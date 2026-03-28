@@ -3590,9 +3590,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
             var _gfdx = [0], _gfdy = [0], _gfr = [0];
             for (var _gfi = 0; _gfi < _gnc; _gfi++) {
-              _gfdx.push((_gcr() - 0.5) * gBW * 0.3);
-              _gfdy.push((_gcr() - 0.5) * gBW * 0.2);
-              _gfr.push((_gcr() - 0.5) * 0.02);
+              _gfdx.push((_gcr() > 0.5 ? 1 : -1) * gBW * (0.6 + _gcr() * 0.6));
+              _gfdy.push((_gcr() - 0.5) * gBW * 0.4);
+              _gfr.push((_gcr() - 0.5) * 0.03);
             }
             var _gbwAt = function(y) { return gBW * Math.max(0, Math.min(1, (y + gBL) / gBL)); };
             var _gcolL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
@@ -3722,9 +3722,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Fragment offsets — first stays, rest drift
           var _fdx = [0], _fdy = [0], _fr = [0];
           for (var _fi = 0; _fi < _nc; _fi++) {
-            _fdx.push((_cr() - 0.5) * bladeW * 0.15);
-            _fdy.push((_cr() - 0.5) * bladeW * 0.1);
-            _fr.push((_cr() - 0.5) * 0.02);
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * bladeW * (0.3 + _cr() * 0.3));
+            _fdy.push((_cr() - 0.5) * bladeW * 0.2);
+            _fr.push((_cr() - 0.5) * 0.03);
           }
           var _bwAt = function(y) { return _hw * Math.max(0, Math.min(1, (y + bladeH) / _totalH)); };
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
