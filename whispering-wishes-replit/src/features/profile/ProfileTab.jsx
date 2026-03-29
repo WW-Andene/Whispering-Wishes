@@ -122,6 +122,8 @@ export default function ProfileTab({
   firebaseUrl,
   // Tab navigation (for admin collection/trophy "Go to Import" buttons)
   setActiveTab,
+  // Cache busting (for admin collection images)
+  withCacheBuster,
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [importPlatform, setImportPlatform] = useState(null);

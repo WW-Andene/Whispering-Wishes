@@ -1981,6 +1981,7 @@ function WhisperingWishesInner() {
             getFirebaseAuth={getFirebaseAuth}
             firebaseUrl={firebaseUrl}
             setActiveTab={setActiveTab}
+            withCacheBuster={withCacheBuster}
           />
         )}
 
