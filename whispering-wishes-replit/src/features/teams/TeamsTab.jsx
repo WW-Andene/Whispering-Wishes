@@ -32,6 +32,7 @@ export default function TeamsTab({
   framingMode,
   editingImage,
   setEditingImage,
+  toast,
 }) {
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
@@ -142,7 +143,49 @@ export default function TeamsTab({
                   <Card>
                     <CardHeader action={
                       <div className="flex gap-1.5">
-                        {/* P6-FIX: Use .kuro-btn for consistency (F-P6-047) */}
+                        <button
+                          onClick={() => {
+                            try {
+                              const data = JSON.stringify({ teams: state.teams, activeTeamIndex: state.activeTeamIndex, equipment: teamEquipment }, null, 2);
+                              const blob = new Blob([data], { type: 'application/json' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a'); a.href = url; a.download = 'ww-teams.json'; a.click();
+                              URL.revokeObjectURL(url);
+                              toast?.addToast?.('Teams exported!', 'success');
+                            } catch { toast?.addToast?.('Export failed', 'error'); }
+                          }}
+                          className="kuro-btn text-[10px]"
+                          aria-label="Export team loadouts"
+                        >
+                          Export
+                        </button>
+                        <button
+                          onClick={() => {
+                            const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+                            input.onchange = (e) => {
+                              const file = e.target.files?.[0]; if (!file) return;
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                try {
+                                  const data = JSON.parse(ev.target.result);
+                                  if (!data.teams || !Array.isArray(data.teams)) throw new Error('Invalid format');
+                                  dispatch({ type: 'IMPORT_TEAMS', teams: data.teams, activeTeamIndex: data.activeTeamIndex });
+                                  if (data.equipment && typeof data.equipment === 'object') {
+                                    setTeamEquipment(data.equipment);
+                                    try { localStorage.setItem('ww-team-equipment', JSON.stringify(data.equipment)); } catch {}
+                                  }
+                                  toast?.addToast?.('Teams imported!', 'success');
+                                } catch (err) { toast?.addToast?.('Invalid file: ' + err.message, 'error'); }
+                              };
+                              reader.readAsText(file);
+                            };
+                            input.click();
+                          }}
+                          className="kuro-btn text-[10px]"
+                          aria-label="Import team loadouts"
+                        >
+                          Import
+                        </button>
                         <button
                           onClick={() => {
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;

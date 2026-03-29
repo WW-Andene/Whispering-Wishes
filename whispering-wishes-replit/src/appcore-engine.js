@@ -417,6 +417,7 @@ const ACTION = Object.freeze({
   CLEAR_TEAM_SLOT: 'CLEAR_TEAM_SLOT',
   CLEAR_TEAM: 'CLEAR_TEAM',
   RENAME_TEAM: 'RENAME_TEAM',
+  IMPORT_TEAMS: 'IMPORT_TEAMS',
   LOAD_STATE: 'LOAD_STATE',
   RESET: 'RESET',
 });
@@ -757,6 +758,14 @@ const reducer = (state, action) => {
         : t
       );
       return { ...state, teams };
+    }
+    case ACTION.IMPORT_TEAMS: {
+      if (!Array.isArray(action.teams) || action.teams.length !== 5) return state;
+      const teams = action.teams.map((t, i) => ({
+        name: (t?.name || `Team ${i + 1}`).slice(0, 20),
+        slots: Array.isArray(t?.slots) ? t.slots.slice(0, 3).map(s => typeof s === 'string' ? s : null) : [null, null, null],
+      }));
+      return { ...state, teams, activeTeamIndex: Math.max(0, Math.min(4, action.activeTeamIndex ?? state.activeTeamIndex)) };
     }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
     case ACTION.LOAD_STATE: return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)

@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
+import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, Crown, Star, Sword, Swords, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
@@ -35,7 +36,7 @@ export default function TrackerTab({
   toast,
   confirm,
 }) {
-  const [trackerCategory, setTrackerCategory] = useState('character');
+  const [trackerCategory, setTrackerCategory] = useSessionState('ww-tracker-cat', 'character');
   const [showBannerHistory, setShowBannerHistory] = useState(false);
 
   return (

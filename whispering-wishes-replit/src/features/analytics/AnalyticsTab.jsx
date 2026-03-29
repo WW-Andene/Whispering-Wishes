@@ -35,6 +35,7 @@ export default function AnalyticsTab({
   // ── Analytics-only state ──────────────────────────────────────────────────
   const [chartRange, setChartRange] = useState('monthly');
   const [chartOffset, setChartOffset] = useState(9999);
+  const [chartBanner, setChartBanner] = useState('all');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [selectedTrophy, setSelectedTrophy] = useState(null);
   const [leaderboardConsented, setLeaderboardConsented] = useState(() => {
@@ -137,7 +138,11 @@ export default function AnalyticsTab({
       minPity: fiveStars.length ? Math.min(...fiveStars.map(p => p.pity)) : 0,
       maxPity: fiveStars.length ? Math.max(...fiveStars.map(p => p.pity)) : 0,
     } : null;
-    return { allHist, fiveStars, pullLogFiveStars, totalObtained, histogramBuckets, allBucketLabels, histogramStats };
+    const featuredHist = featured;
+    const weaponHist = weapon;
+    const stdCharHist = stdChar;
+    const stdWeapHist = stdWeap;
+    return { allHist, featuredHist, weaponHist, stdCharHist, stdWeapHist, fiveStars, pullLogFiveStars, totalObtained, histogramBuckets, allBucketLabels, histogramStats };
   }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
 
   // ── Effects ────────────────────────────────────────────────────────────────
@@ -824,12 +829,16 @@ export default function AnalyticsTab({
                   </CardHeader>
                   <CardBody>
                     {(() => {
-                      const allHist = statsTabData.allHist;
-                      if (allHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting sufficient signal data for trend analysis</p>;
-                      
+                      const chartHist = chartBanner === 'all' ? statsTabData.allHist
+                        : chartBanner === 'featured' ? statsTabData.featuredHist
+                        : chartBanner === 'weapon' ? statsTabData.weaponHist
+                        : chartBanner === 'stdChar' ? statsTabData.stdCharHist
+                        : statsTabData.stdWeapHist;
+                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting sufficient signal data for trend analysis</p>;
+
                       const groupData = (range) => {
                         const grouped = {};
-                        allHist.forEach(p => {
+                        chartHist.forEach(p => {
                           if (p.timestamp) {
                             const date = new Date(p.timestamp);
                             let key;
@@ -890,6 +899,17 @@ export default function AnalyticsTab({
                       
                       return (
                         <>
+                          <div className="flex gap-1 mb-2 flex-wrap">
+                            {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Std Char'], ['stdWeap', 'Std Weap']].map(([val, label]) => (
+                              <button
+                                key={val}
+                                onClick={() => { setChartBanner(val); setChartOffset(9999); }}
+                                className={`px-2 py-1 text-[10px] rounded transition-all ${chartBanner === val ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex gap-1">
                               {['daily', 'weekly', 'monthly', 'yearly'].map(r => (

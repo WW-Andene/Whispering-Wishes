@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
 import {
   CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, CHAR_BUFF_TABLE,
@@ -36,18 +37,18 @@ export default function CollectionTab({
   refreshImages,
   handleSetProfilePic,
 }) {
-  // ── Tab-local state ──────────────────────────────────────────────────────────
-  const [collectionSort, setCollectionSort] = useState('copies');
+  // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
+  const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'copies');
   const [collectionSearch, setCollectionSearch] = useState('');
-  const [collectionCategoryFilter, setCollectionCategoryFilter] = useState('all');
-  const [collectionWeaponFilter, setCollectionWeaponFilter] = useState('all');
-  const [collectionElementFilter, setCollectionElementFilter] = useState('all');
-  const [collectionStatFilter, setCollectionStatFilter] = useState('all');
-  const [collectionDamageFilter, setCollectionDamageFilter] = useState('all');
-  const [collectionRoleFilter, setCollectionRoleFilter] = useState('all');
-  const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useState('all');
-  const [collectionEchoBuffFilter, setCollectionEchoBuffFilter] = useState('all');
-  const [collectionView, setCollectionView] = useState('items');
+  const [collectionCategoryFilter, setCollectionCategoryFilter] = useSessionState('ww-coll-cat', 'all');
+  const [collectionWeaponFilter, setCollectionWeaponFilter] = useSessionState('ww-coll-weap', 'all');
+  const [collectionElementFilter, setCollectionElementFilter] = useSessionState('ww-coll-elem', 'all');
+  const [collectionStatFilter, setCollectionStatFilter] = useSessionState('ww-coll-stat', 'all');
+  const [collectionDamageFilter, setCollectionDamageFilter] = useSessionState('ww-coll-dmg', 'all');
+  const [collectionRoleFilter, setCollectionRoleFilter] = useSessionState('ww-coll-role', 'all');
+  const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useSessionState('ww-coll-eset', 'all');
+  const [collectionEchoBuffFilter, setCollectionEchoBuffFilter] = useSessionState('ww-coll-ebuf', 'all');
+  const [collectionView, setCollectionView] = useSessionState('ww-coll-view', 'items');
 
   // ── Derived / computed ────────────────────────────────────────────────────────
 

@@ -804,12 +804,21 @@ function WhisperingWishesInner() {
   
   // Swipe navigation between tabs
   const swipeRef = useRef({ startX: 0, startY: 0, startTime: 0 });
+  const lastSwipeRef = useRef(0);
   const activeTabRef = useRef(activeTab);
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
   
   useEffect(() => {
     if (!visualSettings.swipeNavigation) return;
-    
+
+    const EDGE_EXCLUSION = 20;   // pixels from screen edge to ignore
+    const MIN_DISTANCE = 50;     // minimum swipe distance in px
+    const MAX_TIME = 300;        // maximum swipe duration in ms
+    const MIN_RATIO = 1.5;       // horizontal/vertical ratio threshold
+    const SWIPE_COOLDOWN = 400;  // ms between accepted swipes
+    const MIN_VELOCITY = 0.5;    // px/ms for velocity-based acceptance
+    const MIN_VELOCITY_DIST = 30; // minimum distance for velocity-based swipes
+
     const handleTouchStart = (e) => {
       // P10-FIX: Don't capture swipes starting inside horizontally scrollable containers (Step 10 audit — MEDIUM-5j)
       let el = e.target;
@@ -822,7 +831,7 @@ function WhisperingWishesInner() {
       }
       // Exclude swipes starting near screen edges to avoid conflicting with OS back/forward gestures
       const touchX = e.touches[0].clientX;
-      if (touchX < 20 || touchX > window.innerWidth - 20) {
+      if (touchX < EDGE_EXCLUSION || touchX > window.innerWidth - EDGE_EXCLUSION) {
         swipeRef.current = { startX: 0, startY: 0, startTime: 0, ignore: true };
         return;
       }
@@ -833,39 +842,47 @@ function WhisperingWishesInner() {
         ignore: false
       };
     };
-    
+
     const handleTouchEnd = (e) => {
       if (swipeRef.current.ignore) return;
+      // Cooldown: prevent double-swipes
+      if (Date.now() - lastSwipeRef.current < SWIPE_COOLDOWN) return;
+
       const { startX, startY, startTime } = swipeRef.current;
       const endX = e.changedTouches[0].clientX;
       const endY = e.changedTouches[0].clientY;
       const deltaX = endX - startX;
       const deltaY = endY - startY;
       const deltaTime = Date.now() - startTime;
-      
+
       // Must be horizontal swipe (more X than Y movement)
-      // Must be fast enough (under 300ms) and long enough (over 50px)
-      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.5;
-      const isFastEnough = deltaTime < 300;
-      const isLongEnough = Math.abs(deltaX) > 50;
-      
-      if (isHorizontalSwipe && isFastEnough && isLongEnough) {
+      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * MIN_RATIO;
+      // Primary check: fast enough and long enough
+      const isFastEnough = deltaTime < MAX_TIME;
+      const isLongEnough = Math.abs(deltaX) > MIN_DISTANCE;
+      // Alternative: velocity-based acceptance for quick flicks
+      const velocity = deltaTime > 0 ? Math.abs(deltaX) / deltaTime : 0;
+      const isHighVelocity = velocity > MIN_VELOCITY && Math.abs(deltaX) > MIN_VELOCITY_DIST;
+
+      if (isHorizontalSwipe && ((isFastEnough && isLongEnough) || isHighVelocity)) {
         const currentIndex = TAB_ORDER.indexOf(activeTabRef.current);
         if (deltaX < 0 && currentIndex < TAB_ORDER.length - 1) {
           // Swipe left → next tab
+          lastSwipeRef.current = Date.now();
           haptic.medium();
           setActiveTab(TAB_ORDER[currentIndex + 1]);
         } else if (deltaX > 0 && currentIndex > 0) {
           // Swipe right → previous tab
+          lastSwipeRef.current = Date.now();
           haptic.medium();
           setActiveTab(TAB_ORDER[currentIndex - 1]);
         }
       }
     };
-    
+
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    
+
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
@@ -1932,6 +1949,7 @@ function WhisperingWishesInner() {
             framingMode={framingMode}
             editingImage={editingImage}
             setEditingImage={setEditingImage}
+            toast={toast}
           />
         )}
 
