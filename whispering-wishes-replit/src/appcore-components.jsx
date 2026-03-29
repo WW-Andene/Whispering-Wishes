@@ -3674,46 +3674,36 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cuts = [];
           for (var _ci = 0; _ci < _nCracks; _ci++) {
             var _cy = -bladeH * 0.85 + _cr() * (bladeH * 0.75 + guardH);
-            // Generate 5-7 zigzag points across the blade width
-            var _nPts = 5 + (_cr() * 3 | 0);
-            var _pts = [];
-            var _yy = _cy;
-            for (var _pi = 0; _pi <= _nPts; _pi++) {
-              var _px = -_hw + (_pi / _nPts) * _hw * 2;
-              _pts.push({ x: _px, y: _yy });
-              _yy += ((_cr() > 0.5 ? 1 : -1) * bladeH * (0.01 + _cr() * 0.04));
-            }
-            _cuts.push({ pts: _pts, center: (_pts[0].y + _pts[_pts.length-1].y) * 0.5 });
+            var _steep = _cr();
+            var _cdy = bladeH * (0.02 + _steep * _steep * 0.2) * (_cr() > 0.5 ? 1 : -1);
+            var _cmx = (_cr() - 0.5) * _hw * (0.4 + _cr() * 1.0);
+            _cuts.push({ y: _cy, dy: _cdy, mx: _cmx });
           }
           // Sort by center Y (top to bottom)
-          _cuts.sort(function(a,b){ return a.center - b.center; });
+          _cuts.sort(function(a,b){ return (a.y + a.dy*0.5) - (b.y + b.dy*0.5); });
           // Remove cuts too close together (min 8% bladeH apart)
           var _minSpace = bladeH * 0.08;
           var _filtered = [_cuts[0]];
           for (var _fi = 1; _fi < _cuts.length; _fi++) {
-            if (Math.abs(_cuts[_fi].center - _filtered[_filtered.length-1].center) >= _minSpace) _filtered.push(_cuts[_fi]);
+            var _prevCenter = _filtered[_filtered.length-1].y + _filtered[_filtered.length-1].dy * 0.5;
+            var _thisCenter = _cuts[_fi].y + _cuts[_fi].dy * 0.5;
+            if (Math.abs(_thisCenter - _prevCenter) >= _minSpace) _filtered.push(_cuts[_fi]);
           }
           _cuts = _filtered;
           var _nCuts = _cuts.length;
           // Y along cut zigzag at X
-          // Interpolate Y along zigzag points at any X
           var _cutY = function(c, x) {
-            var p = c.pts;
-            if (x <= p[0].x) return p[0].y;
-            if (x >= p[p.length-1].x) return p[p.length-1].y;
-            for (var _i = 0; _i < p.length - 1; _i++) {
-              if (x >= p[_i].x && x <= p[_i+1].x) {
-                var t = (p[_i+1].x === p[_i].x) ? 0.5 : (x - p[_i].x) / (p[_i+1].x - p[_i].x);
-                return p[_i].y + t * (p[_i+1].y - p[_i].y);
-              }
+            var p1x = -_hw, p1y = c.y + (c.dy > 0 ? 0 : c.dy);
+            var p2x = c.mx, p2y = c.y + c.dy * 0.5;
+            var p3x = _hw, p3y = c.y + (c.dy > 0 ? c.dy : 0);
+            if (x <= p1x) return p1y;
+            if (x >= p3x) return p3y;
+            if (x <= p2x) {
+              if (p2x === p1x) return (p1y + p2y) * 0.5;
+              return p1y + (x - p1x) / (p2x - p1x) * (p2y - p1y);
             }
-            return p[p.length-1].y;
-          };
-          // Trace full zigzag for outline
-          var _traceZig = function(c, yOff) {
-            var p = c.pts;
-            ctx.moveTo(p[0].x, p[0].y + yOff);
-            for (var _i = 1; _i < p.length; _i++) ctx.lineTo(p[_i].x, p[_i].y + yOff);
+            if (p3x === p2x) return (p2y + p3y) * 0.5;
+            return p2y + (x - p2x) / (p3x - p2x) * (p3y - p2y);
           };
           // Gradient helpers
           var _gL = function() {
@@ -3739,63 +3729,70 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _si = 0; _si <= _nCuts; _si++) {
             var _topCut = _si > 0 ? _cuts[_si - 1] : null;
             var _botCut = _si < _nCuts ? _cuts[_si] : null;
+            var _dx = _offX[_si], _dy = _offY[_si];
             ctx.save();
-            ctx.translate(_offX[_si], _offY[_si]);
-            // Draw full piece as one polygon: top edge → right edge → bottom edge → left edge
+            ctx.translate(_dx, _dy);
+            // Top Y and bottom Y at left edge, center, right edge
+            var _tL = _topCut ? _cutY(_topCut, -_hw) + _gap : tipEnd;
+            var _tC = _topCut ? _cutY(_topCut, 0) + _gap : -bladeH;
+            var _tR = _topCut ? _cutY(_topCut, _hw) + _gap : tipEnd;
+            var _bL = _botCut ? _cutY(_botCut, -_hw) : guardH;
+            var _bC = _botCut ? _cutY(_botCut, 0) : guardH;
+            var _bR = _botCut ? _cutY(_botCut, _hw) : guardH;
+            // Left half
             ctx.fillStyle = _gL();
             ctx.beginPath();
-            // Top edge (left to right)
             if (!_topCut) {
-              ctx.moveTo(-_hw, tipEnd);
-              ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
               ctx.moveTo(0, -bladeH);
               ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
               ctx.lineTo(-_hw, tipEnd);
             } else {
-              var _tp = _topCut.pts;
-              ctx.moveTo(_tp[0].x, _tp[0].y + _gap);
-              for (var _ti = 1; _ti < _tp.length; _ti++) ctx.lineTo(_tp[_ti].x, _tp[_ti].y + _gap);
+              ctx.moveTo(0, _tC);
+              ctx.lineTo(-_hw * 0.5, _cutY(_topCut, -_hw * 0.5) + _gap);
+              ctx.lineTo(-_hw, _tL);
             }
-            // Right edge down
+            ctx.lineTo(-_hw, _bL);
             if (!_botCut) {
-              ctx.lineTo(_hw, guardH);
+              ctx.lineTo(0, guardH);
             } else {
-              ctx.lineTo(_hw, _botCut.pts[_botCut.pts.length-1].y);
-            }
-            // Bottom edge (right to left)
-            if (!_botCut) {
-              ctx.lineTo(-_hw, guardH);
-            } else {
-              var _bp = _botCut.pts;
-              for (var _bi2 = _bp.length - 1; _bi2 >= 0; _bi2--) ctx.lineTo(_bp[_bi2].x, _bp[_bi2].y);
-            }
-            // Left edge up
-            if (!_topCut) {
-              ctx.lineTo(-_hw, tipEnd);
-            } else {
-              ctx.lineTo(_topCut.pts[0].x, _topCut.pts[0].y + _gap);
+              ctx.lineTo(-_hw * 0.5, _cutY(_botCut, -_hw * 0.5));
+              ctx.lineTo(0, _bC);
             }
             ctx.closePath(); ctx.fill();
-            // Right half overlay
+            // Right half
             ctx.fillStyle = _gR();
             ctx.beginPath();
-            ctx.moveTo(0, _topCut ? _cutY(_topCut, 0) + _gap : -bladeH);
-            ctx.lineTo(_hw, _topCut ? _cutY(_topCut, _hw) + _gap : tipEnd);
-            ctx.lineTo(_hw, _botCut ? _cutY(_botCut, _hw) : guardH);
-            ctx.lineTo(0, _botCut ? _cutY(_botCut, 0) : guardH);
+            if (!_topCut) {
+              ctx.moveTo(0, -bladeH);
+              ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+              ctx.lineTo(_hw, tipEnd);
+            } else {
+              ctx.moveTo(0, _tC);
+              ctx.lineTo(_hw * 0.5, _cutY(_topCut, _hw * 0.5) + _gap);
+              ctx.lineTo(_hw, _tR);
+            }
+            ctx.lineTo(_hw, _bR);
+            if (!_botCut) {
+              ctx.lineTo(0, guardH);
+            } else {
+              ctx.lineTo(_hw * 0.5, _cutY(_botCut, _hw * 0.5));
+              ctx.lineTo(0, _bC);
+            }
             ctx.closePath(); ctx.fill();
             // Ridge
             ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            var _rT = _topCut ? _cutY(_topCut, 0) + _gap + 1 : -bladeH + 1;
-            var _rB = _botCut ? _cutY(_botCut, 0) - 1 : guardH;
-            ctx.beginPath(); ctx.moveTo(0, _rT); ctx.lineTo(0, _rB); ctx.stroke();
-            // Black outline on top broken edge — trace all zigzag points
+            ctx.beginPath(); ctx.moveTo(0, _tC + 1); ctx.lineTo(0, _bC - 1); ctx.stroke();
+            // Black outline on top broken edge
             if (_topCut) {
               ctx.strokeStyle = 'rgba(0,0,0,0.85)';
               ctx.lineWidth = 1;
               ctx.beginPath();
-              _traceZig(_topCut, _gap);
+              ctx.moveTo(-_hw, _tL);
+              ctx.lineTo(-_hw * 0.5, _cutY(_topCut, -_hw * 0.5) + _gap);
+              ctx.lineTo(0, _tC);
+              ctx.lineTo(_hw * 0.5, _cutY(_topCut, _hw * 0.5) + _gap);
+              ctx.lineTo(_hw, _tR);
               ctx.stroke();
             }
             // Black outline on bottom broken edge
@@ -3803,7 +3800,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.strokeStyle = 'rgba(0,0,0,0.85)';
               ctx.lineWidth = 1;
               ctx.beginPath();
-              _traceZig(_botCut, 0);
+              ctx.moveTo(-_hw, _bL);
+              ctx.lineTo(-_hw * 0.5, _cutY(_botCut, -_hw * 0.5));
+              ctx.lineTo(0, _bC);
+              ctx.lineTo(_hw * 0.5, _cutY(_botCut, _hw * 0.5));
+              ctx.lineTo(_hw, _bR);
               ctx.stroke();
             }
             ctx.restore();
