@@ -3818,8 +3818,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _sy = (_sc.yL + _sc.yR) * 0.5;
             // Left shard — wider, shorter, pointing inward
             var _slx = -_hw - Math.max(3, 2 + _cr() * 4);
-            var _slw = Math.max(3, 2 + _cr() * 3);
-            var _slh = Math.max(3, 2 + _cr() * 3);
+            var _slw = Math.max(5, 3 + _cr() * 5);
+            var _slh = Math.max(4, 3 + _cr() * 4);
             ctx.beginPath();
             ctx.moveTo(_slx, _sy - _slw * 0.5);
             ctx.lineTo(_slx + _slh, _sy + _slw * 0.1);
@@ -3827,8 +3827,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath(); ctx.fill();
             // Right shard — wider, shorter, pointing inward
             var _srx = _hw + Math.max(3, 2 + _cr() * 4);
-            var _srw = Math.max(3, 2 + _cr() * 3);
-            var _srh = Math.max(3, 2 + _cr() * 3);
+            var _srw = Math.max(5, 3 + _cr() * 5);
+            var _srh = Math.max(4, 3 + _cr() * 4);
             ctx.beginPath();
             ctx.moveTo(_srx, _sy - _srw * 0.5);
             ctx.lineTo(_srx - _srh, _sy + _srw * 0.1);
