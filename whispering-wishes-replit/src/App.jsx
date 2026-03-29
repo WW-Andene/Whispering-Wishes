@@ -156,12 +156,7 @@ const isAllowedImageUrl = (url) => {
 };
 const sanitizeImageUrl = (url, fallback = '') => isAllowedImageUrl(url) ? url : fallback;
 
-// Utility for silent-in-prod, logged-in-dev error handling
-const silentCatch = (err, context = '') => {
-  if (import.meta.env?.DEV) {
-    console.warn(`[WW] Silent catch${context ? ` in ${context}` : ''}:`, err);
-  }
-};
+import { silentCatch } from './utils/silentCatch.js';
 
 // P13-FIX: HIGH-5 — Hash UIDs before writing to Firebase to protect player privacy.
 // Game UIDs can potentially be correlated to real identities; hashing makes stored data pseudonymous.
@@ -2038,7 +2033,26 @@ function WhisperingWishesInner() {
               >
                 Copy to Clipboard
               </button>
-              
+              <button
+                onClick={() => {
+                  try {
+                    const blob = new Blob([exportData], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `whispering-wishes-backup-${new Date().toISOString().slice(0,10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast?.addToast?.('Backup downloaded!', 'success');
+                  } catch {
+                    toast?.addToast?.('Download failed', 'error');
+                  }
+                }}
+                className="kuro-btn w-full flex items-center justify-center gap-2"
+              >
+                <Download size={14} /> Download .json
+              </button>
+
               <div className="relative my-1">
                 <div className="kuro-divider" />
                 <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[10px] text-gray-400 uppercase tracking-wider">Restore</span>

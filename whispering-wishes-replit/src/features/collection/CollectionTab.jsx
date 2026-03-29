@@ -66,7 +66,7 @@ export default function CollectionTab({
         if (data.role === 'Support') tags.push('buff', 'buffer', 'utility');
         if (data.role === 'Sub DPS') tags.push('sub', 'off-field', 'coordinated');
         if (data.desc) tags.push(data.desc.toLowerCase());
-        if (data.damageFocus) data.damageFocus.forEach(d => tags.push(d.toLowerCase()));
+        if (data.dmgFocus) data.dmgFocus.forEach(d => tags.push(d.toLowerCase()));
         if (data.statScaling) tags.push(data.statScaling.toLowerCase(), data.statScaling.toLowerCase() + ' scaling');
         const buffs = CHAR_BUFF_TABLE[name];
         if (buffs) {

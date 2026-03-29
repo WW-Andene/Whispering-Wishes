@@ -558,7 +558,7 @@ const CHARACTER_DATA = {
 // Structured combat data — derived from desc fields. Merged into CHARACTER_DATA.
 // Format: [name, dmgFocus[], buffs[], debuffs[]]
 // dmgFocus terms: Basic ATK, Heavy ATK, Skill, Liberation, Echo, Coordinated ATK
-// Synced with CHAR_TAGS damageFocus — every character must have complete dmgFocus
+// Every character must have complete dmgFocus
 [
   // 5★ Main DPS
   ['Jiyan',         ['Heavy ATK', 'Liberation'],     [],                                      []],
@@ -728,7 +728,7 @@ const CHARACTER_DATA = {
 
 // [SECTION:CHAR_TAGS] — Per-character stat scaling for filtering
 // statScaling: which stat the character primarily scales from (ATK default, HP, DEF)
-// damageFocus is now synced from dmgFocus above — kept here only for statScaling
+// dmgFocus is set in CHAR_TAGS above — this section only adds statScaling
 [
   // 5★ Main DPS
   ['Jiyan',          'ATK'],
@@ -781,7 +781,7 @@ const CHARACTER_DATA = {
   ['Buling',         'ATK'],
 ].forEach(([name, statScaling]) => {
   if (CHARACTER_DATA[name]) {
-    Object.assign(CHARACTER_DATA[name], { damageFocus: CHARACTER_DATA[name].dmgFocus, statScaling });
+    Object.assign(CHARACTER_DATA[name], { statScaling });
   }
 });
 

@@ -44,11 +44,7 @@ const ADMIN_SALT = 'whispering-wishes-v3-admin';
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 const currentYear = new Date().getFullYear();
-const silentCatch = (err, context = '') => {
-  if (typeof err === 'object' && err !== null) {
-    Object.defineProperty(err, '_silenced', { value: true, writable: false, enumerable: false });
-  }
-};
+import { silentCatch } from '../../utils/silentCatch.js';
 const constantTimeCompare = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
   if (a.length !== b.length) return false;
