@@ -3673,37 +3673,39 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nCracks = 4 + (_cr() * 4 | 0); // 4-7 cracks
           var _cuts = [];
           for (var _ci = 0; _ci < _nCracks; _ci++) {
-            var _cy = -bladeH * 0.85 + _cr() * (bladeH * 0.75 + guardH);
-            var _steep = _cr();
-            var _cdy = bladeH * (0.02 + _steep * _steep * 0.2) * (_cr() > 0.5 ? 1 : -1);
+            // Start Y on one side of blade
+            var _cyStart = -bladeH * 0.85 + _cr() * (bladeH * 0.75 + guardH);
+            // Always slopes down: end is 2-20% bladeH lower than start
+            var _drop = bladeH * (0.02 + _cr() * _cr() * 0.18);
+            var _cyEnd = _cyStart + _drop;
+            // Direction: left-high→right-low or right-high→left-low
+            var _dir = _cr() > 0.5 ? 1 : -1; // 1 = left high, -1 = right high
+            // Midpoint zigzags but stays between start and end Y
             var _cmx = (_cr() - 0.5) * _hw * (0.4 + _cr() * 1.0);
-            _cuts.push({ y: _cy, dy: _cdy, mx: _cmx });
+            var _midY = _cyStart + _drop * (0.3 + _cr() * 0.4); // 30-70% of the drop
+            _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
           }
           // Sort by center Y (top to bottom)
-          _cuts.sort(function(a,b){ return (a.y + a.dy*0.5) - (b.y + b.dy*0.5); });
+          _cuts.sort(function(a,b){ return a.yM - b.yM; });
           // Remove cuts too close together (min 8% bladeH apart)
           var _minSpace = bladeH * 0.08;
           var _filtered = [_cuts[0]];
           for (var _fi = 1; _fi < _cuts.length; _fi++) {
-            var _prevCenter = _filtered[_filtered.length-1].y + _filtered[_filtered.length-1].dy * 0.5;
-            var _thisCenter = _cuts[_fi].y + _cuts[_fi].dy * 0.5;
-            if (Math.abs(_thisCenter - _prevCenter) >= _minSpace) _filtered.push(_cuts[_fi]);
+            if (Math.abs(_cuts[_fi].yM - _filtered[_filtered.length-1].yM) >= _minSpace) _filtered.push(_cuts[_fi]);
           }
           _cuts = _filtered;
           var _nCuts = _cuts.length;
           // Y along cut zigzag at X
+          // 3 points: (-hw, yL) → (mx, yM) → (hw, yR)
           var _cutY = function(c, x) {
-            var p1x = -_hw, p1y = c.y + (c.dy > 0 ? 0 : c.dy);
-            var p2x = c.mx, p2y = c.y + c.dy * 0.5;
-            var p3x = _hw, p3y = c.y + (c.dy > 0 ? c.dy : 0);
-            if (x <= p1x) return p1y;
-            if (x >= p3x) return p3y;
-            if (x <= p2x) {
-              if (p2x === p1x) return (p1y + p2y) * 0.5;
-              return p1y + (x - p1x) / (p2x - p1x) * (p2y - p1y);
+            if (x <= -_hw) return c.yL;
+            if (x >= _hw) return c.yR;
+            if (x <= c.mx) {
+              if (c.mx === -_hw) return (c.yL + c.yM) * 0.5;
+              return c.yL + (x - (-_hw)) / (c.mx - (-_hw)) * (c.yM - c.yL);
             }
-            if (p3x === p2x) return (p2y + p3y) * 0.5;
-            return p2y + (x - p2x) / (p3x - p2x) * (p3y - p2y);
+            if (_hw === c.mx) return (c.yM + c.yR) * 0.5;
+            return c.yM + (x - c.mx) / (_hw - c.mx) * (c.yR - c.yM);
           };
           // Gradient helpers
           var _gL = function() {
