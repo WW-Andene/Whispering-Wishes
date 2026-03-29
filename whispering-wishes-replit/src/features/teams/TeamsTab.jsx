@@ -126,9 +126,20 @@ export default function TeamsTab({
     };
 
     // ── Enemy scaling ──
-    // Wiki formula: DEF% = (800 + 8×AttackerLvl) / (800 + 8×AttackerLvl + EnemyDEF × (1 - DEFIgnore))
+    // Wiki: Enemy DEF = 8 × LVL_enemy + 792
+    // Wiki: DEF% = (800 + 8×LVL_attacker) / (800 + 8×LVL_attacker + DEF_target × (1 - DEFIgnore))
     const attackerFactor = 800 + 8 * 90; // 1520 at attacker level 90
-    const enemyDef90 = 800 + 8 * enemyLevel; // standard enemy DEF (same scaling as attacker)
+    const enemyDef90 = 792 + 8 * enemyLevel; // Wiki: Enemy DEF = 8×LVL + 792
+    // Wiki RES formula (3-tier piecewise):
+    // RES < 0:       1 - RES/2
+    // 0 ≤ RES < 0.8: 1 - RES
+    // RES ≥ 0.8:     1/(1 + 5×RES)
+    const calcResMult = (baseRes, shred) => {
+      const totalRes = (baseRes - shred) / 100; // convert to decimal
+      if (totalRes < 0) return 1 - totalRes / 2;
+      if (totalRes < 0.8) return 1 - totalRes;
+      return 1 / (1 + 5 * totalRes);
+    };
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
     const enemyResMap = enemyEchoData?.enemyRes || {};
     const getEnemyRes = (el) => {
@@ -210,10 +221,11 @@ export default function TeamsTab({
       // Raw damage calculation
       const rEff = m.baseStat * (1 + rStatPct / 100);
       const rAvgCrit = 1 + (Math.min(rCr, 100) / 100) * (rCd / 100 - 1);
-      const rDmgBonus = (1 + rElem / 100) * (1 + rSkillDmg / 100);
+      // Wiki: %DMG_Bonus = 1 + All_DMG_Bonus (elemental + skill type are ALL additive)
+      const rDmgBonus = 1 + (rElem + rSkillDmg) / 100;
       const rDefMult = attackerFactor / (attackerFactor + enemyDef90);
       const rBaseRes = getEnemyRes(m.d.element);
-      const rResMult = 1 - rBaseRes / 100;
+      const rResMult = calcResMult(rBaseRes, 0); // RAW tier: no shred
       rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
     });
     const rawDps = Math.round(rawTotalRotDmg / (mainDps.d.rotTime || 25));
@@ -457,12 +469,15 @@ export default function TeamsTab({
 
     const effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
-    const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
-    const effectiveDef = enemyDef90 * Math.max(0, 1 - (defShred + defIgnore) / 100);
+    // Wiki: %DMG_Bonus = 1 + All_DMG_Bonus (additive), then × DMG_Amplify (deepen, separate mult)
+    const dmgBonus = (1 + (elemDmg + skillDmg) / 100) * (1 + deepen / 100);
+    // Wiki: DEF Reduction modifies enemy DEF before formula, DEF Ignore is inside formula
+    // DEF_Mult = attacker / (attacker + DEF × (1 - DEF_Reduction) × (1 - DEF_Ignore))
+    const reducedDef = enemyDef90 * Math.max(0, 1 - defShred / 100);
+    const effectiveDef = reducedDef * Math.max(0, 1 - defIgnore / 100);
     const defMult = attackerFactor / (attackerFactor + effectiveDef);
     const mainBaseRes = getEnemyRes(mainDps.d.element);
-    const effectiveRes = Math.max(mainBaseRes - resShred, -30);
-    const resMult = 1 - effectiveRes / 100;
+    const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
     const rotTime = mainDps.d.rotTime || 25;
@@ -759,11 +774,14 @@ export default function TeamsTab({
         if (focus.includes('Liberation')) sTypeDmg += sLibDmg;
         if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
         if (focus.includes('Coordinated ATK')) sTypeDmg += sCoordDmg;
-        const sDmgBonus = (1 + sElem / 100) * (1 + sTypeDmg / 100) * (1 + sDeepen / 100);
-        const sEffDef = enemyDef90 * Math.max(0, 1 - (sDefShred + sDefIgnore) / 100);
+        // Wiki: all DMG bonuses additive, deepen is separate multiplicative layer
+        const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sDeepen / 100);
+        // Wiki: DEF Reduction applied first, then DEF Ignore inside formula
+        const sReducedDef = enemyDef90 * Math.max(0, 1 - sDefShred / 100);
+        const sEffDef = sReducedDef * Math.max(0, 1 - sDefIgnore / 100);
         const sDefMult = attackerFactor / (attackerFactor + sEffDef);
         const sBaseRes = getEnemyRes(m.d.element);
-        const sResMult = 1 - Math.max(sBaseRes - sResShred, -30) / 100;
+        const sResMult = calcResMult(sBaseRes, sResShred);
         const sDmg = sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * sResMult;
         totalRotDmg += sDmg;
         memberDmgArr.push({ name: m.name, dmg: sDmg });
@@ -789,7 +807,7 @@ export default function TeamsTab({
           const echoEl = echoInfo?.element || m.d.element;
           const echoBase = m.scaling === 'ATK' ? m.totalBaseAtk : m.baseStat * 0.25;
           const echoResRate = getEnemyRes(echoEl);
-          const echoResMult = 1 - Math.max(echoResRate - resShred, -30) / 100;
+          const echoResMult = calcResMult(echoResRate, resShred);
           // Include echo DMG bonus from sets and weapon passives
           let echoSkillBonus = 0;
           if (m.echoSet) {
