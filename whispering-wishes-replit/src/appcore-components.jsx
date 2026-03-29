@@ -3737,106 +3737,39 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
           ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
           ctx.stroke();
-          // Generate all crack line data first
-          var _nCrackLines = 3 + (_cr() * 3 | 0);
-          var _crLines = [];
-          for (var _cli = 0; _cli < _nCrackLines; _cli++) {
-            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
-            var _cw = _hw * (0.3 + _cr() * 0.7);
-            var _cdir = _cr() > 0.5 ? 1 : -1;
-            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1);
-            var _cmx = (_cr() - 0.5) * _hw * 0.4;
-            _crLines.push({ y: _cy, w: _cw, dir: _cdir, dy: _cdy, mx: _cmx });
-          }
-          // Pick 1 crack as break line — must not be in bottom 6.25% of blade
-          var _totalH = bladeH + guardH;
-          var _minBreakY = guardH - _totalH * 0.0625;
-          var _breakCrack = null;
-          var _bestIdx = -1;
-          for (var _bi = 0; _bi < _crLines.length; _bi++) {
-            var _bc = _crLines[_bi];
-            var _bLow = Math.max(_bc.y, _bc.y + _bc.dy);
-            if (_bLow < _minBreakY && _bc.y > -bladeH * 0.85) {
-              _breakCrack = _bc;
-              _bestIdx = _bi;
-              break;
-            }
-          }
-          // Draw decorative crack lines (skip the break one)
+          // Crack lines on blade surface — thin dark diagonal lines
+          var _nCrackLines = 3 + (_cr() * 3 | 0); // 3-5 crack lines
           ctx.strokeStyle = 'rgba(0,0,0,0.4)';
           ctx.lineWidth = Math.max(0.5, bladeW * 0.04);
-          for (var _cli2 = 0; _cli2 < _crLines.length; _cli2++) {
-            if (_cli2 === _bestIdx) continue;
-            var _cl = _crLines[_cli2];
+          for (var _cli = 0; _cli < _nCrackLines; _cli++) {
+            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
+            var _cw = _hw * (0.3 + _cr() * 0.7); // how far across blade
+            var _cdir = _cr() > 0.5 ? 1 : -1;
+            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1); // gentle diagonal
+            // 2-3 segment zigzag crack line
             ctx.beginPath();
-            ctx.moveTo(_cl.dir * -_cl.w, _cl.y);
-            ctx.lineTo(_cl.mx, _cl.y + _cl.dy * 0.5);
-            ctx.lineTo(_cl.dir * _cl.w, _cl.y + _cl.dy);
+            ctx.moveTo(_cdir * -_cw, _cy);
+            ctx.lineTo((_cr() - 0.5) * _hw * 0.4, _cy + _cdy * 0.5);
+            ctx.lineTo(_cdir * _cw, _cy + _cdy);
             ctx.stroke();
           }
-          // Cut blade at break crack — erase a strip then redraw upper piece shifted
-          if (_breakCrack) {
-            var _bk = _breakCrack;
-            // 3 points of the crack, extended to full blade width
-            var _p1x = _bk.dir * -_hw, _p1y = _bk.y;
-            var _p2x = _bk.mx, _p2y = _bk.y + _bk.dy * 0.5;
-            var _p3x = _bk.dir * _hw, _p3y = _bk.y + _bk.dy;
-            var _cutW = Math.max(2, bladeW * 0.15); // gap thickness
-            // Erase a band along the crack line
-            var _prevComp = ctx.globalCompositeOperation;
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = 'rgba(0,0,0,1)';
-            ctx.beginPath();
-            // Upper edge of cut band
-            ctx.moveTo(_p1x - _hw * 0.3, _p1y - _cutW);
-            ctx.lineTo(_p2x, _p2y - _cutW);
-            ctx.lineTo(_p3x + _hw * 0.3, _p3y - _cutW);
-            // Lower edge of cut band
-            ctx.lineTo(_p3x + _hw * 0.3, _p3y + _cutW);
-            ctx.lineTo(_p2x, _p2y + _cutW);
-            ctx.lineTo(_p1x - _hw * 0.3, _p1y + _cutW);
-            ctx.closePath();
-            ctx.fill();
-            ctx.globalCompositeOperation = _prevComp;
-            // Draw the break crack line (visible dark line at cut)
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-            ctx.lineWidth = Math.max(0.5, bladeW * 0.03);
-            ctx.beginPath();
-            ctx.moveTo(_p1x, _p1y - _cutW);
-            ctx.lineTo(_p2x, _p2y - _cutW);
-            ctx.lineTo(_p3x, _p3y - _cutW);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(_p1x, _p1y + _cutW);
-            ctx.lineTo(_p2x, _p2y + _cutW);
-            ctx.lineTo(_p3x, _p3y + _cutW);
-            ctx.stroke();
-            // Bright fracture edge (light catching exposed metal)
-            ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.25+lit*0.3)+')';
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
-            ctx.beginPath();
-            ctx.moveTo(_p1x, _p1y + _cutW * 0.5);
-            ctx.lineTo(_p2x, _p2y + _cutW * 0.5);
-            ctx.lineTo(_p3x, _p3y + _cutW * 0.5);
-            ctx.stroke();
-          }
-          // Bright edge highlights on remaining cracks
+          // Bright edge on some cracks (light catching fracture edge)
           ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.15+lit*0.2)+')';
           ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
-          for (var _cli3 = 0; _cli3 < 2; _cli3++) {
-            var _cy3 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
-            var _cw3 = _hw * (0.4 + _cr() * 0.5);
+          for (var _cli2 = 0; _cli2 < 2; _cli2++) {
+            var _cy2 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
+            var _cw2 = _hw * (0.4 + _cr() * 0.5);
             ctx.beginPath();
-            ctx.moveTo(-_cw3, _cy3);
-            ctx.lineTo(_cw3, _cy3 + bladeW * (0.1 + _cr() * 0.2));
+            ctx.moveTo(-_cw2, _cy2);
+            ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
             ctx.stroke();
           }
-          // Floating shards near notches
+          // Floating shards — broken-off chips hover near the blade edge
           var _shardBr = 0.3 + lit * 0.4;
           var _shardCol = 'rgb('+Math.round(30+180*_shardBr)+','+Math.round(22+130*_shardBr)+','+Math.round(14+60*_shardBr)+')';
           for (var _sli = 0; _sli < _notchesL.length; _sli++) {
             var _sn = _notchesL[_sli];
-            var _gap = _hw * (0.12 + _cr() * 0.15);
+            var _gap = _hw * (0.12 + _cr() * 0.15); // hover gap
             var _sx = -_hw - _gap;
             var _sy = _sn.y + _sn.h * 0.1;
             var _sw = _sn.d * (0.6 + _cr() * 0.3);
