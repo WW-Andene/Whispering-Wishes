@@ -3655,6 +3655,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.moveTo(0, gTip + 1);
             ctx.lineTo(0, gBase);
             ctx.stroke();
+            // Orange highlight on lit edge
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            var _ghlAlpha = 0.12 + lit * 0.2;
+            ctx.strokeStyle = 'rgba(255,130,35,' + _ghlAlpha + ')';
+            ctx.lineWidth = Math.max(0.5, gBW * 0.2);
+            var _ghlX = leftLight ? -gBW : gBW;
+            ctx.beginPath();
+            ctx.moveTo(0, gTip);
+            ctx.quadraticCurveTo(_ghlX * 0.4, gTip + (gBL - gTaperAt) * 0.4, _ghlX, gTaperY);
+            ctx.quadraticCurveTo(_ghlX * 1.08, (gTaperY + gBase) * 0.5, _ghlX * 0.95, gBase);
+            ctx.stroke();
+            ctx.restore();
             // Grip (drawn before guard) — cylindrical gradient
             const gGripGrad = ctx.createLinearGradient(-gGripW, 0, gGripW, 0);
             const gkR = Math.round(20 + 40 * gripBr), gkG = Math.round(12 + 20 * gripBr), gkB = Math.round(8 + 10 * gripBr);
@@ -3876,6 +3889,39 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _rt = _top ? _cutYat(_top, 0) + _inset + 1 : -bladeH + 1;
             var _rb = _bot ? _cutYat(_bot, 0) - _inset - 1 : guardH;
             ctx.beginPath(); ctx.moveTo(0, _rt); ctx.lineTo(0, _rb); ctx.stroke();
+            // Orange highlight on lit edge of this piece
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            var _hlAlpha = 0.12 + lit * 0.2;
+            ctx.strokeStyle = 'rgba(255,130,35,' + _hlAlpha + ')';
+            ctx.lineWidth = Math.max(0.5, bladeW * 0.15);
+            var _hlSide = leftLight ? -1 : 1;
+            var _hlX = _hlSide * _hw;
+            var _hlNotch = leftLight ? _notchL : _notchR;
+            var _hlTop = leftLight ? _tYL : _tYR;
+            var _hlBot = leftLight ? _bYL : _bYR;
+            ctx.beginPath();
+            if (!_top && _hlSide === -1) {
+              ctx.moveTo(-_hw * 0.3, -bladeH * 0.7);
+              ctx.lineTo(_hlX, tipEnd);
+            } else if (!_top && _hlSide === 1) {
+              ctx.moveTo(_hw * 0.3, -bladeH * 0.7);
+              ctx.lineTo(_hlX, tipEnd);
+            } else {
+              ctx.moveTo(_hlX, _hlTop);
+            }
+            var _hlPY = _hlTop;
+            for (var _hli = 0; _hli < _hlNotch.length; _hli++) {
+              var _hln = _hlNotch[_hli];
+              if (_hln.y <= _hlPY || _hln.y + _hln.h > _hlBot) continue;
+              ctx.lineTo(_hlX, _hln.y);
+              ctx.lineTo(_hlX - _hlSide * _hln.d, _hln.y + _hln.h * 0.4);
+              ctx.lineTo(_hlX, _hln.y + _hln.h);
+              _hlPY = _hln.y + _hln.h;
+            }
+            ctx.lineTo(_hlX, _hlBot);
+            ctx.stroke();
+            ctx.restore();
             ctx.restore();
           }
           // Shards — 2 per cut (one each side), triangular, pointing outward
@@ -4029,20 +4075,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fill();
 
           } // end else (normal sword)
-
-          // Orange highlight on lit edge
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          var _hlSide = leftLight ? -1 : 1;
-          var _hlX = _hlSide * (isGladius ? overall * 0.7 * 0.048 : bladeW / 2);
-          var _hlAlpha = 0.06 + lit * 0.12;
-          ctx.strokeStyle = 'rgba(255,140,40,' + _hlAlpha + ')';
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.12);
-          ctx.beginPath();
-          ctx.moveTo(_hlX, -(isGladius ? overall * 0.7 * 0.72 : bladeH) * 0.95);
-          ctx.lineTo(_hlX, guardH);
-          ctx.stroke();
-          ctx.restore();
 
           ctx.restore();
         }
