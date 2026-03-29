@@ -1975,6 +1975,9 @@ function WhisperingWishesInner() {
             luckRating={luckRating}
             ownedCharNames={ownedCharNames}
             trophies={trophies}
+            trophyOverrides={trophyOverrides}
+            setTrophyOverrides={setTrophyOverrides}
+            DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
             getFirebaseAuth={getFirebaseAuth}
             firebaseUrl={firebaseUrl}
             setActiveTab={setActiveTab}

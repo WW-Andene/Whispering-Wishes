@@ -4,8 +4,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, Star, X } from 'lucide-react';
+import { CHARACTER_DATA, HEADER_ICON } from '../../appcore-data.js';
+import { TROPHY_ICON_MAP, hideOnError } from '../../appcore-components.jsx';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
+
+const TROPHY_TIER_ORDER = { legendary: 0, gold: 1, silver: 2, bronze: 3, gray: 4, orange: 5 };
 
 export default function IdCardModal({
   showIdCard, setShowIdCard,
@@ -17,6 +21,8 @@ export default function IdCardModal({
   collectionImages,
   ownedCharNames,
   idCardTrapRef,
+  trophies,
+  getImageFraming,
 }) {
   if (!showIdCard) return null;
   return (

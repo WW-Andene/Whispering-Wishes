@@ -67,30 +67,7 @@ const isAllowedImageUrl = (url) => {
     );
   } catch { return false; }
 };
-const DEFAULT_VISUAL_SETTINGS = Object.freeze({
-  oledMode: false,
-  swipeNavigation: true,
-  animationsEnabled: 'on',
-  bgStyle: 'resonance',
-  bgResolution: null,
-  bgFps: null,
-  theme: 'default',
-  // Slider values
-  particleIntensity: 1.0,
-  particleSpeed: 1.0,
-  glowIntensity: 1.0,
-  glowPulseSpeed: 1.0,
-  bgOpacity: 1.0,
-  ringScale: 1.0,
-  ringSpeed: 1.0,
-  ringDirection: 1,
-  swordDensity: 1.0,
-  swordSpeed: 1.0,
-  swordDirection: 1,
-  triangleScale: 1.0,
-  triangleSpeed: 1.0,
-  triangleDirection: 1,
-});
+// DEFAULT_VISUAL_SETTINGS received as prop from App.jsx (canonical source)
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -137,6 +114,8 @@ export default function ProfileTab({
   luckRating,
   ownedCharNames,
   trophies,
+  trophyOverrides, setTrophyOverrides,
+  DEFAULT_VISUAL_SETTINGS,
   // Firebase (for admin fetch)
   getFirebaseAuth,
   firebaseUrl,
@@ -179,9 +158,6 @@ export default function ProfileTab({
       }
     } catch (err) { silentCatch(err, 'admin lockout init'); }
     return false;
-  });
-  const [trophyOverrides, setTrophyOverrides] = useState(() => {
-    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch (err) { silentCatch(err, 'trophy overrides init'); return {}; }
   });
   const [trophyJsonInput, setTrophyJsonInput] = useState('');
   const [activePlayersCount, setActivePlayersCount] = useState(null);
@@ -1616,6 +1592,8 @@ Example: {"pulls":[...]}'
         collectionImages={collectionImages}
         ownedCharNames={ownedCharNames}
         idCardTrapRef={idCardTrapRef}
+        trophies={trophies}
+        getImageFraming={getImageFraming}
       />
 
       {/* Admin Panel Modal + Mini Window */}
@@ -1646,6 +1624,9 @@ Example: {"pulls":[...]}'
         adminTrapRef={adminTrapRef}
         setActiveTab={setActiveTab}
         withCacheBuster={withCacheBuster}
+        detailModal={detailModal}
+        saveImageFraming={saveImageFraming}
+        DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
       />
 
     </>

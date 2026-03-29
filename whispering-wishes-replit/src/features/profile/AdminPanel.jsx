@@ -7,7 +7,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, Minus, Plus, RefreshCcw, Settings, X } from 'lucide-react';
-import { APP_VERSION } from '../../appcore-data.js';
+import { APP_VERSION, DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../appcore-data.js';
 import {
   Card, CardHeader, CardBody,
   KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
@@ -15,6 +15,9 @@ import {
   hideOnError,
 } from '../../appcore-components.jsx';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
+
+const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
+const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 
 export default function AdminPanel({
   showAdminPanel, setShowAdminPanel,
@@ -40,6 +43,9 @@ export default function AdminPanel({
   adminTrapRef,
   setActiveTab,
   withCacheBuster,
+  detailModal,
+  saveImageFraming,
+  DEFAULT_VISUAL_SETTINGS,
 }) {
   if (!showAdminPanel) return null;
   return (
