@@ -3670,32 +3670,27 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           _cr(); _cr();
           var _hw = bladeW / 2;
           // Generate cuts — diagonal, spread across cuttable zone
-          var _nCracks = 3 + (_cr() * 3 | 0); // 3-5 cuts
+          var _nCracks = 3 + (_cr() * 2 | 0); // 3-4 cuts
           var _totalH = bladeH + guardH;
-          var _guardZone = _totalH * 0.06125; // 6.125% protected above guard
-          var _cutTop = -bladeH; // tip
-          var _cutBot = guardH - _guardZone; // top of protected zone
-          var _cutRange = _cutBot - _cutTop; // cuttable range = 93.875%
+          var _guardZone = _totalH * 0.06125;
+          var _cutTop = -bladeH;
+          var _cutBot = guardH - _guardZone;
+          var _cutRange = _cutBot - _cutTop;
+          // Place cuts evenly across blade with random jitter — guaranteed spread
           var _cuts = [];
+          var _spacing = _cutRange / (_nCracks + 1);
           for (var _ci = 0; _ci < _nCracks; _ci++) {
-            var _cyStart = _cutTop + _cr() * _cutRange;
-            // Gentle drop: 2-6% bladeH (not steep)
+            var _baseY = _cutTop + _spacing * (_ci + 1);
+            var _jitter = (_cr() - 0.5) * _spacing * 0.5;
+            var _cyStart = _baseY + _jitter;
             var _drop = bladeH * (0.02 + _cr() * 0.04);
-            var _cyEnd = _cyStart + _drop;
-            // Clamp to cuttable zone
-            if (_cyEnd > _cutBot) _cyEnd = _cutBot;
+            var _cyEnd = Math.min(_cyStart + _drop, _cutBot);
             var _dir = _cr() > 0.5 ? 1 : -1;
             var _cmx = (_cr() * 0.4 + 0.1) * _hw * (_cr() > 0.5 ? 1 : -1);
             var _midY = _cyStart + _drop * (0.3 + _cr() * 0.4);
             _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
           }
           _cuts.sort(function(a,b){ return a.yM - b.yM; });
-          // Space cuts apart so they don't overlap (min 12px between centers)
-          var _spaced = [_cuts[0]];
-          for (var _sp = 1; _sp < _cuts.length; _sp++) {
-            if (Math.abs(_cuts[_sp].yM - _spaced[_spaced.length-1].yM) >= 12) _spaced.push(_cuts[_sp]);
-          }
-          _cuts = _spaced;
           var _nCuts = _cuts.length;
           // Y along cut at X: 3 points (-hw,yL)→(mx,yM)→(hw,yR)
           var _cutY = function(c, x) {
