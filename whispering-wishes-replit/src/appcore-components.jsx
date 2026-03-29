@@ -4030,6 +4030,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           } // end else (normal sword)
 
+          // Orange highlight on lit edge
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          var _hlSide = leftLight ? -1 : 1;
+          var _hlX = _hlSide * (isGladius ? overall * 0.7 * 0.048 : bladeW / 2);
+          var _hlAlpha = 0.06 + lit * 0.12;
+          ctx.strokeStyle = 'rgba(255,140,40,' + _hlAlpha + ')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.12);
+          ctx.beginPath();
+          ctx.moveTo(_hlX, -(isGladius ? overall * 0.7 * 0.72 : bladeH) * 0.95);
+          ctx.lineTo(_hlX, guardH);
+          ctx.stroke();
+          ctx.restore();
+
           ctx.restore();
         }
 
