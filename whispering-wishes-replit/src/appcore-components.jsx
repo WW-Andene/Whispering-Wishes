@@ -3818,8 +3818,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _sy = (_sc.yL + _sc.yR) * 0.5;
             // Left shard — wider, shorter, pointing inward
             var _slx = -_hw - Math.max(3, 2 + _cr() * 4);
-            var _slw = Math.max(5, 3 + _cr() * 5);
-            var _slh = Math.max(4, 3 + _cr() * 4);
+            var _slw = Math.max(3, 2 + _cr() * 3);
+            var _slh = Math.max(3, 2 + _cr() * 3);
             ctx.beginPath();
             ctx.moveTo(_slx, _sy - _slw * 0.5);
             ctx.lineTo(_slx + _slh, _sy + _slw * 0.1);
@@ -3827,8 +3827,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath(); ctx.fill();
             // Right shard — wider, shorter, pointing inward
             var _srx = _hw + Math.max(3, 2 + _cr() * 4);
-            var _srw = Math.max(5, 3 + _cr() * 5);
-            var _srh = Math.max(4, 3 + _cr() * 4);
+            var _srw = Math.max(3, 2 + _cr() * 3);
+            var _srh = Math.max(3, 2 + _cr() * 3);
             ctx.beginPath();
             ctx.moveTo(_srx, _sy - _srw * 0.5);
             ctx.lineTo(_srx - _srh, _sy + _srw * 0.1);
@@ -3840,24 +3840,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _sn2 = _notchL[_sni];
             if (_cr() > 0.5) continue;
             var _sx2 = -_hw - Math.max(2, 1 + _cr() * 3);
-            var _sw2 = Math.max(4, _sn2.h * 0.7);
-            var _sh2 = Math.max(3, _sn2.d * 0.8);
+            var _sw2 = Math.max(2, _sn2.h * 0.4);
+            var _sh2 = Math.max(2, _sn2.d * 0.5);
             ctx.beginPath();
-            ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.1);
+            ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.2);
             ctx.lineTo(_sx2 + _sh2, _sn2.y + _sn2.h * 0.45);
-            ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.8);
+            ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.7);
             ctx.closePath(); ctx.fill();
           }
           for (var _sri2 = 0; _sri2 < _notchR.length; _sri2++) {
             var _snr2 = _notchR[_sri2];
             if (_cr() > 0.5) continue;
             var _sxr2 = _hw + Math.max(2, 1 + _cr() * 3);
-            var _swr2 = Math.max(4, _snr2.h * 0.7);
-            var _shr2 = Math.max(3, _snr2.d * 0.8);
+            var _swr2 = Math.max(2, _snr2.h * 0.4);
+            var _shr2 = Math.max(2, _snr2.d * 0.5);
             ctx.beginPath();
-            ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.1);
+            ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.2);
             ctx.lineTo(_sxr2 - _shr2, _snr2.y + _snr2.h * 0.45);
-            ctx.lineTo(_sxr2, _snr2.y + _snr2.h * 0.8);
+            ctx.lineTo(_sxr2, _snr2.y + _snr2.h * 0.7);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
