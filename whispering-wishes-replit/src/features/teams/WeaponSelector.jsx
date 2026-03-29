@@ -1,0 +1,121 @@
+import React from 'react';
+import { Sword, X } from 'lucide-react';
+import {
+  haptic,
+  CHARACTER_DATA, WEAPON_DATA,
+} from '../../appcore-data.js';
+import {
+  FocusTrapModal,
+} from '../../appcore-providers.jsx';
+import {
+  hideOnError,
+} from '../../appcore-components.jsx';
+
+export default function WeaponSelector({
+  weaponSelectorOpen,
+  setWeaponSelectorOpen,
+  weaponSelectorTarget,
+  weaponSearch,
+  setWeaponSearch,
+  setTeamEquipment,
+  collectionImages,
+}) {
+  return (
+                  <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="" onClick={() => setWeaponSelectorOpen(false)} centered>
+                      <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                          <div>
+                            <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
+                            <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
+                          </div>
+                          <button onClick={() => setWeaponSelectorOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close weapon selector"><X size={16} className="text-gray-400" /></button>
+                        </div>
+                        <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
+                          <input
+                            value={weaponSearch}
+                            onChange={e => setWeaponSearch(e.target.value)}
+                            placeholder="Search weapons..."
+                            className="kuro-input w-full text-xs"
+                          />
+                        </div>
+                        <div className="overflow-y-auto flex-1 p-2">
+                          <div className="space-y-1">
+                            {/* Unequip option */}
+                            <button
+                              onClick={() => {
+                                const eqKey = weaponSelectorTarget.teamIdx + ':' + weaponSelectorTarget.charName;
+                                setTeamEquipment(prev => {
+                                  const n = { ...prev };
+                                  if (n[eqKey]) n[eqKey] = { ...n[eqKey], weapon: null };
+                                  else n[eqKey] = { weapon: null, echoes: [null, null, null, null, null] };
+                                  try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                  return n;
+                                });
+                                setWeaponSelectorOpen(false);
+                                haptic.light();
+                              }}
+                              className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                              style={{ background: 'var(--bg-btn)' }}
+                            >
+                              ✕ Unequip weapon
+                            </button>
+                            {/* Filtered weapons */}
+                            {(() => {
+                              const charWeapType = CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon;
+                              return Object.entries(WEAPON_DATA)
+                                .filter(([name, w]) => {
+                                  if (charWeapType && w.type !== charWeapType) return false;
+                                  if (weaponSearch && !name.toLowerCase().includes(weaponSearch.toLowerCase())) return false;
+                                  return true;
+                                })
+                                .sort((a, b) => b[1].rarity - a[1].rarity || b[1].baseAtk - a[1].baseAtk)
+                                .map(([name, w]) => {
+                                  const rarity5 = w.rarity === 5;
+                                  const isBest = name === CHARACTER_DATA[weaponSelectorTarget.charName]?.bestWeapon;
+                                  return (
+                                    <button
+                                      key={name}
+                                      onClick={() => {
+                                        const eqKey = weaponSelectorTarget.teamIdx + ':' + weaponSelectorTarget.charName;
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          if (n[eqKey]) n[eqKey] = { ...n[eqKey], weapon: name };
+                                          else n[eqKey] = { weapon: name, echoes: [null, null, null, null, null] };
+                                          try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                          return n;
+                                        });
+                                        setWeaponSelectorOpen(false);
+                                        haptic.success();
+                                      }}
+                                      className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${rarity5 ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10' : 'border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/10'}`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        {collectionImages[name] ? (
+                                          <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border${rarity5 ? ' holo-5star' : ''}`} style={{ borderColor: rarity5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)', background: rarity5 ? 'rgba(234,179,8,0.08)' : 'rgba(168,85,247,0.08)', position: 'relative' }}>
+                                            <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                          </div>
+                                        ) : (
+                                          <Sword size={14} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} />
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-white text-xs font-semibold truncate">{name}</span>
+                                            <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                            {isBest && <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                          </div>
+                                          <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[10px] text-gray-400">ATK {w.baseAtk}</span>
+                                            <span className="text-[10px] text-cyan-400/80">{w.stat} {w.subStatValue}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                });
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                  </FocusTrapModal>
+  );
+}
