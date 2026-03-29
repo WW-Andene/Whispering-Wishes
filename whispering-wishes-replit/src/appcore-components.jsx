@@ -766,63 +766,41 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* 4. Skill + Damage */}
+          {/* 4. Skill (attack description + damage) */}
           {data.desc && (() => {
             const parts = data.desc.split(/(?<=\.)\s+/);
+            // Skill = sentences with damage percentages or attack actions
             const skillParts = [];
+            const effectParts = [];
             for (let i = 1; i < parts.length; i++) {
-              if (!/grants?\s|Main slot/i.test(parts[i])) skillParts.push(parts[i]);
-            }
-            if (skillParts.length === 0 && !(data.dmg > 0)) return null;
-            return (
-              <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
-                {data.dmg > 0 && (
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-sm font-bold text-white">{data.dmg}%</span>
-                    {data.element && data.element !== 'Healing' && (
-                      <span className="text-xs px-2 py-0.5 rounded" style={{ color: getBuffElementColor(data.element), background: `${getBuffElementColor(data.element)}15`, border: `1px solid ${getBuffElementColor(data.element)}30` }}>{data.element} DMG</span>
-                    )}
-                    <span className="text-[10px] text-gray-500">total multiplier</span>
-                  </div>
-                )}
-                {skillParts.length > 0 && (
-                  <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* 5. Buff */}
-          {(() => {
-            const buffParts = [];
-            if (data.desc) {
-              const parts = data.desc.split(/(?<=\.)\s+/);
-              for (let i = 1; i < parts.length; i++) {
-                if (/grants?\s|Main slot|buff|boost|\+\d+%|increases?\s/i.test(parts[i])) buffParts.push(parts[i]);
+              if (/\d+(\.\d+)?%\s*\w*\s*DMG|deal(?:s|ing)?\s|attack|strike|slash|smash|launch|fire|punch|kick|slam|transform|summon/i.test(parts[i]) && /\d+(\.\d+)?%/i.test(parts[i])) {
+                skillParts.push(parts[i]);
+              } else {
+                effectParts.push(parts[i]);
               }
             }
-            const buffs = Array.isArray(data.buff) ? data.buff : [data.buff];
-            // If no buff text found, extract from last sentence of desc as fallback
-            if (buffParts.length === 0 && data.desc) {
-              const parts = data.desc.split(/(?<=\.)\s+/);
-              const last = parts[parts.length - 1];
-              if (last && parts.length > 1 && /\+|\%|dmg|atk|def|hp|crit|heal|energy|res/i.test(last)) buffParts.push(last);
+            // If no skill parts found but there's damage, put first non-identity sentence in skill
+            if (skillParts.length === 0 && parts.length > 1) {
+              skillParts.push(parts[1]);
+              effectParts.shift();
             }
             return (
-              <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
-                  {buffs.map(b => (
-                    <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
-                  ))}
+              <>
+                <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+                  {skillParts.length > 0 && (
+                    <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
+                  )}
                 </div>
-                {buffParts.length > 0 ? (
-                  <p className="text-gray-400 text-[10px] leading-relaxed">{buffParts.join(' ')}</p>
-                ) : (
-                  <p className="text-gray-500 text-[10px] italic">Damage type buff from echo skill</p>
+
+                {/* 5. Effect (buffs, shields, bonuses, cooldown) */}
+                {effectParts.length > 0 && (
+                  <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Effect</div>
+                    <p className="text-gray-400 text-[10px] leading-relaxed">{effectParts.join(' ')}</p>
+                  </div>
                 )}
-              </div>
+              </>
             );
           })()}
 
