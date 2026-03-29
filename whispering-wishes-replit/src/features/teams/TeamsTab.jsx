@@ -137,10 +137,20 @@ export default function TeamsTab({
     };
 
     // ── RAW TIER: equipment-only stats, no team buffs ──
+    const rawRotTime = mainDps.d.rotTime || 25;
+    const rawMainOnField = mainDps.d.onField || 15;
+    const rawOffFieldTime = Math.max(0, rawRotTime - rawMainOnField);
+    const rawNumSubDps = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0).length || 1;
+    const rawSubFieldEach = rawOffFieldTime / rawNumSubDps;
     let rawTotalRotDmg = 0;
     mems.forEach(m => {
-      const mult = m.d.totalMult || 0;
+      let mult = m.d.totalMult || 0;
       if (mult === 0) return;
+      // Sub-DPS: scale mult by field-time ratio
+      if (m.name !== mainDps.name) {
+        const subOnField = m.d.onField || 15;
+        mult = mult * Math.min(1, rawSubFieldEach / subOnField);
+      }
       const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
       let rStatPct = 0, rCr = 5, rCd = 150, rElem = 0, rSkillDmg = 0;
       // Weapon substat
@@ -559,12 +569,23 @@ export default function TeamsTab({
 
     let totalRotDmg = 0;
     const memberDmgArr = [];
+    // Sub-DPS field time: off-field seconds shared among sub-DPS members
+    const mainOnField = mainDps.d.onField || 15;
+    const offFieldTime = Math.max(0, rotTime - mainOnField);
+    const numSubDps = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0).length || 1;
+    const subFieldEach = offFieldTime / numSubDps;
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
       if (mult === 0) { memberDmgArr.push({ name: m.name, dmg: 0 }); return; }
       const mBase = m.baseStat;
       const isMain = m.name === mainDps.name;
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
+      // Sub-DPS: scale mult by their share of off-field time vs their own on-field requirement
+      if (!isMain) {
+        const subOnField = m.d.onField || 15;
+        const fieldRatio = Math.min(1, subFieldEach / subOnField);
+        mult = mult * fieldRatio;
+      }
       if (isMain && m.weapon?.pv?.atkSpeed) {
         const mainRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
         const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
@@ -1408,7 +1429,7 @@ export default function TeamsTab({
                                                     onClick={() => {
                                                       setTeamEquipment(prev => {
                                                         const n = { ...prev };
-                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoPreset: opt.value };
+                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null }), echoPreset: opt.value, echoes: [null,null,null,null,null], echoSet: '' };
                                                         try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                                                         return n;
                                                       });
