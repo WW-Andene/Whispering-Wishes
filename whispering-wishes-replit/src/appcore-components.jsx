@@ -3671,20 +3671,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _hw = bladeW / 2;
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125;
-          // 3-4 zigzag cuts evenly spaced, varied angles
-          var _nCuts = 3 + (_cr() * 2 | 0);
+          // 4-5 zigzag cuts, alternating directions, varied angles
+          var _nCuts = 4 + (_cr() * 2 | 0);
           var _cutTop = -bladeH * 0.9;
           var _cutBot = guardH - _guardZone;
           var _cutSpan = _cutBot - _cutTop;
           var _cuts = [];
           for (var _ci = 0; _ci < _nCuts; _ci++) {
-            var _y = _cutTop + _cutSpan * (_ci + 0.5) / _nCuts + (_cr() - 0.5) * _cutSpan * 0.15;
-            var _drop = Math.max(3, bladeH * (0.02 + _cr() * 0.05));
-            var _dir = _cr() > 0.5 ? 1 : -1;
-            // Zigzag midpoint — deviates from the diagonal
-            var _mx = (_cr() - 0.5) * _hw * 0.8; // midpoint X offset
-            var _my = _y + _dir * _drop * (0.3 + _cr() * 0.4); // midpoint Y between start/end
-            _cuts.push({ yL: _y, yR: _y + _dir * _drop, mx: _mx, my: _my });
+            var _y = _cutTop + _cutSpan * (_ci + 0.5) / _nCuts + (_cr() - 0.5) * _cutSpan * 0.12;
+            // Alternating directions — odd cuts go left-down, even go right-down
+            var _dir = _ci % 2 === 0 ? 1 : -1;
+            // Bigger drop for more visible diagonal (5-12% bladeH)
+            var _drop = Math.max(4, bladeH * (0.05 + _cr() * 0.07)) * _dir;
+            // Zigzag midpoint — big Y deviation to make the zigzag visible
+            var _mx = (_cr() * 0.6 - 0.3) * _hw; // midpoint X: anywhere in blade
+            var _midDev = Math.max(3, bladeH * (0.01 + _cr() * 0.03)); // 1-4% bladeH deviation
+            var _my = _y + _drop * 0.5 + (_cr() > 0.5 ? 1 : -1) * _midDev;
+            _cuts.push({ yL: _y, yR: _y + _drop, mx: _mx, my: _my });
           }
           _cuts.sort(function(a,b){ return ((a.yL+a.yR)*0.5) - ((b.yL+b.yR)*0.5); });
           // Cut Y at any X: zigzag through midpoint
@@ -3696,15 +3699,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var t2 = (x - c.mx) / (_hw - c.mx);
             return c.my + t2 * (c.yR - c.my);
           };
-          // Edge notches per piece
-          var _nNotch = 4 + (_cr() * 4 | 0);
+          // Edge notches — more, bigger, varied
+          var _nNotch = 6 + (_cr() * 5 | 0);
           var _notchL = [], _notchR = [];
           for (var _ni = 0; _ni < _nNotch; _ni++) {
             var _ny = _cutTop + _cr() * (_cutSpan * 0.95);
-            var _nd = Math.max(2, _hw * (0.3 + _cr() * 0.5));
-            var _nh = Math.max(3, bladeH * (0.02 + _cr() * 0.05));
-            if (_cr() > 0.3) _notchL.push({ y: _ny, d: _nd, h: _nh });
-            if (_cr() > 0.3) _notchR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
+            var _nd = Math.max(2, _hw * (0.35 + _cr() * 0.65));
+            var _nh = Math.max(4, bladeH * (0.025 + _cr() * 0.06));
+            if (_cr() > 0.25) _notchL.push({ y: _ny, d: _nd, h: _nh });
+            if (_cr() > 0.25) _notchR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
           _notchL.sort(function(a,b){ return a.y - b.y; });
           _notchR.sort(function(a,b){ return a.y - b.y; });
