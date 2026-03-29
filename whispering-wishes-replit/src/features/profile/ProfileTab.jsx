@@ -1,0 +1,2768 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// ProfileTab — Extracted from App.jsx [SECTION:TAB-PROFILE]
+// Includes: Profile settings, Display settings, Import, ID Card modal,
+//           Admin panel modal, Admin mini window
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Award, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Upload, User, X } from 'lucide-react';
+import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import {
+  APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
+  SERVERS, getServerOffset,
+  CURRENT_BANNERS, CHARACTER_DATA,
+  DEFAULT_COLLECTION_IMAGES, ALL_CHARACTERS,
+  getElementColor, getElementBg,
+  CHARACTER_THEMES,
+} from '../../appcore-data.js';
+import {
+  storageAvailable,
+} from '../../appcore-engine.js';
+import {
+  useFocusTrap, FocusTrapModal,
+} from '../../appcore-providers.jsx';
+import {
+  TROPHY_ICON_MAP, TabBackground,
+  Card, CardHeader, CardBody,
+  TabErrorBoundary,
+  ADMIN_BANNER_KEY, ADMIN_HASH,
+  VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
+  ImportGuide, getActiveBanners,
+  hideOnError,
+} from '../../appcore-components.jsx';
+
+// Module-level constants (copied from App.jsx — profile/admin specific)
+const MAX_USERNAME_LENGTH = 24;
+const MAX_ADMIN_ATTEMPTS = 5;
+const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const ADMIN_TAP_TIMEOUT_MS = 1500;
+const ADMIN_SALT = 'whispering-wishes-v3-admin';
+const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
+const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
+const currentYear = new Date().getFullYear();
+const silentCatch = (err, context = '') => {
+  if (typeof err === 'object' && err !== null) {
+    Object.defineProperty(err, '_silenced', { value: true, writable: false, enumerable: false });
+  }
+};
+const constantTimeCompare = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+};
+const isAllowedImageUrl = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return false;
+    return ALLOWED_IMAGE_HOSTS.some(host =>
+      parsed.hostname === host || parsed.hostname.endsWith('.' + host)
+    );
+  } catch { return false; }
+};
+const DEFAULT_VISUAL_SETTINGS = Object.freeze({
+  oledMode: false,
+  swipeNavigation: true,
+  animationsEnabled: 'on',
+  bgStyle: 'resonance',
+  bgResolution: null,
+  bgFps: null,
+  theme: 'default',
+  // Slider values
+  particleIntensity: 1.0,
+  particleSpeed: 1.0,
+  glowIntensity: 1.0,
+  glowPulseSpeed: 1.0,
+  bgOpacity: 1.0,
+  ringScale: 1.0,
+  ringSpeed: 1.0,
+  ringDirection: 1,
+  swordDensity: 1.0,
+  swordSpeed: 1.0,
+  swordDirection: 1,
+  triangleScale: 1.0,
+  triangleSpeed: 1.0,
+  triangleDirection: 1,
+});
+
+const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
+
+export default function ProfileTab({
+  // Core state
+  state,
+  dispatch,
+  // Visual settings
+  visualSettings,
+  saveVisualSettings,
+  // Toast & confirm
+  toast,
+  confirm,
+  // PWA
+  pwa,
+  // Image framing
+  imageFraming,
+  getImageFraming,
+  saveImageFraming,
+  editingImage,
+  setEditingImage,
+  framingMode,
+  setFramingMode,
+  miniPanelPosition,
+  saveMiniPanelPosition,
+  getMiniPanelPositionClasses,
+  updateEditingFraming,
+  resetEditingFraming,
+  // Collection images
+  collectionImages,
+  customCollectionImages,
+  saveCollectionImages,
+  // Detail modal (for admin mini window framing)
+  detailModal,
+  // Export
+  handleExport,
+  // Import processing
+  processImportData,
+  // Banners
+  activeBanners,
+  setActiveBanners,
+  // Stats for ID card
+  overallStats,
+  luckRating,
+  ownedCharNames,
+  trophies,
+  // Firebase (for admin fetch)
+  getFirebaseAuth,
+  firebaseUrl,
+  // Tab navigation (for admin collection/trophy "Go to Import" buttons)
+  setActiveTab,
+}) {
+  // ── Tab-local state ──────────────────────────────────────────────────────
+  const [importPlatform, setImportPlatform] = useState(null);
+  const [importMethod, setImportMethod] = useState('file');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [importStatus, setImportStatus] = useState(null);
+  const [pasteJsonText, setPasteJsonText] = useState('');
+  const [showIdCard, setShowIdCard] = useState(false);
+  const [idCardFormat, setIdCardFormat] = useState('landscape');
+
+  // ── Admin state ──────────────────────────────────────────────────────────
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminTapCount, setAdminTapCount] = useState(0);
+  const adminTapTimerRef = useRef(null);
+  const adminTapCountRef = useRef(0);
+  const [adminTab, setAdminTab] = useState('banners');
+  const [adminMiniMode, setAdminMiniMode] = useState(false);
+  const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
+    try {
+      const lockoutUntil = localStorage.getItem('ww-admin-lockout');
+      const failCount = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10);
+      if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
+        return parseInt(lockoutUntil, 10);
+      }
+      if (lockoutUntil) {
+        localStorage.removeItem('ww-admin-lockout');
+        localStorage.removeItem('ww-admin-fails');
+      }
+      if (failCount >= MAX_ADMIN_ATTEMPTS * 3) {
+        const extendedLockout = Date.now() + ADMIN_LOCKOUT_MS * 4;
+        localStorage.setItem('ww-admin-lockout', String(extendedLockout));
+        return extendedLockout;
+      }
+    } catch (err) { silentCatch(err, 'admin lockout init'); }
+    return false;
+  });
+  const [trophyOverrides, setTrophyOverrides] = useState(() => {
+    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch (err) { silentCatch(err, 'trophy overrides init'); return {}; }
+  });
+  const [trophyJsonInput, setTrophyJsonInput] = useState('');
+  const [activePlayersCount, setActivePlayersCount] = useState(null);
+  const [activePlayersHistory, setActivePlayersHistory] = useState([]);
+  const [presenceError, setPresenceError] = useState(null);
+  const [adminPlayerList, setAdminPlayerList] = useState(null);
+
+  // Banner form state
+  const buildBannerForm = useCallback((banners) => {
+    const b = banners || {};
+    const chars = b.characters || [];
+    const weaps = b.weapons || [];
+    return {
+      version: b.version || '1.0',
+      phase: String(b.phase ?? 1),
+      startDate: b.startDate?.slice(0, 16) || '',
+      endDate: b.endDate?.slice(0, 16) || '',
+      charsJson: JSON.stringify(chars, null, 2),
+      weapsJson: JSON.stringify(weaps, null, 2),
+      charImages: Object.fromEntries(chars.map((c, i) => [i, c.imageUrl || ''])),
+      charImagePositions: Object.fromEntries(chars.map((c, i) => [i, c.imagePosition || ''])),
+      weapImages: Object.fromEntries(weaps.map((w, i) => [i, w.imageUrl || ''])),
+      weapImagePositions: Object.fromEntries(weaps.map((w, i) => [i, w.imagePosition || ''])),
+      standardCharImg: b.standardCharBannerImage || '',
+      standardWeapImg: b.standardWeapBannerImage || '',
+      wwImg: b.whimperingWastesImage || '',
+      dpImg: b.doubledPawnsImage || '',
+      toaImg: b.towerOfAdversityImage || '',
+      irImg: b.illusiveRealmImage || '',
+      drImg: b.dailyResetImage || '',
+      thImg: b.tacticalHologramImage || '',
+      wbImg: b.weeklyBossImage || '',
+    };
+  }, []);
+  const [bannerForm, setBannerForm] = useState(() => buildBannerForm(activeBanners));
+  const updateBannerForm = useCallback((field, value) => {
+    const imageFields = ['standardCharImg', 'standardWeapImg', 'wwImg', 'dpImg', 'toaImg', 'irImg', 'drImg', 'thImg', 'wbImg'];
+    if (imageFields.includes(field) || field.startsWith('charImages.') || field.startsWith('weapImages.')) {
+      if (value && !isAllowedImageUrl(value)) return;
+    }
+    setBannerForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Focus trap refs
+  const idCardTrapRef = useFocusTrap(showIdCard);
+  const adminTrapRef = useFocusTrap(showAdminPanel && !adminMiniMode);
+
+  // ── Admin fetch functions ─────────────────────────────────────────────
+  const FETCH_TIMEOUT_MS = 10000;
+  const PRESENCE_TTL_MS = 120000;
+  const fetchWithTimeout = useCallback((url, options = {}) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    return fetch(url, { ...options, signal: controller.signal })
+      .catch((err) => {
+        if (err.name === 'AbortError') throw new Error(`Request timed out after ${FETCH_TIMEOUT_MS}ms`);
+        throw err;
+      })
+      .finally(() => clearTimeout(timeoutId));
+  }, []);
+
+  const fetchActivePlayersCount = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl('presence', authToken));
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const now = Date.now();
+          const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
+          const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
+          for (const [key] of staleSessions.slice(0, 50)) {
+            try { await fetchWithTimeout(firebaseUrl(`presence/${key}`, authToken), { method: 'DELETE' }); } catch {}
+          }
+          const count = activeSessions.length;
+          setActivePlayersCount(count);
+          setPresenceError(null);
+          setActivePlayersHistory(prev => {
+            const next = [...prev, { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), count }];
+            return next.slice(-30);
+          });
+        } else {
+          setActivePlayersCount(0);
+          setPresenceError('No presence data in Firebase. Check that heartbeat writes are succeeding.');
+        }
+      } else {
+        const errText = await res.text().catch(() => '');
+        setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
+      }
+    } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
+  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+
+  const fetchAdminPlayerList = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const players = Object.entries(data).map(([key, e]) => ({
+            firebaseKey: key,
+            id: e.id || key,
+            uid: e.uid || null,
+            avgPity: e.avgPity,
+            totalPulls: e.totalPulls ?? 0,
+            fiveStars: e.pulls ?? 0,
+            won5050: e.won5050 ?? 0,
+            lost5050: e.lost5050 ?? 0,
+            timestamp: e.timestamp || 0,
+          }));
+          players.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          setAdminPlayerList(players);
+        } else {
+          setAdminPlayerList([]);
+        }
+      } else {
+        setAdminPlayerList([]);
+      }
+    } catch (e) {
+      console.error('Admin player list fetch error:', e);
+      setAdminPlayerList([]);
+    }
+  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+
+  // ── Import handlers (moved from App.jsx — they use tab-local state) ────
+  const handleFileImport = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const MAX_IMPORT_SIZE = MAX_IMPORT_SIZE_MB * 1024 * 1024;
+    if (file.size > MAX_IMPORT_SIZE) {
+      toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
+      e.target.value = '';
+      return;
+    }
+    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      processImportData(ev.target.result);
+      setImportStatus(null);
+    };
+    reader.onerror = () => {
+      toast?.addToast?.('Failed to read file', 'error');
+      setImportStatus(null);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, [processImportData, toast]);
+
+  const handleFileDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      toast?.addToast?.('Please drop a .json file', 'error');
+      return;
+    }
+    const MAX_IMPORT_SIZE = MAX_IMPORT_SIZE_MB * 1024 * 1024;
+    if (file.size > MAX_IMPORT_SIZE) {
+      toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
+      return;
+    }
+    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
+    const reader = new FileReader();
+    reader.onload = (ev) => { processImportData(ev.target.result); setImportStatus(null); };
+    reader.onerror = () => { setImportStatus(null); };
+    reader.readAsText(file);
+  }, [processImportData, toast]);
+
+  const handlePasteImport = useCallback(() => {
+    if (!pasteJsonText.trim()) {
+      toast?.addToast?.('Please paste your JSON data first', 'error');
+      return;
+    }
+    const success = processImportData(pasteJsonText);
+    if (success) {
+      setPasteJsonText('');
+    }
+  }, [pasteJsonText, processImportData, toast]);
+
+  // ── Admin handlers ─────────────────────────────────────────────────────
+  const handleAdminTap = useCallback(async () => {
+    if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
+    haptic.light();
+    adminTapCountRef.current += 1;
+    const newCount = adminTapCountRef.current;
+    setAdminTapCount(newCount);
+    if (newCount >= 5) {
+      try {
+        const lockoutUntil = localStorage.getItem('ww-admin-lockout');
+        if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
+          const remaining = Math.ceil((parseInt(lockoutUntil, 10) - Date.now()) / 60000);
+          toast?.addToast?.(`Admin locked for ${remaining}m. Try again later.`, 'error');
+          adminTapCountRef.current = 0;
+          setAdminTapCount(0);
+          return;
+        }
+        if (lockoutUntil) {
+          localStorage.removeItem('ww-admin-lockout');
+          localStorage.removeItem('ww-admin-fails');
+        }
+      } catch {}
+      setShowAdminPanel(true);
+      adminTapCountRef.current = 0;
+      setAdminTapCount(0);
+    } else {
+      adminTapTimerRef.current = setTimeout(() => {
+        adminTapCountRef.current = 0;
+        setAdminTapCount(0);
+      }, ADMIN_TAP_TIMEOUT_MS);
+    }
+  }, [toast]);
+
+  const saveCustomBanners = useCallback((banners) => {
+    if (!storageAvailable) {
+      setActiveBanners(banners);
+      toast?.addToast?.('Banner data updated (preview mode - not saved)', 'info');
+      return;
+    }
+    try {
+      localStorage.setItem(ADMIN_BANNER_KEY, JSON.stringify(banners));
+      setActiveBanners(banners);
+      toast?.addToast?.('Banner data updated!', 'success');
+    } catch (e) {
+      toast?.addToast?.('Failed to save banner data', 'error');
+    }
+  }, [toast, setActiveBanners]);
+
+  const hashPasswordPBKDF2 = useCallback(async (password, salt) => {
+    try {
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+      const derivedBits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', salt: enc.encode(salt), iterations: 100000, hash: 'SHA-256' },
+        keyMaterial, 256
+      );
+      return Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle PBKDF2 unavailable:', e);
+      return null;
+    }
+  }, []);
+
+  const hashPasswordSHA256 = useCallback(async (password, salt = '') => {
+    try {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + password));
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.error('crypto.subtle unavailable (requires HTTPS):', e);
+      return null;
+    }
+  }, []);
+
+  const adminSessionFailsRef = useRef(0);
+  const adminSessionLockUntilRef = useRef(0);
+
+  const verifyAdminPassword = useCallback(async () => {
+    if (!adminPassword || adminPassword.length < 4) {
+      toast?.addToast?.('Password must be at least 4 characters', 'error');
+      return;
+    }
+    const now = Date.now();
+    if (adminSessionLockUntilRef.current > now) {
+      const remaining = Math.ceil((adminSessionLockUntilRef.current - now) / 60000);
+      toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+      return;
+    }
+    try {
+      const lockoutUntil = localStorage.getItem('ww-admin-lockout');
+      if (lockoutUntil && now < parseInt(lockoutUntil, 10)) {
+        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - now) / 60000);
+        toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+        return;
+      }
+    } catch {}
+    const pbkdf2Hash = await hashPasswordPBKDF2(adminPassword, ADMIN_SALT);
+    const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
+    const legacyHash = await hashPasswordSHA256(adminPassword);
+    if (!saltedHash && !legacyHash && !pbkdf2Hash) {
+      toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
+      return;
+    }
+    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH) || constantTimeCompare(saltedHash, ADMIN_HASH) || constantTimeCompare(legacyHash, ADMIN_HASH)) {
+      setAdminUnlocked(true);
+      setAdminPassword('');
+      adminSessionFailsRef.current = 0;
+      setBannerForm(buildBannerForm(activeBanners));
+      try { localStorage.setItem('ww-admin-fails', '0'); } catch {}
+    } else {
+      adminSessionFailsRef.current += 1;
+      const sessionFails = adminSessionFailsRef.current;
+      try {
+        const storageFails = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10) + 1;
+        localStorage.setItem('ww-admin-fails', storageFails.toString());
+        const totalFails = Math.max(sessionFails, storageFails);
+        if (totalFails >= MAX_ADMIN_ATTEMPTS) {
+          const lockoutTime = now + ADMIN_LOCKOUT_MS;
+          adminSessionLockUntilRef.current = lockoutTime;
+          localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
+          setAdminLockedUntil(lockoutTime);
+          setShowAdminPanel(false);
+          setAdminPassword('');
+          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+        } else {
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - totalFails} attempts remaining)`, 'error');
+        }
+      } catch {
+        if (sessionFails >= MAX_ADMIN_ATTEMPTS) {
+          adminSessionLockUntilRef.current = now + ADMIN_LOCKOUT_MS;
+          setShowAdminPanel(false);
+          setAdminPassword('');
+          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+        } else {
+          toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - sessionFails} attempts remaining)`, 'error');
+        }
+      }
+    }
+  }, [adminPassword, toast, hashPasswordPBKDF2, hashPasswordSHA256, activeBanners, buildBannerForm]);
+
+  // Fetch admin data when Players tab is open
+  useEffect(() => {
+    if (adminTab === 'players' && adminUnlocked && showAdminPanel) {
+      fetchActivePlayersCount();
+      fetchAdminPlayerList();
+      const interval = setInterval(() => {
+        fetchActivePlayersCount();
+        fetchAdminPlayerList();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount, fetchAdminPlayerList]);
+
+
+  // ID Card canvas download — supports landscape (16:9) and portrait (9:16)
+  const downloadIdCard = useCallback(async (format) => {
+    const isPortrait = (format || idCardFormat) === 'portrait';
+    const canvas = document.createElement('canvas');
+    const W = isPortrait ? 1080 : 1920;
+    const H = isPortrait ? 1920 : 1080;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const rr = (x,y,w,h,r) => { ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath(); };
+
+    // Data
+    const picName = state.profile.profilePic;
+    const picUrl = picName ? (collectionImages[picName] || '') : '';
+    let pImg = null;
+    // AUDIT-FIX H1: Clear timeouts to prevent leaks on image preload
+    if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{const t=setTimeout(j,3000);pImg.onload=()=>{clearTimeout(t);r();};pImg.onerror=()=>{clearTimeout(t);j();};pImg.src=picUrl;}); } catch { pImg = null; } }
+    let appIco = null;
+    try { appIco = new Image(); await new Promise((r,j)=>{const t=setTimeout(j,2000);appIco.onload=()=>{clearTimeout(t);r();};appIco.onerror=()=>{clearTimeout(t);j();};appIco.src=HEADER_ICON;}); } catch { appIco = null; }
+
+    // Preload resonator portrait images
+    const resImgs = {};
+    const charHist0 = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...(state.profile.beginner?.history||[]).filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+    const preloadNames = [...new Set(charHist0.filter(p=>(p.rarity===5||p.rarity===4)&&p.name&&ALL_CHARACTERS.has(p.name)).map(p=>p.name))].reverse().slice(0, 24);
+    await Promise.all(preloadNames.map(name => {
+      const url = collectionImages[name];
+      if (!url) return Promise.resolve();
+      return new Promise(resolve => {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        // AUDIT-FIX H1: Clear timeout on load/error to prevent leaks
+        const t = setTimeout(resolve, 3000);
+        img.onload = () => { clearTimeout(t); resImgs[name] = img; resolve(); };
+        img.onerror = () => { clearTimeout(t); resolve(); }; img.src = url;
+      });
+    }));
+
+    const uname = state.profile.username || 'Resonator';
+    const uid = state.profile.uid || '--';
+    const svr = state.server;
+    const lr = luckRating;
+    const tList = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
+    const impDate = state.profile.importedAt ? new Date(state.profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+    const beginnerHist = state.profile.beginner?.history||[];
+    const charHist = [
+      ...(state.profile.featured?.history || []),
+      ...(state.profile.standardChar?.history || []),
+      ...beginnerHist.filter(p => p.name && ALL_CHARACTERS.has(p.name))
+    ];
+    const weapHist = [
+      ...(state.profile.weapon?.history || []),
+      ...(state.profile.standardWeap?.history || []),
+      ...beginnerHist.filter(p => p.name && !ALL_CHARACTERS.has(p.name))
+    ];
+
+    const countUniqueOwned = (h, r, isChar) =>
+      new Set(h.filter(p => p.rarity === r && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name))).map(p => p.name)).size;
+
+    const c5 = countUniqueOwned(charHist, 5, true);
+    const c4 = countUniqueOwned(charHist, 4, true);
+    const w5 = countUniqueOwned(weapHist, 5, false);
+    const w4 = countUniqueOwned(weapHist, 4, false);
+    const w3 = countUniqueOwned(weapHist, 3, false);
+    const w2 = countUniqueOwned(weapHist, 2, false);
+    const w1 = countUniqueOwned(weapHist, 1, false);
+
+    const newestRes = [...new Set(
+      charHist.filter(p => (p.rarity === 5 || p.rarity === 4) && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name)
+    )].reverse();
+
+    const fiveStarPulls = [...charHist, ...weapHist].filter(p => p.rarity === 5 && p.pity > 0);
+
+    const histBuckets = {};
+    fiveStarPulls.forEach(p => {
+      if (p.pity > 80) {
+        histBuckets['81+'] = (histBuckets['81+'] ?? 0) + 1;
+      } else {
+        const b = Math.floor((p.pity - 1) / 10) * 10 + 1;
+        histBuckets[`${b}-${b + 9}`] = (histBuckets[`${b}-${b + 9}`] ?? 0) + 1;
+      }
+    });
+
+    const histLabels = Array.from({ length: 8 }, (_, i) => `${i * 10 + 1}-${(i + 1) * 10}`);
+    if (histBuckets['81+']) histLabels.push('81+');
+    histLabels.forEach(b => { if (!histBuckets[b]) histBuckets[b] = 0; });
+
+    const histSummary = fiveStarPulls.length >= 2 ? {
+      max: Math.max(...Object.values(histBuckets), 1),
+      avg: (fiveStarPulls.reduce((s, p) => s + p.pity, 0) / fiveStarPulls.length).toFixed(1),
+      lo: Math.min(...fiveStarPulls.map(p => p.pity)),
+      hi: Math.max(...fiveStarPulls.map(p => p.pity))
+    } : null;
+    const sts = [
+      {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
+      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
+      {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
+      {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
+      {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
+      {l:'Lost',v:String(overallStats?.lost5050??'--'),c:'#f87171'},
+    ];
+
+    // Per-banner breakdown data
+    const featHist = state.profile.featured?.history||[];
+    const weapBannerHist = state.profile.weapon?.history||[];
+    const stdCHist = state.profile.standardChar?.history||[];
+    const stdWHist = state.profile.standardWeap?.history||[];
+    const bgnHist = state.profile.beginner?.history||[];
+    const bannerStats = [
+      {l:'Featured',v:String(featHist.length),c:'#edaf18',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Weapon',v:String(weapBannerHist.length),c:'#c084fc',s:weapBannerHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Std. Char',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Std. Weap',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Beginner',v:String(bgnHist.length),c:'#34d399',s:bgnHist.filter(p=>p.rarity===5).length+' ★5'},
+    ];
+
+    // ═══ DRAWING PRIMITIVES ═══
+    // Outer card — .kuro-card
+    const drawShell = (x,y,w,h) => {
+      ctx.fillStyle='rgba(12,16,24,0.8)';rr(x,y,w,h,24);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,24);ctx.stroke();
+      const il=ctx.createLinearGradient(x,y,x,y+3);il.addColorStop(0,'rgba(255,255,255,0.07)');il.addColorStop(1,'transparent');
+      ctx.fillStyle=il;ctx.fillRect(x+24,y+1,w-48,2);
+      const sh=ctx.createLinearGradient(x,0,x+w,0);
+      sh.addColorStop(0,'transparent');sh.addColorStop(0.2,'rgba(255,255,255,0.35)');sh.addColorStop(0.5,'rgba(255,255,255,0.55)');sh.addColorStop(0.8,'rgba(255,255,255,0.35)');sh.addColorStop(1,'transparent');
+      ctx.fillStyle=sh;ctx.fillRect(x+24,y,w-48,1.5);
+      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(x+w-12-18,y+12);ctx.lineTo(x+w-12,y+12);ctx.lineTo(x+w-12,y+12+18);ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';
+      ctx.beginPath();ctx.moveTo(x+12+18,y+h-12);ctx.lineTo(x+12,y+h-12);ctx.lineTo(x+12,y+h-12-18);ctx.stroke();
+    };
+
+    // Header
+    const drawHeader = (x,y,w) => {
+      const hH=54;
+      const hg=ctx.createLinearGradient(x,y,x+w,y);
+      hg.addColorStop(0,'rgba(255,255,255,0.02)');hg.addColorStop(0.4,'transparent');hg.addColorStop(0.6,'transparent');hg.addColorStop(1,'rgba(255,255,255,0.02)');
+      ctx.fillStyle=hg;ctx.fillRect(x,y,w,hH);
+      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+hH);ctx.lineTo(x+w,y+hH);ctx.stroke();
+      const gb=ctx.createLinearGradient(0,y+15,0,y+15+26);gb.addColorStop(0,'rgba(237,175,24,0.9)');gb.addColorStop(1,'rgba(237,175,24,0.4)');
+      ctx.fillStyle=gb;rr(x+18,y+15,4,26,2);ctx.fill();
+      ctx.shadowColor='rgba(237,175,24,0.3)';ctx.shadowBlur=12;rr(x+18,y+15,4,26,2);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
+      ctx.fillStyle='#f1f5f9';ctx.font='600 18px sans-serif';ctx.fillText('RESONATOR ID',x+32,y+34);
+      ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-18,y+34);ctx.textAlign='left';
+      return hH;
+    };
+
+    // Section panel with gold bar label
+    const drawPanel = (x,y,w,h,label) => {
+      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,15);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,15);ctx.stroke();
+      const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.18)');ps.addColorStop(0.5,'rgba(255,255,255,0.3)');ps.addColorStop(0.7,'rgba(255,255,255,0.18)');ps.addColorStop(1,'transparent');
+      ctx.fillStyle=ps;ctx.fillRect(x+12,y,w-24,1.5);
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x+w-9-12,y+6);ctx.lineTo(x+w-9,y+6);ctx.lineTo(x+w-9,y+6+12);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+9+12,y+h-6);ctx.lineTo(x+9,y+h-6);ctx.lineTo(x+9,y+h-6-12);ctx.stroke();
+      if(label){
+        const gb2=ctx.createLinearGradient(0,y+12,0,y+12+20);gb2.addColorStop(0,'rgba(237,175,24,0.8)');gb2.addColorStop(1,'rgba(237,175,24,0.3)');
+        ctx.fillStyle=gb2;rr(x+15,y+12,3.5,20,1.5);ctx.fill();
+        ctx.fillStyle='#e2e8f0';ctx.font='600 17px sans-serif';ctx.fillText(label,x+26,y+28);
+        return 39;
+      }
+      return 9;
+    };
+
+    // .kuro-stat cell
+    const drawStat = (x,y,w,h,val,lab,col,fs) => {
+      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,w,h,12);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(x,y,w,h,12);ctx.stroke();
+      const ss=ctx.createLinearGradient(x,0,x+w,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
+      ctx.fillStyle=ss;ctx.fillRect(x+6,y,w-12,1.5);
+      const f=Math.round((fs||24)*1.1);
+      ctx.fillStyle=col;ctx.font=`bold ${f}px monospace`;ctx.textAlign='center';ctx.fillText(val,x+w/2,y+h*0.48);
+      ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(11,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
+    };
+
+    // Resonator portrait — collection-panel style: tall card with image + gradient name overlay
+    const drawResPortrait = (x,y,cellW,cellH,name,img) => {
+      ctx.fillStyle='rgba(10,14,22,0.9)';rr(x,y,cellW,cellH,9);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;rr(x,y,cellW,cellH,9);ctx.stroke();
+      if(img){
+        ctx.save();rr(x+1,y+1,cellW-2,cellH-2,8);ctx.clip();
+        const f=getImageFraming('collection-'+name);
+        const sc=f.zoom/100;
+        // Preserve aspect ratio (object-contain): fit image inside cell
+        const imgAR=img.naturalWidth/img.naturalHeight;
+        const cellAR=cellW/cellH;
+        let bw2,bh2;
+        if(imgAR>cellAR){bw2=cellW;bh2=cellW/imgAR;}else{bh2=cellH;bw2=cellH*imgAR;}
+        const dw=bw2*sc,dh=bh2*sc;
+        const dx=x+(cellW-dw)/2-(f.x/100)*bw2*sc;
+        const dy=y+(cellH-dh)/2-(f.y/100)*bh2*sc;
+        ctx.drawImage(img,dx,dy,dw,dh);
+        ctx.restore();
+        const fade=ctx.createLinearGradient(0,y+cellH-33,0,y+cellH);
+        fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(1,'rgba(0,0,0,0.85)');
+        ctx.save();rr(x+1,y+1,cellW-2,cellH-2,8);ctx.clip();
+        ctx.fillStyle=fade;ctx.fillRect(x+1,y+cellH-33,cellW-2,32);
+        ctx.restore();
+      } else {
+        ctx.fillStyle='#4b5563';ctx.font=Math.max(14,Math.round(cellW*0.3))+'px sans-serif';
+        ctx.textAlign='center';ctx.fillText(name[0],x+cellW/2,y+cellH/2+6);ctx.textAlign='left';
+      }
+      ctx.fillStyle='#e5e7eb';ctx.font='11px sans-serif';ctx.textAlign='center';
+      const ml=Math.floor(cellW/5.5);
+      ctx.fillText(name.length>ml?name.slice(0,ml-1)+'..':name,x+cellW/2,y+cellH-5);ctx.textAlign='left';
+    };
+
+    // Draw icon using canvas path primitives — guaranteed to render (no font/Unicode dependency)
+    const drawIconPath = (icx,icy,r,iconName,color) => {
+      ctx.save();ctx.fillStyle=color;ctx.strokeStyle=color;
+      ctx.lineWidth=Math.max(1.5,r*0.15);ctx.lineCap='round';ctx.lineJoin='round';
+      const s=r*0.65;
+      switch(iconName){
+        case 'Crown':{ctx.beginPath();ctx.moveTo(icx-s,icy+s*0.5);ctx.lineTo(icx-s*0.9,icy-s*0.3);ctx.lineTo(icx-s*0.4,icy+s*0.05);ctx.lineTo(icx,icy-s*0.6);ctx.lineTo(icx+s*0.4,icy+s*0.05);ctx.lineTo(icx+s*0.9,icy-s*0.3);ctx.lineTo(icx+s,icy+s*0.5);ctx.closePath();ctx.fill();break;}
+        case 'Sparkles':{ctx.beginPath();for(let i=0;i<8;i++){const a=(i*Math.PI/4)-Math.PI/2,rd=i%2===0?s:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+        case 'Heart':{const ht=s*0.9;ctx.beginPath();ctx.moveTo(icx,icy+ht*0.55);ctx.bezierCurveTo(icx-ht*1.1,icy-ht*0.2,icx-ht*0.5,icy-ht*0.9,icx,icy-ht*0.3);ctx.bezierCurveTo(icx+ht*0.5,icy-ht*0.9,icx+ht*1.1,icy-ht*0.2,icx,icy+ht*0.55);ctx.fill();break;}
+        case 'Swords':{ctx.lineWidth=r*0.18;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy-s*0.7);ctx.lineTo(icx+s*0.7,icy+s*0.7);ctx.moveTo(icx+s*0.7,icy-s*0.7);ctx.lineTo(icx-s*0.7,icy+s*0.7);ctx.stroke();break;}
+        case 'Sword':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx,icy-s*0.8);ctx.lineTo(icx,icy+s*0.6);ctx.moveTo(icx-s*0.35,icy-s*0.1);ctx.lineTo(icx+s*0.35,icy-s*0.1);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy+s*0.7,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'Shield':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.75);ctx.lineTo(icx+s*0.7,icy-s*0.35);ctx.lineTo(icx+s*0.55,icy+s*0.25);ctx.quadraticCurveTo(icx,icy+s*0.85,icx,icy+s*0.85);ctx.quadraticCurveTo(icx,icy+s*0.85,icx-s*0.55,icy+s*0.25);ctx.lineTo(icx-s*0.7,icy-s*0.35);ctx.closePath();ctx.fill();break;}
+        case 'Gift':{ctx.fillStyle=color;rr(icx-s*0.55,icy-s*0.15,s*1.1,s*0.8,2);ctx.fill();rr(icx-s*0.65,icy-s*0.45,s*1.3,s*0.35,2);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.4)';ctx.fillRect(icx-s*0.06,icy-s*0.45,s*0.12,s*1.25);ctx.fillRect(icx-s*0.65,icy-s*0.35,s*1.3,s*0.1);break;}
+        case 'Zap':{ctx.beginPath();ctx.moveTo(icx+s*0.15,icy-s*0.8);ctx.lineTo(icx-s*0.3,icy+s*0.05);ctx.lineTo(icx+s*0.05,icy+s*0.05);ctx.lineTo(icx-s*0.15,icy+s*0.8);ctx.lineTo(icx+s*0.3,icy-s*0.05);ctx.lineTo(icx-s*0.05,icy-s*0.05);ctx.closePath();ctx.fill();break;}
+        case 'Clover':{const cr=s*0.28;ctx.beginPath();ctx.arc(icx,icy-cr,cr,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx-cr*0.87,icy+cr*0.5,cr,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx+cr*0.87,icy+cr*0.5,cr,0,Math.PI*2);ctx.fill();ctx.lineWidth=r*0.1;ctx.beginPath();ctx.moveTo(icx,icy+cr*0.4);ctx.lineTo(icx,icy+s*0.8);ctx.stroke();break;}
+        case 'Flame':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.8);ctx.bezierCurveTo(icx+s*0.6,icy-s*0.3,icx+s*0.5,icy+s*0.4,icx,icy+s*0.7);ctx.bezierCurveTo(icx-s*0.5,icy+s*0.4,icx-s*0.6,icy-s*0.3,icx,icy-s*0.8);ctx.fill();break;}
+        case 'Target':{ctx.lineWidth=r*0.12;ctx.beginPath();ctx.arc(icx,icy,s*0.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy,s*0.4,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(icx,icy,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'AlertCircle':{ctx.lineWidth=r*0.12;ctx.beginPath();ctx.arc(icx,icy,s*0.7,0,Math.PI*2);ctx.stroke();ctx.fillRect(icx-s*0.07,icy-s*0.35,s*0.14,s*0.4);ctx.beginPath();ctx.arc(icx,icy+s*0.32,s*0.08,0,Math.PI*2);ctx.fill();break;}
+        case 'TrendingUp':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy+s*0.35);ctx.lineTo(icx-s*0.1,icy-s*0.15);ctx.lineTo(icx+s*0.2,icy+s*0.1);ctx.lineTo(icx+s*0.7,icy-s*0.4);ctx.stroke();ctx.beginPath();ctx.moveTo(icx+s*0.3,icy-s*0.4);ctx.lineTo(icx+s*0.7,icy-s*0.4);ctx.lineTo(icx+s*0.7,icy);ctx.stroke();break;}
+        case 'TrendingDown':{ctx.lineWidth=r*0.15;ctx.beginPath();ctx.moveTo(icx-s*0.7,icy-s*0.35);ctx.lineTo(icx-s*0.1,icy+s*0.15);ctx.lineTo(icx+s*0.2,icy-s*0.1);ctx.lineTo(icx+s*0.7,icy+s*0.4);ctx.stroke();ctx.beginPath();ctx.moveTo(icx+s*0.3,icy+s*0.4);ctx.lineTo(icx+s*0.7,icy+s*0.4);ctx.lineTo(icx+s*0.7,icy);ctx.stroke();break;}
+        case 'Fish':{ctx.beginPath();ctx.moveTo(icx+s*0.6,icy);ctx.quadraticCurveTo(icx,icy-s*0.5,icx-s*0.45,icy);ctx.quadraticCurveTo(icx,icy+s*0.5,icx+s*0.6,icy);ctx.fill();ctx.beginPath();ctx.moveTo(icx-s*0.45,icy);ctx.lineTo(icx-s*0.75,icy-s*0.3);ctx.lineTo(icx-s*0.75,icy+s*0.3);ctx.closePath();ctx.fill();break;}
+        case 'Diamond':{ctx.beginPath();ctx.moveTo(icx,icy-s*0.7);ctx.lineTo(icx+s*0.5,icy);ctx.lineTo(icx,icy+s*0.7);ctx.lineTo(icx-s*0.5,icy);ctx.closePath();ctx.fill();break;}
+        case 'Gamepad2':{rr(icx-s*0.6,icy-s*0.25,s*1.2,s*0.5,s*0.15);ctx.fill();ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.arc(icx-s*0.28,icy,s*0.12,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(icx+s*0.28,icy,s*0.12,0,Math.PI*2);ctx.fill();break;}
+        case 'Star':{ctx.beginPath();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,rd=i%2===0?s*0.75:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+        case 'Trophy':{ctx.beginPath();ctx.moveTo(icx-s*0.45,icy-s*0.5);ctx.lineTo(icx+s*0.45,icy-s*0.5);ctx.lineTo(icx+s*0.3,icy+s*0.1);ctx.quadraticCurveTo(icx,icy+s*0.35,icx-s*0.3,icy+s*0.1);ctx.closePath();ctx.fill();ctx.fillRect(icx-s*0.07,icy+s*0.1,s*0.14,s*0.25);rr(icx-s*0.25,icy+s*0.35,s*0.5,s*0.12,2);ctx.fill();break;}
+        default:{ctx.beginPath();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,rd=i%2===0?s*0.75:s*0.3;const px=icx+Math.cos(a)*rd,py=icy+Math.sin(a)*rd;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.closePath();ctx.fill();break;}
+      }
+      ctx.restore();
+    };
+
+    // Trophy card — flat dark cell style with trophy color accents
+    const drawTrophy = (x,y,size,t) => {
+      const tc=t.color||'#9ca3af';
+      // Dark fill base
+      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,size,size,12);ctx.fill();
+      // Colored gradient overlay (stronger tint so color is clearly visible)
+      const bg2=ctx.createLinearGradient(x,y,x+size,y+size);
+      bg2.addColorStop(0,tc+'30');bg2.addColorStop(1,tc+'12');
+      ctx.fillStyle=bg2;rr(x,y,size,size,12);ctx.fill();
+      // Colored border
+      ctx.strokeStyle=tc+'50';ctx.lineWidth=1;rr(x,y,size,size,12);ctx.stroke();
+      // Colored shimmer top line
+      const ss=ctx.createLinearGradient(x,0,x+size,0);
+      ss.addColorStop(0,'transparent');ss.addColorStop(0.5,tc+'60');ss.addColorStop(1,'transparent');
+      ctx.fillStyle=ss;ctx.fillRect(x+6,y,size-12,1.5);
+      // Icon — centered, with colored glow for premium look
+      const iconR=size*0.28;
+      ctx.save();
+      ctx.shadowColor=tc;ctx.shadowBlur=Math.max(12,size*0.1);
+      drawIconPath(x+size/2,y+size*0.38,iconR,t.icon,tc);
+      ctx.restore();
+      // Name — white bold, centered
+      const nameFontSize=Math.max(10,Math.floor(size*0.12));
+      ctx.fillStyle='#ffffff';ctx.font=`bold ${nameFontSize}px sans-serif`;
+      const maxW=size-14;
+      let nameText=t.name;
+      if(ctx.measureText(nameText).width>maxW){
+        while(nameText.length>1&&ctx.measureText(nameText+'..').width>maxW)nameText=nameText.slice(0,-1);
+        nameText=nameText+'..';
+      }
+      ctx.textAlign='center';ctx.fillText(nameText,x+size/2,y+size*0.78);
+      ctx.textAlign='left';
+    };
+
+    // Hero profile image — large, with collection-style framing and gradient fade
+    const drawHero = (x,y,w,h) => {
+      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,15);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;rr(x,y,w,h,15);ctx.stroke();
+      if(pImg){
+        ctx.save();rr(x+2,y+2,w-4,h-4,14);ctx.clip();
+        const f=picName?getImageFraming('collection-'+picName):{zoom:100,x:0,y:0};
+        const sc=f.zoom/100;
+        // Preserve aspect ratio (object-contain)
+        const imgAR=pImg.naturalWidth/pImg.naturalHeight;
+        const cellAR=w/h;
+        let bw2,bh2;
+        if(imgAR>cellAR){bw2=w;bh2=w/imgAR;}else{bh2=h;bw2=h*imgAR;}
+        const dw=bw2*sc,dh=bh2*sc;
+        const dx=x+(w-dw)/2-(f.x/100)*bw2*sc;
+        const dy=y+(h-dh)/2-(f.y/100)*bh2*sc;
+        ctx.drawImage(pImg,dx,dy,dw,dh);
+        ctx.restore();
+        const fade=ctx.createLinearGradient(0,y+h-90,0,y+h);
+        fade.addColorStop(0,'rgba(8,12,18,0)');fade.addColorStop(1,'rgba(8,12,18,0.9)');
+        ctx.fillStyle=fade;ctx.fillRect(x+2,y+h-90,w-4,88);
+      } else if(appIco){
+        const sz=Math.min(w,h)*0.3;ctx.globalAlpha=0.08;ctx.drawImage(appIco,x+(w-sz)/2,y+(h-sz)/2,sz,sz);ctx.globalAlpha=1;
+      }
+      if(picName){ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText(picName,x+w/2,y+h-9);ctx.textAlign='left';}
+    };
+
+    // Luck bar
+    const drawLuck = (x,y,w) => {
+      if(!lr)return 0;
+      rr(x,y,w,12,6);ctx.fillStyle='rgba(10,14,22,0.8)';ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;rr(x,y,w,12,6);ctx.stroke();
+      const fw=Math.max(6,Math.min(lr.percentile||50,100)/100*w);
+      ctx.save();rr(x,y,w,12,6);ctx.clip();
+      const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#edaf18');g.addColorStop(1,'#34d399');
+      ctx.fillStyle=g;rr(x,y,fw,12,6);ctx.fill();ctx.restore();
+      ctx.fillStyle='rgba(10,14,22,0.85)';rr(x+w+9,y-5,105,21,6);ctx.fill();
+      ctx.strokeStyle=(lr.color||'#edaf18')+'60';ctx.lineWidth=1;rr(x+w+9,y-5,105,21,6);ctx.stroke();
+      ctx.fillStyle=lr.color||'#edaf18';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+61,y+10);ctx.textAlign='left';
+      return 27;
+    };
+
+    // Stats grid 3x2
+    const drawStats = (sx,sy,gw,ch2,fs) => {
+      const g2=8,cols=3,cw2=(gw-(cols-1)*g2)/cols;
+      sts.forEach((s,i)=>{const col=i%cols,row=Math.floor(i/cols);drawStat(sx+col*(cw2+g2),sy+row*(ch2+g2),cw2,ch2,s.v,s.l,s.c,fs);});
+      return (ch2+g2)*2-g2;
+    };
+
+    // Resonator portraits grid — collection-panel style (tall cards, fills width)
+    const drawResTags = (rx,ry,mw,cols,max) => {
+      const ch2=newestRes.slice(0,max);if(!ch2.length)return 0;
+      const g2=6,cellW=(mw-(cols-1)*g2)/cols,cellH=Math.round(cellW*1.6);
+      ch2.forEach((n,i)=>{drawResPortrait(rx+(i%cols)*(cellW+g2),ry+Math.floor(i/cols)*(cellH+g2),cellW,cellH,n,resImgs[n]);});
+      const rows=Math.ceil(ch2.length/cols);let h2=rows*(cellH+g2)-g2;
+      if(newestRes.length>max){ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.fillText('+'+String(newestRes.length-max)+' more',rx,ry+h2+18);h2+=21;}
+      return h2;
+    };
+
+    // Collection row
+    const drawColl = (cx2,cy2,cw2) => {
+      const items=[{l:'5* Res',o:c5,t:ALL_5STAR_RESONATORS.length,c:'#edaf18'},{l:'4* Res',o:c4,t:ALL_4STAR_RESONATORS.length,c:'#c084fc'},{l:'5* Wep',o:w5,t:ALL_5STAR_WEAPONS.length,c:'#edaf18'},{l:'4* Wep',o:w4,t:ALL_4STAR_WEAPONS.length,c:'#c084fc'},{l:'3* Wep',o:w3,t:ALL_3STAR_WEAPONS.length,c:'#60a5fa'},{l:'2* Wep',o:w2,t:ALL_2STAR_WEAPONS.length,c:'#4ade80'},{l:'1* Wep',o:w1,t:ALL_1STAR_WEAPONS.length,c:'#9ca3af'}];
+      const g2=6,iw=(cw2-(items.length-1)*g2)/items.length;
+      items.forEach((it,i)=>{drawStat(cx2+i*(iw+g2),cy2,iw,48,it.o+'/'+it.t,it.l,it.c,16);});
+      return 48;
+    };
+
+    // Mini histogram — neon glow style matching Stats tab
+    // Helper: draw bar path with only top corners rounded (flat bottom, like CSS rounded-t)
+    const barPath = (bx,by,bw,bh2,r) => {
+      ctx.beginPath();
+      ctx.moveTo(bx+r,by);ctx.lineTo(bx+bw-r,by);
+      ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+r);
+      ctx.lineTo(bx+bw,by+bh2);ctx.lineTo(bx,by+bh2);
+      ctx.lineTo(bx,by+r);
+      ctx.quadraticCurveTo(bx,by,bx+r,by);
+      ctx.closePath();
+    };
+    const drawHisto = (hx,hy,hw,hh) => {
+      if(!histSummary||!histLabels.length)return;
+      const bg2=3,bw2=(hw-(histLabels.length-1)*bg2)/histLabels.length,area=hh-24;
+      histLabels.forEach((lab,i)=>{
+        const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
+        const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
+        const bucket=parseInt(lab)||0;
+        const bc=bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
+        // Semi-transparent gradient fill with outer glow (single fill, no stacking)
+        ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;
+        const barGrad=ctx.createLinearGradient(0,by2+bh,0,by2);
+        barGrad.addColorStop(0,bc+'40');barGrad.addColorStop(1,bc+'20');
+        ctx.fillStyle=barGrad;barPath(bx2,by2,bw2,bh,3);ctx.fill();
+        ctx.restore();
+        // Border — top and sides only, no bottom (matches borderBottom: 'none')
+        ctx.strokeStyle=bc+'90';ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.moveTo(bx2,by2+bh);ctx.lineTo(bx2,by2+3);
+        ctx.quadraticCurveTo(bx2,by2,bx2+3,by2);
+        ctx.lineTo(bx2+bw2-3,by2);
+        ctx.quadraticCurveTo(bx2+bw2,by2,bx2+bw2,by2+3);
+        ctx.lineTo(bx2+bw2,by2+bh);
+        ctx.stroke();
+        // Bottom glow line — full bar width (matches Stats tab bottom glow)
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;
+        ctx.fillRect(bx2,by2+bh-2,bw2,2);ctx.restore();}
+        // Count label with glow (matches textShadow: 0 0 8px ${color})
+        if(cnt>0){ctx.save();ctx.shadowColor=bc;ctx.shadowBlur=8;ctx.fillStyle=bc;ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText(cnt,bx2+bw2/2,by2-5);ctx.textAlign='left';ctx.restore();}
+        // Bottom label
+        ctx.fillStyle='#6b7280';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(lab.split('-')[0],bx2+bw2/2,hy+area+15);ctx.textAlign='left';
+      });
+    };
+
+    // Banner Breakdown — per-banner pull count + 5★ count row
+    const drawBannerRow = (bx2,by2,bw2,bh2) => {
+      const g2=6,iw=(bw2-4*g2)/5;
+      bannerStats.forEach((bs,i)=>{
+        const sx=bx2+i*(iw+g2);
+        // stat cell background
+        ctx.fillStyle='rgba(10,14,22,0.8)';rr(sx,by2,iw,bh2,12);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(sx,by2,iw,bh2,12);ctx.stroke();
+        const ss=ctx.createLinearGradient(sx,0,sx+iw,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
+        ctx.fillStyle=ss;ctx.fillRect(sx+6,by2,iw-12,1.5);
+        // Pull count (main value)
+        ctx.fillStyle=bs.c;ctx.font='bold 22px monospace';ctx.textAlign='center';
+        ctx.fillText(bs.v,sx+iw/2,by2+bh2*0.35);
+        // 5★ sub-value
+        ctx.fillStyle='#9ca3af';ctx.font='12px sans-serif';
+        ctx.fillText(bs.s,sx+iw/2,by2+bh2*0.58);
+        // Label
+        ctx.fillStyle='#6b7280';ctx.font='11px sans-serif';
+        ctx.fillText(bs.l,sx+iw/2,by2+bh2*0.8);
+        ctx.textAlign='left';
+      });
+      return bh2;
+    };
+
+    // Footer
+    const drawFooter = (x,y,w) => {
+      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();
+      ctx.fillStyle='#4b5563';ctx.font='14px monospace';ctx.fillText('Generated '+new Date().toLocaleDateString(),x,y+18);
+      ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w,y+18);ctx.textAlign='left';
+    };
+
+    // ═══ RENDER ═══
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,W,H);
+    const bgG=ctx.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.4,W*0.5);
+    bgG.addColorStop(0,'rgba(237,175,24,0.008)');bgG.addColorStop(1,'transparent');
+    ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
+
+    const M=18,ox=M,oy=M,ow=W-M*2,oh=H-M*2;
+    drawShell(ox,oy,ow,oh);
+    const hH=drawHeader(ox+1,oy+1,ow-2);
+    const P=15,bx=ox+P,bw=ow-P*2;
+    const footH=30;
+    let Y=oy+1+hH+P;
+    const bottomY=oy+oh-footH-P;
+
+    if(!isPortrait){
+      // ═══ LANDSCAPE 1920x1080 — content-adaptive ═══
+      const gap=9;
+      const leftW=Math.floor(bw*0.35);
+      const rightX=bx+leftW+gap;
+      const rightW=bw-leftW-gap;
+      const contentH=bottomY-Y;
+
+      // Hero image takes top of left column
+      const heroH=Math.floor(contentH*0.32);
+      drawHero(bx,Y,leftW,heroH);
+
+      // Profile + Stats + Pity Distribution below hero — fills rest of left
+      const idY=Y+heroH+gap;
+      const idH=contentH-heroH-gap;
+      const idOff=drawPanel(bx,idY,leftW,idH,'Profile');
+      ctx.fillStyle='#f1f5f9';ctx.font='bold 30px sans-serif';ctx.fillText(uname,bx+15,idY+idOff+21);
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',bx+15,idY+idOff+45);
+      ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,bx+48,idY+idOff+45);
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',bx+15,idY+idOff+66);
+      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,bx+72,idY+idOff+66);
+      if(lr)drawLuck(bx+15,idY+idOff+87,leftW-135);
+      const metaY=idY+idOff+(lr?117:90);
+      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
+      let metaLine1='';
+      if(tList.length>0)metaLine1+=tList.length+' Trophies';
+      if(impDate)metaLine1+=(metaLine1?' · ':'')+impDate;
+      if(metaLine1)ctx.fillText(metaLine1,bx+15,metaY);
+      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+15,metaY+16);
+      // Convene Stats inside profile panel
+      const statCellH=36,statStartY=metaY+(overallStats?.totalAstrite?36:21);
+      drawStats(bx+9,statStartY,leftW-18,statCellH,16);
+      // Pity Distribution below stats inside profile panel
+      const histoY=statStartY+(statCellH+8)*2-8+15;
+      const histoH=idY+idH-histoY-9;
+      if(histSummary&&histoH>40){
+        ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+15,histoY-6);ctx.lineTo(bx+leftW-15,histoY-6);ctx.stroke();
+        ctx.fillStyle='#e2e8f0';ctx.font='600 13px sans-serif';ctx.fillText('Pity Distribution',bx+15,histoY+6);
+        drawHisto(bx+9,histoY+15,leftW-18,histoH-15);
+        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,bx+leftW-12,idY+idH-6);ctx.textAlign='left';
+      }
+
+      // ── Right column: Collection → Resonators → Trophies → Banner Breakdown ──
+      const panelPad=39;
+      const collH=panelPad+48+6;
+      const trophyCols=Math.max(tList.length,1),trophyGap=8;
+      const trophyCellSize=Math.min(160,Math.floor((rightW-18-(trophyCols-1)*trophyGap)/trophyCols));
+      const trophyPanelH=panelPad+trophyCellSize+6;
+      const bannerH=panelPad+72+6; // banner breakdown panel height
+
+      const resCols=10,resGap2=6;
+      const resMax=Math.min(newestRes.length,20);
+      const resCellW=(rightW-18-(resCols-1)*resGap2)/resCols,resCellH=Math.round(resCellW*1.6);
+      const resRows=Math.ceil(Math.max(resMax,1)/resCols);
+      const resContentH=panelPad+resRows*(resCellH+resGap2)-resGap2+6+(newestRes.length>resMax?21:0);
+
+      // Draw Row 1: Collection (full width)
+      const cp1o=drawPanel(rightX,Y,rightW,collH,'Collection');
+      drawColl(rightX+9,Y+cp1o,rightW-18);
+
+      // Draw Row 2: Resonators — sized to content, fills width
+      const r2Y=Y+collH+gap;
+      const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
+      drawResTags(rightX+9,r2Y+rp1o,rightW-18,10,resMax);
+
+      // Draw Row 3: Trophies — fixed height, centered
+      const r3Y=r2Y+resContentH+gap;
+      if(tList.length>0){
+        const tp1o=drawPanel(rightX,r3Y,rightW,trophyPanelH,'Trophies ('+tList.length+')');
+        tList.forEach((t,i)=>{drawTrophy(rightX+9+i*(trophyCellSize+trophyGap),r3Y+tp1o,trophyCellSize,t);});
+      }
+
+      // Draw Row 4: Banner Breakdown — fills remaining
+      const r4Y=r3Y+(tList.length>0?trophyPanelH:0)+gap;
+      const r4H=bottomY-r4Y;
+      if(r4H>60){
+        const bp1o=drawPanel(rightX,r4Y,rightW,r4H,'Convene Breakdown');
+        drawBannerRow(rightX+9,r4Y+bp1o,rightW-18,r4H-bp1o-6);
+      }
+
+      drawFooter(bx,bottomY,bw);
+
+    } else {
+      // ═══ PORTRAIT 1080x1920 — content-adaptive ═══
+      const gap=9;
+      const contentH=bottomY-Y;
+
+      // ── Top: Hero + Profile (with stats inside) side by side ──
+      const heroW=Math.floor(bw*0.38);
+      // Profile needs: panelPad(39) + name(30) + UID(24) + Server(24) + luck(27+18) + meta(18) + stats(2 rows * (51+8) - 8) = ~280
+      const pStatCellH=51,pPad=39;
+      const profileMinH=pPad+30+24+24+(lr?45:0)+18+(pStatCellH+8)*2-8+15;
+      const heroH=Math.max(Math.floor(contentH*0.22),profileMinH);
+      drawHero(bx,Y,heroW,heroH);
+
+      const ix=bx+heroW+gap,iw=bw-heroW-gap;
+      const idOff=drawPanel(ix,Y,iw,heroH,'Profile');
+      ctx.fillStyle='#f1f5f9';ctx.font='bold 33px sans-serif';ctx.fillText(uname,ix+15,Y+idOff+21);
+      const uidLY=Y+idOff+48;
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',ix+15,uidLY);
+      ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,ix+48,uidLY);
+      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',ix+15,uidLY+24);
+      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,ix+72,uidLY+24);
+      if(lr)drawLuck(ix+15,uidLY+51,iw-135);
+      const metaY2=uidLY+(lr?84:57);
+      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
+      let metaLine='';
+      if(tList.length>0)metaLine+=tList.length+' Trophies';
+      if(impDate)metaLine+=(metaLine?' · ':'')+impDate;
+      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString()+' Astrite';
+      if(metaLine)ctx.fillText(metaLine,ix+15,metaY2);
+      // Convene Stats inside profile panel
+      const pStatY=metaY2+30;
+      drawStats(ix+9,pStatY,iw-18,pStatCellH,22);
+
+      Y+=heroH+gap;
+
+      // Pre-calculate content heights for adaptive layout
+      const pCollH=pPad+48+6;
+      const pHistoH=144;
+      const pResCols=8,pResGap2=6;
+      const pResMax=Math.min(newestRes.length,24);
+      const pResCellW=(bw-18-(pResCols-1)*pResGap2)/pResCols,pResCellH=Math.round(pResCellW*1.6);
+      const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
+      const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+6+(newestRes.length>pResMax?21:0);
+      const pTrophyCols=Math.max(tList.length,1),pTrophyGap=8;
+      const pTrophySize=Math.min(200,Math.floor((bw-18-(pTrophyCols-1)*pTrophyGap)/pTrophyCols));
+      const pTrophyPanelH=pPad+pTrophySize+6;
+      const pBannerH=pPad+80+6; // banner breakdown
+
+      // ── Pity Distribution ──
+      const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
+      if(histSummary){drawHisto(bx+9,Y+hp2o,bw-18,pHistoH-hp2o-12);
+        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-12,Y+pHistoH-5);ctx.textAlign='left';}
+      Y+=pHistoH+gap;
+
+      // ── Collection ──
+      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
+      drawColl(bx+9,Y+cp2o,bw-18);
+      Y+=pCollH+gap;
+
+      // ── Resonators — fills width ──
+      const rp2o=drawPanel(bx,Y,bw,pResContentH,'Resonators ('+newestRes.length+')');
+      drawResTags(bx+9,Y+rp2o,bw-18,8,pResMax);
+      Y+=pResContentH+gap;
+
+      // ── Trophies — fixed height, centered ──
+      if(tList.length>0){
+        const tp2o=drawPanel(bx,Y,bw,pTrophyPanelH,'Trophies ('+tList.length+')');
+        tList.forEach((t,i)=>{drawTrophy(bx+9+i*(pTrophySize+pTrophyGap),Y+tp2o,pTrophySize,t);});
+        Y+=pTrophyPanelH+gap;
+      }
+
+      // ── Banner Breakdown — fills remaining ──
+      const pRemaining=bottomY-Y;
+      if(pRemaining>60){
+        const bp2o=drawPanel(bx,Y,bw,pRemaining,'Convene Breakdown');
+        drawBannerRow(bx+9,Y+bp2o,bw-18,pRemaining-bp2o-6);
+      }
+
+      drawFooter(bx,bottomY,bw);
+    }
+
+    try {
+      canvas.toBlob(blob=>{
+        if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
+        a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
+      },'image/png');
+    } catch (e) {
+      console.error('ID card export failed (possible CORS tainted canvas):', e);
+      toast?.addToast?.('Failed to save ID card — try a different profile image', 'error');
+    }
+  }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies]);
+
+  return (
+    <>
+          <div role="tabpanel" id="tabpanel-profile" aria-labelledby="tab-profile" tabIndex="0">
+          <TabErrorBoundary tabName="Profile">
+          <div className="kuro-calc space-y-3 tab-content">
+            <TabBackground id="profile" />
+
+            {/* E2-FP3: Resonator Profile moved above Server Region (identity first) */}
+            <Card>
+              <CardHeader><User size={14} className="text-cyan-400" /> Resonator Profile</CardHeader>
+              <CardBody className="space-y-3">
+                {/* Username */}
+                <div>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-2">Display Name</label>
+                  <input
+                    id="profile-display-name"
+                    type="text"
+                    value={state.profile.username}
+                    onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
+                    placeholder="Enter your name..."
+                    maxLength={MAX_USERNAME_LENGTH}
+                    className="kuro-input w-full"
+                  />
+                  {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
+                  <p className="text-gray-400 text-[10px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
+                </div>
+
+                {/* Profile Picture — current selection */}
+                <div>
+                  <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-14 h-14 rounded-lg flex-shrink-0${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint', position: 'relative', overflow: 'hidden' }}>
+                      {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                        const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                        return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
+                      })() : (
+                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
+                      <p className="text-gray-400 text-[10px] mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      {state.profile.profilePic && (
+                        <button
+                          onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
+                          className="text-red-400/70 text-[10px] hover:text-red-400 mt-0.5"
+                        >Reset to default</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* View ID Card Button */}
+                <button
+                  onClick={() => setShowIdCard(true)}
+                  className="kuro-btn kuro-btn-hero w-full text-xs flex items-center justify-center gap-2"
+                >
+                  <Award size={14} /> View Resonator ID Card
+                </button>
+              </CardBody>
+            </Card>
+
+            {/* Server Region */}
+            <Card>
+              <CardHeader>Server Region</CardHeader>
+              <CardBody>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                  {Object.keys(SERVERS).map(s => (
+                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
+                  ))}
+                </div>
+                <p className="text-gray-400 text-[10px] mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+              </CardBody>
+            </Card>
+
+            {/* Settings + Import — side by side on desktop */}
+            <div className="desktop-grid-2 space-y-3 lg:space-y-0">
+            {/* Display Settings */}
+            <Card>
+              <CardHeader><Settings size={14} className="text-gray-400" /> Display Settings</CardHeader>
+              <CardBody className="space-y-3">
+                {/* OLED Mode Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
+                      <Monitor size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">OLED Mode</div>
+                      <div className="text-gray-400 text-[10px]">True black (#000) for OLED screens</div>
+                    </div>
+                  </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, oledMode: !visualSettings.oledMode })}
+                    className="relative w-[52px] h-[24px] rounded-full transition-colors"
+                    style={{ background: visualSettings.oledMode ? '#fff' : 'var(--bg-btn)' }}
+                    role="switch"
+                    aria-checked={visualSettings.oledMode}
+                    aria-label="Toggle OLED mode"
+                  >
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.oledMode ? 'left-[32px] bg-black' : 'left-[4px] bg-gray-400'}`} />
+                  </button>
+                </div>
+                {visualSettings.oledMode && (
+                  <p className="text-emerald-400 text-[10px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
+                )}
+                
+                {/* Swipe Navigation Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
+                      <ChevronDown size={16} className="-rotate-90" />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Swipe Navigation</div>
+                      <div className="text-gray-400 text-[10px]">Swipe left/right to switch tabs</div>
+                    </div>
+                  </div>
+                  {/* AUDIT-FIX M22: OLED-aware toggle track */}
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, swipeNavigation: !visualSettings.swipeNavigation })}
+                    className={`relative w-[52px] h-[24px] rounded-full transition-colors ${visualSettings.swipeNavigation ? 'bg-cyan-500' : ''}`}
+                    style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}
+                    role="switch"
+                    aria-checked={visualSettings.swipeNavigation}
+                    aria-label="Toggle swipe navigation"
+                  >
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                  </button>
+                </div>
+                {visualSettings.swipeNavigation && (
+                  <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
+                )}
+
+                {/* Animations Toggle — 3-state: off < on < full */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Animations</div>
+                      <div className="text-gray-400 text-[10px]">Background effects, transitions & glow</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
+                      saveVisualSettings({ ...visualSettings, animationsEnabled: next });
+                    }}
+                    className="relative w-[52px] h-[24px] rounded-full transition-colors flex-shrink-0"
+                    style={{ background: visualSettings.animationsEnabled === 'off' ? 'var(--bg-btn)' : visualSettings.animationsEnabled === 'on' ? '#a855f7' : '#d946ef' }}
+                    role="switch"
+                    aria-checked={visualSettings.animationsEnabled !== 'off'}
+                    aria-label="Toggle animations: off, on, full"
+                  >
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px]' : 'left-[32px]'}`} />
+                  </button>
+                </div>
+                {visualSettings.animationsEnabled === 'off' && (
+                  <p className="text-gray-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
+                )}
+                {visualSettings.animationsEnabled === 'on' && (
+                  <p className="text-purple-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
+                )}
+                {visualSettings.animationsEnabled === 'full' && (
+                  <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                )}
+
+                {/* Background Style Selector */}
+                {visualSettings.animationsEnabled !== 'off' && (
+                  <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
+                        <Diamond size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Background Style</div>
+                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[
+                        { id: 'none', label: 'None', color: 'bg-gray-600' },
+                        { id: 'reflect', label: 'Reflect', color: 'bg-purple-500' },
+                        { id: 'resonance', label: 'Resonance', color: 'bg-blue-500' },
+                        { id: 'honour', label: 'Honour', color: 'bg-amber-600' },
+                      ].map(bg => (
+                        <button key={bg.id}
+                          onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id })}
+                          className={`py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
+                          style={visualSettings.bgStyle !== bg.id ? { background: 'var(--bg-btn)' } : undefined}
+                        >{bg.label}</button>
+                      ))}
+                    </div>
+                    {visualSettings.bgStyle !== 'none' && (
+                      <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">Resolution</div>
+                          <div className="flex gap-1 flex-1">
+                            {[25, 50, 100, 200].map(res => {
+                              const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
+                              const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
+                              return <button key={res}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
+                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                              >{res}%</button>;
+                            })}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">FPS</div>
+                          <div className="flex gap-1 flex-1">
+                            {[15, 30, 45, 60].map(fps => {
+                              const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
+                              const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
+                              return <button key={fps}
+                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
+                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                              >{fps}</button>;
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Theme Selector */}
+                <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : '#9ca3af' }}>
+                      <Sparkles size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Header Theme</div>
+                      <div className="text-gray-400 text-[10px]">Character banner art & accent colors</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                    {/* Default theme */}
+                    <button
+                      onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })}
+                      className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === 'default' ? 'border-yellow-500 ring-1 ring-yellow-500/50' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                      style={{ aspectRatio: '16/9' }}
+                      aria-pressed={visualSettings.theme === 'default'}
+                      aria-label="Default theme"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#080c14] to-[#0f141c] flex items-center justify-center">
+                        <span className="text-gray-400 text-[10px] font-medium">Default</span>
+                      </div>
+                      {visualSettings.theme === 'default' && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                    </button>
+                    {/* Character themes */}
+                    {CHARACTER_THEMES.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => saveVisualSettings({ ...visualSettings, theme: t.id })}
+                        className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === t.id ? `ring-1` : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                        style={{ aspectRatio: '16/9', borderColor: visualSettings.theme === t.id ? getElementColor(t.element) : undefined, boxShadow: visualSettings.theme === t.id ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
+                        aria-pressed={visualSettings.theme === t.id}
+                        aria-label={`${t.name} theme`}
+                      >
+                        <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        <span className="absolute bottom-0.5 left-1 text-white text-[9px] font-medium drop-shadow-lg">{t.name}</span>
+                        {visualSettings.theme === t.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                      </button>
+                    ))}
+                  </div>
+                  {visualSettings.theme !== 'default' && (() => {
+                    const t = CHARACTER_THEMES.find(th => th.id === visualSettings.theme);
+                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} — {t.element} theme active</p> : null;
+                  })()}
+                </div>
+
+                {/* Install App on Device */}
+                {pwa?.canInstall && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                        <Download size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-xs font-medium">Install App</div>
+                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const accepted = await pwa.promptInstall();
+                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                    >
+                      Install
+                    </button>
+                  </div>
+                )}
+                {pwa?.isInstalled && (
+                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
+                )}
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardHeader>Import Convene History</CardHeader>
+              <CardBody className="space-y-3">
+                <p className="text-gray-300 text-[10px]">Import your Convene history from wuwatracker or compatible trackers.</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
+                    <button key={k} onClick={() => setImportPlatform(k)} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
+                      <Icon size={16} className="mx-auto mb-0.5" /><div className="text-[10px]">{l}</div>
+                    </button>
+                  ))}
+                </div>
+                {/* P4-FIX: Data-driven import guides — eliminates ~90 lines of copy-paste */}
+                {importPlatform && <ImportGuide platform={importPlatform} />}
+                
+                {/* Import Method Selector */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => setImportMethod('file')} 
+                    className={`kuro-btn py-2 text-xs ${importMethod === 'file' ? 'active-gold' : ''}`}
+                  >
+                    <Upload size={14} className="inline mr-1.5" />Upload File
+                  </button>
+                  <button 
+                    onClick={() => setImportMethod('paste')} 
+                    className={`kuro-btn py-2 text-xs ${importMethod === 'paste' ? 'active-gold' : ''}`}
+                  >
+                    <ClipboardList size={14} className="inline mr-1.5" />
+                    Paste JSON
+                  </button>
+                </div>
+                
+                {/* File Upload Method — P8-FIX: Now supports drag-and-drop */}
+                {importMethod === 'file' && (
+                  <label
+                    className="block"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
+                    onDrop={handleFileDrop}
+                  >
+                    {importStatus ? (
+                      <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
+                        <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '60%', height: '12px' }} />
+                        <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
+                        <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
+                      </div>
+                    ) : (
+                    <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
+                      <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
+                      <p className={`text-[10px] ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
+                        {isDragOver ? 'Drop JSON file here' : 'Upload or drag & drop JSON file from wuwatracker'}
+                      </p>
+                    </div>
+                    )}
+                    <input type="file" accept=".json" onChange={handleFileImport} className="hidden" />
+                  </label>
+                )}
+                
+                {/* Paste JSON Method */}
+                {importMethod === 'paste' && (
+                  <div className="space-y-2">
+                    <textarea
+                      value={pasteJsonText}
+                      onChange={(e) => setPasteJsonText(e.target.value)}
+                      placeholder='Paste your wuwatracker JSON here...
+
+Example: {"pulls":[...]}'
+                      className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
+                      spellCheck={false}
+                      aria-label="Paste import JSON data"
+                    />
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={handlePasteImport}
+                        disabled={!pasteJsonText.trim()}
+                        className={`kuro-btn flex-1 py-2 text-xs ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
+                      >
+                        <Check size={14} className="inline mr-1.5" />Import Data
+                      </button>
+                      {pasteJsonText && (
+                        <button 
+                          onClick={() => setPasteJsonText('')}
+                          className="kuro-btn px-3 py-2 text-xs"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-gray-400 text-[10px]">
+                      💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
+                    </p>
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+            </div>{/* end desktop-grid-2 */}
+
+            {state.profile.importedAt && (
+              <Card>
+                <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear history', message: 'Clear all imported Convene history?\nThis cannot be undone.', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); } }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
+                <CardBody>
+                  {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
+                  <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
+                  <p className="text-gray-400 text-[10px] mt-2">View detailed stats in the Stats tab</p>
+                </CardBody>
+              </Card>
+            )}
+
+            <Card>
+              <CardBody className="space-y-2">
+                <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
+                  <Download size={14} /> Export Backup
+                </button>
+                <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
+                  Reset All Data
+                </button>
+              </CardBody>
+            </Card>
+
+            {/* About & Legal */}
+            <Card>
+              <CardHeader>About</CardHeader>
+              <CardBody className="space-y-3">
+                <div className="text-center">
+                  <h4 className="text-gray-100 font-bold text-sm">Whispering Wishes</h4>
+                  <p className="text-gray-500 text-[10px]">Version {APP_VERSION}</p>
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-gray-400 text-[10px] mb-1">Questions, issues, or feedback?</p>
+                  <a 
+                    href="mailto:whisperingwishes.app@gmail.com" 
+                    className="text-yellow-400 text-xs hover:text-yellow-300 transition-colors underline"
+                  >
+                    whisperingwishes.app@gmail.com
+                  </a>
+                </div>
+                
+                <div className="kuro-divider" />
+                
+                <div className="space-y-2 text-[10px] text-gray-400">
+                  <p className="font-medium text-gray-400">Disclaimer</p>
+                  <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
+                  <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{currentYear}. All rights reserved.</p>
+                </div>
+                
+                <div className="space-y-2 text-[10px] text-gray-400">
+                  <p className="font-medium text-gray-400">Data & Privacy</p>
+                  <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
+                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
+                  <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
+                </div>
+                
+                <div className="space-y-2 text-[10px] text-gray-400">
+                  <p className="font-medium text-gray-400">Third-Party Services</p>
+                  <p>This app recommends wuwatracker.com for data export. We are not affiliated with wuwatracker.com and are not responsible for their services, data handling, or availability.</p>
+                </div>
+                
+                <div className="space-y-2 text-[10px] text-gray-400">
+                  <p className="font-medium text-gray-400">Data Sources & Attribution</p>
+                  <p>Banner schedules, event timings, and countdown data are sourced from:</p>
+                  <ul className="list-disc list-inside ml-2 space-y-0.5">
+                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - Event timeline & pity tracking</li>
+                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - Banner countdowns</li>
+                  </ul>
+                  <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
+                </div>
+                
+                <div className="space-y-2 text-[10px] text-gray-400">
+                  <p className="font-medium text-gray-400">License</p>
+                  <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
+                </div>
+                
+                <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+              </CardBody>
+            </Card>
+          </div>
+          </TabErrorBoundary>
+          </div>
+
+      {/* Resonator ID Card Modal */}
+      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
+          <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '420px', maxHeight: '90vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
+            {/* The Card */}
+            <div className="kuro-card" style={{ overflow: 'hidden' }}>
+              <div className="kuro-card-inner">
+                {/* Header */}
+                <div className="kuro-header">
+                  <span className="text-gray-100 font-bold text-xs flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
+                  <span className="text-gray-500 text-[10px]">Whispering Wishes</span>
+                </div>
+
+                {/* Main content */}
+                <div className="kuro-body" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                  {/* ═══ PROFILE PANEL ═══ */}
+                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '12px' }}>
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="flex gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-semibold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
+                            <span className="text-gray-200 text-xs font-mono">{state.profile.uid || '—'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
+                            <span className="text-xs font-mono" style={{ color: '#edaf18', textShadow: '0 0 8px rgba(237,175,24,0.3)' }}>{state.server}</span>
+                          </div>
+                        </div>
+                        {luckRating && (
+                          <div className="mt-2.5 flex items-center gap-2">
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #edaf18, #34d399)', boxShadow: '0 0 6px rgba(237,175,24,0.4)' }} />
+                            </div>
+                            <span className="text-[10px] font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60`, fontFamily: 'var(--font-display)' }}>{luckRating.tier} {luckRating.rating}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 flex flex-col items-center">
+                        <div className={`relative rounded-xl overflow-hidden${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
+                          <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
+                          {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                            const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                            {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
+                            return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
+                          })() : (
+                            <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
+                              <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
+                            </div>
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }} />
+                        </div>
+                        {state.profile.profilePic && (
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '7px', width: '110px' }}>{state.profile.profilePic}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ═══ CONVENE STATS PANEL ═══ */}
+                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.4), transparent)' }} />
+                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="flex items-center gap-2 mb-2">
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Convene Stats</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
+                      { label: 'Total Convenes', value: overallStats?.totalPulls?.toLocaleString() ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
+                      { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
+                      { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
+                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
+                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },
+                    ].map((s, i) => (
+                      <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
+                        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
+                        <div className="font-bold text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30`, fontFamily: 'var(--font-data)' }}>{s.value}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '7px', letterSpacing: '0.04em' }}>{s.label}</div>
+                      </div>
+                    ))}
+                    </div>
+                  </div>
+
+                  {/* ═══ PITY DISTRIBUTION PANEL ═══ */}
+                  {(() => {
+                    const bgnHist = state.profile.beginner?.history||[];
+                    const charHist = [...(state.profile.featured?.history||[]),...(state.profile.standardChar?.history||[]),...bgnHist.filter(p=>p.name&&ALL_CHARACTERS.has(p.name))];
+                    const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...bgnHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
+                    const fsp = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
+                    if(fsp.length < 2) return null;
+                    const bk = {};
+                    fsp.forEach(p => { if(p.pity>80){bk['81+']=(bk['81+']||0)+1;} else {const b=Math.floor((p.pity-1)/10)*10+1;bk[`${b}-${b+9}`]=(bk[`${b}-${b+9}`]||0)+1;} });
+                    const labs = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`);
+                    if(bk['81+'])labs.push('81+');
+                    labs.forEach(b=>{if(!bk[b])bk[b]=0;});
+                    const mx = Math.max(...Object.values(bk),1);
+                    const avg = (fsp.reduce((s,p)=>s+p.pity,0)/fsp.length).toFixed(1);
+                    const lo = Math.min(...fsp.map(p=>p.pity));
+                    const hi = Math.max(...fsp.map(p=>p.pity));
+                    return (
+                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.35), transparent)' }} />
+                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Pity Distribution</span>
+                        </div>
+                        {/* §E10-CH-F2: Summary moved above histogram, escalated to text-xs */}
+                        <div className="text-right mb-1.5">
+                          <span className="text-xs text-gray-400 kuro-number" style={{ fontFamily: 'var(--font-data)' }}>Lo {lo} · Avg {avg} · Hi {hi}</span>
+                        </div>
+                        <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
+                          {labs.map((lab, i) => {
+                            const cnt = bk[lab]||0;
+                            const height = mx > 0 ? (cnt / mx) * 100 : 0;
+                            const bucket = parseInt(lab)||81;
+                            const color = bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center">
+                                <div className="w-full relative" style={{ height: '96px' }}>
+                                  {cnt > 0 && (
+                                    <div className="absolute left-0 right-0 text-center font-bold"
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
+                                      {cnt}
+                                    </div>
+                                  )}
+                                  <div className="absolute bottom-0 left-1 right-1 rounded-t"
+                                    style={{ height: `${height}%`, minHeight: cnt > 0 ? '8px' : '0',
+                                      background: `linear-gradient(to top, ${color}40, ${color}20)`,
+                                      border: cnt > 0 ? `1px solid ${color}90` : 'none', borderBottom: 'none',
+                                      boxShadow: cnt > 0 ? `0 0 12px ${color}50, inset 0 0 15px ${color}30` : 'none' }} />
+                                  {cnt > 0 && (
+                                    <div className="absolute bottom-0 left-1 right-1 rounded-full"
+                                      style={{ height: '2px', background: color, boxShadow: `0 0 8px ${color}, 0 0 16px ${color}80` }} />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="flex gap-1.5">
+                          {labs.map((lab, i) => (
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: '7px', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                          ))}
+                        </div>
+                        {/* Summary moved above histogram per §E10-CH-F2 */}
+                      </div>
+                    );
+                  })()}
+
+                  {/* ═══ RESONATORS PANEL ═══ */}
+                  {ownedCharNames.length > 0 && (
+                    <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                      <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent)' }} />
+                      <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                      <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                      <div className="flex items-center gap-2 mb-2">
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                        <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
+                      </div>
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {ownedCharNames.slice(0, 16).map(name => {
+                          const imgUrl = collectionImages[name];
+                          const f = getImageFraming(`collection-${name}`);
+                          const is5Star = CHARACTER_DATA[name]?.rarity === 5;
+                          return (
+                            <div key={name}>
+                              <div className={`relative rounded-lg overflow-hidden w-full${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
+                                <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+                                {imgUrl ? (
+                                  <div className="absolute inset-0 breath-zoom"><img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} /></div>
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
+                                  </div>
+                                )}
+                                <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))' }}>
+                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {ownedCharNames.length > 16 && (
+                          <div className="flex items-center justify-center rounded-lg w-full" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <span className="text-gray-500 font-mono" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ═══ TROPHIES PANEL ═══ */}
+                  {(() => {
+                    const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
+                    if (!sorted.length) return null;
+                    return (
+                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
+                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.3), transparent)' }} />
+                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
+                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                        <div className="flex items-center gap-2 mb-2">
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
+                        </div>
+                        <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
+                          {sorted.map(trophy => {
+                            const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
+                            return (
+                              <div key={trophy.id} className="relative p-2 rounded-lg text-center overflow-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
+                                <div className="rounded-full flex items-center justify-center mb-1" style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                  <IconComponent size={14} style={{ color: trophy.color }} />
+                                </div>
+                                <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '7px', wordBreak: 'break-word' }}>{trophy.name}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* ═══ FOOTER ═══ */}
+                  <div className="relative flex items-center justify-between pt-1.5">
+                    <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+                    <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
+                    <span className="text-gray-500" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Format toggle + action buttons */}
+            <div className="flex gap-2 mt-3">
+              {/* Format toggle */}
+              <div className="flex rounded-xl overflow-hidden" style={{ background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <button
+                  onClick={() => setIdCardFormat('landscape')}
+                  className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
+                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+                  title="Landscape 16:9"
+                >
+                  <Monitor size={12} /> 16:9
+                </button>
+                <button
+                  onClick={() => setIdCardFormat('portrait')}
+                  className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
+                  style={idCardFormat === 'portrait' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18' } : { color: '#6b7280' }}
+                  title="Portrait 9:16"
+                >
+                  <Smartphone size={12} /> 9:16
+                </button>
+              </div>
+              {/* Download */}
+              <button
+                onClick={() => downloadIdCard(idCardFormat)}
+                className="kuro-btn flex-1 py-2.5 text-xs active-gold flex items-center justify-center gap-2"
+              >
+                <Download size={14} /> Download {idCardFormat === 'portrait' ? '9:16' : '16:9'}
+              </button>
+              {/* Close */}
+              <button
+                onClick={() => setShowIdCard(false)}
+                className="kuro-btn px-4 py-2.5 text-xs"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+      </FocusTrapModal>
+
+      {/* Admin Panel Modal */}
+      <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel" centered>
+          <div className="kuro-card w-full max-w-2xl max-h-[90vh]" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
+            <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
+              <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
+            </CardHeader>
+            <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+              {!adminUnlocked ? (
+                <div className="space-y-3">
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
+                    <p className="text-yellow-400 text-sm font-medium">Admin Access Required</p>
+                    <p className="text-gray-400 text-[10px] mt-1">Enter admin password to continue</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      placeholder="Enter password"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && verifyAdminPassword()}
+                      className="kuro-input flex-1 text-sm"
+                      aria-label="Admin password"
+                      aria-invalid={adminLockedUntil > Date.now() ? true : undefined}
+                      aria-describedby={adminLockedUntil > Date.now() ? 'admin-lockout-msg' : undefined}
+                    />
+                    <button onClick={verifyAdminPassword} className="kuro-btn px-4" aria-label="Unlock admin panel">Unlock</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
+                    <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
+                  </div>
+
+                  {/* Admin Tab Switcher */}
+                  <div className="flex gap-2 border-b border-[var(--border-medium)] pb-2 flex-wrap">
+                    <button
+                      onClick={() => setAdminTab('banners')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'banners' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Banners
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('collection')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'collection' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Collection
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('visuals')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'visuals' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Visual Settings
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('trophies')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'trophies' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Trophies
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('players')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players
+                    </button>
+                  </div>
+
+                  {/* Collection Tab */}
+                  {adminTab === 'collection' && (
+                    <div className="space-y-4">
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
+                        <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
+                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Add custom URLs to override or add missing ones.</p>
+                        
+                        {/* Get unique names from history */}
+                        {(() => {
+                          const allHistory = [
+                            ...state.profile.featured.history,
+                            ...state.profile.weapon.history,
+                            ...(state.profile.standardChar?.history || []),
+                            ...(state.profile.standardWeap?.history || [])
+                          ];
+                          const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
+                          
+                          if (uniqueNames.length === 0) {
+                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-500 text-xs">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>;
+                          }
+                          
+                          return (
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                              {uniqueNames.map(name => {
+                                const hasDefault = DEFAULT_COLLECTION_IMAGES[name];
+                                const hasCustom = customCollectionImages[name];
+                                const displayUrl = collectionImages[name];
+                                return (
+                                  <div key={name} className="flex items-center gap-2">
+                                    <span className={`text-[10px] w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
+                                      {name} {!hasDefault && '⚠'}
+                                    </span>
+                                    <input
+                                      type="text"
+                                      placeholder={hasDefault ? "(using default)" : "https://i.ibb.co/..."}
+                                      value={hasCustom || ''}
+                                      onChange={(e) => {
+                                        const val = e.target.value.trim();
+                                        const newCustom = { ...customCollectionImages };
+                                        if (val) {
+                                          if (val.length > 5 && !/^https:\/\//i.test(val)) return; // Enforce HTTPS-only URLs
+                                          // P15-FIX: MEDIUM-3 — Validate against domain allowlist
+                                          if (val.length > 10) { try { const h = new URL(val).hostname; if (!ALLOWED_IMAGE_HOSTS.some(d => h === d || h.endsWith('.'+d))) return; } catch { return; } }
+                                          newCustom[name] = val;
+                                        } else {
+                                          delete newCustom[name];
+                                        }
+                                        saveCollectionImages(newCustom);
+                                      }}
+                                      className={`kuro-input flex-1 text-[10px] py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
+                                    />
+                                    {displayUrl && (
+                                      <img
+                                        src={displayUrl}
+                                        alt={name}
+                                        className="w-[28px] h-[28px] object-cover rounded border border-purple-500/30"
+                                        loading="lazy"
+                                        onError={hideOnError}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => { if (await confirm({ title: 'Clear overrides', message: 'Clear all custom image overrides?', confirmLabel: 'Clear', destructive: true })) saveCollectionImages({}); }}
+                          className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                        >
+                          Clear Custom Overrides
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Visual Settings Tab */}
+                  {adminTab === 'visuals' && (
+                    <div className="space-y-4">
+                      {VISUAL_SLIDER_CONFIGS.map(cfg => (
+                        <React.Fragment key={cfg.color}>
+                          {cfg.subtitle && (
+                            <div className={`${cfg.color === 'purple' ? 'bg-purple-500/10 border border-purple-500/30' : ''} rounded p-3`}>
+                              <VisualSliderGroup
+                                title={cfg.title} color={cfg.color} sliders={cfg.sliders}
+                                visualSettings={visualSettings} saveVisualSettings={saveVisualSettings}
+                                directionControl={cfg.directionControl}
+                              />
+                            </div>
+                          )}
+                          {!cfg.subtitle && (
+                            <VisualSliderGroup
+                              title={cfg.title} color={cfg.color} sliders={cfg.sliders}
+                              visualSettings={visualSettings} saveVisualSettings={saveVisualSettings}
+                              directionControl={cfg.directionControl}
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setAdminMiniMode(true)}
+                          className="flex-1 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded text-xs hover:bg-emerald-500/30"
+                        >
+                          🗗 Mini Window
+                        </button>
+                        <button
+                          onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
+                          className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600"
+                        >
+                          Reset to Defaults
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Players Tab — Anonymous real-time presence */}
+                  {adminTab === 'players' && (
+                    <div className="space-y-4">
+                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
+                          <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Live</span>
+                        </div>
+                        <div className="text-5xl font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 20px rgba(52,211,153,0.4)', transition: 'opacity 0.3s ease' }}>
+                          {activePlayersCount !== null ? activePlayersCount : '—'}
+                        </div>
+                        <div className="text-gray-400 text-xs mt-1">
+                          {activePlayersCount === 1 ? 'Open Session' : 'Open Sessions'}
+                        </div>
+                        <div className="text-gray-400 text-[10px] mt-1 leading-relaxed">
+                          Anyone browsing the app — includes visitors who haven't imported data or submitted to the leaderboard
+                        </div>
+                        <div className="text-gray-400 text-[10px] mt-1">
+                          Updates every 30s • Heartbeat: 60s • Timeout: 2min
+                        </div>
+                      </div>
+                      
+                      {/* Activity Chart */}
+                      {activePlayersHistory.length > 1 && (
+                        <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3">
+                          <div className="text-gray-400 text-[10px] font-medium mb-2 uppercase tracking-wider">Session Activity</div>
+                          <div className="h-24">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={activePlayersHistory}>
+                                <defs>
+                                  <linearGradient id="presenceGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+                                  </linearGradient>
+                                </defs>
+                                <XAxis dataKey="time" tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} interval="preserveStartEnd" />
+                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
+                                <Area type="monotone" dataKey="count" stroke="#34d399" strokeWidth={2} fill="url(#presenceGrad)" />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Refresh Button */}
+                      <button 
+                        onClick={() => { fetchActivePlayersCount(); fetchAdminPlayerList(); }}
+                        className="kuro-btn w-full py-2 text-xs active-emerald"
+                      >
+                        <RefreshCcw size={12} className="inline mr-1.5" />Refresh Now
+                      </button>
+                      
+                      {/* Admin Player List — full UIDs visible only here */}
+                      <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-gray-400 text-[10px] font-medium uppercase tracking-wider">Registered Players</div>
+                          <div className="text-gray-400 text-[10px]">{adminPlayerList ? adminPlayerList.length : '—'} total</div>
+                        </div>
+                        {!adminPlayerList ? (
+                          <div className="space-y-1.5 py-2" aria-label="Loading player list">
+                            {[...Array(4)].map((_, i) => (
+                              <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                                <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
+                                <div className="kuro-skeleton kuro-skeleton-text flex-1" style={{ width: `${60 + i * 5}%` }} />
+                                <div className="kuro-skeleton kuro-skeleton-text w-12 h-3 flex-shrink-0" />
+                              </div>
+                            ))}
+                          </div>
+                        ) : adminPlayerList.length === 0 ? (
+                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting operative registration</p>
+                        ) : (
+                          <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
+                            {adminPlayerList.map((p, i) => (
+                              <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-gray-400 text-[10px] w-4 text-right flex-shrink-0">{i + 1}</span>
+                                    <span className="text-white text-xs font-mono font-medium truncate">{p.uid || p.id}</span>
+                                    {p.uid && p.id !== p.uid && (
+                                      <span className="text-gray-500 text-[8px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-3 ml-6 mt-0.5">
+                                    <span className="text-gray-400 text-[10px]">Avg: <span className="text-yellow-400">{typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity}</span></span>
+                                    <span className="text-gray-400 text-[10px]">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
+                                    <span className="text-gray-400 text-[10px]">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
+                                    <span className="text-gray-400 text-[10px]">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
+                                  </div>
+                                </div>
+                                <div className="text-gray-500 text-[8px] text-right flex-shrink-0 ml-2">
+                                  {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Privacy Notice */}
+                      <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3 text-[10px] text-gray-400 space-y-1">
+                        <div className="text-gray-400 font-medium">🔒 Privacy</div>
+                        <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
+                        <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
+                      </div>
+                      
+                      {/* Error Display */}
+                      {presenceError && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-[10px] text-red-400 space-y-1.5">
+                          <div className="font-medium">⚠ Presence Error</div>
+                          <p>{presenceError}</p>
+                          <div className="text-red-400/70 text-[10px] space-y-0.5">
+                            <p className="font-medium">Fix: Add this Firebase rule:</p>
+                            <pre className="bg-black/30 rounded p-2 text-[10px] overflow-x-auto font-mono whitespace-pre">
+{`"presence": {
+  ".read": true,
+  ".write": true
+}`}
+                            </pre>
+                            <p>Firebase Console → Realtime Database → Rules</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Trophies Tab */}
+                  {adminTab === 'trophies' && (
+                    <div className="space-y-4">
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                        <h3 className="text-amber-400 text-sm font-medium mb-2">Trophy Name Editor</h3>
+                        <p className="text-gray-400 text-[10px] mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
+
+                        {/* Current trophies list — read-only reference */}
+                        <div className="mb-3">
+                          <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Current Trophies ({trophies?.list?.length || 0})</div>
+                          <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-[var(--border-medium)] p-2 space-y-0.5">
+                            {(trophies?.list || []).map(t => (
+                              <div key={t.id} className="flex items-center gap-2 py-0.5">
+                                <span className="text-[10px] font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
+                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                                <span className={`text-[10px] flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
+                                <span className="text-[8px] text-gray-500 flex-shrink-0">{t.name.length}ch</span>
+                              </div>
+                            ))}
+                            {(!trophies?.list || trophies.list.length === 0) && (
+                              <div className="kuro-empty-state text-center py-4"><p className="text-gray-500 text-xs">Import Convene data to unlock achievements</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Export current as JSON */}
+                        <button
+                          onClick={() => {
+                            const data = {};
+                            (trophies?.list || []).forEach(t => { data[t.id] = { name: t.name, desc: t.desc }; });
+                            navigator.clipboard?.writeText(JSON.stringify(data, null, 2));
+                            toast?.addToast?.('Trophy data copied to clipboard', 'success');
+                          }}
+                          className="w-full mb-3 px-3 py-1.5 bg-white/5 border border-[var(--border-medium)] text-gray-300 rounded text-[10px] hover:bg-white/10 transition-colors"
+                        >
+                          Export Current Trophies as JSON
+                        </button>
+
+                        {/* JSON import textarea */}
+                        <div className="text-gray-400 text-[10px] font-medium mb-1 uppercase tracking-wider">Import Overrides (JSON)</div>
+                        <textarea
+                          className="kuro-input w-full h-40 text-[10px] font-mono"
+                          value={trophyJsonInput}
+                          onChange={(e) => setTrophyJsonInput(e.target.value)}
+                          placeholder={'{\n  "pity1": { "name": "New Name Here", "desc": "New description" },\n  "win7": { "name": "Another Name" }\n}'}
+                          aria-label="Trophy overrides JSON input"
+                        />
+                        <p className="text-gray-400 text-[10px] mt-1 mb-2">Only include trophies you want to rename. Omit <code className="text-amber-400/60">desc</code> to keep the original description.</p>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              try {
+                                const parsed = JSON.parse(trophyJsonInput);
+                                if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Must be a JSON object');
+                                const cleaned = {};
+                                let count = 0;
+                                for (const [id, val] of Object.entries(parsed)) {
+                                  if (typeof val !== 'object' || !val) continue;
+                                  const entry = {};
+                                  if (val.name && typeof val.name === 'string') entry.name = val.name.trim();
+                                  if (val.desc && typeof val.desc === 'string') entry.desc = val.desc.trim();
+                                  if (Object.keys(entry).length > 0) { cleaned[id] = entry; count++; }
+                                }
+                                setTrophyOverrides(cleaned);
+                                try { localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(cleaned)); } catch {}
+                                toast?.addToast?.(`Applied ${count} trophy override${count !== 1 ? 's' : ''}`, 'success');
+                              } catch (e) {
+                                toast?.addToast?.('Invalid JSON: ' + e.message, 'error');
+                              }
+                            }}
+                            className="kuro-btn flex-1 text-xs"
+                          >
+                            Apply Overrides
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!await confirm({ title: 'Clear overrides', message: 'Clear all trophy name overrides?', confirmLabel: 'Clear', destructive: true })) return;
+                              setTrophyOverrides({});
+                              setTrophyJsonInput('');
+                              try { localStorage.removeItem(TROPHY_OVERRIDES_KEY); } catch {}
+                              toast?.addToast?.('Trophy overrides cleared', 'success');
+                            }}
+                            className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+
+                        {/* Active overrides count */}
+                        {Object.keys(trophyOverrides).length > 0 && (
+                          <div className="mt-3 bg-amber-500/10 border border-amber-500/20 rounded p-2 text-[10px] text-amber-400">
+                            {Object.keys(trophyOverrides).length} active override{Object.keys(trophyOverrides).length !== 1 ? 's' : ''}: {Object.keys(trophyOverrides).join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Banners Tab */}
+                  {adminTab === 'banners' && (
+                    <>
+                    <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Quick Banner Update</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Version (e.g., 3.1)"
+                        value={bannerForm.version}
+                        onChange={(e) => updateBannerForm('version', e.target.value)}
+                        className="kuro-input text-[10px] py-1"
+                        aria-label="Banner version"
+                      />
+                      <input
+                        type="number"
+                        placeholder="e.g. 1"
+                        value={bannerForm.phase}
+                        onChange={(e) => updateBannerForm('phase', e.target.value)}
+                        className="kuro-input text-[10px] py-1"
+                        aria-label="Banner phase"
+                      />
+                      <input
+                        type="datetime-local"
+                        placeholder="Start Date"
+                        value={bannerForm.startDate}
+                        onChange={(e) => updateBannerForm('startDate', e.target.value)}
+                        className="kuro-input text-[10px] py-1"
+                        aria-label="Banner start date"
+                      />
+                      <input
+                        type="datetime-local"
+                        placeholder="End Date"
+                        value={bannerForm.endDate}
+                        onChange={(e) => updateBannerForm('endDate', e.target.value)}
+                        className="kuro-input text-[10px] py-1"
+                        aria-label="Banner end date"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Featured Resonators (JSON)</h3>
+                    <textarea
+                      className="kuro-input w-full h-32 text-[10px] font-mono"
+                      value={bannerForm.charsJson}
+                      onChange={(e) => updateBannerForm('charsJson', e.target.value)}
+                      placeholder="Paste characters array JSON"
+                      aria-label="Featured resonators JSON"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Featured Weapons (JSON)</h3>
+                    <textarea
+                      className="kuro-input w-full h-32 text-[10px] font-mono"
+                      value={bannerForm.weapsJson}
+                      onChange={(e) => updateBannerForm('weapsJson', e.target.value)}
+                      placeholder="Paste weapons array JSON"
+                      aria-label="Featured weapons JSON"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Resonator Images</h3>
+                    <div className="space-y-1">
+                      {activeBanners.characters.map((c, i) => (
+                        <div key={c.id} className="flex items-center gap-2">
+                          <span className="text-gray-300 text-[10px] w-20 truncate">{c.name}</span>
+                          <input
+                            type="text"
+                            placeholder="https://i.ibb.co/..."
+                            value={bannerForm.charImages[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))}
+                            className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${c.name} image URL`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="center 20%"
+                            value={bannerForm.charImagePositions[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, charImagePositions: { ...prev.charImagePositions, [i]: e.target.value } }))}
+                            className="kuro-input w-24 text-[10px] py-1"
+                            aria-label={`${c.name} image position`}
+                            title="CSS object-position (e.g. center 20%)"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Weapon Images</h3>
+                    <div className="space-y-1">
+                      {activeBanners.weapons.map((w, i) => (
+                        <div key={w.id} className="flex items-center gap-2">
+                          <span className="text-gray-300 text-[10px] w-20 truncate">{w.name}</span>
+                          <input
+                            type="text"
+                            placeholder="https://i.ibb.co/..."
+                            value={bannerForm.weapImages[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))}
+                            className="kuro-input flex-1 text-[10px] py-1"
+                            aria-label={`${w.name} image URL`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="center 30%"
+                            value={bannerForm.weapImagePositions[i] ?? ''}
+                            onChange={(e) => setBannerForm(prev => ({ ...prev, weapImagePositions: { ...prev.weapImagePositions, [i]: e.target.value } }))}
+                            className="kuro-input w-24 text-[10px] py-1"
+                            aria-label={`${w.name} image position`}
+                            title="CSS object-position (e.g. center 30%)"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Standard Banner Images</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Tidal Chorus</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.standardCharImg}
+                          onChange={(e) => updateBannerForm('standardCharImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tidal Chorus banner image URL"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Winter Brume</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.standardWeapImg}
+                          onChange={(e) => updateBannerForm('standardWeapImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Winter Brume banner image URL"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-white text-sm font-medium">Event Banner Images</h3>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Whimpering Wastes</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.wwImg}
+                          onChange={(e) => updateBannerForm('wwImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Whimpering Wastes image URL"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Doubled Pawns</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.dpImg}
+                          onChange={(e) => updateBannerForm('dpImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Doubled Pawns image URL"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Tower of Adversity</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.toaImg}
+                          onChange={(e) => updateBannerForm('toaImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Tower of Adversity image URL"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Illusive Realm</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.irImg}
+                          onChange={(e) => updateBannerForm('irImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Illusive Realm image URL"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-300 text-[10px] w-28">Daily Reset</span>
+                        <input
+                          type="text"
+                          placeholder="https://i.ibb.co/..."
+                          value={bannerForm.drImg}
+                          onChange={(e) => updateBannerForm('drImg', e.target.value)}
+                          className="kuro-input flex-1 text-[10px] py-1"
+                          aria-label="Daily Reset image URL"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-gray-400 text-[10px]">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        try {
+                          // P6-FIX: Read from controlled bannerForm state, not DOM (HIGH-17)
+                          const chars = JSON.parse(bannerForm.charsJson);
+                          const weaps = JSON.parse(bannerForm.weapsJson);
+                          if (!Array.isArray(chars) || !Array.isArray(weaps)) throw new Error('Characters and weapons must be arrays');
+                          if (chars.length === 0) throw new Error('At least one character required');
+                          if (weaps.length === 0) throw new Error('At least one weapon required');
+                          // P10-FIX: Validate all image URLs are HTTPS to prevent mixed-content and tracking (Step 6 audit)
+                          const validateImgUrl = (url, label) => {
+                            if (!url) return;
+                            try { 
+                              const u = new URL(url);
+                              if (u.protocol !== 'https:') throw new Error(`${label} must use HTTPS`);
+                            } catch (e) {
+                              if (e.message.includes('HTTPS')) throw e;
+                              throw new Error(`${label} has an invalid URL`);
+                            }
+                          };
+                          chars.forEach((c, i) => {
+                            if (!c.id || !c.name) throw new Error(`Character ${i + 1} missing id or name`);
+                            const img = (bannerForm.charImages[i] ?? '').trim();
+                            if (img) { validateImgUrl(img, `Character ${i + 1} image`); c.imageUrl = img; }
+                            const pos = (bannerForm.charImagePositions[i] ?? '').trim();
+                            if (pos) c.imagePosition = pos;
+                          });
+                          weaps.forEach((w, i) => {
+                            if (!w.id || !w.name) throw new Error(`Weapon ${i + 1} missing id or name`);
+                            const img = (bannerForm.weapImages[i] ?? '').trim();
+                            if (img) { validateImgUrl(img, `Weapon ${i + 1} image`); w.imageUrl = img; }
+                            const pos = (bannerForm.weapImagePositions[i] ?? '').trim();
+                            if (pos) w.imagePosition = pos;
+                          });
+                          const startDate = new Date(bannerForm.startDate);
+                          const endDate = new Date(bannerForm.endDate);
+                          if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
+                          if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
+                          if (endDate <= startDate) throw new Error('End date must be after start date');
+                          // P10-FIX: Validate all static image URLs too (Step 6 audit)
+                          [bannerForm.standardCharImg, bannerForm.standardWeapImg, bannerForm.wwImg, bannerForm.dpImg, bannerForm.toaImg, bannerForm.irImg, bannerForm.drImg].forEach((url, i) => {
+                            const labels = ['Standard char banner', 'Standard weap banner', 'Whimpering Wastes', 'Doubled Pawns', 'Tower of Adversity', 'Illusive Realm', 'Daily reset'];
+                            if (url?.trim()) validateImgUrl(url.trim(), labels[i] + ' image');
+                          });
+                          const newBanners = {
+                            ...activeBanners,
+                            version: bannerForm.version || '1.0',
+                            phase: parseInt(bannerForm.phase, 10) || 1,
+                            startDate: startDate.toISOString(),
+                            endDate: endDate.toISOString(),
+                            characters: chars,
+                            weapons: weaps,
+                            standardCharBannerImage: bannerForm.standardCharImg.trim(),
+                            standardWeapBannerImage: bannerForm.standardWeapImg.trim(),
+                            whimperingWastesImage: bannerForm.wwImg.trim(),
+                            doubledPawnsImage: bannerForm.dpImg.trim(),
+                            towerOfAdversityImage: bannerForm.toaImg.trim(),
+                            illusiveRealmImage: bannerForm.irImg.trim(),
+                            dailyResetImage: bannerForm.drImg.trim(),
+                          };
+                          saveCustomBanners(newBanners);
+                          setShowAdminPanel(false);
+                          setAdminUnlocked(false);
+                          setAdminPassword('');
+                        } catch (e) {
+                          toast?.addToast?.('Invalid data: ' + e.message, 'error');
+                        }
+                      }}
+                      className="kuro-btn flex-1"
+                    >
+                      Save Banner Updates
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!await confirm({ title: 'Reset banners', message: 'Reset to default banners?\nCustom banner data will be lost.', confirmLabel: 'Reset', destructive: true })) return;
+                        if (storageAvailable) {
+                          try { localStorage.removeItem(ADMIN_BANNER_KEY); } catch {}
+                        }
+                        setActiveBanners(CURRENT_BANNERS);
+                        toast?.addToast?.('Reset to default banners', 'success');
+                      }}
+                      className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+            </div>
+          </div>
+      </FocusTrapModal>
+
+      {/* Admin Mini Window — portaled to body */}
+      {showAdminPanel && adminMiniMode && adminUnlocked && createPortal(
+        <div
+          className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
+          style={{ 
+            boxShadow: '0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3)'
+          }}
+        >
+          <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-2.5 flex items-center justify-between">
+            <span className="text-cyan-300 text-[10px] font-bold flex items-center gap-1.5"><Settings size={14} /> Visual Settings</span>
+            <div className="flex gap-1">
+              {/* Corner position buttons */}
+              <div className="flex gap-0.5 mr-1">
+                <button onClick={() => saveMiniPanelPosition('top-left')} aria-label="Move to top-left" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
+                <button onClick={() => saveMiniPanelPosition('top-right')} aria-label="Move to top-right" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
+                <button onClick={() => saveMiniPanelPosition('bottom-left')} aria-label="Move to bottom-left" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
+                <button onClick={() => saveMiniPanelPosition('bottom-right')} aria-label="Move to bottom-right" className={`w-5 h-5 rounded text-[8px] ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
+              </div>
+              <button 
+                onClick={() => setAdminMiniMode(false)} 
+                className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10 transition-colors"
+                title="Expand"
+                aria-label="Expand to full panel"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+              <button 
+                onClick={() => { setShowAdminPanel(false); setAdminMiniMode(false); setFramingMode(false); setEditingImage(null); }} 
+                className="text-red-400 hover:text-white p-1 rounded hover:bg-red-500/30 bg-red-500/20 transition-colors"
+                title="Close"
+                aria-label="Close image framing panel"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-3 space-y-3">
+            {/* Framing Mode Toggle - only for Collection tab */}
+            <button 
+              onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}
+              className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
+            >
+              {framingMode ? '✓ Framing Mode ON' : '⊞ Enable Framing Mode'}
+            </button>
+            
+            {/* Framing Controls - show when image selected */}
+            {framingMode && editingImage && (
+              <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                <div className="text-emerald-400 text-[10px] font-medium mb-2 truncate">
+                  Editing: {editingImage.replace('collection-', '').replace('team-', 'Team: ')}
+                </div>
+                {/* Position controls — P6-FIX: Added aria-labels for D-pad clarity (HIGH-22) */}
+                <div className="grid grid-cols-3 gap-1 mb-2">
+                  <div />
+                  <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move image up">▲</button>
+                  <div />
+                  <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move image left">◀</button>
+                  <button onClick={resetEditingFraming} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-[8px]" aria-label="Reset framing">Reset</button>
+                  <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move image right">▶</button>
+                  <div />
+                  <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move image down">▼</button>
+                  <div />
+                </div>
+                {/* Zoom controls */}
+                <div className="flex gap-1 justify-center items-center">
+                  <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom - 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Zoom out">−</button>
+                  <span className="px-2 py-1 text-white text-xs min-w-[50px] text-center">{getImageFraming(editingImage).zoom}%</span>
+                  <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom + 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Zoom in">+</button>
+                </div>
+                <div className="text-center text-gray-500 text-[8px] mt-2">Tap another image to edit it</div>
+              </div>
+            )}
+            
+            {framingMode && !editingImage && (
+              <div className="p-2 bg-white/5 border border-[var(--border-medium)] rounded-lg text-center">
+                <div className="text-gray-400 text-[10px]">Tap any character image to frame it (Collection, Teams, or Detail modal)</div>
+              </div>
+            )}
+
+            {/* Info Panel Framing — appears when a character detail modal is open */}
+            {framingMode && detailModal.show && detailModal.type === 'character' && (() => {
+              const infoKey = `info-${detailModal.name}`;
+              const infoF = getImageFraming(infoKey);
+              return (
+                <div className="p-2 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                  <div className="text-orange-400 text-[10px] font-medium mb-2 truncate">
+                    Info Panel: {detailModal.name}
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 mb-2">
+                    <div />
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image up">▲</button>
+                    <div />
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image left">◀</button>
+                    <button onClick={() => saveImageFraming(infoKey, { x: 0, y: 0, zoom: 100 })} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-[8px]" aria-label="Reset info framing">Reset</button>
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image right">▶</button>
+                    <div />
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Move info image down">▼</button>
+                    <div />
+                  </div>
+                  <div className="flex gap-1 justify-center items-center">
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.max(100, infoF.zoom - 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Zoom out">−</button>
+                    <span className="px-2 py-1 text-white text-xs min-w-[50px] text-center">{infoF.zoom}%</span>
+                    <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.min(300, infoF.zoom + 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-xs" aria-label="Zoom in">+</button>
+                  </div>
+                  <div className="text-center text-gray-500 text-[8px] mt-2">Adjusts the character info panel header image</div>
+                </div>
+              );
+            })()}
+            
+            {/* Export Framing Data button — visible when framing mode is active */}
+            {framingMode && Object.keys(imageFraming).length > 0 && (
+              <button
+                onClick={() => {
+                  const json = JSON.stringify(imageFraming);
+                  if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(json).then(
+                      () => toast?.addToast?.('Framing data copied to clipboard!', 'success'),
+                      () => { window.prompt('Copy this framing data:', json); }
+                    );
+                  } else {
+                    window.prompt('Copy this framing data:', json);
+                  }
+                }}
+                className="w-full py-2 rounded text-[10px] font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
+              >
+                <ClipboardList size={10} className="inline mr-1" />
+                Export Framing Data ({Object.keys(imageFraming).length} images)
+              </button>
+            )}
+            
+            {!framingMode && (
+              <>
+            {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
+            <button 
+              onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
+              className="w-full py-1.5 rounded text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
+            >
+              ↻ Reset All to Defaults
+            </button>
+
+            {/* P4-FIX: Compact slider groups — eliminates ~120 lines of duplication */}
+            {VISUAL_SLIDER_CONFIGS.map((cfg, i) => (
+              <VisualSliderGroup
+                key={cfg.color}
+                title={cfg.compactTitle} color={cfg.color} sliders={cfg.sliders}
+                visualSettings={visualSettings} saveVisualSettings={saveVisualSettings}
+                compact={true} directionControl={cfg.directionControl}
+              />
+            ))}
+              </>
+            )}
+
+            {/* App Info */}
+            <Card>
+              <CardBody className="text-center">
+                <p className="text-gray-500 text-[10px]">
+                  {`Whispering Wishes v${APP_VERSION}`} • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
+                </p>
+              </CardBody>
+            </Card>
+          </div>
+        </div>,
+      document.body)}
+
+    </>
+  );
+}
