@@ -3816,23 +3816,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _shi = 0; _shi < _cuts.length; _shi++) {
             var _sc = _cuts[_shi];
             var _sy = (_sc.yL + _sc.yR) * 0.5;
-            // Left shard — wider, shorter, pointing inward
+            // Left shard
             var _slx = -_hw - Math.max(3, 2 + _cr() * 4);
-            var _slw = Math.max(4, 3 + _cr() * 5);
-            var _slh = Math.max(2, 2 + _cr() * 3);
+            var _slw = Math.max(3, 2 + _cr() * 4);
+            var _slh = Math.max(4, 3 + _cr() * 5);
             ctx.beginPath();
-            ctx.moveTo(_slx, _sy - _slw * 0.5);
-            ctx.lineTo(_slx + _slh, _sy + _slw * 0.1);
-            ctx.lineTo(_slx, _sy + _slw * 0.5);
+            ctx.moveTo(_slx, _sy - _slh * 0.5);
+            ctx.lineTo(_slx - _slw, _sy + _slh * 0.1);
+            ctx.lineTo(_slx, _sy + _slh * 0.5);
             ctx.closePath(); ctx.fill();
-            // Right shard — wider, shorter, pointing inward
+            // Right shard
             var _srx = _hw + Math.max(3, 2 + _cr() * 4);
-            var _srw = Math.max(4, 3 + _cr() * 5);
-            var _srh = Math.max(2, 2 + _cr() * 3);
+            var _srw = Math.max(3, 2 + _cr() * 4);
+            var _srh = Math.max(4, 3 + _cr() * 5);
             ctx.beginPath();
-            ctx.moveTo(_srx, _sy - _srw * 0.5);
-            ctx.lineTo(_srx - _srh, _sy + _srw * 0.1);
-            ctx.lineTo(_srx, _sy + _srw * 0.5);
+            ctx.moveTo(_srx, _sy - _srh * 0.5);
+            ctx.lineTo(_srx + _srw, _sy + _srh * 0.1);
+            ctx.lineTo(_srx, _sy + _srh * 0.5);
             ctx.closePath(); ctx.fill();
           }
           // Extra shards near notches
@@ -3840,11 +3840,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _sn2 = _notchL[_sni];
             if (_cr() > 0.5) continue;
             var _sx2 = -_hw - Math.max(2, 1 + _cr() * 3);
-            var _sw2 = Math.max(3, _sn2.d * 0.6);
-            var _sh2 = Math.max(2, _sn2.h * 0.4);
+            var _sw2 = Math.max(2, _sn2.d * 0.5);
+            var _sh2 = Math.max(3, _sn2.h * 0.6);
             ctx.beginPath();
             ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.1);
-            ctx.lineTo(_sx2 + _sh2, _sn2.y + _sn2.h * 0.4);
+            ctx.lineTo(_sx2 - _sw2, _sn2.y + _sn2.h * 0.4);
             ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.8);
             ctx.closePath(); ctx.fill();
           }
