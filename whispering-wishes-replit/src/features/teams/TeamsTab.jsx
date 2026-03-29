@@ -808,7 +808,44 @@ export default function TeamsTab({
     const els = new Set(mems.map(m => m.d.element));
     if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps };
+
+    // Build rotation timeline for visualizer
+    const rotationTimeline = (() => {
+      const timeline = [];
+      const buffs = [];
+      let t = 0;
+      // Sort: main DPS first, then sub-DPS by onField descending, healer/support last
+      const ordered = [...mems].sort((a, b) => {
+        if (a.name === mainDps.name) return -1;
+        if (b.name === mainDps.name) return 1;
+        const roleOrder = { 'Main DPS': 0, 'Sub DPS': 1, 'Support': 2, 'Healer': 3 };
+        return (roleOrder[a.d.role] || 2) - (roleOrder[b.d.role] || 2);
+      });
+      // Assign field time segments
+      ordered.forEach(m => {
+        const onField = m.d.onField || (m.name === mainDps.name ? 15 : 5);
+        timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
+        // Collect outro buffs with timing
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (bt) {
+          (bt.outroBuffs || []).forEach(b => {
+            if (b.target === 'next' || b.target === 'enemy') {
+              const dur = b.duration || 14;
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: dur });
+            }
+          });
+          (bt.libBuffs || []).forEach(b => {
+            if (b.target === 'team') {
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
+            }
+          });
+        }
+        t += onField;
+      });
+      return { segments: timeline, buffs, totalTime: rotTime };
+    })();
+
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps, rotationTimeline };
   }, [teamEquipment, enemyLevel, enemyEcho]);
 
   return (
@@ -1120,7 +1157,7 @@ export default function TeamsTab({
                     // calcTeamStats is now defined in the component body via useCallback
                     const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
                     if (!stats) return null;
-                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps } = stats;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps, rotationTimeline } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
                     return (
@@ -1587,6 +1624,60 @@ export default function TeamsTab({
                                     <span className="text-[9px] text-gray-500 w-8 text-right">{m.pct}%</span>
                                   </div>
                                 ))}
+                              </div>
+                            )}
+
+                            {/* Rotation Timeline Visualizer */}
+                            {rotationTimeline && rotationTimeline.segments.length > 0 && (
+                              <div className="mt-3 p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Rotation Timeline ({rotationTimeline.totalTime}s)</div>
+                                {/* Field time bars */}
+                                <div className="flex rounded-lg overflow-hidden h-6 mb-2">
+                                  {rotationTimeline.segments.map((seg, i) => {
+                                    const pct = (seg.duration / rotationTimeline.totalTime) * 100;
+                                    const elColors = { Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Spectro: '#edaf18', Havoc: '#ec4899' };
+                                    const color = elColors[seg.element] || '#6b7280';
+                                    return (
+                                      <div key={i} className="flex items-center justify-center relative" style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }} title={`${seg.name}: ${seg.duration}s on-field`}>
+                                        <span className="text-[8px] font-bold truncate px-0.5" style={{ color }}>{seg.name.split(' ')[0]}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                {/* Legend */}
+                                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                                  {rotationTimeline.segments.map((seg, i) => {
+                                    const elColors = { Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Spectro: '#edaf18', Havoc: '#ec4899' };
+                                    const color = elColors[seg.element] || '#6b7280';
+                                    return (
+                                      <div key={i} className="flex items-center gap-1">
+                                        <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+                                        <span className="text-[9px] text-gray-400">{seg.name} <span className="text-gray-500">{seg.duration}s</span></span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                {/* Buff uptime bars */}
+                                {rotationTimeline.buffs.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-[var(--border-medium)]/30 space-y-1">
+                                    <div className="text-[9px] text-gray-500 mb-1">Buff Windows</div>
+                                    {rotationTimeline.buffs.slice(0, 6).map((buff, i) => {
+                                      const startPct = Math.min((buff.start / rotationTimeline.totalTime) * 100, 100);
+                                      const durPct = Math.min((buff.duration / rotationTimeline.totalTime) * 100, 100 - startPct);
+                                      const statLabels = { atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elem DMG', deepen: 'Deepen', basicDmg: 'Basic', heavyDmg: 'Heavy', libDmg: 'Lib', echoDmg: 'Echo', skillDmg: 'Skill', critRate: 'CR', critDmg: 'CD', resShred: 'RES↓', defShred: 'DEF↓' };
+                                      return (
+                                        <div key={i} className="flex items-center gap-1.5">
+                                          <span className="text-[8px] text-gray-500 w-14 truncate text-right">{buff.source.split(' ')[0]}</span>
+                                          <div className="flex-1 h-2.5 rounded-full bg-white/5 relative overflow-hidden">
+                                            <div className="absolute h-full rounded-full bg-emerald-500/40 flex items-center justify-center" style={{ left: `${startPct}%`, width: `${durPct}%` }}>
+                                              <span className="text-[7px] text-emerald-300 font-medium truncate px-0.5">{statLabels[buff.stat] || buff.stat} +{buff.value}%</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                               </div>
                             )}
 
