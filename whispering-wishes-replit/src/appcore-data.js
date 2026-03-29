@@ -868,6 +868,23 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { region });
 });
 
+// [SECTION:BIRTHDAY_DATA] — Character birthdays (month-day format)
+// Source: wutheringwaves.fandom.com, esportstales.com, gamerant.com
+// Characters without official birthdays are omitted
+[
+  ['Jiyan',       '12-14'], ['Calcharo',    '07-08'], ['Encore',      '03-21'],
+  ['Jianxin',     '04-06'], ['Lingyang',    '08-08'], ['Verina',      '05-18'],
+  ['Yinlin',      '09-17'], ['Jinhsi',      '03-06'], ['Changli',     '06-06'],
+  ['Zhezhi',      '12-31'], ['Shorekeeper', '02-27'], ['Camellya',    '12-10'],
+  ['Roccia',      '01-31'], ['Cantarella',  '06-18'],
+  ['Aalto',       '06-11'], ['Baizhi',      '09-10'], ['Chixia',      '04-18'],
+  ['Danjin',      '08-31'], ['Yangyang',    '10-11'], ['Sanhua',      '01-20'],
+  ['Taoqi',       '02-25'], ['Yuanwu',      '10-02'], ['Mortefi',     '11-06'],
+  ['Youhu',       '10-13'],
+].forEach(([name, birthday]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
+});
+
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
 // Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
 // Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
