@@ -19,23 +19,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { AlertCircle, AlertTriangle, Archive, Award, BarChart3, BookmarkPlus, Calculator, Calendar, Check, ChevronDown, ClipboardList, Clover, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Minus, Monitor, Plus, RefreshCcw, Search, Settings, Shield, Smartphone, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, Upload, User, Users, X, Zap } from 'lucide-react';
-import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
+import { AlertCircle, Archive, BarChart3, Calculator, Calendar, Check, ChevronDown, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Settings, Shield, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, User, Users, X, Zap } from 'lucide-react';
 // --- appcore-data.js ---
 import {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
   calculateLuckRating, SERVERS, getServerOffset,
-  CURRENT_BANNERS, BANNER_HISTORY, CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
-  EVENTS, SUBSCRIPTIONS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
-  LUNITE_DAILY_ASTRITE, MAX_ASTRITE, MAX_CALC_PULLS,
-  DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER, WEAPON_RELEASE_ORDER,
+  CURRENT_BANNERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
+  DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER,
   ALL_5STAR_RESONATORS, ALL_5STAR_WEAPONS,
-  ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES,
-  ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
-  TAB_ORDER, MEDAL_COLORS,
-  getElementColor, getElementBg, getElementBorder,
+  ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS,
+  ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS,
+  TAB_ORDER,
+  getElementColor,
   CHARACTER_THEMES,
 } from './appcore-data.js';
 // --- appcore-engine.js ---
@@ -43,29 +38,22 @@ import {
   getServerAdjustedEnd,
   initialState, STORAGE_KEY, storageAvailable,
   sanitizeStateObj, sanitizeImportedState,
-  loadFromStorage, saveToStorage, reducer, calcStats,
+  loadFromStorage, saveToStorage, reducer,
 } from './appcore-engine.js';
 // --- appcore-providers.jsx ---
 import {
   PWAProvider, usePWA, ToastProvider, useToast,
-  useFocusTrap, useEscapeKey, FocusTrapModal,
+  useFocusTrap, FocusTrapModal,
   ConfirmProvider, useConfirm,
   OnboardingModal, KuroStyles,
 } from './appcore-providers.jsx';
 // --- appcore-components.jsx ---
 import {
-  TROPHY_ICON_MAP, generateVerticalMaskGradient, TabBackground,
-  Card, CardHeader, CardBody,
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
-  TabButton, CountdownTimer,
-  AppErrorBoundary, TabErrorBoundary,
+  TabButton,
+  AppErrorBoundary,
   BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour,
-  BannerCard, EventCard,
-  ADMIN_BANNER_KEY, ADMIN_HASH,
-  KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  PityCounterInput, CalcResultsCard, StandardBannerSection,
-  ImportGuide, getActiveBanners,
-  hideOnError,
+  getActiveBanners,
 } from './appcore-components.jsx';
 // --- Feature tabs ---
 import EventsTab from './features/events/EventsTab.jsx';
