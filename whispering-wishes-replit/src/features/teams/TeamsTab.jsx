@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { AlertTriangle, BarChart3, Diamond, Download, Plus, Search, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, Diamond, Download, Plus, Search, Share2, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import {
   haptic,
   CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
@@ -914,6 +914,36 @@ export default function TeamsTab({
                           aria-label="Import team loadouts"
                         >
                           <Upload size={12} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            try {
+                              const team = state.teams[state.activeTeamIndex] || state.teams[0];
+                              const slots = team.slots;
+                              if (!slots.some(s => s)) return;
+                              const stats = calcTeamStats(slots, state.activeTeamIndex);
+                              const charParts = slots.filter(s => s).map(name => {
+                                const eqKey = state.activeTeamIndex + ':' + name;
+                                const eq = teamEquipment[eqKey];
+                                const d = CHARACTER_DATA[name];
+                                const weapName = (eq?.weapon) || d?.bestWeapon || 'None';
+                                return `${name} (${weapName})`;
+                              });
+                              const lines = [`Team: ${team.name || 'Team ' + (state.activeTeamIndex + 1)}`];
+                              lines.push(charParts.join(' | '));
+                              if (stats) {
+                                lines.push(`Raw: ${stats.rawDps.toLocaleString()}/s | Full: ${stats.realDps.toLocaleString()}/s | Perfect: ${stats.perfectDps.toLocaleString()}/s`);
+                              }
+                              const text = lines.join('\n');
+                              navigator.clipboard.writeText(text);
+                              toast?.addToast?.('Team copied!', 'success');
+                              haptic.light();
+                            } catch { toast?.addToast?.('Share failed', 'error'); }
+                          }}
+                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          aria-label="Copy team build to clipboard"
+                        >
+                          <Share2 size={12} />
                         </button>
                         <button
                           onClick={() => {
