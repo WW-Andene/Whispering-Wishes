@@ -3669,6 +3669,32 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath();
             ctx.arc(0, gKnobY, gKnobR, 0, Math.PI * 2);
             ctx.fill();
+          } else if (overall < 35) {
+          // === SMALL/DISTANT LONGSWORD — solid blade, no fractures ===
+          var _hw = bladeW / 2;
+          // Left half
+          ctx.fillStyle = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(-_hw, tipEnd);
+          ctx.lineTo(-_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Right half
+          ctx.fillStyle = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(_hw, tipEnd);
+          ctx.lineTo(_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Ridge
+          ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+
           } else {
 
           // === LONGSWORD — broken blade: zigzag cuts, damaged edges, shards ===
