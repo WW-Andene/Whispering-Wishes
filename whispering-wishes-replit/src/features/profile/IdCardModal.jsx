@@ -9,7 +9,7 @@ import { CHARACTER_DATA, HEADER_ICON, ALL_CHARACTERS } from '../../appcore-data.
 import { TROPHY_ICON_MAP, hideOnError } from '../../appcore-components.jsx';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 
-const TROPHY_TIER_ORDER = { legendary: 0, gold: 1, silver: 2, bronze: 3, gray: 4, orange: 5 };
+const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
 export default function IdCardModal({
   showIdCard, setShowIdCard,
