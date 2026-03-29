@@ -3559,7 +3559,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.scale(1, -1);
           ctx.rotate(-s.lean);
           // 3D Y-axis rotation — skew creates perspective effect
-          ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
+          ctx.transform(s._absYRot, 0, s._sinYSkew, 1, 0, 0);
 
           // 3D-informed lighting — cached on sword object
           if (s._lR === undefined) {
@@ -3573,6 +3573,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             s._darkB = 0.08 + s._lit * 0.12 + (1 - faceCatch) * 0.06;
             s._lR = Math.round(45 + 210 * s._lightB); s._lG = Math.round(30 + 145 * s._lightB); s._lB2 = Math.round(18 + 75 * s._lightB);
             s._dR = Math.round(25 + 70 * s._darkB); s._dG = Math.round(14 + 40 * s._darkB); s._dB = Math.round(8 + 20 * s._darkB);
+            s._absYRot = Math.abs(s.yRot); s._sinYSkew = Math.sin(s.yAngle) * 0.15;
+            // Pre-build color strings
+            s._colLight = 'rgb('+s._lR+','+s._lG+','+s._lB2+')';
+            s._colDark = 'rgb('+s._dR+','+s._dG+','+s._dB+')';
+            s._ridgeStyle = 'rgba('+Math.min(255,s._lR+80)+','+Math.min(255,s._lG+75)+','+Math.min(255,s._lB2+65)+','+(0.3+s._lit*0.4)+')';
+            var _shBr2 = 0.3 + s._lit * 0.4;
+            s._shCol = 'rgb('+Math.round(30+180*_shBr2)+','+Math.round(22+130*_shBr2)+','+Math.round(14+60*_shBr2)+')';
+            // Guard/grip base colors
+            var _gB2 = (s._lightB + s._darkB) * 0.4;
+            s._gR3 = Math.round(15 + 165 * _gB2); s._gG3 = Math.round(12 + 113 * _gB2); s._gBl3 = Math.round(10 + 40 * _gB2);
+            var _gripBrL2 = _gB2 * 0.6;
+            s._grR = Math.round(15 + 100 * _gripBrL2); s._grG = Math.round(12 + 68 * _gripBrL2); s._grBl = Math.round(10 + 24 * _gripBrL2);
           }
           const lit = s._lit, leftLight = s._leftLight, lightB = s._lightB, darkB = s._darkB;
           const lR = s._lR, lG = s._lG, lB2 = s._lB2, dR = s._dR, dG = s._dG, dB = s._dB;
@@ -3637,7 +3649,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath();
             ctx.fill();
             // Center ridge highlight
-            ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+            ctx.strokeStyle = s._ridgeStyle;
             ctx.lineWidth = Math.max(0.3, gBW * 0.08);
             ctx.beginPath();
             ctx.moveTo(0, gTip + 1);
@@ -3767,8 +3779,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var t2 = (x - c.mx) / (_hw - c.mx); return c.my + t2 * (c.yR - c.my);
           };
           var _inset = 3 * _sc;
-          var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
-          var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+          var _colL = leftLight ? s._colLight : s._colDark;
+          var _colR = leftLight ? s._colDark : s._colLight;
           // Draw each piece
           for (var _si = 0; _si <= _nCuts; _si++) {
             var _top = _si > 0 ? _cuts[_si - 1] : null;
@@ -3859,7 +3871,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.stroke();
             }
             // Ridge
-            ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
+            ctx.strokeStyle = s._ridgeStyle;
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
             var _rt = _top ? _cutYat(_top, 0) + _inset + 1 : -bladeH + 1;
             var _rb = _bot ? _cutYat(_bot, 0) - _inset - 1 : guardH;
@@ -3867,8 +3879,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.restore();
           }
           // Shards — 2 per cut (one each side), triangular, pointing outward
-          var _shBr = 0.3 + lit * 0.4;
-          var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
+          var _shCol = s._shCol;
           ctx.fillStyle = _shCol;
           for (var _shi = 0; _shi < _cuts.length; _shi++) {
             var _shc = _cuts[_shi];
@@ -3918,7 +3929,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           // Guard — 3D gradient top-to-bottom
           const gB = (lightB + darkB) * 0.4;
-          const gR3 = Math.round(15 + 165 * gB), gG3 = Math.round(12 + 113 * gB), gBl3 = Math.round(10 + 40 * gB);
+          const gR3 = s._gR3, gG3 = s._gG3, gBl3 = s._gBl3;
           const guardGrad = ctx.createLinearGradient(0, -guardH * 0.5, 0, guardH * 1.5);
           guardGrad.addColorStop(0, `rgb(${Math.min(255,gR3+20)},${Math.min(255,gG3+15)},${Math.min(255,gBl3+10)})`);
           guardGrad.addColorStop(0.5, `rgb(${gR3},${gG3},${gBl3})`);
@@ -3968,8 +3979,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           const pommelType = (ph >>> 0) % 2;
           // Grip — cylindrical gradient
           const gripGrad = ctx.createLinearGradient(-gripW / 2, 0, gripW / 2, 0);
-          const gripBrL = gB * 0.6;
-          const grR = Math.round(15 + 100 * gripBrL), grG = Math.round(12 + 68 * gripBrL), grBl = Math.round(10 + 24 * gripBrL);
+          const grR = s._grR, grG = s._grG, grBl = s._grBl;
           gripGrad.addColorStop(0, `rgb(${Math.max(0,grR-10)},${Math.max(0,grG-6)},${Math.max(0,grBl-4)})`);
           gripGrad.addColorStop(0.35, `rgb(${grR},${grG},${grBl})`);
           gripGrad.addColorStop(0.5, `rgb(${Math.min(255,grR+12)},${Math.min(255,grG+8)},${Math.min(255,grBl+5)})`);
