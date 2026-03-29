@@ -3737,9 +3737,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Float offsets — guard piece stays, others float
           var _fdx = [], _fdy = [], _frt = [];
           for (var _fi = 0; _fi < _nBk; _fi++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(4, bladeW * 0.7));
-            _fdy.push((_cr() - 0.5) * Math.max(3, bladeW * 0.4));
-            _frt.push((_cr() - 0.5) * 0.05);
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(6, bladeW * 2));
+            _fdy.push((_cr() - 0.5) * Math.max(5, bladeH * 0.04));
+            _frt.push((_cr() - 0.5) * 0.08);
           }
           _fdx.push(0); _fdy.push(0); _frt.push(0); // guard piece
           // Gradient helpers
@@ -3774,7 +3774,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.lineTo(0, _crYatX(brk, 0) + yOff);
             ctx.lineTo(_hw * 0.33, _crYatX(brk, _hw * 0.33) + yOff);
           };
-          var _gap = Math.max(2, bladeW * 0.18);
+          var _gap = Math.max(3, bladeH * 0.03);
           // Draw blade in segments — si=0 is topmost (tip), si=nBk is bottommost (guard)
           for (var _si = 0; _si <= _nBk; _si++) {
             var _topBrk = _si > 0 ? _breaks[_si - 1] : null;
