@@ -3677,8 +3677,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _notchesL = [], _notchesR = [];
           for (var _ni = 0; _ni < _nNotches; _ni++) {
             var _ny = -bladeH * 0.88 + _cr() * (bladeH * 0.88 + _dmgBot);
-            var _nd = _hw * (0.25 + _cr() * 0.6); // 25-85% of half-width deep
-            var _nh = bladeH * (0.03 + _cr() * 0.07); // 3-10% blade height tall
+            var _nd = Math.max(2, _hw * (0.3 + _cr() * 0.7)); // min 2px deep
+            var _nh = Math.max(4, bladeH * (0.03 + _cr() * 0.07)); // min 4px tall
             if (_cr() > 0.3) _notchesL.push({ y: _ny, d: _nd, h: _nh });
             if (_cr() > 0.3) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
@@ -3739,8 +3739,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.stroke();
           // Diagonal crack lines on surface
           var _nCracks = 4 + (_cr() * 4 | 0); // 4-7 crack lines
-          ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-          ctx.lineWidth = Math.max(0.5, bladeW * 0.04);
+          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+          ctx.lineWidth = Math.max(1, bladeW * 0.06);
           for (var _cli = 0; _cli < _nCracks; _cli++) {
             var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + _dmgBot);
             var _cw = _hw * (0.3 + _cr() * 0.7);
