@@ -7,6 +7,7 @@ import {
   ALL_5STAR_RESONATORS,
   ALL_4STAR_RESONATORS,
   ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA,
+  ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES,
   getElementColor, getElementBg, getElementBorder,
 } from '../../appcore-data.js';
 import {
@@ -60,6 +61,9 @@ export default function TeamsTab({
   const [enemyEcho, setEnemyEcho] = useState('');
   const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
   const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
+  const [enemyEchoCostFilter, setEnemyEchoCostFilter] = useState('all');
+  const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
+  const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
 
   // ── Reusable calculator with proper WuWa damage formula ──
   // Memoized so it only recalculates when teamEquipment changes.
@@ -1579,14 +1583,33 @@ export default function TeamsTab({
                               suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
                             }
                           }
+                          // Score each suggestion: ownership + DPS estimate + role balance
+                          suggestions.forEach(s => {
+                            let score = s.ownedCount * 30;
+                            if (s.allOwned) score += 50;
+                            const roles = s.members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
+                            if (roles.includes('Main DPS')) score += 20;
+                            if (roles.includes('Healer') || roles.includes('Support')) score += 15;
+                            if (roles.includes('Sub DPS')) score += 10;
+                            const hasMainDps = s.members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+                            if (hasMainDps) {
+                              const dpsData = CHARACTER_DATA[hasMainDps];
+                              score += Math.min(30, Math.round((dpsData?.totalMult || 0) / 100));
+                            }
+                            // Element synergy bonus
+                            const elements = s.members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
+                            const elSet = new Set(elements);
+                            if (elements.length > elSet.size) score += 15; // element resonance
+                            s.score = score;
+                          });
                           suggestions.sort((a, b) => {
                             if (a.allOwned !== b.allOwned) return b.allOwned ? 1 : -1;
-                            return b.ownedCount - a.ownedCount;
+                            return b.score - a.score;
                           });
                           if (suggestions.length === 0) {
                             return <p className="text-gray-500 text-[10px] text-center py-2">No team suggestions available</p>;
                           }
-                          return suggestions.slice(0, 10).map((s, i) => (
+                          return suggestions.slice(0, 15).map((s, i) => (
                             <button
                               key={i}
                               onClick={() => {
@@ -1614,7 +1637,16 @@ export default function TeamsTab({
                                   );
                                 })}
                               </div>
-                              <span className="text-[10px] text-gray-300 truncate flex-1">{s.text}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[10px] text-gray-300 truncate">{s.text}</div>
+                                <div className="flex gap-1 mt-0.5">
+                                  {s.members.slice(0, 3).map((m, j) => {
+                                    const role = CHARACTER_DATA[m]?.role;
+                                    const rc = role === 'Main DPS' ? 'text-red-400' : role === 'Sub DPS' ? 'text-orange-400' : role === 'Healer' ? 'text-emerald-400' : 'text-blue-400';
+                                    return <span key={j} className={`text-[8px] ${rc}`}>{role || '?'}</span>;
+                                  })}
+                                </div>
+                              </div>
                               {s.allOwned ? (
                                 <span className="text-[8px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1 py-0.5 rounded flex-shrink-0">All owned</span>
                               ) : (
@@ -1686,62 +1718,94 @@ export default function TeamsTab({
                     collectionImages={collectionImages}
                   />
 
-                  {/* Enemy Echo Selector Modal */}
+                  {/* Enemy Echo Selector Modal — same UI as character selector with collection filters */}
                   <FocusTrapModal isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)} className="" onClick={() => setEnemyEchoModalOpen(false)} centered>
-                    <div className="kuro-card w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                    <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
                       <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                         <div>
                           <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
-                          <p className="text-gray-400 text-[10px]">Boss echoes with elemental resistances</p>
+                          <p className="text-gray-400 text-[10px]">All echoes — select an enemy to fight against</p>
                         </div>
                         <button onClick={() => setEnemyEchoModalOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close"><X size={16} className="text-gray-400" /></button>
                       </div>
-                      <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
-                        <input value={enemyEchoSearch} onChange={e => setEnemyEchoSearch(e.target.value)} placeholder="Search enemies..." className="kuro-input w-full text-xs" />
+                      {/* Search + Filters */}
+                      <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
+                        <input value={enemyEchoSearch} onChange={e => setEnemyEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+                        <div className="flex gap-1">
+                          {[['all', 'All'], ['4', '4-Cost'], ['3', '3-Cost'], ['1', '1-Cost']].map(([val, label]) => (
+                            <button key={val} onClick={() => setEnemyEchoCostFilter(val)}
+                              className={`flex-1 text-[10px] py-1 rounded ${enemyEchoCostFilter === val ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-white/5 border-[var(--border-medium)] text-gray-500'} border`}>{label}</button>
+                          ))}
+                        </div>
+                        <div className="flex gap-1.5">
+                          <KuroSelect value={enemyEchoSetFilter} onChange={v => setEnemyEchoSetFilter(v)} small
+                            options={[{ value: 'all', label: 'All Sets' }, ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s }))]}
+                            className="flex-1 text-[10px]" />
+                          <KuroSelect value={enemyEchoBuffFilter} onChange={v => setEnemyEchoBuffFilter(v)} small
+                            options={[{ value: 'all', label: 'All Types' }, ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b }))]}
+                            className="flex-1 text-[10px]" />
+                        </div>
                       </div>
                       <div className="overflow-y-auto flex-1 p-2">
                         <div className="space-y-1">
                           <button onClick={() => { setEnemyEcho(''); setEnemyEchoModalOpen(false); haptic.light(); }}
                             className={`w-full p-2 rounded-lg border text-left transition-all ${!enemyEcho ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-[var(--border-medium)] hover:border-white/20'}`}>
                             <div className="text-xs font-semibold text-white">Default Enemy</div>
-                            <div className="text-[10px] text-gray-400">10% all element RES</div>
+                            <div className="text-[10px] text-gray-400">10% all element RES · No special mechanics</div>
                           </button>
-                          {ALL_4COST_ECHOES.filter(n => {
-                            const ed = ECHO_DATA[n];
-                            if (!ed?.enemyRes) return false;
-                            if (enemyEchoSearch && !n.toLowerCase().includes(enemyEchoSearch.toLowerCase())) return false;
-                            return true;
-                          }).map(name => {
-                            const ed = ECHO_DATA[name];
-                            const resEntries = Object.entries(ed.enemyRes || {});
-                            const isActive = enemyEcho === name;
-                            return (
-                              <button key={name} onClick={() => { setEnemyEcho(name); setEnemyEchoModalOpen(false); haptic.success(); }}
-                                className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isActive ? 'border-2 border-yellow-400 bg-yellow-500/10' : 'border-[var(--border-medium)] hover:border-white/20'}`}
-                                style={isActive ? { boxShadow: '0 0 12px rgba(234,179,8,0.3)' } : {}}>
-                                <div className="flex items-center gap-2">
-                                  {collectionImages[name] ? (
-                                    <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-yellow-500/30 bg-yellow-500/8">
-                                      <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
-                                    </div>
-                                  ) : (
-                                    <Sword size={14} className="text-red-400" />
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="text-xs font-semibold text-white truncate">{name}</div>
-                                    <div className="flex gap-1 mt-0.5 flex-wrap">
-                                      {resEntries.map(([el, val]) => (
-                                        <span key={el} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
-                                          {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
-                                        </span>
-                                      ))}
-                                      <span className="text-[9px] text-gray-500">Other 10%</span>
+                          {(() => {
+                            const costList = enemyEchoCostFilter === '4' ? ALL_4COST_ECHOES : enemyEchoCostFilter === '3' ? ALL_3COST_ECHOES : enemyEchoCostFilter === '1' ? ALL_1COST_ECHOES : [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
+                            return costList.filter(n => {
+                              if (enemyEchoSearch && !n.toLowerCase().includes(enemyEchoSearch.toLowerCase())) return false;
+                              const ed = ECHO_DATA[n];
+                              if (!ed) return false;
+                              if (enemyEchoSetFilter !== 'all' && !ed.sets?.includes(enemyEchoSetFilter)) return false;
+                              if (enemyEchoBuffFilter !== 'all' && !(Array.isArray(ed.buff) ? ed.buff.includes(enemyEchoBuffFilter) : ed.buff === enemyEchoBuffFilter)) return false;
+                              return true;
+                            }).map(name => {
+                              const ed = ECHO_DATA[name];
+                              const isActive = enemyEcho === name;
+                              const hasRes = ed?.enemyRes;
+                              const resEntries = hasRes ? Object.entries(ed.enemyRes) : [];
+                              const cost = ALL_4COST_ECHOES.includes(name) ? 4 : ALL_3COST_ECHOES.includes(name) ? 3 : 1;
+                              const costColor = cost === 4 ? 'yellow' : cost === 3 ? 'purple' : 'cyan';
+                              return (
+                                <button key={name} onClick={() => { setEnemyEcho(name); setEnemyEchoModalOpen(false); haptic.success(); }}
+                                  className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isActive ? `border-2 border-${costColor}-400 bg-${costColor}-500/10` : `border-[var(--border-medium)] hover:border-${costColor}-500/30`}`}
+                                  style={isActive ? { boxShadow: `0 0 12px rgba(234,179,8,0.3)` } : {}}>
+                                  <div className="flex items-center gap-2">
+                                    {collectionImages[name] ? (
+                                      <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`}>
+                                        <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                      </div>
+                                    ) : (
+                                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-${costColor}-500/30 bg-${costColor}-500/5`}>
+                                        <Diamond size={14} className={`text-${costColor}-400`} />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-semibold text-white truncate">{name}</span>
+                                        <span className={`text-[8px] px-1 py-0.5 rounded bg-${costColor}-500/15 text-${costColor}-400 border border-${costColor}-500/25`}>{cost}C</span>
+                                      </div>
+                                      <div className="flex gap-1 mt-0.5 flex-wrap">
+                                        {resEntries.length > 0 ? resEntries.map(([el, val]) => (
+                                          <span key={el} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                                            {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
+                                          </span>
+                                        )) : (
+                                          <span className="text-[9px] text-gray-500">10% all RES</span>
+                                        )}
+                                        {ed?.element && ed.element !== 'Healing' && (
+                                          <span className="text-[9px] text-gray-500">· {ed.element}</span>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </button>
-                            );
-                          })}
+                                </button>
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
                     </div>

@@ -718,36 +718,70 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          {/* Description */}
-          {data.desc && (() => {
-            const parts = data.desc.split(/(?<=\.)\s+/);
-            const identity = parts[0] || '';
-            const skillParts = [];
-            const buffParts = [];
-            for (let i = 1; i < parts.length; i++) {
-              if (/grants?\s|Main slot/i.test(parts[i])) buffParts.push(parts[i]);
-              else skillParts.push(parts[i]);
-            }
-            return (
-              <div className="text-sm space-y-2">
-                <p className="text-gray-400 italic">{identity}</p>
-                {skillParts.length > 0 && (
-                  <div className="p-2.5 rounded-lg bg-white/5">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
-                    <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
+          {/* 1. Description (identity) */}
+          {data.desc && (
+            <p className="text-sm text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
+          )}
+
+          {/* 2. As Enemy (boss echoes) */}
+          {(data.enemyRes || data.enemyHp) && (
+            <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">As Enemy</div>
+              <div className="space-y-2">
+                {(data.enemyHp || data.enemyAtk) && (
+                  <div className="flex gap-3">
+                    {data.enemyHp && (
+                      <div className="flex-1 p-2 rounded-lg bg-red-500/5 text-center">
+                        <div className="text-[9px] text-gray-500">HP</div>
+                        <div className="text-sm font-bold text-red-400">{data.enemyHp.toLocaleString()}K</div>
+                      </div>
+                    )}
+                    {data.enemyAtk && (
+                      <div className="flex-1 p-2 rounded-lg bg-red-500/5 text-center">
+                        <div className="text-[9px] text-gray-500">ATK</div>
+                        <div className="text-sm font-bold text-orange-400">{data.enemyAtk.toLocaleString()}</div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {buffParts.length > 0 && (
-                  <div className="p-2.5 rounded-lg bg-white/5">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
-                    <p className="text-gray-300 text-xs leading-relaxed">{buffParts.join(' ')}</p>
+                {data.enemyRes && (
+                  <div>
+                    <div className="text-[9px] text-gray-500 mb-1">Elemental Resistance</div>
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(data.enemyRes).map(([el, val]) => (
+                        <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
+                          {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
+                        </span>
+                      ))}
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
+                    </div>
+                  </div>
+                )}
+                {data.enemyDebuffs?.length > 0 && (
+                  <div>
+                    <div className="text-[9px] text-gray-500 mb-1">Debuffs (applies to player)</div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.enemyDebuffs.map(d => (
+                        <span key={d} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-300">{d}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {data.enemySelfBuffs?.length > 0 && (
+                  <div>
+                    <div className="text-[9px] text-gray-500 mb-1">Self Buffs</div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.enemySelfBuffs.map(b => (
+                        <span key={b} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{b}</span>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-            );
-          })()}
+            </div>
+          )}
 
-          {/* Sonata Sets */}
+          {/* 3. Sonata Sets */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Available Sonata Sets</div>
             <div className="space-y-2">
@@ -772,7 +806,59 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* Main Stat Options (based on cost) */}
+          {/* 4. Skill + Damage */}
+          {data.desc && (() => {
+            const parts = data.desc.split(/(?<=\.)\s+/);
+            const skillParts = [];
+            for (let i = 1; i < parts.length; i++) {
+              if (!/grants?\s|Main slot/i.test(parts[i])) skillParts.push(parts[i]);
+            }
+            if (skillParts.length === 0 && !(data.dmg > 0)) return null;
+            return (
+              <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+                {data.dmg > 0 && (
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-2xl font-bold text-yellow-400">{data.dmg}%</span>
+                    {data.element && data.element !== 'Healing' && (
+                      <span className="text-xs px-2 py-0.5 rounded" style={{ color: getBuffElementColor(data.element), background: `${getBuffElementColor(data.element)}15`, border: `1px solid ${getBuffElementColor(data.element)}30` }}>{data.element} DMG</span>
+                    )}
+                    <span className="text-[10px] text-gray-500">total multiplier</span>
+                  </div>
+                )}
+                {skillParts.length > 0 && (
+                  <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* 5. Buff */}
+          {(() => {
+            const buffParts = [];
+            if (data.desc) {
+              const parts = data.desc.split(/(?<=\.)\s+/);
+              for (let i = 1; i < parts.length; i++) {
+                if (/grants?\s|Main slot/i.test(parts[i])) buffParts.push(parts[i]);
+              }
+            }
+            const buffs = Array.isArray(data.buff) ? data.buff : [data.buff];
+            return (
+              <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
+                <div className="flex flex-wrap gap-1.5 mb-1">
+                  {buffs.map(b => (
+                    <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
+                  ))}
+                </div>
+                {buffParts.length > 0 && (
+                  <p className="text-gray-400 text-[10px] leading-relaxed">{buffParts.join(' ')}</p>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* 6. Main Stats */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
             <div className="flex flex-wrap gap-1">
@@ -791,93 +877,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* Buff Description */}
-          <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill Buff</div>
-            <div className="flex flex-wrap gap-1.5">
-              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => (
-                <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* Skill Damage */}
-          {data.dmg > 0 && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill Damage</div>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl font-bold text-yellow-400">{data.dmg}%</span>
-                {data.element && data.element !== 'Healing' && (
-                  <span className="text-xs px-2 py-0.5 rounded" style={{ color: getBuffElementColor(data.element), background: `${getBuffElementColor(data.element)}15`, border: `1px solid ${getBuffElementColor(data.element)}30` }}>{data.element} DMG</span>
-                )}
-                <span className="text-[10px] text-gray-500">total ATK% multiplier</span>
-              </div>
-            </div>
-          )}
-
-          {/* As Enemy (boss echoes) */}
-          {(data.enemyRes || data.enemyHp) && (
-            <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
-              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">As Enemy</div>
-              <div className="space-y-2">
-                {/* Combat Stats */}
-                {(data.enemyHp || data.enemyAtk) && (
-                  <div className="flex gap-3">
-                    {data.enemyHp && (
-                      <div className="flex-1 p-2 rounded-lg bg-red-500/5 text-center">
-                        <div className="text-[9px] text-gray-500">HP</div>
-                        <div className="text-sm font-bold text-red-400">{data.enemyHp.toLocaleString()}K</div>
-                      </div>
-                    )}
-                    {data.enemyAtk && (
-                      <div className="flex-1 p-2 rounded-lg bg-red-500/5 text-center">
-                        <div className="text-[9px] text-gray-500">ATK</div>
-                        <div className="text-sm font-bold text-orange-400">{data.enemyAtk.toLocaleString()}</div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {/* Resistances */}
-                {data.enemyRes && (
-                  <div>
-                    <div className="text-[9px] text-gray-500 mb-1">Elemental Resistance</div>
-                    <div className="flex flex-wrap gap-1">
-                      {Object.entries(data.enemyRes).map(([el, val]) => (
-                        <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
-                          {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
-                        </span>
-                      ))}
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
-                    </div>
-                  </div>
-                )}
-                {/* Debuffs applied to player */}
-                {data.enemyDebuffs?.length > 0 && (
-                  <div>
-                    <div className="text-[9px] text-gray-500 mb-1">Debuffs (applies to player)</div>
-                    <div className="flex flex-wrap gap-1">
-                      {data.enemyDebuffs.map(d => (
-                        <span key={d} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-300">{d}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {/* Self buffs */}
-                {data.enemySelfBuffs?.length > 0 && (
-                  <div>
-                    <div className="text-[9px] text-gray-500 mb-1">Self Buffs</div>
-                    <div className="flex flex-wrap gap-1">
-                      {data.enemySelfBuffs.map(b => (
-                        <span key={b} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{b}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Obtainable Substats */}
+          {/* 7. Substats */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
             <div className="flex flex-wrap gap-1">
@@ -887,7 +887,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* Used By Characters */}
+          {/* 8. Recommended For */}
           {usedBy.length > 0 && (
             <div>
               <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Recommended For</div>
