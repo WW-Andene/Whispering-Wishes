@@ -3531,7 +3531,75 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         const swords = swordGridCache;
 
-        for (const s of swords) {
+        // Pre-compute electricity data for interleaving with swords
+        var _elecFet = cloudTime * 0.15;
+        var _elecSeedT = Math.floor(_elecFet * 0.06);
+        var _drawArc = function(fi2) {
+          var fSw = swords[fi2];
+          var fPhase2 = Math.sin(_elecFet * 0.03 + fi2 * 2.7) * Math.sin(_elecFet * 0.017 + fi2 * 4.1) * Math.sin(_elecFet * 0.009 + fi2 * 1.3);
+          if (fPhase2 < 0.2) return;
+          var fAlpha2 = (fPhase2 - 0.2) * 1.5;
+          // Find nearest sword
+          var fBestDist = 99999, fTarget = -1;
+          for (var fti = 0; fti < swords.length; fti++) {
+            if (fti === fi2) continue;
+            var ftdx = swords[fti].scrX - fSw.scrX, ftdy = swords[fti].scrY - fSw.scrY;
+            var ftd = Math.sqrt(ftdx * ftdx + ftdy * ftdy);
+            if (ftd > 20 && ftd < fBestDist) { fBestDist = ftd; fTarget = fti; }
+          }
+          if (fTarget < 0 || fBestDist > W * 0.35) return;
+          var fTw = swords[fTarget];
+          var fx0 = fSw.scrX, fy0 = fSw.scrY, fx1 = fTw.scrX, fy1 = fTw.scrY;
+          var fdx = fx1 - fx0, fdy = fy1 - fy0;
+          var fDist = Math.sqrt(fdx * fdx + fdy * fdy);
+          if (fDist < 10) return;
+          var _fa = (fi2 * 1640531527 + _elecSeedT * 9973) | 0;
+          var faRng = function() { _fa = Math.imul(_fa ^ (_fa >>> 16), 0x45d9f3b); _fa = _fa ^ (_fa >>> 13); return ((_fa >>> 0) % 1000) / 1000; };
+          var fNSeg2 = 5 + (fi2 % 4);
+          var fmpx2 = [fx0], fmpy2 = [fy0];
+          for (var fsi2 = 1; fsi2 <= fNSeg2; fsi2++) {
+            var ft2 = fsi2 / fNSeg2;
+            fmpx2.push(fx0 + fdx * ft2 + (faRng() - 0.5) * fDist * 0.2);
+            fmpy2.push(fy0 + fdy * ft2 + (faRng() - 0.5) * fDist * 0.12);
+          }
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(fmpx2[0], fmpy2[0]);
+          for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
+          ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
+          ctx.lineWidth = 4; ctx.stroke();
+          ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
+          ctx.lineWidth = 2; ctx.stroke();
+          ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
+          ctx.lineWidth = 0.8; ctx.stroke();
+          var fNBr2 = 2 + (fi2 % 2);
+          for (var fbi2 = 0; fbi2 < fNBr2; fbi2++) {
+            var fbrIdx2 = 1 + Math.floor(faRng() * (fmpx2.length - 2));
+            var fbrAng2 = Math.atan2(fdy, fdx) + (faRng() - 0.5) * 2.0;
+            var fbrLen2 = fDist * (0.12 + faRng() * 0.2);
+            var fbrSegs2 = 3 + (fbi2 % 2);
+            ctx.beginPath();
+            ctx.moveTo(fmpx2[fbrIdx2], fmpy2[fbrIdx2]);
+            for (var fbsi2 = 1; fbsi2 <= fbrSegs2; fbsi2++) {
+              ctx.lineTo(
+                fmpx2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.cos(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.3,
+                fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
+              );
+            }
+            ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
+            ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
+            ctx.lineWidth = 0.6; ctx.stroke();
+          }
+          ctx.restore();
+        };
+
+        for (let _si2 = 0; _si2 < swords.length; _si2++) {
+          const s = swords[_si2];
+          // Draw lightning BEFORE this sword (sits between depth layers)
+          if (_si2 % 4 === 0 && swords.length > 1) _drawArc(_si2);
           // Sword type — hash independent of position grid
           let th = (s.idx * 1640531527 + 2747636419) | 0; th = Math.imul(th ^ (th >>> 16), 0x45d9f3b); th = th ^ (th >>> 13);
           const isGladius = ((th >>> 0) % 4) === 0;
@@ -4079,87 +4147,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // === FLOOR ELECTRICITY — arcs between swords, originating from sword bases ===
-        if (swords.length > 1) {
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          var fet = cloudTime * 0.15;
-          // Pick sword pairs to arc between
-          var fSeedT = Math.floor(fet * 0.06);
-          var _fs2 = (fSeedT * 2246822519 + 314159) | 0;
-          var fRng2 = function() { _fs2 = Math.imul(_fs2 ^ (_fs2 >>> 16), 0x45d9f3b); _fs2 = _fs2 ^ (_fs2 >>> 13); return ((_fs2 >>> 0) % 1000) / 1000; };
-          // Arcs from some swords — sparse, erratic timing
-          for (var fi2 = 0; fi2 < swords.length; fi2 += 4) {
-            var fSw = swords[fi2];
-            // Erratic phase — overlapping slow sins for irregular flicker
-            var fPhase2 = Math.sin(fet * 0.03 + fi2 * 2.7) * Math.sin(fet * 0.017 + fi2 * 4.1) * Math.sin(fet * 0.009 + fi2 * 1.3);
-            if (fPhase2 < 0.2) continue;
-            var fAlpha2 = (fPhase2 - 0.2) * 1.5;
-            // Pick a nearby sword to arc toward
-            var fTarget = fi2 + 1 + Math.floor(fRng2() * Math.min(3, swords.length - fi2 - 1));
-            if (fTarget >= swords.length) fTarget = Math.floor(fRng2() * swords.length);
-            if (fTarget === fi2) continue;
-            var fTw = swords[fTarget];
-            // Start at sword base, end at target sword base
-            var fx0 = fSw.scrX;
-            var fy0 = fSw.scrY;
-            var fx1 = fTw.scrX;
-            var fy1 = fTw.scrY;
-            var fdx = fx1 - fx0, fdy = fy1 - fy0;
-            var fDist = Math.sqrt(fdx * fdx + fdy * fdy);
-            if (fDist < 10 || fDist > W * 0.6) continue;
-            // Reseed per arc for temporal variation
-            var _fa = (fi2 * 1640531527 + fSeedT * 9973) | 0;
-            var faRng = function() { _fa = Math.imul(_fa ^ (_fa >>> 16), 0x45d9f3b); _fa = _fa ^ (_fa >>> 13); return ((_fa >>> 0) % 1000) / 1000; };
-            var fNSeg2 = 5 + (fi2 % 4);
-            var fmpx2 = [fx0], fmpy2 = [fy0];
-            for (var fsi2 = 1; fsi2 <= fNSeg2; fsi2++) {
-              var ft2 = fsi2 / fNSeg2;
-              // Interpolate toward target with jitter
-              fmpx2.push(fx0 + fdx * ft2 + (faRng() - 0.5) * fDist * 0.2);
-              fmpy2.push(fy0 + fdy * ft2 + (faRng() - 0.5) * fDist * 0.12);
-            }
-            // Outer glow — orange
-            ctx.beginPath();
-            ctx.moveTo(fmpx2[0], fmpy2[0]);
-            for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
-            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            // Mid glow
-            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            // Core — bright orange-white
-            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-            // 2-3 branch arms from main arc
-            var fNBr2 = 2 + (fi2 % 2);
-            for (var fbi2 = 0; fbi2 < fNBr2; fbi2++) {
-              var fbrIdx2 = 1 + Math.floor(faRng() * (fmpx2.length - 2));
-              var fbrAng2 = Math.atan2(fdy, fdx) + (faRng() - 0.5) * 2.0;
-              var fbrLen2 = fDist * (0.12 + faRng() * 0.2);
-              var fbrSegs2 = 3 + (fbi2 % 2);
-              ctx.beginPath();
-              ctx.moveTo(fmpx2[fbrIdx2], fmpy2[fbrIdx2]);
-              for (var fbsi2 = 1; fbsi2 <= fbrSegs2; fbsi2++) {
-                ctx.lineTo(
-                  fmpx2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.cos(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.3,
-                  fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
-                );
-              }
-              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
-              ctx.lineWidth = 2.5;
-              ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
-              ctx.lineWidth = 0.6;
-              ctx.stroke();
-            }
-          }
-          ctx.restore();
-        }
+        // (floor electricity now interleaved in sword loop above)
 
         // === BANNER — pole with round crest + vertical-only cloth ===
         {
