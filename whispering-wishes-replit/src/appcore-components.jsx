@@ -707,6 +707,26 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              {/* Element badges from echo skill element(s) */}
+              {(() => {
+                const elements = [];
+                if (data.element) elements.push(data.element);
+                // Also extract additional elements mentioned as DMG in desc
+                const elNames = ['Glacio', 'Fusion', 'Electro', 'Aero', 'Spectro', 'Havoc'];
+                if (data.desc) {
+                  elNames.forEach(el => {
+                    if (!elements.includes(el) && new RegExp(el + '\\s*DMG', 'i').test(data.desc)) {
+                      elements.push(el);
+                    }
+                  });
+                }
+                return elements.map(el => {
+                  const ec = ELEMENT_COLORS[el];
+                  return ec ? (
+                    <span key={el} className="text-[10px] px-2 py-0.5 rounded font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
+                  ) : null;
+                });
+              })()}
               {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
                 const bc = ECHO_BUFF_COLORS[b] || buffColors;
                 return <span key={b} className={`text-[10px] px-2 py-0.5 rounded ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
@@ -723,12 +743,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             <p className="text-sm text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
           )}
 
-          {/* 2. As Enemy (boss echoes with known resistance) */}
+          {/* 2. Enemy resistance (boss echoes with known resistance) */}
           {data.enemyRes && (
             <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
-              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">As Enemy</div>
+              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
               <div>
-                <div className="text-[9px] text-gray-500 mb-1">Elemental Resistance</div>
                 <div className="flex flex-wrap gap-1">
                   {Object.entries(data.enemyRes).map(([el, val]) => (
                     <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
@@ -771,41 +790,39 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             const parts = data.desc.split(/(?<=\.)\s+/);
             const allSkillText = parts.slice(1).join(' ');
             if (!allSkillText) return null;
-            // Format text: highlight damage %, buff %, heal %, shield %, durations, cooldowns
+            // Format text: element DMG in element color, ALL other numbers in white
             const formatSkillText = (text) => {
-              const elements = [];
-              // Split by tokens we want to highlight
-              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*DMG)|(\d+(?:\.\d+)?%\s*(?:DMG\s*(?:Reduction|Boost|Bonus)|ATK|HP|DEF|Crit(?:\.\s*)?(?:Rate|DMG)|Energy\s*Regen|Resonance\s*(?:Skill|Liberation)\s*DMG(?:\s*Bonus)?|(?:Basic|Heavy|Echo|Coordinated)\s*(?:Attack\s*)?DMG(?:\s*Bonus)?|All[- ]?Attribute\s*DMG(?:\s*Bonus)?|Healing\s*Bonus|(?:Aero|Glacio|Fusion|Electro|Spectro|Havoc)\s*DMG(?:\s*Bonus)?))|(\d+(?:\.\d+)?%\s*(?:of\s*(?:the\s*current\s*character's\s*)?(?:Max\s*)?(?:HP|DEF|ATK)))|(\d+(?:\.\d+)?%?\s*Max\s*HP)|(\b\d+s\b)|(\bCD:\s*\d+s\b)/gi;
+              const result = [];
+              // Match element DMG patterns first, then catch ALL remaining numbers
+              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*DMG)|(\d+(?:\.\d+)?%?(?:\s*(?:Max\s*)?HP)?)|(\b\d+s\b)|(\bCD:\s*\d+s\b)/gi;
               let lastIndex = 0;
               let match;
               while ((match = regex.exec(text)) !== null) {
-                if (match.index > lastIndex) {
-                  elements.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex, match.index)}</span>);
-                }
+                // Skip single-digit matches that are just part of words (e.g. "3pc")
                 const m = match[0];
-                let color = '#d1d5db'; // gray default
-                let tag = null;
-                if (/Glacio/i.test(m)) color = getBuffElementColor('Glacio DMG');
-                else if (/Fusion/i.test(m)) color = getBuffElementColor('Fusion DMG');
-                else if (/Electro/i.test(m)) color = getBuffElementColor('Electro DMG');
-                else if (/Aero/i.test(m)) color = getBuffElementColor('Aero DMG');
-                else if (/Spectro/i.test(m)) color = getBuffElementColor('Spectro DMG');
-                else if (/Havoc/i.test(m)) color = getBuffElementColor('Havoc DMG');
-                else if (/Physical/i.test(m)) color = '#a1a1aa';
-                if (/DMG\s*Reduction|Shield/i.test(m)) { color = '#60a5fa'; tag = 'shield'; }
-                else if (/DMG\s*Boost|DMG\s*Bonus|ATK|Crit|Resonance|Basic|Heavy|Echo|Coordinated|All/i.test(m)) { color = '#34d399'; tag = 'buff'; }
-                else if (/HP|Heal/i.test(m) && !/DMG/i.test(m)) { color = '#4ade80'; tag = 'heal'; }
-                else if (/\d+(?:\.\d+)?%\s*\w*\s*DMG/i.test(m)) { tag = 'damage'; }
-                if (/^CD:/i.test(m) || /^\d+s$/i.test(m)) { color = '#9ca3af'; tag = null; }
-                elements.push(
+                if (match.index > lastIndex) {
+                  result.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex, match.index)}</span>);
+                }
+                let color = '#ffffff'; // white default for all numbers
+                // Only element DMG gets element color
+                if (match[1]) {
+                  if (/Glacio/i.test(m)) color = getBuffElementColor('Glacio DMG');
+                  else if (/Fusion/i.test(m)) color = getBuffElementColor('Fusion DMG');
+                  else if (/Electro/i.test(m)) color = getBuffElementColor('Electro DMG');
+                  else if (/Aero/i.test(m)) color = getBuffElementColor('Aero DMG');
+                  else if (/Spectro/i.test(m)) color = getBuffElementColor('Spectro DMG');
+                  else if (/Havoc/i.test(m)) color = getBuffElementColor('Havoc DMG');
+                  else if (/Physical/i.test(m)) color = '#a1a1aa';
+                }
+                result.push(
                   <span key={match.index} className="font-semibold" style={{ color }}>{m}</span>
                 );
                 lastIndex = match.index + m.length;
               }
               if (lastIndex < text.length) {
-                elements.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex)}</span>);
+                result.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex)}</span>);
               }
-              return elements;
+              return result;
             };
             return (
               <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
