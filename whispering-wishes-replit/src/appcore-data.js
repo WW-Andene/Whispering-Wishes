@@ -934,7 +934,7 @@ const CHAR_BUFF_TABLE = {
     note: 'Lib: 24% All DMG (30s). Outro: 15% Deepen + 25% Lib Amp (14s). Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
   },
   'Mornye': {
-    outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 30 }],
     libBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 40 }],
     selfBuffs: [],
     weaponBuffs: [{ stat: 'critDmg', value: 40, target: 'team', duration: 10, condition: 'Sig weapon: team Crit DMG +40% on heal' }],
@@ -997,11 +997,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
   },
   'Cantarella': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
+      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
+    ],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Off-field Coordinated ATK. Outro: 15% Deepen. Heal.',
+    note: 'Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal.',
   },
   'Ciaccona': {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
@@ -1014,11 +1017,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Solo Concert: +24% Aero DMG team. Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Weapon: Aero RES -16%.',
   },
   'Lupa': {
-    outroBuffs: [{ stat: 'deepen', value: 18, target: 'next', duration: 14 }],
-    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 40 }],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },
+      { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
+    ],
+    libBuffs: [{ stat: 'atkPct', value: 18, target: 'team', duration: 40 }],
     selfBuffs: [],
     debuffs: [{ stat: 'resShred', value: 15, duration: 10, condition: 'Fusion RES' }],
-    note: 'Outro: 18% Deepen. Lib: 15% ATK team. Fusion RES Shred 15%.',
+    note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: 18% ATK team. Fusion RES Shred.',
   },
   'Iuno': {
     outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }],
@@ -1221,11 +1227,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Top-tier Aero DPS. HP-scaling. Self-sufficient Erosion duo with Ciaccona. Weapon: DEF Ignore +16%.',
   },
   'Brant': {
-    outroBuffs: [],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },
+      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
+    ],
     libBuffs: [],
     selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Fusion DMG +12%' }],
     debuffs: [],
-    note: 'Fusion Basic ATK DPS. Self-heal. ATK speed +10% from weapon.',
+    note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal. Weapon: Fusion DMG +12%.',
   },
   'Augusta': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
@@ -1263,11 +1272,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Rune-consuming Echo Skill hypercarry. Inherent: up to 50% Echo DMG from ER. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes.',
   },
   'Phrolova': {
-    outroBuffs: [],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
+      { stat: 'heavyDmg', value: 25, target: 'next', duration: 14 },
+    ],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Aftersound: +2.5% CD per stack, 24 stacks max' }],
     debuffs: [],
-    note: 'Echo Skill focused AoE DPS. One of strongest AoE in game.',
+    note: 'Outro: +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60% CD from Aftersound.',
   },
   // ── Electro characters with Electro Flare ──
   'Xiangli Yao': {
