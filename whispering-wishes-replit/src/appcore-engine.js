@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import {
+  APP_VERSION,
   SERVERS, getServerOffset,
   HARD_PITY, SOFT_PITY_START,
   LUNITE_DAILY_ASTRITE, ASTRITE_PER_PULL,
@@ -521,6 +522,12 @@ const loadFromStorage = () => {
     const parsed = JSON.parse(saved);
     // P10-FIX: Sanitize loaded state to prevent prototype pollution from tampered localStorage (Step 6 audit)
     const safeParsed = sanitizeStateObj(parsed);
+    // Version tracking: detect pre-migration data (no version field = v1)
+    const savedVersion = safeParsed.version || '1.0.0';
+    if (savedVersion !== APP_VERSION) {
+      console.info(`[WW] Data migration: loaded v${savedVersion}, app is v${APP_VERSION}`);
+      // Future migrations go here based on savedVersion
+    }
     return {
       ...initialState,
       ...sanitizeImportedState(safeParsed),
@@ -556,7 +563,7 @@ const loadFromStorage = () => {
 const saveToStorage = (state) => {
   if (!storageAvailable) return false; // Storage unavailable — save did not happen
   try {
-    const data = JSON.stringify(state);
+    const data = JSON.stringify({ ...state, version: APP_VERSION });
     // Warn if approaching 5MB localStorage limit (~80% = 4MB)
     if (data.length > 4 * 1024 * 1024) {
       console.warn('Storage approaching limit:', (data.length / 1024 / 1024).toFixed(1) + 'MB');

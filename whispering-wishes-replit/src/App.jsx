@@ -1579,6 +1579,15 @@ function WhisperingWishesInner() {
         if (typeof p !== 'object' || p === null) return false;
         const hasType = p.bannerType ?? p.cardPoolType ?? p.gachaType;
         const hasName = p.name || p.resourceName;
+        // Validate name is a non-empty string
+        const nameVal = (p.name || p.resourceName || '');
+        if (typeof nameVal !== 'string' || !nameVal.trim()) return false;
+        // Validate rarity is a number between 1-5 (if present)
+        const rawRarity = p.rarity ?? p.qualityLevel;
+        if (rawRarity !== undefined && rawRarity !== null) {
+          const r = parseInt(rawRarity, 10);
+          if (isNaN(r) || r < 1 || r > 5) return false;
+        }
         // Validate timestamp if present
         const ts = p.timestamp || p.time;
         if (ts) {
@@ -1587,7 +1596,9 @@ function WhisperingWishesInner() {
         }
         return hasType && hasName;
       });
-      
+
+      const skippedCount = pulls.length - validPulls.length;
+
       if (validPulls.length === 0) {
         throw new Error('No valid pull entries found — check data format');
       }
@@ -1693,7 +1704,8 @@ function WhisperingWishesInner() {
       if (sc + sw) parts.push(`${sc + sw} std`);
       if (bc) parts.push(`${bc} beg`);
       
-      toast?.addToast?.(`Imported ${totalImported} Convenes! (${parts.join(', ')})`, 'success');
+      const skippedNote = skippedCount > 0 ? ` (${skippedCount} invalid entries skipped)` : '';
+      toast?.addToast?.(`Imported ${totalImported} Convenes! (${parts.join(', ')})${skippedNote}`, 'success');
       
       // P12-FIX: Check storage capacity after import (Step 14 audit — LOW-10a)
       if (storageAvailable) {
@@ -1719,6 +1731,7 @@ function WhisperingWishesInner() {
     try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
     try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
     try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
     const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state, ...(Object.keys(aux).length > 0 ? { aux } : {}) };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
@@ -2179,6 +2192,9 @@ function WhisperingWishesInner() {
                         if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
                           localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
                           setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+                        }
+                        if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
+                          localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
                         }
                       } catch {}
                     }

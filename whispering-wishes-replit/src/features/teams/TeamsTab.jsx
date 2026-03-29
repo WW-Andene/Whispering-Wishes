@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { AlertTriangle, BarChart3, Diamond, Plus, Search, Star, Sword, Target, Users, X, Zap } from 'lucide-react';
 import {
   haptic,

@@ -161,8 +161,22 @@ export default function AnalyticsTab({
     setLeaderboardLoading(true);
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
-      if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
+      let res;
+      try {
+        res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      } catch (networkErr) {
+        // Network failure — wait 2s and retry once
+        await new Promise(r => setTimeout(r, 2000));
+        res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      }
+      if (!res.ok) {
+        if (res.status >= 500) {
+          // Server error — wait 2s and retry once
+          await new Promise(r => setTimeout(r, 2000));
+          res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+        }
+        if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
+      }
       const data = await res.json();
       if (data) {
         const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
@@ -198,7 +212,19 @@ export default function AnalyticsTab({
   const loadCommunityPulls = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+      let res;
+      try {
+        res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+      } catch (networkErr) {
+        // Network failure — wait 2s and retry once
+        await new Promise(r => setTimeout(r, 2000));
+        res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+      }
+      if (!res.ok && res.status >= 500) {
+        // Server error — wait 2s and retry once
+        await new Promise(r => setTimeout(r, 2000));
+        res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+      }
       if (res.ok) {
         const data = await res.json();
         if (data) {
