@@ -893,21 +893,21 @@ const CHARACTER_DATA = {
 const CHAR_BUFF_TABLE = {
   // ── 5★ Supports / Sub DPS ──
   'Verina': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 40 }],
-    libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 40 }],
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 30 }],
+    libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% All DMG Deepen 30s. Lib: 20% ATK teamwide. Fatal blow protection.',
+    note: 'Outro: 15% All DMG Deepen 30s. Inherent 1: 20% ATK teamwide 20s (on Forte/Lib/Outro).',
   },
   'Shorekeeper': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 24 }],
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 30 }],
     libBuffs: [
-      { stat: 'critRate', value: 12.8, target: 'team', duration: 25, condition: 'In Stellarealm field' },
-      { stat: 'critDmg', value: 25, target: 'team', duration: 25, condition: 'In Stellarealm field' },
+      { stat: 'critRate', value: 12.5, target: 'team', duration: 30, condition: 'In Stellarealm field' },
+      { stat: 'critDmg', value: 25, target: 'team', duration: 30, condition: 'In Stellarealm field' },
     ],
     selfBuffs: [],
     debuffs: [],
-    note: 'Lib field: +12.8% CR +25% CD while inside. Outro: 15% Deepen. Knockdown recovery.',
+    note: 'Outro: 15% All DMG Amp 30s. Lib Stellarealm: +12.5% CR +25% CD (30s). Knockdown recovery.',
   },
   'Jianxin': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
@@ -951,13 +951,13 @@ const CHAR_BUFF_TABLE = {
   },
   'Roccia': {
     outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
       { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
-      { stat: 'atkPct', value: 12, target: 'team', duration: 20, condition: 'Weapon passive' },
     ],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 20 }],
     debuffs: [],
-    note: 'Outro: 25% Basic ATK DMG Amp. Weapon passive: 12% team ATK.',
+    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% 12s.',
   },
   'Changli': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
@@ -967,18 +967,24 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 20% Fusion DMG Amp to next. Self ATK ramp.',
   },
   'Yinlin': {
-    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14 },
+      { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
+    ],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [{ stat: 'resShred', value: 10, duration: 10, condition: 'Electro RES' }],
-    note: 'Outro: 20% Electro DMG Amp. Off-field Coordinated ATK. Electro RES Shred.',
+    note: 'Outro: +20% Electro DMG Amp + 25% Liberation DMG Amp (14s). Off-field Coordinated ATK. Electro RES Shred.',
   },
   'Zhezhi': {
-    outroBuffs: [{ stat: 'skillDmg', value: 25, target: 'next', duration: 14 }],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Glacio DMG Amp' },
+      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
+    ],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: +25% Res. Skill DMG to next (14s). Off-field painter DMG.',
+    note: 'Outro: +20% Glacio DMG Amp + 25% Res. Skill DMG Amp (14s). Off-field painter DMG.',
   },
   'Phoebe': {
     outroBuffs: [
@@ -998,14 +1004,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Off-field Coordinated ATK. Outro: 15% Deepen. Heal.',
   },
   'Ciaccona': {
-    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Aero DMG Bonus' }],
-    libBuffs: [],
+    outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
+    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30, condition: 'Solo Concert: Aero DMG +24%' }],
     selfBuffs: [],
     debuffs: [
       { stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' },
       { stat: 'resShred', value: 16, duration: 20, condition: 'Weapon: Aero RES -16%' },
     ],
-    note: 'Aero Erosion applier (3 stacks DOT). Outro: 20% Aero DMG. Weapon: Aero RES -16%.',
+    note: 'Solo Concert: +24% Aero DMG team. Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Weapon: Aero RES -16%.',
   },
   'Lupa': {
     outroBuffs: [{ stat: 'deepen', value: 18, target: 'next', duration: 14 }],
