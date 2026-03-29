@@ -2896,7 +2896,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           }
           ctx.restore();
         }
-        // Static electricity — slow arcs with branches near clouds
+        // Static electricity — slow arcs with branches near clouds (paths cached)
         var _drawSparks = function(startIdx, endIdx) {
           ctx.save();
           ctx.globalCompositeOperation = 'lighter';
@@ -2912,62 +2912,66 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             if (phase < 0.5) continue;
             var alpha = (phase - 0.5) * 1.5;
             var bw = cl1.baked.w, bh = cl1.baked.h;
-            var arcLen = Math.max(bw, bh) * (0.5 + Math.sin(ei * 3.7) * 0.2);
             var ox = cx1 + cl1.baked.ox + bw * 0.5;
             var oy = cy1 + cl1.baked.oy + bh * 0.5;
-            // Erratic start direction — snaps to new angle periodically
             var seedT = Math.floor(et * 0.15 + ei * 0.1);
-            var _es = (ei * 1640531527 + seedT * 9973) | 0;
-            var eRng = function() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; };
-            var mainDir = eRng() * Math.PI * 2;
-            var ax0 = ox + (eRng() - 0.5) * bw * 0.5;
-            var ay0 = oy + (eRng() - 0.5) * bh * 0.4;
-            var nSeg = 6 + (ei % 4);
-            var segLen = arcLen / nSeg;
-            var mpx = [ax0], mpy = [ay0];
-            var curDir = mainDir;
-            for (var si = 1; si <= nSeg; si++) {
-              curDir += (eRng() - 0.5) * 1.4;
-              mpx.push(mpx[si - 1] + Math.cos(curDir) * segLen + (eRng() - 0.5) * segLen * 0.5);
-              mpy.push(mpy[si - 1] + Math.sin(curDir) * segLen + (eRng() - 0.5) * segLen * 0.4);
-            }
-            // Main arc — 3-layer orange glow
-            ctx.beginPath();
-            ctx.moveTo(mpx[0], mpy[0]);
-            for (var mi = 1; mi < mpx.length; mi++) ctx.lineTo(mpx[mi], mpy[mi]);
-            ctx.strokeStyle = 'rgba(255,120,20,' + (alpha * 0.18) + ')';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,160,50,' + (alpha * 0.35) + ')';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,210,140,' + (alpha * 0.5) + ')';
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-            // 2-3 branch arms
-            var nBranch = 2 + (ei % 2);
-            for (var bi = 0; bi < nBranch; bi++) {
-              var brIdx = 1 + Math.floor(eRng() * (mpx.length - 2));
-              var brAng = eRng() * Math.PI * 2;
-              var brLen = arcLen * (0.2 + eRng() * 0.3);
-              var brSegs = 3 + (bi % 2);
-              var brSegLen = brLen / brSegs;
-              var bCurDir = brAng;
-              var bpx = mpx[brIdx], bpy = mpy[brIdx];
-              ctx.beginPath();
-              ctx.moveTo(bpx, bpy);
-              for (var bsi = 1; bsi <= brSegs; bsi++) {
-                bCurDir += (eRng() - 0.5) * 1.2;
-                bpx += Math.cos(bCurDir) * brSegLen + (eRng() - 0.5) * brSegLen * 0.4;
-                bpy += Math.sin(bCurDir) * brSegLen + (eRng() - 0.5) * brSegLen * 0.3;
-                ctx.lineTo(bpx, bpy);
+            // Cache path offsets on cloud — recompute only when seedT changes
+            if (!cl1._sparkCache || cl1._sparkSeedT !== seedT) {
+              var arcLen = Math.max(bw, bh) * (0.5 + Math.sin(ei * 3.7) * 0.2);
+              var _es = (ei * 1640531527 + seedT * 9973) | 0;
+              var eRng = function() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; };
+              var mainDir = eRng() * Math.PI * 2;
+              var dx0 = (eRng() - 0.5) * bw * 0.5, dy0 = (eRng() - 0.5) * bh * 0.4;
+              var nSeg = 6 + (ei % 4);
+              var segLen = arcLen / nSeg;
+              var offx = [dx0], offy = [dy0];
+              var curDir = mainDir;
+              for (var si = 1; si <= nSeg; si++) {
+                curDir += (eRng() - 0.5) * 1.4;
+                offx.push(offx[si - 1] + Math.cos(curDir) * segLen + (eRng() - 0.5) * segLen * 0.5);
+                offy.push(offy[si - 1] + Math.sin(curDir) * segLen + (eRng() - 0.5) * segLen * 0.4);
               }
+              var branches = [];
+              var nBranch = 2 + (ei % 2);
+              for (var bi = 0; bi < nBranch; bi++) {
+                var brIdx = 1 + Math.floor(eRng() * (offx.length - 2));
+                var brAng = eRng() * Math.PI * 2;
+                var brLen = arcLen * (0.2 + eRng() * 0.3);
+                var brSegs = 3 + (bi % 2);
+                var brSegLen = brLen / brSegs;
+                var bCurDir = brAng;
+                var bOffx = [offx[brIdx]], bOffy = [offy[brIdx]];
+                for (var bsi = 1; bsi <= brSegs; bsi++) {
+                  bCurDir += (eRng() - 0.5) * 1.2;
+                  bOffx.push(bOffx[bsi - 1] + Math.cos(bCurDir) * brSegLen + (eRng() - 0.5) * brSegLen * 0.4);
+                  bOffy.push(bOffy[bsi - 1] + Math.sin(bCurDir) * brSegLen + (eRng() - 0.5) * brSegLen * 0.3);
+                }
+                branches.push({ x: bOffx, y: bOffy });
+              }
+              cl1._sparkCache = { ox: offx, oy: offy, br: branches };
+              cl1._sparkSeedT = seedT;
+            }
+            var sc = cl1._sparkCache;
+            // Draw main arc
+            ctx.beginPath();
+            ctx.moveTo(ox + sc.ox[0], oy + sc.oy[0]);
+            for (var mi = 1; mi < sc.ox.length; mi++) ctx.lineTo(ox + sc.ox[mi], oy + sc.oy[mi]);
+            ctx.strokeStyle = 'rgba(255,120,20,' + (alpha * 0.18) + ')';
+            ctx.lineWidth = 4; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,160,50,' + (alpha * 0.35) + ')';
+            ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,210,140,' + (alpha * 0.5) + ')';
+            ctx.lineWidth = 0.8; ctx.stroke();
+            // Draw branches
+            for (var bi2 = 0; bi2 < sc.br.length; bi2++) {
+              var br = sc.br[bi2];
+              ctx.beginPath();
+              ctx.moveTo(ox + br.x[0], oy + br.y[0]);
+              for (var bsi2 = 1; bsi2 < br.x.length; bsi2++) ctx.lineTo(ox + br.x[bsi2], oy + br.y[bsi2]);
               ctx.strokeStyle = 'rgba(255,140,30,' + (alpha * 0.12) + ')';
-              ctx.lineWidth = 2.5;
-              ctx.stroke();
+              ctx.lineWidth = 2.5; ctx.stroke();
               ctx.strokeStyle = 'rgba(255,200,120,' + (alpha * 0.35) + ')';
-              ctx.lineWidth = 0.6;
-              ctx.stroke();
+              ctx.lineWidth = 0.6; ctx.stroke();
             }
           }
           ctx.restore();
@@ -3537,6 +3541,57 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         const swords = swordGridCache;
 
+        // Pre-compute ground lightning paths (cached per seedT)
+        var _geFet = cloudTime * 0.15;
+        var _geSeedT = Math.floor(_geFet * 0.06);
+        if (!swordGridCache._elecCache || swordGridCache._elecSeedT !== _geSeedT) {
+          var _geArcs = [];
+          for (var _gei = 0; _gei < swords.length; _gei += 4) {
+            var _geSw = swords[_gei];
+            var _geTarget = _gei + 1 + Math.floor(Math.abs(Math.sin(_gei * 7.3 + _geSeedT * 1.7)) * Math.min(3, swords.length - _gei - 1));
+            if (_geTarget >= swords.length) _geTarget = Math.floor(Math.abs(Math.sin(_gei * 3.1)) * swords.length);
+            if (_geTarget === _gei) continue;
+            var _geTw = swords[_geTarget];
+            var _gex0 = _geSw.scrX, _gey0 = _geSw.scrY, _gex1 = _geTw.scrX, _gey1 = _geTw.scrY;
+            var _gedx = _gex1 - _gex0, _gedy = _gey1 - _gey0;
+            var _geDist = Math.sqrt(_gedx * _gedx + _gedy * _gedy);
+            if (_geDist < 10 || _geDist > W * 1.2) continue;
+            var _gefa = (_gei * 1640531527 + _geSeedT * 9973) | 0;
+            var _geRng = function() { _gefa = Math.imul(_gefa ^ (_gefa >>> 16), 0x45d9f3b); _gefa = _gefa ^ (_gefa >>> 13); return ((_gefa >>> 0) % 1000) / 1000; };
+            var _geNSeg = 7 + (_gei % 4);
+            var _geSegLen = _geDist / _geNSeg;
+            var _geCurDir = Math.atan2(_gedy, _gedx);
+            var _geMpx = [_gex0], _geMpy = [_gey0];
+            for (var _gesi = 1; _gesi <= _geNSeg; _gesi++) {
+              _geCurDir += (_geRng() - 0.5) * 1.4;
+              var _geToT = Math.atan2(_gey1 - _geMpy[_gesi - 1], _gex1 - _geMpx[_gesi - 1]);
+              _geCurDir = _geCurDir * 0.6 + _geToT * 0.4;
+              _geMpx.push(_geMpx[_gesi - 1] + Math.cos(_geCurDir) * _geSegLen + (_geRng() - 0.5) * _geSegLen * 0.5);
+              _geMpy.push(_geMpy[_gesi - 1] + Math.sin(_geCurDir) * _geSegLen + (_geRng() - 0.5) * _geSegLen * 0.4);
+            }
+            var _geBranches = [];
+            var _geNBr = 2 + (_gei % 2);
+            for (var _gebi = 0; _gebi < _geNBr; _gebi++) {
+              var _gebrIdx = 1 + Math.floor(_geRng() * (_geMpx.length - 2));
+              var _gebrDir = _geRng() * Math.PI * 2;
+              var _gebrLen = _geDist * (0.12 + _geRng() * 0.2);
+              var _gebrSegs = 3 + (_gebi % 2);
+              var _gebrSegLen = _gebrLen / _gebrSegs;
+              var _gebpx = [_geMpx[_gebrIdx]], _gebpy = [_geMpy[_gebrIdx]];
+              for (var _gebsi = 1; _gebsi <= _gebrSegs; _gebsi++) {
+                _gebrDir += (_geRng() - 0.5) * 1.2;
+                _gebpx.push(_gebpx[_gebsi - 1] + Math.cos(_gebrDir) * _gebrSegLen + (_geRng() - 0.5) * _gebrSegLen * 0.4);
+                _gebpy.push(_gebpy[_gebsi - 1] + Math.sin(_gebrDir) * _gebrSegLen + (_geRng() - 0.5) * _gebrSegLen * 0.3);
+              }
+              _geBranches.push({ x: _gebpx, y: _gebpy });
+            }
+            _geArcs.push({ idx: _gei, mx: _geMpx, my: _geMpy, br: _geBranches });
+          }
+          swordGridCache._elecCache = _geArcs;
+          swordGridCache._elecSeedT = _geSeedT;
+        }
+        var _geArcs = swordGridCache._elecCache;
+
         var _sBatchSize = Math.max(1, Math.ceil(swords.length / 4));
         for (var _sIdx = 0; _sIdx < swords.length; _sIdx++) {
           // Draw electricity layer before each depth batch
@@ -3544,64 +3599,26 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.save();
             ctx.globalCompositeOperation = 'lighter';
             ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            var _eFet = cloudTime * 0.15;
-            var _eSeedT = Math.floor(_eFet * 0.06);
-            for (var _ei = 0; _ei < swords.length; _ei += 4) {
-              // Only draw arcs from swords in this depth batch
-              if (_ei < _sIdx || _ei >= _sIdx + _sBatchSize) continue;
-              var _eSw = swords[_ei];
-              var _ePhase = Math.sin(_eFet * 0.03 + _ei * 2.7) * Math.sin(_eFet * 0.017 + _ei * 4.1) * Math.sin(_eFet * 0.009 + _ei * 1.3);
+            for (var _eai = 0; _eai < _geArcs.length; _eai++) {
+              var _ea = _geArcs[_eai];
+              if (_ea.idx < _sIdx || _ea.idx >= _sIdx + _sBatchSize) continue;
+              var _ePhase = Math.sin(_geFet * 0.03 + _ea.idx * 2.7) * Math.sin(_geFet * 0.017 + _ea.idx * 4.1) * Math.sin(_geFet * 0.009 + _ea.idx * 1.3);
               if (_ePhase < 0.2) continue;
               var _eAlpha = (_ePhase - 0.2) * 1.5;
-              var _eTarget = _ei + 1 + Math.floor(Math.abs(Math.sin(_ei * 7.3 + _eSeedT * 1.7)) * Math.min(3, swords.length - _ei - 1));
-              if (_eTarget >= swords.length) _eTarget = Math.floor(Math.abs(Math.sin(_ei * 3.1)) * swords.length);
-              if (_eTarget === _ei) continue;
-              var _eTw = swords[_eTarget];
-              var _ex0 = _eSw.scrX, _ey0 = _eSw.scrY, _ex1 = _eTw.scrX, _ey1 = _eTw.scrY;
-              var _edx = _ex1 - _ex0, _edy = _ey1 - _ey0;
-              var _eDist = Math.sqrt(_edx * _edx + _edy * _edy);
-              if (_eDist < 10 || _eDist > W * 1.2) continue;
-              var _efa = (_ei * 1640531527 + _eSeedT * 9973) | 0;
-              var _eRng = function() { _efa = Math.imul(_efa ^ (_efa >>> 16), 0x45d9f3b); _efa = _efa ^ (_efa >>> 13); return ((_efa >>> 0) % 1000) / 1000; };
-              // Wandering path — each segment turns randomly toward target
-              var _eNSeg = 7 + (_ei % 4);
-              var _eSegLen = _eDist / _eNSeg;
-              var _eCurDir = Math.atan2(_edy, _edx);
-              var _empx = [_ex0], _empy = [_ey0];
-              for (var _esi = 1; _esi <= _eNSeg; _esi++) {
-                // Wander direction + pull toward target
-                _eCurDir += (_eRng() - 0.5) * 1.4;
-                var _eToTarget = Math.atan2(_ey1 - _empy[_esi - 1], _ex1 - _empx[_esi - 1]);
-                _eCurDir = _eCurDir * 0.6 + _eToTarget * 0.4;
-                _empx.push(_empx[_esi - 1] + Math.cos(_eCurDir) * _eSegLen + (_eRng() - 0.5) * _eSegLen * 0.5);
-                _empy.push(_empy[_esi - 1] + Math.sin(_eCurDir) * _eSegLen + (_eRng() - 0.5) * _eSegLen * 0.4);
-              }
               ctx.beginPath();
-              ctx.moveTo(_empx[0], _empy[0]);
-              for (var _emi = 1; _emi < _empx.length; _emi++) ctx.lineTo(_empx[_emi], _empy[_emi]);
+              ctx.moveTo(_ea.mx[0], _ea.my[0]);
+              for (var _emi = 1; _emi < _ea.mx.length; _emi++) ctx.lineTo(_ea.mx[_emi], _ea.my[_emi]);
               ctx.strokeStyle = 'rgba(255,120,20,' + (_eAlpha * 0.18) + ')';
               ctx.lineWidth = 4; ctx.stroke();
               ctx.strokeStyle = 'rgba(255,160,50,' + (_eAlpha * 0.35) + ')';
               ctx.lineWidth = 2; ctx.stroke();
               ctx.strokeStyle = 'rgba(255,210,140,' + (_eAlpha * 0.5) + ')';
               ctx.lineWidth = 0.8; ctx.stroke();
-              // Branches — wander outward from fork point
-              var _eNBr = 2 + (_ei % 2);
-              for (var _ebi = 0; _ebi < _eNBr; _ebi++) {
-                var _ebrIdx = 1 + Math.floor(_eRng() * (_empx.length - 2));
-                var _ebrDir = _eRng() * Math.PI * 2;
-                var _ebrLen = _eDist * (0.12 + _eRng() * 0.2);
-                var _ebrSegs = 3 + (_ebi % 2);
-                var _ebrSegLen = _ebrLen / _ebrSegs;
-                var _ebpx = _empx[_ebrIdx], _ebpy = _empy[_ebrIdx];
+              for (var _ebi2 = 0; _ebi2 < _ea.br.length; _ebi2++) {
+                var _ebr = _ea.br[_ebi2];
                 ctx.beginPath();
-                ctx.moveTo(_ebpx, _ebpy);
-                for (var _ebsi = 1; _ebsi <= _ebrSegs; _ebsi++) {
-                  _ebrDir += (_eRng() - 0.5) * 1.2;
-                  _ebpx += Math.cos(_ebrDir) * _ebrSegLen + (_eRng() - 0.5) * _ebrSegLen * 0.4;
-                  _ebpy += Math.sin(_ebrDir) * _ebrSegLen + (_eRng() - 0.5) * _ebrSegLen * 0.3;
-                  ctx.lineTo(_ebpx, _ebpy);
-                }
+                ctx.moveTo(_ebr.x[0], _ebr.y[0]);
+                for (var _ebsi2 = 1; _ebsi2 < _ebr.x.length; _ebsi2++) ctx.lineTo(_ebr.x[_ebsi2], _ebr.y[_ebsi2]);
                 ctx.strokeStyle = 'rgba(255,140,30,' + (_eAlpha * 0.12) + ')';
                 ctx.lineWidth = 2.5; ctx.stroke();
                 ctx.strokeStyle = 'rgba(255,200,120,' + (_eAlpha * 0.35) + ')';
