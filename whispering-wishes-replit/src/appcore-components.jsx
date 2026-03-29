@@ -2666,7 +2666,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         const sunR = H * 0.09;
 
         // Sky — warm sunset gradient from ground-background.jsx
-        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v9) {
+        if (!skyCache || skyCache.width !== W || skyCache.height !== H || !skyCache._v10) {
           skyCache = document.createElement('canvas'); skyCache.width = W; skyCache.height = H;
           const sc = skyCache.getContext('2d');
           // Base vertical gradient — dramatic dark sky
@@ -2702,6 +2702,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             fg2.addColorStop(0,'rgba(255,175,80,'+fA+')');fg2.addColorStop(0.3,'rgba(255,120,35,'+(fA*0.6)+')');fg2.addColorStop(0.7,'rgba(195,60,10,'+(fA*0.2)+')');fg2.addColorStop(1,'rgba(95,22,3,0)');
             sc.save();sc.translate(fx2,fy2);sc.rotate(fAng);sc.scale(1,fW/fLen);sc.translate(-fx2,-fy2);
             sc.fillStyle=fg2;sc.beginPath();sc.arc(fx2,fy2,fLen,0,Math.PI*2);sc.fill();sc.restore();
+          }
+          sc.restore();
+          // Horizontal sun flare streaks — anamorphic lens effect
+          sc.save(); sc.globalCompositeOperation = 'lighter';
+          for (var _hfi = 0; _hfi < 3; _hfi++) {
+            var _hfW = W * (0.6 + _hfi * 0.25);
+            var _hfH = sunR * (0.08 - _hfi * 0.02);
+            var _hfA = 0.18 - _hfi * 0.05;
+            var _hfGrad = sc.createLinearGradient(sunX - _hfW, sunY, sunX + _hfW, sunY);
+            _hfGrad.addColorStop(0, 'rgba(255,100,20,0)');
+            _hfGrad.addColorStop(0.3, 'rgba(255,130,40,' + (_hfA * 0.4) + ')');
+            _hfGrad.addColorStop(0.45, 'rgba(255,170,70,' + _hfA + ')');
+            _hfGrad.addColorStop(0.5, 'rgba(255,210,130,' + (_hfA * 1.3) + ')');
+            _hfGrad.addColorStop(0.55, 'rgba(255,170,70,' + _hfA + ')');
+            _hfGrad.addColorStop(0.7, 'rgba(255,130,40,' + (_hfA * 0.4) + ')');
+            _hfGrad.addColorStop(1, 'rgba(255,100,20,0)');
+            sc.fillStyle = _hfGrad;
+            sc.fillRect(sunX - _hfW, sunY - _hfH * 0.5 + _hfi * sunR * 0.15, _hfW * 2, _hfH);
           }
           sc.restore();
           // Horizon haze band — warm glow at horizon
@@ -2792,7 +2810,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             sc.stroke();
           }
           sc.restore();
-          skyCache._v9 = true;
+          skyCache._v10 = true;
         }
         ctx.drawImage(skyCache, 0, 0);
 
@@ -2956,11 +2974,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath();
             ctx.moveTo(ox + sc.ox[0], oy + sc.oy[0]);
             for (var mi = 1; mi < sc.ox.length; mi++) ctx.lineTo(ox + sc.ox[mi], oy + sc.oy[mi]);
-            ctx.strokeStyle = 'rgba(255,120,20,' + (alpha * 0.18) + ')';
-            ctx.lineWidth = 4; ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,160,50,' + (alpha * 0.35) + ')';
-            ctx.lineWidth = 2; ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,210,140,' + (alpha * 0.5) + ')';
+            ctx.strokeStyle = 'rgba(255,100,10,' + (alpha * 0.22) + ')';
+            ctx.lineWidth = 5; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,140,30,' + (alpha * 0.4) + ')';
+            ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,190,90,' + (alpha * 0.6) + ')';
             ctx.lineWidth = 0.8; ctx.stroke();
             // Draw branches
             for (var bi2 = 0; bi2 < sc.br.length; bi2++) {
@@ -2968,9 +2986,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.beginPath();
               ctx.moveTo(ox + br.x[0], oy + br.y[0]);
               for (var bsi2 = 1; bsi2 < br.x.length; bsi2++) ctx.lineTo(ox + br.x[bsi2], oy + br.y[bsi2]);
-              ctx.strokeStyle = 'rgba(255,140,30,' + (alpha * 0.12) + ')';
-              ctx.lineWidth = 2.5; ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,200,120,' + (alpha * 0.35) + ')';
+              ctx.strokeStyle = 'rgba(255,110,15,' + (alpha * 0.15) + ')';
+              ctx.lineWidth = 3; ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,170,60,' + (alpha * 0.4) + ')';
               ctx.lineWidth = 0.6; ctx.stroke();
             }
           }
@@ -3541,93 +3559,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         const swords = swordGridCache;
 
-        // Pre-compute ground lightning paths (cached per seedT)
-        var _geFet = cloudTime * 0.15;
-        var _geSeedT = Math.floor(_geFet * 0.06);
-        if (!swordGridCache._elecCache || swordGridCache._elecSeedT !== _geSeedT) {
-          var _geArcs = [];
-          for (var _gei = 0; _gei < swords.length; _gei += 4) {
-            var _geSw = swords[_gei];
-            var _geTarget = _gei + 1 + Math.floor(Math.abs(Math.sin(_gei * 7.3 + _geSeedT * 1.7)) * Math.min(3, swords.length - _gei - 1));
-            if (_geTarget >= swords.length) _geTarget = Math.floor(Math.abs(Math.sin(_gei * 3.1)) * swords.length);
-            if (_geTarget === _gei) continue;
-            var _geTw = swords[_geTarget];
-            var _gex0 = _geSw.scrX, _gey0 = _geSw.scrY, _gex1 = _geTw.scrX, _gey1 = _geTw.scrY;
-            var _gedx = _gex1 - _gex0, _gedy = _gey1 - _gey0;
-            var _geDist = Math.sqrt(_gedx * _gedx + _gedy * _gedy);
-            if (_geDist < 10 || _geDist > W * 1.2) continue;
-            var _gefa = (_gei * 1640531527 + _geSeedT * 9973) | 0;
-            var _geRng = function() { _gefa = Math.imul(_gefa ^ (_gefa >>> 16), 0x45d9f3b); _gefa = _gefa ^ (_gefa >>> 13); return ((_gefa >>> 0) % 1000) / 1000; };
-            var _geNSeg = 7 + (_gei % 4);
-            var _geSegLen = _geDist / _geNSeg;
-            var _geCurDir = Math.atan2(_gedy, _gedx);
-            var _geMpx = [_gex0], _geMpy = [_gey0];
-            for (var _gesi = 1; _gesi <= _geNSeg; _gesi++) {
-              _geCurDir += (_geRng() - 0.5) * 1.4;
-              var _geToT = Math.atan2(_gey1 - _geMpy[_gesi - 1], _gex1 - _geMpx[_gesi - 1]);
-              _geCurDir = _geCurDir * 0.6 + _geToT * 0.4;
-              _geMpx.push(_geMpx[_gesi - 1] + Math.cos(_geCurDir) * _geSegLen + (_geRng() - 0.5) * _geSegLen * 0.5);
-              _geMpy.push(_geMpy[_gesi - 1] + Math.sin(_geCurDir) * _geSegLen + (_geRng() - 0.5) * _geSegLen * 0.4);
-            }
-            var _geBranches = [];
-            var _geNBr = 2 + (_gei % 2);
-            for (var _gebi = 0; _gebi < _geNBr; _gebi++) {
-              var _gebrIdx = 1 + Math.floor(_geRng() * (_geMpx.length - 2));
-              var _gebrDir = _geRng() * Math.PI * 2;
-              var _gebrLen = _geDist * (0.12 + _geRng() * 0.2);
-              var _gebrSegs = 3 + (_gebi % 2);
-              var _gebrSegLen = _gebrLen / _gebrSegs;
-              var _gebpx = [_geMpx[_gebrIdx]], _gebpy = [_geMpy[_gebrIdx]];
-              for (var _gebsi = 1; _gebsi <= _gebrSegs; _gebsi++) {
-                _gebrDir += (_geRng() - 0.5) * 1.2;
-                _gebpx.push(_gebpx[_gebsi - 1] + Math.cos(_gebrDir) * _gebrSegLen + (_geRng() - 0.5) * _gebrSegLen * 0.4);
-                _gebpy.push(_gebpy[_gebsi - 1] + Math.sin(_gebrDir) * _gebrSegLen + (_geRng() - 0.5) * _gebrSegLen * 0.3);
-              }
-              _geBranches.push({ x: _gebpx, y: _gebpy });
-            }
-            _geArcs.push({ idx: _gei, mx: _geMpx, my: _geMpy, br: _geBranches });
-          }
-          swordGridCache._elecCache = _geArcs;
-          swordGridCache._elecSeedT = _geSeedT;
-        }
-        var _geArcs = swordGridCache._elecCache;
-
-        var _sBatchSize = Math.max(1, Math.ceil(swords.length / 4));
-        for (var _sIdx = 0; _sIdx < swords.length; _sIdx++) {
-          // Draw electricity layer before each depth batch
-          if (_sIdx % _sBatchSize === 0 && swords.length > 1) {
-            ctx.save();
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            for (var _eai = 0; _eai < _geArcs.length; _eai++) {
-              var _ea = _geArcs[_eai];
-              if (_ea.idx < _sIdx || _ea.idx >= _sIdx + _sBatchSize) continue;
-              var _ePhase = Math.sin(_geFet * 0.03 + _ea.idx * 2.7) * Math.sin(_geFet * 0.017 + _ea.idx * 4.1) * Math.sin(_geFet * 0.009 + _ea.idx * 1.3);
-              if (_ePhase < 0.2) continue;
-              var _eAlpha = (_ePhase - 0.2) * 1.5;
-              ctx.beginPath();
-              ctx.moveTo(_ea.mx[0], _ea.my[0]);
-              for (var _emi = 1; _emi < _ea.mx.length; _emi++) ctx.lineTo(_ea.mx[_emi], _ea.my[_emi]);
-              ctx.strokeStyle = 'rgba(255,120,20,' + (_eAlpha * 0.18) + ')';
-              ctx.lineWidth = 4; ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,160,50,' + (_eAlpha * 0.35) + ')';
-              ctx.lineWidth = 2; ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,210,140,' + (_eAlpha * 0.5) + ')';
-              ctx.lineWidth = 0.8; ctx.stroke();
-              for (var _ebi2 = 0; _ebi2 < _ea.br.length; _ebi2++) {
-                var _ebr = _ea.br[_ebi2];
-                ctx.beginPath();
-                ctx.moveTo(_ebr.x[0], _ebr.y[0]);
-                for (var _ebsi2 = 1; _ebsi2 < _ebr.x.length; _ebsi2++) ctx.lineTo(_ebr.x[_ebsi2], _ebr.y[_ebsi2]);
-                ctx.strokeStyle = 'rgba(255,140,30,' + (_eAlpha * 0.12) + ')';
-                ctx.lineWidth = 2.5; ctx.stroke();
-                ctx.strokeStyle = 'rgba(255,200,120,' + (_eAlpha * 0.35) + ')';
-                ctx.lineWidth = 0.6; ctx.stroke();
-              }
-            }
-            ctx.restore();
-          }
-          const s = swords[_sIdx];
+        for (const s of swords) {
           // Sword type — hash independent of position grid
           let th = (s.idx * 1640531527 + 2747636419) | 0; th = Math.imul(th ^ (th >>> 16), 0x45d9f3b); th = th ^ (th >>> 13);
           const isGladius = ((th >>> 0) % 4) === 0;
@@ -4174,9 +4106,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           // Small orange glow along blade (cached params)
           if (s._glowA === undefined) {
-            s._glowA = 0.07 + s._lit * 0.08;
-            s._glowBlur = Math.max(2, bladeH * 0.04);
-            s._glowLW = Math.max(0.5, bladeW * 0.2);
+            s._glowA = 0.15 + s._lit * 0.2;
+            s._glowBlur = Math.max(4, bladeH * 0.08);
+            s._glowLW = Math.max(1, bladeW * 0.4);
             s._glowTop = -(isGladius ? overall * 0.7 * 0.72 : bladeH) * 0.9;
           }
           ctx.globalCompositeOperation = 'lighter';
