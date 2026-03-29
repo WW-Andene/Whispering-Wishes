@@ -3746,11 +3746,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _gi = 0; _gi < _nCuts; _gi++) _gaps.push(6 + _cr() * 6);
           var _driftX = [0];
           for (var _oi = 0; _oi < _nCuts; _oi++) _driftX.unshift((_cr() > 0.5 ? 1 : -1) * (1 + _cr() * 2));
-          // Cumulative gap: guard piece at 0, each piece above shifts more negative
-          var _cumGap = [];
+          // Cumulative gap: tip piece at 0, each piece below shifts more positive
+          var _cumGap = [0]; // tip piece stays
           var _gSum = 0;
-          for (var _cg = _nCuts - 1; _cg >= 0; _cg--) { _gSum += _gaps[_cg]; _cumGap[_cg] = -_gSum; }
-          _cumGap[_nCuts] = 0; // guard piece stays
+          for (var _cg = 0; _cg < _nCuts; _cg++) { _gSum += _gaps[_cg]; _cumGap.push(_gSum); }
           // Draw pieces
           for (var _si = 0; _si <= _nCuts; _si++) {
             var _topCut = _si > 0 ? _cuts[_si - 1] : null;
