@@ -146,11 +146,13 @@ export default function TeamsTab({
       if (m.weapSubstat === 'Crit DMG') rCd += parseFloat(m.weapSubVal) || 0;
       if (m.weapSubstat === sKey) rStatPct += parseFloat(m.weapSubVal) || 0;
       // Weapon passive (own only)
-      if (m.weapon?.passive) {
-        const wp = parsePassive(m.weapon.passive, m.d.element);
-        if (m.scaling === 'ATK') rStatPct += wp.atkPct;
-        rElem += wp.elemDmg; rSkillDmg += wp.skillDmg;
-        rCr += wp.critRate; rCd += wp.critDmg;
+      if (m.weapon) {
+        const wp = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
+        if (m.scaling === 'ATK') rStatPct += (wp.atkPct || 0);
+        else if (m.scaling === 'HP') rStatPct += (wp.hpPct || 0);
+        else if (m.scaling === 'DEF') rStatPct += (wp.defPct || 0);
+        rElem += (wp.elemDmg || 0); rSkillDmg += (wp.skillDmg || 0);
+        rCr += (wp.critRate || 0); rCd += (wp.critDmg || 0);
       }
       // Echo set (own set bonuses)
       if (m.echoSet) {
@@ -211,11 +213,16 @@ export default function TeamsTab({
     if (mainDps.weapSubstat === 'Energy Regen') atkPct += 8;
 
     let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
-    if (mainDps.weapon?.passive) {
-      const wp = parsePassive(mainDps.weapon.passive, mainDps.d.element);
-      atkPct += wp.atkPct; elemDmg += wp.elemDmg; skillDmg += wp.skillDmg;
-      cr += wp.critRate; cd += wp.critDmg; defIgnore += wp.defIgnore; resShred += wp.resShred;
-      wpBasicDmg = wp.basicDmg; wpHeavyDmg = wp.heavyDmg; wpLibDmg = wp.libDmg; wpEchoDmg = wp.echoDmg;
+    if (mainDps.weapon) {
+      const wp = mainDps.weapon.pv || parsePassive(mainDps.weapon.passive, mainDps.d.element);
+      if (mainDps.scaling === 'ATK') atkPct += (wp.atkPct || 0);
+      else if (mainDps.scaling === 'HP') atkPct += (wp.hpPct || 0);
+      else if (mainDps.scaling === 'DEF') atkPct += (wp.defPct || 0);
+      elemDmg += (wp.elemDmg || 0); skillDmg += (wp.skillDmg || 0);
+      cr += (wp.critRate || 0); cd += (wp.critDmg || 0);
+      defIgnore += (wp.defIgnore || 0); resShred += (wp.resShred || 0);
+      wpBasicDmg = (wp.basicDmg || 0); wpHeavyDmg = (wp.heavyDmg || 0);
+      wpLibDmg = (wp.libDmg || 0); wpEchoDmg = (wp.echoDmg || 0);
     }
 
     if (mainDps.echoSet) {
@@ -377,6 +384,16 @@ export default function TeamsTab({
         else if (wb.stat === 'critDmg') cd += val;
         else if (wb.stat === 'allDmg') elemDmg += val;
       });
+      // Weapon team buffs (tv)
+      if (m.weapon?.tv) {
+        const wt = m.weapon.tv;
+        const teamRotTime = mainDps.d.rotTime || 25;
+        const uptime = Math.min(1, (wt.duration || 15) / teamRotTime);
+        if (wt.atkPct) atkPct += wt.atkPct * uptime;
+        if (wt.elemDmg) elemDmg += wt.elemDmg * uptime;
+        if (wt.critRate) cr += wt.critRate * uptime;
+        if (wt.critDmg) cd += wt.critDmg * uptime;
+      }
     });
 
     let seqTotalMultBonus = 0;
@@ -608,13 +625,16 @@ export default function TeamsTab({
           });
         }
         // Sub-DPS weapon passive
-        if (m.weapon?.passive) {
-          const swp = parsePassive(m.weapon.passive, m.d.element);
-          if (m.scaling === 'ATK') sAtkPct += swp.atkPct;
-          sElem += swp.elemDmg; sSkillDmg += swp.skillDmg;
-          sCr += swp.critRate; sCd += swp.critDmg;
-          sBasicDmg += swp.basicDmg; sHeavyDmg += swp.heavyDmg;
-          sLibDmg += swp.libDmg; sEchoDmg += swp.echoDmg;
+        if (m.weapon) {
+          const swp = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
+          if (m.scaling === 'ATK') sAtkPct += (swp.atkPct || 0);
+          else if (m.scaling === 'HP') sAtkPct += (swp.hpPct || 0);
+          else if (m.scaling === 'DEF') sAtkPct += (swp.defPct || 0);
+          sElem += (swp.elemDmg || 0); sSkillDmg += (swp.skillDmg || 0);
+          sCr += (swp.critRate || 0); sCd += (swp.critDmg || 0);
+          sBasicDmg += (swp.basicDmg || 0); sHeavyDmg += (swp.heavyDmg || 0);
+          sLibDmg += (swp.libDmg || 0); sEchoDmg += (swp.echoDmg || 0);
+          sDefIgnore += (swp.defIgnore || 0); sResShred += (swp.resShred || 0);
         }
         // Echo set (HP/DEF scaling support)
         if (m.echoSet) {
