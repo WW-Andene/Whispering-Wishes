@@ -3664,131 +3664,120 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — damaged blade: jagged edges, surface cracks, shards ===
+          // === LONGSWORD — broken blade: diagonal cuts, separated pieces, shards ===
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
           var _hw = bladeW / 2;
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125;
-          var _dmgBot = guardH - _guardZone; // no damage below here
-          // Big jagged notches — chunks missing from blade edges
-          var _nNotches = 5 + (_cr() * 5 | 0); // 5-9 per side
-          var _notchesL = [], _notchesR = [];
-          for (var _ni = 0; _ni < _nNotches; _ni++) {
-            var _ny = -bladeH * 0.88 + _cr() * (bladeH * 0.88 + _dmgBot);
-            var _nd = Math.max(2, _hw * (0.3 + _cr() * 0.7)); // min 2px deep
-            var _nh = Math.max(4, bladeH * (0.03 + _cr() * 0.07)); // min 4px tall
-            if (_cr() > 0.3) _notchesL.push({ y: _ny, d: _nd, h: _nh });
-            if (_cr() > 0.3) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
+          // 3-4 diagonal cuts evenly spaced across blade
+          var _nCuts = 3 + (_cr() * 2 | 0);
+          var _cutTop = -bladeH * 0.9;
+          var _cutBot = guardH - _guardZone;
+          var _cutSpan = _cutBot - _cutTop;
+          var _cuts = [];
+          for (var _ci = 0; _ci < _nCuts; _ci++) {
+            var _y = _cutTop + _cutSpan * (_ci + 0.5) / _nCuts + (_cr() - 0.5) * _cutSpan * 0.15;
+            var _drop = Math.max(3, bladeH * (0.02 + _cr() * 0.04));
+            var _dir = _cr() > 0.5 ? 1 : -1;
+            _cuts.push({ yL: _y, yR: _y + _dir * _drop });
           }
-          _notchesL.sort(function(a,b){ return a.y - b.y; });
-          _notchesR.sort(function(a,b){ return a.y - b.y; });
-          // Left half with jagged edge
-          var _blGL = ctx.createLinearGradient(0, 0, -_hw, 0);
-          if (leftLight) { _blGL.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');_blGL.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');_blGL.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
-          else { _blGL.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');_blGL.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');_blGL.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
-          ctx.fillStyle = _blGL;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
-          ctx.lineTo(-_hw, tipEnd);
-          var _prevY = tipEnd;
-          for (var _li = 0; _li < _notchesL.length; _li++) {
-            var _n = _notchesL[_li];
-            if (_n.y <= _prevY) continue;
-            ctx.lineTo(-_hw, _n.y);
-            ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
-            ctx.lineTo(-_hw, _n.y + _n.h);
-            _prevY = _n.y + _n.h;
-          }
-          ctx.lineTo(-_hw, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath(); ctx.fill();
-          // Right half with jagged edge
-          var _blGR = ctx.createLinearGradient(0, 0, _hw, 0);
-          if (leftLight) { _blGR.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');_blGR.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');_blGR.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
-          else { _blGR.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');_blGR.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');_blGR.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
-          ctx.fillStyle = _blGR;
-          ctx.beginPath();
-          ctx.moveTo(0, -bladeH);
-          ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
-          ctx.lineTo(_hw, tipEnd);
-          _prevY = tipEnd;
-          for (var _ri = 0; _ri < _notchesR.length; _ri++) {
-            var _nr = _notchesR[_ri];
-            if (_nr.y <= _prevY) continue;
-            ctx.lineTo(_hw, _nr.y);
-            ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
-            ctx.lineTo(_hw, _nr.y + _nr.h);
-            _prevY = _nr.y + _nr.h;
-          }
-          ctx.lineTo(_hw, guardH);
-          ctx.lineTo(0, guardH);
-          ctx.closePath(); ctx.fill();
-          // Center ridge
-          ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
-          // Fuller grooves
-          var _fullerOff = bladeW * 0.18;
-          ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
-          ctx.beginPath();
-          ctx.moveTo(-_fullerOff, -bladeH * 0.88); ctx.lineTo(-_fullerOff, guardH);
-          ctx.moveTo(_fullerOff, -bladeH * 0.88); ctx.lineTo(_fullerOff, guardH);
-          ctx.stroke();
-          // Diagonal crack lines on surface
-          var _nCracks = 4 + (_cr() * 4 | 0); // 4-7 crack lines
-          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-          ctx.lineWidth = Math.max(1, bladeW * 0.06);
-          for (var _cli = 0; _cli < _nCracks; _cli++) {
-            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + _dmgBot);
-            var _cw = _hw * (0.3 + _cr() * 0.7);
-            var _cdir = _cr() > 0.5 ? 1 : -1;
-            var _cdy = bladeH * (0.02 + _cr() * 0.04) * (_cr() > 0.5 ? 1 : -1);
+          _cuts.sort(function(a,b){ return ((a.yL+a.yR)*0.5) - ((b.yL+b.yR)*0.5); });
+          // Cut Y at any X: simple linear interpolation left→right
+          var _cutYat = function(c, x) {
+            return c.yL + (x + _hw) / (2 * _hw) * (c.yR - c.yL);
+          };
+          // Inset = half the gap. Each side insets 3px = 6px total gap
+          var _inset = 3;
+          // Color for left/right halves
+          var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
+          var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
+          // Draw each piece: si=0 is tip, si=nCuts is guard
+          for (var _si = 0; _si <= _nCuts; _si++) {
+            var _top = _si > 0 ? _cuts[_si - 1] : null;
+            var _bot = _si < _nCuts ? _cuts[_si] : null;
+            // Alternate X drift: even pieces +2px, odd pieces -2px
+            var _dx = (_si % 2 === 0 ? 1 : -1) * (1 + _cr() * 2);
+            ctx.save();
+            ctx.translate(_dx, 0);
+            // --- LEFT HALF ---
+            ctx.fillStyle = _colL;
             ctx.beginPath();
-            ctx.moveTo(_cdir * -_cw, _cy);
-            ctx.lineTo((_cr() - 0.5) * _hw * 0.4, _cy + _cdy * 0.5);
-            ctx.lineTo(_cdir * _cw, _cy + _cdy);
-            ctx.stroke();
-          }
-          // Bright crack highlights
-          ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.15+lit*0.2)+')';
-          ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
-          for (var _cli2 = 0; _cli2 < 2; _cli2++) {
-            var _cy2 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
-            var _cw2 = _hw * (0.4 + _cr() * 0.5);
+            if (!_top) {
+              ctx.moveTo(0, -bladeH);
+              ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
+              ctx.lineTo(-_hw, tipEnd);
+            } else {
+              ctx.moveTo(0, _cutYat(_top, 0) + _inset);
+              ctx.lineTo(-_hw, _cutYat(_top, -_hw) + _inset);
+            }
+            if (!_bot) {
+              ctx.lineTo(-_hw, guardH);
+              ctx.lineTo(0, guardH);
+            } else {
+              ctx.lineTo(-_hw, _cutYat(_bot, -_hw) - _inset);
+              ctx.lineTo(0, _cutYat(_bot, 0) - _inset);
+            }
+            ctx.closePath(); ctx.fill();
+            // --- RIGHT HALF ---
+            ctx.fillStyle = _colR;
             ctx.beginPath();
-            ctx.moveTo(-_cw2, _cy2);
-            ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
-            ctx.stroke();
+            if (!_top) {
+              ctx.moveTo(0, -bladeH);
+              ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+              ctx.lineTo(_hw, tipEnd);
+            } else {
+              ctx.moveTo(0, _cutYat(_top, 0) + _inset);
+              ctx.lineTo(_hw, _cutYat(_top, _hw) + _inset);
+            }
+            if (!_bot) {
+              ctx.lineTo(_hw, guardH);
+              ctx.lineTo(0, guardH);
+            } else {
+              ctx.lineTo(_hw, _cutYat(_bot, _hw) - _inset);
+              ctx.lineTo(0, _cutYat(_bot, 0) - _inset);
+            }
+            ctx.closePath(); ctx.fill();
+            // --- 1px BLACK OUTLINE on broken edges ---
+            ctx.strokeStyle = 'rgba(0,0,0,0.9)';
+            ctx.lineWidth = 1;
+            if (_top) {
+              ctx.beginPath();
+              ctx.moveTo(-_hw, _cutYat(_top, -_hw) + _inset);
+              ctx.lineTo(0, _cutYat(_top, 0) + _inset);
+              ctx.lineTo(_hw, _cutYat(_top, _hw) + _inset);
+              ctx.stroke();
+            }
+            if (_bot) {
+              ctx.beginPath();
+              ctx.moveTo(-_hw, _cutYat(_bot, -_hw) - _inset);
+              ctx.lineTo(0, _cutYat(_bot, 0) - _inset);
+              ctx.lineTo(_hw, _cutYat(_bot, _hw) - _inset);
+              ctx.stroke();
+            }
+            // Ridge line per piece
+            ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
+            ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+            var _rt = _top ? _cutYat(_top, 0) + _inset + 1 : -bladeH + 1;
+            var _rb = _bot ? _cutYat(_bot, 0) - _inset - 1 : guardH;
+            ctx.beginPath(); ctx.moveTo(0, _rt); ctx.lineTo(0, _rb); ctx.stroke();
+            ctx.restore();
           }
-          // Floating shards near each notch — triangles pointing outward
+          // Small triangular shards floating near cut gaps
           var _shBr = 0.3 + lit * 0.4;
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
-          for (var _sli = 0; _sli < _notchesL.length; _sli++) {
-            var _sn = _notchesL[_sli];
-            var _sg = Math.max(3, _hw * 0.3 + _cr() * 4);
-            var _sx = -_hw - _sg;
-            var _sw = Math.max(3, _sn.d * (0.6 + _cr() * 0.5));
-            var _sh = Math.max(4, _sn.h * (0.5 + _cr() * 0.6));
+          for (var _shi = 0; _shi < _cuts.length; _shi++) {
+            var _sc = _cuts[_shi];
+            var _side = _cr() > 0.5 ? 1 : -1;
+            var _sx = _side * (_hw + 2 + _cr() * 3);
+            var _sy = (_sc.yL + _sc.yR) * 0.5;
+            var _ssz = Math.max(3, bladeW * 0.4 + _cr() * 3);
             ctx.beginPath();
-            ctx.moveTo(_sx, _sn.y);
-            ctx.lineTo(_sx - _sw * 0.7, _sn.y + _sh * 0.4);
-            ctx.lineTo(_sx - _sw * 0.1, _sn.y + _sh);
-            ctx.closePath(); ctx.fill();
-          }
-          for (var _sri = 0; _sri < _notchesR.length; _sri++) {
-            var _snr = _notchesR[_sri];
-            var _sgR = Math.max(3, _hw * 0.3 + _cr() * 4);
-            var _sxr = _hw + _sgR;
-            var _swr = Math.max(3, _snr.d * (0.6 + _cr() * 0.5));
-            var _shr = Math.max(4, _snr.h * (0.5 + _cr() * 0.6));
-            ctx.beginPath();
-            ctx.moveTo(_sxr, _snr.y);
-            ctx.lineTo(_sxr + _swr * 0.7, _snr.y + _shr * 0.4);
-            ctx.lineTo(_sxr + _swr * 0.1, _snr.y + _shr);
+            ctx.moveTo(_sx, _sy - _ssz * 0.5);
+            ctx.lineTo(_sx + _side * _ssz * 0.7, _sy);
+            ctx.lineTo(_sx, _sy + _ssz * 0.5);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
