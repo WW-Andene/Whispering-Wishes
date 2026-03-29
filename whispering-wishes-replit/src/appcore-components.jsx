@@ -3554,7 +3554,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               var _ex0 = _eSw.scrX, _ey0 = _eSw.scrY, _ex1 = _eTw.scrX, _ey1 = _eTw.scrY;
               var _edx = _ex1 - _ex0, _edy = _ey1 - _ey0;
               var _eDist = Math.sqrt(_edx * _edx + _edy * _edy);
-              if (_eDist < 10 || _eDist > W * 0.6) continue;
+              if (_eDist < 10 || _eDist > W * 1.2) continue;
               var _efa = (_ei * 1640531527 + _eSeedT * 9973) | 0;
               var _eRng = function() { _efa = Math.imul(_efa ^ (_efa >>> 16), 0x45d9f3b); _efa = _efa ^ (_efa >>> 13); return ((_efa >>> 0) % 1000) / 1000; };
               var _eNSeg = 5 + (_ei % 4);
