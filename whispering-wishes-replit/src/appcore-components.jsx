@@ -3695,17 +3695,17 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nBk = _breakCracks.length;
           var _fdx = [0], _fdy = [0], _frot = [0];
           for (var _fi3 = 0; _fi3 < _nBk; _fi3++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(3, bladeW * 0.5));
-            _fdy.push((_cr() - 0.5) * Math.max(2, bladeW * 0.3));
-            _frot.push((_cr() - 0.5) * 0.04);
+            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(2, bladeW * 0.35));
+            _fdy.push((_cr() - 0.5) * Math.max(1, bladeW * 0.2));
+            _frot.push((_cr() - 0.5) * 0.03);
           }
           // Notches
-          var _nNotches = 5 + (_cr() * 5 | 0); // 5-9 notches
+          var _nNotches = 4 + (_cr() * 4 | 0);
           var _notchesL = [], _notchesR = [];
           for (var _ni = 0; _ni < _nNotches; _ni++) {
             var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.85 + guardH);
-            var _nd = Math.max(1.5, _hw * (0.3 + _cr() * 0.4)); // 30-70% of half-width, min 1.5px
-            var _nh = Math.max(2, bladeH * (0.03 + _cr() * 0.06)); // min 2px tall
+            var _nd = _hw * (0.15 + _cr() * 0.3);
+            var _nh = bladeH * (0.02 + _cr() * 0.04);
             if (_cr() > 0.4) _notchesL.push({ y: _ny, d: _nd, h: _nh });
             if (_cr() > 0.4) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
@@ -3715,117 +3715,58 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _colL, _colR;
           if (leftLight) { _colL = 'rgb('+lR+','+lG+','+lB2+')'; _colR = 'rgb('+dR+','+dG+','+dB+')'; }
           else { _colL = 'rgb('+dR+','+dG+','+dB+')'; _colR = 'rgb('+lR+','+lG+','+lB2+')'; }
-          // Draw blade in segments — top/bottom edges follow crack diagonals
-          var _gapOff = Math.max(1.5, bladeW * 0.15); // gap offset along normal
+          // Draw blade in segments with diagonal gaps following crack lines
+          var _segBounds = [-bladeH];
+          for (var _sb = 0; _sb < _nBk; _sb++) _segBounds.push(_breakCracks[_sb].y);
+          _segBounds.push(guardH);
           for (var _si = 0; _si <= _nBk; _si++) {
-            var _topCrk = _si > 0 ? _breakCracks[_si - 1] : null;
-            var _botCrk = _si < _nBk ? _breakCracks[_si] : null;
-            // Y bounds for notch filtering
-            var _yTmin = _topCrk ? Math.min(_topCrk.y, _topCrk.y + _topCrk.dy) : -bladeH;
-            var _yBmax = _botCrk ? Math.max(_botCrk.y, _botCrk.y + _botCrk.dy) : guardH;
+            var _yT = _segBounds[_si], _yB = _segBounds[_si + 1];
+            // Gap follows crack diagonal — offset Y by crack's dy
+            var _gapAmt = Math.max(1.5, bladeW * 0.2);
+            var _yTd = _si === 0 ? _yT : _yT + _gapAmt;
+            var _wT = _hw * Math.max(0.05, Math.min(1, (_yTd + bladeH) / _totalH));
+            var _wB = _hw * Math.max(0.05, Math.min(1, (_yB + bladeH) / _totalH));
             ctx.save();
             ctx.translate(_fdx[_si], _fdy[_si]);
             ctx.rotate(_frot[_si]);
-            // --- LEFT HALF ---
+            // Left half with notches for this segment
             ctx.fillStyle = _colL;
             ctx.beginPath();
-            if (!_topCrk) {
-              // First piece: tip
-              ctx.moveTo(0, -bladeH);
-              var _wTip = _hw * Math.max(0.05, (tipEnd + bladeH) / _totalH);
-              ctx.lineTo(-_wTip * 0.4, -bladeH * 0.7);
-              ctx.lineTo(-_wTip, tipEnd);
-            } else {
-              // Top edge follows crack diagonal (shifted down by gap)
-              var _tc = _topCrk;
-              var _tPts = [
-                { x: Math.min(_tc.dir * -_tc.w, 0), y: _tc.y + _gapOff },
-                { x: Math.min(_tc.mx, 0), y: _tc.y + _tc.dy * 0.5 + _gapOff },
-                { x: Math.min(_tc.dir * _tc.w, 0), y: _tc.y + _tc.dy + _gapOff }
-              ];
-              // Sort left-to-right by x
-              _tPts.sort(function(a,b){return a.x - b.x});
-              ctx.moveTo(0, _tPts[_tPts.length-1].y);
-              for (var _tp = _tPts.length-1; _tp >= 0; _tp--) ctx.lineTo(_tPts[_tp].x, _tPts[_tp].y);
-            }
-            // Left edge with notches
-            var _pY = _topCrk ? _yTmin + _gapOff : tipEnd;
+            if (_si === 0) { ctx.moveTo(0, -bladeH); ctx.lineTo(-_wT * 0.4, -bladeH * 0.7); ctx.lineTo(-_wT, tipEnd); }
+            else { ctx.moveTo(0, _yTd); ctx.lineTo(-_wT, _yTd); }
+            var _pY = _si === 0 ? tipEnd : _yTd;
             for (var _nli = 0; _nli < _notchesL.length; _nli++) {
               var _nl = _notchesL[_nli];
-              if (_nl.y <= _pY || _nl.y + _nl.h > _yBmax) continue;
+              if (_nl.y <= _pY || _nl.y + _nl.h > _yB) continue;
               var _wAtN = _hw * Math.max(0.05, (_nl.y + bladeH) / _totalH);
               ctx.lineTo(-_wAtN, _nl.y);
               ctx.lineTo(-_wAtN + _nl.d, _nl.y + _nl.h * 0.4);
               ctx.lineTo(-_wAtN, _nl.y + _nl.h);
               _pY = _nl.y + _nl.h;
             }
-            // Bottom edge
-            if (!_botCrk) {
-              var _wBot = _hw * Math.max(0.05, (guardH + bladeH) / _totalH);
-              ctx.lineTo(-_wBot, guardH); ctx.lineTo(0, guardH);
-            } else {
-              var _bc = _botCrk;
-              var _bPts = [
-                { x: Math.min(_bc.dir * -_bc.w, 0), y: _bc.y },
-                { x: Math.min(_bc.mx, 0), y: _bc.y + _bc.dy * 0.5 },
-                { x: Math.min(_bc.dir * _bc.w, 0), y: _bc.y + _bc.dy }
-              ];
-              _bPts.sort(function(a,b){return a.x - b.x});
-              for (var _bp = 0; _bp < _bPts.length; _bp++) ctx.lineTo(_bPts[_bp].x, _bPts[_bp].y);
-              ctx.lineTo(0, _bPts[_bPts.length-1].y);
-            }
+            ctx.lineTo(-_wB, _yB); ctx.lineTo(0, _yB);
             ctx.closePath(); ctx.fill();
-            // --- RIGHT HALF ---
+            // Right half with notches
             ctx.fillStyle = _colR;
             ctx.beginPath();
-            if (!_topCrk) {
-              ctx.moveTo(0, -bladeH);
-              var _wTipR = _hw * Math.max(0.05, (tipEnd + bladeH) / _totalH);
-              ctx.lineTo(_wTipR * 0.4, -bladeH * 0.7);
-              ctx.lineTo(_wTipR, tipEnd);
-            } else {
-              var _tcR = _topCrk;
-              var _tPtsR = [
-                { x: Math.max(_tcR.dir * -_tcR.w, 0), y: _tcR.y + _gapOff },
-                { x: Math.max(_tcR.mx, 0), y: _tcR.y + _tcR.dy * 0.5 + _gapOff },
-                { x: Math.max(_tcR.dir * _tcR.w, 0), y: _tcR.y + _tcR.dy + _gapOff }
-              ];
-              _tPtsR.sort(function(a,b){return a.x - b.x});
-              ctx.moveTo(0, _tPtsR[0].y);
-              for (var _tp2 = 0; _tp2 < _tPtsR.length; _tp2++) ctx.lineTo(_tPtsR[_tp2].x, _tPtsR[_tp2].y);
-            }
-            // Right edge with notches
-            _pY = _topCrk ? _yTmin + _gapOff : tipEnd;
+            if (_si === 0) { ctx.moveTo(0, -bladeH); ctx.lineTo(_wT * 0.4, -bladeH * 0.7); ctx.lineTo(_wT, tipEnd); }
+            else { ctx.moveTo(0, _yTd); ctx.lineTo(_wT, _yTd); }
+            _pY = _si === 0 ? tipEnd : _yTd;
             for (var _nri = 0; _nri < _notchesR.length; _nri++) {
               var _nrr = _notchesR[_nri];
-              if (_nrr.y <= _pY || _nrr.y + _nrr.h > _yBmax) continue;
+              if (_nrr.y <= _pY || _nrr.y + _nrr.h > _yB) continue;
               var _wAtNR = _hw * Math.max(0.05, (_nrr.y + bladeH) / _totalH);
               ctx.lineTo(_wAtNR, _nrr.y);
               ctx.lineTo(_wAtNR - _nrr.d, _nrr.y + _nrr.h * 0.4);
               ctx.lineTo(_wAtNR, _nrr.y + _nrr.h);
               _pY = _nrr.y + _nrr.h;
             }
-            if (!_botCrk) {
-              var _wBotR = _hw * Math.max(0.05, (guardH + bladeH) / _totalH);
-              ctx.lineTo(_wBotR, guardH); ctx.lineTo(0, guardH);
-            } else {
-              var _bcR = _botCrk;
-              var _bPtsR = [
-                { x: Math.max(_bcR.dir * -_bcR.w, 0), y: _bcR.y },
-                { x: Math.max(_bcR.mx, 0), y: _bcR.y + _bcR.dy * 0.5 },
-                { x: Math.max(_bcR.dir * _bcR.w, 0), y: _bcR.y + _bcR.dy }
-              ];
-              _bPtsR.sort(function(a,b){return b.x - a.x});
-              for (var _bp2 = 0; _bp2 < _bPtsR.length; _bp2++) ctx.lineTo(_bPtsR[_bp2].x, _bPtsR[_bp2].y);
-              ctx.lineTo(0, _bPtsR[_bPtsR.length-1].y);
-            }
+            ctx.lineTo(_wB, _yB); ctx.lineTo(0, _yB);
             ctx.closePath(); ctx.fill();
             // Ridge per piece
             ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            var _ridgeTop = _topCrk ? _topCrk.y + _gapOff + 1 : -bladeH + 1;
-            var _ridgeBot = _botCrk ? _botCrk.y : guardH;
-            ctx.beginPath(); ctx.moveTo(0, _ridgeTop); ctx.lineTo(0, _ridgeBot); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, _yTd + 1); ctx.lineTo(0, _yB); ctx.stroke();
             ctx.restore();
           }
           // Crack lines on surface
