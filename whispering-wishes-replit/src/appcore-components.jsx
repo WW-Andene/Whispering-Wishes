@@ -3741,12 +3741,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               _pY = _n.y + _n.h;
             }
           };
-          var _gap = 6 + _cr() * 6; // 6-12px gap
-          // Pieces move UP from guard. Guard stays at 0. Each piece above shifts 6-12px up.
+          var _gap = 6 + _cr() * 3; // 6-9px gap added to top boundary of each piece
+          // Pieces move UP from guard. Guard stays at 0.
           var _offX = [0], _offY = [0]; // guard piece (last)
           for (var _oi = 0; _oi < _nCuts; _oi++) {
-            _offX.unshift(_offX[0] + (_cr() > 0.5 ? 1 : -1) * _cr() * 3); // 0-3px left or right
-            _offY.unshift(_offY[0] - (6 + _cr() * 6)); // negative = UP (toward tip, away from ground)
+            _offX.unshift(_offX[0] + (_cr() > 0.5 ? 1 : -1) * _cr() * 3);
+            _offY.unshift(_offY[0] - (6 + _cr() * 3)); // 6-9px up per piece
           }
           // Draw pieces
           for (var _si = 0; _si <= _nCuts; _si++) {
@@ -3754,8 +3754,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _botCut = _si < _nCuts ? _cuts[_si] : null;
             ctx.save();
             ctx.translate(_offX[_si], _offY[_si]);
-            var _tL = _topCut ? _cutY(_topCut, -_hw) + _gap : tipEnd;
-            var _tR = _topCut ? _cutY(_topCut, _hw) + _gap : tipEnd;
+            var _tL = _topCut ? _cutY(_topCut, -_hw) : tipEnd;
+            var _tR = _topCut ? _cutY(_topCut, _hw) : tipEnd;
             var _bL = _botCut ? _cutY(_botCut, -_hw) : guardH;
             var _bR = _botCut ? _cutY(_botCut, _hw) : guardH;
             // Left half
@@ -3766,8 +3766,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
               ctx.lineTo(-_hw, tipEnd);
             } else {
-              ctx.moveTo(0, _cutY(_topCut, 0) + _gap);
-              ctx.lineTo(_topCut.mx < 0 ? _topCut.mx : -_hw * 0.3, _cutY(_topCut, _topCut.mx < 0 ? _topCut.mx : -_hw * 0.3) + _gap);
+              ctx.moveTo(0, _cutY(_topCut, 0));
+              ctx.lineTo(_topCut.mx < 0 ? _topCut.mx : -_hw * 0.3, _cutY(_topCut, _topCut.mx < 0 ? _topCut.mx : -_hw * 0.3));
               ctx.lineTo(-_hw, _tL);
             }
             _drawNotch(_notchesL, -1, _tL, _bL);
@@ -3787,8 +3787,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
               ctx.lineTo(_hw, tipEnd);
             } else {
-              ctx.moveTo(0, _cutY(_topCut, 0) + _gap);
-              ctx.lineTo(_topCut.mx > 0 ? _topCut.mx : _hw * 0.3, _cutY(_topCut, _topCut.mx > 0 ? _topCut.mx : _hw * 0.3) + _gap);
+              ctx.moveTo(0, _cutY(_topCut, 0));
+              ctx.lineTo(_topCut.mx > 0 ? _topCut.mx : _hw * 0.3, _cutY(_topCut, _topCut.mx > 0 ? _topCut.mx : _hw * 0.3));
               ctx.lineTo(_hw, _tR);
             }
             _drawNotch(_notchesR, 1, _tR, _bR);
@@ -3803,7 +3803,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             // Ridge
             ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            var _rT = _topCut ? _cutY(_topCut, 0) + _gap + 1 : -bladeH + 1;
+            var _rT = _topCut ? _cutY(_topCut, 0) + 1 : -bladeH + 1;
             var _rB = _botCut ? _cutY(_botCut, 0) - 1 : guardH;
             ctx.beginPath(); ctx.moveTo(0, _rT); ctx.lineTo(0, _rB); ctx.stroke();
             // Black outline on broken edges
@@ -3811,9 +3811,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.strokeStyle = 'rgba(0,0,0,0.85)';
               ctx.lineWidth = 1;
               ctx.beginPath();
-              ctx.moveTo(-_hw, _cutY(_topCut, -_hw) + _gap);
-              ctx.lineTo(_topCut.mx, _topCut.yM + _gap);
-              ctx.lineTo(_hw, _cutY(_topCut, _hw) + _gap);
+              ctx.moveTo(-_hw, _cutY(_topCut, -_hw));
+              ctx.lineTo(_topCut.mx, _topCut.yM);
+              ctx.lineTo(_hw, _cutY(_topCut, _hw));
               ctx.stroke();
             }
             if (_botCut) {
