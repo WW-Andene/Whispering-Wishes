@@ -3979,20 +3979,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           } // end else (normal sword)
 
-          // Twinkling orange glow aura
-          var _glowPhase = Math.sin(cloudTime * 0.02 + s.idx * 3.1) * 0.5 + 0.5;
-          var _glowAlpha = 0.04 + _glowPhase * 0.06;
-          var _glowR = Math.max(3, bladeH * 0.06);
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          var _auraGrad = ctx.createRadialGradient(0, -bladeH * 0.4, 0, 0, -bladeH * 0.4, bladeH * 0.7);
-          _auraGrad.addColorStop(0, 'rgba(255,140,40,' + (_glowAlpha * 1.2) + ')');
-          _auraGrad.addColorStop(0.4, 'rgba(255,100,20,' + (_glowAlpha * 0.6) + ')');
-          _auraGrad.addColorStop(1, 'rgba(255,60,10,0)');
-          ctx.fillStyle = _auraGrad;
-          ctx.fillRect(-_glowR * 3, -bladeH - _glowR, _glowR * 6, bladeH + guardH + _glowR * 2);
-          ctx.restore();
-
           ctx.restore();
         }
 
