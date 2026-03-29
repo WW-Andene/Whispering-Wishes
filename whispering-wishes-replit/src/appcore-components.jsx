@@ -3526,7 +3526,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.beginPath();
           ctx.rect(0, 0, W, s.scrY);
           ctx.clip();
-          var _sFloat = Math.sin(cloudTime * 0.008 + s.idx * 2.3) * 2 * (overall / 100);
+          var _sFloat = Math.sin(cloudTime * 0.008 + s.idx * 2.3) * 2 * Math.min(1, overall / 100);
           ctx.translate(s.scrX, s.scrY - buried + _sFloat);
           ctx.scale(1, -1);
           ctx.rotate(-s.lean);
@@ -3675,7 +3675,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
           var _hw = bladeW / 2;
-          var _sc = overall / 100;
+          var _sc = Math.min(1, overall / 100);
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125;
           // 4-5 zigzag cuts, alternating directions, varied angles
