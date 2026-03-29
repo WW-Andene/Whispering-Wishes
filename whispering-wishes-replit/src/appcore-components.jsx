@@ -3033,15 +3033,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             // Only medium and big clouds darken — color strings cached on cloud
             if (!cl._shCol0) {
               const darkness = cl.cloudType >= 3 ? 0.82 : 0.88;
-              const dStr = Math.round(darkness * 255);
-              const midStr = Math.round(darkness * 255 + (255 - darkness * 255) * 0.6);
-              cl._shCol0 = 'rgb(' + dStr + ',' + dStr + ',' + dStr + ')';
-              cl._shCol1 = 'rgb(' + midStr + ',' + midStr + ',' + midStr + ')';
+              var _shR = Math.round(darkness * 255);
+              var _shG = Math.round(darkness * 240);
+              var _shB = Math.round(darkness * 210);
+              var _shMidR = Math.round(_shR + (255 - _shR) * 0.6);
+              var _shMidG = Math.round(_shG + (248 - _shG) * 0.6);
+              var _shMidB = Math.round(_shB + (235 - _shB) * 0.6);
+              cl._shCol0 = 'rgb(' + _shR + ',' + _shG + ',' + _shB + ')';
+              cl._shCol1 = 'rgb(' + _shMidR + ',' + _shMidG + ',' + _shMidB + ')';
             }
             const shadowGrad = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, shadowR);
             shadowGrad.addColorStop(0, cl._shCol0);
             shadowGrad.addColorStop(0.5, cl._shCol1);
-            shadowGrad.addColorStop(1, 'rgb(255,255,255)');
+            shadowGrad.addColorStop(1, 'rgb(255,250,240)');
             ctx.fillStyle = shadowGrad;
             ctx.beginPath(); ctx.arc(cx3, cy3, shadowR, 0, Math.PI * 2); ctx.fill();
           }
@@ -3123,7 +3127,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         };
 
         // --- Baked ground from ground-background.jsx ---
-        if (!groundCache || groundCache.width !== W || groundCache.height !== H || !groundCache._v2) {
+        if (!groundCache || groundCache.width !== W || groundCache.height !== H || !groundCache._v3) {
           groundCache = document.createElement('canvas'); groundCache.width = W; groundCache.height = H;
           const gctx = groundCache.getContext('2d');
           const SEED = sceneSeed;
@@ -3160,8 +3164,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             // Mid-tone: warm brown
             const tmR=baseVal*0.70+warmShift*0.40, tmG=baseVal*0.52+warmShift*0.28, tmB=baseVal*0.36+warmShift*0.16;
             // Light tones: muted warm
-            const t2r=baseVal*0.95+warmShift*0.55, t2g=baseVal*0.70+warmShift*0.38, t2b=baseVal*0.45+warmShift*0.20;
-            const t3r=baseVal*1.20+warmShift*0.70, t3g=baseVal*0.85+warmShift*0.48, t3b=baseVal*0.52+warmShift*0.24;
+            const t2r=baseVal*1.0+warmShift*0.60, t2g=baseVal*0.72+warmShift*0.40, t2b=baseVal*0.46+warmShift*0.22;
+            const t3r=baseVal*1.30+warmShift*0.78, t3g=baseVal*0.90+warmShift*0.52, t3b=baseVal*0.55+warmShift*0.28;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
@@ -3181,7 +3185,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const cn=_bgFbm(nx*10,dT*7,2,SEED+7000),ce=Math.abs(cn-0.5);if(ce<0.01){const cs=(1-ce/0.01);rr=rr*(1-cs*0.3)+tones[0][0]*cs*0.3;gg=gg*(1-cs*0.3)+tones[0][1]*cs*0.3;bb=bb*(1-cs*0.3)+tones[0][2]*cs*0.3;}
               // Curve clip highlight + edges
               const hg2=Math.pow(Math.max(0,1-dT*6),3),scx=Math.exp(-Math.pow((nx-0.5)*2,2));
-              rr+=hg2*scx*35;gg+=hg2*scx*22;bb+=hg2*scx*8;
+              rr+=hg2*scx*45;gg+=hg2*scx*28;bb+=hg2*scx*12;
               const eDk=1-Math.pow(Math.abs(nx-0.5)*2,2)*0.1;rr*=eDk;gg*=eDk;bb*=eDk;
               const idx=(py*gW+px)*4;gd[idx]=Math.max(0,Math.min(255,Math.round(rr)));gd[idx+1]=Math.max(0,Math.min(255,Math.round(gg)));gd[idx+2]=Math.max(0,Math.min(255,Math.round(bb)));gd[idx+3]=255;
           }}
@@ -3238,11 +3242,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           gctx.fillStyle=gShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.globalCompositeOperation="multiply";
           const amberShade=gctx.createLinearGradient(0,edgeY-curveH,0,edgeY+groundH);
-          amberShade.addColorStop(0,"rgba(210,180,140,1)");amberShade.addColorStop(0.3,"rgba(195,165,120,1)");amberShade.addColorStop(0.7,"rgba(175,145,100,1)");amberShade.addColorStop(1,"rgba(155,125,85,1)");
+          amberShade.addColorStop(0,"rgba(225,190,150,1)");amberShade.addColorStop(0.3,"rgba(210,175,130,1)");amberShade.addColorStop(0.7,"rgba(190,155,110,1)");amberShade.addColorStop(1,"rgba(170,140,95,1)");
           gctx.fillStyle=amberShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.restore();
           } // end if gW>=4&&gHt>=4
-          groundCache._v2 = true;
+          groundCache._v3 = true;
         }
         ctx.drawImage(groundCache, 0, 0);
 
@@ -3600,7 +3604,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             s._lightB = (0.25 + s._lit * 0.75) * faceCatch;
             s._darkB = 0.08 + s._lit * 0.12 + (1 - faceCatch) * 0.06;
             s._lR = Math.round(45 + 210 * s._lightB); s._lG = Math.round(30 + 145 * s._lightB); s._lB2 = Math.round(18 + 75 * s._lightB);
-            s._dR = Math.round(25 + 70 * s._darkB); s._dG = Math.round(14 + 40 * s._darkB); s._dB = Math.round(8 + 20 * s._darkB);
+            s._dR = Math.round(38 + 85 * s._darkB); s._dG = Math.round(22 + 50 * s._darkB); s._dB = Math.round(12 + 28 * s._darkB);
             s._absYRot = Math.abs(s.yRot); s._sinYSkew = Math.sin(s.yAngle) * 0.15;
             // Pre-build color strings
             s._colLight = 'rgb('+s._lR+','+s._lG+','+s._lB2+')';
