@@ -1607,6 +1607,9 @@ Example: {"pulls":[...]}'
         trophyJsonInput={trophyJsonInput} setTrophyJsonInput={setTrophyJsonInput}
         activePlayersCount={activePlayersCount} activePlayersHistory={activePlayersHistory}
         presenceError={presenceError} adminPlayerList={adminPlayerList}
+        adminLockedUntil={adminLockedUntil}
+        trophies={trophies}
+        fetchActivePlayersCount={fetchActivePlayersCount} fetchAdminPlayerList={fetchAdminPlayerList}
         trophyOverrides={trophyOverrides} setTrophyOverrides={setTrophyOverrides}
         verifyAdminPassword={verifyAdminPassword} saveCustomBanners={saveCustomBanners}
         buildBannerForm={buildBannerForm} updateBannerForm={updateBannerForm}

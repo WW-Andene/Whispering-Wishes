@@ -15,6 +15,7 @@ import {
   hideOnError,
 } from '../../appcore-components.jsx';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
@@ -29,6 +30,9 @@ export default function AdminPanel({
   trophyJsonInput, setTrophyJsonInput,
   activePlayersCount, activePlayersHistory,
   presenceError, adminPlayerList,
+  adminLockedUntil,
+  trophies,
+  fetchActivePlayersCount, fetchAdminPlayerList,
   trophyOverrides, setTrophyOverrides,
   verifyAdminPassword, saveCustomBanners,
   buildBannerForm, updateBannerForm,

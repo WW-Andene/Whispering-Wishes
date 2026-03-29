@@ -4,8 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Download, Star, X } from 'lucide-react';
-import { CHARACTER_DATA, HEADER_ICON } from '../../appcore-data.js';
+import { Crown, Download, Monitor, Smartphone, Star, X } from 'lucide-react';
+import { CHARACTER_DATA, HEADER_ICON, ALL_CHARACTERS } from '../../appcore-data.js';
 import { TROPHY_ICON_MAP, hideOnError } from '../../appcore-components.jsx';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 
