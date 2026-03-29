@@ -5382,7 +5382,7 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic }) => {
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned }) => {
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -5454,6 +5454,18 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         <Crown size={12} />
       </button>
     )}
+    {/* Owned indicator badge — bottom-right corner, only for characters with tracking */}
+    {onToggleOwned && !framingMode && (
+      <button
+        className={`absolute z-20 flex items-center justify-center transition-all ${isCharOwned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-black/50 text-gray-600 hover:bg-black/70 hover:text-gray-400'}`}
+        style={{ bottom: '32px', left: '4px', width: '20px', height: '20px', minHeight: '20px', borderRadius: '5px', padding: 0 }}
+        onClick={(e) => { e.stopPropagation(); onToggleOwned(name); }}
+        title={isCharOwned ? 'Owned — click to unmark' : 'Not owned — click to mark as owned'}
+        aria-label={isCharOwned ? `Unmark ${name} as owned` : `Mark ${name} as owned`}
+      >
+        <Check size={12} />
+      </button>
+    )}
     {isSelected && (
       <div className="absolute top-1 right-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
         <span className="text-black text-[10px]">✓</span>
@@ -5473,7 +5485,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
-  prev.isProfilePic === next.isProfilePic &&
+  prev.isProfilePic === next.isProfilePic && prev.isCharOwned === next.isCharOwned &&
   prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
 );
 CollectionGridCard.displayName = 'CollectionGridCard';
@@ -5647,7 +5659,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
 KuroSelect.displayName = 'KuroSelect';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="kuro-empty-state relative py-3">
@@ -5689,6 +5701,8 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               isNew={isNew}
               isProfilePic={profilePic === name}
               onSetProfilePic={onSetProfilePic}
+              isCharOwned={ownedChars ? ownedChars.includes(name) : undefined}
+              onToggleOwned={toggleOwned}
             />
           );
         })}

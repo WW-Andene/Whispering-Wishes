@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
-import { Archive, Calendar, Check, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
+import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
 import {
   CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, CHAR_BUFF_TABLE,
   RELEASE_ORDER, WEAPON_RELEASE_ORDER,
@@ -297,7 +297,7 @@ export default function CollectionTab({
                       <Crown size={12} className="inline mr-1" />Characters
                     </button>
                     <button
-                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
                       title="Weapons"
                       aria-label="View weapons"
@@ -306,7 +306,7 @@ export default function CollectionTab({
                       <Sword size={12} className="inline mr-1" />Weapons
                     </button>
                     <button
-                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); }}
+                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionOwnedFilter('all'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
                       title="Echoes"
                       aria-label="View echoes"
@@ -637,6 +637,7 @@ export default function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                ownedChars={ownedChars} toggleOwned={toggleOwned}
                 collapsible
               />
             </CardBody>
