@@ -2264,6 +2264,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
     if (!ctx) return;
     let animId;
     let groundCache = null;
+    let swordGridCache = null;
     let honourParticles = null;
     let lastFrame = 0;
     let sceneClouds = null;
@@ -2290,6 +2291,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
       groundCache = null;
+      swordGridCache = null;
       honourParticles = null;
       skyCache = null;
     };
@@ -3431,9 +3433,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
 
         // --- SWORDS spread equally on 50m × 50m plane, 2m spacing ---
+        if (!swordGridCache) {
         const planeSize = 50;
         const baseSpacing = 1;
-        const swords = [];
+        const _swords = [];
         let swordIdx = 0;
 
         // Walk the grid with per-sword spacing variation (0.5 to 2)
@@ -3495,13 +3498,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const yAngle = rng(swordIdx, 606) * Math.PI;  // 0-180°
             const yRot = Math.cos(yAngle);
 
-            swords.push({ scrX, scrY, size, lean, yRot, yAngle, wz: jz, wx: jx, shuffle: rng(swordIdx, 200), idx: swordIdx });
+            _swords.push({ scrX, scrY, size, lean, yRot, yAngle, wz: jz, wx: jx, shuffle: rng(swordIdx, 200), idx: swordIdx });
           }
           bz += rowSpacingZ;
         }
 
         // Sort back-to-front
-        swords.sort((a, b) => b.wz - a.wz);
+        _swords.sort((a, b) => b.wz - a.wz);
+        swordGridCache = _swords;
+        }
+        const swords = swordGridCache;
 
         for (const s of swords) {
           // Sword type — hash independent of position grid
