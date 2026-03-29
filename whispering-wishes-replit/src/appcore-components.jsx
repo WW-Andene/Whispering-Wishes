@@ -3669,7 +3669,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath();
             ctx.arc(0, gKnobY, gKnobR, 0, Math.PI * 2);
             ctx.fill();
-          } else if (overall < 35) {
+          } else if (overall < 70) {
           // === SMALL/DISTANT LONGSWORD — solid blade, no fractures ===
           var _hw = bladeW / 2;
           // Left half
