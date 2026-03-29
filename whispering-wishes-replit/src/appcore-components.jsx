@@ -4132,17 +4132,43 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
         // === BANNER — pole with round crest + vertical-only cloth ===
         {
-          const bWx = 0.5, bWz = 22;
-          const bScrX = projX(bWx, bWz);
-          const bScrY = projY(bWz, bWx);
-          const bScale = 2.8 * focal / (bWz - camZ);
-          const poleH = bScale * 3.2;
-          const poleW = Math.max(1, bScale * 0.035);
-          const poleBury = bScale * 0.3;
-          const poleTop = bScrY - poleH + poleBury;
-          const bannerLean = -0.06;
+          if (!swordGridCache._banner) {
+            const bWx = 0.5, bWz = 22;
+            swordGridCache._banner = {
+              bScrX: projX(bWx, bWz), bScrY: projY(bWz, bWx),
+              bScale: 2.8 * focal / (bWz - camZ)
+            };
+            const _b = swordGridCache._banner;
+            _b.poleH = _b.bScale * 3.2;
+            _b.poleW = Math.max(1, _b.bScale * 0.035);
+            _b.poleBury = _b.bScale * 0.3;
+            _b.poleTop = _b.bScrY - _b.poleH + _b.poleBury;
+            _b.crossY = _b.poleTop + _b.bScale * 0.04;
+            _b.armH = _b.bScale * 0.2;
+            _b.crossW = _b.bScale * 0.7;
+            _b.barThick = _b.poleW;
+            _b.diaW = _b.poleW * 1.2;
+            _b.diaOut = _b.poleW * 2.2;
+            _b.diaIn = _b.poleW * 1.0;
+            _b.ridgeTop = _b.crossY + _b.poleW / 2;
+            _b.ridgeH = _b.bScale * 0.12;
+            _b.ridgeW = _b.crossW * 0.85;
+            _b.dTop = _b.ridgeTop + _b.ridgeH;
+            _b.dW = _b.crossW * 0.55;
+            _b.dH = _b.bScale * 1.6;
+            _b.cellSize = Math.sqrt(10);
+            _b.gridX = Math.max(2, Math.round(_b.dW / _b.cellSize));
+            _b.gridY = Math.max(2, Math.round(_b.dH / _b.cellSize));
+            _b.crestR = _b.bScale * 0.12;
+            // Pre-build shaft gradient coords
+            _b.shaftL = _b.bScrX - _b.poleW;
+            _b.shaftR = _b.bScrX + _b.poleW;
+          }
+          const _b = swordGridCache._banner;
+          const { bScrX, bScrY, bScale, poleH, poleW, poleTop, crossY, armH, crossW, barThick, diaW, diaOut, diaIn, ridgeTop, ridgeH, ridgeW, dTop, dW, dH, gridX, gridY, crestR } = _b;
           const wt = cloudTime * 0.5;
           const gD = 'rgb(140,95,25)', gM = 'rgb(200,155,45)', gH = 'rgb(245,215,100)';
+          const bannerLean = -0.06;
 
           ctx.save();
           ctx.translate(bScrX, bScrY);
@@ -4151,7 +4177,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           try {
 
           // Pole shaft
-          const shaftGrad = ctx.createLinearGradient(bScrX - poleW, 0, bScrX + poleW, 0);
+          const shaftGrad = ctx.createLinearGradient(_b.shaftL, 0, _b.shaftR, 0);
           shaftGrad.addColorStop(0, 'rgb(120,80,20)');
           shaftGrad.addColorStop(0.35, 'rgb(180,135,35)');
           shaftGrad.addColorStop(0.5, 'rgb(220,180,65)');
@@ -4160,23 +4186,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.fillStyle = shaftGrad;
           ctx.fillRect(bScrX - poleW / 2, poleTop, poleW, poleH);
 
-          // Gold arms — same thickness as pole for both vertical and horizontal
-          const barThick = poleW;
-          const crossY = poleTop + bScale * 0.04;
-
           // Vertical arm above
-          const armH = bScale * 0.2;
           ctx.fillStyle = gM;
           ctx.fillRect(bScrX - barThick / 2, poleTop - armH, barThick, armH);
 
-          // Horizontal crossbar — same thickness, arms extend past flag
-          const crossW = bScale * 0.7;
           ctx.fillRect(bScrX - crossW / 2, crossY - barThick / 2, crossW, barThick);
-
-          // Diamond 💎 end caps — point outward AND inward
-          const diaW = barThick * 1.2;  // width (perpendicular)
-          const diaOut = barThick * 2.2; // long outward point
-          const diaIn = barThick * 1.0;  // shorter inward point
           // Left — points left
           ctx.beginPath();
           ctx.moveTo(bScrX - crossW / 2 - diaOut, crossY);
@@ -4200,9 +4214,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath(); ctx.fill();
 
           // Vertical ridged columns
-          const ridgeTop = crossY + barThick / 2;
-          const ridgeH = bScale * 0.12;
-          const ridgeW = crossW * 0.85;
           for (let ri = 0; ri < 7; ri++) {
             const rx = bScrX - ridgeW / 2 + (ri + 0.5) * (ridgeW / 7);
             const rw = ridgeW / 7 * 0.5;
@@ -4212,13 +4223,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fillRect(rx - rw, ridgeTop, rw * 2, ridgeH);
           }
 
-          // Cloth — 2D grid mesh, sized to ~10px cells
-          const dTop = ridgeTop + ridgeH;
-          const dW = crossW * 0.55;
-          const dH = bScale * 1.6;
-          const cellSize = Math.sqrt(10);
-          const gridX = Math.max(2, Math.round(dW / cellSize));
-          const gridY = Math.max(2, Math.round(dH / cellSize));
+          // Cloth — 2D grid mesh
 
           // Each row is a wave layer — displaced in X, Y, Z (depth→scale+opacity)
           // Wave field — slow traveling folds across cloth surface
@@ -4433,7 +4438,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.closePath(); ctx.stroke();
 
           // Gold crest — on top of everything, centered on crossbar
-          const crestR = bScale * 0.12;
           const cBg = ctx.createRadialGradient(bScrX, crossY, 0, bScrX, crossY, crestR);
           cBg.addColorStop(0, 'rgb(120,30,18)'); cBg.addColorStop(0.6, 'rgb(95,22,12)'); cBg.addColorStop(1, 'rgb(75,16,8)');
           ctx.fillStyle = cBg;
