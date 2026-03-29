@@ -564,6 +564,13 @@ export default function TeamsTab({
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
         const teamRotTime = mainDps.d.rotTime || 25;
+        // Default echo stats for sub-DPS if not configured (assumes: 4-cost ATK%/CR, 3-cost ElemDMG×2, 1-cost ATK%×2, +3 CR subs, +3 CD subs)
+        if (sEchoes.length === 0) {
+          sAtkPct += 30 + 18 + 18; // 4-cost ATK% + two 1-cost ATK%
+          sCr += 22.5; // 3 Crit Rate substats
+          sCd += 45; // 3 Crit DMG substats
+          sElem += 60; // two 3-cost Elem DMG
+        }
         // Collect buffs from ALL teammates
         mems.forEach(other => {
           if (other.name === m.name) return;
