@@ -3664,206 +3664,112 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — cracked/chipped blade, cut at crack lines ===
+          // === LONGSWORD — cracked/chipped blade ===
+          // Seeded RNG for this sword's damage pattern
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
+          // Generate jagged edge notches (chips in the blade edge)
           var _hw = bladeW / 2;
-          var _totalH = bladeH + guardH;
-          // Pre-generate crack line data
-          var _nCL = 3 + (_cr() * 3 | 0);
-          var _crLines = [];
-          for (var _cli = 0; _cli < _nCL; _cli++) {
-            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
-            var _cw = _hw * (0.3 + _cr() * 0.7);
-            var _cdir = _cr() > 0.5 ? 1 : -1;
-            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1);
-            var _cmx = (_cr() - 0.5) * _hw * 0.4;
-            _crLines.push({ y: _cy, w: _cw, dir: _cdir, dy: _cdy, mx: _cmx });
-          }
-          // Helper: Y along crack polyline at any X
-          var _crYatX = function(c, x) {
-            var pts = [
-              {x: c.dir * -c.w, y: c.y},
-              {x: c.mx, y: c.y + c.dy * 0.5},
-              {x: c.dir * c.w, y: c.y + c.dy}
-            ];
-            pts.sort(function(a,b){return a.x - b.x});
-            if (x <= pts[0].x) return pts[0].y;
-            if (x >= pts[2].x) return pts[2].y;
-            if (x <= pts[1].x) {
-              var t = (pts[1].x === pts[0].x) ? 0 : (x - pts[0].x) / (pts[1].x - pts[0].x);
-              return pts[0].y + t * (pts[1].y - pts[0].y);
-            }
-            var t2 = (pts[2].x === pts[1].x) ? 0 : (x - pts[1].x) / (pts[2].x - pts[1].x);
-            return pts[1].y + t2 * (pts[2].y - pts[1].y);
-          };
-          // Pick 1-2 breaks — extend to full width, protect bottom 6.25%
-          _crLines.sort(function(a, b) { return a.y - b.y; });
-          var _minBreakY = guardH - _totalH * 0.0625;
-          var _nBreaks = 1 + (_cr() * 2 | 0);
-          var _breakCracks = [];
-          var _breakStep = Math.max(1, Math.floor(_crLines.length / _nBreaks));
-          for (var _bki = 0; _bki < _nBreaks; _bki++) {
-            var _bCrack = _crLines[Math.min(_bki * _breakStep, _crLines.length - 1)];
-            var _bLowest = Math.max(_bCrack.y, _bCrack.y + _bCrack.dy);
-            if (_bLowest < _minBreakY) {
-              _breakCracks.push({ y: _bCrack.y, w: _hw, dir: _bCrack.dir, dy: _bCrack.dy, mx: _bCrack.mx, _orig: _bCrack });
-            }
-          }
-          _breakCracks.sort(function(a,b) { return (a.y + a.dy*0.5) - (b.y + b.dy*0.5); });
-          // Fragment offsets — top pieces float, bottom (guard) stays
-          var _nBk = _breakCracks.length;
-          var _fdx = [], _fdy = [], _frot = [];
-          for (var _fi = 0; _fi < _nBk; _fi++) {
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(3, bladeW * 0.5));
-            _fdy.push((_cr() - 0.5) * Math.max(2, bladeW * 0.3));
-            _frot.push((_cr() - 0.5) * 0.04);
-          }
-          _fdx.push(0); _fdy.push(0); _frot.push(0);
-          // Notches
-          var _nNotches = 4 + (_cr() * 4 | 0);
+          var _nNotches = 4 + (_cr() * 4 | 0); // 4-7 notches per side
           var _notchesL = [], _notchesR = [];
           for (var _ni = 0; _ni < _nNotches; _ni++) {
-            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.85 + guardH);
-            var _nd = _hw * (0.15 + _cr() * 0.3);
-            var _nh = bladeH * (0.02 + _cr() * 0.04);
+            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.85 + guardH); // along blade
+            var _nd = _hw * (0.15 + _cr() * 0.3); // notch depth (15-45% of half-width)
+            var _nh = bladeH * (0.02 + _cr() * 0.04); // notch height
             if (_cr() > 0.4) _notchesL.push({ y: _ny, d: _nd, h: _nh });
             if (_cr() > 0.4) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
           _notchesL.sort(function(a,b){ return a.y - b.y; });
           _notchesR.sort(function(a,b){ return a.y - b.y; });
-          // Gradient helpers
-          var _mkGL = function() {
-            var g = ctx.createLinearGradient(0, 0, -_hw, 0);
-            if (leftLight) { g.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');g.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');g.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
-            else { g.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');g.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');g.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
-            return g;
-          };
-          var _mkGR = function() {
-            var g = ctx.createLinearGradient(0, 0, _hw, 0);
-            if (leftLight) { g.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');g.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');g.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
-            else { g.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');g.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');g.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
-            return g;
-          };
-          var _gapOff = Math.max(1.5, bladeW * 0.12);
-          // Draw blade in segments — cuts follow crack line diagonals
-          for (var _si = 0; _si <= _nBk; _si++) {
-            var _topCrk = _si > 0 ? _breakCracks[_si - 1] : null;
-            var _botCrk = _si < _nBk ? _breakCracks[_si] : null;
-            ctx.save();
-            ctx.translate(_fdx[_si], _fdy[_si]);
-            ctx.rotate(_frot[_si]);
-            // --- LEFT HALF ---
-            ctx.fillStyle = _mkGL();
-            ctx.beginPath();
-            if (!_topCrk) {
-              ctx.moveTo(0, -bladeH);
-              ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
-              ctx.lineTo(-_hw, tipEnd);
-            } else {
-              ctx.moveTo(0, _crYatX(_topCrk, 0) + _gapOff);
-              ctx.lineTo(-_hw * 0.5, _crYatX(_topCrk, -_hw * 0.5) + _gapOff);
-              ctx.lineTo(-_hw, _crYatX(_topCrk, -_hw) + _gapOff);
-            }
-            var _lStartY = _topCrk ? _crYatX(_topCrk, -_hw) + _gapOff : tipEnd;
-            var _lEndY = _botCrk ? _crYatX(_botCrk, -_hw) : guardH;
-            var _prevY = _lStartY;
-            for (var _li = 0; _li < _notchesL.length; _li++) {
-              var _n = _notchesL[_li];
-              if (_n.y <= _prevY || _n.y + _n.h > _lEndY) continue;
-              ctx.lineTo(-_hw, _n.y);
-              ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
-              ctx.lineTo(-_hw, _n.y + _n.h);
-              _prevY = _n.y + _n.h;
-            }
-            if (!_botCrk) {
-              ctx.lineTo(-_hw, guardH); ctx.lineTo(0, guardH);
-            } else {
-              ctx.lineTo(-_hw, _crYatX(_botCrk, -_hw));
-              ctx.lineTo(-_hw * 0.5, _crYatX(_botCrk, -_hw * 0.5));
-              ctx.lineTo(0, _crYatX(_botCrk, 0));
-            }
-            ctx.closePath(); ctx.fill();
-            // --- RIGHT HALF ---
-            ctx.fillStyle = _mkGR();
-            ctx.beginPath();
-            if (!_topCrk) {
-              ctx.moveTo(0, -bladeH);
-              ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
-              ctx.lineTo(_hw, tipEnd);
-            } else {
-              ctx.moveTo(0, _crYatX(_topCrk, 0) + _gapOff);
-              ctx.lineTo(_hw * 0.5, _crYatX(_topCrk, _hw * 0.5) + _gapOff);
-              ctx.lineTo(_hw, _crYatX(_topCrk, _hw) + _gapOff);
-            }
-            var _rStartY = _topCrk ? _crYatX(_topCrk, _hw) + _gapOff : tipEnd;
-            var _rEndY = _botCrk ? _crYatX(_botCrk, _hw) : guardH;
-            _prevY = _rStartY;
-            for (var _ri = 0; _ri < _notchesR.length; _ri++) {
-              var _nr = _notchesR[_ri];
-              if (_nr.y <= _prevY || _nr.y + _nr.h > _rEndY) continue;
-              ctx.lineTo(_hw, _nr.y);
-              ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
-              ctx.lineTo(_hw, _nr.y + _nr.h);
-              _prevY = _nr.y + _nr.h;
-            }
-            if (!_botCrk) {
-              ctx.lineTo(_hw, guardH); ctx.lineTo(0, guardH);
-            } else {
-              ctx.lineTo(_hw, _crYatX(_botCrk, _hw));
-              ctx.lineTo(_hw * 0.5, _crYatX(_botCrk, _hw * 0.5));
-              ctx.lineTo(0, _crYatX(_botCrk, 0));
-            }
-            ctx.closePath(); ctx.fill();
-            // Ridge per segment
-            ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            var _rTop = _topCrk ? _crYatX(_topCrk, 0) + _gapOff + 1 : -bladeH + 1;
-            var _rBot = _botCrk ? _crYatX(_botCrk, 0) - 1 : guardH;
-            ctx.beginPath(); ctx.moveTo(0, _rTop); ctx.lineTo(0, _rBot); ctx.stroke();
-            // Fuller grooves per segment
-            var _fOff = bladeW * 0.18;
-            ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
-            ctx.beginPath();
-            ctx.moveTo(-_fOff, _rTop); ctx.lineTo(-_fOff, _rBot);
-            ctx.moveTo(_fOff, _rTop); ctx.lineTo(_fOff, _rBot);
-            ctx.stroke();
-            ctx.restore();
+          // Left half with chipped edge
+          const blGL = ctx.createLinearGradient(0, 0, -bladeW / 2, 0);
+          if (leftLight) { blGL.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);blGL.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);blGL.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
+          else { blGL.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);blGL.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);blGL.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
+          ctx.fillStyle = blGL;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          // Left edge: tip down to guard with notches
+          ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(-_hw, tipEnd);
+          // Walk down left edge, adding notch indentations
+          var _prevY = tipEnd;
+          for (var _li = 0; _li < _notchesL.length; _li++) {
+            var _n = _notchesL[_li];
+            if (_n.y <= _prevY) continue;
+            ctx.lineTo(-_hw, _n.y);
+            ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
+            ctx.lineTo(-_hw, _n.y + _n.h);
+            _prevY = _n.y + _n.h;
           }
-          // Decorative crack lines (non-break ones)
+          ctx.lineTo(-_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Right half with chipped edge
+          const blGR = ctx.createLinearGradient(0, 0, bladeW / 2, 0);
+          if (leftLight) { blGR.addColorStop(0,`rgb(${Math.min(255,dR+25)},${Math.min(255,dG+20)},${Math.min(255,dB+15)})`);blGR.addColorStop(0.2,`rgb(${dR},${dG},${dB})`);blGR.addColorStop(1,`rgb(${Math.max(0,dR-8)},${Math.max(0,dG-7)},${Math.max(0,dB-6)})`); }
+          else { blGR.addColorStop(0,`rgb(${Math.min(255,lR+55)},${Math.min(255,lG+50)},${Math.min(255,lB2+40)})`);blGR.addColorStop(0.2,`rgb(${lR},${lG},${lB2})`);blGR.addColorStop(1,`rgb(${Math.max(0,lR-30)},${Math.max(0,lG-25)},${Math.max(0,lB2-20)})`); }
+          ctx.fillStyle = blGR;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(_hw, tipEnd);
+          _prevY = tipEnd;
+          for (var _ri = 0; _ri < _notchesR.length; _ri++) {
+            var _nr = _notchesR[_ri];
+            if (_nr.y <= _prevY) continue;
+            ctx.lineTo(_hw, _nr.y);
+            ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
+            ctx.lineTo(_hw, _nr.y + _nr.h);
+            _prevY = _nr.y + _nr.h;
+          }
+          ctx.lineTo(_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Center ridge
+          ctx.strokeStyle = `rgba(${Math.min(255,lR+80)},${Math.min(255,lG+75)},${Math.min(255,lB2+65)},${0.3+lit*0.4})`;
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+          // Fuller grooves
+          var fullerOff = bladeW * 0.18;
+          ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(-fullerOff, -bladeH * 0.88); ctx.lineTo(-fullerOff, guardH);
+          ctx.moveTo(fullerOff, -bladeH * 0.88); ctx.lineTo(fullerOff, guardH);
+          ctx.stroke();
+          // Crack lines on blade surface — thin dark diagonal lines
+          var _nCrackLines = 3 + (_cr() * 3 | 0); // 3-5 crack lines
           ctx.strokeStyle = 'rgba(0,0,0,0.4)';
           ctx.lineWidth = Math.max(0.5, bladeW * 0.04);
-          for (var _cli2 = 0; _cli2 < _crLines.length; _cli2++) {
-            var _cl = _crLines[_cli2];
-            var _isBrk = false;
-            for (var _bi = 0; _bi < _breakCracks.length; _bi++) {
-              if (_breakCracks[_bi]._orig === _cl) { _isBrk = true; break; }
-            }
-            if (_isBrk) continue;
+          for (var _cli = 0; _cli < _nCrackLines; _cli++) {
+            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
+            var _cw = _hw * (0.3 + _cr() * 0.7); // how far across blade
+            var _cdir = _cr() > 0.5 ? 1 : -1;
+            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1); // gentle diagonal
+            // 2-3 segment zigzag crack line
             ctx.beginPath();
-            ctx.moveTo(_cl.dir * -_cl.w, _cl.y);
-            ctx.lineTo(_cl.mx, _cl.y + _cl.dy * 0.5);
-            ctx.lineTo(_cl.dir * _cl.w, _cl.y + _cl.dy);
+            ctx.moveTo(_cdir * -_cw, _cy);
+            ctx.lineTo((_cr() - 0.5) * _hw * 0.4, _cy + _cdy * 0.5);
+            ctx.lineTo(_cdir * _cw, _cy + _cdy);
             ctx.stroke();
           }
-          // Bright crack highlights
+          // Bright edge on some cracks (light catching fracture edge)
           ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.15+lit*0.2)+')';
           ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
-          for (var _cli3 = 0; _cli3 < 2; _cli3++) {
-            var _cy3 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
-            var _cw3 = _hw * (0.4 + _cr() * 0.5);
+          for (var _cli2 = 0; _cli2 < 2; _cli2++) {
+            var _cy2 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
+            var _cw2 = _hw * (0.4 + _cr() * 0.5);
             ctx.beginPath();
-            ctx.moveTo(-_cw3, _cy3);
-            ctx.lineTo(_cw3, _cy3 + bladeW * (0.1 + _cr() * 0.2));
+            ctx.moveTo(-_cw2, _cy2);
+            ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
             ctx.stroke();
           }
-          // Floating shards near notches
+          // Floating shards — broken-off chips hover near the blade edge
           var _shardBr = 0.3 + lit * 0.4;
           var _shardCol = 'rgb('+Math.round(30+180*_shardBr)+','+Math.round(22+130*_shardBr)+','+Math.round(14+60*_shardBr)+')';
           for (var _sli = 0; _sli < _notchesL.length; _sli++) {
             var _sn = _notchesL[_sli];
-            var _gap = _hw * (0.12 + _cr() * 0.15);
+            var _gap = _hw * (0.12 + _cr() * 0.15); // hover gap
             var _sx = -_hw - _gap;
             var _sy = _sn.y + _sn.h * 0.1;
             var _sw = _sn.d * (0.6 + _cr() * 0.3);
