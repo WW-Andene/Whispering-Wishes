@@ -3531,7 +3531,71 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         const swords = swordGridCache;
 
-        for (const s of swords) {
+        var _sBatchSize = Math.max(1, Math.ceil(swords.length / 4));
+        for (var _sIdx = 0; _sIdx < swords.length; _sIdx++) {
+          // Draw electricity layer before each depth batch
+          if (_sIdx % _sBatchSize === 0 && swords.length > 1) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            var _eFet = cloudTime * 0.15;
+            var _eSeedT = Math.floor(_eFet * 0.06);
+            for (var _ei = 0; _ei < swords.length; _ei += 4) {
+              // Only draw arcs from swords in this depth batch
+              if (_ei < _sIdx || _ei >= _sIdx + _sBatchSize) continue;
+              var _eSw = swords[_ei];
+              var _ePhase = Math.sin(_eFet * 0.03 + _ei * 2.7) * Math.sin(_eFet * 0.017 + _ei * 4.1) * Math.sin(_eFet * 0.009 + _ei * 1.3);
+              if (_ePhase < 0.2) continue;
+              var _eAlpha = (_ePhase - 0.2) * 1.5;
+              var _eTarget = _ei + 1 + Math.floor(Math.abs(Math.sin(_ei * 7.3 + _eSeedT * 1.7)) * Math.min(3, swords.length - _ei - 1));
+              if (_eTarget >= swords.length) _eTarget = Math.floor(Math.abs(Math.sin(_ei * 3.1)) * swords.length);
+              if (_eTarget === _ei) continue;
+              var _eTw = swords[_eTarget];
+              var _ex0 = _eSw.scrX, _ey0 = _eSw.scrY, _ex1 = _eTw.scrX, _ey1 = _eTw.scrY;
+              var _edx = _ex1 - _ex0, _edy = _ey1 - _ey0;
+              var _eDist = Math.sqrt(_edx * _edx + _edy * _edy);
+              if (_eDist < 10 || _eDist > W * 0.6) continue;
+              var _efa = (_ei * 1640531527 + _eSeedT * 9973) | 0;
+              var _eRng = function() { _efa = Math.imul(_efa ^ (_efa >>> 16), 0x45d9f3b); _efa = _efa ^ (_efa >>> 13); return ((_efa >>> 0) % 1000) / 1000; };
+              var _eNSeg = 5 + (_ei % 4);
+              var _empx = [_ex0], _empy = [_ey0];
+              for (var _esi = 1; _esi <= _eNSeg; _esi++) {
+                var _et = _esi / _eNSeg;
+                _empx.push(_ex0 + _edx * _et + (_eRng() - 0.5) * _eDist * 0.2);
+                _empy.push(_ey0 + _edy * _et + (_eRng() - 0.5) * _eDist * 0.12);
+              }
+              ctx.beginPath();
+              ctx.moveTo(_empx[0], _empy[0]);
+              for (var _emi = 1; _emi < _empx.length; _emi++) ctx.lineTo(_empx[_emi], _empy[_emi]);
+              ctx.strokeStyle = 'rgba(255,120,20,' + (_eAlpha * 0.18) + ')';
+              ctx.lineWidth = 4; ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,160,50,' + (_eAlpha * 0.35) + ')';
+              ctx.lineWidth = 2; ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,210,140,' + (_eAlpha * 0.5) + ')';
+              ctx.lineWidth = 0.8; ctx.stroke();
+              var _eNBr = 2 + (_ei % 2);
+              for (var _ebi = 0; _ebi < _eNBr; _ebi++) {
+                var _ebrIdx = 1 + Math.floor(_eRng() * (_empx.length - 2));
+                var _ebrAng = Math.atan2(_edy, _edx) + (_eRng() - 0.5) * 2.0;
+                var _ebrLen = _eDist * (0.12 + _eRng() * 0.2);
+                var _ebrSegs = 3 + (_ebi % 2);
+                ctx.beginPath();
+                ctx.moveTo(_empx[_ebrIdx], _empy[_ebrIdx]);
+                for (var _ebsi = 1; _ebsi <= _ebrSegs; _ebsi++) {
+                  ctx.lineTo(
+                    _empx[_ebrIdx] + (_ebsi / _ebrSegs) * _ebrLen * Math.cos(_ebrAng) + (_eRng() - 0.5) * _ebrLen * 0.3,
+                    _empy[_ebrIdx] + (_ebsi / _ebrSegs) * _ebrLen * Math.sin(_ebrAng) + (_eRng() - 0.5) * _ebrLen * 0.2
+                  );
+                }
+                ctx.strokeStyle = 'rgba(255,140,30,' + (_eAlpha * 0.12) + ')';
+                ctx.lineWidth = 2.5; ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,200,120,' + (_eAlpha * 0.35) + ')';
+                ctx.lineWidth = 0.6; ctx.stroke();
+              }
+            }
+            ctx.restore();
+          }
+          const s = swords[_sIdx];
           // Sword type — hash independent of position grid
           let th = (s.idx * 1640531527 + 2747636419) | 0; th = Math.imul(th ^ (th >>> 16), 0x45d9f3b); th = th ^ (th >>> 13);
           const isGladius = ((th >>> 0) % 4) === 0;
@@ -4079,66 +4143,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.restore();
         }
 
-        // === FLOOR ELECTRICITY — arcs between swords ===
-        if (swords.length > 1) {
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          var fet = cloudTime * 0.15;
-          var fSeedT = Math.floor(fet * 0.06);
-          for (var fi2 = 0; fi2 < swords.length; fi2 += 4) {
-            var fSw = swords[fi2];
-            var fPhase2 = Math.sin(fet * 0.03 + fi2 * 2.7) * Math.sin(fet * 0.017 + fi2 * 4.1) * Math.sin(fet * 0.009 + fi2 * 1.3);
-            if (fPhase2 < 0.2) continue;
-            var fAlpha2 = (fPhase2 - 0.2) * 1.5;
-            var fTarget = fi2 + 1 + Math.floor(Math.abs(Math.sin(fi2 * 7.3 + fSeedT * 1.7)) * Math.min(3, swords.length - fi2 - 1));
-            if (fTarget >= swords.length) fTarget = Math.floor(Math.abs(Math.sin(fi2 * 3.1)) * swords.length);
-            if (fTarget === fi2) continue;
-            var fTw = swords[fTarget];
-            var fx0 = fSw.scrX, fy0 = fSw.scrY, fx1 = fTw.scrX, fy1 = fTw.scrY;
-            var fdx = fx1 - fx0, fdy = fy1 - fy0;
-            var fDist = Math.sqrt(fdx * fdx + fdy * fdy);
-            if (fDist < 10 || fDist > W * 0.6) continue;
-            var _fa = (fi2 * 1640531527 + fSeedT * 9973) | 0;
-            var faRng = function() { _fa = Math.imul(_fa ^ (_fa >>> 16), 0x45d9f3b); _fa = _fa ^ (_fa >>> 13); return ((_fa >>> 0) % 1000) / 1000; };
-            var fNSeg2 = 5 + (fi2 % 4);
-            var fmpx2 = [fx0], fmpy2 = [fy0];
-            for (var fsi2 = 1; fsi2 <= fNSeg2; fsi2++) {
-              var ft2 = fsi2 / fNSeg2;
-              fmpx2.push(fx0 + fdx * ft2 + (faRng() - 0.5) * fDist * 0.2);
-              fmpy2.push(fy0 + fdy * ft2 + (faRng() - 0.5) * fDist * 0.12);
-            }
-            ctx.beginPath();
-            ctx.moveTo(fmpx2[0], fmpy2[0]);
-            for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
-            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
-            ctx.lineWidth = 4; ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
-            ctx.lineWidth = 2; ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
-            ctx.lineWidth = 0.8; ctx.stroke();
-            var fNBr2 = 2 + (fi2 % 2);
-            for (var fbi2 = 0; fbi2 < fNBr2; fbi2++) {
-              var fbrIdx2 = 1 + Math.floor(faRng() * (fmpx2.length - 2));
-              var fbrAng2 = Math.atan2(fdy, fdx) + (faRng() - 0.5) * 2.0;
-              var fbrLen2 = fDist * (0.12 + faRng() * 0.2);
-              var fbrSegs2 = 3 + (fbi2 % 2);
-              ctx.beginPath();
-              ctx.moveTo(fmpx2[fbrIdx2], fmpy2[fbrIdx2]);
-              for (var fbsi2 = 1; fbsi2 <= fbrSegs2; fbsi2++) {
-                ctx.lineTo(
-                  fmpx2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.cos(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.3,
-                  fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
-                );
-              }
-              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
-              ctx.lineWidth = 2.5; ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
-              ctx.lineWidth = 0.6; ctx.stroke();
-            }
-          }
-          ctx.restore();
-        }
+        // (floor electricity interleaved in sword loop above)
 
         // === BANNER — pole with round crest + vertical-only cloth ===
         {
