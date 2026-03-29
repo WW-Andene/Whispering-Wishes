@@ -3976,16 +3976,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.lineCap = 'round'; ctx.lineJoin = 'round';
           var fet = cloudTime * 0.15;
           // Pick sword pairs to arc between
-          var fSeedT = Math.floor(fet * 0.18);
+          var fSeedT = Math.floor(fet * 0.06);
           var _fs2 = (fSeedT * 2246822519 + 314159) | 0;
           var fRng2 = function() { _fs2 = Math.imul(_fs2 ^ (_fs2 >>> 16), 0x45d9f3b); _fs2 = _fs2 ^ (_fs2 >>> 13); return ((_fs2 >>> 0) % 1000) / 1000; };
-          // Arcs from each visible sword (skip some via phase)
-          for (var fi2 = 0; fi2 < swords.length; fi2++) {
+          // Arcs from some swords — sparse, erratic timing
+          for (var fi2 = 0; fi2 < swords.length; fi2 += 4) {
             var fSw = swords[fi2];
-            // Phase check — slow pulse per sword
-            var fPhase2 = Math.sin(fet * 0.07 + fi2 * 1.9) * Math.sin(fet * 0.05 + fi2 * 1.3);
-            if (fPhase2 < 0.4) continue;
-            var fAlpha2 = (fPhase2 - 0.4) * 1.5;
+            // Erratic phase — overlapping slow sins for irregular flicker
+            var fPhase2 = Math.sin(fet * 0.03 + fi2 * 2.7) * Math.sin(fet * 0.017 + fi2 * 4.1) * Math.sin(fet * 0.009 + fi2 * 1.3);
+            if (fPhase2 < 0.2) continue;
+            var fAlpha2 = (fPhase2 - 0.2) * 1.5;
             // Pick a nearby sword to arc toward
             var fTarget = fi2 + 1 + Math.floor(fRng2() * Math.min(3, swords.length - fi2 - 1));
             if (fTarget >= swords.length) fTarget = Math.floor(fRng2() * swords.length);
@@ -4014,16 +4014,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath();
             ctx.moveTo(fmpx2[0], fmpy2[0]);
             for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
-            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = 'rgba(255,140,45,' + (fAlpha2 * 0.15) + ')';
+            ctx.lineWidth = 3;
             ctx.stroke();
-            // Mid glow
-            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            // Core — bright orange-white
-            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
-            ctx.lineWidth = 0.8;
+            // Core
+            ctx.strokeStyle = 'rgba(255,220,160,' + (fAlpha2 * 0.45) + ')';
+            ctx.lineWidth = 1;
             ctx.stroke();
             // 2-3 branch arms from main arc
             var fNBr2 = 2 + (fi2 % 2);
@@ -4040,10 +4036,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                   fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
                 );
               }
-              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
-              ctx.lineWidth = 2.5;
+              ctx.strokeStyle = 'rgba(255,160,70,' + (fAlpha2 * 0.1) + ')';
+              ctx.lineWidth = 2;
               ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
+              ctx.strokeStyle = 'rgba(255,230,180,' + (fAlpha2 * 0.3) + ')';
               ctx.lineWidth = 0.6;
               ctx.stroke();
             }
