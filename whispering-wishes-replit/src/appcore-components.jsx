@@ -3688,8 +3688,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + guardH);
             var _cw = _hw * (0.3 + _cr() * 0.7);
             var _cdir = _cr() > 0.5 ? 1 : -1;
-            var _cdy = bladeW * (0.2 + _cr() * 0.3) * (_cr() > 0.5 ? 1 : -1);
-            var _cmx = (_cr() - 0.5) * _hw * 0.4;
+            var _steepVar = _cr();
+            var _cdy = bladeH * (0.02 + _steepVar * _steepVar * 0.12) * (_cr() > 0.5 ? 1 : -1);
+            var _cmx = (_cr() - 0.5) * _hw * (0.5 + _cr() * 0.5);
             _crLines.push({ y: _cy, w: _cw, dir: _cdir, dy: _cdy, mx: _cmx });
           }
           // Helper: Y along crack zigzag at X, extended to full blade width
@@ -3783,7 +3784,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath(); ctx.moveTo(0, _by0 + _gap + 1); ctx.lineTo(0, guardH); ctx.stroke();
             // BLACK OUTLINE on broken edge — top of bottom piece
             ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-            ctx.lineWidth = Math.max(1, bladeW * 0.07);
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(-_hw - 0.5, _byNH + _gap);
             ctx.lineTo(-_hw * 0.33, _byN3 + _gap);
@@ -3823,7 +3824,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, _by0 - 1); ctx.stroke();
             // BLACK OUTLINE on broken edge — bottom of top piece
             ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-            ctx.lineWidth = Math.max(1, bladeW * 0.07);
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(-_hw - 0.5, _byNH);
             ctx.lineTo(-_hw * 0.33, _byN3);
