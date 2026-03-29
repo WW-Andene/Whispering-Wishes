@@ -3736,10 +3736,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nBk = _breaks.length;
           // Float offsets — guard piece stays, others float
           var _fdx = [0], _fdy = [0]; // guard piece (last) stays at 0
-          // Build offsets from guard upward — each piece shifts 3-9px from its neighbor
+          // Build offsets from guard upward — each piece shifts 3-9px from neighbor
           for (var _fi = _nBk - 1; _fi >= 0; _fi--) {
             var _px = _fdx[0] + (_cr() > 0.5 ? 1 : -1) * (3 + _cr() * 6);
-            var _py = _fdy[0] - (3 + _cr() * 6);
+            var _py = _fdy[0] + (3 + _cr() * 6); // positive = UP (away from ground after Y flip)
             _fdx.unshift(_px);
             _fdy.unshift(_py);
           }
