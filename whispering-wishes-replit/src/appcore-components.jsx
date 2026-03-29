@@ -3539,21 +3539,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // 3D Y-axis rotation — skew creates perspective effect
           ctx.transform(Math.abs(s.yRot), 0, Math.sin(s.yAngle) * 0.15, 1, 0, 0);
 
-          // 3D-informed lighting — yAngle face catch + sun direction
-          const sdx2 = s.scrX - sunX, sdy2 = s.scrY - sunY;
-          const sunDist2 = Math.sqrt(sdx2 * sdx2 + sdy2 * sdy2);
-          const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
-          const lit = sunProx2 * sunProx2;
-          const leftLight = s.scrX > sunX;
-          // yAngle modulates how much the lit face catches light
-          const faceCatch = 0.4 + Math.sin(s.yAngle) * 0.6;
-          // Light face: bright, modulated by face angle and sun proximity
-          const lightB = (0.25 + lit * 0.75) * faceCatch;
-          // Dark face: low ambient + faint warm reflected sky
-          const darkB = 0.08 + lit * 0.12 + (1 - faceCatch) * 0.06;
-          // Steel metallic — sunset-tinted, warm amber highlights
-          const lR = Math.round(45 + 210 * lightB), lG = Math.round(30 + 145 * lightB), lB2 = Math.round(18 + 75 * lightB);
-          const dR = Math.round(25 + 70 * darkB), dG = Math.round(14 + 40 * darkB), dB = Math.round(8 + 20 * darkB);
+          // 3D-informed lighting — cached on sword object
+          if (s._lR === undefined) {
+            const sdx2 = s.scrX - sunX, sdy2 = s.scrY - sunY;
+            const sunDist2 = Math.sqrt(sdx2 * sdx2 + sdy2 * sdy2);
+            const sunProx2 = Math.max(0, 1 - sunDist2 / (Math.max(W, H) * 0.7));
+            s._lit = sunProx2 * sunProx2;
+            s._leftLight = s.scrX > sunX;
+            const faceCatch = 0.4 + Math.sin(s.yAngle) * 0.6;
+            s._lightB = (0.25 + s._lit * 0.75) * faceCatch;
+            s._darkB = 0.08 + s._lit * 0.12 + (1 - faceCatch) * 0.06;
+            s._lR = Math.round(45 + 210 * s._lightB); s._lG = Math.round(30 + 145 * s._lightB); s._lB2 = Math.round(18 + 75 * s._lightB);
+            s._dR = Math.round(25 + 70 * s._darkB); s._dG = Math.round(14 + 40 * s._darkB); s._dB = Math.round(8 + 20 * s._darkB);
+          }
+          const lit = s._lit, leftLight = s._leftLight, lightB = s._lightB, darkB = s._darkB;
+          const lR = s._lR, lG = s._lG, lB2 = s._lB2, dR = s._dR, dG = s._dG, dB = s._dB;
 
           const tipEnd = -bladeH + pomDia * 2;
           const ov = 1;
