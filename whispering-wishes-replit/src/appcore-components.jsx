@@ -1208,7 +1208,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
     const isFull = animationsEnabled === 'full';
     const BLUR_SCALE = (bgResolution || (isFull ? 100 : 50)) / 100;
     const frameInterval = bgFps ? Math.round(1000 / bgFps) : (isFull ? 33 : 66);
-    let w, h, bw, bh;
+    let w, h, bw, bh, _glowGrid;
 
     // OLED mode uses darker base color
     const bgColor = oledMode ? 'rgb(0,0,0)' : 'rgb(2,3,6)';
@@ -1229,6 +1229,14 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       bh = Math.ceil(h * BLUR_SCALE);
       buf.width = bw;
       buf.height = bh;
+      // Pre-compute pixel screen coords
+      const gs = 2;
+      _glowGrid = [];
+      for (let by = 0; by < bh; by += gs) {
+        for (let bx = 0; bx < bw; bx += gs) {
+          _glowGrid.push({ bx, by, sx: bx / BLUR_SCALE, sy: by / BLUR_SCALE });
+        }
+      }
     };
     init();
     window.addEventListener('resize', init);
@@ -1244,34 +1252,32 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       bctx.fillRect(0, 0, bw, bh);
 
       const gs = 2;
-      for (let by = 0; by < bh; by += gs) {
-        for (let bx = 0; bx < bw; bx += gs) {
-          const sx = bx / BLUR_SCALE;
-          const sy = by / BLUR_SCALE;
+      for (let _gi = 0; _gi < _glowGrid.length; _gi++) {
+        const _gg = _glowGrid[_gi];
+        const sx = _gg.sx, sy = _gg.sy;
 
-          const h1 = Math.sin(_wf1(sx, sy, time));
-          const h2 = Math.sin(_wf2(sx, sy, time));
-          const h3 = Math.sin(_wf3(sx, sy, time));
-          const totalH = h1 * 0.7 + h2 * 0.5 + h3 * 0.4;
+        const h1 = Math.sin(_wf1(sx, sy, time));
+        const h2 = Math.sin(_wf2(sx, sy, time));
+        const h3 = Math.sin(_wf3(sx, sy, time));
+        const totalH = h1 * 0.7 + h2 * 0.5 + h3 * 0.4;
 
-          const d = 10;
-          const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5 + (Math.sin(_wf3(sx+d,sy,time))-h3)*0.4;
-          const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5 + (Math.sin(_wf3(sx,sy+d,time))-h3)*0.4;
-          const tilt = Math.sqrt(slX*slX + slY*slY);
+        const d = 10;
+        const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5 + (Math.sin(_wf3(sx+d,sy,time))-h3)*0.4;
+        const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5 + (Math.sin(_wf3(sx,sy+d,time))-h3)*0.4;
+        const tilt = Math.sqrt(slX*slX + slY*slY);
 
-          const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
-          const peak = Math.max(0, totalH / 1.5) * peakMul;
-          const gI = spec * specMul + peak;
+        const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
+        const peak = Math.max(0, totalH / 1.5) * peakMul;
+        const gI = spec * specMul + peak;
 
-          if (gI > 0.008) {
-            const a = Math.min(gI * glowAlphaScale, glowAlphaMax);
-            const blend = Math.max(0, Math.min(1, (totalH + 1.6) / 3.2));
-            const rr = Math.round(Math.min(255, (6 + blend * 25) * colorBoost));
-            const gg = Math.round(Math.min(255, (12 + blend * 40) * colorBoost));
-            const bb = Math.round(Math.min(255, (45 + blend * 70) * colorBoost));
-            bctx.fillStyle = `rgba(${rr},${gg},${bb},${a})`;
-            bctx.fillRect(bx, by, gs, gs);
-          }
+        if (gI > 0.008) {
+          const a = Math.min(gI * glowAlphaScale, glowAlphaMax);
+          const blend = Math.max(0, Math.min(1, (totalH + 1.6) / 3.2));
+          const rr = Math.round(Math.min(255, (6 + blend * 25) * colorBoost));
+          const gg = Math.round(Math.min(255, (12 + blend * 40) * colorBoost));
+          const bb = Math.round(Math.min(255, (45 + blend * 70) * colorBoost));
+          bctx.fillStyle = `rgba(${rr},${gg},${bb},${a})`;
+          bctx.fillRect(_gg.bx, _gg.by, gs, gs);
         }
       }
 
@@ -1322,7 +1328,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolut
     const TW = 36;
     const TH = 31;
     const HALF = TW / 2;
-    let w, h, cols, rows, seeds;
+    let w, h, cols, rows, seeds, _triGrid;
 
     const init = () => {
       w = window.innerWidth;
@@ -1335,6 +1341,20 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolut
       rows = Math.ceil(h / TH) + 4;
       seeds = new Float32Array(cols * rows);
       for (let i = 0; i < seeds.length; i++) seeds[i] = Math.random() * 6.28;
+      // Pre-compute static grid data
+      _triGrid = [];
+      for (let r = -1; r < rows; r++) {
+        for (let c = -1; c < cols; c++) {
+          const isUp = ((c + r) % 2 + 2) % 2 === 0;
+          const cx = c * HALF;
+          const cy = r * TH + (isUp ? TH * 0.33 : TH * 0.66);
+          if (cx < -HALF || cx > w + HALF || cy < -TH || cy > h + TH) continue;
+          const seedIdx = (r + 1) * cols + (c + 1);
+          const seed = seedIdx >= 0 && seedIdx < seeds.length ? seeds[seedIdx] : 0;
+          const so = seed * 0.05;
+          _triGrid.push({ c, r, isUp, cx, cy, so, x: c * HALF, y: r * TH });
+        }
+      }
     };
     init();
     window.addEventListener('resize', init);
@@ -1355,64 +1375,46 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolut
       ctx.clearRect(0, 0, w, h);
       const time = t * 0.00075; // 25% slower
 
-      for (let r = -1; r < rows; r++) {
-        for (let c = -1; c < cols; c++) {
-          const isUp = ((c + r) % 2 + 2) % 2 === 0;
-          const cx = c * HALF;
-          const cy = r * TH + (isUp ? TH * 0.33 : TH * 0.66);
+      for (let _ti = 0; _ti < _triGrid.length; _ti++) {
+        const _tg = _triGrid[_ti];
+        const { cx, cy, so, isUp, x, y } = _tg;
 
-          if (cx < -HALF || cx > w + HALF || cy < -TH || cy > h + TH) continue;
+        const v1 = Math.sin(_wf1(cx, cy, time) + so);
+        const v2 = Math.sin(_wf2(cx, cy, time) + so * 0.7);
+        const v3 = Math.sin(_wf3(cx, cy, time) + so * 0.5);
+        const totalH = v1 * 0.7 + v2 * 0.5 + v3 * 0.4;
 
-          const seedIdx = ((r + 1) * cols + (c + 1));
-          const seed = seedIdx >= 0 && seedIdx < seeds.length ? seeds[seedIdx] : 0;
+        const dd = 4;
+        const hR = Math.sin(_wf1(cx+dd,cy,time)+so)*0.7 + Math.sin(_wf2(cx+dd,cy,time)+so*0.7)*0.5 + Math.sin(_wf3(cx+dd,cy,time)+so*0.5)*0.4;
+        const hD = Math.sin(_wf1(cx,cy+dd,time)+so)*0.7 + Math.sin(_wf2(cx,cy+dd,time)+so*0.7)*0.5 + Math.sin(_wf3(cx,cy+dd,time)+so*0.5)*0.4;
+        const slopeX = hR - totalH;
+        const slopeY = hD - totalH;
+        const tilt = Math.sqrt(slopeX * slopeX + slopeY * slopeY);
 
-          // Minimal seed for subtle per-triangle variation
-          const so = seed * 0.05;
+        const specular = Math.pow(Math.max(0, 1 - tilt * 3.5), 5);
+        const peakGlow = Math.max(0, totalH / 2.0) * twPeakMul;
+        const intensity = specular * twSpecMul + peakGlow;
+        if (intensity < 0.015) continue;
 
-          // Wave heights at this triangle center
-          const v1 = Math.sin(_wf1(cx, cy, time) + so);
-          const v2 = Math.sin(_wf2(cx, cy, time) + so * 0.7);
-          const v3 = Math.sin(_wf3(cx, cy, time) + so * 0.5);
-          const totalH = v1 * 0.7 + v2 * 0.5 + v3 * 0.4;
-
-          // Slope from finite differences (traveling wavefront detection)
-          const dd = 4;
-          const hR = Math.sin(_wf1(cx+dd,cy,time)+so)*0.7 + Math.sin(_wf2(cx+dd,cy,time)+so*0.7)*0.5 + Math.sin(_wf3(cx+dd,cy,time)+so*0.5)*0.4;
-          const hD = Math.sin(_wf1(cx,cy+dd,time)+so)*0.7 + Math.sin(_wf2(cx,cy+dd,time)+so*0.7)*0.5 + Math.sin(_wf3(cx,cy+dd,time)+so*0.5)*0.4;
-          const slopeX = hR - totalH;
-          const slopeY = hD - totalH;
-          const tilt = Math.sqrt(slopeX * slopeX + slopeY * slopeY);
-
-          // Specular: flat faces (low tilt) catch light → traveling bright bands
-          const specular = Math.pow(Math.max(0, 1 - tilt * 3.5), 5);
-          // Peak height glow: wave crests glow slightly
-          const peakGlow = Math.max(0, totalH / 2.0) * twPeakMul;
-
-          const intensity = specular * twSpecMul + peakGlow;
-          if (intensity < 0.015) continue;
-
-          const x = c * HALF;
-          const y = r * TH;
-          ctx.beginPath();
-          if (isUp) {
-            ctx.moveTo(x - HALF, y + TH);
-            ctx.lineTo(x, y);
-            ctx.lineTo(x + HALF, y + TH);
-          } else {
-            ctx.moveTo(x - HALF, y);
-            ctx.lineTo(x + HALF, y);
-            ctx.lineTo(x, y + TH);
-          }
-          ctx.closePath();
-
-          const sp = Math.min(specular * 3, 1);
-          const ri = Math.round(Math.min(255, (60 + sp * 120) * twColorBoost));
-          const gi = Math.round(Math.min(255, (85 + sp * 100) * twColorBoost));
-          const bi = Math.round(Math.min(255, (150 + sp * 80) * twColorBoost));
-          const alpha = Math.min(intensity * twAlphaScale, twAlphaMax);
-          ctx.fillStyle = `rgba(${ri},${gi},${bi},${alpha})`;
-          ctx.fill();
+        ctx.beginPath();
+        if (isUp) {
+          ctx.moveTo(x - HALF, y + TH);
+          ctx.lineTo(x, y);
+          ctx.lineTo(x + HALF, y + TH);
+        } else {
+          ctx.moveTo(x - HALF, y);
+          ctx.lineTo(x + HALF, y);
+          ctx.lineTo(x, y + TH);
         }
+        ctx.closePath();
+
+        const sp = Math.min(specular * 3, 1);
+        const ri = Math.round(Math.min(255, (60 + sp * 120) * twColorBoost));
+        const gi = Math.round(Math.min(255, (85 + sp * 100) * twColorBoost));
+        const bi = Math.round(Math.min(255, (150 + sp * 80) * twColorBoost));
+        const alpha = Math.min(intensity * twAlphaScale, twAlphaMax);
+        ctx.fillStyle = `rgba(${ri},${gi},${bi},${alpha})`;
+        ctx.fill();
       }
       ctx.restore();
     };
