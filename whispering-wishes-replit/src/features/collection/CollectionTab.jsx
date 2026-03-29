@@ -46,6 +46,8 @@ export default function CollectionTab({
   const [collectionStatFilter, setCollectionStatFilter] = useSessionState('ww-coll-stat', 'all');
   const [collectionDamageFilter, setCollectionDamageFilter] = useSessionState('ww-coll-dmg', 'all');
   const [collectionRoleFilter, setCollectionRoleFilter] = useSessionState('ww-coll-role', 'all');
+  const [collectionRegionFilter, setCollectionRegionFilter] = useSessionState('ww-coll-region', 'all');
+  const [collectionTierFilter, setCollectionTierFilter] = useSessionState('ww-coll-tier', 'all');
   const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useSessionState('ww-coll-eset', 'all');
   const [collectionEchoBuffFilter, setCollectionEchoBuffFilter] = useSessionState('ww-coll-ebuf', 'all');
   const [collectionView, setCollectionView] = useSessionState('ww-coll-view', 'items');
@@ -144,6 +146,8 @@ export default function CollectionTab({
           if (collectionRoleFilter !== 'all' && data.role !== collectionRoleFilter) return false;
           if (collectionStatFilter !== 'all' && !charMatchesStat(name, collectionStatFilter)) return false;
           if (collectionDamageFilter !== 'all' && !charMatchesDamage(name, collectionDamageFilter)) return false;
+          if (collectionRegionFilter !== 'all' && data.region !== collectionRegionFilter) return false;
+          if (collectionTierFilter !== 'all' && !(data.tier && (data.tier.toa === collectionTierFilter || data.tier.ww === collectionTierFilter))) return false;
         }
       } else {
         const data = WEAPON_DATA[name];
@@ -154,7 +158,7 @@ export default function CollectionTab({
       }
       return true;
     });
-  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, getSearchTags, charMatchesStat, charMatchesDamage]);
+  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, getSearchTags, charMatchesStat, charMatchesDamage]);
 
   const clearCollectionFilters = useCallback(() => {
     setCollectionSearch('');
@@ -164,6 +168,8 @@ export default function CollectionTab({
     setCollectionStatFilter('all');
     setCollectionDamageFilter('all');
     setCollectionRoleFilter('all');
+    setCollectionRegionFilter('all');
+    setCollectionTierFilter('all');
     setCollectionEchoSetFilter('all');
     setCollectionEchoBuffFilter('all');
   }, []);
@@ -180,8 +186,8 @@ export default function CollectionTab({
   }, [collectionSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
   const hasActiveFilters = useMemo(() =>
-    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all'),
-    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionEchoSetFilter, collectionEchoBuffFilter]
+    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all'),
+    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter]
   );
 
   const collectionMaskData = useMemo(() => ({
@@ -280,7 +286,7 @@ export default function CollectionTab({
                       <Crown size={12} className="inline mr-1" />Characters
                     </button>
                     <button
-                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
                       title="Weapons"
                       aria-label="View weapons"
@@ -289,7 +295,7 @@ export default function CollectionTab({
                       <Sword size={12} className="inline mr-1" />Weapons
                     </button>
                     <button
-                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); }}
+                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
                       title="Echoes"
                       aria-label="View echoes"
@@ -373,6 +379,34 @@ export default function CollectionTab({
                       { value: 'Healer', label: 'Healer' },
                     ]}
                     ariaLabel="Filter by role"
+                  />
+                  <KuroSelect
+                    value={collectionRegionFilter}
+                    onChange={setCollectionRegionFilter}
+                    options={[
+                      { value: 'all', label: 'All Regions' },
+                      { value: 'Huanglong', label: 'Huanglong' },
+                      { value: 'Rinascita', label: 'Rinascita' },
+                      { value: 'Black Shores', label: 'Black Shores' },
+                      { value: 'Septimont', label: 'Septimont' },
+                      { value: 'Lahai-Roi', label: 'Lahai-Roi' },
+                    ]}
+                    ariaLabel="Filter by region"
+                  />
+                  <KuroSelect
+                    value={collectionTierFilter}
+                    onChange={setCollectionTierFilter}
+                    options={[
+                      { value: 'all', label: 'All Tiers' },
+                      { value: 'T0', label: 'T0' },
+                      { value: 'T0.5', label: 'T0.5' },
+                      { value: 'T1', label: 'T1' },
+                      { value: 'T1.5', label: 'T1.5' },
+                      { value: 'T2', label: 'T2' },
+                      { value: 'T3', label: 'T3' },
+                      { value: 'T4', label: 'T4' },
+                    ]}
+                    ariaLabel="Filter by tier"
                   />
                 </>)}
 

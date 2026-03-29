@@ -394,13 +394,15 @@ export default function TeamsTab({
       });
       // Weapon team buffs (tv)
       if (m.weapon?.tv) {
+        const tvRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
+        const tvRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[tvRefLevel - 1] || 1 : 1;
         const wt = m.weapon.tv;
         const teamRotTime = mainDps.d.rotTime || 25;
         const uptime = Math.min(1, (wt.duration || 15) / teamRotTime);
-        if (wt.atkPct) atkPct += wt.atkPct * uptime;
-        if (wt.elemDmg) elemDmg += wt.elemDmg * uptime;
-        if (wt.critRate) cr += wt.critRate * uptime;
-        if (wt.critDmg) cd += wt.critDmg * uptime;
+        if (wt.atkPct) atkPct += wt.atkPct * tvRefScale * uptime;
+        if (wt.elemDmg) elemDmg += wt.elemDmg * tvRefScale * uptime;
+        if (wt.critRate) cr += wt.critRate * tvRefScale * uptime;
+        if (wt.critDmg) cd += wt.critDmg * tvRefScale * uptime;
       }
     });
 
@@ -554,14 +556,17 @@ export default function TeamsTab({
     dotDmgPerRotation += tuneBreakDmg;
 
     let totalRotDmg = 0;
+    const memberDmgArr = [];
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
-      if (mult === 0) return;
+      if (mult === 0) { memberDmgArr.push({ name: m.name, dmg: 0 }); return; }
       const mBase = m.baseStat;
       const isMain = m.name === mainDps.name;
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
       if (isMain) {
-        totalRotDmg += mBase * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
+        const mDmg = mBase * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
+        totalRotDmg += mDmg;
+        memberDmgArr.push({ name: m.name, dmg: mDmg });
       } else {
         const sEqKey = teamIdx + ':' + m.name;
         const sEq = teamEquipment[sEqKey];
@@ -642,7 +647,10 @@ export default function TeamsTab({
         }
         // Sub-DPS weapon passive
         if (m.weapon) {
-          const swp = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
+          const subRefLevel = sEq?.refinement || 1;
+          const subRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[subRefLevel - 1] || 1 : 1;
+          const subRawPv = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
+          const swp = m.weapon.pv ? Object.fromEntries(Object.entries(subRawPv).map(([k, v]) => [k, v * subRefScale])) : subRawPv;
           if (m.scaling === 'ATK') sAtkPct += (swp.atkPct || 0);
           else if (m.scaling === 'HP') sAtkPct += (swp.hpPct || 0);
           else if (m.scaling === 'DEF') sAtkPct += (swp.defPct || 0);
@@ -710,8 +718,14 @@ export default function TeamsTab({
         const sDefMult = attackerFactor / (attackerFactor + sEffDef);
         const sBaseRes = getEnemyRes(m.d.element);
         const sResMult = 1 - Math.max(sBaseRes - sResShred, -30) / 100;
-        totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * sResMult;
+        const sDmg = sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * sResMult;
+        totalRotDmg += sDmg;
+        memberDmgArr.push({ name: m.name, dmg: sDmg });
       }
+    });
+    const memberDps = memberDmgArr.map(m => {
+      const pct = totalRotDmg > 0 ? Math.round(m.dmg / totalRotDmg * 100) : 0;
+      return { name: m.name, dmg: m.dmg, pct };
     });
     const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
 
@@ -769,7 +783,7 @@ export default function TeamsTab({
     const els = new Set(mems.map(m => m.d.element));
     if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps };
   }, [teamEquipment, enemyLevel, enemyEcho]);
 
   return (
