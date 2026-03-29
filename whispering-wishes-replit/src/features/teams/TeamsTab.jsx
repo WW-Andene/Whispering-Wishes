@@ -90,7 +90,7 @@ export default function TeamsTab({
     const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
 
     const parsePassive = (passive, element) => {
-      const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0 };
+      const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0 };
       if (!passive) return r;
       const p = passive.toLowerCase();
       const atkMatch = p.match(/atk\s*\+(\d+)%/);
@@ -111,7 +111,7 @@ export default function TeamsTab({
       const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
       if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1]);
       const coordMatch = p.match(/coord(?:inated)?\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
-      if (coordMatch) r.basicDmg += parseInt(coordMatch[1]) * 0.3;
+      if (coordMatch) r.coordDmg += parseInt(coordMatch[1]);
       const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
       if (echoMatch) r.echoDmg += parseInt(echoMatch[1]);
       const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
@@ -217,7 +217,7 @@ export default function TeamsTab({
     if (mainDps.weapSubstat === mainStatKey) atkPct += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Energy Regen') atkPct += 8;
 
-    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
+    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0, wpCoordDmg = 0;
     if (mainDps.weapon) {
       const mainRefLevel = (teamEquipment[teamIdx + ':' + mainDps.name])?.refinement || 1;
       const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
@@ -1669,6 +1669,42 @@ export default function TeamsTab({
                                 );
                               })}
                             </div>
+                            {/* Side-by-side stats */}
+                            {computed.length > 1 && (
+                              <div className="mt-3 overflow-x-auto">
+                                <table className="w-full text-[10px]">
+                                  <thead>
+                                    <tr className="border-b border-[var(--border-medium)]">
+                                      <th className="text-left text-gray-500 py-1 pr-2">Stat</th>
+                                      {computed.map((e, i) => (
+                                        <th key={i} className="text-center text-gray-400 py-1 px-1">{e.stats.mainDps.name}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {[
+                                      ['Eff. ATK', e => e.stats.effAtk?.toLocaleString()],
+                                      ['Crit Rate', e => Math.min(e.stats.critRate, 100).toFixed(1) + '%'],
+                                      ['Crit DMG', e => e.stats.critDmg?.toFixed(1) + '%'],
+                                      ['Elem DMG', e => e.stats.elemDmg?.toFixed(1) + '%'],
+                                      ['DEF Shred', e => (e.stats.defShred || 0) + '%'],
+                                      ['RES Shred', e => (e.stats.resShred || 0) + '%'],
+                                      ['Synergy', e => e.stats.synergy + '%'],
+                                    ].map(([label, fn]) => (
+                                      <tr key={label} className="border-b border-[var(--border-medium)]/30">
+                                        <td className="text-gray-500 py-0.5 pr-2">{label}</td>
+                                        {computed.map((e, i) => {
+                                          const val = fn(e);
+                                          const nums = computed.map(c => parseFloat(fn(c)) || 0);
+                                          const isMax = parseFloat(val) === Math.max(...nums) && nums.filter(n => n === Math.max(...nums)).length === 1;
+                                          return <td key={i} className={`text-center py-0.5 px-1 ${isMax ? 'text-yellow-400 font-bold' : 'text-gray-300'}`}>{val}</td>;
+                                        })}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
                             {teamCompareEntries.length < 5 && (
                               <p className="text-gray-500 text-[10px] text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
                             )}
