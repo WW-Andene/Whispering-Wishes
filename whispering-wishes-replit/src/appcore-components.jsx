@@ -223,17 +223,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
-              {data.tier && (
-                <>
-                  <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
-                    data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                    data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                    data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
-                    data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
-                    'bg-gray-500/20 text-gray-400 border border-gray-500/30'
-                  }`}>{data.tier.toa}</span>
-                </>
-              )}
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -241,9 +230,36 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
         </div>
-        
+
         {/* Content */}
         <div className="p-4 space-y-4">
+          {/* Tier + Info bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.tier && (
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
+                data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
+                data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
+                data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+                'bg-gray-500/20 text-gray-300 border border-gray-500/40'
+              }`}>
+                <span className="text-[9px] text-gray-400">ToA</span> {data.tier.toa}
+                <span className="text-gray-600 mx-0.5">|</span>
+                <span className="text-[9px] text-gray-400">WW</span> {data.tier.ww}
+              </div>
+            )}
+            {data.region && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{data.region}</span>
+            )}
+            {data.birthday && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{(() => {
+                const [m, d] = data.birthday.split('-');
+                const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${months[parseInt(m)]} ${parseInt(d)}`;
+              })()}</span>
+            )}
+          </div>
+
           {/* Description */}
           {data.desc && (() => {
             const dot = data.desc.indexOf('. ');
@@ -256,20 +272,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             );
           })()}
-          {(data.birthday || data.region) && (
-            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-              {data.birthday && (
-                <div className="text-[10px] text-gray-500">Birthday: {(() => {
-                  const [m, d] = data.birthday.split('-');
-                  const months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                  return `${months[parseInt(m)]} ${parseInt(d)}`;
-                })()}</div>
-              )}
-              {data.region && (
-                <div className="text-[10px] text-gray-500">Region: {data.region}</div>
-              )}
-            </div>
-          )}
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
