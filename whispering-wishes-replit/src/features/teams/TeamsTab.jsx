@@ -19,6 +19,9 @@ import {
   KuroSelect,
   hideOnError,
 } from '../../appcore-components.jsx';
+import TeamSelector from './TeamSelector.jsx';
+import WeaponSelector from './WeaponSelector.jsx';
+import EchoSelector from './EchoSelector.jsx';
 
 export default function TeamsTab({
   state,

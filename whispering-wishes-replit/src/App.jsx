@@ -101,7 +101,6 @@ const ADMIN_TAP_TIMEOUT_MS = 1500;
 const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 const MAX_USERNAME_LENGTH = 24;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
-const LEADERBOARD_DISPLAY_LIMIT = 20;
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
 const constantTimeCompare = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
@@ -891,67 +890,10 @@ function WhisperingWishesInner() {
   }, [visualSettings.swipeNavigation, setActiveTab]);
   
 
-  const [chartRange, setChartRange] = useState('monthly');
-  const [chartOffset, setChartOffset] = useState(9999);
   const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null, framing: null });
   
-  // Anonymous Luck Leaderboard
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [selectedTrophy, setSelectedTrophy] = useState(null);
-  const [leaderboardConsented, setLeaderboardConsented] = useState(() => {
-    try { return localStorage.getItem('ww-leaderboard-consent') === 'true'; } catch { return false; }
-  });
-  // P13-FIX: MEDIUM-4 — Custom consent modal instead of window.confirm (accessible, stylable, screen-reader friendly)
-  const [showConsentModal, setShowConsentModal] = useState(false);
-  const consentResolveRef = useRef(null);
-
-  const [leaderboardData, setLeaderboardData] = useState([]);
-  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
-  const [leaderboardSubmitting, setLeaderboardSubmitting] = useState(false);
-  const [leaderboardTab, setLeaderboardTab] = useState('rankings'); // 'rankings' or 'popular'
-  const [communityPulls, setCommunityPulls] = useState(null);
-  const [userLeaderboardId] = useState(() => {
-    if (!storageAvailable) return null;
-    try {
-      let id = localStorage.getItem('ww-leaderboard-id');
-      if (!id) {
-        // 5.2 fix: CSPRNG for leaderboard ID (Math.random is predictable)
-        try {
-          const arr = new Uint8Array(4);
-          crypto.getRandomValues(arr);
-          id = 'WW' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-        } catch {
-          id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
-        }
-        localStorage.setItem('ww-leaderboard-id', id);
-      }
-      return id;
-    } catch {
-      // Storage failed — generate session-stable ID (won't persist across refreshes)
-      return null;
-    }
-  });
-
-  // P8-FIX: Use in-game UID as primary leaderboard key so same player on web + Android = one entry
-  // Falls back to random ID only if no import has been done yet
-  // Sanitize UIDs for Firebase path safety — only allow alphanumeric, hyphens, underscores
-  const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
-  const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
-
-  // Pre-compute hashed UID for leaderboard "You" comparison (entry.uid is hashed, state.profile.uid is raw)
-  const [hashedProfileUid, setHashedProfileUid] = useState(null);
-  useEffect(() => {
-    if (state.profile.uid) {
-      hashUidForStorage(state.profile.uid).then(setHashedProfileUid);
-    } else {
-      setHashedProfileUid(null);
-    }
-  }, [state.profile.uid]);
-
   // 6.1 fix: Focus trapping for inline modals — Tab wraps within modal, auto-focus first element, restore on close
-  const leaderboardTrapRef = useFocusTrap(showLeaderboard);
   const exportTrapRef = useFocusTrap(showExportModal);
-  const trophyTrapRef = useFocusTrap(!!selectedTrophy);
 
   // Overall stats from imported history
   const overallStats = useMemo(() => {
@@ -1028,171 +970,6 @@ function WhisperingWishesInner() {
     return authToken ? `${base}?auth=${authToken}` : base;
   }, []);
   
-  const leaderboardLoadingRef = useRef(false);
-  const loadLeaderboard = useCallback(async () => {
-    if (leaderboardLoadingRef.current) return;
-    leaderboardLoadingRef.current = true;
-    setLeaderboardLoading(true);
-    try {
-      const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
-      if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
-      const data = await res.json();
-      if (data) {
-        const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
-        // Deduplicate by uid, then by stats fingerprint
-        const deduped = new Map();
-        rawEntries.forEach(e => {
-          const uidKey = e.uid || null;
-          const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
-          const key = uidKey || statsKey;
-          const existing = deduped.get(key);
-          if (!existing ||
-              (e.uid && !existing.uid) ||
-              ((e.timestamp ?? 0) > (existing.timestamp ?? 0))) {
-            deduped.set(key, e);
-          }
-        });
-        const entries = [...deduped.values()];
-        entries.sort((a, b) => a.avgPity - b.avgPity);
-        setAllLeaderboardEntries(entries);
-        setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
-      } else {
-        setAllLeaderboardEntries([]);
-        setLeaderboardData([]);
-      }
-    } catch (e) {
-      console.error('Leaderboard load error:', e);
-      setAllLeaderboardEntries([]);
-      setLeaderboardData([]);
-    }
-    setLeaderboardLoading(false);
-    leaderboardLoadingRef.current = false;
-  }, [getFirebaseAuth, firebaseUrl]);
-  
-  const loadCommunityPulls = useCallback(async () => {
-    try {
-      const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
-      if (res.ok) {
-        const data = await res.json();
-        if (data) {
-          const charCounts = {};
-          const weapCounts = {};
-          const playerCount = Object.keys(data).length;
-          Object.values(data).forEach(entry => {
-            (entry.chars || []).forEach(name => { charCounts[name] = (charCounts[name] || 0) + 1; });
-            (entry.weaps || []).forEach(name => { weapCounts[name] = (weapCounts[name] || 0) + 1; });
-          });
-          const sortedChars = Object.entries(charCounts).sort((a, b) => b[1] - a[1]);
-          const sortedWeaps = Object.entries(weapCounts).sort((a, b) => b[1] - a[1]);
-          setCommunityPulls({ chars: sortedChars, weaps: sortedWeaps, playerCount });
-        }
-      }
-    } catch (e) { console.error('Community pulls load error:', e); }
-  }, [getFirebaseAuth, firebaseUrl]);
-
-  const submittingRef = useRef(false);
-  const submitToLeaderboard = useCallback(async () => {
-    if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
-    if (submittingRef.current) return; // prevent double-submit
-    // P13-FIX: HIGH-2 — Rate limit leaderboard writes
-    if (!checkFirebaseRateLimit('leaderboard-submit')) {
-      toast?.addToast?.('Please wait a few seconds before submitting again', 'warning'); /* §E10-ER-F2 */
-      return;
-    }
-
-    // P13-FIX: MEDIUM-4 — Require explicit consent via accessible custom modal before first submission
-    if (!leaderboardConsented) {
-      const consent = await new Promise(resolve => {
-        consentResolveRef.current = resolve;
-        setShowConsentModal(true);
-      });
-      if (!consent) return;
-      setLeaderboardConsented(true);
-      try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
-    }
-
-    submittingRef.current = true;
-    setLeaderboardSubmitting(true);
-    try {
-      // P13-FIX: HIGH-3 — Validate entry bounds before submission
-      const avgPity = parseFloat(overallStats.avgPity);
-      const pulls = overallStats.fiveStars ?? 0;
-      const totalPulls = overallStats.totalPulls ?? 0;
-      const won5050 = overallStats.won5050 ?? 0;
-      const lost5050 = overallStats.lost5050 ?? 0;
-      if (isNaN(avgPity) || avgPity < 1 || avgPity > 80) throw new Error('Invalid average pity value');
-      if (pulls < 0 || pulls > 9999) throw new Error('Invalid 5★ pull count');
-      if (totalPulls < 0 || totalPulls > 999999) throw new Error('Invalid total pull count');
-      if (won5050 < 0 || won5050 > pulls) throw new Error('Invalid 50/50 win count');
-      if (lost5050 < 0 || lost5050 > pulls) throw new Error('Invalid 50/50 loss count');
-      if (effectiveLeaderboardId.length > 64) throw new Error('Leaderboard ID too long');
-
-      const hashedUid = await hashUidForStorage(state.profile.uid);
-      const entry = {
-        id: effectiveLeaderboardId,
-        uid: hashedUid,
-        avgPity,
-        pulls,
-        totalPulls,
-        won5050,
-        lost5050,
-        timestamp: Date.now()
-      };
-
-      const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl(`leaderboard/${effectiveLeaderboardId}`, authToken), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      });
-      if (!res.ok) throw new Error(`Firebase write failed (${res.status})`);
-
-      // Submit owned 5★ for community "Most Pulled" ranking
-      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
-      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
-        try {
-          await fetchWithTimeout(firebaseUrl(`community-pulls/${effectiveLeaderboardId}`, authToken), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
-          });
-        } catch { /* community-pulls is best-effort */ }
-      }
-      // Clean up stale duplicate entries
-      if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
-        try {
-          await fetchWithTimeout(firebaseUrl(`leaderboard/${userLeaderboardId}`, authToken), { method: 'DELETE' });
-          await fetchWithTimeout(firebaseUrl(`community-pulls/${userLeaderboardId}`, authToken), { method: 'DELETE' });
-        } catch { /* best-effort cleanup */ }
-      }
-
-      toast?.addToast?.('Score submitted to leaderboard!', 'success');
-
-      loadLeaderboard();
-      loadCommunityPulls();
-    } catch (e) {
-      console.error('Submit error:', e);
-      toast?.addToast?.('Failed to submit: ' + e.message, 'error');
-    } finally {
-      submittingRef.current = false;
-      setLeaderboardSubmitting(false);
-    }
-  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseUrl]);
-
-  useEffect(() => {
-    if (showLeaderboard) {
-      loadLeaderboard();
-      loadCommunityPulls();
-    }
-    // Note: AbortController not added here because loadLeaderboard/loadCommunityPulls
-    // set state only on success paths and are guarded by showLeaderboard gate
-  }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
-
   // Anonymous presence system — writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
   const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
@@ -1234,24 +1011,6 @@ function WhisperingWishesInner() {
   }, [sendPresenceHeartbeat, removePresence]);
 
 
-
-  // Community stats aggregated from leaderboard entries
-  // Community stats from ALL leaderboard entries (not just displayed top-20)
-  const [allLeaderboardEntries, setAllLeaderboardEntries] = useState([]);
-  const communityStats = useMemo(() => {
-    if (!allLeaderboardEntries.length) return null;
-    const entries = allLeaderboardEntries;
-    const totalPlayers = entries.length;
-    const avgPityAll = (entries.reduce((s, e) => s + e.avgPity, 0) / totalPlayers).toFixed(1);
-    const totalFiveStars = entries.reduce((s, e) => s + (e.pulls ?? 0), 0);
-    const totalPullsAll = entries.reduce((s, e) => s + (e.totalPulls ?? 0), 0);
-    const totalWon = entries.reduce((s, e) => s + (e.won5050 ?? 0), 0);
-    const totalLost = entries.reduce((s, e) => s + (e.lost5050 ?? 0), 0);
-    const globalWinRate = (totalWon + totalLost) > 0 ? ((totalWon / (totalWon + totalLost)) * 100).toFixed(1) : null;
-    const luckiest = entries.length > 0 ? entries.reduce((min, e) => e.avgPity < min.avgPity ? e : min) : null;
-    const unluckiest = entries.length > 0 ? entries.reduce((max, e) => e.avgPity > max.avgPity ? e : max) : null;
-    return { totalPlayers, avgPityAll, totalFiveStars, totalPullsAll, totalWon, totalLost, globalWinRate, luckiest, unluckiest };
-  }, [allLeaderboardEntries]);
 
   // Trophies/Badges computation
   const trophies = useMemo(() => {
@@ -1787,69 +1546,6 @@ function WhisperingWishesInner() {
 
   // collectionMaskData moved to CollectionTab component
 
-  // P2-FIX: Memoized stats tab data — eliminates 5+ independent allHist concatenations per render
-  // All Stats tab IIFEs now read from this single precomputed dataset
-  const statsTabData = useMemo(() => {
-    const featured = state.profile.featured?.history || [];
-    const weapon = state.profile.weapon?.history || [];
-    const stdChar = state.profile.standardChar?.history || [];
-    const stdWeap = state.profile.standardWeap?.history || [];
-    const beginner = state.profile.beginner?.history || [];
-    
-    // Single concatenation — used by histogram, chart, and total obtained
-    const allHist = [...featured, ...weapon, ...stdChar, ...stdWeap];
-    
-    // 5★ with pity > 0 — used by histogram
-    const fiveStars = allHist.filter(p => p.rarity === 5 && p.pity > 0);
-    
-    // Pull log — all pulls with banner labels, 5★ only, sorted newest first
-    // Includes beginner banner for complete 5★ visibility
-    const pullLogFiveStars = [
-      ...featured.map(p => ({...p, banner: 'Featured'})),
-      ...weapon.map(p => ({...p, banner: 'Weapon'})),
-      ...stdChar.map(p => ({...p, banner: 'Std Char'})),
-      ...stdWeap.map(p => ({...p, banner: 'Std Weap'})),
-      ...beginner.map(p => ({...p, banner: 'Beginner'})),
-    ].filter(p => p.rarity === 5 && p.name).sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
-    
-    // Total obtained — resonator and weapon histories including beginner banner
-    const resHist = [...featured, ...stdChar, ...beginner.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
-    const wepHist = [...weapon, ...stdWeap, ...beginner.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
-    const totalObtained = {
-      res5: resHist.filter(p => p.rarity === 5).length,
-      res4: resHist.filter(p => p.rarity === 4).length,
-      wep5: wepHist.filter(p => p.rarity === 5).length,
-      wep4: wepHist.filter(p => p.rarity === 4).length,
-      wep3: wepHist.filter(p => p.rarity === 3).length,
-    };
-    
-    // Histogram buckets
-    const histogramBuckets = {};
-    fiveStars.forEach(p => {
-      // Clamp pity >80 into an overflow bucket
-      if (p.pity > HARD_PITY) { // P7-FIX: Overflow bucket for out-of-range pity (7A)
-        histogramBuckets[`${HARD_PITY+1}+`] = (histogramBuckets[`${HARD_PITY+1}+`] ?? 0) + 1;
-      } else {
-        const bucket = Math.floor((p.pity - 1) / 10) * 10 + 1;
-        const label = `${bucket}-${bucket + 9}`;
-        histogramBuckets[label] = (histogramBuckets[label] ?? 0) + 1;
-      }
-    });
-    const allBucketLabels = Array.from({length: HARD_PITY / 10}, (_, i) => `${i*10+1}-${(i+1)*10}`); // P7-FIX: Data-driven bucket labels (7E)
-    // Only add 81+ bucket if there are pulls in it
-    if (histogramBuckets['81+']) allBucketLabels.push('81+');
-    allBucketLabels.forEach(b => { if (!histogramBuckets[b]) histogramBuckets[b] = 0; });
-    
-    const histogramStats = fiveStars.length >= 2 ? {
-      maxCount: Math.max(...Object.values(histogramBuckets), 1),
-      avgPity: fiveStars.length > 0 ? (fiveStars.reduce((sum, p) => sum + p.pity, 0) / fiveStars.length).toFixed(1) : '0', // P7-FIX: Guard division by zero (7A)
-      minPity: fiveStars.length ? Math.min(...fiveStars.map(p => p.pity)) : 0,
-      maxPity: fiveStars.length ? Math.max(...fiveStars.map(p => p.pity)) : 0,
-    } : null;
-    
-    return { allHist, fiveStars, pullLogFiveStars, totalObtained, histogramBuckets, allBucketLabels, histogramStats };
-  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
-
   // Shared import processor for both file and paste methods
   // Name normalization: maps game API / tracker names to internal names used in this app
   const IMPORT_NAME_ALIASES = useMemo(() => ({
@@ -2207,33 +1903,19 @@ function WhisperingWishesInner() {
         {activeTab === 'analytics' && (
           <AnalyticsTab
             state={state}
+            dispatch={dispatch}
             setActiveTab={setActiveTab}
             overallStats={overallStats}
             luckRating={luckRating}
-            effectiveLeaderboardId={effectiveLeaderboardId}
-            consentResolveRef={consentResolveRef}
             trophies={trophies}
-            statsTabData={statsTabData}
-            communityStats={communityStats}
-            communityPulls={communityPulls}
-            leaderboardData={leaderboardData}
-            leaderboardLoading={leaderboardLoading}
-            leaderboardSubmitting={leaderboardSubmitting}
-            leaderboardTab={leaderboardTab}
-            setLeaderboardTab={setLeaderboardTab}
-            showConsentModal={showConsentModal}
-            setShowConsentModal={setShowConsentModal}
-            showLeaderboard={showLeaderboard}
-            setShowLeaderboard={setShowLeaderboard}
-            selectedTrophy={selectedTrophy}
-            setSelectedTrophy={setSelectedTrophy}
-            chartRange={chartRange}
-            setChartRange={setChartRange}
-            chartOffset={chartOffset}
-            setChartOffset={setChartOffset}
-            hashedProfileUid={hashedProfileUid}
             collectionImages={collectionImages}
-            submitToLeaderboard={submitToLeaderboard}
+            toast={toast}
+            getFirebaseAuth={getFirebaseAuth}
+            firebaseUrl={firebaseUrl}
+            fetchWithTimeout={fetchWithTimeout}
+            hashUidForStorage={hashUidForStorage}
+            checkFirebaseRateLimit={checkFirebaseRateLimit}
+            FIREBASE_AVAILABLE={FIREBASE_AVAILABLE}
           />
         )}
         {/* [SECTION:TAB-COLLECT] */}

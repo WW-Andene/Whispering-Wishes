@@ -3,40 +3,301 @@
 // Stats, luck rating, trophies, leaderboard, pull history charts
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
-import { MEDAL_COLORS, calculateLuckRating } from '../../appcore-data.js';
+import { MEDAL_COLORS, calculateLuckRating, ALL_CHARACTERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../appcore-data.js';
+import { storageAvailable } from '../../appcore-engine.js';
 import {
   Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
   TROPHY_ICON_MAP, hideOnError,
 } from '../../appcore-components.jsx';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { FocusTrapModal, useFocusTrap } from '../../appcore-providers.jsx';
+
+const LEADERBOARD_DISPLAY_LIMIT = 20;
 
 export default function AnalyticsTab({
   state,
+  dispatch,
   setActiveTab,
   overallStats,
   luckRating,
-  effectiveLeaderboardId,
-  consentResolveRef,
   trophies,
-  statsTabData,
-  communityStats,
-  communityPulls,
-  leaderboardData,
-  leaderboardLoading,
-  leaderboardSubmitting,
-  leaderboardTab, setLeaderboardTab,
-  showConsentModal, setShowConsentModal,
-  showLeaderboard, setShowLeaderboard,
-  selectedTrophy, setSelectedTrophy,
-  chartRange, setChartRange,
-  chartOffset, setChartOffset,
-  hashedProfileUid,
   collectionImages,
-  submitToLeaderboard,
+  toast,
+  getFirebaseAuth,
+  firebaseUrl,
+  fetchWithTimeout,
+  hashUidForStorage,
+  checkFirebaseRateLimit,
+  FIREBASE_AVAILABLE,
 }) {
+  // ── Analytics-only state ──────────────────────────────────────────────────
+  const [chartRange, setChartRange] = useState('monthly');
+  const [chartOffset, setChartOffset] = useState(9999);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [selectedTrophy, setSelectedTrophy] = useState(null);
+  const [leaderboardConsented, setLeaderboardConsented] = useState(() => {
+    try { return localStorage.getItem('ww-leaderboard-consent') === 'true'; } catch { return false; }
+  });
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const consentResolveRef = useRef(null);
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardSubmitting, setLeaderboardSubmitting] = useState(false);
+  const [leaderboardTab, setLeaderboardTab] = useState('rankings');
+  const [communityPulls, setCommunityPulls] = useState(null);
+  const [allLeaderboardEntries, setAllLeaderboardEntries] = useState([]);
+  const [hashedProfileUid, setHashedProfileUid] = useState(null);
+  const [userLeaderboardId] = useState(() => {
+    if (!storageAvailable) return null;
+    try {
+      let id = localStorage.getItem('ww-leaderboard-id');
+      if (!id) {
+        try {
+          const arr = new Uint8Array(4);
+          crypto.getRandomValues(arr);
+          id = 'WW' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        } catch {
+          id = 'WW' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        localStorage.setItem('ww-leaderboard-id', id);
+      }
+      return id;
+    } catch {
+      return null;
+    }
+  });
+
+  // ── Refs ───────────────────────────────────────────────────────────────────
+  const leaderboardLoadingRef = useRef(false);
+  const submittingRef = useRef(false);
+  const leaderboardTrapRef = useFocusTrap(showLeaderboard);
+  const trophyTrapRef = useFocusTrap(!!selectedTrophy);
+
+  // ── Computed values ────────────────────────────────────────────────────────
+  const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
+  const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
+
+  const communityStats = useMemo(() => {
+    if (!allLeaderboardEntries.length) return null;
+    const entries = allLeaderboardEntries;
+    const totalPlayers = entries.length;
+    const avgPityAll = (entries.reduce((s, e) => s + e.avgPity, 0) / totalPlayers).toFixed(1);
+    const totalFiveStars = entries.reduce((s, e) => s + (e.pulls ?? 0), 0);
+    const totalPullsAll = entries.reduce((s, e) => s + (e.totalPulls ?? 0), 0);
+    const totalWon = entries.reduce((s, e) => s + (e.won5050 ?? 0), 0);
+    const totalLost = entries.reduce((s, e) => s + (e.lost5050 ?? 0), 0);
+    const globalWinRate = (totalWon + totalLost) > 0 ? ((totalWon / (totalWon + totalLost)) * 100).toFixed(1) : null;
+    const luckiest = entries.length > 0 ? entries.reduce((min, e) => e.avgPity < min.avgPity ? e : min) : null;
+    const unluckiest = entries.length > 0 ? entries.reduce((max, e) => e.avgPity > max.avgPity ? e : max) : null;
+    return { totalPlayers, avgPityAll, totalFiveStars, totalPullsAll, totalWon, totalLost, globalWinRate, luckiest, unluckiest };
+  }, [allLeaderboardEntries]);
+
+  const statsTabData = useMemo(() => {
+    const featured = state.profile.featured?.history || [];
+    const weapon = state.profile.weapon?.history || [];
+    const stdChar = state.profile.standardChar?.history || [];
+    const stdWeap = state.profile.standardWeap?.history || [];
+    const beginner = state.profile.beginner?.history || [];
+    const allHist = [...featured, ...weapon, ...stdChar, ...stdWeap];
+    const fiveStars = allHist.filter(p => p.rarity === 5 && p.pity > 0);
+    const pullLogFiveStars = [
+      ...featured.map(p => ({...p, banner: 'Featured'})),
+      ...weapon.map(p => ({...p, banner: 'Weapon'})),
+      ...stdChar.map(p => ({...p, banner: 'Std Char'})),
+      ...stdWeap.map(p => ({...p, banner: 'Std Weap'})),
+      ...beginner.map(p => ({...p, banner: 'Beginner'})),
+    ].filter(p => p.rarity === 5 && p.name).sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
+    const resHist = [...featured, ...stdChar, ...beginner.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
+    const wepHist = [...weapon, ...stdWeap, ...beginner.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
+    const totalObtained = {
+      res5: resHist.filter(p => p.rarity === 5).length,
+      res4: resHist.filter(p => p.rarity === 4).length,
+      wep5: wepHist.filter(p => p.rarity === 5).length,
+      wep4: wepHist.filter(p => p.rarity === 4).length,
+      wep3: wepHist.filter(p => p.rarity === 3).length,
+    };
+    const histogramBuckets = {};
+    fiveStars.forEach(p => {
+      if (p.pity > HARD_PITY) {
+        histogramBuckets[`${HARD_PITY+1}+`] = (histogramBuckets[`${HARD_PITY+1}+`] ?? 0) + 1;
+      } else {
+        const bucket = Math.floor((p.pity - 1) / 10) * 10 + 1;
+        const label = `${bucket}-${bucket + 9}`;
+        histogramBuckets[label] = (histogramBuckets[label] ?? 0) + 1;
+      }
+    });
+    const allBucketLabels = Array.from({length: HARD_PITY / 10}, (_, i) => `${i*10+1}-${(i+1)*10}`);
+    if (histogramBuckets['81+']) allBucketLabels.push('81+');
+    allBucketLabels.forEach(b => { if (!histogramBuckets[b]) histogramBuckets[b] = 0; });
+    const histogramStats = fiveStars.length >= 2 ? {
+      maxCount: Math.max(...Object.values(histogramBuckets), 1),
+      avgPity: fiveStars.length > 0 ? (fiveStars.reduce((sum, p) => sum + p.pity, 0) / fiveStars.length).toFixed(1) : '0',
+      minPity: fiveStars.length ? Math.min(...fiveStars.map(p => p.pity)) : 0,
+      maxPity: fiveStars.length ? Math.max(...fiveStars.map(p => p.pity)) : 0,
+    } : null;
+    return { allHist, fiveStars, pullLogFiveStars, totalObtained, histogramBuckets, allBucketLabels, histogramStats };
+  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
+
+  // ── Effects ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (state.profile.uid) {
+      hashUidForStorage(state.profile.uid).then(setHashedProfileUid);
+    } else {
+      setHashedProfileUid(null);
+    }
+  }, [state.profile.uid, hashUidForStorage]);
+
+  // ── Callbacks ──────────────────────────────────────────────────────────────
+  const loadLeaderboard = useCallback(async () => {
+    if (leaderboardLoadingRef.current) return;
+    leaderboardLoadingRef.current = true;
+    setLeaderboardLoading(true);
+    try {
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
+      const data = await res.json();
+      if (data) {
+        const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
+        const deduped = new Map();
+        rawEntries.forEach(e => {
+          const uidKey = e.uid || null;
+          const statsKey = `${e.avgPity}|${e.totalPulls ?? ''}|${e.pulls ?? ''}|${e.won5050 ?? ''}|${e.lost5050 ?? ''}|${e.id ?? ''}`;
+          const key = uidKey || statsKey;
+          const existing = deduped.get(key);
+          if (!existing ||
+              (e.uid && !existing.uid) ||
+              ((e.timestamp ?? 0) > (existing.timestamp ?? 0))) {
+            deduped.set(key, e);
+          }
+        });
+        const entries = [...deduped.values()];
+        entries.sort((a, b) => a.avgPity - b.avgPity);
+        setAllLeaderboardEntries(entries);
+        setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
+      } else {
+        setAllLeaderboardEntries([]);
+        setLeaderboardData([]);
+      }
+    } catch (e) {
+      console.error('Leaderboard load error:', e);
+      setAllLeaderboardEntries([]);
+      setLeaderboardData([]);
+    }
+    setLeaderboardLoading(false);
+    leaderboardLoadingRef.current = false;
+  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+
+  const loadCommunityPulls = useCallback(async () => {
+    try {
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          const charCounts = {};
+          const weapCounts = {};
+          const playerCount = Object.keys(data).length;
+          Object.values(data).forEach(entry => {
+            (entry.chars || []).forEach(name => { charCounts[name] = (charCounts[name] || 0) + 1; });
+            (entry.weaps || []).forEach(name => { weapCounts[name] = (weapCounts[name] || 0) + 1; });
+          });
+          const sortedChars = Object.entries(charCounts).sort((a, b) => b[1] - a[1]);
+          const sortedWeaps = Object.entries(weapCounts).sort((a, b) => b[1] - a[1]);
+          setCommunityPulls({ chars: sortedChars, weaps: sortedWeaps, playerCount });
+        }
+      }
+    } catch (e) { console.error('Community pulls load error:', e); }
+  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+
+  const submitToLeaderboard = useCallback(async () => {
+    if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
+    if (submittingRef.current) return;
+    if (!checkFirebaseRateLimit('leaderboard-submit')) {
+      toast?.addToast?.('Please wait a few seconds before submitting again', 'warning');
+      return;
+    }
+    if (!leaderboardConsented) {
+      const consent = await new Promise(resolve => {
+        consentResolveRef.current = resolve;
+        setShowConsentModal(true);
+      });
+      if (!consent) return;
+      setLeaderboardConsented(true);
+      try { localStorage.setItem('ww-leaderboard-consent', 'true'); } catch {}
+    }
+    submittingRef.current = true;
+    setLeaderboardSubmitting(true);
+    try {
+      const avgPity = parseFloat(overallStats.avgPity);
+      const pulls = overallStats.fiveStars ?? 0;
+      const totalPulls = overallStats.totalPulls ?? 0;
+      const won5050 = overallStats.won5050 ?? 0;
+      const lost5050 = overallStats.lost5050 ?? 0;
+      if (isNaN(avgPity) || avgPity < 1 || avgPity > 80) throw new Error('Invalid average pity value');
+      if (pulls < 0 || pulls > 9999) throw new Error('Invalid 5★ pull count');
+      if (totalPulls < 0 || totalPulls > 999999) throw new Error('Invalid total pull count');
+      if (won5050 < 0 || won5050 > pulls) throw new Error('Invalid 50/50 win count');
+      if (lost5050 < 0 || lost5050 > pulls) throw new Error('Invalid 50/50 loss count');
+      if (effectiveLeaderboardId.length > 64) throw new Error('Leaderboard ID too long');
+      const hashedUid = await hashUidForStorage(state.profile.uid);
+      const entry = {
+        id: effectiveLeaderboardId,
+        uid: hashedUid,
+        avgPity,
+        pulls,
+        totalPulls,
+        won5050,
+        lost5050,
+        timestamp: Date.now()
+      };
+      const authToken = await getFirebaseAuth();
+      const res = await fetchWithTimeout(firebaseUrl(`leaderboard/${effectiveLeaderboardId}`, authToken), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error(`Firebase write failed (${res.status})`);
+      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
+      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+      const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
+        try {
+          await fetchWithTimeout(firebaseUrl(`community-pulls/${effectiveLeaderboardId}`, authToken), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
+          });
+        } catch { /* community-pulls is best-effort */ }
+      }
+      if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
+        try {
+          await fetchWithTimeout(firebaseUrl(`leaderboard/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+          await fetchWithTimeout(firebaseUrl(`community-pulls/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+        } catch { /* best-effort cleanup */ }
+      }
+      toast?.addToast?.('Score submitted to leaderboard!', 'success');
+      loadLeaderboard();
+      loadCommunityPulls();
+    } catch (e) {
+      console.error('Submit error:', e);
+      toast?.addToast?.('Failed to submit: ' + e.message, 'error');
+    } finally {
+      submittingRef.current = false;
+      setLeaderboardSubmitting(false);
+    }
+  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseUrl, fetchWithTimeout, hashUidForStorage, checkFirebaseRateLimit]);
+
+  // Load leaderboard data when modal opens
+  useEffect(() => {
+    if (showLeaderboard) {
+      loadLeaderboard();
+      loadCommunityPulls();
+    }
+  }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
   return (
     <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" tabIndex="0">
     <TabErrorBoundary tabName="Stats">
