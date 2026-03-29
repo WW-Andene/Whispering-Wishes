@@ -1065,7 +1065,7 @@ export default function TeamsTab({
                     // calcTeamStats is now defined in the component body via useCallback
                     const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
                     if (!stats) return null;
-                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings } = stats;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
                     return (
@@ -1464,6 +1464,21 @@ export default function TeamsTab({
                                 <div className="text-gray-500 text-[8px]">team comp</div>
                               </div>
                             </div>
+
+                            {/* DPS Breakdown per character */}
+                            {memberDps && (
+                              <div className="mt-2 space-y-1">
+                                {memberDps.map(m => (
+                                  <div key={m.name} className="flex items-center gap-2">
+                                    <span className="text-[9px] text-gray-400 w-20 truncate">{m.name}</span>
+                                    <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                                      <div className="h-full rounded-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
+                                    </div>
+                                    <span className="text-[9px] text-gray-500 w-8 text-right">{m.pct}%</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
 
                             {/* Warnings */}
                             {warnings.length > 0 && (
