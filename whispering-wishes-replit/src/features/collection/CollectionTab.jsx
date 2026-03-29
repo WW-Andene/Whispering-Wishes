@@ -3,9 +3,9 @@
 // Gacha collection gallery with filtering, sorting, and image framing
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
-import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
+import { Archive, Calendar, Check, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
 import {
   CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, CHAR_BUFF_TABLE,
   RELEASE_ORDER, WEAPON_RELEASE_ORDER,
@@ -51,6 +51,14 @@ export default function CollectionTab({
   const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useSessionState('ww-coll-eset', 'all');
   const [collectionEchoBuffFilter, setCollectionEchoBuffFilter] = useSessionState('ww-coll-ebuf', 'all');
   const [collectionView, setCollectionView] = useSessionState('ww-coll-view', 'items');
+  const [collectionOwnedFilter, setCollectionOwnedFilter] = useSessionState('ww-coll-owned', 'all');
+
+  // ── Owned characters tracking (persisted to localStorage) ────────────────────
+  const [ownedChars, setOwnedChars] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ww-owned-chars') || '[]'); } catch { return []; }
+  });
+  useEffect(() => { try { localStorage.setItem('ww-owned-chars', JSON.stringify(ownedChars)); } catch {} }, [ownedChars]);
+  const toggleOwned = useCallback((name) => setOwnedChars(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]), []);
 
   // ── Derived / computed ────────────────────────────────────────────────────────
 
@@ -131,6 +139,8 @@ export default function CollectionTab({
 
   const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
     return items.filter(name => {
+      if (collectionOwnedFilter === 'owned' && !ownedChars.includes(name)) return false;
+      if (collectionOwnedFilter === 'not-owned' && ownedChars.includes(name)) return false;
       if (collectionCategoryFilter === 'character' && !isCharacter) return false;
       if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
       if (collectionSearch) {
@@ -158,7 +168,7 @@ export default function CollectionTab({
       }
       return true;
     });
-  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, getSearchTags, charMatchesStat, charMatchesDamage]);
+  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
 
   const clearCollectionFilters = useCallback(() => {
     setCollectionSearch('');
@@ -172,6 +182,7 @@ export default function CollectionTab({
     setCollectionTierFilter('all');
     setCollectionEchoSetFilter('all');
     setCollectionEchoBuffFilter('all');
+    setCollectionOwnedFilter('all');
   }, []);
 
   const filterEchoes = useCallback((echoNames) => {
@@ -186,8 +197,8 @@ export default function CollectionTab({
   }, [collectionSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
   const hasActiveFilters = useMemo(() =>
-    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all'),
-    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter]
+    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all' || collectionOwnedFilter !== 'all'),
+    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
   );
 
   const collectionMaskData = useMemo(() => ({
@@ -408,6 +419,16 @@ export default function CollectionTab({
                     ]}
                     ariaLabel="Filter by tier"
                   />
+                  <KuroSelect
+                    value={collectionOwnedFilter}
+                    onChange={setCollectionOwnedFilter}
+                    options={[
+                      { value: 'all', label: 'All Owned' },
+                      { value: 'owned', label: 'Owned' },
+                      { value: 'not-owned', label: 'Not Owned' },
+                    ]}
+                    ariaLabel="Filter by owned status"
+                  />
                 </>)}
 
                 {/* ── Weapons view: Type, Sub-stat ── */}
@@ -593,6 +614,7 @@ export default function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                ownedChars={ownedChars} toggleOwned={toggleOwned}
                 collapsible
               />
             </CardBody>
