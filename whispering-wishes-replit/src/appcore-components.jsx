@@ -4014,12 +4014,16 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath();
             ctx.moveTo(fmpx2[0], fmpy2[0]);
             for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
-            ctx.strokeStyle = 'rgba(255,140,45,' + (fAlpha2 * 0.15) + ')';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
+            ctx.lineWidth = 4;
             ctx.stroke();
-            // Core
-            ctx.strokeStyle = 'rgba(255,220,160,' + (fAlpha2 * 0.45) + ')';
-            ctx.lineWidth = 1;
+            // Mid glow
+            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Core — bright orange-white
+            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
+            ctx.lineWidth = 0.8;
             ctx.stroke();
             // 2-3 branch arms from main arc
             var fNBr2 = 2 + (fi2 % 2);
@@ -4036,10 +4040,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                   fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
                 );
               }
-              ctx.strokeStyle = 'rgba(255,160,70,' + (fAlpha2 * 0.1) + ')';
-              ctx.lineWidth = 2;
+              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
+              ctx.lineWidth = 2.5;
               ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,230,180,' + (fAlpha2 * 0.3) + ')';
+              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
               ctx.lineWidth = 0.6;
               ctx.stroke();
             }
