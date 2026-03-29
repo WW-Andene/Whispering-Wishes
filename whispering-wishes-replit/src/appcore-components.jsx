@@ -597,11 +597,24 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          {/* Stats */}
-          <div className="flex gap-2">
-            {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.baseAtk} Base ATK</span>}
-            <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
+          {/* 1. Stats bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.baseAtk && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+                <span className="text-[9px] text-gray-400">ATK</span>
+                <span className="text-xs font-bold text-red-400">{data.baseAtk}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
+              <span className="text-[9px] text-gray-400">{data.stat}</span>
+              <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
+            </div>
+            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => (
+              <span key={i} className="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
+            ))}
           </div>
+
+          {/* 2. Description */}
           {data.desc && (() => {
             const sig = data.desc.match(/^(\w+ signature)\.\s*/);
             const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
@@ -616,23 +629,25 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               </div>
             );
           })()}
-          
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+
+          {/* 3. Passive */}
+          <div className={`p-3 rounded-xl border ${colors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
-            <div className={`text-xs ${colors.text}`}>{data.passive}</div>
+            <div className={`text-xs font-medium ${colors.text}`}>{data.passive}</div>
           </div>
 
+          {/* 4. Refinement Scaling */}
           {data.pv && Object.keys(data.pv).length > 0 && (
             <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
               <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Refinement Scaling</div>
               <div className="grid grid-cols-5 gap-1">
                 {WEAPON_REFINE_SCALE.map((scale, i) => (
                   <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
-                    <div className="text-[9px] text-gray-500 mb-0.5">R{i + 1}</div>
+                    <div className={`text-[9px] mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
                     {Object.entries(data.pv).map(([stat, val]) => (
                       <div key={stat} className="text-[9px] text-gray-300">
                         <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
-                        <span className="text-gray-500 ml-0.5">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</span>
+                        <div className="text-gray-500 text-[8px]">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
                       </div>
                     ))}
                   </div>
@@ -641,18 +656,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             </div>
           )}
 
-          {data.bestFor && data.bestFor.length > 0 && (
-            <div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best For</div>
-              <div className="flex flex-wrap gap-1">
-                {data.bestFor.map((char, i) => (
-                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Ascension Materials */}
+          {/* 5. Ascension Materials */}
           {data.ascensionMaterials && (() => {
             const costs = data.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
             const forgeryTiers = FORGERY_MAT_TIERS[data.ascensionMaterials.forgery];
@@ -676,7 +680,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             );
           })()}
 
-          {/* EXP Materials */}
+          {/* 6. EXP Materials */}
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
@@ -788,31 +792,43 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          {/* 1. Description (identity) */}
+          {/* 1. Info bar — dmg value + sets */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.dmg > 0 && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+                <span className="text-[9px] text-gray-400">DMG</span>
+                <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
+              </div>
+            )}
+            {data.sets.map(setName => {
+              const sc = getSetElementColor(setName);
+              return <span key={setName} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
+            })}
+          </div>
+
+          {/* 2. Description (identity) */}
           {data.desc && (
             <p className="text-sm text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
           )}
 
-          {/* 2. Enemy resistance (boss echoes with known resistance) */}
+          {/* 3. Enemy resistance (boss echoes with known resistance) */}
           {data.enemyRes && (
             <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
               <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
-              <div>
-                <div className="flex flex-wrap gap-1">
-                  {Object.entries(data.enemyRes).map(([el, val]) => (
-                    <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
-                      {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
-                    </span>
-                  ))}
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
-                </div>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(data.enemyRes).map(([el, val]) => (
+                  <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
+                    {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
+                  </span>
+                ))}
+                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
               </div>
             </div>
           )}
 
-          {/* 3. Sonata Sets */}
+          {/* 4. Sonata Sets */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Available Sonata Sets</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Sonata Set Bonuses</div>
             <div className="space-y-2">
               {data.sets.map(setName => {
                 const setData = ECHO_SETS[setName];
@@ -878,15 +894,6 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
               <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
                 <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
-                {data.sets.length > 1 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    <span className="text-[9px] text-gray-500">Available in:</span>
-                    {data.sets.map(setName => {
-                      const setColor = getSetElementColor(setName);
-                      return <span key={setName} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${setColor}15`, color: setColor, border: `1px solid ${setColor}30` }}>{setName}</span>;
-                    })}
-                  </div>
-                )}
               </div>
             );
           })()}
