@@ -475,7 +475,7 @@ export default function TeamsTab({
     // DEF_Mult = attacker / (attacker + DEF × (1 - DEF_Reduction) × (1 - DEF_Ignore))
     const reducedDef = enemyDef90 * Math.max(0, 1 - defShred / 100);
     const effectiveDef = reducedDef * Math.max(0, 1 - defIgnore / 100);
-    const defMult = attackerFactor / (attackerFactor + effectiveDef);
+    const defMult = Math.min(2, attackerFactor / (attackerFactor + effectiveDef)); // Wiki: capped at 200%
     const mainBaseRes = getEnemyRes(mainDps.d.element);
     const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
@@ -779,7 +779,7 @@ export default function TeamsTab({
         // Wiki: DEF Reduction applied first, then DEF Ignore inside formula
         const sReducedDef = enemyDef90 * Math.max(0, 1 - sDefShred / 100);
         const sEffDef = sReducedDef * Math.max(0, 1 - sDefIgnore / 100);
-        const sDefMult = attackerFactor / (attackerFactor + sEffDef);
+        const sDefMult = Math.min(2, attackerFactor / (attackerFactor + sEffDef)); // Wiki: capped at 200%
         const sBaseRes = getEnemyRes(m.d.element);
         const sResMult = calcResMult(sBaseRes, sResShred);
         const sDmg = sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * sResMult;
