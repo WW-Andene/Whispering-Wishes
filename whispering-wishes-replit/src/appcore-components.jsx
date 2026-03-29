@@ -3670,7 +3670,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           _cr(); _cr();
           var _hw = bladeW / 2;
           // Generate cuts — diagonal, spread across cuttable zone
-          var _nCracks = 2 + (_cr() * 2 | 0); // 2-3 cuts
+          var _nCracks = 3 + (_cr() * 3 | 0); // 3-5 cuts
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125; // 6.125% protected above guard
           var _cutTop = -bladeH; // tip
@@ -3690,7 +3690,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
           }
           _cuts.sort(function(a,b){ return a.yM - b.yM; });
-          // No min spacing filter — let all cuts through
+          // Space cuts apart so they don't overlap (min 12px between centers)
+          var _spaced = [_cuts[0]];
+          for (var _sp = 1; _sp < _cuts.length; _sp++) {
+            if (Math.abs(_cuts[_sp].yM - _spaced[_spaced.length-1].yM) >= 12) _spaced.push(_cuts[_sp]);
+          }
+          _cuts = _spaced;
           var _nCuts = _cuts.length;
           // Y along cut at X: 3 points (-hw,yL)→(mx,yM)→(hw,yR)
           var _cutY = function(c, x) {
