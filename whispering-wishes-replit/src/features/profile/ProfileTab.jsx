@@ -6,7 +6,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Award, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Upload, User, X } from 'lucide-react';
+import { Award, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Type, Upload, User, X } from 'lucide-react';
 import {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
   SERVERS, getServerOffset,
@@ -1198,7 +1198,30 @@ export default function ProfileTab({
                 {visualSettings.oledMode && (
                   <p className="text-emerald-400 text-[10px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
                 )}
-                
+
+                {/* Dyslexic Font Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.dyslexicFont ? 'bg-amber-500 text-white' : 'text-gray-400'}`} style={!visualSettings.dyslexicFont ? { background: 'var(--bg-btn)' } : undefined}>
+                      <Type size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-xs font-medium">Dyslexia Font</div>
+                      <div className="text-gray-400 text-[10px]">OpenDyslexic — easier to read</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, dyslexicFont: !visualSettings.dyslexicFont })}
+                    className="relative w-[52px] h-[24px] rounded-full transition-colors"
+                    style={{ background: visualSettings.dyslexicFont ? '#f59e0b' : 'var(--bg-btn)' }}
+                    role="switch"
+                    aria-checked={visualSettings.dyslexicFont}
+                    aria-label="Toggle dyslexia font"
+                  >
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.dyslexicFont ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                  </button>
+                </div>
+
                 {/* Swipe Navigation Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">

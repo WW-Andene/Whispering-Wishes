@@ -34,6 +34,15 @@ body {
   overflow-x: hidden;
 }
 
+/* Dyslexia-friendly font — applied via toggle in Display Settings */
+html.dyslexic-font body,
+html.dyslexic-font input,
+html.dyslexic-font select,
+html.dyslexic-font textarea,
+html.dyslexic-font button {
+  font-family: 'OpenDyslexic', 'Rajdhani', system-ui, sans-serif !important;
+}
+
 /* TX-F1 / AT-F1: CSS radial-gradient fallback when canvas atmosphere fails */
 body::before {
   content: '';

@@ -133,7 +133,8 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   bgStyle: 'none', // 'none' | 'reflect' | 'resonance' | 'honour' — background animation style
   bgResolution: null, // null = auto (50% on, 100% full) | 25 | 50 | 100 | 200
   bgFps: null, // null = auto (15 on, 30 full) | 15 | 30 | 45 | 60
-  theme: 'default' // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
+  theme: 'default', // 'default' | CHARACTER_THEMES[].id — character theme changes header art & accent colors
+  dyslexicFont: false // OpenDyslexic font for dyslexia accessibility
 });
 const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'character', label: 'Resonators', color: 'yellow' }),
@@ -407,6 +408,11 @@ function WhisperingWishesInner() {
     el.classList.toggle('animations-full', visualSettings.animationsEnabled === 'full');
     el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
   }, [visualSettings.animationsEnabled]);
+
+  // Sync dyslexic font class to <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle('dyslexic-font', !!visualSettings.dyslexicFont);
+  }, [visualSettings.dyslexicFont]);
 
   // Image framing state - stores position/zoom for each image by key
   const [imageFraming, setImageFraming] = useState({});
