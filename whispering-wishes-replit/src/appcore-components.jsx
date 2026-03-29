@@ -3670,23 +3670,25 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           _cr(); _cr();
           var _hw = bladeW / 2;
           // Generate cuts — always diagonal, sharp zigzag midpoint
-          var _nCracks = 3 + (_cr() * 3 | 0); // 3-5 cuts
+          var _nCracks = 5 + (_cr() * 4 | 0); // 5-8 cuts
+          var _totalH = bladeH + guardH;
+          var _guardZone = guardH - _totalH * 0.06125; // protect bottom 6.125%
           var _cuts = [];
           for (var _ci = 0; _ci < _nCracks; _ci++) {
             var _cyStart = -bladeH * 0.82 + _cr() * (bladeH * 0.7 + guardH);
-            // Steeper drop: 5-30% bladeH
-            var _drop = bladeH * (0.05 + _cr() * _cr() * 0.25);
+            // Gentler drop: 3-12% bladeH
+            var _drop = bladeH * (0.03 + _cr() * 0.09);
             var _cyEnd = _cyStart + _drop;
+            // Skip if any part enters guard zone
+            if (_cyEnd > _guardZone || _cyStart > _guardZone) continue;
             var _dir = _cr() > 0.5 ? 1 : -1;
-            // Sharp angular midpoint — deviates UP from the diagonal line
             var _cmx = (_cr() * 0.4 + 0.1) * _hw * (_cr() > 0.5 ? 1 : -1);
-            // Midpoint Y zigzags sharply: can go ABOVE start Y for angular look
             var _midY = _cyStart - _drop * (0.1 + _cr() * 0.4) + _drop * 0.5;
             _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
           }
           _cuts.sort(function(a,b){ return a.yM - b.yM; });
-          // More space between cuts (min 15% bladeH)
-          var _minSpace = bladeH * 0.15;
+          // Min 10% bladeH spacing
+          var _minSpace = bladeH * 0.10;
           var _filtered = [_cuts[0]];
           for (var _fi = 1; _fi < _cuts.length; _fi++) {
             if (Math.abs(_cuts[_fi].yM - _filtered[_filtered.length-1].yM) >= _minSpace) _filtered.push(_cuts[_fi]);
@@ -3708,7 +3710,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nNotches = 4 + (_cr() * 5 | 0);
           var _notchesL = [], _notchesR = [];
           for (var _ni = 0; _ni < _nNotches; _ni++) {
-            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.85 + guardH);
+            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.7);
+            if (_ny > _guardZone) continue;
             var _nd = _hw * (0.2 + _cr() * 0.5);
             var _nh = bladeH * (0.02 + _cr() * 0.05);
             if (_cr() > 0.35) _notchesL.push({ y: _ny, d: _nd, h: _nh });
@@ -3840,8 +3843,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _sh = _sn.h * (0.4 + _cr() * 0.5);
             ctx.beginPath();
             ctx.moveTo(_sx, _sn.y);
-            ctx.lineTo(_sx - _sw * 0.6, _sn.y + _sh * 0.4);
-            ctx.lineTo(_sx - _sw * 0.15, _sn.y + _sh);
+            ctx.lineTo(_sx + _sw * 0.6, _sn.y + _sh * 0.4);
+            ctx.lineTo(_sx, _sn.y + _sh);
             ctx.closePath(); ctx.fill();
           }
           for (var _sri = 0; _sri < _notchesR.length; _sri++) {
@@ -3852,8 +3855,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _shr = _snr.h * (0.4 + _cr() * 0.5);
             ctx.beginPath();
             ctx.moveTo(_sxr, _snr.y);
-            ctx.lineTo(_sxr + _swr * 0.6, _snr.y + _shr * 0.4);
-            ctx.lineTo(_sxr + _swr * 0.15, _snr.y + _shr);
+            ctx.lineTo(_sxr - _swr * 0.6, _snr.y + _shr * 0.4);
+            ctx.lineTo(_sxr, _snr.y + _shr);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
