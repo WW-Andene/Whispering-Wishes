@@ -3690,13 +3690,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
           }
           _cuts.sort(function(a,b){ return a.yM - b.yM; });
-          // Min 10% bladeH spacing
-          var _minSpace = bladeH * 0.10;
-          var _filtered = [_cuts[0]];
-          for (var _fi = 1; _fi < _cuts.length; _fi++) {
-            if (Math.abs(_cuts[_fi].yM - _filtered[_filtered.length-1].yM) >= _minSpace) _filtered.push(_cuts[_fi]);
-          }
-          _cuts = _filtered;
+          // No min spacing filter — let all cuts through
           var _nCuts = _cuts.length;
           // Y along cut at X: 3 points (-hw,yL)→(mx,yM)→(hw,yR)
           var _cutY = function(c, x) {
