@@ -3002,13 +3002,17 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const shadowR = Math.max(bk.w, bk.h) * 0.5;
             const cx3 = clx + bk.ox + bk.w * 0.5;
             const cy3 = cly + bk.oy + bk.h * 0.5;
-            // Only medium and big clouds darken — and less aggressively
-            const darkness = cl.cloudType >= 3 ? 0.82 : 0.88;
-            const dStr = Math.round(darkness * 255);
-            const midStr = Math.round(darkness * 255 + (255 - darkness * 255) * 0.6);
+            // Only medium and big clouds darken — color strings cached on cloud
+            if (!cl._shCol0) {
+              const darkness = cl.cloudType >= 3 ? 0.82 : 0.88;
+              const dStr = Math.round(darkness * 255);
+              const midStr = Math.round(darkness * 255 + (255 - darkness * 255) * 0.6);
+              cl._shCol0 = 'rgb(' + dStr + ',' + dStr + ',' + dStr + ')';
+              cl._shCol1 = 'rgb(' + midStr + ',' + midStr + ',' + midStr + ')';
+            }
             const shadowGrad = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, shadowR);
-            shadowGrad.addColorStop(0, 'rgb(' + dStr + ',' + dStr + ',' + dStr + ')');
-            shadowGrad.addColorStop(0.5, 'rgb(' + midStr + ',' + midStr + ',' + midStr + ')');
+            shadowGrad.addColorStop(0, cl._shCol0);
+            shadowGrad.addColorStop(0.5, cl._shCol1);
             shadowGrad.addColorStop(1, 'rgb(255,255,255)');
             ctx.fillStyle = shadowGrad;
             ctx.beginPath(); ctx.arc(cx3, cy3, shadowR, 0, Math.PI * 2); ctx.fill();
