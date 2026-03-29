@@ -3664,167 +3664,106 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — shattered blade: diagonal cuts, damaged edges, shards ===
+          // === LONGSWORD — damaged blade: jagged edges, surface cracks, shards ===
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
           var _hw = bladeW / 2;
-          // Generate cuts — diagonal, spread across cuttable zone
-          var _nCracks = 3 + (_cr() * 2 | 0); // 3-4 cuts
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125;
-          var _cutTop = -bladeH;
-          var _cutBot = guardH - _guardZone;
-          var _cutRange = _cutBot - _cutTop;
-          // Place cuts evenly across blade with random jitter — guaranteed spread
-          var _cuts = [];
-          var _spacing = _cutRange / (_nCracks + 1);
-          for (var _ci = 0; _ci < _nCracks; _ci++) {
-            var _baseY = _cutTop + _spacing * (_ci + 1);
-            var _jitter = (_cr() - 0.5) * _spacing * 0.5;
-            var _cyStart = _baseY + _jitter;
-            var _drop = bladeH * (0.02 + _cr() * 0.04);
-            var _cyEnd = Math.min(_cyStart + _drop, _cutBot);
-            var _dir = _cr() > 0.5 ? 1 : -1;
-            var _cmx = (_cr() * 0.4 + 0.1) * _hw * (_cr() > 0.5 ? 1 : -1);
-            var _midY = _cyStart + _drop * (0.3 + _cr() * 0.4);
-            _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
-          }
-          _cuts.sort(function(a,b){ return a.yM - b.yM; });
-          var _nCuts = _cuts.length;
-          // Y along cut at X: 3 points (-hw,yL)→(mx,yM)→(hw,yR)
-          var _cutY = function(c, x) {
-            if (x <= -_hw) return c.yL;
-            if (x >= _hw) return c.yR;
-            if (x <= c.mx) {
-              if (c.mx === -_hw) return (c.yL + c.yM) * 0.5;
-              return c.yL + (x - (-_hw)) / (c.mx - (-_hw)) * (c.yM - c.yL);
-            }
-            if (_hw === c.mx) return (c.yM + c.yR) * 0.5;
-            return c.yM + (x - c.mx) / (_hw - c.mx) * (c.yR - c.yM);
-          };
-          // Damaged edge notches
-          var _nNotches = 4 + (_cr() * 5 | 0);
+          var _dmgBot = guardH - _guardZone; // no damage below here
+          // Big jagged notches — chunks missing from blade edges
+          var _nNotches = 5 + (_cr() * 5 | 0); // 5-9 per side
           var _notchesL = [], _notchesR = [];
           for (var _ni = 0; _ni < _nNotches; _ni++) {
-            var _ny = _cutTop + _cr() * _cutRange;
-            var _nd = _hw * (0.2 + _cr() * 0.5);
-            var _nh = bladeH * (0.02 + _cr() * 0.05);
-            if (_cr() > 0.35) _notchesL.push({ y: _ny, d: _nd, h: _nh });
-            if (_cr() > 0.35) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
+            var _ny = -bladeH * 0.88 + _cr() * (bladeH * 0.88 + _dmgBot);
+            var _nd = _hw * (0.25 + _cr() * 0.6); // 25-85% of half-width deep
+            var _nh = bladeH * (0.03 + _cr() * 0.07); // 3-10% blade height tall
+            if (_cr() > 0.3) _notchesL.push({ y: _ny, d: _nd, h: _nh });
+            if (_cr() > 0.3) _notchesR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
           _notchesL.sort(function(a,b){ return a.y - b.y; });
           _notchesR.sort(function(a,b){ return a.y - b.y; });
-          // Gradients
-          var _gL = function() {
-            var g = ctx.createLinearGradient(0, 0, -_hw, 0);
-            if (leftLight) { g.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');g.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');g.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
-            else { g.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');g.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');g.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
-            return g;
-          };
-          var _gR = function() {
-            var g = ctx.createLinearGradient(0, 0, _hw, 0);
-            if (leftLight) { g.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');g.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');g.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
-            else { g.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');g.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');g.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
-            return g;
-          };
-          // Notch edge helper
-          var _drawNotch = function(notches, side, fromY, toY) {
-            var _x = side * _hw;
-            var _pY = fromY;
-            for (var _i = 0; _i < notches.length; _i++) {
-              var _n = notches[_i];
-              if (_n.y <= _pY || _n.y + _n.h > toY) continue;
-              ctx.lineTo(_x, _n.y);
-              ctx.lineTo(_x + (-side) * _n.d, _n.y + _n.h * 0.4);
-              ctx.lineTo(_x, _n.y + _n.h);
-              _pY = _n.y + _n.h;
-            }
-          };
-          // No translate for separation — inset handles it. Tiny X drift only.
-          var _driftX = [0];
-          for (var _oi = 0; _oi < _nCuts; _oi++) _driftX.unshift((_cr() > 0.5 ? 1 : -1) * _cr() * 3);
-          // Draw pieces
-          for (var _si = 0; _si <= _nCuts; _si++) {
-            var _topCut = _si > 0 ? _cuts[_si - 1] : null;
-            var _botCut = _si < _nCuts ? _cuts[_si] : null;
-            ctx.save();
-            ctx.translate(_driftX[_si] || 0, 0);
-            // Inset 2px from shared boundary — 4px total gap between pieces
-            var _tL = _topCut ? _cutY(_topCut, -_hw) + 2 : tipEnd;
-            var _tR = _topCut ? _cutY(_topCut, _hw) + 2 : tipEnd;
-            var _bL = _botCut ? _cutY(_botCut, -_hw) - 2 : guardH;
-            var _bR = _botCut ? _cutY(_botCut, _hw) - 2 : guardH;
-            // Left half
-            ctx.fillStyle = _gL();
-            ctx.beginPath();
-            if (!_topCut) {
-              ctx.moveTo(0, -bladeH);
-              ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
-              ctx.lineTo(-_hw, tipEnd);
-            } else {
-              ctx.moveTo(0, _cutY(_topCut, 0) + 2);
-              ctx.lineTo(_topCut.mx < 0 ? _topCut.mx : -_hw * 0.3, _cutY(_topCut, _topCut.mx < 0 ? _topCut.mx : -_hw * 0.3) + 2);
-              ctx.lineTo(-_hw, _tL);
-            }
-            _drawNotch(_notchesL, -1, _tL, _bL);
-            ctx.lineTo(-_hw, _bL);
-            if (!_botCut) {
-              ctx.lineTo(0, guardH);
-            } else {
-              ctx.lineTo(_botCut.mx < 0 ? _botCut.mx : -_hw * 0.3, _cutY(_botCut, _botCut.mx < 0 ? _botCut.mx : -_hw * 0.3) - 2);
-              ctx.lineTo(0, _cutY(_botCut, 0) - 2);
-            }
-            ctx.closePath(); ctx.fill();
-            // Right half
-            ctx.fillStyle = _gR();
-            ctx.beginPath();
-            if (!_topCut) {
-              ctx.moveTo(0, -bladeH);
-              ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
-              ctx.lineTo(_hw, tipEnd);
-            } else {
-              ctx.moveTo(0, _cutY(_topCut, 0) + 2);
-              ctx.lineTo(_topCut.mx > 0 ? _topCut.mx : _hw * 0.3, _cutY(_topCut, _topCut.mx > 0 ? _topCut.mx : _hw * 0.3) + 2);
-              ctx.lineTo(_hw, _tR);
-            }
-            _drawNotch(_notchesR, 1, _tR, _bR);
-            ctx.lineTo(_hw, _bR);
-            if (!_botCut) {
-              ctx.lineTo(0, guardH);
-            } else {
-              ctx.lineTo(_botCut.mx > 0 ? _botCut.mx : _hw * 0.3, _cutY(_botCut, _botCut.mx > 0 ? _botCut.mx : _hw * 0.3) - 2);
-              ctx.lineTo(0, _cutY(_botCut, 0) - 2);
-            }
-            ctx.closePath(); ctx.fill();
-            // Ridge
-            ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            var _rT = _topCut ? _cutY(_topCut, 0) + 3 : -bladeH + 1;
-            var _rB = _botCut ? _cutY(_botCut, 0) - 1 : guardH;
-            ctx.beginPath(); ctx.moveTo(0, _rT); ctx.lineTo(0, _rB); ctx.stroke();
-            // Black outline on broken edges
-            if (_topCut) {
-              ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-              ctx.lineWidth = 1;
-              ctx.beginPath();
-              ctx.moveTo(-_hw, _cutY(_topCut, -_hw) + 2);
-              ctx.lineTo(_topCut.mx, _topCut.yM + 2);
-              ctx.lineTo(_hw, _cutY(_topCut, _hw) + 2);
-              ctx.stroke();
-            }
-            if (_botCut) {
-              ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-              ctx.lineWidth = 1;
-              ctx.beginPath();
-              ctx.moveTo(-_hw, _cutY(_botCut, -_hw));
-              ctx.lineTo(_botCut.mx, _botCut.yM);
-              ctx.lineTo(_hw, _cutY(_botCut, _hw));
-              ctx.stroke();
-            }
-            ctx.restore();
+          // Left half with jagged edge
+          var _blGL = ctx.createLinearGradient(0, 0, -_hw, 0);
+          if (leftLight) { _blGL.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');_blGL.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');_blGL.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
+          else { _blGL.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');_blGL.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');_blGL.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
+          ctx.fillStyle = _blGL;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(-_hw, tipEnd);
+          var _prevY = tipEnd;
+          for (var _li = 0; _li < _notchesL.length; _li++) {
+            var _n = _notchesL[_li];
+            if (_n.y <= _prevY) continue;
+            ctx.lineTo(-_hw, _n.y);
+            ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
+            ctx.lineTo(-_hw, _n.y + _n.h);
+            _prevY = _n.y + _n.h;
           }
-          // Floating shards near damaged edges — point OUTWARD, visible size
+          ctx.lineTo(-_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Right half with jagged edge
+          var _blGR = ctx.createLinearGradient(0, 0, _hw, 0);
+          if (leftLight) { _blGR.addColorStop(0,'rgb('+Math.min(255,dR+25)+','+Math.min(255,dG+20)+','+Math.min(255,dB+15)+')');_blGR.addColorStop(0.2,'rgb('+dR+','+dG+','+dB+')');_blGR.addColorStop(1,'rgb('+Math.max(0,dR-8)+','+Math.max(0,dG-7)+','+Math.max(0,dB-6)+')'); }
+          else { _blGR.addColorStop(0,'rgb('+Math.min(255,lR+55)+','+Math.min(255,lG+50)+','+Math.min(255,lB2+40)+')');_blGR.addColorStop(0.2,'rgb('+lR+','+lG+','+lB2+')');_blGR.addColorStop(1,'rgb('+Math.max(0,lR-30)+','+Math.max(0,lG-25)+','+Math.max(0,lB2-20)+')'); }
+          ctx.fillStyle = _blGR;
+          ctx.beginPath();
+          ctx.moveTo(0, -bladeH);
+          ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
+          ctx.lineTo(_hw, tipEnd);
+          _prevY = tipEnd;
+          for (var _ri = 0; _ri < _notchesR.length; _ri++) {
+            var _nr = _notchesR[_ri];
+            if (_nr.y <= _prevY) continue;
+            ctx.lineTo(_hw, _nr.y);
+            ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
+            ctx.lineTo(_hw, _nr.y + _nr.h);
+            _prevY = _nr.y + _nr.h;
+          }
+          ctx.lineTo(_hw, guardH);
+          ctx.lineTo(0, guardH);
+          ctx.closePath(); ctx.fill();
+          // Center ridge
+          ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
+          ctx.beginPath(); ctx.moveTo(0, -bladeH + 1); ctx.lineTo(0, guardH); ctx.stroke();
+          // Fuller grooves
+          var _fullerOff = bladeW * 0.18;
+          ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = Math.max(0.3, bladeW * 0.03);
+          ctx.beginPath();
+          ctx.moveTo(-_fullerOff, -bladeH * 0.88); ctx.lineTo(-_fullerOff, guardH);
+          ctx.moveTo(_fullerOff, -bladeH * 0.88); ctx.lineTo(_fullerOff, guardH);
+          ctx.stroke();
+          // Diagonal crack lines on surface
+          var _nCracks = 4 + (_cr() * 4 | 0); // 4-7 crack lines
+          ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+          ctx.lineWidth = Math.max(0.5, bladeW * 0.04);
+          for (var _cli = 0; _cli < _nCracks; _cli++) {
+            var _cy = -bladeH * 0.8 + _cr() * (bladeH * 0.8 + _dmgBot);
+            var _cw = _hw * (0.3 + _cr() * 0.7);
+            var _cdir = _cr() > 0.5 ? 1 : -1;
+            var _cdy = bladeH * (0.02 + _cr() * 0.04) * (_cr() > 0.5 ? 1 : -1);
+            ctx.beginPath();
+            ctx.moveTo(_cdir * -_cw, _cy);
+            ctx.lineTo((_cr() - 0.5) * _hw * 0.4, _cy + _cdy * 0.5);
+            ctx.lineTo(_cdir * _cw, _cy + _cdy);
+            ctx.stroke();
+          }
+          // Bright crack highlights
+          ctx.strokeStyle = 'rgba('+Math.min(255,lR+90)+','+Math.min(255,lG+80)+','+Math.min(255,lB2+60)+','+(0.15+lit*0.2)+')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.02);
+          for (var _cli2 = 0; _cli2 < 2; _cli2++) {
+            var _cy2 = -bladeH * 0.7 + _cr() * bladeH * 0.6;
+            var _cw2 = _hw * (0.4 + _cr() * 0.5);
+            ctx.beginPath();
+            ctx.moveTo(-_cw2, _cy2);
+            ctx.lineTo(_cw2, _cy2 + bladeW * (0.1 + _cr() * 0.2));
+            ctx.stroke();
+          }
+          // Floating shards near each notch — triangles pointing outward
           var _shBr = 0.3 + lit * 0.4;
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
