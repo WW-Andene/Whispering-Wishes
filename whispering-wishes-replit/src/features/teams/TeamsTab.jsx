@@ -1016,7 +1016,7 @@ export default function TeamsTab({
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
-                          className="kuro-btn active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
                         >
                           + Compare
@@ -1075,12 +1075,12 @@ export default function TeamsTab({
                               <button
                                 key={slotIdx}
                                 onClick={() => openSelector(slotIdx)}
-                                className="relative overflow-hidden border-2 border-dashed rounded-lg border-white/15 hover:border-yellow-500/40 transition-all flex flex-col items-center justify-center gap-2 group"
+                                className="relative overflow-hidden border-2 border-dashed rounded-lg border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50 hover:bg-yellow-500/10 transition-all flex flex-col items-center justify-center gap-1.5 group"
                                 style={{ height: '160px', contain: 'paint' }}
                                 aria-label={`Add resonator to slot ${slotIdx + 1}`}
                               >
-                                <Plus size={18} className="text-gray-500 group-hover:text-yellow-400 transition-colors" />
-                                <span className="text-[10px] text-gray-400 group-hover:text-gray-300 transition-colors">Slot {slotIdx + 1}</span>
+                                <Plus size={24} className="text-yellow-500/50 group-hover:text-yellow-400 transition-colors" />
+                                <span className="text-[10px] text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">Add</span>
                               </button>
                             );
                           }
@@ -1121,7 +1121,7 @@ export default function TeamsTab({
                               {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-icon-square"
+                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />
@@ -1752,7 +1752,7 @@ export default function TeamsTab({
                                 return (
                                   <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-icon-square"
+                                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
                                       aria-label="Remove this team from comparison">
                                       <X size={12} />
                                     </button>

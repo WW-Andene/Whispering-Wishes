@@ -337,6 +337,18 @@ export default function CollectionTab({
               {/* Filter Dropdowns — context-sensitive per view */}
               <Card>
                 <CardBody>
+              {hasActiveFilters && (
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
+                      Filters active
+                    </span>
+                  </div>
+                  <button onClick={clearCollectionFilters} className="text-[10px] text-gray-400 hover:text-white underline">
+                    Clear all
+                  </button>
+                </div>
+              )}
               <div className="grid grid-cols-3 gap-1.5">
 
                 {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
@@ -571,7 +583,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="" totalCount={ALL_4COST_ECHOES.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
@@ -593,7 +605,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="" totalCount={ALL_3COST_ECHOES.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
@@ -615,7 +627,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-cyan-500/10" ownedBorder="border-cyan-500/30"
                 countColor="text-cyan-400" countPrefix="" totalCount={ALL_1COST_ECHOES.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
@@ -639,7 +651,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="S" totalCount={ALL_5STAR_RESONATORS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
@@ -662,7 +674,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="S" totalCount={ALL_4STAR_RESONATORS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
@@ -687,7 +699,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="R" totalCount={ALL_5STAR_WEAPONS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
@@ -709,7 +721,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="R" totalCount={ALL_4STAR_WEAPONS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
@@ -731,7 +743,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30"
                 countColor="text-blue-400" countPrefix="R" totalCount={ALL_3STAR_WEAPONS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
@@ -753,7 +765,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-green-500/10" ownedBorder="border-green-500/30"
                 countColor="text-green-400" countPrefix="R" totalCount={ALL_2STAR_WEAPONS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
@@ -775,7 +787,7 @@ export default function CollectionTab({
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-gray-500/10" ownedBorder="border-gray-500/30"
                 countColor="text-gray-400" countPrefix="R" totalCount={ALL_1STAR_WEAPONS.length}
-                hasActiveFilters={hasActiveFilters} collectionImages={collectionImages}
+                hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
                 framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}

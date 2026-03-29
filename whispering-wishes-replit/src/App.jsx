@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { AlertCircle, Archive, BarChart3, Calculator, Calendar, Check, ChevronDown, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Settings, Shield, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, User, Users, X, Zap } from 'lucide-react';
+import { AlertCircle, Archive, BarChart3, Calculator, Calendar, Check, ChevronDown, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Menu, Settings, Shield, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, User, Users, X, Zap } from 'lucide-react';
 // --- appcore-data.js ---
 import {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
@@ -807,7 +807,21 @@ function WhisperingWishesInner() {
     setActiveTabRaw(tab);
     window.scrollTo({ top: 0 });
   }, []);
-  
+
+  // "More" overflow menu state for mobile nav
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef(null);
+  useEffect(() => {
+    if (!moreMenuOpen) return;
+    const handleClickOutside = (e) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target)) {
+        setMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
+  }, [moreMenuOpen]);
+
   // Swipe navigation between tabs
   const swipeRef = useRef({ startX: 0, startY: 0, startTime: 0 });
   const lastSwipeRef = useRef(0);
@@ -1857,14 +1871,50 @@ function WhisperingWishesInner() {
               if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), FOCUS_DELAY_MS); }
             }}>
             <div className="tab-indicator" />
+            {/* Primary tabs — always visible */}
             <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
-            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
-            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
-            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
+            {/* Secondary tabs — desktop only (hidden on mobile, available via More menu) */}
+            <div className="hidden sm:block"><TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton></div>
+            <div className="hidden sm:block"><TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton></div>
+            <div className="hidden sm:block"><TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton></div>
+            {/* Primary tabs continued */}
             <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
             <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
             <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
+            {/* More menu for mobile — contains secondary tabs */}
+            <div className="sm:hidden relative" ref={moreMenuRef}>
+              <button
+                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-lg transition-all text-xs ${
+                  ['events','calculator','planner'].includes(activeTab)
+                    ? 'text-white bg-white/10'
+                    : 'text-gray-400 hover:text-gray-200'
+                }`}
+                aria-label="More tabs"
+                aria-expanded={moreMenuOpen}
+                aria-haspopup="true"
+              >
+                <Menu size={18} />
+                <span className="text-[10px]">More</span>
+              </button>
+              {moreMenuOpen && (
+                <div className="absolute bottom-full mb-2 right-0 bg-[#0c1018] border border-[var(--border-medium)] rounded-lg shadow-xl p-2 min-w-[140px] z-50">
+                  <button onClick={() => { setActiveTab('events'); setMoreMenuOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded flex items-center gap-2">
+                    <Calendar size={14} /> Events
+                  </button>
+                  <button onClick={() => { setActiveTab('calculator'); setMoreMenuOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded flex items-center gap-2">
+                    <Calculator size={14} /> Calc
+                  </button>
+                  <button onClick={() => { setActiveTab('planner'); setMoreMenuOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded flex items-center gap-2">
+                    <TrendingUp size={14} /> Plan
+                  </button>
+                </div>
+              )}
+            </div>
           </nav>
           {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
           {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[10px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}

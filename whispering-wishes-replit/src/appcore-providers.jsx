@@ -1288,10 +1288,13 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* E5-BT2: Button hierarchy — primary (gold bg), ghost (transparent), danger (red) */
     .kuro-btn-primary {
-      background: rgba(237, 175, 24, 0.2);
-      border-color: rgba(237, 175, 24, 0.6);
-      color: #fef08a;
+      background: rgba(237, 175, 24, 0.15) !important;
+      border-color: rgba(237, 175, 24, 0.4) !important;
+      color: #edaf18 !important;
       font-weight: 600;
+    }
+    .kuro-btn-primary:hover {
+      background: rgba(237, 175, 24, 0.25) !important;
     }
     .kuro-btn-ghost {
       background: transparent;
@@ -1305,15 +1308,12 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
     .kuro-btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.5);
-      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.1) !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+      color: #f87171 !important;
     }
-    @media (hover: hover) {
-      .kuro-btn-danger:hover {
-        background: rgba(239, 68, 68, 0.25);
-        border-color: rgba(239, 68, 68, 0.7);
-      }
+    .kuro-btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2) !important;
     }
 
     /* Active states with glassy glow */

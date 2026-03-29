@@ -5659,17 +5659,15 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
 KuroSelect.displayName = 'KuroSelect';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
-    <div className="kuro-empty-state relative py-3">
-      {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
-      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 mb-2" aria-hidden="true">
-        {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="ghost-grid-cell aspect-[3/4] rounded-lg border border-white/[0.04]" style={{ animationDelay: `${i * 0.08}s` }} />
-        ))}
-      </div>
-      <p className="text-gray-500 text-xs text-center">No items match your filters</p>
+    <div className="text-center py-8">
+      <div className="text-gray-500 text-sm mb-2">No characters found</div>
+      <p className="text-gray-600 text-[10px] mb-3">Try adjusting your filters or clearing them</p>
+      {hasActiveFilters && onClearFilters && (
+        <button onClick={onClearFilters} className="kuro-btn text-[10px] px-3 py-1.5 active-gold">Clear Filters</button>
+      )}
     </div>
   );
   const ownedCount = items.filter(([_, c]) => c > 0).length;
