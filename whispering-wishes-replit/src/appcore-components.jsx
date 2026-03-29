@@ -3664,14 +3664,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.fill();
           } else {
 
-          // === LONGSWORD — broken blade: diagonal cuts, separated pieces, shards ===
+          // === LONGSWORD — broken blade: zigzag cuts, damaged edges, shards ===
           var _cs = (s.idx * 2246822519 + 314159) | 0;
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
           var _hw = bladeW / 2;
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125;
-          // 3-4 diagonal cuts evenly spaced across blade
+          // 3-4 zigzag cuts evenly spaced, varied angles
           var _nCuts = 3 + (_cr() * 2 | 0);
           var _cutTop = -bladeH * 0.9;
           var _cutBot = guardH - _guardZone;
@@ -3679,29 +3679,50 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cuts = [];
           for (var _ci = 0; _ci < _nCuts; _ci++) {
             var _y = _cutTop + _cutSpan * (_ci + 0.5) / _nCuts + (_cr() - 0.5) * _cutSpan * 0.15;
-            var _drop = Math.max(3, bladeH * (0.02 + _cr() * 0.04));
+            var _drop = Math.max(3, bladeH * (0.02 + _cr() * 0.05));
             var _dir = _cr() > 0.5 ? 1 : -1;
-            _cuts.push({ yL: _y, yR: _y + _dir * _drop });
+            // Zigzag midpoint — deviates from the diagonal
+            var _mx = (_cr() - 0.5) * _hw * 0.8; // midpoint X offset
+            var _my = _y + _dir * _drop * (0.3 + _cr() * 0.4); // midpoint Y between start/end
+            _cuts.push({ yL: _y, yR: _y + _dir * _drop, mx: _mx, my: _my });
           }
           _cuts.sort(function(a,b){ return ((a.yL+a.yR)*0.5) - ((b.yL+b.yR)*0.5); });
-          // Cut Y at any X: simple linear interpolation left→right
+          // Cut Y at any X: zigzag through midpoint
           var _cutYat = function(c, x) {
-            return c.yL + (x + _hw) / (2 * _hw) * (c.yR - c.yL);
+            if (x <= c.mx) {
+              var t = (x + _hw) / (c.mx + _hw);
+              return c.yL + t * (c.my - c.yL);
+            }
+            var t2 = (x - c.mx) / (_hw - c.mx);
+            return c.my + t2 * (c.yR - c.my);
           };
-          // Inset = half the gap. Each side insets 3px = 6px total gap
+          // Edge notches per piece
+          var _nNotch = 4 + (_cr() * 4 | 0);
+          var _notchL = [], _notchR = [];
+          for (var _ni = 0; _ni < _nNotch; _ni++) {
+            var _ny = _cutTop + _cr() * (_cutSpan * 0.95);
+            var _nd = Math.max(2, _hw * (0.3 + _cr() * 0.5));
+            var _nh = Math.max(3, bladeH * (0.02 + _cr() * 0.05));
+            if (_cr() > 0.3) _notchL.push({ y: _ny, d: _nd, h: _nh });
+            if (_cr() > 0.3) _notchR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
+          }
+          _notchL.sort(function(a,b){ return a.y - b.y; });
+          _notchR.sort(function(a,b){ return a.y - b.y; });
           var _inset = 3;
-          // Color for left/right halves
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
           var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
-          // Draw each piece: si=0 is tip, si=nCuts is guard
+          // Draw each piece
           for (var _si = 0; _si <= _nCuts; _si++) {
             var _top = _si > 0 ? _cuts[_si - 1] : null;
             var _bot = _si < _nCuts ? _cuts[_si] : null;
-            // Alternate X drift: even pieces +2px, odd pieces -2px
             var _dx = (_si % 2 === 0 ? 1 : -1) * (1 + _cr() * 2);
             ctx.save();
             ctx.translate(_dx, 0);
-            // --- LEFT HALF ---
+            var _tYL = _top ? _cutYat(_top, -_hw) + _inset : tipEnd;
+            var _tYR = _top ? _cutYat(_top, _hw) + _inset : tipEnd;
+            var _bYL = _bot ? _cutYat(_bot, -_hw) - _inset : guardH;
+            var _bYR = _bot ? _cutYat(_bot, _hw) - _inset : guardH;
+            // --- LEFT HALF with edge notches ---
             ctx.fillStyle = _colL;
             ctx.beginPath();
             if (!_top) {
@@ -3710,17 +3731,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(-_hw, tipEnd);
             } else {
               ctx.moveTo(0, _cutYat(_top, 0) + _inset);
-              ctx.lineTo(-_hw, _cutYat(_top, -_hw) + _inset);
+              ctx.lineTo(_top.mx, _top.my + _inset);
+              ctx.lineTo(-_hw, _tYL);
+            }
+            // Walk down left edge with notches
+            var _pY = _tYL;
+            for (var _li = 0; _li < _notchL.length; _li++) {
+              var _n = _notchL[_li];
+              if (_n.y <= _pY || _n.y + _n.h > _bYL) continue;
+              ctx.lineTo(-_hw, _n.y);
+              ctx.lineTo(-_hw + _n.d, _n.y + _n.h * 0.4);
+              ctx.lineTo(-_hw, _n.y + _n.h);
+              _pY = _n.y + _n.h;
             }
             if (!_bot) {
-              ctx.lineTo(-_hw, guardH);
-              ctx.lineTo(0, guardH);
+              ctx.lineTo(-_hw, guardH); ctx.lineTo(0, guardH);
             } else {
-              ctx.lineTo(-_hw, _cutYat(_bot, -_hw) - _inset);
+              ctx.lineTo(-_hw, _bYL);
+              ctx.lineTo(_bot.mx, _bot.my - _inset);
               ctx.lineTo(0, _cutYat(_bot, 0) - _inset);
             }
             ctx.closePath(); ctx.fill();
-            // --- RIGHT HALF ---
+            // --- RIGHT HALF with edge notches ---
             ctx.fillStyle = _colR;
             ctx.beginPath();
             if (!_top) {
@@ -3729,34 +3761,44 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(_hw, tipEnd);
             } else {
               ctx.moveTo(0, _cutYat(_top, 0) + _inset);
-              ctx.lineTo(_hw, _cutYat(_top, _hw) + _inset);
+              ctx.lineTo(_top.mx, _top.my + _inset);
+              ctx.lineTo(_hw, _tYR);
+            }
+            _pY = _tYR;
+            for (var _ri = 0; _ri < _notchR.length; _ri++) {
+              var _nr = _notchR[_ri];
+              if (_nr.y <= _pY || _nr.y + _nr.h > _bYR) continue;
+              ctx.lineTo(_hw, _nr.y);
+              ctx.lineTo(_hw - _nr.d, _nr.y + _nr.h * 0.4);
+              ctx.lineTo(_hw, _nr.y + _nr.h);
+              _pY = _nr.y + _nr.h;
             }
             if (!_bot) {
-              ctx.lineTo(_hw, guardH);
-              ctx.lineTo(0, guardH);
+              ctx.lineTo(_hw, guardH); ctx.lineTo(0, guardH);
             } else {
-              ctx.lineTo(_hw, _cutYat(_bot, _hw) - _inset);
+              ctx.lineTo(_hw, _bYR);
+              ctx.lineTo(_bot.mx, _bot.my - _inset);
               ctx.lineTo(0, _cutYat(_bot, 0) - _inset);
             }
             ctx.closePath(); ctx.fill();
-            // --- 1px BLACK OUTLINE on broken edges ---
+            // 1px black outline on broken edges (zigzag shape)
             ctx.strokeStyle = 'rgba(0,0,0,0.9)';
             ctx.lineWidth = 1;
             if (_top) {
               ctx.beginPath();
-              ctx.moveTo(-_hw, _cutYat(_top, -_hw) + _inset);
-              ctx.lineTo(0, _cutYat(_top, 0) + _inset);
-              ctx.lineTo(_hw, _cutYat(_top, _hw) + _inset);
+              ctx.moveTo(-_hw, _tYL);
+              ctx.lineTo(_top.mx, _top.my + _inset);
+              ctx.lineTo(_hw, _tYR);
               ctx.stroke();
             }
             if (_bot) {
               ctx.beginPath();
-              ctx.moveTo(-_hw, _cutYat(_bot, -_hw) - _inset);
-              ctx.lineTo(0, _cutYat(_bot, 0) - _inset);
-              ctx.lineTo(_hw, _cutYat(_bot, _hw) - _inset);
+              ctx.moveTo(-_hw, _bYL);
+              ctx.lineTo(_bot.mx, _bot.my - _inset);
+              ctx.lineTo(_hw, _bYR);
               ctx.stroke();
             }
-            // Ridge line per piece
+            // Ridge
             ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
             var _rt = _top ? _cutYat(_top, 0) + _inset + 1 : -bladeH + 1;
@@ -3764,20 +3806,55 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.beginPath(); ctx.moveTo(0, _rt); ctx.lineTo(0, _rb); ctx.stroke();
             ctx.restore();
           }
-          // Small triangular shards floating near cut gaps
+          // Shards — 2 per cut (one each side), triangular, pointing outward
           var _shBr = 0.3 + lit * 0.4;
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
           for (var _shi = 0; _shi < _cuts.length; _shi++) {
             var _sc = _cuts[_shi];
-            var _side = _cr() > 0.5 ? 1 : -1;
-            var _sx = _side * (_hw + 2 + _cr() * 3);
             var _sy = (_sc.yL + _sc.yR) * 0.5;
-            var _ssz = Math.max(3, bladeW * 0.4 + _cr() * 3);
+            // Left shard
+            var _slx = -_hw - Math.max(3, 2 + _cr() * 4);
+            var _slw = Math.max(3, 2 + _cr() * 4);
+            var _slh = Math.max(4, 3 + _cr() * 5);
             ctx.beginPath();
-            ctx.moveTo(_sx, _sy - _ssz * 0.5);
-            ctx.lineTo(_sx + _side * _ssz * 0.7, _sy);
-            ctx.lineTo(_sx, _sy + _ssz * 0.5);
+            ctx.moveTo(_slx, _sy - _slh * 0.5);
+            ctx.lineTo(_slx - _slw, _sy + _slh * 0.1);
+            ctx.lineTo(_slx, _sy + _slh * 0.5);
+            ctx.closePath(); ctx.fill();
+            // Right shard
+            var _srx = _hw + Math.max(3, 2 + _cr() * 4);
+            var _srw = Math.max(3, 2 + _cr() * 4);
+            var _srh = Math.max(4, 3 + _cr() * 5);
+            ctx.beginPath();
+            ctx.moveTo(_srx, _sy - _srh * 0.5);
+            ctx.lineTo(_srx + _srw, _sy + _srh * 0.1);
+            ctx.lineTo(_srx, _sy + _srh * 0.5);
+            ctx.closePath(); ctx.fill();
+          }
+          // Extra shards near notches
+          for (var _sni = 0; _sni < _notchL.length; _sni++) {
+            var _sn2 = _notchL[_sni];
+            if (_cr() > 0.5) continue;
+            var _sx2 = -_hw - Math.max(2, 1 + _cr() * 3);
+            var _sw2 = Math.max(2, _sn2.d * 0.5);
+            var _sh2 = Math.max(3, _sn2.h * 0.6);
+            ctx.beginPath();
+            ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.1);
+            ctx.lineTo(_sx2 - _sw2, _sn2.y + _sn2.h * 0.4);
+            ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.8);
+            ctx.closePath(); ctx.fill();
+          }
+          for (var _sri2 = 0; _sri2 < _notchR.length; _sri2++) {
+            var _snr2 = _notchR[_sri2];
+            if (_cr() > 0.5) continue;
+            var _sxr2 = _hw + Math.max(2, 1 + _cr() * 3);
+            var _swr2 = Math.max(2, _snr2.d * 0.5);
+            var _shr2 = Math.max(3, _snr2.h * 0.6);
+            ctx.beginPath();
+            ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.1);
+            ctx.lineTo(_sxr2 + _swr2, _snr2.y + _snr2.h * 0.4);
+            ctx.lineTo(_sxr2, _snr2.y + _snr2.h * 0.8);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
