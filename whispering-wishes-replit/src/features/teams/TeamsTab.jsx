@@ -142,7 +142,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex gap-1.5">
+                      <div className="flex gap-1.5 flex-wrap">
                         <button
                           onClick={() => {
                             try {
@@ -193,6 +193,11 @@ export default function TeamsTab({
                             if (teamCompareEntries.length >= 5) return;
                             setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), teamIdx: state.activeTeamIndex }]);
                             haptic.success();
+                            // Scroll to comparison section after render
+                            setTimeout(() => {
+                              const el = document.getElementById('team-dps-comparison');
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 100);
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
                           className="kuro-btn active-gold text-[10px]"
@@ -1286,6 +1291,7 @@ export default function TeamsTab({
 
                       {/* DPS Comparison — computed from stored slots */}
                       {teamCompareEntries.length > 0 && (() => {
+                        // id for scroll-into-view from Compare button
                         const computed = teamCompareEntries.map(entry => ({
                           ...entry,
                           stats: calcTeamStats(entry.slots, entry.teamIdx ?? 0),
@@ -1294,7 +1300,7 @@ export default function TeamsTab({
                         const maxS = Math.max(...computed.map(e => e.stats.score), 1);
                         const maxDps = Math.max(...computed.map(e => e.stats.realDps), 1);
                         return (
-                        <Card>
+                        <Card id="team-dps-comparison">
                           <CardHeader action={
                             <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
                               className="kuro-btn text-[10px]"
@@ -1309,9 +1315,9 @@ export default function TeamsTab({
                                 const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
                                 const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
                                 return (
-                                  <div key={entry.id} className="p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
+                                  <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                                      className="absolute top-1.5 right-1.5 z-20 w-[28px] h-[28px] rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-icon-square"
                                       aria-label="Remove this team from comparison">
                                       <X size={12} />
                                     </button>
