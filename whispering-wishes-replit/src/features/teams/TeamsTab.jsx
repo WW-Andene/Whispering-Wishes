@@ -1292,7 +1292,7 @@ export default function TeamsTab({
                                           </div>
                                         </div>
 
-                                        {/* Sequence + Sonata side by side */}
+                                        {/* Sequence + Refinement side by side */}
                                         <div className="flex gap-2">
                                           <div className="flex-1">
                                             <div className="text-[10px] text-gray-400 mb-0.5">Sequence</div>
@@ -1314,6 +1314,30 @@ export default function TeamsTab({
                                                       haptic.light();
                                                     }}
                                                   >S{s}</button>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                          <div className="flex-shrink-0">
+                                            <div className="text-[10px] text-gray-400 mb-0.5">Refinement</div>
+                                            <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
+                                              {[1,2,3,4,5].map(r => {
+                                                const isActive = (eq.refinement || 1) === r;
+                                                return (
+                                                  <button key={r}
+                                                    role="radio"
+                                                    aria-checked={isActive}
+                                                    className={`w-7 py-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    onClick={() => {
+                                                      setTeamEquipment(prev => {
+                                                        const n = { ...prev };
+                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
+                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                        return n;
+                                                      });
+                                                      haptic.light();
+                                                    }}
+                                                  >R{r}</button>
                                                 );
                                               })}
                                             </div>
