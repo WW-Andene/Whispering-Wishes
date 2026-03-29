@@ -2912,11 +2912,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               x3: rex + rpx * rW2 * 2.2, y3: rey + rpy * rW2 * 2.2 });
           }
           sceneClouds._rayCache = _rayData;
+          sceneClouds._rayBlur = 'blur(' + Math.max(1, Math.round(H * 0.005)) + 'px)';
         }
-        const _rayBlur = 'blur(' + Math.max(1, Math.round(H * 0.005)) + 'px)';
         function drawRays(alphaScale, group) {
           ctx.save(); ctx.globalCompositeOperation = 'lighter';
-          ctx.filter = _rayBlur;
+          ctx.filter = sceneClouds._rayBlur;
           const rays = sceneClouds._rayCache;
           for (let ri2 = 0; ri2 < rays.length; ri2++) {
             const r = rays[ri2];
@@ -3326,6 +3326,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               p.aspectW = 0.3; p.aspectH = 0.3;
               for (let v = 0; v < 3; v++) p.shape.push({ a: (Math.PI*2/3)*v + _bgHash(s+v*3+20)*0.4, rad: 0.5+_bgHash(s+v*3+21)*0.5 });
             }
+            // Cache hue-shifted color bases (constant per particle)
+            p._cg_base = 235 + p.hueShift * 0.2;
+            p._cb_base = 160 + p.hueShift * 0.15;
+            p._mg_base = 140 + p.hueShift * 0.3;
+            p._og_base = 55 + p.hueShift * 0.2;
+            p._ohR_base = 200 + p.hueShift;
+            p._scg_base = 200 + p.hueShift * 0.4;
+            p._scb_base = 85 + p.hueShift * 0.2;
+            p._sog_base = 60 + p.hueShift * 0.2;
+            p._soR_base = 230 + p.hueShift;
+            p._fR_base = 210 + p.hueShift;
+            p._fG_base = 90 + p.hueShift * 0.3;
             return p;
           };
           const _particles = [];
@@ -3389,8 +3401,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                 ctx.globalCompositeOperation = "lighter";
                 const pulse = 0.5 + Math.sin(p.life * 0.08 + f.delay * 12) * 0.5;
                 const fragFlicker = 0.7 + Math.sin(p.life * 0.15 + f.delay * 20) * 0.3;
-                const fR = Math.round((210 + p.hueShift) * p.intensity * pulse);
-                const fG = Math.round((90 + p.hueShift * 0.3) * p.intensity * pulse);
+                const fR = Math.round(p._fR_base * p.intensity * pulse);
+                const fG = Math.round(p._fG_base * p.intensity * pulse);
                 const fB = Math.round(20 * p.intensity * pulse);
                 const glR2 = fragSize * (5 + pulse * 2);
                 const gl = ctx.createRadialGradient(0,0,0,0,0,glR2);
@@ -3417,13 +3429,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const depthFocus = 0.6 + (p.y / H) * 0.4;
               const hotness = p.intensity * pulse * flicker;
               const coreR = Math.round(Math.min(255, 255 * hotness));
-              const coreG = Math.round(Math.min(255, (235 + p.hueShift * 0.2) * hotness));
-              const coreB = Math.round(Math.min(255, (160 + p.hueShift * 0.15) * hotness));
+              const coreG = Math.round(Math.min(255, p._cg_base * hotness));
+              const coreB = Math.round(Math.min(255, p._cb_base * hotness));
               const midR = Math.round(Math.min(255, (255 + p.hueShift * 0.5) * hotness));
-              const midG = Math.round(Math.min(255, (140 + p.hueShift * 0.3) * hotness));
+              const midG = Math.round(Math.min(255, p._mg_base * hotness));
               const midB = Math.round(Math.min(80, 35 * hotness));
-              const outerR = Math.round(Math.min(255, (200 + p.hueShift) * hotness * 0.7));
-              const outerG = Math.round(Math.min(120, (55 + p.hueShift * 0.2) * hotness * 0.5));
+              const outerR = Math.round(Math.min(255, p._ohR_base * hotness * 0.7));
+              const outerG = Math.round(Math.min(120, p._og_base * hotness * 0.5));
               const outerB = Math.round(8 * hotness * 0.3);
               if (sz > 0.3) {
                 const bokehR = sz * (3.0 + (1 - depthFocus) * 3.0) * dim;
@@ -3467,10 +3479,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               const sz = p.baseSize * dim * depthScale;
               const temp = p.intensity * pulse * rapidFlicker;
               const cr = Math.round(Math.min(255, 255 * temp));
-              const cg4 = Math.round(Math.min(255, (200 + p.hueShift * 0.4) * temp));
-              const cb4 = Math.round(Math.min(140, (85 + p.hueShift * 0.2) * temp));
-              const outerCr = Math.round(Math.min(255, (230 + p.hueShift) * temp * 0.7));
-              const outerCg = Math.round(Math.min(120, (60 + p.hueShift * 0.2) * temp * 0.5));
+              const cg4 = Math.round(Math.min(255, p._scg_base * temp));
+              const cb4 = Math.round(Math.min(140, p._scb_base * temp));
+              const outerCr = Math.round(Math.min(255, p._soR_base * temp * 0.7));
+              const outerCg = Math.round(Math.min(120, p._sog_base * temp * 0.5));
               if (sz > 0.2) {
                 const haloR = sz * (3.5 + (1 - p.y / H) * 2.5);
                 const hg3 = ctx.createRadialGradient(0, 0, 0, 0, 0, haloR);
