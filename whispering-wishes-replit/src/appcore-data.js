@@ -1191,19 +1191,24 @@ const CHAR_BUFF_TABLE = {
 // Format: { s1-s6: { stat: value } } — each level adds ON TOP of previous
 // Values from Prydwen, WutheringLab, community testing
 const RESONANCE_CHAIN_DATA = {
-  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 40 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { skillDmg: 40 } },
-  'Carlotta':     { s1: { critRate: 15 }, s2: { skillDmg: 25 }, s3: { elemDmg: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { defIgnore: 40 } },
+  // Camellya S1: +28% CD after Intro (confirmed). S6: Sweet Dream +150% mult + Perennial mechanic ≈ totalMult 50
+  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 40 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
+  // Carlotta S1: +12.5% CR on Deconstructed targets. S6: Death Knell mult +186.6% ≈ totalMult +50 (front-loaded burst)
+  'Carlotta':     { s1: { critRate: 12.5 }, s2: { skillDmg: 25 }, s3: { elemDmg: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { totalMult: 50 } },
   'Jiyan':        { s1: { atkPct: 10 }, s2: { heavyDmg: 40 }, s3: { critRate: 15, critDmg: 40 }, s4: { heavyDmg: 15 }, s5: { atkPct: 25 }, s6: { libDmg: 40 } },
-  'Jinhsi':       { s1: { elemDmg: 12 }, s2: { skillDmg: 40 }, s3: { critDmg: 25 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
+  // Jinhsi S1: Herald of Revival stacks → up to +80% Illuminous Epiphany DMG ≈ skillDmg 40 avg. S6: +45% Illuminous mult ≈ totalMult 30
+  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { skillDmg: 40 }, s3: { critDmg: 25 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { totalMult: 30 } },
   'Calcharo':     { s1: { elemDmg: 12 }, s2: { libDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { libDmg: 40 } },
   'Encore':       { s1: { basicDmg: 15 }, s2: { atkPct: 40 }, s3: { elemDmg: 15 }, s4: { basicDmg: 15 }, s5: { totalMult: 10 }, s6: { elemDmg: 25 } },
   'Xiangli Yao':  { s1: { elemDmg: 12 }, s2: { skillDmg: 40 }, s3: { critRate: 12 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
   'Aemeath':      { s1: { critDmg: 30, heavyDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 40 }, s6: { totalMult: 40 } },
-  'Zani':         { s1: { critRate: 10, atkPct: 12 }, s2: { critDmg: 30, heavyDmg: 25 }, s3: { totalMult: 15 }, s4: { deepen: 15 }, s5: { totalMult: 40 }, s6: { elemDmg: 25 } },
+  // Zani S1: +50% Spectro DMG for 14s. S6: +40% Heavy Slash mult + Blaze scaling
+  'Zani':         { s1: { elemDmg: 50 }, s2: { critDmg: 30, heavyDmg: 25 }, s3: { totalMult: 15 }, s4: { deepen: 15 }, s5: { totalMult: 40 }, s6: { totalMult: 40, heavyDmg: 40 } },
   'Phoebe':       { s1: { elemDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
   'Phrolova':     { s1: { critRate: 15 }, s2: { critRate: 30, totalMult: 40 }, s3: { totalMult: 15 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
   'Brant':        { s1: { atkPct: 15, elemDmg: 12 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
-  'Augusta':      { s1: { critRate: 40 }, s2: { critRate: 20, critDmg: 40 }, s3: { totalMult: 15 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  // Augusta S1: +15% CD per Crown stack (max 2) ≈ critDmg 30. S6: Triumphant Slash mult boost ≈ totalMult 25
+  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 20, critDmg: 40 }, s3: { totalMult: 15 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
   'Cartethyia':   { s1: { defIgnore: 8, deepen: 40 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
   'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
   'Galbrena':     { s1: { echoDmg: 15 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
