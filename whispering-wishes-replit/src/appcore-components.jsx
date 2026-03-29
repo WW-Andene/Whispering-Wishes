@@ -3191,69 +3191,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         ctx.drawImage(groundCache, 0, 0);
 
-        // === FLOOR ELECTRICITY — static arcs crawling across ground ===
-        {
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          var fet = cloudTime * 0.15;
-          var fGroundH = H - edgeY;
-          var fCurveH = H * 0.035;
-          var fNArcs = 6 + Math.floor(_bgHash(777) * 4);
-          for (var fi = 0; fi < fNArcs; fi++) {
-            var fPhase = Math.sin(fet * 0.06 + fi * 1.7) * Math.sin(fet * 0.04 + fi * 1.1);
-            if (fPhase < 0.45) continue;
-            var fAlpha = (fPhase - 0.45) * 1.4;
-            var fSeedT = Math.floor(fet * 0.18 + fi * 0.13);
-            var _fs = (fi * 1640531527 + fSeedT * 9973) | 0;
-            var fRng = function() { _fs = Math.imul(_fs ^ (_fs >>> 16), 0x45d9f3b); _fs = _fs ^ (_fs >>> 13); return ((_fs >>> 0) % 1000) / 1000; };
-            // Start point on ground surface
-            var fx0 = W * (0.05 + fRng() * 0.9);
-            var fy0 = edgeY + fGroundH * (0.05 + fRng() * 0.45);
-            var fArcLen = W * (0.08 + fRng() * 0.18);
-            var fMainDir = (fRng() - 0.5) * 1.2;
-            var fNSeg = 5 + (fi % 4);
-            var fmpx = [fx0], fmpy = [fy0];
-            for (var fsi = 1; fsi <= fNSeg; fsi++) {
-              fmpx.push(fx0 + (fsi / fNSeg) * fArcLen * Math.cos(fMainDir) + (fRng() - 0.5) * fArcLen * 0.25);
-              fmpy.push(fy0 + (fsi / fNSeg) * fArcLen * Math.sin(fMainDir) * 0.4 + (fRng() - 0.5) * fGroundH * 0.08);
-            }
-            // Main arc — outer glow
-            ctx.beginPath();
-            ctx.moveTo(fmpx[0], fmpy[0]);
-            for (var fmi = 1; fmi < fmpx.length; fmi++) ctx.lineTo(fmpx[fmi], fmpy[fmi]);
-            ctx.strokeStyle = 'rgba(255,140,45,' + (fAlpha * 0.15) + ')';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            // Core
-            ctx.strokeStyle = 'rgba(255,220,160,' + (fAlpha * 0.45) + ')';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            // 2-3 branch arms
-            var fNBranch = 2 + (fi % 2);
-            for (var fbi = 0; fbi < fNBranch; fbi++) {
-              var fbrIdx = 1 + Math.floor(fRng() * (fmpx.length - 2));
-              var fbrAng = fMainDir + (fRng() - 0.5) * 1.5;
-              var fbrLen = fArcLen * (0.15 + fRng() * 0.25);
-              var fbrSegs = 3 + (fbi % 2);
-              ctx.beginPath();
-              ctx.moveTo(fmpx[fbrIdx], fmpy[fbrIdx]);
-              for (var fbsi = 1; fbsi <= fbrSegs; fbsi++) {
-                ctx.lineTo(
-                  fmpx[fbrIdx] + (fbsi / fbrSegs) * fbrLen * Math.cos(fbrAng) + (fRng() - 0.5) * fbrLen * 0.25,
-                  fmpy[fbrIdx] + (fbsi / fbrSegs) * fbrLen * Math.sin(fbrAng) * 0.4 + (fRng() - 0.5) * fGroundH * 0.05
-                );
-              }
-              ctx.strokeStyle = 'rgba(255,160,70,' + (fAlpha * 0.1) + ')';
-              ctx.lineWidth = 2;
-              ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,230,180,' + (fAlpha * 0.3) + ')';
-              ctx.lineWidth = 0.6;
-              ctx.stroke();
-            }
-          }
-          ctx.restore();
-        }
+        // (floor electricity moved below swords)
 
         // === EMBER/SPARK PARTICLE SYSTEM from ground-background.jsx ===
         if (!honourParticles) {
@@ -4028,6 +3966,88 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           } // end else (normal sword)
 
+          ctx.restore();
+        }
+
+        // === FLOOR ELECTRICITY — arcs between swords, originating from sword bases ===
+        if (swords.length > 1) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          var fet = cloudTime * 0.15;
+          // Pick sword pairs to arc between
+          var fSeedT = Math.floor(fet * 0.18);
+          var _fs2 = (fSeedT * 2246822519 + 314159) | 0;
+          var fRng2 = function() { _fs2 = Math.imul(_fs2 ^ (_fs2 >>> 16), 0x45d9f3b); _fs2 = _fs2 ^ (_fs2 >>> 13); return ((_fs2 >>> 0) % 1000) / 1000; };
+          // Arcs from each visible sword (skip some via phase)
+          for (var fi2 = 0; fi2 < swords.length; fi2++) {
+            var fSw = swords[fi2];
+            // Phase check — slow pulse per sword
+            var fPhase2 = Math.sin(fet * 0.07 + fi2 * 1.9) * Math.sin(fet * 0.05 + fi2 * 1.3);
+            if (fPhase2 < 0.4) continue;
+            var fAlpha2 = (fPhase2 - 0.4) * 1.5;
+            // Pick a nearby sword to arc toward
+            var fTarget = fi2 + 1 + Math.floor(fRng2() * Math.min(3, swords.length - fi2 - 1));
+            if (fTarget >= swords.length) fTarget = Math.floor(fRng2() * swords.length);
+            if (fTarget === fi2) continue;
+            var fTw = swords[fTarget];
+            // Start at sword base, end at target sword base
+            var fx0 = fSw.scrX;
+            var fy0 = fSw.scrY;
+            var fx1 = fTw.scrX;
+            var fy1 = fTw.scrY;
+            var fdx = fx1 - fx0, fdy = fy1 - fy0;
+            var fDist = Math.sqrt(fdx * fdx + fdy * fdy);
+            if (fDist < 10 || fDist > W * 0.6) continue;
+            // Reseed per arc for temporal variation
+            var _fa = (fi2 * 1640531527 + fSeedT * 9973) | 0;
+            var faRng = function() { _fa = Math.imul(_fa ^ (_fa >>> 16), 0x45d9f3b); _fa = _fa ^ (_fa >>> 13); return ((_fa >>> 0) % 1000) / 1000; };
+            var fNSeg2 = 5 + (fi2 % 4);
+            var fmpx2 = [fx0], fmpy2 = [fy0];
+            for (var fsi2 = 1; fsi2 <= fNSeg2; fsi2++) {
+              var ft2 = fsi2 / fNSeg2;
+              // Interpolate toward target with jitter
+              fmpx2.push(fx0 + fdx * ft2 + (faRng() - 0.5) * fDist * 0.2);
+              fmpy2.push(fy0 + fdy * ft2 + (faRng() - 0.5) * fDist * 0.12);
+            }
+            // Outer glow — orange
+            ctx.beginPath();
+            ctx.moveTo(fmpx2[0], fmpy2[0]);
+            for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
+            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            // Mid glow
+            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Core — bright orange-white
+            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+            // 2-3 branch arms from main arc
+            var fNBr2 = 2 + (fi2 % 2);
+            for (var fbi2 = 0; fbi2 < fNBr2; fbi2++) {
+              var fbrIdx2 = 1 + Math.floor(faRng() * (fmpx2.length - 2));
+              var fbrAng2 = Math.atan2(fdy, fdx) + (faRng() - 0.5) * 2.0;
+              var fbrLen2 = fDist * (0.12 + faRng() * 0.2);
+              var fbrSegs2 = 3 + (fbi2 % 2);
+              ctx.beginPath();
+              ctx.moveTo(fmpx2[fbrIdx2], fmpy2[fbrIdx2]);
+              for (var fbsi2 = 1; fbsi2 <= fbrSegs2; fbsi2++) {
+                ctx.lineTo(
+                  fmpx2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.cos(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.3,
+                  fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
+                );
+              }
+              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
+              ctx.lineWidth = 2.5;
+              ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
           ctx.restore();
         }
 
