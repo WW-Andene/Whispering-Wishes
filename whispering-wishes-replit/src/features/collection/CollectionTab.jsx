@@ -201,6 +201,23 @@ export default function CollectionTab({
     [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
   );
 
+  // Extended sort: apply DPS/name/tier sorting on top of the base sortItems result
+  const applySortOverride = useCallback((items) => {
+    if (collectionSort === 'dps') {
+      return [...items].sort((a, b) => {
+        const dA = CHARACTER_DATA[a[0]];
+        const dB = CHARACTER_DATA[b[0]];
+        return ((dB?.totalMult || 0) / (dB?.rotTime || 25)) - ((dA?.totalMult || 0) / (dA?.rotTime || 25));
+      });
+    } else if (collectionSort === 'name') {
+      return [...items].sort((a, b) => a[0].localeCompare(b[0]));
+    } else if (collectionSort === 'tier') {
+      const tierOrder = { 'T0': 0, 'T0.5': 1, 'T1': 2, 'T1.5': 3, 'T2': 4, 'T3': 5, 'T4': 6 };
+      return [...items].sort((a, b) => (tierOrder[CHARACTER_DATA[a[0]]?.tier?.toa] ?? 99) - (tierOrder[CHARACTER_DATA[b[0]]?.tier?.toa] ?? 99));
+    }
+    return items;
+  }, [collectionSort]);
+
   const collectionMaskData = useMemo(() => ({
     collMask: generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection),
     collOpacity: visualSettings.collectionOpacity / 100,
@@ -524,6 +541,19 @@ export default function CollectionTab({
                 >
                   <Calendar size={12} />
                 </button>
+                {collectionView === 'items' && (
+                  <KuroSelect
+                    value={collectionSort}
+                    onChange={setCollectionSort}
+                    options={[
+                      { value: 'copies', label: 'Default' },
+                      { value: 'dps', label: 'DPS Rank' },
+                      { value: 'name', label: 'Name A-Z' },
+                      { value: 'tier', label: 'Tier' },
+                    ]}
+                    ariaLabel="Sort by"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -604,7 +634,7 @@ export default function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_5STAR_RESONATORS, collectionData.chars5Counts, true).map(name => [name, collectionData.chars5Counts[name] || 0]), collectionSort)}
+                items={applySortOverride(collectionData.sortItems(filterCollectionItems(ALL_5STAR_RESONATORS, collectionData.chars5Counts, true).map(name => [name, collectionData.chars5Counts[name] || 0]), collectionSort))}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="S" totalCount={ALL_5STAR_RESONATORS.length}
@@ -627,7 +657,7 @@ export default function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_4STAR_RESONATORS, collectionData.chars4Counts, true).map(name => [name, collectionData.chars4Counts[name] || 0]), collectionSort)}
+                items={applySortOverride(collectionData.sortItems(filterCollectionItems(ALL_4STAR_RESONATORS, collectionData.chars4Counts, true).map(name => [name, collectionData.chars4Counts[name] || 0]), collectionSort))}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="S" totalCount={ALL_4STAR_RESONATORS.length}

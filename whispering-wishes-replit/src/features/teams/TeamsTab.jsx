@@ -231,6 +231,7 @@ export default function TeamsTab({
       defIgnore += (wp.defIgnore || 0); resShred += (wp.resShred || 0);
       wpBasicDmg = (wp.basicDmg || 0); wpHeavyDmg = (wp.heavyDmg || 0);
       wpLibDmg = (wp.libDmg || 0); wpEchoDmg = (wp.echoDmg || 0);
+      wpCoordDmg = (wp.coordDmg || 0);
     }
 
     if (mainDps.echoSet) {
@@ -288,7 +289,7 @@ export default function TeamsTab({
       if (mainEl && elCounts[mainEl] >= 2) elemDmg += 10;
     }
 
-    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg;
+    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg;
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
@@ -365,6 +366,7 @@ export default function TeamsTab({
     if (focus.includes('Liberation')) skillDmg += libDmg;
     else if (libDmg > 0) skillDmg += libDmg * 0.3;
     if (focus.includes('Echo')) skillDmg += echoDmg;
+    if (focus.includes('Coordinated ATK')) skillDmg += coordDmg;
 
     const mainDpsEl = (mainDps.d.element || '').toLowerCase();
     mems.forEach(m => {
@@ -563,6 +565,11 @@ export default function TeamsTab({
       const mBase = m.baseStat;
       const isMain = m.name === mainDps.name;
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
+      if (isMain && m.weapon?.pv?.atkSpeed) {
+        const mainRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
+        const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
+        mult = mult * (1 + (m.weapon.pv.atkSpeed * mainRefScale) / 100);
+      }
       if (isMain) {
         const mDmg = mBase * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
         totalRotDmg += mDmg;
@@ -575,15 +582,31 @@ export default function TeamsTab({
         const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
         const sStatKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
         let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0;
-        let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sDefIgnore = 0;
+        let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
         const teamRotTime = mainDps.d.rotTime || 25;
-        // Default echo stats for sub-DPS if not configured (assumes: 4-cost ATK%/CR, 3-cost ElemDMG×2, 1-cost ATK%×2, +3 CR subs, +3 CD subs)
+        // Default echo stats for sub-DPS if not configured, based on echo preset
+        const echoPreset = sEq?.echoPreset || 'default';
         if (sEchoes.length === 0) {
-          sAtkPct += 30 + 18 + 18; // 4-cost ATK% + two 1-cost ATK%
-          sCr += 22.5; // 3 Crit Rate substats
-          sCd += 45; // 3 Crit DMG substats
-          sElem += 60; // two 3-cost Elem DMG
+          if (echoPreset === 'er') {
+            // Energy Regen preset: reduced ATK focus, ER main stats instead
+            sAtkPct += 18 + 18; // two 1-cost ATK% only (4-cost goes to ER, one 3-cost goes to ER)
+            sCr += 22.5; // 3 Crit Rate substats
+            sCd += 45; // 3 Crit DMG substats
+            sElem += 30; // one 3-cost Elem DMG (other is ER)
+          } else if (echoPreset === 'support') {
+            // Support preset: HP%/DEF% focused, minimal DPS contribution
+            sAtkPct += 18; // one 1-cost ATK% only
+            sCr += 15; // 2 Crit Rate substats
+            sCd += 30; // 2 Crit DMG substats
+            sElem += 30; // one 3-cost Elem DMG
+          } else {
+            // Default preset: ATK/Crit focused (assumes: 4-cost ATK%/CR, 3-cost ElemDMG×2, 1-cost ATK%×2, +3 CR subs, +3 CD subs)
+            sAtkPct += 30 + 18 + 18; // 4-cost ATK% + two 1-cost ATK%
+            sCr += 22.5; // 3 Crit Rate substats
+            sCd += 45; // 3 Crit DMG substats
+            sElem += 60; // two 3-cost Elem DMG
+          }
         }
         // Collect buffs from ALL teammates
         mems.forEach(other => {
@@ -658,6 +681,7 @@ export default function TeamsTab({
           sCr += (swp.critRate || 0); sCd += (swp.critDmg || 0);
           sBasicDmg += (swp.basicDmg || 0); sHeavyDmg += (swp.heavyDmg || 0);
           sLibDmg += (swp.libDmg || 0); sEchoDmg += (swp.echoDmg || 0);
+          sCoordDmg += (swp.coordDmg || 0);
           sDefIgnore += (swp.defIgnore || 0); sResShred += (swp.resShred || 0);
         }
         // Echo set (HP/DEF scaling support)
@@ -713,6 +737,7 @@ export default function TeamsTab({
         if (focus.includes('Heavy ATK')) sTypeDmg += sHeavyDmg;
         if (focus.includes('Liberation')) sTypeDmg += sLibDmg;
         if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
+        if (focus.includes('Coordinated ATK')) sTypeDmg += sCoordDmg;
         const sDmgBonus = (1 + sElem / 100) * (1 + sTypeDmg / 100) * (1 + sDeepen / 100);
         const sEffDef = enemyDef90 * Math.max(0, 1 - (sDefShred + sDefIgnore) / 100);
         const sDefMult = attackerFactor / (attackerFactor + sEffDef);
@@ -1321,6 +1346,37 @@ export default function TeamsTab({
                                             </div>
                                           </div>
                                         </div>
+
+                                        {/* Echo Preset for non-main-DPS members */}
+                                        {!isMain && (
+                                          <div>
+                                            <div className="text-[10px] text-gray-400 mb-0.5">Echo Preset</div>
+                                            <div className="flex gap-0.5">
+                                              {[
+                                                { value: 'default', label: 'ATK/Crit', color: 'yellow' },
+                                                { value: 'er', label: 'ER Focus', color: 'cyan' },
+                                                { value: 'support', label: 'Support', color: 'blue' },
+                                              ].map(opt => {
+                                                const currentPreset = eq.echoPreset || 'default';
+                                                const isActive = currentPreset === opt.value;
+                                                return (
+                                                  <button key={opt.value}
+                                                    className={`flex-1 py-1 rounded text-[10px] font-medium transition-all ${isActive ? `bg-${opt.color}-500/20 border-${opt.color}-500/40 text-${opt.color}-400 border` : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    onClick={() => {
+                                                      setTeamEquipment(prev => {
+                                                        const n = { ...prev };
+                                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoPreset: opt.value };
+                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                                        return n;
+                                                      });
+                                                      haptic.light();
+                                                    }}
+                                                  >{opt.label}</button>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+                                        )}
 
                                         {/* Sequence + Refinement side by side */}
                                         <div className="flex gap-2">
