@@ -3741,12 +3741,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               _pY = _n.y + _n.h;
             }
           };
-          var _gap = 6 + _cr() * 6; // 6-12px gap — always visible, never touching
-          // Piece offsets — relative 6-12px from neighbor in both axes
-          var _offX = [0], _offY = [0];
+          var _gap = 6 + _cr() * 6; // 6-12px gap
+          // Pieces move UP from guard. Guard stays at 0. Each piece above shifts 6-12px up.
+          var _offX = [0], _offY = [0]; // guard piece (last)
           for (var _oi = 0; _oi < _nCuts; _oi++) {
-            _offX.unshift(_offX[0] + (_cr() > 0.5 ? 1 : -1) * (6 + _cr() * 6));
-            _offY.unshift(_offY[0] + (6 + _cr() * 6));
+            _offX.unshift(_offX[0] + (_cr() > 0.5 ? 1 : -1) * _cr() * 3); // 0-3px left or right
+            _offY.unshift(_offY[0] - (6 + _cr() * 6)); // negative = UP (toward tip, away from ground)
           }
           // Draw pieces
           for (var _si = 0; _si <= _nCuts; _si++) {
