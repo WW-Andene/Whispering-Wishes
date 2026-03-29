@@ -3526,7 +3526,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           ctx.beginPath();
           ctx.rect(0, 0, W, s.scrY);
           ctx.clip();
-          var _sFloat = Math.sin(cloudTime * 0.008 + s.idx * 2.3) * 2 * (overall / 100);
+          var _sFloat = Math.sin(cloudTime * 0.008 + s.idx * 2.3) * 2;
           ctx.translate(s.scrX, s.scrY - buried + _sFloat);
           ctx.scale(1, -1);
           ctx.rotate(-s.lean);
@@ -3675,7 +3675,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
           var _hw = bladeW / 2;
-          var _sc = overall / 100;
           var _totalH = bladeH + guardH;
           var _guardZone = _totalH * 0.06125;
           // 4-5 zigzag cuts, alternating directions, varied angles
@@ -3689,10 +3688,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             // Alternating directions — odd cuts go left-down, even go right-down
             var _dir = _ci % 2 === 0 ? 1 : -1;
             // Bigger drop for more visible diagonal (5-12% bladeH)
-            var _drop = Math.max(4 * _sc, bladeH * (0.05 + _cr() * 0.07)) * _dir;
+            var _drop = Math.max(4, bladeH * (0.05 + _cr() * 0.07)) * _dir;
             // Zigzag midpoint — big Y deviation to make the zigzag visible
             var _mx = (_cr() * 0.6 - 0.3) * _hw; // midpoint X: anywhere in blade
-            var _midDev = Math.max(3 * _sc, bladeH * (0.01 + _cr() * 0.03));
+            var _midDev = Math.max(3, bladeH * (0.01 + _cr() * 0.03)); // 1-4% bladeH deviation
             var _my = _y + _drop * 0.5 + (_cr() > 0.5 ? 1 : -1) * _midDev;
             _cuts.push({ yL: _y, yR: _y + _drop, mx: _mx, my: _my });
           }
@@ -3711,23 +3710,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _notchL = [], _notchR = [];
           for (var _ni = 0; _ni < _nNotch; _ni++) {
             var _ny = _cutTop + _cr() * (_cutSpan * 0.95);
-            var _nd = Math.max(2 * _sc, _hw * (0.35 + _cr() * 0.65));
-            var _nh = Math.max(3 * _sc, bladeH * (0.015 + _cr() * 0.035));
+            var _nd = Math.max(2, _hw * (0.35 + _cr() * 0.65));
+            var _nh = Math.max(3, bladeH * (0.015 + _cr() * 0.035));
             if (_cr() > 0.25) _notchL.push({ y: _ny, d: _nd, h: _nh });
             if (_cr() > 0.25) _notchR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
           }
           _notchL.sort(function(a,b){ return a.y - b.y; });
           _notchR.sort(function(a,b){ return a.y - b.y; });
-          var _inset = 3 * _sc;
+          var _inset = 3;
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
           var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
           // Draw each piece
           for (var _si = 0; _si <= _nCuts; _si++) {
             var _top = _si > 0 ? _cuts[_si - 1] : null;
             var _bot = _si < _nCuts ? _cuts[_si] : null;
-            var _dx = (_si % 2 === 0 ? 1 : -1) * (1 + _cr() * 2) * _sc;
+            var _dx = (_si % 2 === 0 ? 1 : -1) * (1 + _cr() * 2);
             var _floatSpeed = 0.4 + _cr() * 0.6;
-            var _floatAmp = (1.5 + _cr() * 2.5) * _sc;
+            var _floatAmp = 1.5 + _cr() * 2.5;
             var _floatPhase = _cr() * Math.PI * 2;
             var _floatY = Math.sin(cloudTime * 0.012 * _floatSpeed + _floatPhase) * _floatAmp;
             ctx.save();
@@ -3797,7 +3796,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.closePath(); ctx.fill();
             // 1px black outline on broken edges (zigzag shape)
             ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-            ctx.lineWidth = 0.5 * _sc;
+            ctx.lineWidth = 0.5;
             if (_top) {
               ctx.beginPath();
               ctx.moveTo(-_hw, _tYL);
@@ -3827,21 +3826,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _shi = 0; _shi < _cuts.length; _shi++) {
             var _sc = _cuts[_shi];
             var _sy = (_sc.yL + _sc.yR) * 0.5;
-            var _shFloat = Math.sin(cloudTime * 0.01 * (0.5 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 2) * _sc;
+            var _shFloat = Math.sin(cloudTime * 0.01 * (0.5 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 2);
             _sy += _shFloat;
             // Left shard — wider, shorter, pointing inward
-            var _slx = -_hw - Math.max(3 * _sc, 2 + _cr() * 4) * _sc;
-            var _slw = Math.max(5 * _sc, (3 + _cr() * 5) * _sc);
-            var _slh = Math.max(4 * _sc, (3 + _cr() * 4) * _sc);
+            var _slx = -_hw - Math.max(3, 2 + _cr() * 4);
+            var _slw = Math.max(5, 3 + _cr() * 5);
+            var _slh = Math.max(4, 3 + _cr() * 4);
             ctx.beginPath();
             ctx.moveTo(_slx, _sy - _slw * 0.5);
             ctx.lineTo(_slx + _slh, _sy + _slw * 0.1);
             ctx.lineTo(_slx, _sy + _slw * 0.5);
             ctx.closePath(); ctx.fill();
             // Right shard — wider, shorter, pointing inward
-            var _srx = _hw + Math.max(3 * _sc, 2 + _cr() * 4) * _sc;
-            var _srw = Math.max(5 * _sc, (3 + _cr() * 5) * _sc);
-            var _srh = Math.max(4 * _sc, (3 + _cr() * 4) * _sc);
+            var _srx = _hw + Math.max(3, 2 + _cr() * 4);
+            var _srw = Math.max(5, 3 + _cr() * 5);
+            var _srh = Math.max(4, 3 + _cr() * 4);
             ctx.beginPath();
             ctx.moveTo(_srx, _sy - _srw * 0.5);
             ctx.lineTo(_srx - _srh, _sy + _srw * 0.1);
@@ -3852,10 +3851,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _sni = 0; _sni < _notchL.length; _sni++) {
             var _sn2 = _notchL[_sni];
             if (_cr() > 0.5) continue;
-            var _nfL = Math.sin(cloudTime * 0.01 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5) * _sc;
-            var _sx2 = -_hw - Math.max(2 * _sc, (1 + _cr() * 3) * _sc);
-            var _sw2 = Math.max(2 * _sc, _sn2.h * 0.4);
-            var _sh2 = Math.max(2 * _sc, _sn2.d * 0.5);
+            var _nfL = Math.sin(cloudTime * 0.01 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5);
+            var _sx2 = -_hw - Math.max(2, 1 + _cr() * 3);
+            var _sw2 = Math.max(2, _sn2.h * 0.4);
+            var _sh2 = Math.max(2, _sn2.d * 0.5);
             ctx.beginPath();
             ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.2 + _nfL);
             ctx.lineTo(_sx2 + _sh2, _sn2.y + _sn2.h * 0.45 + _nfL);
@@ -3865,10 +3864,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _sri2 = 0; _sri2 < _notchR.length; _sri2++) {
             var _snr2 = _notchR[_sri2];
             if (_cr() > 0.5) continue;
-            var _nfR = Math.sin(cloudTime * 0.01 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5) * _sc;
-            var _sxr2 = _hw + Math.max(2 * _sc, (1 + _cr() * 3) * _sc);
-            var _swr2 = Math.max(2 * _sc, _snr2.h * 0.4);
-            var _shr2 = Math.max(2 * _sc, _snr2.d * 0.5);
+            var _nfR = Math.sin(cloudTime * 0.01 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5);
+            var _sxr2 = _hw + Math.max(2, 1 + _cr() * 3);
+            var _swr2 = Math.max(2, _snr2.h * 0.4);
+            var _shr2 = Math.max(2, _snr2.d * 0.5);
             ctx.beginPath();
             ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.2 + _nfR);
             ctx.lineTo(_sxr2 - _shr2, _snr2.y + _snr2.h * 0.45 + _nfR);
