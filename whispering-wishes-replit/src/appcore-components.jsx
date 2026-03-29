@@ -3669,21 +3669,24 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
           _cr(); _cr();
           var _hw = bladeW / 2;
-          // Generate cuts — always diagonal, sharp zigzag midpoint
+          // Generate cuts — diagonal, spread across cuttable zone
           var _nCracks = 5 + (_cr() * 4 | 0); // 5-8 cuts
           var _totalH = bladeH + guardH;
-          var _guardZone = guardH - _totalH * 0.06125; // protect bottom 6.125%
+          var _guardZone = _totalH * 0.06125; // 6.125% protected above guard
+          var _cutTop = -bladeH; // tip
+          var _cutBot = guardH - _guardZone; // top of protected zone
+          var _cutRange = _cutBot - _cutTop; // cuttable range = 93.875%
           var _cuts = [];
           for (var _ci = 0; _ci < _nCracks; _ci++) {
-            var _cyStart = -bladeH * 0.82 + _cr() * (bladeH * 0.7 + guardH);
-            // Gentler drop: 3-12% bladeH
-            var _drop = bladeH * (0.03 + _cr() * 0.09);
+            var _cyStart = _cutTop + _cr() * _cutRange;
+            // Gentle drop: 2-6% bladeH (not steep)
+            var _drop = bladeH * (0.02 + _cr() * 0.04);
             var _cyEnd = _cyStart + _drop;
-            // Skip if any part enters guard zone
-            if (_cyEnd > _guardZone || _cyStart > _guardZone) continue;
+            // Clamp to cuttable zone
+            if (_cyEnd > _cutBot) _cyEnd = _cutBot;
             var _dir = _cr() > 0.5 ? 1 : -1;
             var _cmx = (_cr() * 0.4 + 0.1) * _hw * (_cr() > 0.5 ? 1 : -1);
-            var _midY = _cyStart - _drop * (0.1 + _cr() * 0.4) + _drop * 0.5;
+            var _midY = _cyStart + _drop * (0.3 + _cr() * 0.4);
             _cuts.push({ yL: _dir === 1 ? _cyStart : _cyEnd, yR: _dir === 1 ? _cyEnd : _cyStart, mx: _cmx, yM: _midY });
           }
           _cuts.sort(function(a,b){ return a.yM - b.yM; });
@@ -3710,8 +3713,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _nNotches = 4 + (_cr() * 5 | 0);
           var _notchesL = [], _notchesR = [];
           for (var _ni = 0; _ni < _nNotches; _ni++) {
-            var _ny = -bladeH * 0.85 + _cr() * (bladeH * 0.7);
-            if (_ny > _guardZone) continue;
+            var _ny = _cutTop + _cr() * _cutRange;
             var _nd = _hw * (0.2 + _cr() * 0.5);
             var _nh = bladeH * (0.02 + _cr() * 0.05);
             if (_cr() > 0.35) _notchesL.push({ y: _ny, d: _nd, h: _nh });
@@ -3745,12 +3747,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               _pY = _n.y + _n.h;
             }
           };
-          var _gap = 4 + _cr() * 5; // 4-9px gap
-          // Piece offsets — each shifts 3-7px from neighbor
+          var _gap = 6 + _cr() * 6; // 6-12px Y gap
+          // Piece offsets — 3-6px X, 6-12px Y per piece
           var _offX = [0], _offY = [0];
           for (var _oi = 0; _oi < _nCuts; _oi++) {
-            _offX.unshift(_offX[0] + (_cr() > 0.5 ? 1 : -1) * (3 + _cr() * 4));
-            _offY.unshift(_offY[0] + (3 + _cr() * 4));
+            _offX.unshift(_offX[0] + (_cr() > 0.5 ? 1 : -1) * (3 + _cr() * 3));
+            _offY.unshift(_offY[0] + (6 + _cr() * 6));
           }
           // Draw pieces
           for (var _si = 0; _si <= _nCuts; _si++) {
