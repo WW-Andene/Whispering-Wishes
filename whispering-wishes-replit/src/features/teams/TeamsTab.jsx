@@ -453,15 +453,33 @@ export default function TeamsTab({
         const sEchoes = sEq?.echoes || [];
         const sEl = (m.d.element || '').toLowerCase();
         const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
-        // Sub-DPS benefit from team-wide buffs (lib buffs with target 'team')
-        // and share DEF/RES shred with the team
+        // Non-main members get team buffs: outro from teammates, lib team-wide, own self-buffs
         let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0;
-        // Apply team-wide lib buffs to sub-DPS (e.g., Verina's +20% ATK lib)
+        let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sDefIgnore = 0;
+        const teamRotTime = mainDps.d.rotTime || 25;
+        // Collect buffs from ALL teammates
         mems.forEach(other => {
           if (other.name === m.name) return;
           const obt = CHAR_BUFF_TABLE[other.name];
           if (!obt) return;
-          const teamRotTime = mainDps.d.rotTime || 25;
+          // Outro buffs from teammates → this member
+          (obt.outroBuffs || []).forEach(b => {
+            if (b.target === 'next' || b.target === 'enemy') {
+              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+              const val = b.value * uptime;
+              if (b.stat === 'atkPct') sAtkPct += val;
+              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sElem += val;
+              else if (b.stat === 'deepen') sDeepen += val;
+              else if (b.stat === 'basicDmg') sBasicDmg += val;
+              else if (b.stat === 'heavyDmg') sHeavyDmg += val;
+              else if (b.stat === 'libDmg') sLibDmg += val;
+              else if (b.stat === 'echoDmg') sEchoDmg += val;
+              else if (b.stat === 'critRate') sCr += val;
+              else if (b.stat === 'critDmg') sCd += val;
+              else if (b.stat === 'skillDmg') sSkillDmg += val;
+            }
+          });
+          // Team-wide lib buffs
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team') {
               const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
@@ -472,14 +490,19 @@ export default function TeamsTab({
               else if (b.stat === 'critDmg') sCd += val;
             }
           });
-          // Outro buffs that target 'enemy' (debuffs like deepen) affect all team members
-          (obt.outroBuffs || []).forEach(b => {
-            if (b.target === 'enemy' || b.stat === 'deepen') {
-              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
-              if (b.stat === 'deepen') sDeepen += b.value * uptime;
-            }
-          });
         });
+        // Own self-buffs
+        const mbt = CHAR_BUFF_TABLE[m.name];
+        if (mbt) {
+          (mbt.selfBuffs || []).forEach(b => {
+            if (b.stat === 'atkPct') sAtkPct += b.value;
+            else if (b.stat === 'elemDmg') sElem += b.value;
+            else if (b.stat === 'critRate') sCr += b.value;
+            else if (b.stat === 'critDmg') sCd += b.value;
+            else if (b.stat === 'defIgnore') sDefIgnore += b.value;
+            else if (b.stat === 'deepen') sDeepen += b.value;
+          });
+        }
         if (m.echoSet) {
           const ek2 = sEl + 'Dmg';
           const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
@@ -518,8 +541,16 @@ export default function TeamsTab({
         });
         const sEffAtk = mAtk * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
-        const sDmgBonus = (1 + sElem / 100) * (1 + sSkillDmg / 100) * (1 + sDeepen / 100);
-        totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * defMult * resMult;
+        // Accumulate skill-type DMG bonuses based on this member's dmgFocus
+        let sTypeDmg = sSkillDmg;
+        const focus = m.d.dmgFocus || [];
+        if (focus.includes('Basic ATK')) sTypeDmg += sBasicDmg;
+        if (focus.includes('Heavy ATK')) sTypeDmg += sHeavyDmg;
+        if (focus.includes('Liberation')) sTypeDmg += sLibDmg;
+        if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
+        const sDmgBonus = (1 + sElem / 100) * (1 + sTypeDmg / 100) * (1 + sDeepen / 100);
+        const sDefMult = sDefIgnore > 0 ? 800 / (800 + 792 * (1 - sDefIgnore / 100)) : defMult;
+        totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * resMult;
       }
     });
     const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
