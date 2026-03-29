@@ -4172,6 +4172,21 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           } // end else (normal sword)
 
+          // Small orange glow along blade
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = 0.07 + lit * 0.08;
+          ctx.shadowColor = 'rgb(255,130,30)';
+          ctx.shadowBlur = Math.max(2, bladeH * 0.04);
+          ctx.strokeStyle = 'rgba(255,140,40,0.3)';
+          ctx.lineWidth = Math.max(0.5, bladeW * 0.2);
+          ctx.beginPath();
+          ctx.moveTo(0, -(isGladius ? overall * 0.7 * 0.72 : bladeH) * 0.9);
+          ctx.lineTo(0, guardH);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+
           ctx.restore();
         }
 
