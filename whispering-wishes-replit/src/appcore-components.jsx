@@ -2843,14 +2843,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           if (splits[1] === 0 && sceneClouds[di].depth >= depthCuts[0]) splits[1] = di;
           if (sceneClouds[di].depth >= depthCuts[1]) { splits[2] = di; break; }
         }
-        // Ray drawing function
-        function drawRays(alphaScale, group) {
-          ctx.save(); ctx.globalCompositeOperation = 'lighter';
-          ctx.filter = 'blur(' + Math.max(1, Math.round(H * 0.005)) + 'px)';
+        // Ray drawing function — geometry + gradients cached
+        if (!sceneClouds._rayCache) {
           const rCount = 12;
           const rCenter = Math.PI * 0.5, rSpread = Math.PI * 0.55;
+          const _rayData = [];
           for (let ri2 = 0; ri2 < rCount; ri2++) {
-            if (ri2 % 3 !== group) continue;
             const rRng = seededRandom(ri2 * 777 + 42);
             const t2 = (ri2 + rRng() * 0.6 - 0.3) / (rCount - 1);
             const rAng = rCenter - rSpread * 0.5 + t2 * rSpread;
@@ -2858,7 +2856,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rW2 = sunR * (0.15 + rRng() * 0.45);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
-            const rA = (0.28 + rRng() * 0.18) * alphaScale;
+            const rBaseA = 0.28 + rRng() * 0.18;
+            const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
+            // Pre-build gradients for each alphaScale this ray is used with
+            const group = ri2 % 3;
+            const alphaScale = group === 0 ? 0.6 : group === 1 ? 1.0 : 0.5;
+            const rA = rBaseA * alphaScale;
             const rG = ctx.createLinearGradient(sunX, sunY, rex, rey);
             rG.addColorStop(0, 'rgba(255,252,210,' + (rA * 0.25) + ')');
             rG.addColorStop(0.1, 'rgba(255,248,185,' + (rA * 0.5) + ')');
@@ -2867,13 +2870,28 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             rG.addColorStop(0.65, 'rgba(255,225,125,' + (rA * 0.8) + ')');
             rG.addColorStop(0.82, 'rgba(255,215,105,' + (rA * 0.4) + ')');
             rG.addColorStop(1, 'rgba(255,200,85,0)');
-            ctx.fillStyle = rG;
+            _rayData.push({ group: group, grad: rG,
+              x0: sunX + rpx * rW2 * 0.1, y0: sunY + rpy * rW2 * 0.1,
+              x1: sunX - rpx * rW2 * 0.1, y1: sunY - rpy * rW2 * 0.1,
+              x2: rex - rpx * rW2 * 2.2, y2: rey - rpy * rW2 * 2.2,
+              x3: rex + rpx * rW2 * 2.2, y3: rey + rpy * rW2 * 2.2 });
+          }
+          sceneClouds._rayCache = _rayData;
+        }
+        const _rayBlur = 'blur(' + Math.max(1, Math.round(H * 0.005)) + 'px)';
+        function drawRays(alphaScale, group) {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter';
+          ctx.filter = _rayBlur;
+          const rays = sceneClouds._rayCache;
+          for (let ri2 = 0; ri2 < rays.length; ri2++) {
+            const r = rays[ri2];
+            if (r.group !== group) continue;
+            ctx.fillStyle = r.grad;
             ctx.beginPath();
-            const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
-            ctx.moveTo(sunX + rpx * rW2 * 0.1, sunY + rpy * rW2 * 0.1);
-            ctx.lineTo(sunX - rpx * rW2 * 0.1, sunY - rpy * rW2 * 0.1);
-            ctx.lineTo(rex - rpx * rW2 * 2.2, rey - rpy * rW2 * 2.2);
-            ctx.lineTo(rex + rpx * rW2 * 2.2, rey + rpy * rW2 * 2.2);
+            ctx.moveTo(r.x0, r.y0);
+            ctx.lineTo(r.x1, r.y1);
+            ctx.lineTo(r.x2, r.y2);
+            ctx.lineTo(r.x3, r.y3);
             ctx.closePath(); ctx.fill();
           }
           ctx.restore();
