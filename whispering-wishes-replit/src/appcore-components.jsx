@@ -3543,14 +3543,20 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var fPhase2 = Math.sin(_elecFet * 0.03 + fi2 * 2.7) * Math.sin(_elecFet * 0.017 + fi2 * 4.1) * Math.sin(_elecFet * 0.009 + fi2 * 1.3);
             if (fPhase2 < 0.2) continue;
             var fAlpha2 = (fPhase2 - 0.2) * 1.5;
-            var fTarget = fi2 + 1 + Math.floor(Math.abs(Math.sin(fi2 * 7.3 + _elecSeedT * 1.7)) * Math.min(3, swords.length - fi2 - 1));
-            if (fTarget >= swords.length) fTarget = Math.floor(Math.abs(Math.sin(fi2 * 3.1)) * swords.length);
-            if (fTarget === fi2) continue;
+            // Find nearest sword for arc target
+            var fBestDist = 99999, fTarget = -1;
+            for (var _fti = 0; _fti < swords.length; _fti++) {
+              if (_fti === fi2) continue;
+              var _ftdx = swords[_fti].scrX - fSw.scrX, _ftdy = swords[_fti].scrY - fSw.scrY;
+              var _ftd = Math.sqrt(_ftdx * _ftdx + _ftdy * _ftdy);
+              if (_ftd > 15 && _ftd < fBestDist) { fBestDist = _ftd; fTarget = _fti; }
+            }
+            if (fTarget < 0) continue;
             var fTw = swords[fTarget];
             var fx0 = fSw.scrX, fy0 = fSw.scrY, fx1 = fTw.scrX, fy1 = fTw.scrY;
             var fdx = fx1 - fx0, fdy = fy1 - fy0;
-            var fDist = Math.sqrt(fdx * fdx + fdy * fdy);
-            if (fDist < 10 || fDist > W * 0.6) continue;
+            var fDist = fBestDist;
+            if (fDist < 10) continue;
             var _fa = (fi2 * 1640531527 + _elecSeedT * 9973) | 0;
             var faRng = function() { _fa = Math.imul(_fa ^ (_fa >>> 16), 0x45d9f3b); _fa = _fa ^ (_fa >>> 13); return ((_fa >>> 0) % 1000) / 1000; };
             var fNSeg2 = 5 + (fi2 % 4);
