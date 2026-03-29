@@ -1747,6 +1747,19 @@ const ECHO_DATA = {
   if (ECHO_DATA[name]) Object.assign(ECHO_DATA[name], { enemyHp: hp, enemyAtk: atk, enemyDebuffs: debuffs, enemySelfBuffs: selfBuffs });
 });
 
+// Add basic enemy stats to 3-cost (elite) and 1-cost (common) echoes
+// hp: approximate HP in thousands at level 90, atk: approximate ATK
+[...ALL_3COST_ECHOES].forEach(name => {
+  if (ECHO_DATA[name] && !ECHO_DATA[name].enemyHp) {
+    Object.assign(ECHO_DATA[name], { enemyHp: 450, enemyAtk: 800 });
+  }
+});
+[...ALL_1COST_ECHOES].forEach(name => {
+  if (ECHO_DATA[name] && !ECHO_DATA[name].enemyHp) {
+    Object.assign(ECHO_DATA[name], { enemyHp: 150, enemyAtk: 400 });
+  }
+});
+
 // All unique echo sonata sets (for filter dropdown, includes sets beyond ECHO_SETS)
 const ALL_ECHO_SONATA_SETS = [...new Set(Object.values(ECHO_DATA).flatMap(e => e.sets))].sort();
 const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).flatMap(e => Array.isArray(e.buff) ? e.buff : [e.buff]))].sort();

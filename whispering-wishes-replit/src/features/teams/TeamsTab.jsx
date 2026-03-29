@@ -1468,8 +1468,10 @@ export default function TeamsTab({
                               </button>
                               <div className="flex items-center gap-1">
                                 <span className="text-gray-500 text-[10px]">Lv.</span>
-                                <input type="number" min={1} max={120} value={enemyLevel}
-                                  onChange={e => setEnemyLevel(Math.max(1, Math.min(120, parseInt(e.target.value) || 90)))}
+                                <input type="text" inputMode="numeric" value={enemyLevel}
+                                  onFocus={e => e.target.select()}
+                                  onChange={e => { const v = e.target.value.replace(/\D/g, ''); setEnemyLevel(v === '' ? '' : Math.max(1, Math.min(120, parseInt(v) || 90))); }}
+                                  onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value))) setEnemyLevel(90); }}
                                   className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
                               </div>
                               <span className="text-gray-600 text-[9px]">DEF {8 * enemyLevel + 72}</span>

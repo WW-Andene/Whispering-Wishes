@@ -819,7 +819,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
                 {data.dmg > 0 && (
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl font-bold text-yellow-400">{data.dmg}%</span>
+                    <span className="text-sm font-bold text-white">{data.dmg}%</span>
                     {data.element && data.element !== 'Healing' && (
                       <span className="text-xs px-2 py-0.5 rounded" style={{ color: getBuffElementColor(data.element), background: `${getBuffElementColor(data.element)}15`, border: `1px solid ${getBuffElementColor(data.element)}30` }}>{data.element} DMG</span>
                     )}
@@ -839,10 +839,16 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             if (data.desc) {
               const parts = data.desc.split(/(?<=\.)\s+/);
               for (let i = 1; i < parts.length; i++) {
-                if (/grants?\s|Main slot/i.test(parts[i])) buffParts.push(parts[i]);
+                if (/grants?\s|Main slot|buff|boost|\+\d+%|increases?\s/i.test(parts[i])) buffParts.push(parts[i]);
               }
             }
             const buffs = Array.isArray(data.buff) ? data.buff : [data.buff];
+            // If no buff text found, extract from last sentence of desc as fallback
+            if (buffParts.length === 0 && data.desc) {
+              const parts = data.desc.split(/(?<=\.)\s+/);
+              const last = parts[parts.length - 1];
+              if (last && parts.length > 1 && /\+|\%|dmg|atk|def|hp|crit|heal|energy|res/i.test(last)) buffParts.push(last);
+            }
             return (
               <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
@@ -851,8 +857,10 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                     <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
                   ))}
                 </div>
-                {buffParts.length > 0 && (
+                {buffParts.length > 0 ? (
                   <p className="text-gray-400 text-[10px] leading-relaxed">{buffParts.join(' ')}</p>
+                ) : (
+                  <p className="text-gray-500 text-[10px] italic">Damage type buff from echo skill</p>
                 )}
               </div>
             );
