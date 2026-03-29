@@ -142,7 +142,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex gap-1.5 flex-wrap">
+                      <div className="flex gap-1 flex-nowrap">
                         <button
                           onClick={() => {
                             try {
@@ -154,7 +154,7 @@ export default function TeamsTab({
                               toast?.addToast?.('Teams exported!', 'success');
                             } catch { toast?.addToast?.('Export failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px]"
+                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
                           Export
@@ -181,7 +181,7 @@ export default function TeamsTab({
                             };
                             input.click();
                           }}
-                          className="kuro-btn text-[10px]"
+                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
                           Import
@@ -193,21 +193,16 @@ export default function TeamsTab({
                             if (teamCompareEntries.length >= 5) return;
                             setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), teamIdx: state.activeTeamIndex }]);
                             haptic.success();
-                            // Scroll to comparison section after render
-                            setTimeout(() => {
-                              const el = document.getElementById('team-dps-comparison');
-                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }, 100);
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
-                          className="kuro-btn active-gold text-[10px]"
+                          className="kuro-btn active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
                         >
                           + Compare
                         </button>
                         <button
                           onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
-                          className="kuro-btn text-[10px]"
+                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
                           Clear
