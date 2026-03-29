@@ -801,6 +801,92 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
+          {/* Skill Damage */}
+          {data.dmg > 0 && (
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill Damage</div>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold text-yellow-400">{data.dmg}%</span>
+                {data.element && data.element !== 'Healing' && (
+                  <span className="text-xs px-2 py-0.5 rounded" style={{ color: getBuffElementColor(data.element), background: `${getBuffElementColor(data.element)}15`, border: `1px solid ${getBuffElementColor(data.element)}30` }}>{data.element} DMG</span>
+                )}
+                <span className="text-[10px] text-gray-500">total ATK% multiplier</span>
+              </div>
+            </div>
+          )}
+
+          {/* As Enemy (boss echoes) */}
+          {(data.enemyRes || data.enemyHp) && (
+            <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">As Enemy</div>
+              <div className="space-y-2">
+                {/* Combat Stats */}
+                {(data.enemyHp || data.enemyAtk) && (
+                  <div className="flex gap-3">
+                    {data.enemyHp && (
+                      <div className="flex-1 p-2 rounded-lg bg-red-500/5 text-center">
+                        <div className="text-[9px] text-gray-500">HP</div>
+                        <div className="text-sm font-bold text-red-400">{data.enemyHp.toLocaleString()}K</div>
+                      </div>
+                    )}
+                    {data.enemyAtk && (
+                      <div className="flex-1 p-2 rounded-lg bg-red-500/5 text-center">
+                        <div className="text-[9px] text-gray-500">ATK</div>
+                        <div className="text-sm font-bold text-orange-400">{data.enemyAtk.toLocaleString()}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Resistances */}
+                {data.enemyRes && (
+                  <div>
+                    <div className="text-[9px] text-gray-500 mb-1">Elemental Resistance</div>
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(data.enemyRes).map(([el, val]) => (
+                        <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
+                          {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
+                        </span>
+                      ))}
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
+                    </div>
+                  </div>
+                )}
+                {/* Debuffs applied to player */}
+                {data.enemyDebuffs?.length > 0 && (
+                  <div>
+                    <div className="text-[9px] text-gray-500 mb-1">Debuffs (applies to player)</div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.enemyDebuffs.map(d => (
+                        <span key={d} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-300">{d}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Self buffs */}
+                {data.enemySelfBuffs?.length > 0 && (
+                  <div>
+                    <div className="text-[9px] text-gray-500 mb-1">Self Buffs</div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.enemySelfBuffs.map(b => (
+                        <span key={b} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Obtainable Substats */}
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
+            <div className="flex flex-wrap gap-1">
+              {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-[var(--border-medium)]">{s}</span>
+              ))}
+            </div>
+          </div>
+
           {/* Used By Characters */}
           {usedBy.length > 0 && (
             <div>

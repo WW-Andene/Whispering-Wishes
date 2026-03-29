@@ -1699,6 +1699,54 @@ const ECHO_DATA = {
   if (ECHO_DATA[name]) Object.assign(ECHO_DATA[name], { dmg, element, ...(enemyRes && { enemyRes }) });
 });
 
+// [SECTION:ECHO_ENEMY_STATS] — Enemy combat stats for boss echoes
+// enemyHp: approximate HP at level 90 (in thousands)
+// enemyAtk: approximate ATK at level 90
+// enemyDebuffs: status effects the enemy applies to player
+// enemySelfBuffs: buffs the enemy applies to itself
+[
+  ['Mourning Aix', 850, 1200, ['Spectro corrosion'], ['Spectro DMG boost']],
+  ['Feilian Beringal', 1100, 1500, ['Knockback', 'Aero erosion'], ['Aero shield']],
+  ['Tempest Mephis', 900, 1300, ['Electro paralysis'], ['Speed boost']],
+  ['Thundering Mephis', 950, 1350, ['Electro shock', 'Chain lightning'], ['Electro field']],
+  ['Inferno Rider', 1000, 1400, ['Fusion burn'], ['Mount charge']],
+  ['Bell-Borne Geochelone', 1200, 800, ['Freeze'], ['DEF boost', 'Glacio shield']],
+  ['Impermanence Heron', 900, 1300, ['Havoc erosion'], ['Havoc field']],
+  ['Lampylumen Myriad', 1100, 1200, ['Freeze', 'Glacio slow'], ['Glacio shield']],
+  ['Mech Abomination', 1300, 1100, ['Electro discharge'], ['Mech shield']],
+  ['Crownless', 950, 1400, ['Havoc corrosion'], ['Havoc rage']],
+  ['Jué', 1200, 1100, ['Spectro suppression'], ['Spectro barrier']],
+  ['Fallacy of No Return', 1400, 900, ['HP drain', 'Spectro erosion'], ['HP regeneration']],
+  ['Sentry Construct', 1000, 1300, ['Freeze', 'Glacio shatter'], ['Glacio armor']],
+  ['Dreamless', 1000, 1400, ['Havoc corrosion', 'Shadow bind'], ['Havoc boost']],
+  ['Nightmare: Crownless', 1100, 1500, ['Havoc corrosion'], ['DMG boost']],
+  ['Nightmare: Inferno Rider', 1100, 1500, ['Fusion burn'], ['ATK boost']],
+  ['Nightmare: Tempest Mephis', 1000, 1400, ['Electro paralysis'], ['Speed boost']],
+  ['Nightmare: Thundering Mephis', 1000, 1400, ['Electro shock'], ['Electro field']],
+  ['Nightmare: Impermanence Heron', 1000, 1400, ['Havoc erosion'], ['DMG boost']],
+  ['Nightmare: Lampylumen Myriad', 1100, 1300, ['Freeze'], ['Glacio shield']],
+  ['Nightmare: Mourning Aix', 1000, 1400, ['Spectro corrosion'], ['Spectro boost']],
+  ['Nightmare: Feilian Beringal', 1100, 1500, ['Knockback'], ['Aero boost']],
+  ['Nightmare: Hecate', 1100, 1400, ['Havoc corrosion'], ['Havoc field']],
+  ['Hecate', 1000, 1300, ['Havoc corrosion'], ['Havoc boost']],
+  ['The False Sovereign', 1200, 1400, ['Electro paralysis', 'Chain lightning'], ['Electro shield']],
+  ['Lioness of Glory', 1000, 1400, ['Fusion burn'], ['ATK boost']],
+  ['Lady of the Sea', 1100, 1200, ['Aero erosion', 'Pull'], ['Aero barrier']],
+  ['Dragon of Dirge', 900, 1100, ['Fusion burn over time'], ['Fusion trail']],
+  ['Corrosaurus', 1000, 1300, ['Fusion burn'], ['Fusion boost']],
+  ['Lorelei', 1000, 1300, ['Havoc erosion', 'Slow'], ['Havoc field']],
+  ['Nightmare: Kelpie', 1100, 1300, ['Freeze', 'Glacio slow'], ['Glacio armor']],
+  ['Reminiscence: Threnodian - Leviathan', 1200, 1400, ['Havoc corrosion'], ['Havoc boost']],
+  ['Sigillum', 900, 1200, ['Fusion burn'], ['Fusion shield']],
+  ['Reactor Husk', 1100, 1300, ['Fusion explosion'], ['Fusion charge']],
+  ['Nameless Explorer', 1000, 1200, ['Aero erosion'], ['Aero boost']],
+  ['Reminiscence: Fleurdelys', 900, 1100, ['Aero erosion'], ['Aero field']],
+  ['Hyvatia', 900, 1100, ['Spectro suppression'], ['Spectro boost']],
+  ['Reminiscence: Fenrico', 900, 1200, ['Aero erosion'], ['Aero boost']],
+].forEach(([name, hp, atk, debuffs, selfBuffs]) => {
+  if (ECHO_DATA[name]) Object.assign(ECHO_DATA[name], { enemyHp: hp, enemyAtk: atk, enemyDebuffs: debuffs, enemySelfBuffs: selfBuffs });
+});
+
 // All unique echo sonata sets (for filter dropdown, includes sets beyond ECHO_SETS)
 const ALL_ECHO_SONATA_SETS = [...new Set(Object.values(ECHO_DATA).flatMap(e => e.sets))].sort();
 const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).flatMap(e => Array.isArray(e.buff) ? e.buff : [e.buff]))].sort();
