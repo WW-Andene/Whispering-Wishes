@@ -3677,53 +3677,73 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           } else {
 
           // === LONGSWORD — broken blade: zigzag cuts, damaged edges, shards ===
-          var _cs = (s.idx * 2246822519 + 314159) | 0;
-          var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
-          _cr(); _cr();
           var _hw = bladeW / 2;
           var _sc = Math.min(1, overall / 100);
-          var _totalH = bladeH + guardH;
-          var _guardZone = _totalH * 0.06125;
-          // 4-5 zigzag cuts, alternating directions, varied angles
-          var _nCuts = 4 + (_cr() * 2 | 0);
-          var _cutTop = -bladeH * 0.9;
-          var _cutBot = guardH - _guardZone;
-          var _cutSpan = _cutBot - _cutTop;
-          var _cuts = [];
-          for (var _ci = 0; _ci < _nCuts; _ci++) {
-            var _y = _cutTop + _cutSpan * (_ci + 0.5) / _nCuts + (_cr() - 0.5) * _cutSpan * 0.12;
-            // Alternating directions — odd cuts go left-down, even go right-down
-            var _dir = _ci % 2 === 0 ? 1 : -1;
-            // Bigger drop for more visible diagonal (5-12% bladeH)
-            var _drop = Math.max(4 * _sc, bladeH * (0.05 + _cr() * 0.07)) * _dir;
-            // Zigzag midpoint — big Y deviation to make the zigzag visible
-            var _mx = (_cr() * 0.6 - 0.3) * _hw; // midpoint X: anywhere in blade
-            var _midDev = Math.max(3 * _sc, bladeH * (0.01 + _cr() * 0.03));
-            var _my = _y + _drop * 0.5 + (_cr() > 0.5 ? 1 : -1) * _midDev;
-            _cuts.push({ yL: _y, yR: _y + _drop, mx: _mx, my: _my });
-          }
-          _cuts.sort(function(a,b){ return ((a.yL+a.yR)*0.5) - ((b.yL+b.yR)*0.5); });
-          // Cut Y at any X: zigzag through midpoint
-          var _cutYat = function(c, x) {
-            if (x <= c.mx) {
-              var t = (x + _hw) / (c.mx + _hw);
-              return c.yL + t * (c.my - c.yL);
+          if (!s._frac) {
+            var _cs = (s.idx * 2246822519 + 314159) | 0;
+            var _cr = function() { _cs = (_cs * 1103515245 + 12345) & 0x7fffffff; return _cs / 0x7fffffff; };
+            _cr(); _cr();
+            var _totalH = bladeH + guardH;
+            var _guardZone = _totalH * 0.06125;
+            var _nCuts = 4 + (_cr() * 2 | 0);
+            var _cutTop = -bladeH * 0.9;
+            var _cutBot = guardH - _guardZone;
+            var _cutSpan = _cutBot - _cutTop;
+            var _fCuts = [];
+            for (var _ci = 0; _ci < _nCuts; _ci++) {
+              var _y = _cutTop + _cutSpan * (_ci + 0.5) / _nCuts + (_cr() - 0.5) * _cutSpan * 0.12;
+              var _dir = _ci % 2 === 0 ? 1 : -1;
+              var _drop = Math.max(4 * _sc, bladeH * (0.05 + _cr() * 0.07)) * _dir;
+              var _mx = (_cr() * 0.6 - 0.3) * _hw;
+              var _midDev = Math.max(3 * _sc, bladeH * (0.01 + _cr() * 0.03));
+              var _my = _y + _drop * 0.5 + (_cr() > 0.5 ? 1 : -1) * _midDev;
+              _fCuts.push({ yL: _y, yR: _y + _drop, mx: _mx, my: _my });
             }
-            var t2 = (x - c.mx) / (_hw - c.mx);
-            return c.my + t2 * (c.yR - c.my);
-          };
-          // Edge notches — more, bigger, varied
-          var _nNotch = 6 + (_cr() * 5 | 0);
-          var _notchL = [], _notchR = [];
-          for (var _ni = 0; _ni < _nNotch; _ni++) {
-            var _ny = _cutTop + _cr() * (_cutSpan * 0.95);
-            var _nd = Math.max(2 * _sc, _hw * (0.35 + _cr() * 0.65));
-            var _nh = Math.max(3 * _sc, bladeH * (0.015 + _cr() * 0.035));
-            if (_cr() > 0.25) _notchL.push({ y: _ny, d: _nd, h: _nh });
-            if (_cr() > 0.25) _notchR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
+            _fCuts.sort(function(a,b){ return ((a.yL+a.yR)*0.5) - ((b.yL+b.yR)*0.5); });
+            var _fNotchL = [], _fNotchR = [];
+            var _nNotch = 6 + (_cr() * 5 | 0);
+            for (var _ni = 0; _ni < _nNotch; _ni++) {
+              var _ny = _cutTop + _cr() * (_cutSpan * 0.95);
+              var _nd = Math.max(2 * _sc, _hw * (0.35 + _cr() * 0.65));
+              var _nh = Math.max(3 * _sc, bladeH * (0.015 + _cr() * 0.035));
+              if (_cr() > 0.25) _fNotchL.push({ y: _ny, d: _nd, h: _nh });
+              if (_cr() > 0.25) _fNotchR.push({ y: _ny + (_cr()-0.5)*_nh, d: _nd, h: _nh });
+            }
+            _fNotchL.sort(function(a,b){ return a.y - b.y; });
+            _fNotchR.sort(function(a,b){ return a.y - b.y; });
+            // Cache per-piece params
+            var _fPieces = [];
+            for (var _pi = 0; _pi <= _nCuts; _pi++) {
+              _fPieces.push({ dx: (_pi % 2 === 0 ? 1 : -1) * (1 + _cr() * 2) * _sc, fs: 0.4 + _cr() * 0.6, fa: (1.5 + _cr() * 2.5) * _sc, fp: _cr() * Math.PI * 2 });
+            }
+            // Cache shard params
+            var _fShards = [];
+            for (var _fsi = 0; _fsi < _fCuts.length; _fsi++) {
+              _fShards.push({ sf: 0.5 + _cr() * 0.5, sp: _cr() * Math.PI * 2, sa: (1 + _cr() * 2) * _sc,
+                lx: Math.max(3 * _sc, 2 + _cr() * 4) * _sc, lw: Math.max(5 * _sc, (3 + _cr() * 5) * _sc), lh: Math.max(4 * _sc, (3 + _cr() * 4) * _sc),
+                rx: Math.max(3 * _sc, 2 + _cr() * 4) * _sc, rw: Math.max(5 * _sc, (3 + _cr() * 5) * _sc), rh: Math.max(4 * _sc, (3 + _cr() * 4) * _sc) });
+            }
+            // Cache notch shard params
+            var _fNShL = [];
+            for (var _fnli = 0; _fnli < _fNotchL.length; _fnli++) {
+              var _fnSkip = _cr() > 0.5;
+              _fNShL.push({ skip: _fnSkip, sf: 0.4 + _cr() * 0.5, sp: _cr() * Math.PI * 2, sa: (1 + _cr() * 1.5) * _sc,
+                x: Math.max(2 * _sc, (1 + _cr() * 3) * _sc), sw: Math.max(2 * _sc, _fNotchL[_fnli].h * 0.4), sh: Math.max(2 * _sc, _fNotchL[_fnli].d * 0.5) });
+            }
+            var _fNShR = [];
+            for (var _fnri = 0; _fnri < _fNotchR.length; _fnri++) {
+              var _fnrSkip = _cr() > 0.5;
+              _fNShR.push({ skip: _fnrSkip, sf: 0.4 + _cr() * 0.5, sp: _cr() * Math.PI * 2, sa: (1 + _cr() * 1.5) * _sc,
+                x: Math.max(2 * _sc, (1 + _cr() * 3) * _sc), sw: Math.max(2 * _sc, _fNotchR[_fnri].h * 0.4), sh: Math.max(2 * _sc, _fNotchR[_fnri].d * 0.5) });
+            }
+            s._frac = { cuts: _fCuts, nL: _fNotchL, nR: _fNotchR, pcs: _fPieces, sh: _fShards, nsL: _fNShL, nsR: _fNShR };
           }
-          _notchL.sort(function(a,b){ return a.y - b.y; });
-          _notchR.sort(function(a,b){ return a.y - b.y; });
+          var _cuts = s._frac.cuts, _nCuts = _cuts.length;
+          var _notchL = s._frac.nL, _notchR = s._frac.nR;
+          var _cutYat = function(c, x) {
+            if (x <= c.mx) { var t = (x + _hw) / (c.mx + _hw); return c.yL + t * (c.my - c.yL); }
+            var t2 = (x - c.mx) / (_hw - c.mx); return c.my + t2 * (c.yR - c.my);
+          };
           var _inset = 3 * _sc;
           var _colL = leftLight ? 'rgb('+lR+','+lG+','+lB2+')' : 'rgb('+dR+','+dG+','+dB+')';
           var _colR = leftLight ? 'rgb('+dR+','+dG+','+dB+')' : 'rgb('+lR+','+lG+','+lB2+')';
@@ -3731,11 +3751,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _si = 0; _si <= _nCuts; _si++) {
             var _top = _si > 0 ? _cuts[_si - 1] : null;
             var _bot = _si < _nCuts ? _cuts[_si] : null;
-            var _dx = (_si % 2 === 0 ? 1 : -1) * (1 + _cr() * 2) * _sc;
-            var _floatSpeed = 0.4 + _cr() * 0.6;
-            var _floatAmp = (1.5 + _cr() * 2.5) * _sc;
-            var _floatPhase = _cr() * Math.PI * 2;
-            var _floatY = Math.sin(cloudTime * 0.012 * _floatSpeed + _floatPhase) * _floatAmp;
+            var _pc = s._frac.pcs[_si];
+            var _dx = _pc.dx;
+            var _floatY = Math.sin(cloudTime * 0.012 * _pc.fs + _pc.fp) * _pc.fa;
             ctx.save();
             ctx.translate(_dx, _floatY);
             var _tYL = _top ? _cutYat(_top, -_hw) + _inset : tipEnd;
@@ -3831,53 +3849,48 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
           for (var _shi = 0; _shi < _cuts.length; _shi++) {
-            var _sc = _cuts[_shi];
-            var _sy = (_sc.yL + _sc.yR) * 0.5;
-            var _shFloat = Math.sin(cloudTime * 0.01 * (0.5 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 2) * _sc;
+            var _shc = _cuts[_shi];
+            var _sy = (_shc.yL + _shc.yR) * 0.5;
+            var _shd = s._frac.sh[_shi];
+            var _shFloat = Math.sin(cloudTime * 0.01 * _shd.sf + _shd.sp) * _shd.sa;
             _sy += _shFloat;
             // Left shard — wider, shorter, pointing inward
-            var _slx = -_hw - Math.max(3 * _sc, 2 + _cr() * 4) * _sc;
-            var _slw = Math.max(5 * _sc, (3 + _cr() * 5) * _sc);
-            var _slh = Math.max(4 * _sc, (3 + _cr() * 4) * _sc);
+            var _slx = -_hw - _shd.lx;
             ctx.beginPath();
-            ctx.moveTo(_slx, _sy - _slw * 0.5);
-            ctx.lineTo(_slx + _slh, _sy + _slw * 0.1);
-            ctx.lineTo(_slx, _sy + _slw * 0.5);
+            ctx.moveTo(_slx, _sy - _shd.lw * 0.5);
+            ctx.lineTo(_slx + _shd.lh, _sy + _shd.lw * 0.1);
+            ctx.lineTo(_slx, _sy + _shd.lw * 0.5);
             ctx.closePath(); ctx.fill();
             // Right shard — wider, shorter, pointing inward
-            var _srx = _hw + Math.max(3 * _sc, 2 + _cr() * 4) * _sc;
-            var _srw = Math.max(5 * _sc, (3 + _cr() * 5) * _sc);
-            var _srh = Math.max(4 * _sc, (3 + _cr() * 4) * _sc);
+            var _srx = _hw + _shd.rx;
             ctx.beginPath();
-            ctx.moveTo(_srx, _sy - _srw * 0.5);
-            ctx.lineTo(_srx - _srh, _sy + _srw * 0.1);
-            ctx.lineTo(_srx, _sy + _srw * 0.5);
+            ctx.moveTo(_srx, _sy - _shd.rw * 0.5);
+            ctx.lineTo(_srx - _shd.rh, _sy + _shd.rw * 0.1);
+            ctx.lineTo(_srx, _sy + _shd.rw * 0.5);
             ctx.closePath(); ctx.fill();
           }
           // Extra shards near notches
           for (var _sni = 0; _sni < _notchL.length; _sni++) {
             var _sn2 = _notchL[_sni];
-            if (_cr() > 0.5) continue;
-            var _nfL = Math.sin(cloudTime * 0.01 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5) * _sc;
-            var _sx2 = -_hw - Math.max(2 * _sc, (1 + _cr() * 3) * _sc);
-            var _sw2 = Math.max(2 * _sc, _sn2.h * 0.4);
-            var _sh2 = Math.max(2 * _sc, _sn2.d * 0.5);
+            var _nsL = s._frac.nsL[_sni];
+            if (_nsL.skip) continue;
+            var _nfL = Math.sin(cloudTime * 0.01 * _nsL.sf + _nsL.sp) * _nsL.sa;
+            var _sx2 = -_hw - _nsL.x;
             ctx.beginPath();
             ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.2 + _nfL);
-            ctx.lineTo(_sx2 + _sh2, _sn2.y + _sn2.h * 0.45 + _nfL);
+            ctx.lineTo(_sx2 + _nsL.sh, _sn2.y + _sn2.h * 0.45 + _nfL);
             ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.7 + _nfL);
             ctx.closePath(); ctx.fill();
           }
           for (var _sri2 = 0; _sri2 < _notchR.length; _sri2++) {
             var _snr2 = _notchR[_sri2];
-            if (_cr() > 0.5) continue;
-            var _nfR = Math.sin(cloudTime * 0.01 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5) * _sc;
-            var _sxr2 = _hw + Math.max(2 * _sc, (1 + _cr() * 3) * _sc);
-            var _swr2 = Math.max(2 * _sc, _snr2.h * 0.4);
-            var _shr2 = Math.max(2 * _sc, _snr2.d * 0.5);
+            var _nsR = s._frac.nsR[_sri2];
+            if (_nsR.skip) continue;
+            var _nfR = Math.sin(cloudTime * 0.01 * _nsR.sf + _nsR.sp) * _nsR.sa;
+            var _sxr2 = _hw + _nsR.x;
             ctx.beginPath();
             ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.2 + _nfR);
-            ctx.lineTo(_sxr2 - _shr2, _snr2.y + _snr2.h * 0.45 + _nfR);
+            ctx.lineTo(_sxr2 - _nsR.sh, _snr2.y + _snr2.h * 0.45 + _nfR);
             ctx.lineTo(_sxr2, _snr2.y + _snr2.h * 0.7 + _nfR);
             ctx.closePath(); ctx.fill();
           }
