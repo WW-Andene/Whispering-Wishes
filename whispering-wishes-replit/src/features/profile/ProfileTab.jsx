@@ -7,7 +7,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Award, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Upload, User, X } from 'lucide-react';
-import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
   SERVERS, getServerOffset,
