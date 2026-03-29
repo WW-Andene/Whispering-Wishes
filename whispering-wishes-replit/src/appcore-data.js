@@ -785,6 +785,89 @@ const CHARACTER_DATA = {
   }
 });
 
+// [SECTION:TIER_DATA] — Tier rankings from Prydwen.gg (ToA = Tower of Adversity, WW = Whimpering Waste)
+// Best placement across DPS/Hybrid/Support roles. T0 = best, T4 = worst.
+[
+  ['Aemeath',       'T0',   'T1.5'],
+  ['Sigrika',       'T0',   'T0.5'],
+  ['Ciaccona',      'T0',   'T1'],
+  ['Lupa',          'T0',   'T0.5'],
+  ['Lynae',         'T0',   'T0.5'],
+  ['Qiuyuan',       'T0',   'T0'],
+  ['Mornye',        'T0',   'T0.5'],
+  ['Shorekeeper',   'T0',   'T0'],
+  ['Phrolova',      'T0.5', 'T0'],
+  ['Augusta',       'T0.5', 'T1'],
+  ['Cartethyia',    'T0.5', 'T1.5'],
+  ['Galbrena',      'T0.5', 'T1'],
+  ['Iuno',          'T0.5', 'T1'],
+  ['Luuk Herssen',  'T0.5', 'T3'],
+  ['Chisa',         'T0.5', 'T2'],
+  ['Verina',        'T0.5', 'T0.5'],
+  ['Carlotta',      'T1',   'T3'],
+  ['Zani',          'T1',   'T1.5'],
+  ['Brant',         'T1',   'T1'],
+  ['Rover',         'T0.5', 'T1.5'],
+  ['Jiyan',         'T1.5', 'T1'],
+  ['Phoebe',        'T1.5', 'T1.5'],
+  ['Cantarella',    'T1.5', 'T0.5'],
+  ['Mortefi',       'T1.5', 'T1.5'],
+  ['Sanhua',        'T1.5', 'T1.5'],
+  ['Buling',        'T1.5', 'T3'],
+  ['Encore',        'T2',   'T4'],
+  ['Jinhsi',        'T2',   'T4'],
+  ['Xiangli Yao',   'T2',   'T2'],
+  ['Changli',       'T2',   'T1.5'],
+  ['Zhezhi',        'T2',   'T3'],
+  ['Baizhi',        'T2',   'T3'],
+  ['Camellya',      'T3',   'T2'],
+  ['Danjin',        'T3',   'T2'],
+  ['Roccia',        'T3',   'T2'],
+  ['Yinlin',        'T3',   'T4'],
+  ['Calcharo',      'T4',   'T4'],
+  ['Chixia',        'T4',   'T4'],
+  ['Lingyang',      'T4',   'T3'],
+  ['Aalto',         'T4',   'T4'],
+  ['Jianxin',       'T4',   'T4'],
+  ['Lumi',          'T4',   'T4'],
+  ['Taoqi',         'T4',   'T4'],
+  ['Yangyang',      'T4',   'T4'],
+  ['Youhu',         'T4',   'T4'],
+  ['Yuanwu',        'T4',   'T4'],
+].forEach(([name, toa, ww]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
+});
+
+// [SECTION:REGION_DATA] — Character regions/nations
+// Huanglong (Jinzhou/Mengzhou), Rinascita, Black Shores, Septimont, Lahai-Roi
+[
+  // Huanglong
+  ['Rover',        'Huanglong'], ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
+  ['Encore',       'Huanglong'], ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
+  ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
+  ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
+  ['Qiuyuan',      'Huanglong'],
+  // Huanglong 4★
+  ['Aalto',        'Huanglong'], ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
+  ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
+  ['Taoqi',        'Huanglong'], ['Yuanwu',       'Huanglong'], ['Mortefi',      'Huanglong'],
+  ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'], ['Buling',       'Huanglong'],
+  // Black Shores
+  ['Shorekeeper',  'Black Shores'], ['Camellya',   'Black Shores'], ['Galbrena',   'Black Shores'],
+  // Rinascita
+  ['Carlotta',     'Rinascita'], ['Roccia',       'Rinascita'], ['Phoebe',       'Rinascita'],
+  ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
+  ['Ciaccona',     'Rinascita'], ['Cartethyia',   'Rinascita'], ['Lupa',         'Rinascita'],
+  ['Phrolova',     'Rinascita'],
+  // Septimont
+  ['Augusta',      'Septimont'], ['Iuno',         'Septimont'],
+  // Lahai-Roi (Startorch Academy)
+  ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
+  ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
+].forEach(([name, region]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { region });
+});
+
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
 // Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
 // Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
@@ -2627,6 +2710,10 @@ const SKILL_UPGRADE_COSTS = {
   shell: 2030000,
 };
 
+// Weapon refinement scaling — R1 = base (pv values), R2-R5 multiply pv values by these factors
+// Standard WuWa scaling: each refinement adds 25% of base passive bonus
+const WEAPON_REFINE_SCALE = [1, 1.25, 1.5, 1.75, 2];
+
 // 5★ Weapon Lv 1→90 ascension costs (all 6 phases)
 const WEAPON_ASCENSION_COSTS_5 = {
   forgeryT3: 6, forgeryT4: 20,
@@ -2903,7 +2990,7 @@ export {
   ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, STANDARD_5STAR_WEAPONS,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
-  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
+  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE,
   TAB_ORDER, MEDAL_COLORS,
   ELEMENT_COLORS, getElementColor, getElementBg, getElementBorder, getSetElementColor, getEchoSetColors, getBuffElementColor,
   CHARACTER_THEMES,
