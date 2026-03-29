@@ -851,7 +851,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex gap-1 flex-nowrap">
+                      <div className="flex gap-1 flex-wrap justify-end">
                         <button
                           onClick={() => {
                             try {

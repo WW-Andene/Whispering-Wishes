@@ -559,8 +559,6 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
-              {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.baseAtk} Base ATK</span>}
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -568,9 +566,14 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Content */}
         <div className="p-4 space-y-3">
+          {/* Stats */}
+          <div className="flex gap-2">
+            {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.baseAtk} Base ATK</span>}
+            <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
+          </div>
           {data.desc && (() => {
             const sig = data.desc.match(/^(\w+ signature)\.\s*/);
             const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
