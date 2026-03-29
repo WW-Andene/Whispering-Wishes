@@ -519,7 +519,8 @@ export default function TeamsTab({
 
       const tuneBreaksPerRotation = 1;
 
-      const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.02);
+      // Community data: 40 Tune Break Boost ≈ 40% increase → 0.01 per point
+      const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.01);
       tuneBreakDmg += baseTuneBreakDmg * tuneBreaksPerRotation * defMult;
 
       tuneBreakMembers.forEach(m => {
