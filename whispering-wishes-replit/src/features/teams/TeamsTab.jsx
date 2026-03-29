@@ -972,7 +972,7 @@ export default function TeamsTab({
                             };
                             input.click();
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
                           <Upload size={12} />
@@ -1064,6 +1064,12 @@ export default function TeamsTab({
 
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
+                        {!teamSlots.some(s => s) && (
+                          <div className="col-span-3 text-center py-6">
+                            <div className="text-gray-500 text-sm mb-1">Empty Team</div>
+                            <p className="text-gray-600 text-[10px]">Tap a slot to add a Resonator</p>
+                          </div>
+                        )}
                         {teamSlots.map((charName, slotIdx) => {
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
