@@ -3754,10 +3754,11 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _botCut = _si < _nCuts ? _cuts[_si] : null;
             ctx.save();
             ctx.translate(_offX[_si], _offY[_si]);
-            var _tL = _topCut ? _cutY(_topCut, -_hw) : tipEnd;
-            var _tR = _topCut ? _cutY(_topCut, _hw) : tipEnd;
-            var _bL = _botCut ? _cutY(_botCut, -_hw) : guardH;
-            var _bR = _botCut ? _cutY(_botCut, _hw) : guardH;
+            // Inset 3px from shared boundary so pieces never touch
+            var _tL = _topCut ? _cutY(_topCut, -_hw) + 3 : tipEnd;
+            var _tR = _topCut ? _cutY(_topCut, _hw) + 3 : tipEnd;
+            var _bL = _botCut ? _cutY(_botCut, -_hw) - 3 : guardH;
+            var _bR = _botCut ? _cutY(_botCut, _hw) - 3 : guardH;
             // Left half
             ctx.fillStyle = _gL();
             ctx.beginPath();
@@ -3766,8 +3767,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(-_hw * 0.3, -bladeH * 0.7);
               ctx.lineTo(-_hw, tipEnd);
             } else {
-              ctx.moveTo(0, _cutY(_topCut, 0));
-              ctx.lineTo(_topCut.mx < 0 ? _topCut.mx : -_hw * 0.3, _cutY(_topCut, _topCut.mx < 0 ? _topCut.mx : -_hw * 0.3));
+              ctx.moveTo(0, _cutY(_topCut, 0) + 3);
+              ctx.lineTo(_topCut.mx < 0 ? _topCut.mx : -_hw * 0.3, _cutY(_topCut, _topCut.mx < 0 ? _topCut.mx : -_hw * 0.3) + 3);
               ctx.lineTo(-_hw, _tL);
             }
             _drawNotch(_notchesL, -1, _tL, _bL);
@@ -3775,8 +3776,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             if (!_botCut) {
               ctx.lineTo(0, guardH);
             } else {
-              ctx.lineTo(_botCut.mx < 0 ? _botCut.mx : -_hw * 0.3, _cutY(_botCut, _botCut.mx < 0 ? _botCut.mx : -_hw * 0.3));
-              ctx.lineTo(0, _cutY(_botCut, 0));
+              ctx.lineTo(_botCut.mx < 0 ? _botCut.mx : -_hw * 0.3, _cutY(_botCut, _botCut.mx < 0 ? _botCut.mx : -_hw * 0.3) - 3);
+              ctx.lineTo(0, _cutY(_botCut, 0) - 3);
             }
             ctx.closePath(); ctx.fill();
             // Right half
@@ -3787,8 +3788,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineTo(_hw * 0.3, -bladeH * 0.7);
               ctx.lineTo(_hw, tipEnd);
             } else {
-              ctx.moveTo(0, _cutY(_topCut, 0));
-              ctx.lineTo(_topCut.mx > 0 ? _topCut.mx : _hw * 0.3, _cutY(_topCut, _topCut.mx > 0 ? _topCut.mx : _hw * 0.3));
+              ctx.moveTo(0, _cutY(_topCut, 0) + 3);
+              ctx.lineTo(_topCut.mx > 0 ? _topCut.mx : _hw * 0.3, _cutY(_topCut, _topCut.mx > 0 ? _topCut.mx : _hw * 0.3) + 3);
               ctx.lineTo(_hw, _tR);
             }
             _drawNotch(_notchesR, 1, _tR, _bR);
@@ -3796,14 +3797,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             if (!_botCut) {
               ctx.lineTo(0, guardH);
             } else {
-              ctx.lineTo(_botCut.mx > 0 ? _botCut.mx : _hw * 0.3, _cutY(_botCut, _botCut.mx > 0 ? _botCut.mx : _hw * 0.3));
-              ctx.lineTo(0, _cutY(_botCut, 0));
+              ctx.lineTo(_botCut.mx > 0 ? _botCut.mx : _hw * 0.3, _cutY(_botCut, _botCut.mx > 0 ? _botCut.mx : _hw * 0.3) - 3);
+              ctx.lineTo(0, _cutY(_botCut, 0) - 3);
             }
             ctx.closePath(); ctx.fill();
             // Ridge
             ctx.strokeStyle = 'rgba('+Math.min(255,lR+80)+','+Math.min(255,lG+75)+','+Math.min(255,lB2+65)+','+(0.3+lit*0.4)+')';
             ctx.lineWidth = Math.max(0.3, bladeW * 0.06);
-            var _rT = _topCut ? _cutY(_topCut, 0) + 1 : -bladeH + 1;
+            var _rT = _topCut ? _cutY(_topCut, 0) + 4 : -bladeH + 1;
             var _rB = _botCut ? _cutY(_botCut, 0) - 1 : guardH;
             ctx.beginPath(); ctx.moveTo(0, _rT); ctx.lineTo(0, _rB); ctx.stroke();
             // Black outline on broken edges
@@ -3811,9 +3812,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.strokeStyle = 'rgba(0,0,0,0.85)';
               ctx.lineWidth = 1;
               ctx.beginPath();
-              ctx.moveTo(-_hw, _cutY(_topCut, -_hw));
-              ctx.lineTo(_topCut.mx, _topCut.yM);
-              ctx.lineTo(_hw, _cutY(_topCut, _hw));
+              ctx.moveTo(-_hw, _cutY(_topCut, -_hw) + 3);
+              ctx.lineTo(_topCut.mx, _topCut.yM + 3);
+              ctx.lineTo(_hw, _cutY(_topCut, _hw) + 3);
               ctx.stroke();
             }
             if (_botCut) {
@@ -3827,32 +3828,32 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
             ctx.restore();
           }
-          // Floating shards near damaged edges
+          // Floating shards near damaged edges — point OUTWARD, visible size
           var _shBr = 0.3 + lit * 0.4;
           var _shCol = 'rgb('+Math.round(30+180*_shBr)+','+Math.round(22+130*_shBr)+','+Math.round(14+60*_shBr)+')';
           ctx.fillStyle = _shCol;
           for (var _sli = 0; _sli < _notchesL.length; _sli++) {
             var _sn = _notchesL[_sli];
-            var _sg = _hw * (0.15 + _cr() * 0.2);
+            var _sg = Math.max(3, _hw * 0.3 + _cr() * 4);
             var _sx = -_hw - _sg;
-            var _sw = _sn.d * (0.5 + _cr() * 0.4);
-            var _sh = _sn.h * (0.4 + _cr() * 0.5);
+            var _sw = Math.max(3, _sn.d * (0.6 + _cr() * 0.5));
+            var _sh = Math.max(4, _sn.h * (0.5 + _cr() * 0.6));
             ctx.beginPath();
             ctx.moveTo(_sx, _sn.y);
-            ctx.lineTo(_sx + _sw * 0.6, _sn.y + _sh * 0.4);
-            ctx.lineTo(_sx, _sn.y + _sh);
+            ctx.lineTo(_sx - _sw * 0.7, _sn.y + _sh * 0.4);
+            ctx.lineTo(_sx - _sw * 0.1, _sn.y + _sh);
             ctx.closePath(); ctx.fill();
           }
           for (var _sri = 0; _sri < _notchesR.length; _sri++) {
             var _snr = _notchesR[_sri];
-            var _sgR = _hw * (0.15 + _cr() * 0.2);
+            var _sgR = Math.max(3, _hw * 0.3 + _cr() * 4);
             var _sxr = _hw + _sgR;
-            var _swr = _snr.d * (0.5 + _cr() * 0.4);
-            var _shr = _snr.h * (0.4 + _cr() * 0.5);
+            var _swr = Math.max(3, _snr.d * (0.6 + _cr() * 0.5));
+            var _shr = Math.max(4, _snr.h * (0.5 + _cr() * 0.6));
             ctx.beginPath();
             ctx.moveTo(_sxr, _snr.y);
-            ctx.lineTo(_sxr - _swr * 0.6, _snr.y + _shr * 0.4);
-            ctx.lineTo(_sxr, _snr.y + _shr);
+            ctx.lineTo(_sxr + _swr * 0.7, _snr.y + _shr * 0.4);
+            ctx.lineTo(_sxr + _swr * 0.1, _snr.y + _shr);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
