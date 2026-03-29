@@ -2913,20 +2913,23 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var alpha = (phase - 0.5) * 1.5;
             var bw = cl1.baked.w, bh = cl1.baked.h;
             var arcLen = Math.max(bw, bh) * (0.5 + Math.sin(ei * 3.7) * 0.2);
-            var arcAng = et * 0.04 + ei * 2.1;
             var ox = cx1 + cl1.baked.ox + bw * 0.5;
             var oy = cy1 + cl1.baked.oy + bh * 0.5;
-            var ax0 = ox + Math.cos(arcAng) * bw * 0.3;
-            var ay0 = oy + Math.sin(arcAng) * bh * 0.2;
-            var seedT = Math.floor(et * 0.2 + ei * 0.1);
+            // Erratic start direction — snaps to new angle periodically
+            var seedT = Math.floor(et * 0.15 + ei * 0.1);
             var _es = (ei * 1640531527 + seedT * 9973) | 0;
             var eRng = function() { _es = Math.imul(_es ^ (_es >>> 16), 0x45d9f3b); _es = _es ^ (_es >>> 13); return ((_es >>> 0) % 1000) / 1000; };
-            var nSeg = 5 + (ei % 3);
-            var mainDir = arcAng + (eRng() - 0.5) * 0.6;
+            var mainDir = eRng() * Math.PI * 2;
+            var ax0 = ox + (eRng() - 0.5) * bw * 0.5;
+            var ay0 = oy + (eRng() - 0.5) * bh * 0.4;
+            var nSeg = 6 + (ei % 4);
+            var segLen = arcLen / nSeg;
             var mpx = [ax0], mpy = [ay0];
+            var curDir = mainDir;
             for (var si = 1; si <= nSeg; si++) {
-              mpx.push(ax0 + (si / nSeg) * arcLen * Math.cos(mainDir) + (eRng() - 0.5) * arcLen * 0.2);
-              mpy.push(ay0 + (si / nSeg) * arcLen * Math.sin(mainDir) + (eRng() - 0.5) * arcLen * 0.15);
+              curDir += (eRng() - 0.5) * 1.4;
+              mpx.push(mpx[si - 1] + Math.cos(curDir) * segLen + (eRng() - 0.5) * segLen * 0.5);
+              mpy.push(mpy[si - 1] + Math.sin(curDir) * segLen + (eRng() - 0.5) * segLen * 0.4);
             }
             // Main arc — 3-layer orange glow
             ctx.beginPath();
@@ -2945,16 +2948,19 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var nBranch = 2 + (ei % 2);
             for (var bi = 0; bi < nBranch; bi++) {
               var brIdx = 1 + Math.floor(eRng() * (mpx.length - 2));
-              var brAng = mainDir + (eRng() - 0.5) * 1.5;
+              var brAng = eRng() * Math.PI * 2;
               var brLen = arcLen * (0.2 + eRng() * 0.3);
               var brSegs = 3 + (bi % 2);
+              var brSegLen = brLen / brSegs;
+              var bCurDir = brAng;
+              var bpx = mpx[brIdx], bpy = mpy[brIdx];
               ctx.beginPath();
-              ctx.moveTo(mpx[brIdx], mpy[brIdx]);
+              ctx.moveTo(bpx, bpy);
               for (var bsi = 1; bsi <= brSegs; bsi++) {
-                ctx.lineTo(
-                  mpx[brIdx] + (bsi / brSegs) * brLen * Math.cos(brAng) + (eRng() - 0.5) * brLen * 0.25,
-                  mpy[brIdx] + (bsi / brSegs) * brLen * Math.sin(brAng) + (eRng() - 0.5) * brLen * 0.2
-                );
+                bCurDir += (eRng() - 0.5) * 1.2;
+                bpx += Math.cos(bCurDir) * brSegLen + (eRng() - 0.5) * brSegLen * 0.4;
+                bpy += Math.sin(bCurDir) * brSegLen + (eRng() - 0.5) * brSegLen * 0.3;
+                ctx.lineTo(bpx, bpy);
               }
               ctx.strokeStyle = 'rgba(255,140,30,' + (alpha * 0.12) + ')';
               ctx.lineWidth = 2.5;
@@ -3557,12 +3563,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               if (_eDist < 10 || _eDist > W * 1.2) continue;
               var _efa = (_ei * 1640531527 + _eSeedT * 9973) | 0;
               var _eRng = function() { _efa = Math.imul(_efa ^ (_efa >>> 16), 0x45d9f3b); _efa = _efa ^ (_efa >>> 13); return ((_efa >>> 0) % 1000) / 1000; };
-              var _eNSeg = 5 + (_ei % 4);
+              // Wandering path — each segment turns randomly toward target
+              var _eNSeg = 7 + (_ei % 4);
+              var _eSegLen = _eDist / _eNSeg;
+              var _eCurDir = Math.atan2(_edy, _edx);
               var _empx = [_ex0], _empy = [_ey0];
               for (var _esi = 1; _esi <= _eNSeg; _esi++) {
-                var _et = _esi / _eNSeg;
-                _empx.push(_ex0 + _edx * _et + (_eRng() - 0.5) * _eDist * 0.2);
-                _empy.push(_ey0 + _edy * _et + (_eRng() - 0.5) * _eDist * 0.12);
+                // Wander direction + pull toward target
+                _eCurDir += (_eRng() - 0.5) * 1.4;
+                var _eToTarget = Math.atan2(_ey1 - _empy[_esi - 1], _ex1 - _empx[_esi - 1]);
+                _eCurDir = _eCurDir * 0.6 + _eToTarget * 0.4;
+                _empx.push(_empx[_esi - 1] + Math.cos(_eCurDir) * _eSegLen + (_eRng() - 0.5) * _eSegLen * 0.5);
+                _empy.push(_empy[_esi - 1] + Math.sin(_eCurDir) * _eSegLen + (_eRng() - 0.5) * _eSegLen * 0.4);
               }
               ctx.beginPath();
               ctx.moveTo(_empx[0], _empy[0]);
@@ -3573,19 +3585,22 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               ctx.lineWidth = 2; ctx.stroke();
               ctx.strokeStyle = 'rgba(255,210,140,' + (_eAlpha * 0.5) + ')';
               ctx.lineWidth = 0.8; ctx.stroke();
+              // Branches — wander outward from fork point
               var _eNBr = 2 + (_ei % 2);
               for (var _ebi = 0; _ebi < _eNBr; _ebi++) {
                 var _ebrIdx = 1 + Math.floor(_eRng() * (_empx.length - 2));
-                var _ebrAng = Math.atan2(_edy, _edx) + (_eRng() - 0.5) * 2.0;
+                var _ebrDir = _eRng() * Math.PI * 2;
                 var _ebrLen = _eDist * (0.12 + _eRng() * 0.2);
                 var _ebrSegs = 3 + (_ebi % 2);
+                var _ebrSegLen = _ebrLen / _ebrSegs;
+                var _ebpx = _empx[_ebrIdx], _ebpy = _empy[_ebrIdx];
                 ctx.beginPath();
-                ctx.moveTo(_empx[_ebrIdx], _empy[_ebrIdx]);
+                ctx.moveTo(_ebpx, _ebpy);
                 for (var _ebsi = 1; _ebsi <= _ebrSegs; _ebsi++) {
-                  ctx.lineTo(
-                    _empx[_ebrIdx] + (_ebsi / _ebrSegs) * _ebrLen * Math.cos(_ebrAng) + (_eRng() - 0.5) * _ebrLen * 0.3,
-                    _empy[_ebrIdx] + (_ebsi / _ebrSegs) * _ebrLen * Math.sin(_ebrAng) + (_eRng() - 0.5) * _ebrLen * 0.2
-                  );
+                  _ebrDir += (_eRng() - 0.5) * 1.2;
+                  _ebpx += Math.cos(_ebrDir) * _ebrSegLen + (_eRng() - 0.5) * _ebrSegLen * 0.4;
+                  _ebpy += Math.sin(_ebrDir) * _ebrSegLen + (_eRng() - 0.5) * _ebrSegLen * 0.3;
+                  ctx.lineTo(_ebpx, _ebpy);
                 }
                 ctx.strokeStyle = 'rgba(255,140,30,' + (_eAlpha * 0.12) + ')';
                 ctx.lineWidth = 2.5; ctx.stroke();
