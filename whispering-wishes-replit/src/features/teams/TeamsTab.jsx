@@ -453,7 +453,33 @@ export default function TeamsTab({
         const sEchoes = sEq?.echoes || [];
         const sEl = (m.d.element || '').toLowerCase();
         const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
-        let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0;
+        // Sub-DPS benefit from team-wide buffs (lib buffs with target 'team')
+        // and share DEF/RES shred with the team
+        let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0;
+        // Apply team-wide lib buffs to sub-DPS (e.g., Verina's +20% ATK lib)
+        mems.forEach(other => {
+          if (other.name === m.name) return;
+          const obt = CHAR_BUFF_TABLE[other.name];
+          if (!obt) return;
+          const teamRotTime = mainDps.d.rotTime || 25;
+          (obt.libBuffs || []).forEach(b => {
+            if (b.target === 'team') {
+              const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+              const val = b.value * uptime;
+              if (b.stat === 'atkPct') sAtkPct += val;
+              else if (b.stat === 'allDmg') sElem += val;
+              else if (b.stat === 'critRate') sCr += val;
+              else if (b.stat === 'critDmg') sCd += val;
+            }
+          });
+          // Outro buffs that target 'enemy' (debuffs like deepen) affect all team members
+          (obt.outroBuffs || []).forEach(b => {
+            if (b.target === 'enemy' || b.stat === 'deepen') {
+              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+              if (b.stat === 'deepen') sDeepen += b.value * uptime;
+            }
+          });
+        });
         if (m.echoSet) {
           const ek2 = sEl + 'Dmg';
           const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
@@ -492,7 +518,7 @@ export default function TeamsTab({
         });
         const sEffAtk = mAtk * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
-        const sDmgBonus = (1 + sElem / 100) * (1 + sSkillDmg / 100);
+        const sDmgBonus = (1 + sElem / 100) * (1 + sSkillDmg / 100) * (1 + sDeepen / 100);
         totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * defMult * resMult;
       }
     });
