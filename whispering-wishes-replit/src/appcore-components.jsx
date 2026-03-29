@@ -766,41 +766,52 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* 4. Skill (attack description + damage) */}
+          {/* 4. Skill — full description with highlighted numbers and tags */}
           {data.desc && (() => {
             const parts = data.desc.split(/(?<=\.)\s+/);
-            // Skill = sentences with damage percentages or attack actions
-            const skillParts = [];
-            const effectParts = [];
-            for (let i = 1; i < parts.length; i++) {
-              if (/\d+(\.\d+)?%\s*\w*\s*DMG|deal(?:s|ing)?\s|attack|strike|slash|smash|launch|fire|punch|kick|slam|transform|summon/i.test(parts[i]) && /\d+(\.\d+)?%/i.test(parts[i])) {
-                skillParts.push(parts[i]);
-              } else {
-                effectParts.push(parts[i]);
+            const allSkillText = parts.slice(1).join(' ');
+            if (!allSkillText) return null;
+            // Format text: highlight damage %, buff %, heal %, shield %, durations, cooldowns
+            const formatSkillText = (text) => {
+              const elements = [];
+              // Split by tokens we want to highlight
+              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*DMG)|(\d+(?:\.\d+)?%\s*(?:DMG\s*(?:Reduction|Boost|Bonus)|ATK|HP|DEF|Crit(?:\.\s*)?(?:Rate|DMG)|Energy\s*Regen|Resonance\s*(?:Skill|Liberation)\s*DMG(?:\s*Bonus)?|(?:Basic|Heavy|Echo|Coordinated)\s*(?:Attack\s*)?DMG(?:\s*Bonus)?|All[- ]?Attribute\s*DMG(?:\s*Bonus)?|Healing\s*Bonus|(?:Aero|Glacio|Fusion|Electro|Spectro|Havoc)\s*DMG(?:\s*Bonus)?))|(\d+(?:\.\d+)?%\s*(?:of\s*(?:the\s*current\s*character's\s*)?(?:Max\s*)?(?:HP|DEF|ATK)))|(\d+(?:\.\d+)?%?\s*Max\s*HP)|(\b\d+s\b)|(\bCD:\s*\d+s\b)/gi;
+              let lastIndex = 0;
+              let match;
+              while ((match = regex.exec(text)) !== null) {
+                if (match.index > lastIndex) {
+                  elements.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex, match.index)}</span>);
+                }
+                const m = match[0];
+                let color = '#d1d5db'; // gray default
+                let tag = null;
+                if (/Glacio/i.test(m)) color = getBuffElementColor('Glacio DMG');
+                else if (/Fusion/i.test(m)) color = getBuffElementColor('Fusion DMG');
+                else if (/Electro/i.test(m)) color = getBuffElementColor('Electro DMG');
+                else if (/Aero/i.test(m)) color = getBuffElementColor('Aero DMG');
+                else if (/Spectro/i.test(m)) color = getBuffElementColor('Spectro DMG');
+                else if (/Havoc/i.test(m)) color = getBuffElementColor('Havoc DMG');
+                else if (/Physical/i.test(m)) color = '#a1a1aa';
+                if (/DMG\s*Reduction|Shield/i.test(m)) { color = '#60a5fa'; tag = 'shield'; }
+                else if (/DMG\s*Boost|DMG\s*Bonus|ATK|Crit|Resonance|Basic|Heavy|Echo|Coordinated|All/i.test(m)) { color = '#34d399'; tag = 'buff'; }
+                else if (/HP|Heal/i.test(m) && !/DMG/i.test(m)) { color = '#4ade80'; tag = 'heal'; }
+                else if (/\d+(?:\.\d+)?%\s*\w*\s*DMG/i.test(m)) { tag = 'damage'; }
+                if (/^CD:/i.test(m) || /^\d+s$/i.test(m)) { color = '#9ca3af'; tag = null; }
+                elements.push(
+                  <span key={match.index} className="font-semibold" style={{ color }}>{m}</span>
+                );
+                lastIndex = match.index + m.length;
               }
-            }
-            // If no skill parts found but there's damage, put first non-identity sentence in skill
-            if (skillParts.length === 0 && parts.length > 1) {
-              skillParts.push(parts[1]);
-              effectParts.shift();
-            }
+              if (lastIndex < text.length) {
+                elements.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex)}</span>);
+              }
+              return elements;
+            };
             return (
-              <>
-                <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
-                  {skillParts.length > 0 && (
-                    <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
-                  )}
-                </div>
-
-                {/* 5. Effect (buffs, shields, bonuses, cooldown) */}
-                {effectParts.length > 0 && (
-                  <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Effect</div>
-                    <p className="text-gray-400 text-[10px] leading-relaxed">{effectParts.join(' ')}</p>
-                  </div>
-                )}
-              </>
+              <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+                <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
+              </div>
             );
           })()}
 
