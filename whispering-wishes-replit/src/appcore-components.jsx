@@ -3979,51 +3979,6 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           } // end else (normal sword)
 
-          // Twinkling orange glow — traces blade + cut edges
-          var _glTwk = Math.sin(cloudTime * 0.02 + s.idx * 3.1) * 0.5 + 0.5;
-          var _glA = 0.06 + _glTwk * 0.08;
-          ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.shadowColor = 'rgba(255,120,30,' + _glA + ')';
-          ctx.shadowBlur = Math.max(2, bladeH * 0.06);
-          ctx.strokeStyle = 'rgba(255,140,40,' + (_glA * 0.5) + ')';
-          ctx.lineWidth = Math.max(0.5, bladeW * 0.15);
-          // Blade outline
-          ctx.beginPath();
-          if (isGladius) {
-            var gBW2 = overall * 0.7 * 0.2, gBL2 = overall * 0.7 * 0.72;
-            ctx.moveTo(0, -gBL2);
-            ctx.lineTo(-gBW2, -gBL2 * 0.3);
-            ctx.lineTo(-gBW2 * 0.95, guardH);
-            ctx.lineTo(gBW2 * 0.95, guardH);
-            ctx.lineTo(gBW2, -gBL2 * 0.3);
-            ctx.closePath();
-          } else {
-            var _ghw = bladeW / 2;
-            ctx.moveTo(0, -bladeH);
-            ctx.lineTo(-_ghw * 0.3, -bladeH * 0.7);
-            ctx.lineTo(-_ghw, tipEnd);
-            ctx.lineTo(-_ghw, guardH);
-            ctx.lineTo(_ghw, guardH);
-            ctx.lineTo(_ghw, tipEnd);
-            ctx.lineTo(_ghw * 0.3, -bladeH * 0.7);
-            ctx.closePath();
-          }
-          ctx.stroke();
-          // Glow on cut edges
-          if (!isGladius && typeof _cuts !== 'undefined') {
-            ctx.lineWidth = Math.max(0.3, bladeW * 0.1);
-            for (var _gi = 0; _gi < _cuts.length; _gi++) {
-              var _gc = _cuts[_gi];
-              ctx.beginPath();
-              ctx.moveTo(-_ghw, _gc.yL);
-              ctx.lineTo(_gc.mx, _gc.my);
-              ctx.lineTo(_ghw, _gc.yR);
-              ctx.stroke();
-            }
-          }
-          ctx.restore();
-
           ctx.restore();
         }
 
