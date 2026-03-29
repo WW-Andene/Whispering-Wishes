@@ -56,6 +56,8 @@ export default function TeamsTab({
   const [echoSetFilter, setEchoSetFilter] = useState('all');
   const [echoBuffFilter, setEchoBuffFilter] = useState('all');
   const [echoStatPanel, setEchoStatPanel] = useState(null);
+  const [enemyLevel, setEnemyLevel] = useState(90);
+  const [enemyType, setEnemyType] = useState('normal');
 
   // ── Reusable calculator with proper WuWa damage formula ──
   // Memoized so it only recalculates when teamEquipment changes.
@@ -72,7 +74,9 @@ export default function TeamsTab({
       const seqLevel = eq?.sequence || 0;
       let echoSetName = eq?.echoSet || '';
       if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
-      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
+      const scaling = d.statScaling || 'ATK';
+      const baseStat = scaling === 'HP' ? (d.baseHp || 0) : scaling === 'DEF' ? (d.baseDef || 0) : charAtk + weapAtk;
+      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
     }).filter(Boolean);
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
@@ -113,14 +117,84 @@ export default function TeamsTab({
       return r;
     };
 
-    // ── Base stats ──
+    // ── Enemy scaling ──
+    const enemyDef90 = 8 * enemyLevel + 72;
+    const baseResRate = enemyType === 'boss' ? 20 : 10;
+
+    // ── RAW TIER: equipment-only stats, no team buffs ──
+    let rawTotalRotDmg = 0;
+    mems.forEach(m => {
+      const mult = m.d.totalMult || 0;
+      if (mult === 0) return;
+      const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
+      let rStatPct = 0, rCr = 5, rCd = 150, rElem = 0, rSkillDmg = 0;
+      // Weapon substat
+      if (m.weapSubstat === 'Crit Rate') rCr += parseFloat(m.weapSubVal) || 0;
+      if (m.weapSubstat === 'Crit DMG') rCd += parseFloat(m.weapSubVal) || 0;
+      if (m.weapSubstat === sKey) rStatPct += parseFloat(m.weapSubVal) || 0;
+      // Weapon passive (own only)
+      if (m.weapon?.passive) {
+        const wp = parsePassive(m.weapon.passive, m.d.element);
+        if (m.scaling === 'ATK') rStatPct += wp.atkPct;
+        rElem += wp.elemDmg; rSkillDmg += wp.skillDmg;
+        rCr += wp.critRate; rCd += wp.critDmg;
+      }
+      // Echo set (own set bonuses)
+      if (m.echoSet) {
+        const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
+        if (m.scaling === 'ATK') { if (p2.atkPct) rStatPct += p2.atkPct; if (p5.atkPct) rStatPct += p5.atkPct; }
+        if (p2.critRate) rCr += p2.critRate; if (p5.critRate) rCr += p5.critRate;
+        if (p2.skillDmg) rSkillDmg += p2.skillDmg; if (p5.skillDmg) rSkillDmg += p5.skillDmg;
+        const ek = (m.d.element || '').toLowerCase() + 'Dmg';
+        if (p2[ek]) rElem += p2[ek]; if (p5[ek]) rElem += p5[ek];
+      }
+      // Echo main/substats
+      const eqKey = teamIdx + ':' + m.name;
+      const eq = teamEquipment[eqKey];
+      const echoes = eq?.echoes || [];
+      const elKey = (m.d.element || '').toLowerCase();
+      const elDmg = elKey ? elKey.charAt(0).toUpperCase() + elKey.slice(1) + ' DMG' : '';
+      const mStatVals = { 4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44 }, 3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30 }, 1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 } };
+      const subV = { [sKey]: 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Resonance Skill DMG': 9 };
+      echoes.forEach((echo, ei) => {
+        if (!echo || typeof echo !== 'object') return;
+        const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
+        if (echo.mainStat) {
+          const val = mStatVals[cost]?.[echo.mainStat] || 0;
+          if (echo.mainStat === sKey) rStatPct += val;
+          else if (echo.mainStat === 'Crit Rate') rCr += val;
+          else if (echo.mainStat === 'Crit DMG') rCd += val;
+          else if (echo.mainStat === elDmg) rElem += val;
+        }
+        (echo.substats || []).forEach(sub => {
+          if (sub === sKey) rStatPct += 9;
+          else if (sub === 'Crit Rate') rCr += 7.5;
+          else if (sub === 'Crit DMG') rCd += 15;
+          else if (sub === 'Resonance Skill DMG') rSkillDmg += 9;
+        });
+      });
+      // Element resonance
+      const elCnts = {};
+      mems.forEach(mm => { const el = mm.d.element; if (el) elCnts[el] = (elCnts[el] || 0) + 1; });
+      if (m.d.element && elCnts[m.d.element] >= 2) rElem += 10;
+      // Raw damage calculation
+      const rEff = m.baseStat * (1 + rStatPct / 100);
+      const rAvgCrit = 1 + (Math.min(rCr, 100) / 100) * (rCd / 100 - 1);
+      const rDmgBonus = (1 + rElem / 100) * (1 + rSkillDmg / 100);
+      const rDefMult = 800 / (800 + enemyDef90);
+      const rResMult = 1 - baseResRate / 100;
+      rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
+    });
+    const rawDps = Math.round(rawTotalRotDmg / (mainDps.d.rotTime || 25));
+
+    // ── FULL TIER: Base stats with team buffs ──
+    const mainStatKey = mainDps.scaling === 'HP' ? 'HP%' : mainDps.scaling === 'DEF' ? 'DEF%' : 'ATK%';
     let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
 
     if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
-    if (mainDps.weapSubstat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
+    if (mainDps.weapSubstat === mainStatKey) atkPct += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Energy Regen') atkPct += 5;
-    if (mainDps.weapSubstat === 'HP%') {}
 
     let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
     if (mainDps.weapon?.passive) {
@@ -132,7 +206,9 @@ export default function TeamsTab({
 
     if (mainDps.echoSet) {
       const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
-      if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
+      if (mainDps.scaling === 'ATK') { if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct; }
+      else if (mainDps.scaling === 'HP') { if (p2.hpPct) atkPct += p2.hpPct; if (p5.hpPct) atkPct += p5.hpPct; }
+      else if (mainDps.scaling === 'DEF') { if (p2.defPct) atkPct += p2.defPct; if (p5.defPct) atkPct += p5.defPct; }
       if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
       if (p2.skillDmg) skillDmg += p2.skillDmg; if (p5.skillDmg) skillDmg += p5.skillDmg;
       const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
@@ -153,7 +229,7 @@ export default function TeamsTab({
       };
       const subVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Basic ATK DMG': 9, 'Heavy ATK DMG': 9, 'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9 };
       const applyStat = (stat, val) => {
-        if (stat === 'ATK%') atkPct += val;
+        if (stat === mainStatKey) atkPct += val;
         else if (stat === 'Crit Rate') cr += val;
         else if (stat === 'Crit DMG') cd += val;
         else if (stat === elDmgKey) elemDmg += val;
@@ -326,14 +402,12 @@ export default function TeamsTab({
       }
     });
 
-    const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
+    const effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
     const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
-    const enemyDef = 792;
-    const effectiveDef = enemyDef * Math.max(0, 1 - (defShred + defIgnore) / 100);
+    const effectiveDef = enemyDef90 * Math.max(0, 1 - (defShred + defIgnore) / 100);
     const defMult = 800 / (800 + effectiveDef);
-    const baseRes = 10;
-    const effectiveRes = Math.max(baseRes - resShred, -30);
+    const effectiveRes = Math.max(baseResRate - resShred, -30);
     const resMult = 1 - effectiveRes / 100;
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
@@ -442,32 +516,32 @@ export default function TeamsTab({
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
       if (mult === 0) return;
-      const mAtk = m.totalBaseAtk;
+      const mBase = m.baseStat;
       const isMain = m.name === mainDps.name;
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
       if (isMain) {
-        totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
+        totalRotDmg += mBase * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
       } else {
         const sEqKey = teamIdx + ':' + m.name;
         const sEq = teamEquipment[sEqKey];
         const sEchoes = sEq?.echoes || [];
         const sEl = (m.d.element || '').toLowerCase();
         const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
+        const sStatKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
         // Non-main members get team buffs: outro from teammates, lib team-wide, own self-buffs
         let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0;
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sDefIgnore = 0;
         const teamRotTime = mainDps.d.rotTime || 25;
-        // Collect buffs from ALL teammates
+        // Collect buffs from ALL teammates (atkPct buffs only help ATK scalers)
         mems.forEach(other => {
           if (other.name === m.name) return;
           const obt = CHAR_BUFF_TABLE[other.name];
           if (!obt) return;
-          // Outro buffs from teammates → this member
           (obt.outroBuffs || []).forEach(b => {
             if (b.target === 'next' || b.target === 'enemy') {
               const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
               const val = b.value * uptime;
-              if (b.stat === 'atkPct') sAtkPct += val;
+              if (b.stat === 'atkPct' && m.scaling === 'ATK') sAtkPct += val;
               else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sElem += val;
               else if (b.stat === 'deepen') sDeepen += val;
               else if (b.stat === 'basicDmg') sBasicDmg += val;
@@ -479,12 +553,11 @@ export default function TeamsTab({
               else if (b.stat === 'skillDmg') sSkillDmg += val;
             }
           });
-          // Team-wide lib buffs
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team') {
               const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
               const val = b.value * uptime;
-              if (b.stat === 'atkPct') sAtkPct += val;
+              if (b.stat === 'atkPct' && m.scaling === 'ATK') sAtkPct += val;
               else if (b.stat === 'allDmg') sElem += val;
               else if (b.stat === 'critRate') sCr += val;
               else if (b.stat === 'critDmg') sCd += val;
@@ -506,26 +579,26 @@ export default function TeamsTab({
         if (m.echoSet) {
           const ek2 = sEl + 'Dmg';
           const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
-          if (p2.atkPct) sAtkPct += p2.atkPct; if (p5.atkPct) sAtkPct += p5.atkPct;
+          if (m.scaling === 'ATK') { if (p2.atkPct) sAtkPct += p2.atkPct; if (p5.atkPct) sAtkPct += p5.atkPct; }
           if (p2.critRate) sCr += p2.critRate; if (p5.critRate) sCr += p5.critRate;
           if (p2[ek2]) sElem += p2[ek2]; if (p5[ek2]) sElem += p5[ek2];
           if (p2.skillDmg) sSkillDmg += p2.skillDmg; if (p5.skillDmg) sSkillDmg += p5.skillDmg;
         }
         if (m.weapSubstat === 'Crit Rate') sCr += parseFloat(m.weapSubVal) || 0;
         if (m.weapSubstat === 'Crit DMG') sCd += parseFloat(m.weapSubVal) || 0;
-        if (m.weapSubstat === 'ATK%') sAtkPct += parseFloat(m.weapSubVal) || 0;
+        if (m.weapSubstat === sStatKey) sAtkPct += parseFloat(m.weapSubVal) || 0;
         const sMainStatVals = {
           4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
           3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
           1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
         };
-        const sSubVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Resonance Skill DMG': 9 };
+        const sSubVals = { [sStatKey]: 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Resonance Skill DMG': 9 };
         sEchoes.forEach((echo, ei) => {
           if (!echo || typeof echo !== 'object') return;
           const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
           if (echo.mainStat) {
             const val = sMainStatVals[cost]?.[echo.mainStat] || 0;
-            if (echo.mainStat === 'ATK%') sAtkPct += val;
+            if (echo.mainStat === sStatKey) sAtkPct += val;
             else if (echo.mainStat === 'Crit Rate') sCr += val;
             else if (echo.mainStat === 'Crit DMG') sCd += val;
             else if (echo.mainStat === sElDmgKey) sElem += val;
@@ -533,15 +606,14 @@ export default function TeamsTab({
           (echo.substats || []).forEach(sub => {
             const val = sSubVals[sub];
             if (!val) return;
-            if (sub === 'ATK%') sAtkPct += val;
+            if (sub === sStatKey) sAtkPct += val;
             else if (sub === 'Crit Rate') sCr += val;
             else if (sub === 'Crit DMG') sCd += val;
             else if (sub === 'Resonance Skill DMG') sSkillDmg += val;
           });
         });
-        const sEffAtk = mAtk * (1 + sAtkPct / 100);
+        const sEffAtk = mBase * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
-        // Accumulate skill-type DMG bonuses based on this member's dmgFocus
         let sTypeDmg = sSkillDmg;
         const focus = m.d.dmgFocus || [];
         if (focus.includes('Basic ATK')) sTypeDmg += sBasicDmg;
@@ -549,11 +621,91 @@ export default function TeamsTab({
         if (focus.includes('Liberation')) sTypeDmg += sLibDmg;
         if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
         const sDmgBonus = (1 + sElem / 100) * (1 + sTypeDmg / 100) * (1 + sDeepen / 100);
-        const sDefMult = sDefIgnore > 0 ? 800 / (800 + 792 * (1 - sDefIgnore / 100)) : defMult;
+        const sDefMult = sDefIgnore > 0 ? 800 / (800 + enemyDef90 * (1 - sDefIgnore / 100)) : defMult;
         totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * resMult;
       }
     });
     const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
+
+    // ── PERFECT TIER: field time weighting + weapon passives + echo active skills ──
+    // Field-time-adjusted sub-DPS: off-field chars (Coordinated ATK) keep more contribution
+    let perfectTotalRotDmg = 0;
+    mems.forEach(m => {
+      let mult = m.d.totalMult || 0;
+      if (mult === 0) return;
+      const mBase = m.baseStat;
+      const isMain = m.name === mainDps.name;
+      if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
+      const onField = m.d.onField || (isMain ? 15 : 5);
+      const hasCoord = (m.d.dmgFocus || []).includes('Coordinated ATK');
+      // Off-field chars keep 40-100% contribution; on-field-only chars scale by field fraction
+      const fieldWeight = isMain ? 1 : hasCoord ? Math.max(0.4, onField / rotTime) : (onField / rotTime);
+      const adjMult = mult * fieldWeight;
+      if (isMain) {
+        perfectTotalRotDmg += mBase * (1 + atkPct / 100) * (adjMult / 100) * avgCrit * dmgBonus * defMult * resMult;
+      } else {
+        // Use same sub-DPS buff treatment but with adjusted mult
+        // Approximate: scale sub-DPS full-tier contribution by fieldWeight
+        perfectTotalRotDmg += 0; // placeholder — computed via ratio below
+      }
+    });
+    // Simpler: compute per-member contributions and scale sub-DPS by field weight
+    perfectTotalRotDmg = 0;
+    {
+      // Main DPS contributes fully
+      const mainMult = (() => { let m = mainDps.d.totalMult || 0; if (seqTotalMultBonus > 0) m = m * (1 + seqTotalMultBonus / 100); return m; })();
+      perfectTotalRotDmg += mainDps.baseStat * (1 + atkPct / 100) * (mainMult / 100) * avgCrit * dmgBonus * defMult * resMult;
+      // Sub-DPS: scale by field weight ratio
+      const mainContrib = mainDps.baseStat * (1 + atkPct / 100) * (mainMult / 100) * avgCrit * dmgBonus * defMult * resMult;
+      const subContrib = totalRotDmg - mainContrib;
+      // Weighted sub contribution
+      let subWeightSum = 0, subWeightedSum = 0;
+      mems.forEach(m => {
+        if (m.name === mainDps.name) return;
+        const mult = m.d.totalMult || 0;
+        if (mult === 0) return;
+        const onField = m.d.onField || 5;
+        const hasCoord = (m.d.dmgFocus || []).includes('Coordinated ATK');
+        const fw = hasCoord ? Math.max(0.4, onField / rotTime) : (onField / rotTime);
+        subWeightSum += mult;
+        subWeightedSum += mult * fw;
+      });
+      const subScale = subWeightSum > 0 ? subWeightedSum / subWeightSum : 1;
+      perfectTotalRotDmg += subContrib * subScale;
+    }
+    // Weapon passive conditional bonus (signature weapon synergy)
+    let weapPassiveBonus = 0;
+    mems.forEach(m => {
+      const bt = CHAR_BUFF_TABLE[m.name];
+      (bt?.weaponBuffs || []).forEach(wb => {
+        if (wb.target === 'self' || wb.target === 'team') {
+          const uptime = Math.min(1, (wb.duration || 10) / rotTime);
+          const val = wb.value * uptime;
+          // Convert stat bonuses to approximate DPS% increase
+          if (wb.stat === 'atkPct') weapPassiveBonus += val * 0.003;
+          else if (wb.stat === 'critRate') weapPassiveBonus += val * 0.005;
+          else if (wb.stat === 'critDmg') weapPassiveBonus += val * 0.003;
+          else if (wb.stat === 'allDmg') weapPassiveBonus += val * 0.004;
+        }
+      });
+    });
+    // Echo active skill damage (4-cost echo ~300-500% ATK)
+    let echoActiveDmg = 0;
+    mems.forEach(m => {
+      const eqKey = teamIdx + ':' + m.name;
+      const eq = teamEquipment[eqKey];
+      const echoes = eq?.echoes || [];
+      if (echoes[0]?.name) {
+        // Estimate: 4-cost echo active ≈ 350% of character's ATK
+        const echoAtk = m.scaling === 'ATK' ? m.totalBaseAtk : m.baseStat * 0.3;
+        echoActiveDmg += echoAtk * 3.5 * defMult * resMult;
+      }
+    });
+    const perfectDps = Math.round(
+      ((perfectTotalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime)
+      * (1 + weapPassiveBonus)
+      + (echoActiveDmg / rotTime)
+    );
 
     let syn = 0;
     if (mems.some(m => m.d.role === 'Healer')) syn += 25;
@@ -569,8 +721,8 @@ export default function TeamsTab({
     const els = new Set(mems.map(m => m.d.element));
     if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
-  }, [teamEquipment]);
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
+  }, [teamEquipment, enemyLevel, enemyType]);
 
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
@@ -851,7 +1003,7 @@ export default function TeamsTab({
                     // calcTeamStats is now defined in the component body via useCallback
                     const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
                     if (!stats) return null;
-                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, realDps, synergy, warnings } = stats;
+                    const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
                     return (
@@ -1180,7 +1332,7 @@ export default function TeamsTab({
                                     <div>
                                       <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
                                       <div className="flex flex-wrap gap-1">
-                                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.ATK {effAtk.toLocaleString()}</span>
+                                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString()}</span>
                                         <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
                                         <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
                                         <span className="text-[10px] px-2 py-0.5 rounded font-medium"
@@ -1227,17 +1379,40 @@ export default function TeamsTab({
                               </div>
                             )}
 
-                            {/* Damage Score: Raw + Full DPS — single row */}
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="kuro-stat kuro-stat-gold p-2 text-center">
-                                <div className="text-gray-400 text-[10px]">Raw Power</div>
-                                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{score.toLocaleString()}</div>
-                                <div className="text-gray-500 text-[8px]">stat multipliers</div>
+                            {/* Enemy Settings */}
+                            <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+                              <span className="text-gray-400 text-[10px] font-medium">Enemy:</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-gray-500 text-[10px]">Lv.</span>
+                                <input type="number" min={1} max={120} value={enemyLevel}
+                                  onChange={e => setEnemyLevel(Math.max(1, Math.min(120, parseInt(e.target.value) || 90)))}
+                                  className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
+                              </div>
+                              <div className="flex gap-1">
+                                {[['normal', 'Normal'], ['boss', 'Boss']].map(([val, label]) => (
+                                  <button key={val} onClick={() => setEnemyType(val)}
+                                    className={`text-[10px] px-2 py-0.5 rounded ${enemyType === val ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-gray-500/10 border-gray-500/25 text-gray-500'} border`}>{label}</button>
+                                ))}
+                              </div>
+                              <span className="text-gray-600 text-[9px]">DEF {8 * enemyLevel + 72} | RES {enemyType === 'boss' ? 20 : 10}%</span>
+                            </div>
+
+                            {/* DPS Tiers: Raw / Full / Perfect */}
+                            <div className="grid grid-cols-4 gap-2">
+                              <div className="kuro-stat kuro-stat-emerald p-2 text-center">
+                                <div className="text-gray-400 text-[10px]">Raw DPS</div>
+                                <div className="text-lg font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{rawDps.toLocaleString()}</div>
+                                <div className="text-gray-500 text-[8px]">equipment only</div>
                               </div>
                               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
                                 <div className="text-gray-400 text-[10px]">Full DPS</div>
                                 <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString()}</div>
-                                <div className="text-gray-500 text-[8px]">dmg/sec</div>
+                                <div className="text-gray-500 text-[8px]">+buffs/debuffs</div>
+                              </div>
+                              <div className="kuro-stat kuro-stat-gold p-2 text-center">
+                                <div className="text-gray-400 text-[10px]">Perfect DPS</div>
+                                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString()}</div>
+                                <div className="text-gray-500 text-[8px]">+rotation/passives</div>
                               </div>
                               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
                                 <div className="text-gray-400 text-[10px]">Synergy</div>
@@ -1256,7 +1431,7 @@ export default function TeamsTab({
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[10px] text-gray-500 text-center mt-1">Includes: buff uptimes, DOT, Fusion Burst, Tune Break + Rupture/Strain, DEF/RES shred. Excludes: echo substats.</p>
+                            <p className="text-[10px] text-gray-500 text-center mt-1">Raw: equipment only. Full: +buffs, DOT, Tune Break, DEF/RES shred. Perfect: +field time, weapon passives, echo skills. Supports HP/DEF scaling.</p>
                           </div>
                         </CardBody>
                       </Card>
@@ -1269,10 +1444,10 @@ export default function TeamsTab({
                           stats: calcTeamStats(entry.slots, entry.teamIdx ?? 0),
                         })).filter(e => e.stats);
                         if (!computed.length) return null;
-                        const maxS = Math.max(...computed.map(e => e.stats.score), 1);
-                        const maxDps = Math.max(...computed.map(e => e.stats.realDps), 1);
-                        // Unified max so Raw and Full DPS bars are visually comparable within each card
-                        const unifiedMax = Math.max(maxS, maxDps);
+                        const maxRaw = Math.max(...computed.map(e => e.stats.rawDps), 1);
+                        const maxFull = Math.max(...computed.map(e => e.stats.realDps), 1);
+                        const maxPerfect = Math.max(...computed.map(e => e.stats.perfectDps), 1);
+                        const unifiedMax = Math.max(maxRaw, maxFull, maxPerfect);
                         return (
                         <Card id="team-dps-comparison">
                           <CardHeader action={
@@ -1286,8 +1461,9 @@ export default function TeamsTab({
                             <div className="space-y-3">
                               {computed.map((entry) => {
                                 const s = entry.stats;
-                                const rawPct = unifiedMax > 0 ? (s.score / unifiedMax) * 100 : 0;
+                                const rawPct = unifiedMax > 0 ? (s.rawDps / unifiedMax) * 100 : 0;
                                 const fullPct = unifiedMax > 0 ? (s.realDps / unifiedMax) * 100 : 0;
+                                const perfectPct = unifiedMax > 0 ? (s.perfectDps / unifiedMax) * 100 : 0;
                                 return (
                                   <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
@@ -1315,61 +1491,40 @@ export default function TeamsTab({
                                       })}
                                     </div>
 
-                                    {/* Raw score — neon glow style matching histogram */}
-                                    <div className="mb-2">
-                                      <div className="flex items-baseline justify-between mb-1">
-                                        <span className="text-gray-400 text-[10px]">Raw Score</span>
-                                        <span className="text-emerald-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(34,197,94,0.6)' }}>{s.score.toLocaleString()}</span>
+                                    {/* Three-tier DPS bars */}
+                                    {[
+                                      { label: 'Raw DPS', value: s.rawDps, pct: rawPct, color: '#22c55e', suffix: ' /s' },
+                                      { label: 'Full DPS', value: s.realDps, pct: fullPct, color: '#06b6d4', suffix: ' /s' },
+                                      { label: 'Perfect DPS', value: s.perfectDps, pct: perfectPct, color: '#eab308', suffix: ' /s' },
+                                    ].map((bar, bi) => (
+                                      <div key={bi} className={bi < 2 ? 'mb-1.5' : 'mb-1'}>
+                                        <div className="flex items-baseline justify-between mb-0.5">
+                                          <span className="text-gray-400 text-[10px]">{bar.label}</span>
+                                          <span className="font-bold text-sm kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString()}{bar.suffix}</span>
+                                        </div>
+                                        <div className="relative h-5 rounded" style={{ background: 'transparent' }}>
+                                          <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
+                                            style={{
+                                              width: Math.max(bar.pct * 0.85, 6) + '%',
+                                              background: `linear-gradient(90deg, ${bar.color}40, ${bar.color}20)`,
+                                              border: `1px solid ${bar.color}90`,
+                                              borderLeft: 'none',
+                                              boxShadow: `0 0 12px ${bar.color}50, inset 0 0 15px ${bar.color}30`
+                                            }} />
+                                          <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
+                                            style={{ left: 0, background: bar.color, boxShadow: `0 0 8px ${bar.color}, 0 0 16px ${bar.color}80` }} />
+                                        </div>
                                       </div>
-                                      <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
-                                        <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
-                                          style={{
-                                            width: Math.max(rawPct * 0.85, 6) + '%',
-                                            background: 'linear-gradient(90deg, #22c55e40, #22c55e20)',
-                                            border: '1px solid #22c55e90',
-                                            borderLeft: 'none',
-                                            boxShadow: '0 0 12px #22c55e50, inset 0 0 15px #22c55e30'
-                                          }} />
-                                        <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
-                                          style={{
-                                            left: 0,
-                                            background: '#22c55e',
-                                            boxShadow: '0 0 8px #22c55e, 0 0 16px #22c55e80'
-                                          }} />
-                                      </div>
-                                    </div>
-
-                                    {/* Full DPS — neon glow style matching histogram */}
-                                    <div className="mb-1.5">
-                                      <div className="flex items-baseline justify-between mb-1">
-                                        <span className="text-gray-400 text-[10px]">Full DPS</span>
-                                        <span className="text-cyan-400 font-bold text-sm kuro-number" style={{ textShadow: '0 0 8px rgba(6,182,212,0.6)' }}>{s.realDps.toLocaleString()} /s</span>
-                                      </div>
-                                      <div className="relative h-6 rounded" style={{ background: 'transparent' }}>
-                                        <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
-                                          style={{
-                                            width: Math.max(fullPct * 0.85, 6) + '%',
-                                            background: 'linear-gradient(90deg, #06b6d440, #06b6d420)',
-                                            border: '1px solid #06b6d490',
-                                            borderLeft: 'none',
-                                            boxShadow: '0 0 12px #06b6d450, inset 0 0 15px #06b6d430'
-                                          }} />
-                                        <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
-                                          style={{
-                                            left: 0,
-                                            background: '#06b6d4',
-                                            boxShadow: '0 0 8px #06b6d4, 0 0 16px #06b6d480'
-                                          }} />
-                                      </div>
-                                    </div>
+                                    ))}
 
                                     {/* Quick stats */}
                                     <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-[var(--border-medium)]">
                                       <div className="text-[10px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
-                                      <div className="text-[10px]"><span className="text-gray-500">ATK: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
+                                      <div className="text-[10px]"><span className="text-gray-500">{s.mainDps.scaling !== 'ATK' ? s.mainDps.scaling : 'ATK'}: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
                                       <div className="text-[10px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
                                       <div className="text-[10px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
                                       <div className="text-[10px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
+                                      {s.mainDps.scaling !== 'ATK' && <div className="text-[10px]"><span className="text-violet-400">{s.mainDps.scaling} scaling</span></div>}
                                       {s.defShred > 0 && <div className="text-[10px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{s.defShred}%</span></div>}
                                     </div>
                                   </div>
