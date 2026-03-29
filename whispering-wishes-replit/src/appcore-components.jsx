@@ -2385,9 +2385,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       // Brighter amber palette + per-cloud brightness variation
       const bVar = 0.75 + hash(depth * 127 + proximity * 311) * 0.5;
       // Dramatic dark palette — near-black shadows, deep crimson mids, fiery highlights
-      const shR = Math.round((5 + ds * 2 + lr * 1) * bVar), shG = Math.round((2 + ds * 1 + lr * 0) * bVar), shB = Math.round((1 + ds * 0 + lr * 0) * bVar);
-      const ltR = Math.min(255, Math.round((95 + ds * 8 + proximity * 6) * bVar)), ltG = Math.min(255, Math.round((58 + ds * 5 + proximity * 3) * bVar)), ltB = Math.min(255, Math.round((28 + ds * 3 + proximity * 2) * bVar));
-      const rmR = Math.min(255, Math.round((115 + ds * 5) * bVar)), rmG = Math.min(255, Math.round((70 + ds * 5 + proximity * 3) * bVar)), rmB = Math.min(255, Math.round((35 + ds * 3 + proximity * 2) * bVar));
+      const shR = Math.round((3 + ds * 1 + lr * 1) * bVar), shG = Math.round((1 + ds * 0 + lr * 0) * bVar), shB = Math.round((0 + ds * 0 + lr * 0) * bVar);
+      const ltR = Math.min(255, Math.round((115 + ds * 10 + proximity * 8) * bVar)), ltG = Math.min(255, Math.round((70 + ds * 6 + proximity * 4) * bVar)), ltB = Math.min(255, Math.round((35 + ds * 4 + proximity * 3) * bVar));
+      const rmR = Math.min(255, Math.round((135 + ds * 6) * bVar)), rmG = Math.min(255, Math.round((82 + ds * 6 + proximity * 4) * bVar)), rmB = Math.min(255, Math.round((42 + ds * 4 + proximity * 3) * bVar));
       for (let py = 2; py < h - 2; py++) {
         for (let px = 2; px < w - 2; px++) {
           const idx = (py * w + px) * 4, density = dd[idx]; if (density < hT) continue;
@@ -2401,9 +2401,9 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           // Banded shading — 5 bands: sun-facing → 1 deep → 2 stacked → 3 stacked → 4+
           // Floor at 0.25 (4+ only), 3 stacked = 0.38 (warmer than before)
           if (levels <= 1) sL = 0.55;
-          else if (levels === 2) sL = sL > 0.45 ? 0.85 : 0.35;
-          else if (levels === 3) sL = sL > 0.6 ? 0.88 : sL > 0.3 ? 0.50 : 0.32;
-          else { sL = sL > 0.65 ? 0.9 : sL > 0.48 ? 0.65 : sL > 0.3 ? 0.42 : sL > 0.15 ? 0.32 : 0.22; }
+          else if (levels === 2) sL = sL > 0.45 ? 0.9 : 0.25;
+          else if (levels === 3) sL = sL > 0.6 ? 0.92 : sL > 0.3 ? 0.48 : 0.2;
+          else { sL = sL > 0.65 ? 0.95 : sL > 0.48 ? 0.62 : sL > 0.3 ? 0.38 : sL > 0.15 ? 0.22 : 0.12; }
           sL *= lr;
           // Darken bottom (dark orange), brighten center-top (light orange)
           const botT = py / h, botDark = botT > 0.55 ? 1 - (botT - 0.55) / 0.45 * 0.6 : 1;
@@ -2874,7 +2874,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const rW2 = sunR * (0.15 + rRng() * 0.45);
             const rex = sunX + Math.cos(rAng) * rLen;
             const rey = sunY + Math.sin(rAng) * rLen;
-            const rBaseA = 0.28 + rRng() * 0.18;
+            const rBaseA = 0.35 + rRng() * 0.2;
             const rpx = -Math.sin(rAng), rpy = Math.cos(rAng);
             // Pre-build gradients for each alphaScale this ray is used with
             const group = ri2 % 3;
