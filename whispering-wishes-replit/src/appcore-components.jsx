@@ -3191,6 +3191,70 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         }
         ctx.drawImage(groundCache, 0, 0);
 
+        // === FLOOR ELECTRICITY — static arcs crawling across ground ===
+        {
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          var fet = cloudTime * 0.15;
+          var fGroundH = H - edgeY;
+          var fCurveH = H * 0.035;
+          var fNArcs = 6 + Math.floor(_bgHash(777) * 4);
+          for (var fi = 0; fi < fNArcs; fi++) {
+            var fPhase = Math.sin(fet * 0.06 + fi * 1.7) * Math.sin(fet * 0.04 + fi * 1.1);
+            if (fPhase < 0.45) continue;
+            var fAlpha = (fPhase - 0.45) * 1.4;
+            var fSeedT = Math.floor(fet * 0.18 + fi * 0.13);
+            var _fs = (fi * 1640531527 + fSeedT * 9973) | 0;
+            var fRng = function() { _fs = Math.imul(_fs ^ (_fs >>> 16), 0x45d9f3b); _fs = _fs ^ (_fs >>> 13); return ((_fs >>> 0) % 1000) / 1000; };
+            // Start point on ground surface
+            var fx0 = W * (0.05 + fRng() * 0.9);
+            var fy0 = edgeY + fGroundH * (0.05 + fRng() * 0.45);
+            var fArcLen = W * (0.08 + fRng() * 0.18);
+            var fMainDir = (fRng() - 0.5) * 1.2;
+            var fNSeg = 5 + (fi % 4);
+            var fmpx = [fx0], fmpy = [fy0];
+            for (var fsi = 1; fsi <= fNSeg; fsi++) {
+              fmpx.push(fx0 + (fsi / fNSeg) * fArcLen * Math.cos(fMainDir) + (fRng() - 0.5) * fArcLen * 0.25);
+              fmpy.push(fy0 + (fsi / fNSeg) * fArcLen * Math.sin(fMainDir) * 0.4 + (fRng() - 0.5) * fGroundH * 0.08);
+            }
+            // Main arc — outer glow
+            ctx.beginPath();
+            ctx.moveTo(fmpx[0], fmpy[0]);
+            for (var fmi = 1; fmi < fmpx.length; fmi++) ctx.lineTo(fmpx[fmi], fmpy[fmi]);
+            ctx.strokeStyle = 'rgba(255,140,45,' + (fAlpha * 0.15) + ')';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            // Core
+            ctx.strokeStyle = 'rgba(255,220,160,' + (fAlpha * 0.45) + ')';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            // 2-3 branch arms
+            var fNBranch = 2 + (fi % 2);
+            for (var fbi = 0; fbi < fNBranch; fbi++) {
+              var fbrIdx = 1 + Math.floor(fRng() * (fmpx.length - 2));
+              var fbrAng = fMainDir + (fRng() - 0.5) * 1.5;
+              var fbrLen = fArcLen * (0.15 + fRng() * 0.25);
+              var fbrSegs = 3 + (fbi % 2);
+              ctx.beginPath();
+              ctx.moveTo(fmpx[fbrIdx], fmpy[fbrIdx]);
+              for (var fbsi = 1; fbsi <= fbrSegs; fbsi++) {
+                ctx.lineTo(
+                  fmpx[fbrIdx] + (fbsi / fbrSegs) * fbrLen * Math.cos(fbrAng) + (fRng() - 0.5) * fbrLen * 0.25,
+                  fmpy[fbrIdx] + (fbsi / fbrSegs) * fbrLen * Math.sin(fbrAng) * 0.4 + (fRng() - 0.5) * fGroundH * 0.05
+                );
+              }
+              ctx.strokeStyle = 'rgba(255,160,70,' + (fAlpha * 0.1) + ')';
+              ctx.lineWidth = 2;
+              ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,230,180,' + (fAlpha * 0.3) + ')';
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+          ctx.restore();
+        }
+
         // === EMBER/SPARK PARTICLE SYSTEM from ground-background.jsx ===
         if (!honourParticles) {
           const _createParticle = (pW, pH, seed, type) => {
