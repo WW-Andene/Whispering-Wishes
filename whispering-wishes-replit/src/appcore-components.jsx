@@ -3979,6 +3979,67 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
           } // end else (normal sword)
 
+          // === Orange glow aura + blade lightning ===
+          var _glTwk = Math.sin(cloudTime * 0.018 + s.idx * 3.1) * 0.5 + 0.5;
+          var _glTwk2 = Math.sin(cloudTime * 0.011 + s.idx * 5.3) * 0.5 + 0.5;
+          ctx.save();
+          ctx.globalCompositeOperation = 'lighter';
+          // Inner blade glow — fill blade shape with orange + shadowBlur
+          var _ghw = isGladius ? overall * 0.7 * 0.2 : bladeW / 2;
+          var _gBladeH = isGladius ? overall * 0.7 * 0.72 : bladeH;
+          ctx.shadowColor = 'rgba(255,120,30,1)';
+          ctx.shadowBlur = Math.max(3, bladeH * 0.08) * (0.6 + _glTwk * 0.4);
+          ctx.fillStyle = 'rgba(255,160,60,' + (0.03 + _glTwk * 0.04) + ')';
+          ctx.beginPath();
+          if (isGladius) {
+            ctx.moveTo(0, -_gBladeH);
+            ctx.lineTo(-_ghw, -_gBladeH * 0.3);
+            ctx.lineTo(-_ghw * 0.95, guardH);
+            ctx.lineTo(_ghw * 0.95, guardH);
+            ctx.lineTo(_ghw, -_gBladeH * 0.3);
+          } else {
+            ctx.moveTo(0, -bladeH);
+            ctx.lineTo(-_ghw * 0.3, -bladeH * 0.7);
+            ctx.lineTo(-_ghw, tipEnd);
+            ctx.lineTo(-_ghw, guardH);
+            ctx.lineTo(_ghw, guardH);
+            ctx.lineTo(_ghw, tipEnd);
+            ctx.lineTo(_ghw * 0.3, -bladeH * 0.7);
+          }
+          ctx.closePath();
+          ctx.fill();
+          // Edge glow — bright thin stroke on blade edges
+          ctx.shadowBlur = Math.max(5, bladeH * 0.12) * (0.5 + _glTwk2 * 0.5);
+          ctx.strokeStyle = 'rgba(255,180,80,' + (0.05 + _glTwk2 * 0.06) + ')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.08);
+          ctx.stroke();
+          // Small lightning crackles along blade
+          ctx.shadowBlur = Math.max(2, bladeH * 0.04);
+          ctx.shadowColor = 'rgba(255,140,40,0.8)';
+          ctx.strokeStyle = 'rgba(255,200,120,' + (0.08 + _glTwk * 0.1) + ')';
+          ctx.lineWidth = Math.max(0.3, bladeW * 0.05);
+          var _lSeedT = Math.floor(cloudTime * 0.012 + s.idx * 0.7);
+          var _lSeed = (s.idx * 1640531527 + _lSeedT * 7919) | 0;
+          var _lRng = function() { _lSeed = Math.imul(_lSeed ^ (_lSeed >>> 16), 0x45d9f3b); _lSeed = _lSeed ^ (_lSeed >>> 13); return ((_lSeed >>> 0) % 1000) / 1000; };
+          var _nCrackles = 2 + (s.idx % 3);
+          for (var _cli = 0; _cli < _nCrackles; _cli++) {
+            var _clPhase = Math.sin(cloudTime * 0.025 + _cli * 2.3 + s.idx * 1.7) * Math.sin(cloudTime * 0.015 + _cli * 3.9);
+            if (_clPhase < 0.3) continue;
+            var _cStartY = -_gBladeH * (0.1 + _lRng() * 0.8);
+            var _cSide = _lRng() > 0.5 ? 1 : -1;
+            var _cStartX = _cSide * _ghw * (0.3 + _lRng() * 0.7);
+            var _cSegs = 3 + (_cli % 3);
+            ctx.beginPath();
+            ctx.moveTo(_cStartX, _cStartY);
+            for (var _csi = 0; _csi < _cSegs; _csi++) {
+              _cStartX += (_lRng() - 0.5) * _ghw * 2.5;
+              _cStartY += (_lRng() - 0.3) * bladeH * 0.08;
+              ctx.lineTo(_cStartX, _cStartY);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+
           ctx.restore();
         }
 
