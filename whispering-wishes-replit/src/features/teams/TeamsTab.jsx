@@ -474,7 +474,7 @@ export default function TeamsTab({
     }
 
     const hasElectroFlare = mems.some(m => {
-      return m.d.element === 'Electro' && (m.d.dmgFocus || []).length > 0;
+      return CHAR_BUFF_TABLE[m.name]?.electroFlare;
     });
     if (hasElectroFlare) {
       const flareTicks = Math.min(4, Math.floor(rotTime / 4));
@@ -679,7 +679,7 @@ export default function TeamsTab({
     });
     const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
 
-    // ── PERFECT TIER: Full DPS + echo active skills + weapon passives (always >= Full) ──
+    // ── PERFECT TIER: Full DPS + echo active skill damage ──
     // Echo active skill damage — use actual dmg data from ECHO_DATA
     let echoActiveDmg = 0;
     mems.forEach(m => {
@@ -694,29 +694,30 @@ export default function TeamsTab({
           const echoBase = m.scaling === 'ATK' ? m.totalBaseAtk : m.baseStat * 0.25;
           const echoResRate = getEnemyRes(echoEl);
           const echoResMult = 1 - Math.max(echoResRate - resShred, -30) / 100;
-          echoActiveDmg += echoBase * (echoDmgPct / 100) * avgCrit * defMult * echoResMult;
+          // Include echo DMG bonus from sets and weapon passives
+          let echoSkillBonus = 0;
+          if (m.echoSet) {
+            const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
+            if (p2.echoDmg) echoSkillBonus += p2.echoDmg;
+            if (p5.echoDmg) echoSkillBonus += p5.echoDmg;
+          }
+          const echoDmgMult = 1 + echoSkillBonus / 100;
+          // Use the echo user's own crit stats
+          const isMain = m.name === mainDps.name;
+          const echoCrit = isMain ? avgCrit : (() => {
+            let eCr = 5, eCd = 150;
+            if (m.weapSubstat === 'Crit Rate') eCr += parseFloat(m.weapSubVal) || 0;
+            if (m.weapSubstat === 'Crit DMG') eCd += parseFloat(m.weapSubVal) || 0;
+            if (m.weapon?.passive) { const wp = parsePassive(m.weapon.passive, m.d.element); eCr += wp.critRate; eCd += wp.critDmg; }
+            if (m.echoSet) { const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {}; if (p2.critRate) eCr += p2.critRate; if (p5.critRate) eCr += p5.critRate; }
+            return 1 + (Math.min(eCr, 100) / 100) * (eCd / 100 - 1);
+          })();
+          echoActiveDmg += echoBase * (echoDmgPct / 100) * echoCrit * echoDmgMult * defMult * echoResMult;
         }
       }
     });
-    // Weapon passive conditional bonuses (percentage uplift)
-    let weapPassiveBonus = 0;
-    mems.forEach(m => {
-      const bt = CHAR_BUFF_TABLE[m.name];
-      (bt?.weaponBuffs || []).forEach(wb => {
-        if (wb.target === 'self' || wb.target === 'team') {
-          const uptime = Math.min(1, (wb.duration || 10) / rotTime);
-          const val = wb.value * uptime;
-          if (wb.stat === 'atkPct') weapPassiveBonus += val * 0.004;
-          else if (wb.stat === 'critRate') weapPassiveBonus += val * 0.006;
-          else if (wb.stat === 'critDmg') weapPassiveBonus += val * 0.004;
-          else if (wb.stat === 'allDmg') weapPassiveBonus += val * 0.005;
-        }
-      });
-    });
-    // Perfect = Full * (1 + weapon passives) + echo skills — always >= Full
-    const perfectDps = Math.round(
-      realDps * (1 + weapPassiveBonus) + (echoActiveDmg / rotTime)
-    );
+    // Perfect = Full + echo active skills
+    const perfectDps = Math.round(realDps + (echoActiveDmg / rotTime));
 
     let syn = 0;
     if (mems.some(m => m.d.role === 'Healer')) syn += 25;
@@ -1425,7 +1426,7 @@ export default function TeamsTab({
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[10px] text-gray-500 text-center mt-1">Raw: equipment only. Full: +buffs, DOT, Tune Break, DEF/RES shred. Perfect: +field time, weapon passives, echo skills. Supports HP/DEF scaling.</p>
+                            <p className="text-[10px] text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills.</p>
                           </div>
                         </CardBody>
                       </Card>

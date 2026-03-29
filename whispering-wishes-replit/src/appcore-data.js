@@ -1032,7 +1032,8 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% Deepen. Heal. Res. Skill buff.',
+    electroFlare: true,
+    note: 'Outro: 15% Deepen. Heal. Electro Flare via Liberation.',
   },
   'Aalto': {
     outroBuffs: [],
