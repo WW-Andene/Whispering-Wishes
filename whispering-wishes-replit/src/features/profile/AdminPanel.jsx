@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Check, ChevronDown, Minus, Plus, RefreshCcw, Settings, X } from 'lucide-react';
+import { Check, ChevronDown, ClipboardList, Minus, Plus, RefreshCcw, Settings, X } from 'lucide-react';
 import { APP_VERSION, DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../appcore-data.js';
 import {
   Card, CardHeader, CardBody,
