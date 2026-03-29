@@ -308,6 +308,48 @@ export default function EchoSelector({
                     </div>
                   )}
 
+                  {/* Echo Skill Details */}
+                  {echoData && (
+                    <div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill</div>
+                      <div className="p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+                        {echoData.dmg > 0 && (
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] text-gray-400">Damage:</span>
+                            <span className="text-xs font-bold text-yellow-400">{echoData.dmg}%</span>
+                            {echoData.element && echoData.element !== 'Healing' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{echoData.element}</span>
+                            )}
+                          </div>
+                        )}
+                        {echoData.dmg === 0 && (
+                          <div className="text-[10px] text-gray-500 mb-1">Utility / Healing (no damage)</div>
+                        )}
+                        <p className="text-[10px] text-gray-400 leading-relaxed">{echoData.desc}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enemy Stats (4-cost bosses only) */}
+                  {echoData?.enemyRes && (
+                    <div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">As Enemy</div>
+                      <div className="p-2 rounded-lg border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(echoData.enemyRes).map(([el, val]) => (
+                            <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                              {el.charAt(0).toUpperCase() + el.slice(1)} RES: {val}%
+                            </span>
+                          ))}
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">
+                            Other: 10%
+                          </span>
+                        </div>
+                        <p className="text-[9px] text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Main Stat Selection */}
                   <div>
                     <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>

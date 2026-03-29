@@ -57,7 +57,9 @@ export default function TeamsTab({
   const [echoBuffFilter, setEchoBuffFilter] = useState('all');
   const [echoStatPanel, setEchoStatPanel] = useState(null);
   const [enemyLevel, setEnemyLevel] = useState(90);
-  const [enemyEcho, setEnemyEcho] = useState('');  // echo name as enemy target
+  const [enemyEcho, setEnemyEcho] = useState('');
+  const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
+  const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
 
   // ── Reusable calculator with proper WuWa damage formula ──
   // Memoized so it only recalculates when teamEquipment changes.
@@ -104,6 +106,8 @@ export default function TeamsTab({
       if (basicMatch) r.basicDmg += parseInt(basicMatch[1]);
       const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
       if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1]);
+      const coordMatch = p.match(/coord(?:inated)?\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
+      if (coordMatch) r.basicDmg += parseInt(coordMatch[1]) * 0.3;
       const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
       if (echoMatch) r.echoDmg += parseInt(echoMatch[1]);
       const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
@@ -200,7 +204,7 @@ export default function TeamsTab({
     if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === mainStatKey) atkPct += parseFloat(mainDps.weapSubVal) || 0;
-    if (mainDps.weapSubstat === 'Energy Regen') atkPct += 5;
+    if (mainDps.weapSubstat === 'Energy Regen') atkPct += 8;
 
     let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
     if (mainDps.weapon?.passive) {
@@ -349,10 +353,10 @@ export default function TeamsTab({
       const sn = m.echoSetName;
       if (sn === 'Rejuvenating Glow') atkPct += 15;
       if (sn === 'Moonlit Clouds') atkPct += 22.5;
-      if (sn === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
-      if (sn === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; }
+      if (sn === 'Empyrean Anthem') { atkPct += 20; }
+      if (sn === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 20; }
       if (sn === 'Halo of Starry Radiance') atkPct += 20;
-      if (sn === 'Pact of Neonlight Leap') atkPct += 22;
+      if (sn === 'Pact of Neonlight Leap') atkPct += 25;
       if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 25;
       if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
       if (sn === 'Flaming Clawprint' && mainDpsEl === 'fusion') elemDmg += 15;
@@ -671,24 +675,7 @@ export default function TeamsTab({
     });
     const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
 
-    // ── PERFECT TIER: field time weighting + weapon passives + echo active skills ──
-    // Scale sub-DPS contribution by field time fraction
-    const mainMult = (() => { let m2 = mainDps.d.totalMult || 0; if (seqTotalMultBonus > 0) m2 = m2 * (1 + seqTotalMultBonus / 100); return m2; })();
-    const mainContrib = mainDps.baseStat * (1 + atkPct / 100) * (mainMult / 100) * avgCrit * dmgBonus * defMult * resMult;
-    const subContrib = totalRotDmg - mainContrib;
-    let subWeightSum = 0, subWeightedSum = 0;
-    mems.forEach(m => {
-      if (m.name === mainDps.name) return;
-      const mlt = m.d.totalMult || 0;
-      if (mlt === 0) return;
-      const onField = m.d.onField || 5;
-      const hasCoord = (m.d.dmgFocus || []).includes('Coordinated ATK');
-      const fw = hasCoord ? Math.max(0.5, onField / rotTime) : Math.max(0.2, onField / rotTime);
-      subWeightSum += mlt;
-      subWeightedSum += mlt * fw;
-    });
-    const subScale = subWeightSum > 0 ? subWeightedSum / subWeightSum : 1;
-    let perfectTotalRotDmg = mainContrib + subContrib * subScale;
+    // ── PERFECT TIER: Full DPS + echo active skills + weapon passives (always >= Full) ──
     // Echo active skill damage — use actual dmg data from ECHO_DATA
     let echoActiveDmg = 0;
     mems.forEach(m => {
@@ -697,15 +684,17 @@ export default function TeamsTab({
       const echoes = eq?.echoes || [];
       if (echoes[0]?.name) {
         const echoInfo = ECHO_DATA[echoes[0].name];
-        const echoDmgPct = echoInfo?.dmg || 350;
-        const echoEl = echoInfo?.element || m.d.element;
-        const echoBase = m.scaling === 'ATK' ? m.totalBaseAtk : m.baseStat * 0.25;
-        const echoResRate = getEnemyRes(echoEl);
-        const echoResMult = 1 - Math.max(echoResRate - resShred, -30) / 100;
-        echoActiveDmg += echoBase * (echoDmgPct / 100) * avgCrit * defMult * echoResMult;
+        const echoDmgPct = echoInfo?.dmg || 0;
+        if (echoDmgPct > 0) {
+          const echoEl = echoInfo?.element || m.d.element;
+          const echoBase = m.scaling === 'ATK' ? m.totalBaseAtk : m.baseStat * 0.25;
+          const echoResRate = getEnemyRes(echoEl);
+          const echoResMult = 1 - Math.max(echoResRate - resShred, -30) / 100;
+          echoActiveDmg += echoBase * (echoDmgPct / 100) * avgCrit * defMult * echoResMult;
+        }
       }
     });
-    // Weapon passive conditional bonuses
+    // Weapon passive conditional bonuses (percentage uplift)
     let weapPassiveBonus = 0;
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
@@ -720,10 +709,9 @@ export default function TeamsTab({
         }
       });
     });
+    // Perfect = Full * (1 + weapon passives) + echo skills — always >= Full
     const perfectDps = Math.round(
-      ((perfectTotalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime)
-      * (1 + weapPassiveBonus)
-      + (echoActiveDmg / rotTime)
+      realDps * (1 + weapPassiveBonus) + (echoActiveDmg / rotTime)
     );
 
     let syn = 0;
@@ -1445,10 +1433,11 @@ export default function TeamsTab({
                           stats: calcTeamStats(entry.slots, entry.teamIdx ?? 0),
                         })).filter(e => e.stats);
                         if (!computed.length) return null;
-                        // Per-tier scaling: each bar type is relative to its own max across teams
-                        const maxRaw = Math.max(...computed.map(e => e.stats.rawDps), 1);
-                        const maxFull = Math.max(...computed.map(e => e.stats.realDps), 1);
-                        const maxPerfect = Math.max(...computed.map(e => e.stats.perfectDps), 1);
+                        // Unified max across all tiers so bars are proportional to their numbers
+                        const unifiedMax = Math.max(
+                          ...computed.flatMap(e => [e.stats.rawDps, e.stats.realDps, e.stats.perfectDps]),
+                          1
+                        );
                         const bossEchoes = ALL_4COST_ECHOES.filter(n => ECHO_DATA[n]?.enemyRes);
                         return (
                         <Card id="team-dps-comparison">
@@ -1464,16 +1453,15 @@ export default function TeamsTab({
                             <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
                               <Sword size={12} className="text-red-400" />
                               <span className="text-gray-400 text-[10px] font-medium">Target:</span>
-                              <select value={enemyEcho} onChange={e => setEnemyEcho(e.target.value)}
-                                className="kuro-input text-[10px] px-1.5 py-0.5 flex-1 min-w-[120px] max-w-[200px]">
-                                <option value="">Default (10% all RES)</option>
-                                {bossEchoes.map(name => {
-                                  const ed = ECHO_DATA[name];
+                              <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
+                                className="kuro-btn text-[10px] px-2 py-1 flex-1 min-w-[120px] max-w-[240px] text-left truncate">
+                                {enemyEcho ? (() => {
+                                  const ed = ECHO_DATA[enemyEcho];
                                   const resEl = ed?.enemyRes ? Object.keys(ed.enemyRes)[0] : '';
                                   const resVal = ed?.enemyRes?.[resEl] || 10;
-                                  return <option key={name} value={name}>{name} ({resEl ? `${resEl.charAt(0).toUpperCase() + resEl.slice(1)} ${resVal}%` : '10%'})</option>;
-                                })}
-                              </select>
+                                  return `${enemyEcho} (${resEl ? resEl.charAt(0).toUpperCase() + resEl.slice(1) + ' ' + resVal + '%' : '10%'})`;
+                                })() : 'Default (10% all RES)'}
+                              </button>
                               <div className="flex items-center gap-1">
                                 <span className="text-gray-500 text-[10px]">Lv.</span>
                                 <input type="number" min={1} max={120} value={enemyLevel}
@@ -1485,9 +1473,9 @@ export default function TeamsTab({
                             <div className="space-y-3">
                               {computed.map((entry) => {
                                 const s = entry.stats;
-                                const rawPct = (s.rawDps / maxRaw) * 100;
-                                const fullPct = (s.realDps / maxFull) * 100;
-                                const perfectPct = (s.perfectDps / maxPerfect) * 100;
+                                const rawPct = (s.rawDps / unifiedMax) * 100;
+                                const fullPct = (s.realDps / unifiedMax) * 100;
+                                const perfectPct = (s.perfectDps / unifiedMax) * 100;
                                 return (
                                   <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
@@ -1697,6 +1685,67 @@ export default function TeamsTab({
                     setEchoSelectorTarget={setEchoSelectorTarget}
                     collectionImages={collectionImages}
                   />
+
+                  {/* Enemy Echo Selector Modal */}
+                  <FocusTrapModal isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)} className="" onClick={() => setEnemyEchoModalOpen(false)} centered>
+                    <div className="kuro-card w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                      <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                        <div>
+                          <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
+                          <p className="text-gray-400 text-[10px]">Boss echoes with elemental resistances</p>
+                        </div>
+                        <button onClick={() => setEnemyEchoModalOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close"><X size={16} className="text-gray-400" /></button>
+                      </div>
+                      <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
+                        <input value={enemyEchoSearch} onChange={e => setEnemyEchoSearch(e.target.value)} placeholder="Search enemies..." className="kuro-input w-full text-xs" />
+                      </div>
+                      <div className="overflow-y-auto flex-1 p-2">
+                        <div className="space-y-1">
+                          <button onClick={() => { setEnemyEcho(''); setEnemyEchoModalOpen(false); haptic.light(); }}
+                            className={`w-full p-2 rounded-lg border text-left transition-all ${!enemyEcho ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-[var(--border-medium)] hover:border-white/20'}`}>
+                            <div className="text-xs font-semibold text-white">Default Enemy</div>
+                            <div className="text-[10px] text-gray-400">10% all element RES</div>
+                          </button>
+                          {ALL_4COST_ECHOES.filter(n => {
+                            const ed = ECHO_DATA[n];
+                            if (!ed?.enemyRes) return false;
+                            if (enemyEchoSearch && !n.toLowerCase().includes(enemyEchoSearch.toLowerCase())) return false;
+                            return true;
+                          }).map(name => {
+                            const ed = ECHO_DATA[name];
+                            const resEntries = Object.entries(ed.enemyRes || {});
+                            const isActive = enemyEcho === name;
+                            return (
+                              <button key={name} onClick={() => { setEnemyEcho(name); setEnemyEchoModalOpen(false); haptic.success(); }}
+                                className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isActive ? 'border-2 border-yellow-400 bg-yellow-500/10' : 'border-[var(--border-medium)] hover:border-white/20'}`}
+                                style={isActive ? { boxShadow: '0 0 12px rgba(234,179,8,0.3)' } : {}}>
+                                <div className="flex items-center gap-2">
+                                  {collectionImages[name] ? (
+                                    <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-yellow-500/30 bg-yellow-500/8">
+                                      <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                    </div>
+                                  ) : (
+                                    <Sword size={14} className="text-red-400" />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-semibold text-white truncate">{name}</div>
+                                    <div className="flex gap-1 mt-0.5 flex-wrap">
+                                      {resEntries.map(([el, val]) => (
+                                        <span key={el} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                                          {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
+                                        </span>
+                                      ))}
+                                      <span className="text-[9px] text-gray-500">Other 10%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </FocusTrapModal>
 
                 </div>
               );
