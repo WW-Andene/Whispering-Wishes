@@ -3559,39 +3559,42 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             if (fDist < 10) continue;
             var _fa = (fi2 * 1640531527 + _elecSeedT * 9973) | 0;
             var faRng = function() { _fa = Math.imul(_fa ^ (_fa >>> 16), 0x45d9f3b); _fa = _fa ^ (_fa >>> 13); return ((_fa >>> 0) % 1000) / 1000; };
-            var fNSeg2 = 5 + (fi2 % 4);
+            // More segments + stronger jitter for jagged bolt look
+            var fNSeg2 = 8 + (fi2 % 5);
             var fmpx2 = [fx0], fmpy2 = [fy0];
             for (var fsi2 = 1; fsi2 <= fNSeg2; fsi2++) {
               var ft2 = fsi2 / fNSeg2;
-              fmpx2.push(fx0 + fdx * ft2 + (faRng() - 0.5) * fDist * 0.2);
-              fmpy2.push(fy0 + fdy * ft2 + (faRng() - 0.5) * fDist * 0.12);
+              fmpx2.push(fx0 + fdx * ft2 + (faRng() - 0.5) * fDist * 0.35);
+              fmpy2.push(fy0 + fdy * ft2 + (faRng() - 0.5) * fDist * 0.25);
             }
+            // 3-layer glow — outer wide, mid, core thin
             ctx.beginPath();
             ctx.moveTo(fmpx2[0], fmpy2[0]);
             for (var fmi2 = 1; fmi2 < fmpx2.length; fmi2++) ctx.lineTo(fmpx2[fmi2], fmpy2[fmi2]);
-            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.18) + ')';
-            ctx.lineWidth = 4; ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.35) + ')';
-            ctx.lineWidth = 2; ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.5) + ')';
+            ctx.strokeStyle = 'rgba(255,120,20,' + (fAlpha2 * 0.12) + ')';
+            ctx.lineWidth = 6; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,160,50,' + (fAlpha2 * 0.3) + ')';
+            ctx.lineWidth = 2.5; ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,210,140,' + (fAlpha2 * 0.55) + ')';
             ctx.lineWidth = 0.8; ctx.stroke();
-            var fNBr2 = 2 + (fi2 % 2);
+            // 3-5 branch arms — more forks for fluid look
+            var fNBr2 = 3 + (fi2 % 3);
             for (var fbi2 = 0; fbi2 < fNBr2; fbi2++) {
               var fbrIdx2 = 1 + Math.floor(faRng() * (fmpx2.length - 2));
-              var fbrAng2 = Math.atan2(fdy, fdx) + (faRng() - 0.5) * 2.0;
-              var fbrLen2 = fDist * (0.12 + faRng() * 0.2);
-              var fbrSegs2 = 3 + (fbi2 % 2);
+              var fbrAng2 = Math.atan2(fdy, fdx) + (faRng() - 0.5) * 2.4;
+              var fbrLen2 = fDist * (0.15 + faRng() * 0.3);
+              var fbrSegs2 = 4 + (fbi2 % 3);
               ctx.beginPath();
               ctx.moveTo(fmpx2[fbrIdx2], fmpy2[fbrIdx2]);
               for (var fbsi2 = 1; fbsi2 <= fbrSegs2; fbsi2++) {
                 ctx.lineTo(
-                  fmpx2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.cos(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.3,
-                  fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.2
+                  fmpx2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.cos(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.35,
+                  fmpy2[fbrIdx2] + (fbsi2 / fbrSegs2) * fbrLen2 * Math.sin(fbrAng2) + (faRng() - 0.5) * fbrLen2 * 0.25
                 );
               }
-              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.12) + ')';
-              ctx.lineWidth = 2.5; ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.35) + ')';
+              ctx.strokeStyle = 'rgba(255,140,30,' + (fAlpha2 * 0.1) + ')';
+              ctx.lineWidth = 3; ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,200,120,' + (fAlpha2 * 0.3) + ')';
               ctx.lineWidth = 0.6; ctx.stroke();
             }
           }
