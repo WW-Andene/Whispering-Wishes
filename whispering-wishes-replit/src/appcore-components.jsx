@@ -2908,15 +2908,18 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
               mpx.push(ax0 + (si / nSeg) * arcLen * Math.cos(mainDir) + (eRng() - 0.5) * arcLen * 0.2);
               mpy.push(ay0 + (si / nSeg) * arcLen * Math.sin(mainDir) + (eRng() - 0.5) * arcLen * 0.15);
             }
-            // Main arc
+            // Main arc — 3-layer orange glow
             ctx.beginPath();
             ctx.moveTo(mpx[0], mpy[0]);
             for (var mi = 1; mi < mpx.length; mi++) ctx.lineTo(mpx[mi], mpy[mi]);
-            ctx.strokeStyle = 'rgba(255,140,45,' + (alpha * 0.15) + ')';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(255,120,20,' + (alpha * 0.18) + ')';
+            ctx.lineWidth = 4;
             ctx.stroke();
-            ctx.strokeStyle = 'rgba(255,220,160,' + (alpha * 0.45) + ')';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255,160,50,' + (alpha * 0.35) + ')';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,210,140,' + (alpha * 0.5) + ')';
+            ctx.lineWidth = 0.8;
             ctx.stroke();
             // 2-3 branch arms
             var nBranch = 2 + (ei % 2);
@@ -2933,10 +2936,10 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
                   mpy[brIdx] + (bsi / brSegs) * brLen * Math.sin(brAng) + (eRng() - 0.5) * brLen * 0.2
                 );
               }
-              ctx.strokeStyle = 'rgba(255,160,70,' + (alpha * 0.1) + ')';
-              ctx.lineWidth = 2;
+              ctx.strokeStyle = 'rgba(255,140,30,' + (alpha * 0.12) + ')';
+              ctx.lineWidth = 2.5;
               ctx.stroke();
-              ctx.strokeStyle = 'rgba(255,230,180,' + (alpha * 0.3) + ')';
+              ctx.strokeStyle = 'rgba(255,200,120,' + (alpha * 0.35) + ')';
               ctx.lineWidth = 0.6;
               ctx.stroke();
             }
