@@ -3785,8 +3785,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             }
             ctx.closePath(); ctx.fill();
             // 1px black outline on broken edges (zigzag shape)
-            ctx.strokeStyle = 'rgba(0,0,0,0.9)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+            ctx.lineWidth = 0.5;
             if (_top) {
               ctx.beginPath();
               ctx.moveTo(-_hw, _tYL);
