@@ -57,6 +57,464 @@ export default function TeamsTab({
   const [echoBuffFilter, setEchoBuffFilter] = useState('all');
   const [echoStatPanel, setEchoStatPanel] = useState(null);
 
+  // ── Reusable calculator with proper WuWa damage formula ──
+  // Memoized so it only recalculates when teamEquipment changes.
+  const calcTeamStats = useCallback((slots, teamIdx) => {
+    const mems = slots.filter(s => s).map(name => {
+      const d = CHARACTER_DATA[name];
+      if (!d) return null;
+      const eqKey = teamIdx + ':' + name;
+      const eq = teamEquipment[eqKey];
+      const weapName = (eq?.weapon) || d.bestWeapon;
+      const weapon = WEAPON_DATA[weapName] || null;
+      const charAtk = d.baseAtk || 0;
+      const weapAtk = weapon ? weapon.baseAtk : 0;
+      const seqLevel = eq?.sequence || 0;
+      let echoSetName = eq?.echoSet || '';
+      if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
+      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
+    }).filter(Boolean);
+    if (!mems.length) return null;
+    const allBuffs = [], allDebuffs = [];
+    mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
+    const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
+
+    const parsePassive = (passive, element) => {
+      const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0 };
+      if (!passive) return r;
+      const p = passive.toLowerCase();
+      const atkMatch = p.match(/atk\s*\+(\d+)%/);
+      if (atkMatch) r.atkPct += parseInt(atkMatch[1]);
+      if (element) {
+        const elLow = element.toLowerCase();
+        const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
+        if (elMatch) r.elemDmg += parseInt(elMatch[1]);
+        const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
+        if (attrMatch) r.elemDmg += parseInt(attrMatch[1]);
+      }
+      const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);
+      if (skillMatch) r.skillDmg += parseInt(skillMatch[1]);
+      const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/);
+      if (libMatch) r.libDmg += parseInt(libMatch[1]);
+      const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
+      if (basicMatch) r.basicDmg += parseInt(basicMatch[1]);
+      const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
+      if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1]);
+      const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
+      if (echoMatch) r.echoDmg += parseInt(echoMatch[1]);
+      const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
+      if (crMatch) r.critRate += parseInt(crMatch[1]);
+      const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);
+      if (cdMatch) r.critDmg += parseInt(cdMatch[1]);
+      const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
+      if (defMatch) r.defIgnore += parseInt(defMatch[1]);
+      const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);
+      if (resMatch) r.resShred += parseInt(resMatch[1]);
+      return r;
+    };
+
+    // ── Base stats ──
+    let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
+
+    if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
+    if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
+    if (mainDps.weapSubstat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
+    if (mainDps.weapSubstat === 'Energy Regen') atkPct += 5;
+    if (mainDps.weapSubstat === 'HP%') {}
+
+    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
+    if (mainDps.weapon?.passive) {
+      const wp = parsePassive(mainDps.weapon.passive, mainDps.d.element);
+      atkPct += wp.atkPct; elemDmg += wp.elemDmg; skillDmg += wp.skillDmg;
+      cr += wp.critRate; cd += wp.critDmg; defIgnore += wp.defIgnore; resShred += wp.resShred;
+      wpBasicDmg = wp.basicDmg; wpHeavyDmg = wp.heavyDmg; wpLibDmg = wp.libDmg; wpEchoDmg = wp.echoDmg;
+    }
+
+    if (mainDps.echoSet) {
+      const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
+      if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
+      if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
+      if (p2.skillDmg) skillDmg += p2.skillDmg; if (p5.skillDmg) skillDmg += p5.skillDmg;
+      const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
+      if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
+    }
+
+    let echoBasicDmg = 0, echoHeavyDmg = 0, echoSkillDmg = 0, echoLibDmg = 0;
+    {
+      const mainEqKey = teamIdx + ':' + mainDps.name;
+      const mainEq = teamEquipment[mainEqKey];
+      const echoes = mainEq?.echoes || [];
+      const mainEl = (mainDps.d.element || '').toLowerCase();
+      const elDmgKey = mainEl ? mainEl.charAt(0).toUpperCase() + mainEl.slice(1) + ' DMG' : '';
+      const mainStatVals = {
+        4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+        3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+        1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+      };
+      const subVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Basic ATK DMG': 9, 'Heavy ATK DMG': 9, 'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9 };
+      const applyStat = (stat, val) => {
+        if (stat === 'ATK%') atkPct += val;
+        else if (stat === 'Crit Rate') cr += val;
+        else if (stat === 'Crit DMG') cd += val;
+        else if (stat === elDmgKey) elemDmg += val;
+        else if (stat === 'Basic ATK DMG') echoBasicDmg += val;
+        else if (stat === 'Heavy ATK DMG') echoHeavyDmg += val;
+        else if (stat === 'Resonance Skill DMG') echoSkillDmg += val;
+        else if (stat === 'Resonance Liberation DMG') echoLibDmg += val;
+      };
+      echoes.forEach((echo, i) => {
+        if (!echo || typeof echo !== 'object') return;
+        const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
+        if (echo.mainStat) {
+          const val = mainStatVals[cost]?.[echo.mainStat] || 0;
+          applyStat(echo.mainStat, val);
+        }
+        (echo.substats || []).forEach(sub => {
+          const val = subVals[sub];
+          if (val) applyStat(sub, val);
+        });
+      });
+    }
+
+    {
+      const elCounts = {};
+      mems.forEach(m => { const el = m.d.element; if (el) elCounts[el] = (elCounts[el] || 0) + 1; });
+      const mainEl = mainDps.d.element;
+      if (mainEl && elCounts[mainEl] >= 2) elemDmg += 10;
+    }
+
+    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg;
+    mems.forEach(m => {
+      const bt = CHAR_BUFF_TABLE[m.name];
+      if (!bt) return;
+      const isMain = m.name === mainDps.name;
+
+      if (!isMain) {
+        const teamRotTime = mainDps.d.rotTime || 25;
+        (bt.outroBuffs || []).forEach(b => {
+          if (b.target === 'next' || b.target === 'enemy') {
+            const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+            const val = b.value * uptime;
+            if (b.stat === 'atkPct') atkPct += val;
+            else if (b.stat === 'allDmg') elemDmg += val;
+            else if (b.stat === 'elemDmg') {
+              const buffEl = (b.condition || '').toLowerCase();
+              const dpsEl = (mainDps.d.element || '').toLowerCase();
+              if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
+            }
+            else if (b.stat === 'deepen') deepen += val;
+            else if (b.stat === 'basicDmg') basicDmg += val;
+            else if (b.stat === 'heavyDmg') heavyDmg += val;
+            else if (b.stat === 'libDmg') libDmg += val;
+            else if (b.stat === 'echoDmg') echoDmg += val;
+            else if (b.stat === 'critRate') cr += val;
+            else if (b.stat === 'critDmg') cd += val;
+            else if (b.stat === 'resShred') resShred += val;
+            else if (b.stat === 'defShred') defShred += val;
+            else if (b.stat === 'skillDmg') skillDmg += val;
+          }
+        });
+      }
+
+      (bt.libBuffs || []).forEach(b => {
+        if (b.target === 'team' || (!isMain && b.target === 'next')) {
+          const teamRotTime = mainDps.d.rotTime || 25;
+          const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+          const val = b.value * uptime;
+          if (b.stat === 'atkPct') atkPct += val;
+          else if (b.stat === 'allDmg') elemDmg += val;
+          else if (b.stat === 'critRate') cr += val;
+          else if (b.stat === 'critDmg') cd += val;
+          else if (b.stat === 'echoDmg') echoDmg += val;
+        }
+      });
+
+      if (isMain) {
+        (bt.selfBuffs || []).forEach(b => {
+          if (b.stat === 'atkPct') atkPct += b.value;
+          else if (b.stat === 'elemDmg') elemDmg += b.value;
+          else if (b.stat === 'critRate') cr += b.value;
+          else if (b.stat === 'critDmg') cd += b.value;
+          else if (b.stat === 'defIgnore') defIgnore += b.value;
+        });
+      }
+
+      (bt.debuffs || []).forEach(db => {
+        if (db.stat === 'defShred') defShred += db.value;
+        else if (db.stat === 'resShred') resShred += db.value;
+        else if (db.stat === 'frazzle') {}
+        else if (db.stat === 'erosion') {}
+        else if (db.stat === 'offTune') deepen += db.value;
+        else if (db.stat === 'havocBane') defShred += db.value * 2;
+      });
+    });
+
+    basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
+    skillDmg += echoSkillDmg;
+
+    const focus = mainDps.d.dmgFocus || [];
+    if (focus.includes('Basic ATK')) skillDmg += basicDmg;
+    else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5;
+    if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
+    else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
+    if (focus.includes('Liberation')) skillDmg += libDmg;
+    else if (libDmg > 0) skillDmg += libDmg * 0.3;
+    if (focus.includes('Echo')) skillDmg += echoDmg;
+
+    const mainDpsEl = (mainDps.d.element || '').toLowerCase();
+    mems.forEach(m => {
+      if (m.name === mainDps.name) return;
+      const sn = m.echoSetName;
+      if (sn === 'Rejuvenating Glow') atkPct += 15;
+      if (sn === 'Moonlit Clouds') atkPct += 22.5;
+      if (sn === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
+      if (sn === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; }
+      if (sn === 'Halo of Starry Radiance') atkPct += 20;
+      if (sn === 'Pact of Neonlight Leap') atkPct += 22;
+      if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 25;
+      if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
+      if (sn === 'Flaming Clawprint' && mainDpsEl === 'fusion') elemDmg += 15;
+      if (sn === 'Midnight Veil' && mainDpsEl === 'havoc') elemDmg += 15;
+      if (sn === 'Chromatic Foam' && mainDpsEl === 'fusion') elemDmg += 25;
+      const bt = CHAR_BUFF_TABLE[m.name];
+      (bt?.weaponBuffs || []).forEach(wb => {
+        if (wb.target !== 'team') return;
+        const teamRotTime = mainDps.d.rotTime || 25;
+        const uptime = Math.min(1, (wb.duration || 10) / teamRotTime);
+        const val = wb.value * uptime;
+        if (wb.stat === 'atkPct') atkPct += val;
+        else if (wb.stat === 'critRate') cr += val;
+        else if (wb.stat === 'critDmg') cd += val;
+        else if (wb.stat === 'allDmg') elemDmg += val;
+      });
+    });
+
+    let seqTotalMultBonus = 0;
+    mems.forEach(m => {
+      const rc = RESONANCE_CHAIN_DATA[m.name];
+      if (!rc || m.seqLevel <= 0) return;
+      const isMain = m.name === mainDps.name;
+      for (let s = 1; s <= Math.min(m.seqLevel, 6); s++) {
+        const lvl = rc['s' + s];
+        if (!lvl) continue;
+        if (isMain) {
+          if (lvl.atkPct) atkPct += lvl.atkPct;
+          if (lvl.critRate) cr += lvl.critRate;
+          if (lvl.critDmg) cd += lvl.critDmg;
+          if (lvl.elemDmg) elemDmg += lvl.elemDmg;
+          if (lvl.skillDmg) skillDmg += lvl.skillDmg;
+          if (lvl.basicDmg) basicDmg += lvl.basicDmg;
+          if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
+          if (lvl.libDmg) libDmg += lvl.libDmg;
+          if (lvl.echoDmg) echoDmg += lvl.echoDmg;
+          if (lvl.deepen) deepen += lvl.deepen;
+          if (lvl.defIgnore) defIgnore += lvl.defIgnore;
+          if (lvl.defShred) defShred += lvl.defShred;
+          if (lvl.resShred) resShred += lvl.resShred;
+          if (lvl.totalMult) seqTotalMultBonus += lvl.totalMult;
+        } else {
+          if (lvl.allDmg) elemDmg += lvl.allDmg;
+          if (lvl.deepen) deepen += lvl.deepen;
+          if (lvl.defShred) defShred += lvl.defShred;
+          if (lvl.resShred) resShred += lvl.resShred;
+          if (lvl.atkPct) atkPct += lvl.atkPct;
+          if (lvl.critRate) cr += lvl.critRate;
+          if (lvl.critDmg) cd += lvl.critDmg;
+          if (lvl.basicDmg) basicDmg += lvl.basicDmg;
+          if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
+        }
+      }
+    });
+
+    const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
+    const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
+    const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
+    const enemyDef = 792;
+    const effectiveDef = enemyDef * Math.max(0, 1 - (defShred + defIgnore) / 100);
+    const defMult = 800 / (800 + effectiveDef);
+    const baseRes = 10;
+    const effectiveRes = Math.max(baseRes - resShred, -30);
+    const resMult = 1 - effectiveRes / 100;
+    const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+
+    const rotTime = mainDps.d.rotTime || 25;
+    const DOT_LEVEL_MULT = 3674;
+    const DOT_BASE_FACTOR = 1.25078;
+    let dotDmgPerRotation = 0;
+
+    const hasFrazzle = mems.some(m => {
+      const bt = CHAR_BUFF_TABLE[m.name];
+      return bt?.debuffs?.some(db => db.stat === 'frazzle');
+    });
+    if (hasFrazzle) {
+      const frazzleStacks = mems.some(m => m.name === 'Phoebe') ? 18 : 10;
+      const numTicks = Math.min(Math.floor(rotTime / 3), frazzleStacks);
+      let frazzleTotal = 0;
+      for (let s = frazzleStacks; s > frazzleStacks - numTicks; s--) {
+        frazzleTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15);
+      }
+      const hasPhoebeAmp = mems.some(m => m.name === 'Phoebe');
+      const frazzleAmpMult = hasPhoebeAmp ? 2.0 : 1.0;
+      dotDmgPerRotation += frazzleTotal * frazzleAmpMult * defMult * resMult;
+    }
+
+    const hasErosion = mems.some(m => {
+      const bt = CHAR_BUFF_TABLE[m.name];
+      return bt?.debuffs?.some(db => db.stat === 'erosion');
+    });
+    if (hasErosion) {
+      const erosionStacks = mems.some(m => m.name === 'Rover') ? 6 : 3;
+      const erosionTicks = Math.max(1, Math.floor(rotTime / 15));
+      let erosionTotal = 0;
+      for (let t = 0; t < erosionTicks; t++) {
+        erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8);
+      }
+      dotDmgPerRotation += erosionTotal * defMult * resMult;
+    }
+
+    const hasFusionBurst = mems.some(m => {
+      const bt = CHAR_BUFF_TABLE[m.name];
+      return bt?.debuffs?.some(db => db.stat === 'fusionBurst');
+    });
+    if (hasFusionBurst) {
+      const burstExplosions = 2;
+      const burstStacks = 10;
+      const fusionTrailMult = 3.0;
+      const burstDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (burstStacks * 0.5) * fusionTrailMult;
+      dotDmgPerRotation += burstDmg * burstExplosions * defMult * resMult;
+    }
+
+    const hasElectroFlare = mems.some(m => {
+      return m.d.element === 'Electro' && (m.d.dmgFocus || []).length > 0;
+    });
+    if (hasElectroFlare) {
+      const flareTicks = Math.min(4, Math.floor(rotTime / 4));
+      let flareTotal = 0;
+      let stacks = 10;
+      for (let t = 0; t < flareTicks; t++) {
+        flareTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * 0.12);
+        stacks = Math.ceil(stacks / 2);
+      }
+      dotDmgPerRotation += flareTotal * defMult * resMult;
+    }
+
+    let tuneBreakDmg = 0;
+    let tuneBreakAmp = 0;
+    let tuneBreakDeepenMult = 1;
+    const tuneBreakMembers = mems.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
+    if (tuneBreakMembers.length > 0) {
+      let totalTuneBreakBoost = 0;
+      tuneBreakMembers.forEach(m => {
+        const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+        totalTuneBreakBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
+      });
+
+      const tuneBreaksPerRotation = 1;
+
+      const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.02);
+      tuneBreakDmg += baseTuneBreakDmg * tuneBreaksPerRotation * defMult;
+
+      tuneBreakMembers.forEach(m => {
+        const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+        if (tb.ruptureDmgMult) {
+          const responseDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100);
+          tuneBreakDmg += responseDmg * tuneBreaksPerRotation * defMult * resMult;
+        }
+      });
+
+      const mornyeMem = tuneBreakMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
+      if (mornyeMem) {
+        tuneBreakAmp = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
+        const interferedUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
+        tuneBreakDeepenMult *= 1 + (tuneBreakAmp / 100) * interferedUptime;
+      }
+
+      const maxStrain = Math.max(...tuneBreakMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
+      if (maxStrain > 0 && totalTuneBreakBoost > 0) {
+        const strainDmgPct = maxStrain * totalTuneBreakBoost * 0.12;
+        const strainUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
+        tuneBreakDeepenMult *= 1 + (strainDmgPct / 100) * strainUptime;
+      }
+    }
+    dotDmgPerRotation += tuneBreakDmg;
+
+    let totalRotDmg = 0;
+    mems.forEach(m => {
+      let mult = m.d.totalMult || 0;
+      if (mult === 0) return;
+      const mAtk = m.totalBaseAtk;
+      const isMain = m.name === mainDps.name;
+      if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
+      if (isMain) {
+        totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
+      } else {
+        const sEqKey = teamIdx + ':' + m.name;
+        const sEq = teamEquipment[sEqKey];
+        const sEchoes = sEq?.echoes || [];
+        const sEl = (m.d.element || '').toLowerCase();
+        const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
+        let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0;
+        if (m.echoSet) {
+          const ek2 = sEl + 'Dmg';
+          const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
+          if (p2.atkPct) sAtkPct += p2.atkPct; if (p5.atkPct) sAtkPct += p5.atkPct;
+          if (p2.critRate) sCr += p2.critRate; if (p5.critRate) sCr += p5.critRate;
+          if (p2[ek2]) sElem += p2[ek2]; if (p5[ek2]) sElem += p5[ek2];
+          if (p2.skillDmg) sSkillDmg += p2.skillDmg; if (p5.skillDmg) sSkillDmg += p5.skillDmg;
+        }
+        if (m.weapSubstat === 'Crit Rate') sCr += parseFloat(m.weapSubVal) || 0;
+        if (m.weapSubstat === 'Crit DMG') sCd += parseFloat(m.weapSubVal) || 0;
+        if (m.weapSubstat === 'ATK%') sAtkPct += parseFloat(m.weapSubVal) || 0;
+        const sMainStatVals = {
+          4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+          3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+          1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+        };
+        const sSubVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Resonance Skill DMG': 9 };
+        sEchoes.forEach((echo, ei) => {
+          if (!echo || typeof echo !== 'object') return;
+          const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
+          if (echo.mainStat) {
+            const val = sMainStatVals[cost]?.[echo.mainStat] || 0;
+            if (echo.mainStat === 'ATK%') sAtkPct += val;
+            else if (echo.mainStat === 'Crit Rate') sCr += val;
+            else if (echo.mainStat === 'Crit DMG') sCd += val;
+            else if (echo.mainStat === sElDmgKey) sElem += val;
+          }
+          (echo.substats || []).forEach(sub => {
+            const val = sSubVals[sub];
+            if (!val) return;
+            if (sub === 'ATK%') sAtkPct += val;
+            else if (sub === 'Crit Rate') sCr += val;
+            else if (sub === 'Crit DMG') sCd += val;
+            else if (sub === 'Resonance Skill DMG') sSkillDmg += val;
+          });
+        });
+        const sEffAtk = mAtk * (1 + sAtkPct / 100);
+        const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
+        const sDmgBonus = (1 + sElem / 100) * (1 + sSkillDmg / 100);
+        totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * defMult * resMult;
+      }
+    });
+    const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
+
+    let syn = 0;
+    if (mems.some(m => m.d.role === 'Healer')) syn += 25;
+    if (mems.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) syn += 25;
+    if (allBuffs.length >= 2) syn += 15;
+    if (allDebuffs.length >= 1) syn += 10;
+    if (allBuffs.some(b => b.buff.includes(mainDps.d.element))) syn += 15;
+    if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) syn += 10;
+    syn = Math.min(syn, 100);
+    const warnings = [];
+    if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
+    if (mems.length < 3) warnings.push('Incomplete team');
+    const els = new Set(mems.map(m => m.d.element));
+    if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
+    const dotDps = Math.round(dotDmgPerRotation / rotTime);
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
+  }, [teamEquipment]);
+
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
           <TabErrorBoundary tabName="Teams">
@@ -333,545 +791,7 @@ export default function TeamsTab({
 
                   {/* Team Overview + Damage Analysis (merged) */}
                   {(() => {
-                    // ── Reusable calculator with proper WuWa damage formula ──
-                    const calcTeamStats = (slots, teamIdx) => {
-                      const mems = slots.filter(s => s).map(name => {
-                        const d = CHARACTER_DATA[name];
-                        if (!d) return null;
-                        // Use equipped weapon if set, otherwise fall back to bestWeapon
-                        const eqKey = teamIdx + ':' + name;
-                        const eq = teamEquipment[eqKey];
-                        const weapName = (eq?.weapon) || d.bestWeapon;
-                        const weapon = WEAPON_DATA[weapName] || null;
-                        const charAtk = d.baseAtk || 0;
-                        const weapAtk = weapon ? weapon.baseAtk : 0;
-                        const seqLevel = eq?.sequence || 0;
-                        let echoSetName = eq?.echoSet || '';
-                        if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
-                        return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, echoSetName, echoSet: echoSetName ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
-                      }).filter(Boolean);
-                      if (!mems.length) return null;
-                      const allBuffs = [], allDebuffs = [];
-                      mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
-                      const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
-
-                      // ── Parse weapon passive for real values ──
-                      const parsePassive = (passive, element) => {
-                        const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0 };
-                        if (!passive) return r;
-                        const p = passive.toLowerCase();
-                        // ATK% from passive
-                        const atkMatch = p.match(/atk\s*\+(\d+)%/);
-                        if (atkMatch) r.atkPct += parseInt(atkMatch[1]);
-                        // Element DMG
-                        if (element) {
-                          const elLow = element.toLowerCase();
-                          const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
-                          if (elMatch) r.elemDmg += parseInt(elMatch[1]);
-                          // Also "attribute dmg" / "all-attr dmg"
-                          const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
-                          if (attrMatch) r.elemDmg += parseInt(attrMatch[1]);
-                        }
-                        // Skill DMG variants
-                        const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);
-                        if (skillMatch) r.skillDmg += parseInt(skillMatch[1]);
-                        const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/);
-                        if (libMatch) r.libDmg += parseInt(libMatch[1]);
-                        // Basic ATK DMG
-                        const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
-                        if (basicMatch) r.basicDmg += parseInt(basicMatch[1]);
-                        // Heavy ATK DMG
-                        const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
-                        if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1]);
-                        // Echo Skill DMG
-                        const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
-                        if (echoMatch) r.echoDmg += parseInt(echoMatch[1]);
-                        // Crit Rate from passive
-                        const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
-                        if (crMatch) r.critRate += parseInt(crMatch[1]);
-                        // Crit DMG from passive
-                        const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);
-                        if (cdMatch) r.critDmg += parseInt(cdMatch[1]);
-                        // DEF Ignore
-                        const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
-                        if (defMatch) r.defIgnore += parseInt(defMatch[1]);
-                        // RES Shred
-                        const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);
-                        if (resMatch) r.resShred += parseInt(resMatch[1]);
-                        return r;
-                      };
-
-                      // ── Base stats ──
-                      let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
-
-                      // Weapon substat
-                      if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
-                      if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
-                      if (mainDps.weapSubstat === 'ATK%') atkPct += parseFloat(mainDps.weapSubVal) || 0;
-                      if (mainDps.weapSubstat === 'Energy Regen') atkPct += 5; // indirect contribution
-                      if (mainDps.weapSubstat === 'HP%') {} // HP scaling chars — simplified
-
-                      // Weapon passive (real parsed values)
-                      let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
-                      if (mainDps.weapon?.passive) {
-                        const wp = parsePassive(mainDps.weapon.passive, mainDps.d.element);
-                        atkPct += wp.atkPct; elemDmg += wp.elemDmg; skillDmg += wp.skillDmg;
-                        cr += wp.critRate; cd += wp.critDmg; defIgnore += wp.defIgnore; resShred += wp.resShred;
-                        wpBasicDmg = wp.basicDmg; wpHeavyDmg = wp.heavyDmg; wpLibDmg = wp.libDmg; wpEchoDmg = wp.echoDmg;
-                      }
-
-                      // Echo set bonuses (2pc + 5pc)
-                      if (mainDps.echoSet) {
-                        const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
-                        if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct;
-                        if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
-                        if (p2.skillDmg) skillDmg += p2.skillDmg; if (p5.skillDmg) skillDmg += p5.skillDmg;
-                        const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
-                        if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
-                      }
-
-                      // Echo individual stats (main stats + substats from equipped echoes)
-                      // Track echo-sourced type-specific DMG bonuses to feed into basicDmg/heavyDmg/libDmg later
-                      let echoBasicDmg = 0, echoHeavyDmg = 0, echoSkillDmg = 0, echoLibDmg = 0;
-                      {
-                        const mainEqKey = teamIdx + ':' + mainDps.name;
-                        const mainEq = teamEquipment[mainEqKey];
-                        const echoes = mainEq?.echoes || [];
-                        const mainEl = (mainDps.d.element || '').toLowerCase();
-                        const elDmgKey = mainEl ? mainEl.charAt(0).toUpperCase() + mainEl.slice(1) + ' DMG' : '';
-                        // Main stat values by cost tier (max level 25)
-                        const mainStatVals = {
-                          4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-                          3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-                          1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
-                        };
-                        // Substat assumed values (average roll per occurrence)
-                        const subVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Basic ATK DMG': 9, 'Heavy ATK DMG': 9, 'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9 };
-                        const applyStat = (stat, val) => {
-                          if (stat === 'ATK%') atkPct += val;
-                          else if (stat === 'Crit Rate') cr += val;
-                          else if (stat === 'Crit DMG') cd += val;
-                          else if (stat === elDmgKey) elemDmg += val;
-                          else if (stat === 'Basic ATK DMG') echoBasicDmg += val;
-                          else if (stat === 'Heavy ATK DMG') echoHeavyDmg += val;
-                          else if (stat === 'Resonance Skill DMG') echoSkillDmg += val;
-                          else if (stat === 'Resonance Liberation DMG') echoLibDmg += val;
-                          // Energy Regen, HP%, DEF%, flat ATK/HP/DEF, Healing Bonus — not directly in DPS formula
-                        };
-                        echoes.forEach((echo, i) => {
-                          if (!echo || typeof echo !== 'object') return;
-                          const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
-                          // Main stat
-                          if (echo.mainStat) {
-                            const val = mainStatVals[cost]?.[echo.mainStat] || 0;
-                            applyStat(echo.mainStat, val);
-                          }
-                          // Substats
-                          (echo.substats || []).forEach(sub => {
-                            const val = subVals[sub];
-                            if (val) applyStat(sub, val);
-                          });
-                        });
-                      }
-
-                      // ── Element Resonance: 2+ characters of same element = +10% element DMG ──
-                      {
-                        const elCounts = {};
-                        mems.forEach(m => { const el = m.d.element; if (el) elCounts[el] = (elCounts[el] || 0) + 1; });
-                        const mainEl = mainDps.d.element;
-                        if (mainEl && elCounts[mainEl] >= 2) elemDmg += 10;
-                      }
-
-                      // ── Team buff contributions from CHAR_BUFF_TABLE (exact per-character values) ──
-                      let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg;
-                      mems.forEach(m => {
-                        const bt = CHAR_BUFF_TABLE[m.name];
-                        if (!bt) return;
-                        const isMain = m.name === mainDps.name;
-
-                        // Outro buffs — applied to main DPS (target: 'next')
-                        // Scale by uptime: buff.duration / rotTime of team
-                        if (!isMain) {
-                          const teamRotTime = mainDps.d.rotTime || 25;
-                          (bt.outroBuffs || []).forEach(b => {
-                            if (b.target === 'next' || b.target === 'enemy') {
-                              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
-                              const val = b.value * uptime;
-                              if (b.stat === 'atkPct') atkPct += val;
-                              else if (b.stat === 'allDmg') elemDmg += val;
-                              else if (b.stat === 'elemDmg') {
-                                const buffEl = (b.condition || '').toLowerCase();
-                                const dpsEl = (mainDps.d.element || '').toLowerCase();
-                                if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
-                              }
-                              else if (b.stat === 'deepen') deepen += val;
-                              else if (b.stat === 'basicDmg') basicDmg += val;
-                              else if (b.stat === 'heavyDmg') heavyDmg += val;
-                              else if (b.stat === 'libDmg') libDmg += val;
-                              else if (b.stat === 'echoDmg') echoDmg += val;
-                              else if (b.stat === 'critRate') cr += val;
-                              else if (b.stat === 'critDmg') cd += val;
-                              else if (b.stat === 'resShred') resShred += val;
-                              else if (b.stat === 'defShred') defShred += val;
-                              else if (b.stat === 'skillDmg') skillDmg += val;
-                            }
-                          });
-                        }
-
-                        // Liberation buffs — teamwide, apply to main DPS (scaled by uptime)
-                        (bt.libBuffs || []).forEach(b => {
-                          if (b.target === 'team' || (!isMain && b.target === 'next')) {
-                            const teamRotTime = mainDps.d.rotTime || 25;
-                            const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
-                            const val = b.value * uptime;
-                            if (b.stat === 'atkPct') atkPct += val;
-                            else if (b.stat === 'allDmg') elemDmg += val;
-                            else if (b.stat === 'critRate') cr += val;
-                            else if (b.stat === 'critDmg') cd += val;
-                            else if (b.stat === 'echoDmg') echoDmg += val;
-                          }
-                        });
-
-                        // Self buffs — only for main DPS
-                        if (isMain) {
-                          (bt.selfBuffs || []).forEach(b => {
-                            if (b.stat === 'atkPct') atkPct += b.value;
-                            else if (b.stat === 'elemDmg') elemDmg += b.value;
-                            else if (b.stat === 'critRate') cr += b.value;
-                            else if (b.stat === 'critDmg') cd += b.value;
-                            else if (b.stat === 'defIgnore') defIgnore += b.value;
-                          });
-                        }
-
-                        // Debuffs — enemy-side, from any team member
-                        (bt.debuffs || []).forEach(db => {
-                          if (db.stat === 'defShred') defShred += db.value;
-                          else if (db.stat === 'resShred') resShred += db.value;
-                          else if (db.stat === 'frazzle') {} // DOT computed separately below
-                          else if (db.stat === 'erosion') {} // DOT computed separately below
-                          else if (db.stat === 'offTune') deepen += db.value;
-                          else if (db.stat === 'havocBane') defShred += db.value * 2; // 2% DEF reduction per stack
-                        });
-                      });
-
-                      // Add echo substat type-specific DMG bonuses
-                      basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
-                      skillDmg += echoSkillDmg; // Resonance Skill DMG applies directly
-
-                      // Map DPS's dmgFocus to the right skill DMG bonus
-                      const focus = mainDps.d.dmgFocus || [];
-                      if (focus.includes('Basic ATK')) skillDmg += basicDmg;
-                      else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5; // partial benefit
-                      if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
-                      else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
-                      if (focus.includes('Liberation')) skillDmg += libDmg;
-                      else if (libDmg > 0) skillDmg += libDmg * 0.3; // partial — some rotation damage is Lib
-                      if (focus.includes('Echo')) skillDmg += echoDmg;
-
-                      // Support echo set contributions + weapon team buffs
-                      const mainDpsEl = (mainDps.d.element || '').toLowerCase();
-                      mems.forEach(m => {
-                        if (m.name === mainDps.name) return;
-                        const sn = m.echoSetName;
-                        // Healing/Support sets — team ATK buffs
-                        if (sn === 'Rejuvenating Glow') atkPct += 15;
-                        if (sn === 'Moonlit Clouds') atkPct += 22.5;
-                        if (sn === 'Empyrean Anthem') { atkPct += 20; skillDmg += 10; }
-                        if (sn === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 15; } // assumes ≥250% ER
-                        if (sn === 'Halo of Starry Radiance') atkPct += 20; // up to 25%, assume avg 20%
-                        if (sn === 'Pact of Neonlight Leap') atkPct += 22; // outro: +15% ATK + Tune Break Boost bonus, avg ~22%
-                        // Element-specific team buff sets — only benefit if main DPS matches
-                        if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 25; // +15% Aero team + extra 15% (assume partial)
-                        if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
-                        if (sn === 'Flaming Clawprint' && mainDpsEl === 'fusion') elemDmg += 15;
-                        // Outro → next character buff sets
-                        if (sn === 'Midnight Veil' && mainDpsEl === 'havoc') elemDmg += 15;
-                        if (sn === 'Chromatic Foam' && mainDpsEl === 'fusion') elemDmg += 25; // +10% personal + 25% next
-                        // Weapon team buffs from CHAR_BUFF_TABLE
-                        const bt = CHAR_BUFF_TABLE[m.name];
-                        (bt?.weaponBuffs || []).forEach(wb => {
-                          if (wb.target !== 'team') return;
-                          const teamRotTime = mainDps.d.rotTime || 25;
-                          const uptime = Math.min(1, (wb.duration || 10) / teamRotTime);
-                          const val = wb.value * uptime;
-                          if (wb.stat === 'atkPct') atkPct += val;
-                          else if (wb.stat === 'critRate') cr += val;
-                          else if (wb.stat === 'critDmg') cd += val;
-                          else if (wb.stat === 'allDmg') elemDmg += val;
-                        });
-                      });
-
-                      // ── Resonance Chain (S1-S6) buffs ──
-                      let seqTotalMultBonus = 0; // bonus % to totalMult rotation data
-                      mems.forEach(m => {
-                        const rc = RESONANCE_CHAIN_DATA[m.name];
-                        if (!rc || m.seqLevel <= 0) return;
-                        const isMain = m.name === mainDps.name;
-                        for (let s = 1; s <= Math.min(m.seqLevel, 6); s++) {
-                          const lvl = rc['s' + s];
-                          if (!lvl) continue;
-                          // For main DPS: apply all personal stat buffs
-                          if (isMain) {
-                            if (lvl.atkPct) atkPct += lvl.atkPct;
-                            if (lvl.critRate) cr += lvl.critRate;
-                            if (lvl.critDmg) cd += lvl.critDmg;
-                            if (lvl.elemDmg) elemDmg += lvl.elemDmg;
-                            if (lvl.skillDmg) skillDmg += lvl.skillDmg;
-                            if (lvl.basicDmg) basicDmg += lvl.basicDmg;
-                            if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
-                            if (lvl.libDmg) libDmg += lvl.libDmg;
-                            if (lvl.echoDmg) echoDmg += lvl.echoDmg;
-                            if (lvl.deepen) deepen += lvl.deepen;
-                            if (lvl.defIgnore) defIgnore += lvl.defIgnore;
-                            if (lvl.defShred) defShred += lvl.defShred;
-                            if (lvl.resShred) resShred += lvl.resShred;
-                            if (lvl.totalMult) seqTotalMultBonus += lvl.totalMult;
-                          } else {
-                            // For supports: improved team buffs (allDmg, deepen, defShred, resShred affect team)
-                            if (lvl.allDmg) elemDmg += lvl.allDmg;
-                            if (lvl.deepen) deepen += lvl.deepen;
-                            if (lvl.defShred) defShred += lvl.defShred;
-                            if (lvl.resShred) resShred += lvl.resShred;
-                            if (lvl.atkPct) atkPct += lvl.atkPct; // team ATK buffs
-                            if (lvl.critRate) cr += lvl.critRate;
-                            if (lvl.critDmg) cd += lvl.critDmg;
-                            if (lvl.basicDmg) basicDmg += lvl.basicDmg; // e.g. Camellya S4 team Basic DMG
-                            if (lvl.heavyDmg) heavyDmg += lvl.heavyDmg;
-                          }
-                        }
-                      });
-
-                      // Re-map DPS dmgFocus with any new basicDmg/heavyDmg/libDmg from sequences
-                      // (Only add the NEW sequence contributions, the base was already mapped above)
-                      // Note: we skip re-mapping here to avoid double-counting since the initial mapping already ran
-                      // Total ATK = (charBaseATK + weapBaseATK) × (1 + ATK%)
-                      const effAtk = Math.round(mainDps.totalBaseAtk * (1 + atkPct / 100));
-                      // Avg Crit Multiplier
-                      const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
-                      // Damage Bonus = (1 + elemDMG%) × (1 + skillDMG%) × (1 + deepen%)
-                      const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
-                      // DEF multiplier: enemy DEF reduced by shred/ignore. Lv90 enemy base.
-                      // DEF reduction = 1 - (defShred + defIgnore)/100, capped
-                      const enemyDef = 792; // Lv90 standard enemy
-                      const effectiveDef = enemyDef * Math.max(0, 1 - (defShred + defIgnore) / 100);
-                      const defMult = 800 / (800 + effectiveDef); // WuWa DEF formula: charLevel constant ~800
-                      // RES multiplier: 10% base resistance, reduced by shred
-                      const baseRes = 10;
-                      const effectiveRes = Math.max(baseRes - resShred, -30); // can go negative
-                      const resMult = 1 - effectiveRes / 100;
-                      // Final score
-                      const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
-
-                      // ── DOT Damage: Frazzle & Erosion (Level-based, NOT ATK-based) ──
-                      // Formula: BaseDMG = LevelMult × 1.25078 × StackMult
-                      // Lv90 LevelMult = 3674. Ticks consume 1 stack.
-                      // Only affected by DEF, RES, and specific Amplify effects.
-                      const rotTime = mainDps.d.rotTime || 25;
-                      const DOT_LEVEL_MULT = 3674; // Lv90
-                      const DOT_BASE_FACTOR = 1.25078;
-                      let dotDmgPerRotation = 0;
-
-                      // Check if team has Frazzle appliers
-                      const hasFrazzle = mems.some(m => {
-                        const bt = CHAR_BUFF_TABLE[m.name];
-                        return bt?.debuffs?.some(db => db.stat === 'frazzle');
-                      });
-                      if (hasFrazzle) {
-                        // Phoebe applies ~18 stacks in Confession, Rover ~10
-                        const frazzleStacks = mems.some(m => m.name === 'Phoebe') ? 18 : 10;
-                        // Ticks every 3s, each tick at current stack count then -1
-                        const numTicks = Math.min(Math.floor(rotTime / 3), frazzleStacks);
-                        let frazzleTotal = 0;
-                        for (let s = frazzleStacks; s > frazzleStacks - numTicks; s--) {
-                          frazzleTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15); // stack multiplier ~0.15 per stack at high stacks
-                        }
-                        // Phoebe Outro: 100% Frazzle DMG Amp (Confession mode) + Spectro RES -10% already in resShred
-                        const hasPhoebeAmp = mems.some(m => m.name === 'Phoebe');
-                        const frazzleAmpMult = hasPhoebeAmp ? 2.0 : 1.0; // 100% amp = 2x
-                        dotDmgPerRotation += frazzleTotal * frazzleAmpMult * defMult * resMult;
-                      }
-
-                      // Check if team has Erosion appliers
-                      const hasErosion = mems.some(m => {
-                        const bt = CHAR_BUFF_TABLE[m.name];
-                        return bt?.debuffs?.some(db => db.stat === 'erosion');
-                      });
-                      if (hasErosion) {
-                        const erosionStacks = mems.some(m => m.name === 'Rover') ? 6 : 3;
-                        const erosionTicks = Math.max(1, Math.floor(rotTime / 15));
-                        let erosionTotal = 0;
-                        for (let t = 0; t < erosionTicks; t++) {
-                          erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8);
-                        }
-                        dotDmgPerRotation += erosionTotal * defMult * resMult;
-                      }
-
-                      // Check if team has Fusion Burst appliers (Aemeath)
-                      const hasFusionBurst = mems.some(m => {
-                        const bt = CHAR_BUFF_TABLE[m.name];
-                        return bt?.debuffs?.some(db => db.stat === 'fusionBurst');
-                      });
-                      if (hasFusionBurst) {
-                        // Fusion Burst: stacks to 10 (Aemeath changes to 6 trigger), explodes for Fusion AoE
-                        // In Aemeath's case: enhanced skills use max stacks WITHOUT consuming + Fusion Trail (30 stacks = 300% mult)
-                        // ~2 explosions per rotation, each scaling off Level + stacks
-                        const burstExplosions = 2;
-                        const burstStacks = 10; // max stack damage even at 6 trigger
-                        const fusionTrailMult = 3.0; // 30 Fusion Trail stacks = 300% extra mult
-                        const burstDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (burstStacks * 0.5) * fusionTrailMult;
-                        dotDmgPerRotation += burstDmg * burstExplosions * defMult * resMult;
-                      }
-
-                      // Check if team has Electro Flare appliers
-                      const hasElectroFlare = mems.some(m => {
-                        return m.d.element === 'Electro' && (m.d.dmgFocus || []).length > 0;
-                      });
-                      if (hasElectroFlare) {
-                        // Electro Flare: periodic Electro DOT, loses half stacks per tick
-                        // Max 10 stacks → 5 → 2 → 1, each tick deals increasing DMG
-                        // Also generates Electro Rage at max for amplified next Flare
-                        const flareTicks = Math.min(4, Math.floor(rotTime / 4));
-                        let flareTotal = 0;
-                        let stacks = 10;
-                        for (let t = 0; t < flareTicks; t++) {
-                          flareTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * 0.12);
-                          stacks = Math.ceil(stacks / 2);
-                        }
-                        dotDmgPerRotation += flareTotal * defMult * resMult;
-                      }
-
-                      // ── Tune Break damage layer (v3.0+) ──
-                      let tuneBreakDmg = 0;
-                      let tuneBreakAmp = 0;
-                      let tuneBreakDeepenMult = 1;
-                      const tuneBreakMembers = mems.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
-                      if (tuneBreakMembers.length > 0) {
-                        // Sum Tune Break Boost from all members
-                        let totalTuneBreakBoost = 0;
-                        tuneBreakMembers.forEach(m => {
-                          const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
-                          totalTuneBreakBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
-                        });
-
-                        // ~1 Tune Break per rotation on endgame bosses
-                        const tuneBreaksPerRotation = 1;
-
-                        // Base Tune Break DMG: scales off Tune Break Boost (Physical, flat)
-                        const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.02);
-                        tuneBreakDmg += baseTuneBreakDmg * tuneBreaksPerRotation * defMult;
-
-                        // Tune Rupture Response: extra DMG instance from each responder per Break
-                        tuneBreakMembers.forEach(m => {
-                          const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
-                          if (tb.ruptureDmgMult) {
-                            const responseDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100);
-                            tuneBreakDmg += responseDmg * tuneBreaksPerRotation * defMult * resMult;
-                          }
-                        });
-
-                        // Mornye Interfered Marker: up to 40% more DMG on target
-                        const mornyeMem = tuneBreakMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
-                        if (mornyeMem) {
-                          tuneBreakAmp = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
-                          const interferedUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
-                          tuneBreakDeepenMult *= 1 + (tuneBreakAmp / 100) * interferedUptime;
-                        }
-
-                        // Tune Strain: per stack × Boost × 0.12% total DMG increase
-                        const maxStrain = Math.max(...tuneBreakMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
-                        if (maxStrain > 0 && totalTuneBreakBoost > 0) {
-                          const strainDmgPct = maxStrain * totalTuneBreakBoost * 0.12;
-                          const strainUptime = Math.min(1, (8 * tuneBreaksPerRotation) / rotTime);
-                          tuneBreakDeepenMult *= 1 + (strainDmgPct / 100) * strainUptime;
-                        }
-                      }
-                      dotDmgPerRotation += tuneBreakDmg;
-
-                      // ── Real DPS: skill multipliers × rotation timing + DOT ──
-                      // Sum total rotation damage from all team members
-                      let totalRotDmg = 0;
-                      mems.forEach(m => {
-                        let mult = m.d.totalMult || 0;
-                        if (mult === 0) return;
-                        const mAtk = m.totalBaseAtk;
-                        const isMain = m.name === mainDps.name;
-                        // Main DPS: apply resonance chain totalMult bonus
-                        if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
-                        if (isMain) {
-                          totalRotDmg += mAtk * (1 + atkPct / 100) * (mult / 100) * avgCrit * dmgBonus * defMult * resMult;
-                        } else {
-                          // Support/sub DPS: read actual echo stats if configured
-                          const sEqKey = teamIdx + ':' + m.name;
-                          const sEq = teamEquipment[sEqKey];
-                          const sEchoes = sEq?.echoes || [];
-                          const sEl = (m.d.element || '').toLowerCase();
-                          const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
-                          let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0;
-                          // Echo set bonuses
-                          if (m.echoSet) {
-                            const ek2 = sEl + 'Dmg';
-                            const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
-                            if (p2.atkPct) sAtkPct += p2.atkPct; if (p5.atkPct) sAtkPct += p5.atkPct;
-                            if (p2.critRate) sCr += p2.critRate; if (p5.critRate) sCr += p5.critRate;
-                            if (p2[ek2]) sElem += p2[ek2]; if (p5[ek2]) sElem += p5[ek2];
-                            if (p2.skillDmg) sSkillDmg += p2.skillDmg; if (p5.skillDmg) sSkillDmg += p5.skillDmg;
-                          }
-                          // Weapon substat
-                          if (m.weapSubstat === 'Crit Rate') sCr += parseFloat(m.weapSubVal) || 0;
-                          if (m.weapSubstat === 'Crit DMG') sCd += parseFloat(m.weapSubVal) || 0;
-                          if (m.weapSubstat === 'ATK%') sAtkPct += parseFloat(m.weapSubVal) || 0;
-                          // Echo individual stats
-                          const sMainStatVals = {
-                            4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-                            3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-                            1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
-                          };
-                          const sSubVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Resonance Skill DMG': 9 };
-                          sEchoes.forEach((echo, ei) => {
-                            if (!echo || typeof echo !== 'object') return;
-                            const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
-                            if (echo.mainStat) {
-                              const val = sMainStatVals[cost]?.[echo.mainStat] || 0;
-                              if (echo.mainStat === 'ATK%') sAtkPct += val;
-                              else if (echo.mainStat === 'Crit Rate') sCr += val;
-                              else if (echo.mainStat === 'Crit DMG') sCd += val;
-                              else if (echo.mainStat === sElDmgKey) sElem += val;
-                            }
-                            (echo.substats || []).forEach(sub => {
-                              const val = sSubVals[sub];
-                              if (!val) return;
-                              if (sub === 'ATK%') sAtkPct += val;
-                              else if (sub === 'Crit Rate') sCr += val;
-                              else if (sub === 'Crit DMG') sCd += val;
-                              else if (sub === 'Resonance Skill DMG') sSkillDmg += val;
-                            });
-                          });
-                          const sEffAtk = mAtk * (1 + sAtkPct / 100);
-                          const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
-                          const sDmgBonus = (1 + sElem / 100) * (1 + sSkillDmg / 100);
-                          totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * defMult * resMult;
-                        }
-                      });
-                      const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
-
-                      // Synergy
-                      let syn = 0;
-                      if (mems.some(m => m.d.role === 'Healer')) syn += 25;
-                      if (mems.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) syn += 25;
-                      if (allBuffs.length >= 2) syn += 15;
-                      if (allDebuffs.length >= 1) syn += 10;
-                      if (allBuffs.some(b => b.buff.includes(mainDps.d.element))) syn += 15;
-                      if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) syn += 10;
-                      syn = Math.min(syn, 100);
-                      const warnings = [];
-                      if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
-                      if (mems.length < 3) warnings.push('Incomplete team');
-                      const els = new Set(mems.map(m => m.d.element));
-                      if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
-                      const dotDps = Math.round(dotDmgPerRotation / rotTime);
-                      return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, realDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings };
-                    };
-
+                    // calcTeamStats is now defined in the component body via useCallback
                     const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
                     if (!stats) return null;
                     const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, realDps, synergy, warnings } = stats;
