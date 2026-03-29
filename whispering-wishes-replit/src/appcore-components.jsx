@@ -3724,8 +3724,12 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             var _top = _si > 0 ? _cuts[_si - 1] : null;
             var _bot = _si < _nCuts ? _cuts[_si] : null;
             var _dx = (_si % 2 === 0 ? 1 : -1) * (1 + _cr() * 2);
+            var _floatSpeed = 0.4 + _cr() * 0.6;
+            var _floatAmp = 1.5 + _cr() * 2.5;
+            var _floatPhase = _cr() * Math.PI * 2;
+            var _floatY = Math.sin(cloudTime * 0.15 * _floatSpeed + _floatPhase) * _floatAmp;
             ctx.save();
-            ctx.translate(_dx, 0);
+            ctx.translate(_dx, _floatY);
             var _tYL = _top ? _cutYat(_top, -_hw) + _inset : tipEnd;
             var _tYR = _top ? _cutYat(_top, _hw) + _inset : tipEnd;
             var _bYL = _bot ? _cutYat(_bot, -_hw) - _inset : guardH;
@@ -3821,6 +3825,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _shi = 0; _shi < _cuts.length; _shi++) {
             var _sc = _cuts[_shi];
             var _sy = (_sc.yL + _sc.yR) * 0.5;
+            var _shFloat = Math.sin(cloudTime * 0.15 * (0.5 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 2);
+            _sy += _shFloat;
             // Left shard — wider, shorter, pointing inward
             var _slx = -_hw - Math.max(3, 2 + _cr() * 4);
             var _slw = Math.max(5, 3 + _cr() * 5);
@@ -3844,25 +3850,27 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _sni = 0; _sni < _notchL.length; _sni++) {
             var _sn2 = _notchL[_sni];
             if (_cr() > 0.5) continue;
+            var _nfL = Math.sin(cloudTime * 0.15 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5);
             var _sx2 = -_hw - Math.max(2, 1 + _cr() * 3);
             var _sw2 = Math.max(2, _sn2.h * 0.4);
             var _sh2 = Math.max(2, _sn2.d * 0.5);
             ctx.beginPath();
-            ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.2);
-            ctx.lineTo(_sx2 + _sh2, _sn2.y + _sn2.h * 0.45);
-            ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.7);
+            ctx.moveTo(_sx2, _sn2.y + _sn2.h * 0.2 + _nfL);
+            ctx.lineTo(_sx2 + _sh2, _sn2.y + _sn2.h * 0.45 + _nfL);
+            ctx.lineTo(_sx2, _sn2.y + _sn2.h * 0.7 + _nfL);
             ctx.closePath(); ctx.fill();
           }
           for (var _sri2 = 0; _sri2 < _notchR.length; _sri2++) {
             var _snr2 = _notchR[_sri2];
             if (_cr() > 0.5) continue;
+            var _nfR = Math.sin(cloudTime * 0.15 * (0.4 + _cr() * 0.5) + _cr() * Math.PI * 2) * (1 + _cr() * 1.5);
             var _sxr2 = _hw + Math.max(2, 1 + _cr() * 3);
             var _swr2 = Math.max(2, _snr2.h * 0.4);
             var _shr2 = Math.max(2, _snr2.d * 0.5);
             ctx.beginPath();
-            ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.2);
-            ctx.lineTo(_sxr2 - _shr2, _snr2.y + _snr2.h * 0.45);
-            ctx.lineTo(_sxr2, _snr2.y + _snr2.h * 0.7);
+            ctx.moveTo(_sxr2, _snr2.y + _snr2.h * 0.2 + _nfR);
+            ctx.lineTo(_sxr2 - _shr2, _snr2.y + _snr2.h * 0.45 + _nfR);
+            ctx.lineTo(_sxr2, _snr2.y + _snr2.h * 0.7 + _nfR);
             ctx.closePath(); ctx.fill();
           }
           // Guard — 3D gradient top-to-bottom
