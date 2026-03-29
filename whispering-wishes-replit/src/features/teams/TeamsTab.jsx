@@ -1214,6 +1214,8 @@ export default function TeamsTab({
                         if (!computed.length) return null;
                         const maxS = Math.max(...computed.map(e => e.stats.score), 1);
                         const maxDps = Math.max(...computed.map(e => e.stats.realDps), 1);
+                        // Unified max so Raw and Full DPS bars are visually comparable within each card
+                        const unifiedMax = Math.max(maxS, maxDps);
                         return (
                         <Card id="team-dps-comparison">
                           <CardHeader action={
@@ -1227,8 +1229,8 @@ export default function TeamsTab({
                             <div className="space-y-3">
                               {computed.map((entry) => {
                                 const s = entry.stats;
-                                const rawPct = maxS > 0 ? (s.score / maxS) * 100 : 0;
-                                const fullPct = maxDps > 0 ? (s.realDps / maxDps) * 100 : 0;
+                                const rawPct = unifiedMax > 0 ? (s.score / unifiedMax) * 100 : 0;
+                                const fullPct = unifiedMax > 0 ? (s.realDps / unifiedMax) * 100 : 0;
                                 return (
                                   <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
