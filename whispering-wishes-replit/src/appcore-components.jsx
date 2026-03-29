@@ -1262,8 +1262,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
         const totalH = h1 * 0.7 + h2 * 0.5 + h3 * 0.4;
 
         const d = 10;
-        const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5;
-        const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5;
+        const slX = (Math.sin(_wf1(sx+d,sy,time))-h1)*0.7 + (Math.sin(_wf2(sx+d,sy,time))-h2)*0.5 + (Math.sin(_wf3(sx+d,sy,time))-h3)*0.4;
+        const slY = (Math.sin(_wf1(sx,sy+d,time))-h1)*0.7 + (Math.sin(_wf2(sx,sy+d,time))-h2)*0.5 + (Math.sin(_wf3(sx,sy+d,time))-h3)*0.4;
         const tilt = Math.sqrt(slX*slX + slY*slY);
 
         const spec = Math.pow(Math.max(0, 1 - tilt * 2.0), 2);
