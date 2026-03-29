@@ -1470,11 +1470,12 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
     window.addEventListener('resize', init);
 
     // Camera: side view with slight top-down, no yaw — diagonal comes from canvas rotation
-    const tilt = -28 * Math.PI / 180;   // X-axis tilt (side view with a bit of top)
+    const tilt = -28 * Math.PI / 180;
     const cosT = Math.cos(tilt), sinT = Math.sin(tilt);
 
     // Screen-space diagonal: rotate the entire output ~30° on screen
     const SCREEN_ROTATION = 30 * Math.PI / 180;
+    const _cosR = Math.cos(SCREEN_ROTATION), _sinR = Math.sin(SCREEN_ROTATION);
 
     // Pre-compute center offset: project origin (0,0,0) to find where center lands,
     // then offset everything so the ring center sits at screen center
@@ -1492,8 +1493,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       const scale = fov / ez;
       const sx = wx * scale;
       const sy = ey * scale;
-      const cosR = Math.cos(SCREEN_ROTATION), sinR = Math.sin(SCREEN_ROTATION);
-      return { sx: sx * cosR - sy * sinR, sy: sx * sinR + sy * cosR, scale, depth: ez };
+      return { sx: sx * _cosR - sy * _sinR, sy: sx * _sinR + sy * _cosR, scale, depth: ez };
     };
 
     const project = (wx, wy, wz) => {
@@ -1561,41 +1561,44 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       const WAVE_AMP = 30;         // 15% tighter
       const WAVE_FREQ = 2;         // number of wave peaks around the ring
 
+      // Pre-compute static dot data once
+      if (!canvas._dotCache) {
+        const _dots = [];
+        for (let row = 0; row < ROWS; row++) {
+          const rowT = row / (ROWS - 1);
+          const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT * RIBBON_WIDTH;
+          for (let i = 0; i < DOTS_AROUND; i++) {
+            const angleT = i / DOTS_AROUND;
+            const baseAngle = angleT * Math.PI * 2;
+            const hash = Math.sin(row * 127.1 + i * 311.7) * 43758.5453;
+            const jitter = (hash - Math.floor(hash)) * 2 - 1;
+            const radiusJitter = jitter * 0.5;
+            const rj = r + radiusJitter;
+            const veilA = rowT * Math.PI * 3;
+            const veilB = rowT * Math.PI * 5;
+            _dots.push({ rowT, rj, baseAngle, jitter, veilA, veilB });
+          }
+        }
+        canvas._dotCache = _dots;
+      }
+      const _cachedDots = canvas._dotCache;
+
       // Collect all dots for depth sorting
       const allDots = [];
-
-      for (let row = 0; row < ROWS; row++) {
-        // Each row is at a different radius (ribbon has width)
-        const rowT = row / (ROWS - 1); // 0..1 across ribbon width
-        const r = RADIUS - RIBBON_WIDTH * 0.5 + rowT * RIBBON_WIDTH;
-
-        for (let i = 0; i < DOTS_AROUND; i++) {
-          const angleT = i / DOTS_AROUND; // 0..1 around the ring
-          const angle = angleT * Math.PI * 2 + rot;
-
-          // Per-square variation: pseudo-random hash for organic feel
-          const hash = Math.sin(row * 127.1 + i * 311.7) * 43758.5453;
-          const jitter = (hash - Math.floor(hash)) * 2 - 1; // -1..1
-
-          // Position on the ring with slight radius jitter (less stiff)
-          const radiusJitter = jitter * 0.5;
-          const wx = Math.cos(angle) * (r + radiusJitter);
-          const wz = Math.sin(angle) * (r + radiusJitter);
-
-          // Ribbon wave + veil-like ripple across the ribbon surface
-          const ribbonWave = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
-                           + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
-          // Veil: slow ripples that travel across the ribbon width (like fabric in wind)
-          const veil = Math.sin(rowT * Math.PI * 3 + angle * 4 + time * 0.25) * 5
-                     + Math.sin(rowT * Math.PI * 5 - angle * 2 + time * 0.18) * 3;
-          const wy = ribbonWave + veil;
-
-          const p = project(wx, wy, wz);
-          if (!p) continue;
-          if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
-
-          allDots.push({ p, wy, rowT, angleT, r, angle, jitter });
-        }
+      for (let _di = 0; _di < _cachedDots.length; _di++) {
+        const d = _cachedDots[_di];
+        const angle = d.baseAngle + rot;
+        const wx = Math.cos(angle) * d.rj;
+        const wz = Math.sin(angle) * d.rj;
+        const ribbonWave = Math.sin(angle * WAVE_FREQ + time * 0.15) * WAVE_AMP
+                         + Math.sin(angle * (WAVE_FREQ + 1) + time * 0.1) * WAVE_AMP * 0.3;
+        const veil = Math.sin(d.veilA + angle * 4 + time * 0.25) * 5
+                   + Math.sin(d.veilB - angle * 2 + time * 0.18) * 3;
+        const wy = ribbonWave + veil;
+        const p = project(wx, wy, wz);
+        if (!p) continue;
+        if (p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
+        allDots.push({ p, wy, rowT: d.rowT, angleT: d.baseAngle / (Math.PI * 2), r: d.rj, angle, jitter: d.jitter });
       }
 
       // Sort back to front
@@ -1638,11 +1641,19 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       }
 
       // --- Sparkle particles floating above/around the ribbon ---
+      if (!canvas._sparkCache) {
+        canvas._sparkCache = [];
+        for (let sp = 0; sp < 60; sp++) {
+          const spHash = Math.sin(sp * 191.7) * 43758.5453;
+          const spRand = spHash - Math.floor(spHash);
+          const spHash2 = Math.sin(sp * 337.3) * 29871.2;
+          const spRand2 = spHash2 - Math.floor(spHash2);
+          const spHue = spRand < 0.15 ? 192 + spRand * 20 : 250 + spRand * 80;
+          canvas._sparkCache.push({ spRand, spRand2, spHue });
+        }
+      }
       for (let sp = 0; sp < 60; sp++) {
-        const spHash = Math.sin(sp * 191.7) * 43758.5453;
-        const spRand = spHash - Math.floor(spHash);
-        const spHash2 = Math.sin(sp * 337.3) * 29871.2;
-        const spRand2 = spHash2 - Math.floor(spHash2);
+        const { spRand, spRand2, spHue } = canvas._sparkCache[sp];
         const spAngle = spRand * Math.PI * 2 + rot + time * (0.02 + spRand2 * 0.03);
         const spR = RADIUS - RIBBON_WIDTH * 0.4 + spRand2 * RIBBON_WIDTH * 0.8;
         const spWy = Math.sin(spAngle * WAVE_FREQ + time * 0.15) * WAVE_AMP - 6 - spRand * 25;
@@ -1651,8 +1662,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
         if (spP.sx < -5 || spP.sx > w + 5 || spP.sy < -5 || spP.sy > h + 5) continue;
         const twinkle = Math.sin(time * 2.5 + sp * 5.3) * 0.5 + 0.5;
         const spAlpha = twinkle * 0.35 * alphaScale;
-        // Mostly lavender-pink, occasional cyan sparkle
-        const spHue = spRand < 0.15 ? 192 + spRand * 20 : 250 + spRand * 80;
+        // Mostly lavender-pink, occasional cyan sparkle (hue cached)
         const spSize = (1 + twinkle * 2.5) * spP.scale * 0.3;
         ctx.fillStyle = `hsla(${spHue}, 75%, 85%, ${spAlpha})`;
         ctx.fillRect(spP.sx - spSize * 0.5, spP.sy - spSize * 0.5, spSize, spSize);
@@ -1735,16 +1745,23 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       // --- Inner ribbon: vertical mixer bars (flat on Y=0 plane, no wave) ---
       const INNER_RADIUS = RADIUS * 0.55;
       const INNER_BARS = 540;
+      if (!canvas._barCache) {
+        canvas._barCache = [];
+        for (let i = 0; i < INNER_BARS; i++) {
+          const baseAngle = (i / INNER_BARS) * Math.PI * 2;
+          const hash = Math.sin(i * 173.7) * 43758.5453;
+          const barSeed = hash - Math.floor(hash);
+          const barHue = barSeed < 0.35 ? 192 + barSeed * 15 : 255 + barSeed * 65;
+          const barSat = barSeed < 0.35 ? 92 : 75;
+          canvas._barCache.push({ baseAngle, barSeed, barHue, barSat });
+        }
+      }
       for (let i = 0; i < INNER_BARS; i++) {
-        const angleT_b = i / INNER_BARS;
-        const angle = angleT_b * Math.PI * 2 + rot;
-
+        const _bc = canvas._barCache[i];
+        const angle = _bc.baseAngle + rot;
         const wx = Math.cos(angle) * INNER_RADIUS;
         const wz = Math.sin(angle) * INNER_RADIUS;
-
-        // Each bar has a different height that pulses like a sound mixer
-        const hash = Math.sin(i * 173.7) * 43758.5453;
-        const barSeed = hash - Math.floor(hash);
+        const barSeed = _bc.barSeed;
         const barHeight = 5 + barSeed * 25 + Math.sin(time * 0.5 + i * 0.6) * 12;
 
         // Project from flat plane (Y=0), bar extends vertically on screen
@@ -1758,9 +1775,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
         const barAlpha = (0.12 + depthNorm * 0.28) * alphaScale;
 
         // Vertical bars on screen (not rotated)
-        const barHue = barSeed < 0.35 ? 192 + barSeed * 15 : 255 + barSeed * 65;
-        const barSat = barSeed < 0.35 ? 92 : 75;
-        ctx.fillStyle = `hsla(${barHue}, ${barSat}%, 65%, ${barAlpha})`;
+        ctx.fillStyle = `hsla(${_bc.barHue}, ${_bc.barSat}%, 65%, ${barAlpha})`;
         ctx.fillRect(p.sx - barW * 0.5, p.sy - barH, barW, barH);
       }
 
