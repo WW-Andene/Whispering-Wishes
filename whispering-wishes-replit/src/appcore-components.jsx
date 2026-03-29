@@ -3735,14 +3735,14 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for (var _bk = 0; _bk < _brkIdxs.length; _bk++) _breaks.push(_crLines[_brkIdxs[_bk]]);
           var _nBk = _breaks.length;
           // Float offsets — guard piece stays, others float
-          var _fdx = [], _fdy = [], _frt = [];
-          for (var _fi = 0; _fi < _nBk; _fi++) {
-            var _dist = _nBk - _fi; // farther from guard = bigger shift
-            _fdx.push((_cr() > 0.5 ? 1 : -1) * Math.max(5, bladeW * 1.5) * (0.7 + _cr() * 0.6));
-            _fdy.push(-Math.max(5, bladeH * 0.035) * _dist * (0.6 + _cr() * 0.4));
-            _frt.push((_cr() - 0.5) * 0.08 * _dist);
+          var _fdx = [0], _fdy = [0]; // guard piece (last) stays at 0
+          // Build offsets from guard upward — each piece shifts 3-9px from its neighbor
+          for (var _fi = _nBk - 1; _fi >= 0; _fi--) {
+            var _px = _fdx[0] + (_cr() > 0.5 ? 1 : -1) * (3 + _cr() * 6);
+            var _py = _fdy[0] - (3 + _cr() * 6);
+            _fdx.unshift(_px);
+            _fdy.unshift(_py);
           }
-          _fdx.push(0); _fdy.push(0); _frt.push(0); // guard piece
           // Gradient helpers
           var _gradL = function() {
             var g = ctx.createLinearGradient(0, 0, -_hw, 0);
@@ -3775,14 +3775,13 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             ctx.lineTo(0, _crYatX(brk, 0) + yOff);
             ctx.lineTo(_hw * 0.33, _crYatX(brk, _hw * 0.33) + yOff);
           };
-          var _gap = Math.max(4, bladeH * 0.04);
+          var _gap = 3 + _cr() * 6; // 3-9px gap at each break
           // Draw blade in segments — si=0 is topmost (tip), si=nBk is bottommost (guard)
           for (var _si = 0; _si <= _nBk; _si++) {
             var _topBrk = _si > 0 ? _breaks[_si - 1] : null;
             var _botBrk = _si < _nBk ? _breaks[_si] : null;
             ctx.save();
             ctx.translate(_fdx[_si], _fdy[_si]);
-            ctx.rotate(_frt[_si]);
             // Y bounds for notch filtering
             var _topYL = _topBrk ? _crYatX(_topBrk, -_hw) + _gap : tipEnd;
             var _topYR = _topBrk ? _crYatX(_topBrk, _hw) + _gap : tipEnd;
