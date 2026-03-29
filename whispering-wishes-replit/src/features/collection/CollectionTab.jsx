@@ -547,6 +547,7 @@ export default function CollectionTab({
                     onChange={setCollectionSort}
                     options={[
                       { value: 'copies', label: 'Default' },
+                      { value: 'release', label: 'Release' },
                       { value: 'dps', label: 'DPS Rank' },
                       { value: 'name', label: 'Name A-Z' },
                       { value: 'tier', label: 'Tier' },
