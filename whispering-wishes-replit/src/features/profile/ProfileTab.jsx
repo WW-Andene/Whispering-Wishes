@@ -1091,7 +1091,7 @@ export default function ProfileTab({
       console.error('ID card export failed (possible CORS tainted canvas):', e);
       toast?.addToast?.('Failed to save ID card — try a different profile image', 'error');
     }
-  }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies]);
+  }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies, getImageFraming]);
 
   return (
     <>

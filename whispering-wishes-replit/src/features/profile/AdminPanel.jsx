@@ -14,6 +14,7 @@ import {
   ADMIN_BANNER_KEY,
   hideOnError,
 } from '../../appcore-components.jsx';
+import { storageAvailable } from '../../appcore-engine.js';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
