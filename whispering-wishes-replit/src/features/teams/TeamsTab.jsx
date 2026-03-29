@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { AlertTriangle, BarChart3, Diamond, Plus, Search, Star, Sword, Target, Users, X, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, Diamond, Download, Plus, Search, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import {
   haptic,
   CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
-  RELEASE_ORDER,
+  RELEASE_ORDER, WEAPON_REFINE_SCALE,
   ALL_5STAR_RESONATORS,
   ALL_4STAR_RESONATORS,
   ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA,
@@ -149,7 +149,10 @@ export default function TeamsTab({
       if (m.weapSubstat === sKey) rStatPct += parseFloat(m.weapSubVal) || 0;
       // Weapon passive (own only)
       if (m.weapon) {
-        const wp = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
+        const rRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
+        const rRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[rRefLevel - 1] || 1 : 1;
+        const rawPv = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
+        const wp = m.weapon.pv ? Object.fromEntries(Object.entries(rawPv).map(([k, v]) => [k, v * rRefScale])) : rawPv;
         if (m.scaling === 'ATK') rStatPct += (wp.atkPct || 0);
         else if (m.scaling === 'HP') rStatPct += (wp.hpPct || 0);
         else if (m.scaling === 'DEF') rStatPct += (wp.defPct || 0);
@@ -216,7 +219,10 @@ export default function TeamsTab({
 
     let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0;
     if (mainDps.weapon) {
-      const wp = mainDps.weapon.pv || parsePassive(mainDps.weapon.passive, mainDps.d.element);
+      const mainRefLevel = (teamEquipment[teamIdx + ':' + mainDps.name])?.refinement || 1;
+      const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
+      const mainRawPv = mainDps.weapon.pv || parsePassive(mainDps.weapon.passive, mainDps.d.element);
+      const wp = mainDps.weapon.pv ? Object.fromEntries(Object.entries(mainRawPv).map(([k, v]) => [k, v * mainRefScale])) : mainRawPv;
       if (mainDps.scaling === 'ATK') atkPct += (wp.atkPct || 0);
       else if (mainDps.scaling === 'HP') atkPct += (wp.hpPct || 0);
       else if (mainDps.scaling === 'DEF') atkPct += (wp.defPct || 0);
@@ -851,7 +857,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex gap-1 flex-wrap justify-end">
+                      <div className="flex gap-1 items-center">
                         <button
                           onClick={() => {
                             try {
@@ -866,7 +872,7 @@ export default function TeamsTab({
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
-                          Export
+                          <Download size={12} />
                         </button>
                         <button
                           onClick={() => {
@@ -893,7 +899,7 @@ export default function TeamsTab({
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
-                          Import
+                          <Upload size={12} />
                         </button>
                         <button
                           onClick={() => {
@@ -914,7 +920,7 @@ export default function TeamsTab({
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
-                          Clear
+                          <Trash2 size={12} />
                         </button>
                       </div>
                     }>

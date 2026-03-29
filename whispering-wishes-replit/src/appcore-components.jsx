@@ -12,6 +12,7 @@ import {
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
+  WEAPON_REFINE_SCALE,
   ECHO_DATA, ECHO_SETS,
   ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
 } from './appcore-data.js';
@@ -222,6 +223,17 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
+              {data.tier && (
+                <>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
+                    data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                    data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                    data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' :
+                    data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                    'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                  }`}>{data.tier.toa}</span>
+                </>
+              )}
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -244,6 +256,20 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             );
           })()}
+          {(data.birthday || data.region) && (
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+              {data.birthday && (
+                <div className="text-[10px] text-gray-500">Birthday: {(() => {
+                  const [m, d] = data.birthday.split('-');
+                  const months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                  return `${months[parseInt(m)]} ${parseInt(d)}`;
+                })()}</div>
+              )}
+              {data.region && (
+                <div className="text-[10px] text-gray-500">Region: {data.region}</div>
+              )}
+            </div>
+          )}
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
@@ -593,7 +619,26 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
             <div className={`text-xs ${colors.text}`}>{data.passive}</div>
           </div>
-          
+
+          {data.pv && Object.keys(data.pv).length > 0 && (
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Refinement Scaling</div>
+              <div className="grid grid-cols-5 gap-1">
+                {WEAPON_REFINE_SCALE.map((scale, i) => (
+                  <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
+                    <div className="text-[9px] text-gray-500 mb-0.5">R{i + 1}</div>
+                    {Object.entries(data.pv).map(([stat, val]) => (
+                      <div key={stat} className="text-[9px] text-gray-300">
+                        <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
+                        <span className="text-gray-500 ml-0.5">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {data.bestFor && data.bestFor.length > 0 && (
             <div>
               <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best For</div>
@@ -831,6 +876,15 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
               <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
                 <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
+                {data.sets.length > 1 && (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    <span className="text-[9px] text-gray-500">Available in:</span>
+                    {data.sets.map(setName => {
+                      const setColor = getSetElementColor(setName);
+                      return <span key={setName} className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${setColor}15`, color: setColor, border: `1px solid ${setColor}30` }}>{setName}</span>;
+                    })}
+                  </div>
+                )}
               </div>
             );
           })()}
