@@ -3127,7 +3127,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
         };
 
         // --- Baked ground from ground-background.jsx ---
-        if (!groundCache || groundCache.width !== W || groundCache.height !== H || !groundCache._v3) {
+        if (!groundCache || groundCache.width !== W || groundCache.height !== H || !groundCache._v4) {
           groundCache = document.createElement('canvas'); groundCache.width = W; groundCache.height = H;
           const gctx = groundCache.getContext('2d');
           const SEED = sceneSeed;
@@ -3157,15 +3157,15 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           for(let py=0;py<gHt;py++)for(let px=0;px<gW;px++)brushMap[py*gW+px]=_bgFbm(px/gW*25+py/gHt*2,py/gHt*4,2,SEED+9000);
           // 4-tone shading with warm tones
           for(let py=0;py<gHt;py++){const dT=py/gHt,dC=Math.pow(dT,0.5);
-            const contrast=0.6+dT*0.4,warmShift=(1-dT)*38,baseVal=40+dC*90;
+            const contrast=0.7+dT*0.3,warmShift=(1-dT)*38,baseVal=40+dC*90;
             // Ground matching sky — muted warm brown, less orange
-            const t0r=baseVal*0.35+warmShift*0.18, t0g=baseVal*0.24+warmShift*0.12, t0b=baseVal*0.18+warmShift*0.08;
-            const t1r=baseVal*0.50+warmShift*0.28, t1g=baseVal*0.38+warmShift*0.18, t1b=baseVal*0.28+warmShift*0.12;
+            const t0r=baseVal*0.28+warmShift*0.14, t0g=baseVal*0.18+warmShift*0.09, t0b=baseVal*0.13+warmShift*0.06;
+            const t1r=baseVal*0.45+warmShift*0.24, t1g=baseVal*0.33+warmShift*0.15, t1b=baseVal*0.24+warmShift*0.10;
             // Mid-tone: warm brown
             const tmR=baseVal*0.70+warmShift*0.40, tmG=baseVal*0.52+warmShift*0.28, tmB=baseVal*0.36+warmShift*0.16;
             // Light tones: muted warm
-            const t2r=baseVal*1.0+warmShift*0.60, t2g=baseVal*0.72+warmShift*0.40, t2b=baseVal*0.46+warmShift*0.22;
-            const t3r=baseVal*1.30+warmShift*0.78, t3g=baseVal*0.90+warmShift*0.52, t3b=baseVal*0.55+warmShift*0.28;
+            const t2r=baseVal*1.10+warmShift*0.65, t2g=baseVal*0.78+warmShift*0.44, t2b=baseVal*0.48+warmShift*0.24;
+            const t3r=baseVal*1.45+warmShift*0.85, t3g=baseVal*1.0+warmShift*0.58, t3b=baseVal*0.60+warmShift*0.32;
             const tones=[[t0r,t0g,t0b],[t0r+(t1r-t0r)*contrast,t0g+(t1g-t0g)*contrast,t0b+(t1b-t0b)*contrast],[t0r+(tmR-t0r)*contrast,t0g+(tmG-t0g)*contrast,t0b+(tmB-t0b)*contrast],[t0r+(t2r-t0r)*contrast,t0g+(t2g-t0g)*contrast,t0b+(t2b-t0b)*contrast],[t0r+(t3r-t0r)*contrast,t0g+(t3g-t0g)*contrast,t0b+(t3b-t0b)*contrast]];
             for(let px=0;px<gW;px++){const nx=px/gW;
               const gH3=(x,y)=>hMap[Math.max(0,Math.min(gHt-1,y))*gW+Math.max(0,Math.min(gW-1,x))];
@@ -3246,7 +3246,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
           gctx.fillStyle=amberShade;gctx.fillRect(0,edgeY-curveH,W,groundH+curveH);
           gctx.restore();
           } // end if gW>=4&&gHt>=4
-          groundCache._v3 = true;
+          groundCache._v4 = true;
         }
         ctx.drawImage(groundCache, 0, 0);
 
@@ -3603,8 +3603,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
             const faceCatch = 0.4 + Math.sin(s.yAngle) * 0.6;
             s._lightB = (0.25 + s._lit * 0.75) * faceCatch;
             s._darkB = 0.08 + s._lit * 0.12 + (1 - faceCatch) * 0.06;
-            s._lR = Math.round(45 + 210 * s._lightB); s._lG = Math.round(30 + 145 * s._lightB); s._lB2 = Math.round(18 + 75 * s._lightB);
-            s._dR = Math.round(38 + 85 * s._darkB); s._dG = Math.round(22 + 50 * s._darkB); s._dB = Math.round(12 + 28 * s._darkB);
+            s._lR = Math.round(55 + 200 * s._lightB); s._lG = Math.round(35 + 145 * s._lightB); s._lB2 = Math.round(20 + 80 * s._lightB);
+            s._dR = Math.round(30 + 75 * s._darkB); s._dG = Math.round(16 + 42 * s._darkB); s._dB = Math.round(8 + 22 * s._darkB);
             s._absYRot = Math.abs(s.yRot); s._sinYSkew = Math.sin(s.yAngle) * 0.15;
             // Pre-build color strings
             s._colLight = 'rgb('+s._lR+','+s._lG+','+s._lB2+')';
