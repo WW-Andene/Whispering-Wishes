@@ -126,7 +126,9 @@ export default function TeamsTab({
     };
 
     // ── Enemy scaling ──
-    const enemyDef90 = 8 * enemyLevel + 72;
+    // Wiki formula: DEF% = (800 + 8×AttackerLvl) / (800 + 8×AttackerLvl + EnemyDEF × (1 - DEFIgnore))
+    const attackerFactor = 800 + 8 * 90; // 1520 at attacker level 90
+    const enemyDef90 = 800 + 8 * enemyLevel; // standard enemy DEF (same scaling as attacker)
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
     const enemyResMap = enemyEchoData?.enemyRes || {};
     const getEnemyRes = (el) => {
@@ -196,7 +198,7 @@ export default function TeamsTab({
       const rEff = m.baseStat * (1 + rStatPct / 100);
       const rAvgCrit = 1 + (Math.min(rCr, 100) / 100) * (rCd / 100 - 1);
       const rDmgBonus = (1 + rElem / 100) * (1 + rSkillDmg / 100);
-      const rDefMult = 800 / (800 + enemyDef90);
+      const rDefMult = attackerFactor / (attackerFactor + enemyDef90);
       const rBaseRes = getEnemyRes(m.d.element);
       const rResMult = 1 - rBaseRes / 100;
       rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
@@ -437,7 +439,7 @@ export default function TeamsTab({
     const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
     const dmgBonus = (1 + elemDmg / 100) * (1 + skillDmg / 100) * (1 + deepen / 100);
     const effectiveDef = enemyDef90 * Math.max(0, 1 - (defShred + defIgnore) / 100);
-    const defMult = 800 / (800 + effectiveDef);
+    const defMult = attackerFactor / (attackerFactor + effectiveDef);
     const mainBaseRes = getEnemyRes(mainDps.d.element);
     const effectiveRes = Math.max(mainBaseRes - resShred, -30);
     const resMult = 1 - effectiveRes / 100;
@@ -698,7 +700,7 @@ export default function TeamsTab({
         if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
         const sDmgBonus = (1 + sElem / 100) * (1 + sTypeDmg / 100) * (1 + sDeepen / 100);
         const sEffDef = enemyDef90 * Math.max(0, 1 - (sDefShred + sDefIgnore) / 100);
-        const sDefMult = 800 / (800 + sEffDef);
+        const sDefMult = attackerFactor / (attackerFactor + sEffDef);
         const sBaseRes = getEnemyRes(m.d.element);
         const sResMult = 1 - Math.max(sBaseRes - sResShred, -30) / 100;
         totalRotDmg += sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * sResMult;
