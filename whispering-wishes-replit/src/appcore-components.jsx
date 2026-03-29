@@ -790,29 +790,29 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             const parts = data.desc.split(/(?<=\.)\s+/);
             const allSkillText = parts.slice(1).join(' ');
             if (!allSkillText) return null;
-            // Format text: element DMG in element color, ALL other numbers in white
+            // Format text: ONLY numbers highlighted — element color if followed by element DMG, white otherwise
             const formatSkillText = (text) => {
               const result = [];
-              // Match element DMG patterns first, then catch ALL remaining numbers
-              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*DMG)|(\d+(?:\.\d+)?%?(?:\s*(?:Max\s*)?HP)?)|(\b\d+s\b)|(\bCD:\s*\d+s\b)/gi;
+              // Match only numbers with % or s suffix, x-prefix multipliers, or CD: patterns — NOT bare numbers
+              const regex = /([+-]?\d+(?:\.\d+)?%)|(\d+s)|(CD:\s*\d+s)|(x\d+)/gi;
               let lastIndex = 0;
               let match;
               while ((match = regex.exec(text)) !== null) {
-                // Skip single-digit matches that are just part of words (e.g. "3pc")
                 const m = match[0];
                 if (match.index > lastIndex) {
                   result.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex, match.index)}</span>);
                 }
-                let color = '#ffffff'; // white default for all numbers
-                // Only element DMG gets element color
-                if (match[1]) {
-                  if (/Glacio/i.test(m)) color = getBuffElementColor('Glacio DMG');
-                  else if (/Fusion/i.test(m)) color = getBuffElementColor('Fusion DMG');
-                  else if (/Electro/i.test(m)) color = getBuffElementColor('Electro DMG');
-                  else if (/Aero/i.test(m)) color = getBuffElementColor('Aero DMG');
-                  else if (/Spectro/i.test(m)) color = getBuffElementColor('Spectro DMG');
-                  else if (/Havoc/i.test(m)) color = getBuffElementColor('Havoc DMG');
-                  else if (/Physical/i.test(m)) color = '#a1a1aa';
+                let color = '#ffffff'; // white default
+                // Check text after the number for element DMG context
+                if (match[1]) { // percentage — check if followed by element DMG
+                  const after = text.slice(match.index + m.length, match.index + m.length + 30);
+                  if (/^\s*Glacio\s*DMG/i.test(after)) color = getBuffElementColor('Glacio DMG');
+                  else if (/^\s*Fusion\s*DMG/i.test(after)) color = getBuffElementColor('Fusion DMG');
+                  else if (/^\s*Electro\s*DMG/i.test(after)) color = getBuffElementColor('Electro DMG');
+                  else if (/^\s*Aero\s*DMG/i.test(after)) color = getBuffElementColor('Aero DMG');
+                  else if (/^\s*Spectro\s*DMG/i.test(after)) color = getBuffElementColor('Spectro DMG');
+                  else if (/^\s*Havoc\s*DMG/i.test(after)) color = getBuffElementColor('Havoc DMG');
+                  else if (/^\s*Physical\s*DMG/i.test(after)) color = '#a1a1aa';
                 }
                 result.push(
                   <span key={match.index} className="font-semibold" style={{ color }}>{m}</span>

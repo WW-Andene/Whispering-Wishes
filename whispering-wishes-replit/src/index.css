@@ -35,11 +35,8 @@ body {
 }
 
 /* Dyslexia-friendly font — applied via toggle in Display Settings */
-html.dyslexic-font body,
-html.dyslexic-font input,
-html.dyslexic-font select,
-html.dyslexic-font textarea,
-html.dyslexic-font button {
+html.dyslexic-font,
+html.dyslexic-font * {
   font-family: 'OpenDyslexic', 'Rajdhani', system-ui, sans-serif !important;
 }
 
