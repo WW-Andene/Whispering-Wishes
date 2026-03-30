@@ -8,7 +8,7 @@ import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X,
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
-  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE,
+  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
@@ -488,16 +488,41 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
 
-          {/* Skills */}
+          {/* Skills with Multipliers */}
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
+              <span className="text-[9px] text-gray-500 font-normal ml-auto">Lv.1 ATK%</span>
             </h3>
-            <div className="flex flex-wrap gap-1">
-              {data.skills.map((skill, i) => (
-                <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
-              ))}
-            </div>
+            {SKILL_MULTIPLIERS[name] ? (
+              <div className="space-y-0.5">
+                {SKILL_MULTIPLIERS[name].map(([type, skillName, mult], i) => {
+                  const typeColors = {
+                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
+                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
+                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
+                  };
+                  const typeBg = {
+                    'Basic ATK': 'bg-gray-500/10', 'Mid-air': 'bg-gray-500/10', 'Heavy ATK': 'bg-orange-500/10',
+                    'Charged ATK': 'bg-orange-500/10', 'Skill': 'bg-cyan-500/10', 'Liberation': 'bg-yellow-500/10',
+                    'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
+                  };
+                  return (
+                    <div key={i} className={`flex items-start gap-1.5 px-2 py-1 rounded ${typeBg[type] || 'bg-white/5'}`}>
+                      <span className={`text-[9px] font-medium w-14 shrink-0 pt-0.5 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
+                      <span className="text-[10px] text-gray-200 font-medium min-w-0 shrink-0">{skillName}</span>
+                      <span className="text-[10px] text-gray-400 ml-auto text-right pl-1">{mult}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {data.skills.map((skill, i) => (
+                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Ascension Materials (Lv 1→90) */}
