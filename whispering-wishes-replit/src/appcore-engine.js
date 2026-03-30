@@ -851,7 +851,7 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   const pity4 = safePulls % HARD_PITY_4STAR;
   
   return {
-    successRate: successRate.toFixed(1),
+    successRate: successRate > 0 && successRate < 0.1 ? '<0.1' : successRate.toFixed(1),
     p1: pGe(1).toFixed(1),
     p2: pGe(2).toFixed(1),
     p3: pGe(3).toFixed(1),
