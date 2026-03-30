@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
-import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
 import { MEDAL_COLORS, calculateLuckRating, ALL_CHARACTERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../appcore-data.js';
 import { storageAvailable } from '../../appcore-engine.js';
 import {
@@ -1003,27 +1002,51 @@ export default function AnalyticsTab({
                           </div>
                           <div className="h-32">
                             <div className="sr-only">Convene history chart showing activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} Convenes`).join(', ')}.</div>
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <defs>
-                                  <linearGradient id="pullGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="rgba(237,175,24,0.22)" />
-                                    <stop offset="100%" stopColor="rgba(237,175,24,0)" />
-                                  </linearGradient>
-                                </defs>
-                                {/* MED-30: Subtle gridlines for value estimation */}
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                                <XAxis dataKey="label" tick={{ fill: '#8892a4', fontSize: 10, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} />
-                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} />
-                                <RechartsTooltip
-                                  contentStyle={{ background: 'rgba(12,16,24,0.95)', border: '1px solid rgba(237,175,24,0.3)', borderRadius: '8px', fontSize: '11px', fontFamily: 'var(--font-data)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}
-                                  labelStyle={{ color: '#dfe5ef', fontFamily: 'var(--font-display)', fontWeight: 600 }}
-                                  itemStyle={{ color: '#bcc3d1' }}
-                                  cursor={{ stroke: 'rgba(237,175,24,0.2)' }}
-                                />
-                                <Area type="natural" dataKey="pulls" stroke="rgba(237,175,24,0.4)" fill="url(#pullGradient)" strokeWidth={1} name="Convenes" />
-                              </AreaChart>
-                            </ResponsiveContainer>
+                            {(() => {
+                              if (!chartData || chartData.length === 0) return null;
+                              const W = 400, H = 128, PAD = { top: 10, right: 10, bottom: 20, left: 35 };
+                              const cW = W - PAD.left - PAD.right, cH = H - PAD.top - PAD.bottom;
+                              const maxVal = Math.max(...chartData.map(d => d.pulls), 1);
+                              const yTicks = [0, Math.round(maxVal / 2), maxVal];
+                              const pts = chartData.map((d, i) => ({
+                                x: PAD.left + (chartData.length > 1 ? (i / (chartData.length - 1)) * cW : cW / 2),
+                                y: PAD.top + cH - (d.pulls / maxVal) * cH,
+                                ...d,
+                              }));
+                              const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+                              const area = `${line} L${pts[pts.length - 1].x},${PAD.top + cH} L${pts[0].x},${PAD.top + cH} Z`;
+                              const xStep = Math.max(1, Math.ceil(chartData.length / 6));
+                              return (
+                                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                                  <defs>
+                                    <linearGradient id="pullGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="0%" stopColor="rgba(237,175,24,0.22)" />
+                                      <stop offset="100%" stopColor="rgba(237,175,24,0)" />
+                                    </linearGradient>
+                                  </defs>
+                                  {yTicks.map(v => {
+                                    const y = PAD.top + cH - (v / maxVal) * cH;
+                                    return <g key={v}>
+                                      <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
+                                      <text x={PAD.left - 4} y={y + 3} textAnchor="end" fill="#8892a4" fontSize="9" fontFamily="var(--font-data)">{v}</text>
+                                    </g>;
+                                  })}
+                                  <path d={area} fill="url(#pullGrad)" />
+                                  <path d={line} fill="none" stroke="rgba(237,175,24,0.4)" strokeWidth="1.5" />
+                                  {pts.map((p, i) => i % xStep === 0 ? (
+                                    <text key={i} x={p.x} y={H - 4} textAnchor="middle" fill="#8892a4" fontSize="9" fontFamily="var(--font-data)">{p.label}</text>
+                                  ) : null)}
+                                  {pts.map((p, i) => (
+                                    <g key={i}>
+                                      <circle cx={p.x} cy={p.y} r="8" fill="transparent" className="cursor-pointer">
+                                        <title>{p.label}: {p.pulls} Convenes</title>
+                                      </circle>
+                                      <circle cx={p.x} cy={p.y} r="2" fill="rgba(237,175,24,0.6)" className="pointer-events-none" />
+                                    </g>
+                                  ))}
+                                </svg>
+                              );
+                            })()}
                           </div>
                           {allData.length > maxVisible && (
                             <div className="text-center text-[10px] text-gray-400 mt-1">

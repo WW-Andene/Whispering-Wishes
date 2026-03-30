@@ -16,7 +16,7 @@ import {
 } from '../../appcore-components.jsx';
 import { storageAvailable } from '../../appcore-engine.js';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
-import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
+// Recharts removed — using native SVG for charts
 
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
@@ -271,19 +271,37 @@ export default function AdminPanel({
                         <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3">
                           <div className="text-gray-400 text-[10px] font-medium mb-2 uppercase tracking-wider">Session Activity</div>
                           <div className="h-24">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart data={activePlayersHistory}>
-                                <defs>
-                                  <linearGradient id="presenceGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
-                                  </linearGradient>
-                                </defs>
-                                <XAxis dataKey="time" tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} tickLine={false} interval="preserveStartEnd" />
-                                <YAxis tick={{ fill: '#8892a4', fontSize: 9, fontFamily: 'var(--font-data)' }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
-                                <Area type="monotone" dataKey="count" stroke="#34d399" strokeWidth={2} fill="url(#presenceGrad)" />
-                              </AreaChart>
-                            </ResponsiveContainer>
+                            {(() => {
+                              const data = activePlayersHistory;
+                              const W = 300, H = 96, PAD = { top: 5, right: 5, bottom: 16, left: 25 };
+                              const cW = W - PAD.left - PAD.right, cH = H - PAD.top - PAD.bottom;
+                              const maxVal = Math.max(...data.map(d => d.count), 1);
+                              const pts = data.map((d, i) => ({
+                                x: PAD.left + (data.length > 1 ? (i / (data.length - 1)) * cW : cW / 2),
+                                y: PAD.top + cH - (d.count / maxVal) * cH,
+                                ...d,
+                              }));
+                              const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+                              const area = `${line} L${pts[pts.length - 1].x},${PAD.top + cH} L${pts[0].x},${PAD.top + cH} Z`;
+                              return (
+                                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+                                  <defs>
+                                    <linearGradient id="presenceGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
+                                      <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
+                                    </linearGradient>
+                                  </defs>
+                                  <path d={area} fill="url(#presenceGrad)" />
+                                  <path d={line} fill="none" stroke="#34d399" strokeWidth="2" />
+                                  {pts.filter((_, i) => i === 0 || i === pts.length - 1).map((p, i) => (
+                                    <text key={i} x={p.x} y={H - 2} textAnchor={i === 0 ? 'start' : 'end'} fill="#8892a4" fontSize="9" fontFamily="var(--font-data)">{p.time}</text>
+                                  ))}
+                                  {[0, maxVal].map(v => (
+                                    <text key={v} x={PAD.left - 4} y={PAD.top + cH - (v / maxVal) * cH + 3} textAnchor="end" fill="#8892a4" fontSize="9" fontFamily="var(--font-data)">{v}</text>
+                                  ))}
+                                </svg>
+                              );
+                            })()}
                           </div>
                         </div>
                       )}
