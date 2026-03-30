@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, Users, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
@@ -177,7 +177,7 @@ CardBody.displayName = 'CardBody';
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
 // Character Detail Modal
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage, onViewInTeams }) => {
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 
@@ -314,6 +314,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             )}
           </div>
+
+          {/* Quick action — view in teams */}
+          {onViewInTeams && (
+            <button onClick={onViewInTeams} className="w-full py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" style={{ background: 'var(--bg-btn)' }}>
+              <Users size={12} /> View in Team Builder
+            </button>
+          )}
 
           {/* Base Stats (Lv.90) */}
           {data.baseAtk && (

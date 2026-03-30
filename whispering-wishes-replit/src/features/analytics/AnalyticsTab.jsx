@@ -621,6 +621,40 @@ export default function AnalyticsTab({
                     </div>
                 </FocusTrapModal>
 
+                {/* 5★ Pull Log — moved above Trophies for user workflow priority */}
+                <Card>
+                  <CardHeader>5★ Convene Log</CardHeader>
+                  <CardBody>
+                    {(() => {
+                      const fiveStars = statsTabData.pullLogFiveStars;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
+                      return (
+                        <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
+                          {fiveStars.map((p, i) => {
+                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#4ade80' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
+                            const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-green-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
+                            return (
+                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-yellow-400 font-medium truncate">{p.name}</span>
+                                  <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
+                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
+                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[10px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
+                                  {p.timestamp && <span className="text-gray-400 text-[10px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </CardBody>
+                </Card>
+
                 {/* Trophies & Achievements */}
                 {trophies && trophies.list.length > 0 && (
                   <Card>
@@ -1016,42 +1050,6 @@ export default function AnalyticsTab({
                       <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-[10px]">Avg. Pity</div></div>
                     </div>
                     {overallStats.winRate != null && <div className="text-center text-xs text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.winRate}%</span></div>}
-                  </CardBody>
-                </Card>
-
-                {/* 5★ Pull Log */}
-                <Card>
-                  <CardHeader>5★ Convene Log</CardHeader>
-                  <CardBody>
-                    {(() => {
-                      const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
-                      return (
-                        <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
-                          {fiveStars.map((p, i) => {
-                            // P2-FIX: Unified pity color thresholds — matches histogram
-                            const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#4ade80' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
-                            const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-green-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
-                            return (
-                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="text-yellow-400 font-medium truncate">{p.name}</span>
-                                  <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
-                                  {/* MED-34: Enlarged W/L badges with icon backup for colorblind accessibility */}
-                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
-                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[10px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
-                                </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                  <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-400 text-[10px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })()}
                   </CardBody>
                 </Card>
 

@@ -1849,7 +1849,7 @@ function WhisperingWishesInner() {
             </div>
           </div>
           <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-1" role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
-              const tabs = ['tracker','events','calculator','planner','analytics','gathering','teams','profile'];
+              const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
               const idx = tabs.indexOf(activeTab);
               let newTab;
               if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
@@ -1859,11 +1859,11 @@ function WhisperingWishesInner() {
             <div className="tab-indicator" />
             <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
             <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
-            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
             <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
+            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
             <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
-            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
             <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
+            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
             <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
           </nav>
           {/* P15-FIX: LOW-9 — Visual swipe indicator when swipe navigation is enabled */}
@@ -2260,6 +2260,7 @@ function WhisperingWishesInner() {
           editingImage={editingImage}
           setEditingImage={setEditingImage}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
+          onViewInTeams={() => { setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null }); setActiveTab('teams'); }}
         />
       )}
       {detailModal.show && detailModal.type === 'weapon' && (

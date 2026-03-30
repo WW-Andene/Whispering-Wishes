@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { AlertTriangle, BarChart3, Diamond, Download, Plus, Search, Share2, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, ChevronDown, Diamond, Download, Plus, Search, Share2, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import {
   haptic,
   CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
@@ -1467,8 +1467,13 @@ export default function TeamsTab({
                                           </div>
                                         )}
 
-                                        {/* Sequence + Refinement side by side */}
-                                        <div className="flex gap-2">
+                                        {/* Advanced: Sequence + Refinement + Sonata (collapsible) */}
+                                        <details className="group">
+                                          <summary className="text-[10px] text-gray-500 cursor-pointer hover:text-gray-300 transition-colors select-none flex items-center gap-1 py-0.5">
+                                            <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform" />
+                                            Sequence · Refinement · Sonata
+                                          </summary>
+                                        <div className="flex gap-2 mt-1">
                                           <div className="flex-1">
                                             <div className="text-[10px] text-gray-400 mb-0.5">Sequence</div>
                                             <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
@@ -1542,6 +1547,7 @@ export default function TeamsTab({
                                             small
                                           />
                                         </div>
+                                        </details>
                                       </div>
                                     );
                                   })()}
