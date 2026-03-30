@@ -5307,8 +5307,12 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   }, [event, server, isDaily, isWeekly, isRecurring, resetTick]);
   
   const handleExpire = useCallback(() => {
-    if (isDaily || isWeekly || isRecurring) setResetTick(t => t + 1);
-  }, [isDaily, isWeekly, isRecurring]);
+    if (isDaily || isWeekly || isRecurring) {
+      setResetTick(t => t + 1);
+      // Auto-reset done/skipped status on new cycle so recurring events start fresh
+      if (onStatusChange) onStatusChange(null);
+    }
+  }, [isDaily, isWeekly, isRecurring, onStatusChange]);
   
   const recalcFn = useMemo(() => {
     if (isDaily) return () => getNextDailyReset(server);

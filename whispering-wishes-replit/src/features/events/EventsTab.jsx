@@ -3,7 +3,7 @@
 // Time-gated content tracking with server-adjusted countdowns
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { RefreshCcw, Calendar, CheckCircle, Clock } from 'lucide-react';
 import {
   EVENTS, getServerOffset,
@@ -21,6 +21,7 @@ export default function EventsTab({
   visualSettings,
   toast,
 }) {
+  const refreshCooldownRef = useRef(0);
   return (
     <div role="tabpanel" id="tabpanel-events" aria-labelledby="tab-events" tabIndex="0">
     <TabErrorBoundary tabName="Events">
@@ -32,6 +33,8 @@ export default function EventsTab({
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
+                if (Date.now() - refreshCooldownRef.current < 3000) return;
+                refreshCooldownRef.current = Date.now();
                 setActiveBanners(getActiveBanners());
                 toast?.addToast?.('Banner data refreshed!', 'success');
               }}
