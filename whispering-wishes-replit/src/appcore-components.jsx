@@ -426,6 +426,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           )}
 
           {/* Best Echoes - enhanced */}
+          {data.bestEchoes?.length > 0 && (
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
             <div className="space-y-2">
@@ -449,7 +450,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             </div>
           </div>
-          
+          )}
+
           {/* Team Suggestions - with avatars */}
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">

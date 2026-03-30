@@ -888,7 +888,7 @@ export default function TeamsTab({
   }, [teamEquipment, enemyLevel, enemyEcho]);
 
   // Memoize active team stats to avoid recalculating on every render
-  const activeTeamData = state.teams[state.activeTeamIndex] || state.teams[0];
+  const activeTeamData = state.teams?.[state.activeTeamIndex] || state.teams?.[0] || { name: 'Team 1', slots: [null, null, null] };
   const activeTeamStats = useMemo(() =>
     calcTeamStats(activeTeamData.slots, state.activeTeamIndex),
     [calcTeamStats, activeTeamData.slots, state.activeTeamIndex]

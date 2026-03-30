@@ -83,7 +83,7 @@ export default function AnalyticsTab({
     if (!allLeaderboardEntries.length) return null;
     const entries = allLeaderboardEntries;
     const totalPlayers = entries.length;
-    const avgPityAll = (entries.reduce((s, e) => s + e.avgPity, 0) / totalPlayers).toFixed(1);
+    const avgPityAll = (entries.reduce((s, e) => s + (e.avgPity || 0), 0) / (totalPlayers || 1)).toFixed(1);
     const totalFiveStars = entries.reduce((s, e) => s + (e.pulls ?? 0), 0);
     const totalPullsAll = entries.reduce((s, e) => s + (e.totalPulls ?? 0), 0);
     const totalWon = entries.reduce((s, e) => s + (e.won5050 ?? 0), 0);

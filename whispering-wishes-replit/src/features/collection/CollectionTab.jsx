@@ -220,7 +220,7 @@ export default function CollectionTab({
 
   const collectionMaskData = useMemo(() => ({
     collMask: generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection),
-    collOpacity: visualSettings.collectionOpacity / 100,
+    collOpacity: (visualSettings.collectionOpacity ?? 100) / 100,
   }), [visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection, visualSettings.collectionOpacity]);
 
   // ── Render ────────────────────────────────────────────────────────────────────
