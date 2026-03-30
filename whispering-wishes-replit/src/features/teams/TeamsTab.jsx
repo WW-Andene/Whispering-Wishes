@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { AlertTriangle, BarChart3, Diamond, Download, Plus, Search, Share2, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import {
   haptic,
@@ -887,6 +887,13 @@ export default function TeamsTab({
     return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps, rotationTimeline };
   }, [teamEquipment, enemyLevel, enemyEcho]);
 
+  // Memoize active team stats to avoid recalculating on every render
+  const activeTeamData = state.teams[state.activeTeamIndex] || state.teams[0];
+  const activeTeamStats = useMemo(() =>
+    calcTeamStats(activeTeamData.slots, state.activeTeamIndex),
+    [calcTeamStats, activeTeamData.slots, state.activeTeamIndex]
+  );
+
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
           <TabErrorBoundary tabName="Teams">
@@ -1199,8 +1206,8 @@ export default function TeamsTab({
 
                   {/* Team Overview + Damage Analysis (merged) */}
                   {(() => {
-                    // calcTeamStats is now defined in the component body via useCallback
-                    const stats = calcTeamStats(teamSlots, state.activeTeamIndex);
+                    // Use memoized stats for active team
+                    const stats = activeTeamStats;
                     if (!stats) return null;
                     const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps, rotationTimeline } = stats;
                     const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };

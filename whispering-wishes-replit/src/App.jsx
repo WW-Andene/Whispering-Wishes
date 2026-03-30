@@ -1871,7 +1871,11 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 py-3 space-y-3 w-full">
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 py-3 space-y-3 w-full" role="main">
+        {/* Screen reader announcement for tab changes */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
+          {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
+        </div>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
