@@ -38,7 +38,8 @@ import {
   getServerAdjustedEnd,
   initialState, STORAGE_KEY, storageAvailable,
   sanitizeStateObj, sanitizeImportedState,
-  loadFromStorage, saveToStorage, reducer,
+  loadFromStorage, saveToStorage, reducer, createUndoReducer,
+  ACTION, UNDOABLE_ACTIONS,
 } from './appcore-engine.js';
 // --- appcore-providers.jsx ---
 import {
@@ -223,7 +224,15 @@ function WhisperingWishesInner() {
   const toast = useToast();
   const confirm = useConfirm();
   const pwa = usePWA();
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const undoReducer = useMemo(() => createUndoReducer(reducer), []);
+  const [state, rawDispatch] = useReducer(undoReducer, initialState);
+  // Wrap dispatch to show undo toast on destructive actions
+  const dispatch = useCallback((action) => {
+    rawDispatch(action);
+    if (UNDOABLE_ACTIONS.has(action.type)) {
+      toast?.addToast?.('Action completed', 'info', 5000, () => rawDispatch({ type: 'UNDO' }));
+    }
+  }, [rawDispatch, toast]);
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);

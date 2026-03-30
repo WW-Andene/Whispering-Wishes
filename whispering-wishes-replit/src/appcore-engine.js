@@ -421,7 +421,33 @@ const ACTION = Object.freeze({
   IMPORT_TEAMS: 'IMPORT_TEAMS',
   LOAD_STATE: 'LOAD_STATE',
   RESET: 'RESET',
+  UNDO: 'UNDO',
 });
+
+// Destructive actions that support undo
+const UNDOABLE_ACTIONS = new Set([
+  ACTION.CLEAR_TEAM, ACTION.CLEAR_TEAM_SLOT, ACTION.CLEAR_PROFILE,
+  ACTION.CLEAR_ALL_INCOME, ACTION.REMOVE_INCOME, ACTION.DELETE_BOOKMARK, ACTION.RESET,
+]);
+
+// Undo-aware reducer wrapper: snapshots state before destructive actions
+const MAX_UNDO_STACK = 10;
+const createUndoReducer = (baseReducer) => {
+  const undoStack = [];
+  return (state, action) => {
+    if (action.type === ACTION.UNDO) {
+      return undoStack.length > 0 ? undoStack.pop() : state;
+    }
+    if (UNDOABLE_ACTIONS.has(action.type)) {
+      if (undoStack.length >= MAX_UNDO_STACK) undoStack.shift();
+      undoStack.push(state);
+    }
+    return baseReducer(state, action);
+  };
+};
+
+// Check if undo is available (for UI)
+const canUndo = () => false; // placeholder — actual check is via undoReducer closure
 
 // [SECTION:STATE]
 const initialState = {
@@ -851,6 +877,6 @@ export {
   getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset,
   initialState, STORAGE_KEY, storageAvailable,
   sanitizeStateObj, sanitizeImportedState,
-  loadFromStorage, saveToStorage, reducer, calcStats,
-  ACTION, // P15-FIX: MEDIUM-12 — Exported for use in dispatch call sites
+  loadFromStorage, saveToStorage, reducer, createUndoReducer, calcStats,
+  ACTION, UNDOABLE_ACTIONS,
 };

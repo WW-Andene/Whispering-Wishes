@@ -209,10 +209,10 @@ const ToastProvider = ({ children }) => {
     };
   }, []);
 
-  const addToast = useCallback((message, type = 'info', duration = 3000) => {
+  const addToast = useCallback((message, type = 'info', duration = 3000, onUndo = null) => {
     const id = generateUniqueId();
     setToasts(prev => {
-      const next = [...prev, { id, message, type }];
+      const next = [...prev, { id, message, type, onUndo }];
       return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next;
     });
     const timer = setTimeout(() => {
@@ -244,7 +244,17 @@ const ToastProvider = ({ children }) => {
             {/* AUDIT-FIX N7: Use AlertTriangle for warnings to distinguish from errors */}
             {toast.type === 'warning' && <AlertTriangle size={16} />}
             {toast.type === 'info' && <Info size={16} />}
-            {toast.message}
+            <span className="flex-1">{toast.message}</span>
+            {toast.onUndo && (
+              <button onClick={() => {
+                toast.onUndo();
+                setToasts(prev => prev.filter(t => t.id !== toast.id));
+                const timer = timerRefs.current.get(toast.id);
+                if (timer) { clearTimeout(timer); timerRefs.current.delete(toast.id); }
+              }} className="ml-2 px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold uppercase tracking-wider transition-colors flex-shrink-0">
+                Undo
+              </button>
+            )}
           </div>
         ))}
       </div>
