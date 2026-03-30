@@ -5256,7 +5256,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <div className={stats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-[10px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
-            {item.featured4Stars.map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+            {(item.featured4Stars || []).map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
       </div>
@@ -5266,8 +5266,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-base kuro-number ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
-                  <div className="text-gray-400 text-[10px] mt-0.5">5★ Pity</div>
+                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-400 animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-orange-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                  <div className={`text-[10px] mt-0.5 ${stats.pity5 >= SOFT_PITY_START ? 'text-orange-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>

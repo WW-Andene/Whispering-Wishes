@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
-import { Archive, Crown, Star, Sword, Swords, X } from 'lucide-react';
+import { Archive, Crown, Sparkles, Star, Sword, Swords, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
 } from '../../appcore-data.js';
@@ -79,7 +79,7 @@ export default function TrackerTab({
 
             {trackerCategory === 'character' && (
               <div className="space-y-2 banner-grid content-layer">
-                {activeBanners.characters.map(c => (
+                {activeBanners.characters?.length > 0 ? activeBanners.characters.map(c => (
                   <BannerCard
                     key={c.id}
                     item={c}
@@ -95,13 +95,18 @@ export default function TrackerTab({
                     endDate={bannerEndDate}
                     timerColor="yellow"
                   />
-                ))}
+                )) : (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    <Sparkles size={24} className="mx-auto mb-2 opacity-50" />
+                    No active character banners
+                  </div>
+                )}
               </div>
             )}
 
             {trackerCategory === 'weapon' && (
               <div className="space-y-2 banner-grid content-layer">
-                {activeBanners.weapons.map(w => (
+                {activeBanners.weapons?.length > 0 ? activeBanners.weapons.map(w => (
                   <BannerCard
                     key={w.id}
                     item={w}
@@ -116,7 +121,12 @@ export default function TrackerTab({
                     endDate={bannerEndDate}
                     timerColor="pink"
                   />
-                ))}
+                )) : (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    <Sword size={24} className="mx-auto mb-2 opacity-50" />
+                    No active weapon banners
+                  </div>
+                )}
               </div>
             )}
 

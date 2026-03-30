@@ -702,7 +702,7 @@ const reducer = (state, action) => {
           if (history[i].rarity >= 4) break;
           pity4++;
         }
-        return { pity5, pity4 };
+        return { pity5: Math.min(pity5, HARD_PITY), pity4: Math.min(pity4, HARD_PITY_4STAR) };
       };
 
       if (action.bannerType === 'featured') {
