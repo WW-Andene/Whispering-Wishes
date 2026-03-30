@@ -44,6 +44,7 @@ export default function AnalyticsTab({
   const consentResolveRef = useRef(null);
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState(false);
   const [leaderboardSubmitting, setLeaderboardSubmitting] = useState(false);
   const [leaderboardTab, setLeaderboardTab] = useState('rankings');
   const [communityPulls, setCommunityPulls] = useState(null);
@@ -195,14 +196,17 @@ export default function AnalyticsTab({
         entries.sort((a, b) => a.avgPity - b.avgPity);
         setAllLeaderboardEntries(entries);
         setLeaderboardData(entries.slice(0, LEADERBOARD_DISPLAY_LIMIT));
+        setLeaderboardError(false);
       } else {
         setAllLeaderboardEntries([]);
         setLeaderboardData([]);
+        setLeaderboardError(false);
       }
     } catch (e) {
       console.error('Leaderboard load error:', e);
       setAllLeaderboardEntries([]);
       setLeaderboardData([]);
+      setLeaderboardError(true);
     }
     setLeaderboardLoading(false);
     leaderboardLoadingRef.current = false;
@@ -348,7 +352,7 @@ export default function AnalyticsTab({
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
-                    <CardHeader action={<button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button>}>Luck Rating</CardHeader>
+                    <CardHeader action={FIREBASE_AVAILABLE ? <button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button> : null}>Luck Rating</CardHeader>
                     <CardBody>
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': '12s'}}>
@@ -445,8 +449,8 @@ export default function AnalyticsTab({
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">No signals received</div>
-                                <div className="text-gray-500 text-[10px]">Be the first to transmit</div>
+                                <div className="text-gray-500 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
+                                <div className="text-gray-500 text-[10px]">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
                               </div>
                             ) : (
                               leaderboardData.map((entry, i) => {
