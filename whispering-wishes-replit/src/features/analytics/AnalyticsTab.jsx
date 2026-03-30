@@ -384,9 +384,9 @@ export default function AnalyticsTab({
                 )}
                 
                 {/* P13-FIX: MEDIUM-4 — Accessible consent modal (replaces window.confirm) */}
-                {showConsentModal && (
-                  <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Leaderboard consent">
-                    <div className="kuro-card w-full max-w-sm p-5 space-y-4">
+                <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel="Leaderboard consent" centered>
+                  <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                    <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
                       <h3 className="text-white font-semibold text-sm">Leaderboard — Data Sharing Notice</h3>
                       <div className="text-gray-300 text-xs space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
@@ -403,7 +403,7 @@ export default function AnalyticsTab({
                       </div>
                     </div>
                   </div>
-                )}
+                </FocusTrapModal>
 
                 {/* Luck Leaderboard Modal */}
                 <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard" centered>
