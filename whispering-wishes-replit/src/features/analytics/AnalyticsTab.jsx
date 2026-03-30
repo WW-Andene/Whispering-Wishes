@@ -887,13 +887,36 @@ export default function AnalyticsTab({
                     <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
                   </CardHeader>
                   <CardBody>
+                    {/* Banner + Range filter buttons — always visible so user can switch even with empty data */}
+                    <div className="flex gap-1 mb-2 flex-wrap">
+                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Std Char'], ['stdWeap', 'Std Weap']].map(([val, label]) => (
+                        <button
+                          key={val}
+                          onClick={() => { setChartBanner(val); setChartOffset(9999); }}
+                          className={`px-2 py-1 text-[10px] rounded transition-all ${chartBanner === val ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-1 mb-3">
+                      {['daily', 'weekly', 'monthly', 'yearly'].map(r => (
+                        <button
+                          key={r}
+                          onClick={() => { setChartRange(r); setChartOffset(9999); }}
+                          className={`px-2 py-1 text-[10px] rounded transition-all ${chartRange === r ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                        >
+                          {r.charAt(0).toUpperCase() + r.slice(1)}
+                        </button>
+                      ))}
+                    </div>
                     {(() => {
                       const chartHist = chartBanner === 'all' ? statsTabData.allHist
                         : chartBanner === 'featured' ? statsTabData.featuredHist
                         : chartBanner === 'weapon' ? statsTabData.weaponHist
                         : chartBanner === 'stdChar' ? statsTabData.stdCharHist
                         : statsTabData.stdWeapHist;
-                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting sufficient signal data for trend analysis</p>;
+                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>;
 
                       const groupData = (range) => {
                         const grouped = {};
@@ -947,40 +970,19 @@ export default function AnalyticsTab({
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting more Convene signals</p>;
-                      
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>;
+
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
                       const clampedOffset = Math.min(chartOffset, maxOffset);
                       const chartData = allData.slice(clampedOffset, clampedOffset + maxVisible);
                       const canGoLeft = clampedOffset > 0;
                       const canGoRight = clampedOffset < maxOffset;
-                      
+
                       return (
                         <>
-                          <div className="flex gap-1 mb-2 flex-wrap">
-                            {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Std Char'], ['stdWeap', 'Std Weap']].map(([val, label]) => (
-                              <button
-                                key={val}
-                                onClick={() => { setChartBanner(val); setChartOffset(9999); }}
-                                className={`px-2 py-1 text-[10px] rounded transition-all ${chartBanner === val ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
                           <div className="flex items-center justify-between mb-3">
-                            <div className="flex gap-1">
-                              {['daily', 'weekly', 'monthly', 'yearly'].map(r => (
-                                <button
-                                  key={r}
-                                  onClick={() => { setChartRange(r); setChartOffset(9999); }}
-                                  className={`px-2 py-1 text-[10px] rounded transition-all ${chartRange === r ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
-                                >
-                                  {r.charAt(0).toUpperCase() + r.slice(1)}
-                                </button>
-                              ))}
-                            </div>
+                            <div />
                             {allData.length > maxVisible && (
                               <div className="flex gap-1">
                                 <button 
