@@ -332,10 +332,7 @@ export default function ProfileTab({
       toast?.addToast?.('Please paste your JSON data first', 'error');
       return;
     }
-    const success = processImportData(pasteJsonText);
-    if (success) {
-      setPasteJsonText('');
-    }
+    processImportData(pasteJsonText).then(() => setPasteJsonText('')).catch(() => {});
   }, [pasteJsonText, processImportData, toast]);
 
   // ── Admin handlers ─────────────────────────────────────────────────────

@@ -691,48 +691,50 @@ const reducer = (state, action) => {
         return [...existing, ...newEntries].sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
       };
       
+      // FIX #4: Recalculate pity from MERGED history (not just import batch)
+      const recalcPity = (history) => {
+        let pity5 = 0, pity4 = 0;
+        for (let i = history.length - 1; i >= 0; i--) {
+          if (history[i].rarity === 5) break;
+          pity5++;
+        }
+        for (let i = history.length - 1; i >= 0; i--) {
+          if (history[i].rarity >= 4) break;
+          pity4++;
+        }
+        return { pity5, pity4 };
+      };
+
       if (action.bannerType === 'featured') {
         const merged = deduplicateMerge(state.profile.featured?.history, action.history);
-        // P9-FIX: Only update pity values if new entries were actually merged (Step 4 audit)
         const hadNewEntries = merged !== state.profile.featured?.history;
-        newProfile.featured = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.featured?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.featured?.pity4 ?? action.pity4), 
-          guaranteed: hadNewEntries ? (action.guaranteed || false) : (state.profile.featured?.guaranteed ?? false) 
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.featured?.pity5 ?? 0, pity4: state.profile.featured?.pity4 ?? 0 };
+        const fiveStars = merged.filter(p => p.rarity === 5);
+        const lastFive = fiveStars[fiveStars.length - 1];
+        newProfile.featured = {
+          history: merged, pity5, pity4,
+          guaranteed: hadNewEntries ? (lastFive?.won5050 === false) : (state.profile.featured?.guaranteed ?? false)
         };
       } else if (action.bannerType === 'weapon') {
         const merged = deduplicateMerge(state.profile.weapon?.history, action.history);
         const hadNewEntries = merged !== state.profile.weapon?.history;
-        newProfile.weapon = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.weapon?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.weapon?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.weapon?.pity5 ?? 0, pity4: state.profile.weapon?.pity4 ?? 0 };
+        newProfile.weapon = { history: merged, pity5, pity4 };
       } else if (action.bannerType === 'standardChar') {
         const merged = deduplicateMerge(state.profile.standardChar?.history, action.history);
         const hadNewEntries = merged !== state.profile.standardChar?.history;
-        newProfile.standardChar = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.standardChar?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.standardChar?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.standardChar?.pity5 ?? 0, pity4: state.profile.standardChar?.pity4 ?? 0 };
+        newProfile.standardChar = { history: merged, pity5, pity4 };
       } else if (action.bannerType === 'standardWeap') {
         const merged = deduplicateMerge(state.profile.standardWeap?.history, action.history);
         const hadNewEntries = merged !== state.profile.standardWeap?.history;
-        newProfile.standardWeap = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.standardWeap?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.standardWeap?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.standardWeap?.pity5 ?? 0, pity4: state.profile.standardWeap?.pity4 ?? 0 };
+        newProfile.standardWeap = { history: merged, pity5, pity4 };
       } else if (action.bannerType === 'beginner') {
         const merged = deduplicateMerge(state.profile.beginner?.history, action.history);
         const hadNewEntries = merged !== state.profile.beginner?.history;
-        newProfile.beginner = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.beginner?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.beginner?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.beginner?.pity5 ?? 0, pity4: state.profile.beginner?.pity4 ?? 0 };
+        newProfile.beginner = { history: merged, pity5, pity4 };
       }
       return { ...state, profile: newProfile };
     }

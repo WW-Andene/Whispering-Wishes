@@ -1569,7 +1569,7 @@ function WhisperingWishesInner() {
     'Rover-Spectro': 'Rover', 'Rover-Havoc': 'Rover', 'Rover-Aero': 'Rover',
   }), []);
 
-  const processImportData = useCallback((jsonString) => {
+  const processImportData = useCallback(async (jsonString) => {
     try {
       // P10-FIX: Check raw string size before parsing to prevent expansion attacks (Step 6 audit)
       if (jsonString.length > MAX_IMPORT_SIZE_MB * 1024 * 1024) {
@@ -1579,17 +1579,43 @@ function WhisperingWishesInner() {
       if (typeof data !== 'object' || data === null) {
         throw new Error('Invalid data format — expected a JSON object');
       }
+
+      // FIX #1: Detect own backup format (has 'state' key from handleExport)
+      if (data.state && typeof data.state === 'object' && data.state.profile) {
+        const doRestore = await confirm?.('Restore full backup?', 'This will replace ALL current data (pulls, teams, settings) with the backup. Continue?', { confirmText: 'Restore', dangerous: true });
+        if (!doRestore) return;
+        dispatch({ type: 'LOAD_STATE', state: data.state });
+        // Restore auxiliary data (visual settings, team equipment, etc.)
+        if (data.aux) {
+          try { if (data.aux.visualSettings) localStorage.setItem('whispering-wishes-visual', JSON.stringify(data.aux.visualSettings)); } catch {}
+          try { if (data.aux.imageFraming) localStorage.setItem('whispering-wishes-framing', JSON.stringify(data.aux.imageFraming)); } catch {}
+          try { if (data.aux.collectionImages) localStorage.setItem('whispering-wishes-images', JSON.stringify(data.aux.collectionImages)); } catch {}
+          try { if (data.aux.trophyOverrides) localStorage.setItem('whispering-wishes-trophy-overrides', JSON.stringify(data.aux.trophyOverrides)); } catch {}
+          try { if (data.aux.teamEquipment) localStorage.setItem('ww-team-equipment', JSON.stringify(data.aux.teamEquipment)); } catch {}
+        }
+        toast?.addToast?.(`Backup restored! (v${data.version || '?'}, ${data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'unknown date'})`, 'success');
+        return;
+      }
+
       const pulls = data.pulls || data.conveneHistory || data.history || [];
       if (!Array.isArray(pulls)) {
         throw new Error('Invalid data — "pulls" must be an array');
       }
       if (pulls.length === 0) {
-        throw new Error('No pull data found in import');
+        throw new Error('No pull data found in import. If this is a backup file, it should contain a "state" key.');
+      }
+
+      // FIX #2: Warn if importing from a different account
+      const importUid = data.uid || data.playerId || '';
+      const existingUid = stateRef.current.profile.uid || '';
+      if (importUid && existingUid && importUid !== existingUid) {
+        const proceed = await confirm?.('Different account detected', `This data is from UID ${importUid.slice(0, 6)}... but your current account is ${existingUid.slice(0, 6)}... Import will merge both accounts\' history. Continue?`, { confirmText: 'Merge', dangerous: true });
+        if (!proceed) return;
       }
       
       // Validate pull entries have minimum required fields
       const MIN_VALID_DATE = new Date('2024-05-01T00:00:00').getTime(); // P7-FIX: Explicit time avoids UTC midnight shift (7F) // WuWa launch window
-      const MAX_VALID_DATE = Date.now() + 86400000; // tomorrow (allow slight clock drift)
+      const MAX_VALID_DATE = Date.now() + 365 * 86400000; // FIX #3: 1 year ahead (handles wrong device clocks)
       const validPulls = pulls.filter(p => {
         if (typeof p !== 'object' || p === null) return false;
         const hasType = p.bannerType ?? p.cardPoolType ?? p.gachaType;
