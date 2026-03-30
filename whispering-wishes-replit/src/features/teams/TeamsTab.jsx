@@ -1469,7 +1469,7 @@ export default function TeamsTab({
 
                                         {/* Advanced: Sequence + Refinement + Sonata (collapsible) */}
                                         <details className="group">
-                                          <summary className="text-[10px] text-gray-500 cursor-pointer hover:text-gray-300 transition-colors select-none flex items-center gap-1 py-0.5">
+                                          <summary className="kuro-label cursor-pointer hover:text-gray-200 transition-colors select-none flex items-center gap-1 list-none">
                                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform" />
                                             Sequence · Refinement · Sonata
                                           </summary>
