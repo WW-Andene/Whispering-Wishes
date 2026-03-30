@@ -1,6 +1,8 @@
+// @ts-check
 // Weapon data — extracted from appcore-data.js for maintainability
 // Edit this file to add/update weapons without touching the main data file
 
+/** @type {Record<string, import('../types.js').WeaponData>} */
 const WEAPON_DATA = {
   // 5★ Weapons
   'Verdant Summit': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',

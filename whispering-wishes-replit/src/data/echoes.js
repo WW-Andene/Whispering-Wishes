@@ -1,6 +1,8 @@
+// @ts-check
 // Echo data — extracted from appcore-data.js for maintainability
 // Edit this file to add/update echoes, sets, and echo damage data
 
+/** @type {Record<string, import('../types.js').EchoSetData>} */
 const ECHO_SETS = {
   'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 40 } },
   'Molten Rift':          { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Res. Skill → +30% Fusion DMG', p5val: { fusionDmg: 40 } },
