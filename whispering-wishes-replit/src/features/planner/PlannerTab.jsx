@@ -75,7 +75,7 @@ export default function PlannerTab({
         <CardBody className="space-y-3">
           <div>
             <label className="kuro-label" title="Includes Commissions, Dailies, etc.">Daily Astrite</label>
-            <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, +e.target.value || 0) })} className="kuro-input w-full" aria-label="Daily Astrite income" />
+            <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, Math.floor(+e.target.value || 0)) })} className="kuro-input w-full" aria-label="Daily Astrite income" />
           </div>
           {state.planner.luniteActive && (
             <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-between">
@@ -161,7 +161,7 @@ export default function PlannerTab({
               <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
                 <span className="text-gray-200">{i.label}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-yellow-400">+{i.astrite}</span>
+                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite}</span>}
                   {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
                   {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
                   {/* AUDIT-FIX H6: Confirm before removing individual purchase */}

@@ -619,9 +619,9 @@ const reducer = (state, action) => {
       return { ...state, eventStatus: newStatus };
     }
     case ACTION.ADD_INCOME: {
-      const incAst = Math.floor(+action.income.astrite || 0);
-      const incRad = Math.floor(+action.income.radiant || 0);
-      const incLus = Math.floor(+action.income.lustrous || 0);
+      const incAst = Math.max(0, Math.floor(+action.income.astrite || 0));
+      const incRad = Math.max(0, Math.floor(+action.income.radiant || 0));
+      const incLus = Math.max(0, Math.floor(+action.income.lustrous || 0));
       return {
         ...state,
         planner: {
