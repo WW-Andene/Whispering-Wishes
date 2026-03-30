@@ -173,7 +173,7 @@ export default function TeamsTab({
         const rRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
         const rRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[rRefLevel - 1] || 1 : 1;
         const rawPv = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
-        const wp = m.weapon.pv ? Object.fromEntries(Object.entries(rawPv).map(([k, v]) => [k, v * rRefScale])) : rawPv;
+        const wp = Object.fromEntries(Object.entries(rawPv).map(([k, v]) => [k, typeof v === 'number' ? v * rRefScale : v]));
         if (m.scaling === 'ATK') rStatPct += (wp.atkPct || 0);
         else if (m.scaling === 'HP') rStatPct += (wp.hpPct || 0);
         else if (m.scaling === 'DEF') rStatPct += (wp.defPct || 0);
@@ -244,7 +244,7 @@ export default function TeamsTab({
       const mainRefLevel = (teamEquipment[teamIdx + ':' + mainDps.name])?.refinement || 1;
       const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
       const mainRawPv = mainDps.weapon.pv || parsePassive(mainDps.weapon.passive, mainDps.d.element);
-      const wp = mainDps.weapon.pv ? Object.fromEntries(Object.entries(mainRawPv).map(([k, v]) => [k, v * mainRefScale])) : mainRawPv;
+      const wp = Object.fromEntries(Object.entries(mainRawPv).map(([k, v]) => [k, typeof v === 'number' ? v * mainRefScale : v]));
       if (mainDps.scaling === 'ATK') atkPct += (wp.atkPct || 0);
       else if (mainDps.scaling === 'HP') atkPct += (wp.hpPct || 0);
       else if (mainDps.scaling === 'DEF') atkPct += (wp.defPct || 0);
@@ -323,7 +323,9 @@ export default function TeamsTab({
           if (b.target === 'next' || b.target === 'enemy') {
             const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
             const val = b.value * uptime;
-            if (b.stat === 'atkPct') atkPct += val;
+            if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
+            else if (b.stat === 'atkPct' && mainDps.scaling === 'HP') { /* HP-scalers need hpPct, not atkPct */ }
+            else if (b.stat === 'atkPct' && mainDps.scaling === 'DEF') { /* DEF-scalers need defPct, not atkPct */ }
             else if (b.stat === 'allDmg') elemDmg += val;
             else if (b.stat === 'elemDmg') {
               const buffEl = (b.condition || '').toLowerCase();
@@ -349,7 +351,7 @@ export default function TeamsTab({
           const teamRotTime = mainDps.d.rotTime || 25;
           const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
           const val = b.value * uptime;
-          if (b.stat === 'atkPct') atkPct += val;
+          if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
           else if (b.stat === 'allDmg') elemDmg += val;
           else if (b.stat === 'critRate') cr += val;
           else if (b.stat === 'critDmg') cd += val;
@@ -394,12 +396,13 @@ export default function TeamsTab({
     mems.forEach(m => {
       if (m.name === mainDps.name) return;
       const sn = m.echoSetName;
-      if (sn === 'Rejuvenating Glow') atkPct += 15;
-      if (sn === 'Moonlit Clouds') atkPct += 22.5;
-      if (sn === 'Empyrean Anthem') { atkPct += 20; }
-      if (sn === 'Tidebreaking Courage') { atkPct += 15; elemDmg += 20; }
-      if (sn === 'Halo of Starry Radiance') atkPct += 20;
-      if (sn === 'Pact of Neonlight Leap') atkPct += 25;
+      // Echo set ATK% buffs only benefit ATK-scaling main DPS
+      if (sn === 'Rejuvenating Glow' && mainDps.scaling === 'ATK') atkPct += 15;
+      if (sn === 'Moonlit Clouds' && mainDps.scaling === 'ATK') atkPct += 22.5;
+      if (sn === 'Empyrean Anthem' && mainDps.scaling === 'ATK') { atkPct += 20; }
+      if (sn === 'Tidebreaking Courage') { if (mainDps.scaling === 'ATK') atkPct += 15; elemDmg += 20; }
+      if (sn === 'Halo of Starry Radiance' && mainDps.scaling === 'ATK') atkPct += 20;
+      if (sn === 'Pact of Neonlight Leap' && mainDps.scaling === 'ATK') atkPct += 25;
       if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 25;
       if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
       if (sn === 'Flaming Clawprint' && mainDpsEl === 'fusion') elemDmg += 15;
@@ -411,7 +414,7 @@ export default function TeamsTab({
         const teamRotTime = mainDps.d.rotTime || 25;
         const uptime = Math.min(1, (wb.duration || 10) / teamRotTime);
         const val = wb.value * uptime;
-        if (wb.stat === 'atkPct') atkPct += val;
+        if (wb.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
         else if (wb.stat === 'critRate') cr += val;
         else if (wb.stat === 'critDmg') cd += val;
         else if (wb.stat === 'allDmg') elemDmg += val;
@@ -709,7 +712,7 @@ export default function TeamsTab({
           const subRefLevel = sEq?.refinement || 1;
           const subRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[subRefLevel - 1] || 1 : 1;
           const subRawPv = m.weapon.pv || parsePassive(m.weapon.passive, m.d.element);
-          const swp = m.weapon.pv ? Object.fromEntries(Object.entries(subRawPv).map(([k, v]) => [k, v * subRefScale])) : subRawPv;
+          const swp = Object.fromEntries(Object.entries(subRawPv).map(([k, v]) => [k, typeof v === 'number' ? v * subRefScale : v]));
           if (m.scaling === 'ATK') sAtkPct += (swp.atkPct || 0);
           else if (m.scaling === 'HP') sAtkPct += (swp.hpPct || 0);
           else if (m.scaling === 'DEF') sAtkPct += (swp.defPct || 0);
@@ -1795,7 +1798,7 @@ export default function TeamsTab({
                                 <span className="text-gray-500 text-[10px]">Lv.</span>
                                 <input type="text" inputMode="numeric" value={enemyLevel}
                                   onFocus={e => e.target.select()}
-                                  onChange={e => { const v = e.target.value.replace(/\D/g, ''); setEnemyLevel(v === '' ? '' : Math.max(1, Math.min(120, parseInt(v) || 90))); }}
+                                  onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
                                   onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value))) setEnemyLevel(90); }}
                                   className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
                               </div>
