@@ -209,7 +209,8 @@ const ToastProvider = ({ children }) => {
     };
   }, []);
 
-  const addToast = useCallback((message, type = 'info', duration = 3000, onUndo = null) => {
+  const addToast = useCallback((message, type = 'info', duration, onUndo = null) => {
+    if (duration === undefined) duration = type === 'error' ? 4500 : 3000;
     const id = generateUniqueId();
     setToasts(prev => {
       const next = [...prev, { id, message, type, onUndo }];
@@ -335,7 +336,8 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      window.scrollTo(0, scrollY);
+      // Restore scroll position instantly to avoid visual jump on iOS
+      window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
     };
   }, [isOpen]);
 

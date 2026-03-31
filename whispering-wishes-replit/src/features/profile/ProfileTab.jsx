@@ -1463,7 +1463,10 @@ export default function ProfileTab({
                   >
                     {importStatus ? (
                       <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
-                        <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '60%', height: '12px' }} />
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '60%', height: '12px' }} />
+                          <span className="text-yellow-400/80 text-[10px] font-medium animate-pulse">Processing…</span>
+                        </div>
                         <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
                         <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
                       </div>

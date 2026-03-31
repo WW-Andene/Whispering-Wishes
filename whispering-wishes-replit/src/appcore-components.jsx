@@ -501,7 +501,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
-              <span className="text-[9px] text-gray-500 font-normal ml-auto">Lv.1 ATK%</span>
+              <span className="text-[10px] text-gray-500 font-normal ml-auto">Lv.1 ATK%</span>
             </h3>
             {SKILL_MULTIPLIERS[name] ? (
               <div className="space-y-0.5">
@@ -518,7 +518,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                   };
                   return (
                     <div key={i} className={`flex items-start gap-1.5 px-2 py-1 rounded ${typeBg[type] || 'bg-white/5'}`}>
-                      <span className={`text-[9px] font-medium w-14 shrink-0 pt-0.5 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
+                      <span className={`text-[10px] font-medium w-14 shrink-0 pt-0.5 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
                       <span className="text-[10px] text-gray-200 font-medium min-w-0 shrink-0">{skillName}</span>
                       <span className="text-[10px] text-gray-400 ml-auto text-right pl-1">{mult}</span>
                     </div>
@@ -5267,11 +5267,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px] ml-0.5">/{HARD_PITY}</span></div>
                   <div className={`text-[10px] mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>
+                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px] ml-0.5">/10</span></div>
                   <div className="text-gray-400 text-[10px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">
@@ -5280,9 +5280,13 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                 </div>
               </div>
               {/* MED-27: Escalated from text-[10px] to text-xs font-bold for visual weight */}
-              {isChar && (
+              {isChar ? (
                 <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
+                </div>
+              ) : (
+                <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-pink-500/20 text-pink-400 border border-pink-500/30'}`}>
+                  {stats.guaranteed ? '✓ Guaranteed' : 'No Guarantee'}
                 </div>
               )}
             </div>
@@ -5778,7 +5782,7 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
       </div>
       <div className="text-right">
         <span style={{ color: pity >= 65 ? softColor : color }} className={`text-2xl kuro-number ${pity >= 65 ? softPityClass : ''}`}>{pity}</span>
-        <span className="text-gray-200 text-sm">/80</span>
+        <span className="text-gray-200 text-sm ml-0.5">/80</span>
       </div>
     </div>
     <div className="grid grid-cols-2 gap-2 text-xs">

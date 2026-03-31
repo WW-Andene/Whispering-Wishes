@@ -83,7 +83,7 @@ export default function TrackerTab({
             {new Date() > new Date(bannerEndDate) && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center content-layer">
                 <p className="text-yellow-400 text-xs font-medium">Banner period ended</p>
-                <p className="text-gray-400 text-[10px] mt-1">New banners are now live in-game. App update coming soon!</p>
+                <p className="text-gray-400 text-[10px] mt-1">Banners updated — check back for the latest phase.</p>
               </div>
             )}
 
@@ -217,7 +217,7 @@ export default function TrackerTab({
                   {/* View All button */}
                   <button
                     onClick={() => setShowBannerHistory(true)}
-                    className="w-full py-2.5 rounded-lg border border-[var(--border-medium)] text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-lg border border-white/20 text-gray-200 text-xs font-semibold hover:text-white hover:border-white/30 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
                     <Archive size={12} /> View All Banners ({BANNER_HISTORY.length})

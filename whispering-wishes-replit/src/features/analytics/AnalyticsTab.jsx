@@ -383,10 +383,6 @@ export default function AnalyticsTab({
                           </div>
                         </div>
                         <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-baseline justify-between">
-                            <span className="text-gray-400 text-[10px]">Percentile</span>
-                            <span className="text-white font-bold text-sm">Top {Math.max(1, 100 - luckRating.percentile)}%</span>
-                          </div>
                           <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                             <div className="h-full rounded-full transition-[width] duration-300" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
                           </div>
@@ -658,7 +654,7 @@ export default function AnalyticsTab({
                             const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#4ade80' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
                             const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-green-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
-                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-[10px]" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-xs" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
@@ -668,7 +664,7 @@ export default function AnalyticsTab({
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-400 text-[10px]">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-400 text-xs">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );
@@ -1112,7 +1108,7 @@ export default function AnalyticsTab({
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Astrite Spent</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Astrite Spent (in-game)</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[10px]">Won 50/50</div></div>
