@@ -524,15 +524,7 @@ export default function CollectionTab({
                   />
                 </>)}
 
-                {/* Clear Filters */}
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearCollectionFilters}
-                    className="px-2 py-1 rounded-lg text-[10px] bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all flex items-center justify-center"
-                  >
-                    Clear
-                  </button>
-                )}
+                {/* Clear Filters — single button at top of filter area (line 358) */}
               </div>
                 </CardBody>
               </Card>

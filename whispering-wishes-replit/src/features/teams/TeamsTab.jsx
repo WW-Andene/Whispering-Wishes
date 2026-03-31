@@ -1713,7 +1713,7 @@ export default function TeamsTab({
                                     const color = elColors[seg.element] || '#6b7280';
                                     return (
                                       <div key={i} className="flex items-center justify-center relative" style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }} title={`${seg.name}: ${seg.duration}s on-field`}>
-                                        <span className="text-[8px] font-bold truncate px-0.5" style={{ color }}>{seg.name.split(' ')[0]}</span>
+                                        <span className="text-[8px] font-bold truncate px-0.5" style={{ color }}>{seg.name}</span>
                                       </div>
                                     );
                                   })}
@@ -1741,7 +1741,7 @@ export default function TeamsTab({
                                       const statLabels = { atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elem DMG', deepen: 'Deepen', basicDmg: 'Basic', heavyDmg: 'Heavy', libDmg: 'Lib', echoDmg: 'Echo', skillDmg: 'Skill', critRate: 'CR', critDmg: 'CD', resShred: 'RES↓', defShred: 'DEF↓' };
                                       return (
                                         <div key={i} className="flex items-center gap-1.5">
-                                          <span className="text-[8px] text-gray-500 w-14 truncate text-right">{buff.source.split(' ')[0]}</span>
+                                          <span className="text-[8px] text-gray-500 w-16 truncate text-right" title={buff.source}>{buff.source}</span>
                                           <div className="flex-1 h-2.5 rounded-full bg-white/5 relative overflow-hidden">
                                             <div className="absolute h-full rounded-full bg-emerald-500/40 flex items-center justify-center" style={{ left: `${startPct}%`, width: `${durPct}%` }}>
                                               <span className="text-[7px] text-emerald-300 font-medium truncate px-0.5">{statLabels[buff.stat] || buff.stat} +{buff.value}%</span>
