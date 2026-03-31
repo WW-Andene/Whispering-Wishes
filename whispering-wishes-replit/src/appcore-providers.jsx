@@ -1011,7 +1011,7 @@ const KuroStyles = memo(({ oledMode }) => (
       box-shadow:
         var(--shadow-lg),
         0 0 0 1px var(--card-outline, rgba(255, 255, 255, 0.03)),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        inset 0 0 0 1px var(--card-inset, rgba(255, 255, 255, 0.05));
       transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     }
 
@@ -1024,7 +1024,7 @@ const KuroStyles = memo(({ oledMode }) => (
           var(--shadow-xl),
           0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.06)),
           0 0 40px var(--card-glow, rgba(100, 140, 200, 0.03)),
-          inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+          inset 0 0 0 1px var(--card-inset-hover, rgba(255, 255, 255, 0.08));
       }
     }
     
@@ -2230,7 +2230,7 @@ const KuroStyles = memo(({ oledMode }) => (
           var(--shadow-xl),
           0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.08)),
           0 0 50px var(--card-glow, rgba(100, 140, 200, 0.06)),
-          inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+          inset 0 0 0 1px var(--card-inset-hover, rgba(255, 255, 255, 0.10));
       }
       .animations-full .collection-card:hover {
         transform: translateY(-6px) scale(1.03);

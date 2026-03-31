@@ -1833,12 +1833,14 @@ function WhisperingWishesInner() {
       el.style.setProperty('--card-outline', `${themeAccent}10`);
       el.style.setProperty('--card-outline-hover', `${themeAccent}20`);
       el.style.setProperty('--card-glow', `${themeAccent}50`);
+      el.style.setProperty('--card-inset', `${themeAccent}15`);
+      el.style.setProperty('--card-inset-hover', `${themeAccent}25`);
     } else {
       el.style.removeProperty('--theme-accent');
       el.style.setProperty('--border-default', 'rgba(255,255,255,0.08)');
       el.style.setProperty('--border-hover', 'rgba(255,255,255,0.15)');
       el.style.setProperty('--border-bright', 'rgba(255,255,255,0.2)');
-      ['--shimmer-color','--shimmer-color-bright','--card-outline','--card-outline-hover','--card-glow'].forEach(v => el.style.removeProperty(v));
+      ['--shimmer-color','--shimmer-color-bright','--card-outline','--card-outline-hover','--card-glow','--card-inset','--card-inset-hover'].forEach(v => el.style.removeProperty(v));
     }
   }, [themeAccent]);
 
