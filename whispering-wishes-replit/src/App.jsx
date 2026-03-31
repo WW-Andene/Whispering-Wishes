@@ -418,9 +418,18 @@ function WhisperingWishesInner() {
     el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
   }, [visualSettings.animationsEnabled]);
 
-  // Sync dyslexic font class to <html>
+  // Sync accessibility font class + CSS vars to <html>
   useEffect(() => {
-    document.documentElement.classList.toggle('dyslexic-font', !!visualSettings.dyslexicFont);
+    const el = document.documentElement;
+    const on = !!visualSettings.dyslexicFont;
+    el.classList.toggle('dyslexic-font', on);
+    if (on) {
+      el.style.setProperty('--font-display', "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif");
+      el.style.setProperty('--font-data', "'Atkinson Hyperlegible', ui-monospace, SFMono-Regular, Menlo, monospace");
+    } else {
+      el.style.removeProperty('--font-display');
+      el.style.removeProperty('--font-data');
+    }
   }, [visualSettings.dyslexicFont]);
 
   // Image framing state - stores position/zoom for each image by key

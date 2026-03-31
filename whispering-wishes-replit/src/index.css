@@ -47,10 +47,15 @@ body {
   font-display: swap;
 }
 
-/* Dyslexia-friendly font — applied via toggle in Display Settings */
+/* Accessibility font — applied via toggle in Display Settings */
+html.dyslexic-font {
+  --font-display: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  --font-data: 'Atkinson Hyperlegible', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 html.dyslexic-font,
 html.dyslexic-font *,
-html.dyslexic-font #root {
+html.dyslexic-font #root,
+html.dyslexic-font [style*="font-family"] {
   font-family: 'Atkinson Hyperlegible', 'Rajdhani', system-ui, sans-serif !important;
 }
 
