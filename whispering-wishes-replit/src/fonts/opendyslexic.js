@@ -104,5 +104,15 @@ html.dyslexic-font details button[class*="flex-1"][class*="text-\[10px\]"] {
   font-size: 8px !important;
 }
 
+/* Header: app title must not push server button */
+html.dyslexic-font .header-top h1 {
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+}
+html.dyslexic-font .header-top p {
+  font-size: 8px !important;
+  letter-spacing: 0.05em !important;
+}
+
 `;
 }
