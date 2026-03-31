@@ -1011,7 +1011,7 @@ const KuroStyles = memo(({ oledMode }) => (
       box-shadow:
         var(--shadow-lg),
         0 0 0 1px var(--card-outline, rgba(255, 255, 255, 0.03)),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
       transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     }
 
@@ -1024,7 +1024,7 @@ const KuroStyles = memo(({ oledMode }) => (
           var(--shadow-xl),
           0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.06)),
           0 0 40px var(--card-glow, rgba(100, 140, 200, 0.03)),
-          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          inset 0 0 0 1px rgba(255, 255, 255, 0.08);
       }
     }
     
@@ -1037,11 +1037,11 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast);
     }
     
-    /* Top shimmer line — positioned on the border, not inside */
+    /* Top shimmer line — on the border, bleeds outside corners */
     .kuro-card::after {
       content: '';
       position: absolute;
-      top: 0;
+      top: -1px;
       left: 0;
       right: 0;
       height: 1px;
