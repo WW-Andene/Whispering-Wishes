@@ -137,7 +137,8 @@ export default function EventsTab({
             if (isRecurring) return false;
             if (!ev.currentEnd) return false;
             const end = getServerAdjustedEnd(ev.currentEnd, state.server);
-            return end.getTime() <= now;
+            const endMs = new Date(end).getTime();
+            return !isNaN(endMs) && endMs <= now;
           };
 
           const active = entries.filter(([, ev]) => !isEventExpired(ev));

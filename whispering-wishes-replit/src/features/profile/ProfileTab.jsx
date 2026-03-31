@@ -1202,8 +1202,8 @@ export default function ProfileTab({
                       <Type size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Dyslexia Font</div>
-                      <div className="text-gray-400 text-[10px]">OpenDyslexic — easier to read</div>
+                      <div className="text-white text-xs font-medium">Accessibility Font</div>
+                      <div className="text-gray-400 text-[10px]">Atkinson Hyperlegible — by Braille Institute</div>
                     </div>
                   </div>
                   <button
