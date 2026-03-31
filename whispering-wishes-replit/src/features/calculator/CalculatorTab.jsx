@@ -35,6 +35,8 @@ export default function CalculatorTab({ state, dispatch }) {
 
   // Use state.calc as fallback when deferredCalc is null (initial render before deferred computation fires)
   const effectiveCalc = deferredCalc || state.calc;
+  // FIX #48: Track whether deferred calc is still pending so we can show a loading indicator
+  const isCalcPending = deferredCalc !== state.calc;
 
   // ── Smart astrite allocation for "Both" mode ─────────────────────────────
   // P2-FIX: Uses deferredCalc so heavy DP isn't triggered on every slider tick
@@ -366,7 +368,13 @@ export default function CalculatorTab({ state, dispatch }) {
             </Card>
 
             {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
-            <div aria-live="polite" aria-atomic="false" className="banner-grid space-y-3 lg:space-y-0">
+            {isCalcPending && (
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mb-1" aria-live="polite">
+                <span className="inline-block w-2 h-2 rounded-full bg-yellow-400/60 animate-pulse" />
+                Calculating…
+              </div>
+            )}
+            <div aria-live="polite" aria-atomic="false" className={`banner-grid space-y-3 lg:space-y-0 transition-opacity ${isCalcPending ? 'opacity-50' : 'opacity-100'}`}>
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && charStats && (
               <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}

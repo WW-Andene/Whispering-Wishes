@@ -1468,7 +1468,10 @@ export default function TeamsTab({
                                           </div>
                                         </div>
 
-                                        {/* Echo Preset for non-main-DPS members */}
+                                        {/* Echo Preset: show label for main DPS, selector for others */}
+                                        {isMain && (
+                                          <div className="text-[10px] text-gray-500 italic">Echo stats: default ATK/Crit preset</div>
+                                        )}
                                         {!isMain && (
                                           <div>
                                             <div className="text-[10px] text-gray-400 mb-0.5">Echo Preset</div>
