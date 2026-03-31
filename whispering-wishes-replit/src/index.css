@@ -31,17 +31,17 @@ body {
   overflow-x: hidden;
 }
 
-/* Luciole — designed for visually impaired readers (CC BY 4.0) */
+/* OpenDyslexic — self-hosted for CSP compatibility */
 @font-face {
-  font-family: 'Luciole';
-  src: url('/fonts/Luciole-Regular.woff2') format('woff2');
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Luciole';
-  src: url('/fonts/Luciole-Bold.woff2') format('woff2');
+  font-family: 'OpenDyslexic';
+  src: url('/fonts/OpenDyslexic-Bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -49,14 +49,14 @@ body {
 
 /* Accessibility font — applied via toggle in Display Settings */
 html.dyslexic-font {
-  --font-display: 'Luciole', ui-sans-serif, system-ui, sans-serif;
-  --font-data: 'Luciole', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif;
+  --font-data: 'OpenDyslexic', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 html.dyslexic-font,
 html.dyslexic-font *,
 html.dyslexic-font #root,
 html.dyslexic-font [style*="font-family"] {
-  font-family: 'Luciole', 'Rajdhani', system-ui, sans-serif !important;
+  font-family: 'OpenDyslexic', 'Rajdhani', system-ui, sans-serif !important;
 }
 
 /* TX-F1 / AT-F1: CSS radial-gradient fallback when canvas atmosphere fails */
