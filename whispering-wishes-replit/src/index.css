@@ -31,16 +31,16 @@ body {
   overflow-x: hidden;
 }
 
-/* Atkinson Hyperlegible — designed by Braille Institute for maximum legibility */
+/* Lexend — designed by Braille Institute for maximum legibility */
 @font-face {
-  font-family: 'Atkinson Hyperlegible';
+  font-family: 'Lexend';
   src: url('/fonts/AtkinsonHyperlegible-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Atkinson Hyperlegible';
+  font-family: 'Lexend';
   src: url('/fonts/AtkinsonHyperlegible-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
@@ -49,14 +49,14 @@ body {
 
 /* Accessibility font — applied via toggle in Display Settings */
 html.dyslexic-font {
-  --font-display: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
-  --font-data: 'Atkinson Hyperlegible', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  --font-data: 'Lexend', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 html.dyslexic-font,
 html.dyslexic-font *,
 html.dyslexic-font #root,
 html.dyslexic-font [style*="font-family"] {
-  font-family: 'Atkinson Hyperlegible', 'Rajdhani', system-ui, sans-serif !important;
+  font-family: 'Lexend', 'Rajdhani', system-ui, sans-serif !important;
 }
 
 /* TX-F1 / AT-F1: CSS radial-gradient fallback when canvas atmosphere fails */

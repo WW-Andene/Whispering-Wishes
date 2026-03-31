@@ -1203,7 +1203,7 @@ export default function ProfileTab({
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">Accessibility Font</div>
-                      <div className="text-gray-400 text-[10px]">Atkinson Hyperlegible — by Braille Institute</div>
+                      <div className="text-gray-400 text-[10px]">Lexend — designed for reading proficiency</div>
                     </div>
                   </div>
                   <button
