@@ -294,8 +294,7 @@ export default function ProfileTab({
     setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
     reader.onload = (ev) => {
-      processImportData(ev.target.result);
-      setImportStatus(null);
+      processImportData(ev.target.result).catch(() => {}).finally(() => setImportStatus(null));
     };
     reader.onerror = () => {
       toast?.addToast?.('Failed to read file', 'error');
@@ -322,8 +321,8 @@ export default function ProfileTab({
     }
     setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
-    reader.onload = (ev) => { processImportData(ev.target.result); setImportStatus(null); };
-    reader.onerror = () => { setImportStatus(null); };
+    reader.onload = (ev) => { processImportData(ev.target.result).catch(() => {}).finally(() => setImportStatus(null)); };
+    reader.onerror = () => { toast?.addToast?.('Failed to read file', 'error'); setImportStatus(null); };
     reader.readAsText(file);
   }, [processImportData, toast]);
 
