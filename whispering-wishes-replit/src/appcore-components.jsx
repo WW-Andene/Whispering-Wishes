@@ -5665,10 +5665,11 @@ const VISUAL_SLIDER_CONFIGS = [
 ];
 
 // Custom styled select dropdown — replaces native <select> with kuro-card backdrop
-const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
+const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center, icon }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const selected = options.find(o => o.value === value);
+  const isDefault = options.length > 0 && value === options[0].value;
 
   // Close on outside click
   useEffect(() => {
@@ -5685,6 +5686,39 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
+
+  // Icon mode: 28x28 square button with dropdown
+  if (icon) {
+    return (
+      <div ref={ref} className={`relative ${className}`}>
+        <button
+          type="button"
+          onClick={() => setOpen(p => !p)}
+          className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${!isDefault ? 'active-gold' : 'text-gray-400'}`}
+          title={`${ariaLabel}: ${selected?.label ?? value}`}
+          aria-label={ariaLabel}
+          aria-expanded={open}
+          aria-haspopup="listbox"
+        >
+          {icon}
+        </button>
+        {open && (
+          <div className="absolute right-0 mt-1 z-[200] flex flex-col gap-1 min-w-[120px]" role="listbox" aria-label={ariaLabel}>
+            {options.map(opt => {
+              const active = opt.value === value;
+              return (
+                <button key={opt.value} type="button" role="option" aria-selected={active}
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  className={`kuro-btn w-full text-left px-3 py-2 text-[11px] ${active ? 'active-gold' : 'text-gray-300'}`}
+                  style={{ backdropFilter: 'blur(2px) brightness(0.6)', WebkitBackdropFilter: 'blur(2px) brightness(0.6)' }}
+                >{opt.label}</button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div ref={ref} className={`relative ${className}`}>
