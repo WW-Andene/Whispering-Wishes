@@ -1037,14 +1037,15 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast);
     }
     
-    /* Top shimmer line */
+    /* Top shimmer line — positioned on the border, not inside */
     .kuro-card::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: -1px;
+      left: -1px;
+      right: -1px;
       height: 1px;
+      border-radius: 16px 16px 0 0;
       background: linear-gradient(90deg,
         transparent 0%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
