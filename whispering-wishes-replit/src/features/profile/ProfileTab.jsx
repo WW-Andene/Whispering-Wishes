@@ -237,6 +237,14 @@ export default function ProfileTab({
     setDirectCameraOpen(false);
   }, []);
 
+  // Auto-close camera when user leaves screen (tab switch, app switch, lock)
+  useEffect(() => {
+    if (!directCameraOpen) return;
+    const onHide = () => { if (document.hidden) closeDirectCamera(); };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, [directCameraOpen, closeDirectCamera]);
+
   // ── Admin state ──────────────────────────────────────────────────────────
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
@@ -1662,34 +1670,32 @@ Example: {"pulls":[...]}'
                       <div className="fixed inset-0 z-[9999]">
                         <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
 
-                        {/* Darkened area outside scan frame — creates a visible target zone */}
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 18%, rgba(0,0,0,0.0) 22%, rgba(0,0,0,0.0) 72%, rgba(0,0,0,0.15) 76%, rgba(0,0,0,0.6) 100%)' }} />
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.0) 8%, rgba(0,0,0,0.0) 92%, rgba(0,0,0,0.4) 100%)' }} />
+                        {/* Dim outside scan frame */}
+                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 18%, transparent 22%, transparent 72%, rgba(0,0,0,0.1) 76%, rgba(0,0,0,0.55) 100%)' }} />
+                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.35) 100%)' }} />
 
-                        {/* Scan frame corners — thick, visible targeting brackets */}
+                        {/* Scan frame — kuro-card corner decorations */}
                         <div className="absolute pointer-events-none" style={{ top: '20%', left: '5%', right: '5%', bottom: '25%' }}>
-                          {/* Top-left */}
-                          <div className="absolute top-0 left-0 w-6 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          <div className="absolute top-0 left-0 h-6 w-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          {/* Top-right */}
-                          <div className="absolute top-0 right-0 w-6 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          <div className="absolute top-0 right-0 h-6 w-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          {/* Bottom-left */}
-                          <div className="absolute bottom-0 left-0 w-6 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          <div className="absolute bottom-0 left-0 h-6 w-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          {/* Bottom-right */}
-                          <div className="absolute bottom-0 right-0 w-6 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          <div className="absolute bottom-0 right-0 h-6 w-[2px]" style={{ background: 'var(--color-gold, #edaf18)' }} />
-                          {/* Sweep beam inside frame */}
-                          <div className="absolute left-0 right-0 h-[1px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(237,175,24,0.4) 50%, transparent 95%)' }} />
+                          {/* Top-right corner — kuro-card ::before style */}
+                          <div className="absolute top-2 right-2 w-3 h-3" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 4px 0 0', opacity: 0.85 }} />
+                          {/* Bottom-left corner — kuro-card ::after style */}
+                          <div className="absolute bottom-2 left-2 w-3 h-3" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 0 4px', opacity: 0.85 }} />
+                          {/* Top-left corner */}
+                          <div className="absolute top-2 left-2 w-3 h-3" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '4px 0 0 0', opacity: 0.85 }} />
+                          {/* Bottom-right corner */}
+                          <div className="absolute bottom-2 right-2 w-3 h-3" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 4px 0', opacity: 0.85 }} />
+                          {/* Frame border — subtle kuro-card style */}
+                          <div className="absolute inset-0 rounded-2xl" style={{ border: '1px solid var(--border-default, rgba(255,255,255,0.06))', opacity: 0.7 }} />
+                          {/* Sweep beam */}
+                          <div className="absolute left-0 right-0 h-[1px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(237,175,24,0.35) 50%, transparent 95%)' }} />
                         </div>
 
                         {/* Instruction */}
                         <div className="absolute left-0 right-0 text-center pointer-events-none" style={{ bottom: '27%' }}>
-                          <p className="text-white/40 text-[9px] font-medium tracking-wider uppercase drop-shadow-lg">Align URL within frame</p>
+                          <p className="text-white/35 text-[9px] font-medium tracking-wider uppercase drop-shadow-lg">Align URL within frame</p>
                         </div>
 
-                        {/* Top bar — transparent gradient */}
+                        {/* Top bar */}
                         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))', paddingBottom: '8px' }}>
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-lg overflow-hidden shadow-lg" style={{ border: '1px solid rgba(237,175,24,0.25)' }}>
@@ -1705,10 +1711,19 @@ Example: {"pulls":[...]}'
                           </button>
                         </div>
 
-                        {/* Bottom — kuro-card style capture button */}
-                        <div className="absolute bottom-0 left-0 right-0 flex justify-center px-6" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-                          <button onClick={captureDirectCamera} className="kuro-btn kuro-btn-hero w-full py-3 flex items-center justify-center gap-2 pointer-events-auto active:scale-95 transition-transform" style={{ backdropFilter: 'blur(12px)', maxWidth: '280px' }}>
-                            <Camera size={16} /> <span className="text-xs font-semibold tracking-wide">Capture</span>
+                        {/* Capture button — round, transparent, kuro-card outer edge */}
+                        <div className="absolute bottom-0 left-0 right-0 flex justify-center" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
+                          <button onClick={captureDirectCamera} className="relative pointer-events-auto active:scale-90 transition-transform" style={{ width: 72, height: 72 }}>
+                            {/* Outer ring — kuro-card border style */}
+                            <div className="absolute inset-0 rounded-full" style={{ border: '1px solid var(--border-default, rgba(255,255,255,0.06))', background: 'var(--bg-card, rgba(10,14,22,0.5))', backdropFilter: 'blur(12px)' }}>
+                              {/* Kuro corner decorations on the circle */}
+                              <div className="absolute top-1 right-1 w-2.5 h-2.5" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 4px 0 0', opacity: 0.85 }} />
+                              <div className="absolute bottom-1 left-1 w-2.5 h-2.5" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 0 4px', opacity: 0.85 }} />
+                            </div>
+                            {/* Inner icon */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Camera size={22} className="text-white/80" />
+                            </div>
                           </button>
                         </div>
 
