@@ -994,7 +994,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex gap-1 items-center">
+                      <div className="flex flex-wrap gap-1 items-center">
                         <button
                           onClick={() => {
                             try {
@@ -1744,6 +1744,9 @@ export default function TeamsTab({
                                         </div>
                                       );
                                     })}
+                                    {rotationTimeline.buffs.length > 6 && (
+                                      <div className="text-[8px] text-gray-500 text-center mt-0.5">+{rotationTimeline.buffs.length - 6} more</div>
+                                    )}
                                   </div>
                                 )}
                               </div>

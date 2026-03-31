@@ -195,7 +195,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-[90vh]">
+       <div className="overflow-y-auto max-h-full">
         {/* Header with image */}
         <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
@@ -607,7 +607,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-[90vh]">
+       <div className="overflow-y-auto max-h-full">
         {/* Header */}
         <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''}`} style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
@@ -780,7 +780,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
         style={borderColor ? { borderColor: `${borderColor}80` } : {}}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-[90vh]">
+       <div className="overflow-y-auto max-h-full">
         {/* Header */}
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />

@@ -659,6 +659,16 @@ export default function AnalyticsTab({
                 </Card>
 
                 {/* Trophies & Achievements */}
+                {trophies && trophies.list.length === 0 && (
+                  <Card>
+                    <CardHeader>
+                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
+                    </CardHeader>
+                    <CardBody>
+                      <p className="text-gray-500 text-xs text-center py-4">Import more history to earn trophies</p>
+                    </CardBody>
+                  </Card>
+                )}
                 {trophies && trophies.list.length > 0 && (
                   <Card>
                     <CardHeader action={<span className="text-gray-500 text-[10px]">{trophies.list.length} earned</span>}>
@@ -754,7 +764,16 @@ export default function AnalyticsTab({
 
                 {/* 5★ Pity Distribution Histogram */}
                 {(() => {
-                  if (!statsTabData.histogramStats) return null;
+                  if (!statsTabData.histogramStats) return (
+                    <Card>
+                      <CardHeader>
+                        <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
+                      </CardHeader>
+                      <CardBody>
+                        <p className="text-gray-500 text-xs text-center py-4">Need 2+ five-star pulls to show distribution</p>
+                      </CardBody>
+                    </Card>
+                  );
                   const { fiveStars, histogramBuckets: buckets, allBucketLabels: allBuckets, histogramStats } = statsTabData;
                   const { maxCount, avgPity, minPity, maxPity } = histogramStats;
                   

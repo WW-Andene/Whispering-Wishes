@@ -233,11 +233,11 @@ const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={contextValue}>
       {children}
       {/* MED-4: Toast z-index separated from install prompt */}
-      <div className="fixed bottom-24 left-3 right-3 z-[9500] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
+      <div className="fixed bottom-28 left-3 right-3 z-[9500] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {toasts.map(toast => (
-          <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
+          <div key={toast.id} className={`px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto border ${toast.type === 'warning' ? 'text-amber-900 border-amber-300/40' : 'text-white border-white/20'}`} style={{
             animation: 'slideUp 0.2s ease-out',
-            background: toast.type === 'success' ? 'rgba(34,197,94,0.9)' : toast.type === 'error' ? 'rgba(248,113,113,0.9)' : toast.type === 'warning' ? 'rgba(237,175,24,0.9)' : 'rgba(56,189,248,0.9)',
+            background: toast.type === 'success' ? 'rgba(34,197,94,0.9)' : toast.type === 'error' ? 'rgba(248,113,113,0.9)' : toast.type === 'warning' ? 'rgba(252,211,77,0.95)' : 'rgba(56,189,248,0.9)',
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
@@ -251,7 +251,7 @@ const ToastProvider = ({ children }) => {
                 setToasts(prev => prev.filter(t => t.id !== toast.id));
                 const timer = timerRefs.current.get(toast.id);
                 if (timer) { clearTimeout(timer); timerRefs.current.delete(toast.id); }
-              }} className="ml-2 px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 text-white text-[10px] font-bold uppercase tracking-wider transition-colors flex-shrink-0">
+              }} className={`ml-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex-shrink-0 ${toast.type === 'warning' ? 'bg-amber-900/15 hover:bg-amber-900/25 text-amber-900' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
                 Undo
               </button>
             )}
