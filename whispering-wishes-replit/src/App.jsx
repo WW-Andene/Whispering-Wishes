@@ -52,7 +52,7 @@ import {
 import {
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton,
-  AppErrorBoundary,
+  AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton,
   BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour,
   getActiveBanners,
 } from './appcore-components.jsx';

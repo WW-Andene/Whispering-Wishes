@@ -3,8 +3,8 @@
 // Banner tracking with pity counters, category tabs, and banner history archive
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback } from 'react';
-import { Archive, ArrowRight, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Archive, ArrowRight, Clock, Crown, Filter, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
 } from '../../appcore-data.js';
@@ -44,6 +44,32 @@ export default function TrackerTab({
   }, []);
   const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [bannerHistorySearch, setBannerHistorySearch] = useState('');
+  const [showPullHistory, setShowPullHistory] = useState(false);
+  const [pullHistorySearch, setPullHistorySearch] = useState('');
+  const [pullHistoryBannerFilter, setPullHistoryBannerFilter] = useState('all');
+  const [pullHistoryRarityFilter, setPullHistoryRarityFilter] = useState('all');
+
+  // Merge all pull histories from all banners
+  const allPulls = useMemo(() => {
+    const featured = (state.profile.featured?.history || []).map(p => ({ ...p, banner: 'Featured' }));
+    const weapon = (state.profile.weapon?.history || []).map(p => ({ ...p, banner: 'Weapon' }));
+    const stdChar = (state.profile.standardChar?.history || []).map(p => ({ ...p, banner: 'Std Resonator' }));
+    const stdWeap = (state.profile.standardWeap?.history || []).map(p => ({ ...p, banner: 'Std Weapon' }));
+    const beginner = (state.profile.beginner?.history || []).map(p => ({ ...p, banner: 'Beginner' }));
+    return [...featured, ...weapon, ...stdChar, ...stdWeap, ...beginner]
+      .sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
+  }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
+
+  const filteredPulls = useMemo(() => {
+    let pulls = allPulls;
+    if (pullHistoryBannerFilter !== 'all') pulls = pulls.filter(p => p.banner === pullHistoryBannerFilter);
+    if (pullHistoryRarityFilter !== 'all') pulls = pulls.filter(p => p.rarity === Number(pullHistoryRarityFilter));
+    if (pullHistorySearch.trim()) {
+      const q = pullHistorySearch.trim().toLowerCase();
+      pulls = pulls.filter(p => p.name?.toLowerCase().includes(q));
+    }
+    return pulls;
+  }, [allPulls, pullHistoryBannerFilter, pullHistoryRarityFilter, pullHistorySearch]);
 
   return (
           <div role="tabpanel" id="tabpanel-tracker" aria-labelledby="tab-tracker" tabIndex="0">
@@ -158,6 +184,21 @@ export default function TrackerTab({
                   profileData={state.profile.standardWeap} visualSettings={visualSettings}
                 />
               </div>
+            )}
+
+            {/* Pull History Button */}
+            {allPulls.length > 0 && (
+              <Card>
+                <CardBody>
+                  <button
+                    onClick={() => setShowPullHistory(true)}
+                    className="w-full py-2.5 rounded-lg border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    style={{ background: 'var(--bg-btn)' }}
+                  >
+                    <Clock size={12} /> View Pull History ({allPulls.length} pulls)
+                  </button>
+                </CardBody>
+              </Card>
             )}
 
             {/* Banner History Archive */}

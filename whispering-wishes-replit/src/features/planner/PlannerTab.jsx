@@ -277,9 +277,16 @@ export default function PlannerTab({
             Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
           </div>
           <div className="text-[10px] text-gray-500 text-center" style={{ marginTop: '-4px' }}>
-            <span title="How many Convenes needed for one copy (e.g. 80 at hard pity, 160 if guaranteed)">Base Convenes</span>{' × '}
-            <span title="Optional multiplier to plan for multiple goal sets at once">Multiplier</span>{' × '}
-            <span title="Number of copies of the selected banner target (from Calculator)">Copies</span>{' = total Convenes needed'}
+            <span title="How many Convenes needed for one copy (e.g. 80 at hard pity, 160 if guaranteed)" className="underline decoration-dotted cursor-help">Base Convenes</span>
+            <span className="text-gray-600"> (pulls per copy)</span>
+            {' × '}
+            <span title="Optional multiplier to plan for multiple goal sets at once" className="underline decoration-dotted cursor-help">Multiplier</span>
+            <span className="text-gray-600"> (extra scaling)</span>
+            {' × '}
+            <span title="Number of copies of the selected banner target (from Calculator)" className="underline decoration-dotted cursor-help">Copies</span>
+            <span className="text-gray-600"> (from Calculator)</span>
+            {' = '}
+            <span className="text-gray-400">{state.planner.goalPulls} × {state.planner.goalModifier} × {planData.goalCopies} = {planData.targetPulls} Convenes</span>
           </div>
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-sm mb-2">

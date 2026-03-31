@@ -33,10 +33,17 @@ function _bgRidged(x,y,oct,seed){let v=0,a=0.5,f=1,t=0;for(let i=0;i<oct;i++){co
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 // AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
+// Issue #148: Show fallback placeholder instead of silently hiding broken images
+const BROKEN_IMG_FALLBACK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="rgba(255,255,255,0.08)"/><g transform="translate(12,12)" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="22 16 17 11 6 22"/><line x1="1" y1="1" x2="23" y2="23"/></g></svg>');
 const hideOnError = (e) => {
-  e.target.style.visibility = 'hidden';
-  e.target.setAttribute('aria-hidden', 'true');
-  e.target.alt = '';
+  const img = e.target;
+  img.src = BROKEN_IMG_FALLBACK;
+  img.style.objectFit = 'contain';
+  img.style.background = 'rgba(255,255,255,0.05)';
+  img.style.borderRadius = '4px';
+  img.removeAttribute('onerror');
+  img.onerror = null; // prevent infinite loop
+  img.setAttribute('aria-label', 'Image failed to load');
 };
 
 // Material item display helper — shows [icon] name ×qty
@@ -1025,12 +1032,12 @@ class TabErrorBoundary extends React.Component {
                 <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
                 <div className="text-white font-bold text-sm mb-1">Something went wrong</div>
                 <p className="text-gray-400 text-xs mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
-                <button 
+                <button
                   onClick={() => this.setState({ hasError: false, error: null })}
                   className="kuro-btn active-cyan text-xs px-4 py-2"
-                  aria-label={`Retry loading the ${this.props.tabName || 'tab'} tab`}
+                  aria-label={`Reload the ${this.props.tabName || 'tab'} tab`}
                 >
-                  Try Again
+                  ↻ Reload
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left">
@@ -1047,6 +1054,34 @@ class TabErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+// Issue #147: Skeleton loading placeholder for tab transitions
+const TabLoadingSkeleton = () => (
+  <div className="kuro-calc space-y-3 tab-content animate-pulse" aria-label="Loading tab content" role="status">
+    <div className="kuro-card">
+      <div className="kuro-card-inner">
+        <div className="kuro-body space-y-3 py-6">
+          <div className="h-4 bg-white/10 rounded w-1/3" />
+          <div className="h-3 bg-white/5 rounded w-2/3" />
+          <div className="h-3 bg-white/5 rounded w-1/2" />
+        </div>
+      </div>
+    </div>
+    <div className="kuro-card">
+      <div className="kuro-card-inner">
+        <div className="kuro-body space-y-3 py-6">
+          <div className="h-4 bg-white/10 rounded w-1/4" />
+          <div className="flex gap-2">
+            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-20 bg-white/5 rounded flex-1" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <span className="sr-only">Loading...</span>
+  </div>
+);
 
 // P6-FIX: Root-level error boundary — catches crashes outside individual tabs (MED)
 class AppErrorBoundary extends React.Component {
@@ -5364,7 +5399,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           <div className="flex-1 pr-2">
             <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
               {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
-              {isSkipped && <X size={12} className="inline mr-1 -mt-0.5" />}
+              {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}
             </h4>
             <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
@@ -5394,7 +5429,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
               )}
               {!isSkipped && (
                 <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
-                  <X size={10} className="inline -mt-0.5" /> Skip
+                  <SkipForward size={10} className="inline -mt-0.5" /> Skip
                 </button>
               )}
               {status && (
@@ -5505,18 +5540,6 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         <Crown size={12} />
       </button>
     )}
-    {/* Owned indicator badge — bottom-right corner, only for characters with tracking */}
-    {onToggleOwned && !framingMode && (
-      <button
-        className={`absolute z-20 flex items-center justify-center transition-all ${isCharOwned ? 'bg-emerald-500 text-black shadow-lg' : 'bg-black/50 text-gray-600 hover:bg-black/70 hover:text-gray-400'}`}
-        style={{ bottom: '32px', left: '4px', width: '20px', height: '20px', minHeight: '20px', borderRadius: '5px', padding: 0 }}
-        onClick={(e) => { e.stopPropagation(); onToggleOwned(name); }}
-        title={isCharOwned ? 'Owned — click to unmark' : 'Not owned — click to mark as owned'}
-        aria-label={isCharOwned ? `Unmark ${name} as owned` : `Mark ${name} as owned`}
-      >
-        <Check size={12} />
-      </button>
-    )}
     {isSelected && (
       <div className="absolute top-1 right-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
         <span className="text-black text-[10px]">✓</span>
@@ -5536,7 +5559,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
-  prev.isProfilePic === next.isProfilePic && prev.isCharOwned === next.isCharOwned &&
+  prev.isProfilePic === next.isProfilePic &&
   prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
 );
 CollectionGridCard.displayName = 'CollectionGridCard';
@@ -6100,7 +6123,7 @@ export {
   TabBackground, Card, CardHeader, CardBody,
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
-  AppErrorBoundary, TabErrorBoundary,
+  AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton,
   BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,

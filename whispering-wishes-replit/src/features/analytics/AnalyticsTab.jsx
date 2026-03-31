@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
+import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
 import { MEDAL_COLORS, calculateLuckRating, ALL_CHARACTERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../appcore-data.js';
 import { storageAvailable } from '../../appcore-engine.js';
 import {
@@ -1031,14 +1031,14 @@ export default function AnalyticsTab({
                                   disabled={!canGoLeft}
                                   className={`p-1 rounded transition-colors ${canGoLeft ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
                                 >
-                                  <ChevronDown size={14} className="rotate-90" />
+                                  <ChevronLeft size={14} />
                                 </button>
                                 <button 
                                   onClick={() => setChartOffset(Math.min(maxOffset, clampedOffset + Math.floor(maxVisible / 2)))}
                                   disabled={!canGoRight}
                                   className={`p-1 rounded transition-colors ${canGoRight ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
                                 >
-                                  <ChevronDown size={14} className="-rotate-90" />
+                                  <ChevronRight size={14} />
                                 </button>
                               </div>
                             )}
