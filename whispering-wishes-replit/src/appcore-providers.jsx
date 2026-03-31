@@ -1045,6 +1045,7 @@ const KuroStyles = memo(({ oledMode }) => (
       left: 0;
       right: 0;
       height: 1px;
+      border-radius: 16px 16px 0 0;
       background: linear-gradient(90deg,
         transparent 0%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
@@ -1067,17 +1068,17 @@ const KuroStyles = memo(({ oledMode }) => (
       border-radius: 15px;
     }
     
-    /* Corner decorations */
+    /* Corner decorations — aligned with card border radius */
     .kuro-card-inner::before {
       content: '';
       position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 12px;
-      height: 12px;
+      top: 4px;
+      right: 4px;
+      width: 14px;
+      height: 14px;
       border-top: 1px solid var(--border-bright);
       border-right: 1px solid var(--border-bright);
-      border-radius: 0 4px 0 0;
+      border-radius: 0 10px 0 0;
       z-index: 2;
       opacity: 0.85;
     }
@@ -1085,13 +1086,13 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-card-inner::after {
       content: '';
       position: absolute;
-      bottom: 8px;
-      left: 8px;
-      width: 12px;
-      height: 12px;
+      bottom: 4px;
+      left: 4px;
+      width: 14px;
+      height: 14px;
       border-bottom: 1px solid var(--border-bright);
       border-left: 1px solid var(--border-bright);
-      border-radius: 0 0 0 4px;
+      border-radius: 0 0 0 10px;
       z-index: 2;
       opacity: 0.85;
     }
