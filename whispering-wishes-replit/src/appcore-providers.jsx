@@ -1042,8 +1042,8 @@ const KuroStyles = memo(({ oledMode }) => (
       content: '';
       position: absolute;
       top: -1px;
-      left: 0;
-      right: 0;
+      left: -1px;
+      right: -1px;
       height: 1px;
       background: linear-gradient(90deg,
         transparent 0%,
