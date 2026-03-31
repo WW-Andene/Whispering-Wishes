@@ -1015,7 +1015,7 @@ export default function TeamsTab({
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
-                          <Download size={12} /> Export
+                          <Download size={12} />
                         </button>
                         <button
                           onClick={() => {
@@ -1042,7 +1042,7 @@ export default function TeamsTab({
                           className="kuro-btn kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
-                          <Upload size={12} /> Import
+                          <Upload size={12} />
                         </button>
                         <button
                           onClick={() => {
