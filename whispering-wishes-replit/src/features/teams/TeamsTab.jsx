@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, Download, Plus, Search, Share2, Star, Sword, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import {
   haptic,
@@ -48,6 +48,15 @@ export default function TeamsTab({
   const [teamEquipment, setTeamEquipment] = useState(() => {
     try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
   });
+  // Debounced save for teamEquipment — prevents localStorage thrash on rapid interactions
+  const eqSaveTimerRef = useRef(null);
+  useEffect(() => {
+    if (eqSaveTimerRef.current) clearTimeout(eqSaveTimerRef.current);
+    eqSaveTimerRef.current = setTimeout(() => {
+      try { localStorage.setItem('ww-team-equipment', JSON.stringify(teamEquipment)); } catch {}
+    }, 300);
+    return () => { if (eqSaveTimerRef.current) clearTimeout(eqSaveTimerRef.current); };
+  }, [teamEquipment]);
   const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false);
   const [weaponSelectorTarget, setWeaponSelectorTarget] = useState({ teamIdx: 0, charName: '' });
   const [weaponSearch, setWeaponSearch] = useState('');
@@ -159,7 +168,7 @@ export default function TeamsTab({
       if (mult === 0) return;
       // Sub-DPS: scale mult by field-time ratio
       if (m.name !== mainDps.name) {
-        const subOnField = m.d.onField || 15;
+        const subOnField = m.d.onField ?? 15;
         mult = mult * Math.min(1, rawSubFieldEach / subOnField);
       }
       const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
@@ -600,7 +609,7 @@ export default function TeamsTab({
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
       // Sub-DPS: scale mult by their share of off-field time vs their own on-field requirement
       if (!isMain) {
-        const subOnField = m.d.onField || 15;
+        const subOnField = m.d.onField ?? 15;
         const fieldRatio = Math.min(1, subFieldEach / subOnField);
         mult = mult * fieldRatio;
       }
@@ -865,7 +874,9 @@ export default function TeamsTab({
       });
       // Assign field time segments
       ordered.forEach(m => {
-        const onField = m.d.onField || (m.name === mainDps.name ? 15 : 5);
+        const rawOnField = m.d.onField ?? (m.name === mainDps.name ? 15 : 5);
+        const onField = Math.min(rawOnField, Math.max(0, rotTime - t)); // clamp to remaining time
+        if (onField <= 0) return; // no time left in rotation
         timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
         // Collect outro buffs with timing
         const bt = CHAR_BUFF_TABLE[m.name];
@@ -1298,7 +1309,6 @@ export default function TeamsTab({
                                             setTeamEquipment(prev => {
                                               const n = { ...prev };
                                               n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, sequence: n[aeqKey]?.sequence || 0 };
-                                              try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                                               return n;
                                             });
                                             haptic.success();
@@ -1458,8 +1468,7 @@ export default function TeamsTab({
                                                       setTeamEquipment(prev => {
                                                         const n = { ...prev };
                                                         n[eqKey] = { ...(n[eqKey] || { weapon: null }), echoPreset: opt.value, echoes: [null,null,null,null,null], echoSet: '' };
-                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                                        return n;
+                                                                  return n;
                                                       });
                                                       haptic.light();
                                                     }}
@@ -1491,8 +1500,7 @@ export default function TeamsTab({
                                                       setTeamEquipment(prev => {
                                                         const n = { ...prev };
                                                         n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                                        return n;
+                                                                  return n;
                                                       });
                                                       haptic.light();
                                                     }}
@@ -1515,8 +1523,7 @@ export default function TeamsTab({
                                                       setTeamEquipment(prev => {
                                                         const n = { ...prev };
                                                         n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
-                                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
-                                                        return n;
+                                                                  return n;
                                                       });
                                                       haptic.light();
                                                     }}
@@ -1536,7 +1543,6 @@ export default function TeamsTab({
                                               setTeamEquipment(prev => {
                                                 const n = { ...prev };
                                                 n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
-                                                try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                                                 return n;
                                               });
                                               haptic.light();
