@@ -557,18 +557,15 @@ export default function CollectionTab({
                   <Calendar size={12} />
                 </button>
                 {collectionView === 'items' && (
-                  <KuroSelect
-                    value={collectionSort}
-                    onChange={setCollectionSort}
-                    options={[
-                      { value: 'copies', label: 'Default' },
-                      { value: 'release', label: 'Release' },
-                      { value: 'dps', label: 'DPS Rank' },
-                      { value: 'name', label: 'Name A-Z' },
-                      { value: 'tier', label: 'Tier' },
-                    ]}
-                    ariaLabel="Sort by"
-                  />
+                  <button
+                    onClick={() => setCollectionSort('name')}
+                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[9px] font-bold transition-all ${collectionSort === 'name' ? 'active-gold' : 'text-gray-400'}`}
+                    title="Sort A-Z"
+                    aria-label="Sort alphabetically"
+                    aria-pressed={collectionSort === 'name'}
+                  >
+                    Az
+                  </button>
                 )}
               </div>
             </div>
