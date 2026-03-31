@@ -1000,7 +1000,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex flex-wrap gap-1 items-center">
+                      <div className="flex gap-0.5 items-center">
                         <button
                           onClick={() => {
                             try {
