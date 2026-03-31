@@ -6,28 +6,5 @@ export function getOpenDyslexicCSS() {
 *, *::before, *::after { font-family: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
 :root { --font-display: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
 
-/* Layout compensation — OpenDyslexic is wider than Rajdhani */
-/* Layout compensation — OpenDyslexic is wider than Rajdhani */
-html.dyslexic-font { font-size: 12px !important; letter-spacing: -0.03em !important; }
-html.dyslexic-font .text-\[10px\] { font-size: 8px !important; }
-html.dyslexic-font .text-\[9px\] { font-size: 7px !important; }
-html.dyslexic-font .text-\[8px\] { font-size: 6.5px !important; }
-html.dyslexic-font .text-xs { font-size: 9px !important; }
-html.dyslexic-font .text-sm { font-size: 11px !important; }
-html.dyslexic-font .text-base { font-size: 12px !important; }
-html.dyslexic-font .text-lg { font-size: 14px !important; }
-html.dyslexic-font .text-xl { font-size: 15px !important; }
-html.dyslexic-font .text-2xl { font-size: 17px !important; }
-html.dyslexic-font .kuro-number { letter-spacing: -0.05em !important; }
-html.dyslexic-font button { overflow: hidden !important; text-overflow: ellipsis !important; }
-html.dyslexic-font .truncate { overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }
-html.dyslexic-font .kuro-btn { padding-left: 0.25rem !important; padding-right: 0.25rem !important; font-size: 9px !important; }
-html.dyslexic-font [role="radiogroup"] button { min-width: 0 !important; padding-left: 0.1rem !important; padding-right: 0.1rem !important; font-size: 8px !important; }
-html.dyslexic-font .kuro-label { letter-spacing: -0.03em !important; font-size: 8px !important; }
-html.dyslexic-font .grid-cols-3 { gap: 0.15rem !important; }
-html.dyslexic-font .kuro-input { font-size: 10px !important; }
-html.dyslexic-font nav button { font-size: 7.5px !important; padding-left: 0.2rem !important; padding-right: 0.2rem !important; }
-html.dyslexic-font h4, html.dyslexic-font .font-bold { letter-spacing: -0.03em !important; }
-html.dyslexic-font .font-semibold { letter-spacing: -0.02em !important; }
 `;
 }
