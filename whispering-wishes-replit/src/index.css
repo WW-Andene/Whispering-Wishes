@@ -6,9 +6,6 @@
   :root {
     color-scheme: dark;
   }
-  #root {
-    contain: style;
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -36,7 +33,8 @@ body {
 
 /* Dyslexia-friendly font — applied via toggle in Display Settings */
 html.dyslexic-font,
-html.dyslexic-font * {
+html.dyslexic-font *,
+html.dyslexic-font #root {
   font-family: 'OpenDyslexic', 'Rajdhani', system-ui, sans-serif !important;
 }
 
