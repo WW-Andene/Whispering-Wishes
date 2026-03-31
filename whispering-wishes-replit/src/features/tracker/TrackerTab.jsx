@@ -356,6 +356,93 @@ export default function TrackerTab({
                 </div>
               </div></div>
             </FocusTrapModal>
+
+            {/* Pull History Modal */}
+            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel="Pull History" onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered>
+              <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-cyan-400" />
+                    <span className="text-white text-sm font-semibold">Pull History</span>
+                    <span className="text-gray-500 text-[10px]">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''} pulls)</span>
+                  </div>
+                  <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
+                </div>
+                {/* Search & filters */}
+                <div className="px-4 pt-3 pb-1 space-y-2">
+                  <div className="relative">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={pullHistorySearch}
+                      onChange={e => setPullHistorySearch(e.target.value)}
+                      placeholder="Search by name..."
+                      className="w-full pl-8 pr-3 py-2 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                      aria-label="Filter pull history by name"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <select
+                      value={pullHistoryBannerFilter}
+                      onChange={e => setPullHistoryBannerFilter(e.target.value)}
+                      className="flex-1 px-2 py-1.5 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-[11px] focus:outline-none focus:border-cyan-500/50"
+                      aria-label="Filter by banner type"
+                    >
+                      <option value="all">All Banners</option>
+                      <option value="Featured">Featured</option>
+                      <option value="Weapon">Weapon</option>
+                      <option value="Std Resonator">Std Resonator</option>
+                      <option value="Std Weapon">Std Weapon</option>
+                      <option value="Beginner">Beginner</option>
+                    </select>
+                    <select
+                      value={pullHistoryRarityFilter}
+                      onChange={e => setPullHistoryRarityFilter(e.target.value)}
+                      className="flex-1 px-2 py-1.5 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-[11px] focus:outline-none focus:border-cyan-500/50"
+                      aria-label="Filter by rarity"
+                    >
+                      <option value="all">All Rarities</option>
+                      <option value="5">5-Star</option>
+                      <option value="4">4-Star</option>
+                      <option value="3">3-Star</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
+                  {filteredPulls.length === 0 ? (
+                    <div className="text-center text-gray-500 text-xs py-6">
+                      {allPulls.length === 0 ? 'No pull history — import your data in the Profile tab.' : `No pulls match your filters.`}
+                    </div>
+                  ) : (
+                    filteredPulls.map((pull, idx) => {
+                      const rarityColor = pull.rarity === 5 ? 'text-yellow-400' : pull.rarity === 4 ? 'text-purple-400' : 'text-blue-400';
+                      const rarityBg = pull.rarity === 5 ? 'border-yellow-500/20 bg-yellow-500/5' : pull.rarity === 4 ? 'border-purple-500/20 bg-purple-500/5' : 'border-[var(--border-medium)]';
+                      const stars = '★'.repeat(pull.rarity || 0);
+                      return (
+                        <div key={`pull-${idx}`} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${rarityBg} transition-colors`}>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-xs font-semibold truncate ${rarityColor}`}>{pull.name || 'Unknown'}</span>
+                              <span className={`text-[9px] ${rarityColor} opacity-70`}>{stars}</span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-gray-500">{pull.banner}</span>
+                              {pull.pity > 0 && <span className="text-[10px] text-gray-400">Pity: <span className={pull.rarity === 5 && pull.pity >= 70 ? 'text-red-400' : ''}>{pull.pity}</span></span>}
+                            </div>
+                          </div>
+                          {pull.timestamp && (
+                            <div className="text-[10px] text-gray-500 text-right flex-shrink-0 whitespace-nowrap">
+                              {new Date(pull.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              <div className="text-[9px] text-gray-600">{new Date(pull.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div></div>
+            </FocusTrapModal>
           </div>
           </TabErrorBoundary>
           </div>

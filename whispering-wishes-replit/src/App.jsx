@@ -1950,108 +1950,138 @@ function WhisperingWishesInner() {
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
-          <TrackerTab
-            state={state}
-            dispatch={dispatch}
-            activeBanners={activeBanners}
-            visualSettings={visualSettings}
-            themeAccent={themeAccent}
-            collectionImages={collectionImages}
-            bannerEndDate={bannerEndDate}
-            toast={toast}
-            confirm={confirm}
-          />
+          <TabErrorBoundary tabName="Tracker">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <TrackerTab
+                state={state}
+                dispatch={dispatch}
+                activeBanners={activeBanners}
+                visualSettings={visualSettings}
+                themeAccent={themeAccent}
+                collectionImages={collectionImages}
+                bannerEndDate={bannerEndDate}
+                toast={toast}
+                confirm={confirm}
+              />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && (
-          <EventsTab
-            state={state}
-            dispatch={dispatch}
-            activeBanners={activeBanners}
-            setActiveBanners={setActiveBanners}
-            visualSettings={visualSettings}
-            toast={toast}
-          />
+          <TabErrorBoundary tabName="Events">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <EventsTab
+                state={state}
+                dispatch={dispatch}
+                activeBanners={activeBanners}
+                setActiveBanners={setActiveBanners}
+                visualSettings={visualSettings}
+                toast={toast}
+              />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && (
-          <CalculatorTab state={state} dispatch={dispatch} />
+          <TabErrorBoundary tabName="Calculator">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <CalculatorTab state={state} dispatch={dispatch} />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && (
-          <PlannerTab
-            state={state}
-            dispatch={dispatch}
-            activeBanners={activeBanners}
-            bannerEndDate={bannerEndDate}
-            toast={toast}
-            confirm={confirm}
-          />
+          <TabErrorBoundary tabName="Planner">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <PlannerTab
+                state={state}
+                dispatch={dispatch}
+                activeBanners={activeBanners}
+                bannerEndDate={bannerEndDate}
+                toast={toast}
+                confirm={confirm}
+              />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
 
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && (
-          <AnalyticsTab
-            state={state}
-            dispatch={dispatch}
-            setActiveTab={setActiveTab}
-            overallStats={overallStats}
-            luckRating={luckRating}
-            trophies={trophies}
-            collectionImages={collectionImages}
-            toast={toast}
-            getFirebaseAuth={getFirebaseAuth}
-            firebaseUrl={firebaseUrl}
-            fetchWithTimeout={fetchWithTimeout}
-            hashUidForStorage={hashUidForStorage}
-            checkFirebaseRateLimit={checkFirebaseRateLimit}
-            FIREBASE_AVAILABLE={FIREBASE_AVAILABLE}
-          />
+          <TabErrorBoundary tabName="Analytics">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <AnalyticsTab
+                state={state}
+                dispatch={dispatch}
+                setActiveTab={setActiveTab}
+                overallStats={overallStats}
+                luckRating={luckRating}
+                trophies={trophies}
+                collectionImages={collectionImages}
+                toast={toast}
+                getFirebaseAuth={getFirebaseAuth}
+                firebaseUrl={firebaseUrl}
+                fetchWithTimeout={fetchWithTimeout}
+                hashUidForStorage={hashUidForStorage}
+                checkFirebaseRateLimit={checkFirebaseRateLimit}
+                FIREBASE_AVAILABLE={FIREBASE_AVAILABLE}
+              />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && (
-          <CollectionTab
-            state={state}
-            collectionData={collectionData}
-            collectionImages={collectionImages}
-            visualSettings={visualSettings}
-            setActiveTab={setActiveTab}
-            setDetailModal={setDetailModal}
-            framingMode={framingMode}
-            editingImage={editingImage}
-            setEditingImage={setEditingImage}
-            activeBanners={activeBanners}
-            withCacheBuster={withCacheBuster}
-            getImageFraming={getImageFraming}
-            refreshImages={refreshImages}
-            handleSetProfilePic={handleSetProfilePic}
-          />
+          <TabErrorBoundary tabName="Collection">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <CollectionTab
+                state={state}
+                collectionData={collectionData}
+                collectionImages={collectionImages}
+                visualSettings={visualSettings}
+                setActiveTab={setActiveTab}
+                setDetailModal={setDetailModal}
+                framingMode={framingMode}
+                editingImage={editingImage}
+                setEditingImage={setEditingImage}
+                activeBanners={activeBanners}
+                withCacheBuster={withCacheBuster}
+                getImageFraming={getImageFraming}
+                refreshImages={refreshImages}
+                handleSetProfilePic={handleSetProfilePic}
+              />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-TEAMS] */}
         {activeTab === 'teams' && (
-          <TeamsTab
-            state={state}
-            dispatch={dispatch}
-            collectionImages={collectionImages}
-            collectionData={collectionData}
-            getImageFraming={getImageFraming}
-            framingMode={framingMode}
-            editingImage={editingImage}
-            setEditingImage={setEditingImage}
-            toast={toast}
-            confirm={confirm}
-          />
+          <TabErrorBoundary tabName="Teams">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <TeamsTab
+                state={state}
+                dispatch={dispatch}
+                collectionImages={collectionImages}
+                collectionData={collectionData}
+                getImageFraming={getImageFraming}
+                framingMode={framingMode}
+                editingImage={editingImage}
+                setEditingImage={setEditingImage}
+                toast={toast}
+                confirm={confirm}
+              />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
 
         {/* [SECTION:TAB-PROFILE] */}
         {activeTab === 'profile' && (
-          <ProfileTab
+          <TabErrorBoundary tabName="Profile">
+            <React.Suspense fallback={<TabLoadingSkeleton />}>
+              <ProfileTab
             state={state}
             dispatch={dispatch}
             visualSettings={visualSettings}
@@ -2091,6 +2121,8 @@ function WhisperingWishesInner() {
             setActiveTab={setActiveTab}
             withCacheBuster={withCacheBuster}
           />
+            </React.Suspense>
+          </TabErrorBoundary>
         )}
 
       </main>
