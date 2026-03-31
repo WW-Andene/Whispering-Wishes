@@ -113,7 +113,7 @@ export default function CollectionTab({
         if (data.bestFor) data.bestFor.forEach(c => tags.push(c.toLowerCase()));
       }
     }
-    return tags.join(' ');
+    return tags.filter(Boolean).join(' ');
   }, []);
 
   const charMatchesDamage = useCallback((name, damageType) => {
@@ -219,7 +219,7 @@ export default function CollectionTab({
   }, [collectionSort]);
 
   const collectionMaskData = useMemo(() => ({
-    collMask: generateVerticalMaskGradient(visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection),
+    collMask: generateVerticalMaskGradient(visualSettings.collectionFadePosition ?? 50, visualSettings.collectionFadeIntensity ?? 50, visualSettings.collectionFadeDirection || 'down'),
     collOpacity: (visualSettings.collectionOpacity ?? 100) / 100,
   }), [visualSettings.collectionFadePosition, visualSettings.collectionFadeIntensity, visualSettings.collectionFadeDirection, visualSettings.collectionOpacity]);
 

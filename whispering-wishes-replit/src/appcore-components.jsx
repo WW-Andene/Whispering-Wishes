@@ -5701,7 +5701,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
-      <div className="text-gray-500 text-sm mb-2">No characters found</div>
+      <div className="text-gray-500 text-sm mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
       <p className="text-gray-600 text-[10px] mb-3">Try adjusting your filters or clearing them</p>
       {hasActiveFilters && onClearFilters && (
         <button onClick={onClearFilters} className="kuro-btn text-[10px] px-3 py-1.5 active-gold">Clear Filters</button>
