@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Archive, ArrowRight, Clock, Crown, Filter, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
+import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
 } from '../../appcore-data.js';

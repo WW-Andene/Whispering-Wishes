@@ -130,14 +130,16 @@ export default function EventsTab({
           );
 
           // Determine which events are expired (non-recurring with past end date)
-          const now = Date.now();
+          // Issue #18: Use server-adjusted time (getServerOffset) instead of raw Date.now()
+          const serverOffset = getServerOffset(state.server);
+          const now = Date.now() + serverOffset * 3600000;
           const isEventExpired = (ev) => {
             if (ev.dailyReset || ev.weeklyReset) return false;
             const isRecurring = ev.resetType && /^~?\d+\s*(days?|d|h|m)?$/i.test(ev.resetType.trim());
             if (isRecurring) return false;
             if (!ev.currentEnd) return false;
             const end = getServerAdjustedEnd(ev.currentEnd, state.server);
-            const endMs = new Date(end).getTime();
+            const endMs = new Date(end).getTime() + serverOffset * 3600000;
             return !isNaN(endMs) && endMs <= now;
           };
 
