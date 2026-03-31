@@ -1203,7 +1203,7 @@ export default function ProfileTab({
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">Accessibility Font</div>
-                      <div className="text-gray-400 text-[10px]">Lexend — designed for reading proficiency</div>
+                      <div className="text-gray-400 text-[10px]">Luciole — designed for visual accessibility</div>
                     </div>
                   </div>
                   <button

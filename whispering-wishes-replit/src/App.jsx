@@ -431,8 +431,8 @@ function WhisperingWishesInner() {
         document.head.appendChild(tag);
       }
       tag.textContent = `
-        :root, html.dyslexic-font { --font-display: 'Lexend', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'Lexend', ui-monospace, SFMono-Regular, Menlo, monospace !important; }
-        html.dyslexic-font, html.dyslexic-font *, html.dyslexic-font *::before, html.dyslexic-font *::after { font-family: 'Lexend', ui-sans-serif, system-ui, sans-serif !important; }
+        :root, html.dyslexic-font { --font-display: 'Luciole', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'Luciole', ui-monospace, SFMono-Regular, Menlo, monospace !important; }
+        html.dyslexic-font, html.dyslexic-font *, html.dyslexic-font *::before, html.dyslexic-font *::after { font-family: 'Luciole', ui-sans-serif, system-ui, sans-serif !important; }
       `;
     } else if (tag) {
       tag.remove();
