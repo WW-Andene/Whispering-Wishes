@@ -1659,54 +1659,106 @@ Example: {"pulls":[...]}'
 
                     {/* Camera / Screenshot OCR */}
                     {directCameraOpen && createPortal(
-                      <div className="fixed inset-0 z-[9999] flex flex-col" style={{ background: 'linear-gradient(135deg, #080c14, #0f1520)' }}>
-                        {/* Video feed */}
-                        <div className="flex-1 relative mx-3 mt-3 mb-2 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(237,175,24,0.15)' }}>
+                      <div className="fixed inset-0 z-[9999] flex flex-col" style={{ background: '#05080e' }}>
+                        {/* Video feed with vignette */}
+                        <div className="flex-1 relative mx-2 mt-2 mb-1 rounded-xl overflow-hidden">
                           <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
-                          {/* Corner brackets — gold themed */}
+                          {/* Vignette overlay */}
+                          <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.6), inset 0 0 160px rgba(0,0,0,0.3)' }} />
+
+                          {/* HUD overlay */}
                           <div className="absolute inset-0 pointer-events-none">
-                            <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-yellow-500/50 rounded-tl-lg" />
-                            <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-yellow-500/50 rounded-tr-lg" />
-                            <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-yellow-500/50 rounded-bl-lg" />
-                            <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-yellow-500/50 rounded-br-lg" />
-                            {/* Center crosshair */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                              <div className="w-px h-6 bg-yellow-500/30 absolute left-1/2 -translate-x-1/2 -top-3" />
-                              <div className="h-px w-6 bg-yellow-500/30 absolute top-1/2 -translate-y-1/2 -left-3" />
+                            {/* Corner L-brackets — thick, game-style */}
+                            <div className="absolute top-6 left-6">
+                              <div className="w-10 h-[3px] bg-yellow-400/70" />
+                              <div className="w-[3px] h-10 bg-yellow-400/70" />
+                            </div>
+                            <div className="absolute top-6 right-6">
+                              <div className="w-10 h-[3px] bg-yellow-400/70 ml-auto" />
+                              <div className="w-[3px] h-10 bg-yellow-400/70 ml-auto" />
+                            </div>
+                            <div className="absolute bottom-6 left-6">
+                              <div className="w-[3px] h-10 bg-yellow-400/70" />
+                              <div className="w-10 h-[3px] bg-yellow-400/70" />
+                            </div>
+                            <div className="absolute bottom-6 right-6">
+                              <div className="w-[3px] h-10 bg-yellow-400/70 ml-auto" />
+                              <div className="w-10 h-[3px] bg-yellow-400/70 ml-auto" />
+                            </div>
+
+                            {/* Center reticle */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16">
+                              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1.5px] h-4 bg-yellow-400/40" />
+                              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] h-4 bg-yellow-400/40" />
+                              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[1.5px] w-4 bg-yellow-400/40" />
+                              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[1.5px] w-4 bg-yellow-400/40" />
+                              <div className="absolute inset-[6px] rounded-full border border-yellow-400/20" />
+                            </div>
+
+                            {/* HUD data readouts — top left */}
+                            <div className="absolute top-8 left-8 mt-[14px] ml-4 space-y-1">
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ animation: 'camPulse 2s infinite' }} />
+                                <span className="text-emerald-400 text-[8px] font-mono uppercase tracking-wider">Live</span>
+                              </div>
+                              <p className="text-white/30 text-[7px] font-mono">OCR · GROQ VISION</p>
+                            </div>
+
+                            {/* HUD data readouts — top right */}
+                            <div className="absolute top-8 right-8 mt-[14px] mr-4 text-right space-y-1">
+                              <p className="text-white/30 text-[7px] font-mono">{new Date().toLocaleTimeString()}</p>
+                              <p className="text-yellow-500/40 text-[7px] font-mono">RES: 1920x1080</p>
+                            </div>
+
+                            {/* Horizontal scan lines (subtle) */}
+                            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 3px)', backgroundSize: '100% 3px' }} />
+
+                            {/* Sweeping scan beam */}
+                            <div className="absolute left-0 right-0 h-[2px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 0%, rgba(237,175,24,0) 15%, rgba(237,175,24,0.5) 50%, rgba(237,175,24,0) 85%, transparent 100%)' }} />
+
+                            {/* Bottom instruction overlay */}
+                            <div className="absolute bottom-8 left-0 right-0 text-center">
+                              <p className="text-white/50 text-[9px] font-medium tracking-wider uppercase">Align URL within brackets</p>
                             </div>
                           </div>
-                          {/* Scan line animation */}
-                          <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-yellow-400/40 to-transparent pointer-events-none" style={{ animation: 'scanLine 3s ease-in-out infinite', top: '30%' }} />
                         </div>
 
-                        {/* Top header bar */}
-                        <div className="absolute top-0 left-0 right-0 p-3 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, rgba(8,12,20,0.95), rgba(8,12,20,0.5), transparent)', paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
-                          <div className="flex items-center gap-2.5">
-                            <img src={HEADER_ICON} alt="" className="w-7 h-7 rounded-lg" />
+                        {/* Top header — glass panel */}
+                        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2.5" style={{ background: 'rgba(5,8,14,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(237,175,24,0.1)', paddingTop: 'max(10px, env(safe-area-inset-top))' }}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(237,175,24,0.3)', boxShadow: '0 0 8px rgba(237,175,24,0.1)' }}>
+                              <img src={HEADER_ICON} alt="" className="w-full h-full object-cover" />
+                            </div>
                             <div>
-                              <p className="text-white text-[11px] font-semibold tracking-wide">Convene Scanner</p>
-                              <p className="text-yellow-500/60 text-[8px] uppercase tracking-widest">Whispering Wishes</p>
+                              <p className="text-white text-[11px] font-semibold" style={{ letterSpacing: '0.08em' }}>CONVENE SCANNER</p>
+                              <p className="text-[7px] font-mono uppercase" style={{ color: 'rgba(237,175,24,0.5)', letterSpacing: '0.2em' }}>Whispering Wishes</p>
                             </div>
                           </div>
-                          <button onClick={closeDirectCamera} className="min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-colors" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <button onClick={closeDirectCamera} className="min-w-[40px] min-h-[40px] rounded-lg flex items-center justify-center text-gray-500 hover:text-white active:scale-95 transition-all" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
                             <X size={16} />
                           </button>
                         </div>
 
-                        {/* Instruction text */}
-                        <div className="text-center px-4 py-1">
-                          <p className="text-gray-400 text-[10px]">Point camera at your Convene History URL in the browser</p>
-                        </div>
-
-                        {/* Bottom capture area */}
-                        <div className="flex items-center justify-center gap-6 pb-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-                          <button onClick={captureDirectCamera} className="w-[68px] h-[68px] rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'linear-gradient(135deg, rgba(237,175,24,0.15), rgba(237,175,24,0.05))', border: '3px solid rgba(237,175,24,0.6)', boxShadow: '0 0 20px rgba(237,175,24,0.15)' }}>
-                            <div className="w-[52px] h-[52px] rounded-full" style={{ background: 'linear-gradient(135deg, rgba(237,175,24,0.9), rgba(245,158,11,0.9))' }} />
+                        {/* Bottom capture bar — glass panel */}
+                        <div className="flex items-center justify-center py-3" style={{ background: 'rgba(5,8,14,0.85)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(237,175,24,0.1)', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+                          <button onClick={captureDirectCamera} className="group relative active:scale-90 transition-transform">
+                            {/* Outer ring — animated glow */}
+                            <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center" style={{ border: '2px solid rgba(237,175,24,0.4)', animation: 'camGlow 3s ease-in-out infinite' }}>
+                              {/* Inner button */}
+                              <div className="w-[56px] h-[56px] rounded-full transition-all group-hover:scale-105" style={{ background: 'linear-gradient(135deg, #edaf18, #f59e0b)', boxShadow: '0 4px 20px rgba(237,175,24,0.3)' }}>
+                                <div className="w-full h-full rounded-full flex items-center justify-center">
+                                  <Camera size={20} className="text-black/80" />
+                                </div>
+                              </div>
+                            </div>
                           </button>
                         </div>
 
-                        {/* Scan line keyframes */}
-                        <style>{`@keyframes scanLine { 0%,100% { top: 20%; opacity: 0; } 50% { top: 70%; opacity: 1; } }`}</style>
+                        <style>{`
+                          @keyframes camScan { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
+                          @keyframes camPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+                          @keyframes camGlow { 0%,100% { box-shadow: 0 0 8px rgba(237,175,24,0.2); border-color: rgba(237,175,24,0.3); } 50% { box-shadow: 0 0 20px rgba(237,175,24,0.4); border-color: rgba(237,175,24,0.6); } }
+                        `}</style>
                       </div>,
                       document.body
                     )}
