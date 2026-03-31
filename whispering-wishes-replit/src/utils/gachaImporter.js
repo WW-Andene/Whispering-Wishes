@@ -196,46 +196,59 @@ export function compressImage(source) {
 }
 
 /**
- * Extract player_id, record_id, svr_id from a screenshot using Claude Vision API.
+ * Extract player_id, record_id, svr_id from a screenshot via server-side Groq Vision OCR.
  * @param {string} base64Image - base64-encoded JPEG image
  * @returns {Promise<{ player_id: string|null, record_id: string|null, svr_id: string|null }>}
  */
 export async function extractIdsFromImage(base64Image) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/api/ocr', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: 'image/jpeg', data: base64Image },
-          },
-          {
-            type: 'text',
-            text: `This is a Wuthering Waves gacha/convene history URL screenshot.
-Extract player_id (or playerId), record_id (or recordId), and svr_id (or svrId / svr_area) from the URL.
-Respond ONLY with valid JSON — no markdown, no explanation:
-{"player_id":"VALUE_OR_NULL","record_id":"VALUE_OR_NULL","svr_id":"VALUE_OR_NULL"}`,
-          },
-        ],
-      }],
-    }),
+    body: JSON.stringify({ image: base64Image }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `API error ${res.status}`);
+    throw new Error(err?.error || `OCR failed (${res.status})`);
   }
 
-  const data = await res.json();
-  const text = data.content?.find((b) => b.type === 'text')?.text ?? '';
-  try {
-    return JSON.parse(text.replace(/```json|```/g, '').trim());
-  } catch {
-    throw new Error('Could not parse OCR response — try a clearer screenshot.');
+  const ids = await res.json();
+  if (!ids.player_id && !ids.record_id) {
+    throw new Error('IDs not found — try a clearer screenshot.');
   }
+  return ids;
+}
+
+/**
+ * Convert raw API pull data to the format processImportData expects.
+ * Maps WuWa API pool types to the app's banner categories.
+ * @param {{ pulls: Object, total: number, playerId: string }} fetchResult
+ * @returns {string} JSON string compatible with processImportData
+ */
+export function convertToImportFormat(fetchResult) {
+  const allPulls = [];
+
+  // Map pool labels back to cardPoolType numbers
+  const labelToType = {};
+  for (const [type, label] of Object.entries(POOL_LABELS)) {
+    labelToType[label] = parseInt(type, 10);
+  }
+
+  for (const [label, pulls] of Object.entries(fetchResult.pulls)) {
+    const cardPoolType = labelToType[label] ?? 0;
+    for (const pull of pulls) {
+      allPulls.push({
+        ...pull,
+        cardPoolType,
+        qualityLevel: pull.qualityLevel ?? pull.rarity ?? 3,
+        name: pull.name || pull.resourceName || 'Unknown',
+        time: pull.time || pull.createdAt || new Date().toISOString(),
+      });
+    }
+  }
+
+  // Sort by time ascending
+  allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+  return JSON.stringify(allPulls);
 }

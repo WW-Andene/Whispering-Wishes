@@ -6,7 +6,8 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Award, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Type, Upload, User, X } from 'lucide-react';
+import { Award, Camera, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Link, Loader, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Type, Upload, User, X } from 'lucide-react';
+import { parseGachaUrl, buildBaseUrl, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, POOL_LABELS } from '../../utils/gachaImporter.js';
 import {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
   SERVERS, getServerOffset,
@@ -129,6 +130,70 @@ export default function ProfileTab({
   const [pasteJsonText, setPasteJsonText] = useState('');
   const [showIdCard, setShowIdCard] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
+
+  // ── Direct import state ──────────────────────────────────────────────────
+  const [directUrl, setDirectUrl] = useState('');
+  const [directPlayerId, setDirectPlayerId] = useState('');
+  const [directRecordId, setDirectRecordId] = useState('');
+  const [directSvrId, setDirectSvrId] = useState('');
+  const [directStatus, setDirectStatus] = useState('idle'); // idle|fetching|done|error
+  const [directError, setDirectError] = useState('');
+  const [directProgress, setDirectProgress] = useState({});
+  const [directScanStatus, setDirectScanStatus] = useState('idle'); // idle|scanning|done|error
+  const directAbortRef = useRef(null);
+
+  const handleDirectUrlChange = useCallback((val) => {
+    setDirectUrl(val);
+    setDirectError('');
+    const p = parseGachaUrl(val);
+    if (p.valid) {
+      if (p.playerId) setDirectPlayerId(p.playerId);
+      if (p.recordId) setDirectRecordId(p.recordId);
+      if (p.svrId) setDirectSvrId(p.svrId);
+    }
+  }, []);
+
+  const handleDirectFetch = useCallback(async () => {
+    const pid = directPlayerId.trim();
+    const rid = directRecordId.trim();
+    if (!pid || !rid) { setDirectError('player_id and record_id are required.'); return; }
+    try {
+      const baseUrl = buildBaseUrl(directUrl, pid, rid, directSvrId);
+      directAbortRef.current = new AbortController();
+      setDirectStatus('fetching');
+      setDirectError('');
+      setDirectProgress({});
+      const result = await fetchAllPools(baseUrl, directAbortRef.current.signal, (pool, status, count) => {
+        setDirectProgress(prev => ({ ...prev, [pool]: { status, count } }));
+      });
+      if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
+      const jsonStr = convertToImportFormat({ ...result, playerId: pid });
+      await processImportData(jsonStr);
+      setDirectStatus('done');
+      toast?.addToast?.(`Imported ${result.total} Convenes!`, 'success');
+    } catch (err) {
+      if (err.name === 'AbortError') { setDirectStatus('idle'); return; }
+      setDirectStatus('error');
+      setDirectError(err.message || 'Import failed');
+    }
+  }, [directUrl, directPlayerId, directRecordId, directSvrId, processImportData, toast]);
+
+  const handleScreenshotOcr = useCallback(async (file) => {
+    if (!file) return;
+    setDirectScanStatus('scanning');
+    try {
+      const base64 = await compressImage(file);
+      const ids = await extractIdsFromImage(base64);
+      if (ids.player_id) setDirectPlayerId(ids.player_id);
+      if (ids.record_id) setDirectRecordId(ids.record_id);
+      if (ids.svr_id) setDirectSvrId(ids.svr_id);
+      setDirectScanStatus('done');
+      toast?.addToast?.('IDs extracted from screenshot!', 'success');
+    } catch (err) {
+      setDirectScanStatus('error');
+      setDirectError(err.message || 'Screenshot scan failed');
+    }
+  }, [toast]);
 
   // ── Admin state ──────────────────────────────────────────────────────────
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -1437,19 +1502,24 @@ export default function ProfileTab({
                 {importPlatform && <ImportGuide platform={importPlatform} />}
                 
                 {/* Import Method Selector */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    onClick={() => setImportMethod('file')} 
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setImportMethod('file')}
                     className={`kuro-btn py-2 text-xs ${importMethod === 'file' ? 'active-gold' : ''}`}
                   >
-                    <Upload size={14} className="inline mr-1.5" />Upload File
+                    <Upload size={14} className="inline mr-1.5" />File
                   </button>
-                  <button 
-                    onClick={() => setImportMethod('paste')} 
+                  <button
+                    onClick={() => setImportMethod('paste')}
                     className={`kuro-btn py-2 text-xs ${importMethod === 'paste' ? 'active-gold' : ''}`}
                   >
-                    <ClipboardList size={14} className="inline mr-1.5" />
-                    Paste JSON
+                    <ClipboardList size={14} className="inline mr-1.5" />Paste
+                  </button>
+                  <button
+                    onClick={() => setImportMethod('direct')}
+                    className={`kuro-btn py-2 text-xs ${importMethod === 'direct' ? 'active-emerald' : ''}`}
+                  >
+                    <Link size={14} className="inline mr-1.5" />Direct
                   </button>
                 </div>
                 
@@ -1515,6 +1585,76 @@ Example: {"pulls":[...]}'
                     <p className="text-gray-400 text-[10px]">
                       💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
                     </p>
+                  </div>
+                )}
+
+                {/* Direct Import Method — fetch from WuWa API */}
+                {importMethod === 'direct' && (
+                  <div className="space-y-2">
+                    <p className="text-gray-400 text-[10px]">Paste your Convene History URL or enter IDs manually.</p>
+                    <input
+                      type="text"
+                      value={directUrl}
+                      onChange={(e) => handleDirectUrlChange(e.target.value)}
+                      placeholder="Paste Convene History URL here..."
+                      className="kuro-input w-full text-[10px] font-mono"
+                      spellCheck={false}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-gray-500 text-[9px] block mb-0.5">player_id</label>
+                        <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder="e.g. 500123456" className="kuro-input w-full text-[10px] font-mono" />
+                      </div>
+                      <div>
+                        <label className="text-gray-500 text-[9px] block mb-0.5">record_id</label>
+                        <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-[10px] font-mono" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-gray-500 text-[9px] block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
+                      <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-[10px] font-mono" />
+                    </div>
+
+                    {/* Screenshot OCR */}
+                    <div className="flex gap-2">
+                      <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
+                        <Camera size={14} className="inline mr-1.5" />
+                        {directScanStatus === 'scanning' ? 'Scanning...' : 'Scan Screenshot'}
+                        <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
+                      </label>
+                    </div>
+                    {directScanStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">IDs extracted successfully</p>}
+
+                    {/* Fetch button */}
+                    {directStatus === 'fetching' ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2 py-3">
+                          <Loader size={14} className="text-emerald-400 animate-spin" />
+                          <span className="text-emerald-400 text-xs">Fetching Convenes...</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1">
+                          {Object.entries(directProgress).map(([pool, info]) => (
+                            <div key={pool} className={`text-center p-1 rounded text-[8px] ${info.status === 'done' ? 'text-emerald-400 bg-emerald-500/10' : info.status === 'error' ? 'text-red-400 bg-red-500/10' : 'text-gray-400 bg-white/5'}`}>
+                              {POOL_LABELS[pool]?.split(' ')[0] || pool}: {info.count || '...'}
+                            </div>
+                          ))}
+                        </div>
+                        <button onClick={() => directAbortRef.current?.abort()} className="kuro-btn w-full py-1.5 text-xs text-red-400">Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleDirectFetch}
+                        disabled={!directPlayerId.trim() || !directRecordId.trim()}
+                        className={`kuro-btn w-full py-2 text-xs ${directPlayerId.trim() && directRecordId.trim() ? 'active-emerald' : 'opacity-50'}`}
+                      >
+                        <Download size={14} className="inline mr-1.5" />Import from Server
+                      </button>
+                    )}
+
+                    {directStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">Import complete!</p>}
+                    {directError && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
+
+                    <p className="text-gray-500 text-[9px]">Open Convene History in-game, copy the URL from the browser address bar. The URL expires after a few minutes.</p>
                   </div>
                 )}
               </CardBody>
