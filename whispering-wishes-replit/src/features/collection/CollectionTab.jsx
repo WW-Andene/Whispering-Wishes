@@ -345,87 +345,187 @@ export default function CollectionTab({
                   </div>
                 </CardBody>
               </Card>
-              {/* Filter Buttons — compact icon/label toggles */}
+              {/* Filter Dropdowns — context-sensitive per view */}
               <Card>
-                <CardBody className="!py-2 !px-2">
+                <CardBody>
               {hasActiveFilters && (
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
-                    Filters active
-                  </span>
-                  <button onClick={clearCollectionFilters} className="text-[9px] text-gray-400 hover:text-white underline">
-                    Clear
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
+                      Filters active
+                    </span>
+                  </div>
+                  <button onClick={clearCollectionFilters} className="text-[10px] text-gray-400 hover:text-white underline">
+                    Clear all
                   </button>
                 </div>
               )}
+              <div className="grid grid-cols-3 gap-1.5">
 
-                {/* ── Characters view ── */}
-                {collectionView === 'items' && (<div className="space-y-1.5">
-                  {/* Weapon Type */}
-                  <div className="flex gap-1 flex-wrap">
-                    {['All', 'Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(t => {
-                      const v = t === 'All' ? 'all' : t;
-                      return <button key={t} onClick={() => setCollectionWeaponFilter(v)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionWeaponFilter === v ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{t === 'All' ? 'Type' : t}</button>;
-                    })}
-                  </div>
-                  {/* Element */}
-                  <div className="flex gap-1 flex-wrap">
-                    {['All', 'Aero', 'Glacio', 'Electro', 'Fusion', 'Spectro', 'Havoc'].map(t => {
-                      const v = t === 'All' ? 'all' : t;
-                      return <button key={t} onClick={() => setCollectionElementFilter(v)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionElementFilter === v ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{t === 'All' ? 'Elem' : t}</button>;
-                    })}
-                  </div>
-                  {/* Role + Stat + Region + Owned */}
-                  <div className="flex gap-1 flex-wrap">
-                    {[
-                      { label: 'Role', options: ['all', 'Main DPS', 'Sub DPS', 'Support', 'Healer'], state: collectionRoleFilter, setter: setCollectionRoleFilter, color: 'emerald' },
-                      { label: 'Stat', options: ['all', 'ATK', 'HP', 'DEF'], state: collectionStatFilter, setter: setCollectionStatFilter, color: 'amber' },
-                      { label: 'Region', options: ['all', 'Huanglong', 'Rinascita', 'Black Shores'], state: collectionRegionFilter, setter: setCollectionRegionFilter, color: 'purple' },
-                    ].map(group => group.options.map(opt => {
-                      const isAll = opt === 'all';
-                      const isActive = group.state === opt;
-                      return <button key={group.label + opt} onClick={() => group.setter(opt)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${isActive ? `bg-${group.color}-500/20 text-${group.color}-400 border border-${group.color}-500/40` : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{isAll ? group.label : opt}</button>;
-                    }))}
-                    {/* Owned */}
-                    {['all', 'owned', 'not-owned'].map(opt => {
-                      const isActive = collectionOwnedFilter === opt;
-                      const label = opt === 'all' ? 'Own' : opt === 'owned' ? 'Owned' : 'Missing';
-                      return <button key={opt} onClick={() => setCollectionOwnedFilter(opt)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${isActive ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{label}</button>;
-                    })}
-                  </div>
-                </div>)}
+                {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
+                {collectionView === 'items' && (<>
+                  <KuroSelect
+                    value={collectionWeaponFilter}
+                    onChange={setCollectionWeaponFilter}
+                    options={[
+                      { value: 'all', label: 'All Types' },
+                      { value: 'Broadblade', label: 'Broadblade' },
+                      { value: 'Sword', label: 'Sword' },
+                      { value: 'Pistols', label: 'Pistols' },
+                      { value: 'Gauntlets', label: 'Gauntlets' },
+                      { value: 'Rectifier', label: 'Rectifier' },
+                    ]}
+                    ariaLabel="Filter by weapon type"
+                  />
+                  <KuroSelect
+                    value={collectionElementFilter}
+                    onChange={setCollectionElementFilter}
+                    options={[
+                      { value: 'all', label: 'All Elements' },
+                      { value: 'Aero', label: 'Aero' },
+                      { value: 'Glacio', label: 'Glacio' },
+                      { value: 'Electro', label: 'Electro' },
+                      { value: 'Fusion', label: 'Fusion' },
+                      { value: 'Spectro', label: 'Spectro' },
+                      { value: 'Havoc', label: 'Havoc' },
+                    ]}
+                    ariaLabel="Filter by element"
+                  />
+                  <KuroSelect
+                    value={collectionStatFilter}
+                    onChange={setCollectionStatFilter}
+                    options={[
+                      { value: 'all', label: 'Stat Scaling' },
+                      { value: 'ATK', label: 'ATK' },
+                      { value: 'HP', label: 'HP' },
+                      { value: 'DEF', label: 'DEF' },
+                      { value: 'Crit Rate', label: 'Crit Rate' },
+                      { value: 'Crit DMG', label: 'Crit DMG' },
+                      { value: 'Energy Regen', label: 'Energy Regen' },
+                    ]}
+                    ariaLabel="Filter by stat scaling"
+                  />
+                  <KuroSelect
+                    value={collectionDamageFilter}
+                    onChange={setCollectionDamageFilter}
+                    options={[
+                      { value: 'all', label: 'All Damage' },
+                      { value: 'Basic ATK', label: 'Basic ATK' },
+                      { value: 'Heavy ATK', label: 'Heavy ATK' },
+                      { value: 'Skill', label: 'Skill' },
+                      { value: 'Liberation', label: 'Liberation' },
+                      { value: 'Echo', label: 'Echo' },
+                      { value: 'Coordinated', label: 'Coordinated' },
+                    ]}
+                    ariaLabel="Filter by damage type"
+                  />
+                  <KuroSelect
+                    value={collectionRoleFilter}
+                    onChange={setCollectionRoleFilter}
+                    options={[
+                      { value: 'all', label: 'All Rôles' },
+                      { value: 'Main DPS', label: 'Main DPS' },
+                      { value: 'Sub DPS', label: 'Sub DPS' },
+                      { value: 'Support', label: 'Support' },
+                      { value: 'Healer', label: 'Healer' },
+                    ]}
+                    ariaLabel="Filter by role"
+                  />
+                  <KuroSelect
+                    value={collectionRegionFilter}
+                    onChange={setCollectionRegionFilter}
+                    options={[
+                      { value: 'all', label: 'All Regions' },
+                      { value: 'Huanglong', label: 'Huanglong' },
+                      { value: 'Rinascita', label: 'Rinascita' },
+                      { value: 'Black Shores', label: 'Black Shores' },
+                      { value: 'Septimont', label: 'Septimont' },
+                      { value: 'Lahai-Roi', label: 'Lahai-Roi' },
+                    ]}
+                    ariaLabel="Filter by region"
+                  />
+                  <KuroSelect
+                    value={collectionTierFilter}
+                    onChange={setCollectionTierFilter}
+                    options={[
+                      { value: 'all', label: 'All Tiers' },
+                      { value: 'T0', label: 'T0' },
+                      { value: 'T0.5', label: 'T0.5' },
+                      { value: 'T1', label: 'T1' },
+                      { value: 'T1.5', label: 'T1.5' },
+                      { value: 'T2', label: 'T2' },
+                      { value: 'T3', label: 'T3' },
+                      { value: 'T4', label: 'T4' },
+                    ]}
+                    ariaLabel="Filter by tier"
+                  />
+                  <KuroSelect
+                    value={collectionOwnedFilter}
+                    onChange={setCollectionOwnedFilter}
+                    options={[
+                      { value: 'all', label: 'Ownership' },
+                      { value: 'owned', label: 'Owned' },
+                      { value: 'not-owned', label: 'Not Owned' },
+                    ]}
+                    ariaLabel="Filter by owned status"
+                  />
+                </>)}
 
-                {/* ── Weapons view ── */}
-                {collectionView === 'weapons' && (<div className="space-y-1.5">
-                  <div className="flex gap-1 flex-wrap">
-                    {['All', 'Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(t => {
-                      const v = t === 'All' ? 'all' : t;
-                      return <button key={t} onClick={() => setCollectionWeaponFilter(v)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionWeaponFilter === v ? 'bg-pink-500/20 text-pink-400 border border-pink-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{t === 'All' ? 'Type' : t}</button>;
-                    })}
-                  </div>
-                  <div className="flex gap-1 flex-wrap">
-                    {['all', 'ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen'].map(t => {
-                      return <button key={t} onClick={() => setCollectionStatFilter(t)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionStatFilter === t ? 'bg-pink-500/20 text-pink-400 border border-pink-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{t === 'all' ? 'Sub' : t}</button>;
-                    })}
-                  </div>
-                </div>)}
+                {/* ── Weapons view: Type, Sub-stat ── */}
+                {collectionView === 'weapons' && (<>
+                  <KuroSelect
+                    value={collectionWeaponFilter}
+                    onChange={setCollectionWeaponFilter}
+                    options={[
+                      { value: 'all', label: 'All Types' },
+                      { value: 'Broadblade', label: 'Broadblade' },
+                      { value: 'Sword', label: 'Sword' },
+                      { value: 'Pistols', label: 'Pistols' },
+                      { value: 'Gauntlets', label: 'Gauntlets' },
+                      { value: 'Rectifier', label: 'Rectifier' },
+                    ]}
+                    ariaLabel="Filter by weapon type"
+                  />
+                  <KuroSelect
+                    value={collectionStatFilter}
+                    onChange={setCollectionStatFilter}
+                    options={[
+                      { value: 'all', label: 'All Sub-stats' },
+                      { value: 'ATK%', label: 'ATK%' },
+                      { value: 'HP%', label: 'HP%' },
+                      { value: 'DEF%', label: 'DEF%' },
+                      { value: 'Crit Rate', label: 'Crit Rate' },
+                      { value: 'Crit DMG', label: 'Crit DMG' },
+                      { value: 'Energy Regen', label: 'Energy Regen' },
+                    ]}
+                    ariaLabel="Filter by sub-stat"
+                  />
+                </>)}
 
-                {/* ── Echoes view ── */}
-                {collectionView === 'echoes' && (<div className="space-y-1.5">
-                  <div className="flex gap-1 flex-wrap">
-                    <button onClick={() => setCollectionEchoSetFilter('all')} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionEchoSetFilter === 'all' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>All Sets</button>
-                    {ALL_ECHO_SONATA_SETS.map(s => (
-                      <button key={s} onClick={() => setCollectionEchoSetFilter(s)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionEchoSetFilter === s ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{s}</button>
-                    ))}
-                  </div>
-                  <div className="flex gap-1 flex-wrap">
-                    <button onClick={() => setCollectionEchoBuffFilter('all')} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionEchoBuffFilter === 'all' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>All Buffs</button>
-                    {ALL_ECHO_BUFF_TYPES.map(b => (
-                      <button key={b} onClick={() => setCollectionEchoBuffFilter(b)} className={`px-1.5 py-1 rounded text-[8px] font-medium transition-all ${collectionEchoBuffFilter === b ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'text-gray-500 border border-[var(--border-medium)] hover:text-gray-300'}`}>{b}</button>
-                    ))}
-                  </div>
-                </div>)}
+                {/* ── Echoes view: Set, Buff ── */}
+                {collectionView === 'echoes' && (<>
+                  <KuroSelect
+                    value={collectionEchoSetFilter}
+                    onChange={setCollectionEchoSetFilter}
+                    options={[
+                      { value: 'all', label: 'All Sets' },
+                      ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s })),
+                    ]}
+                    ariaLabel="Filter by sonata set"
+                  />
+                  <KuroSelect
+                    value={collectionEchoBuffFilter}
+                    onChange={setCollectionEchoBuffFilter}
+                    options={[
+                      { value: 'all', label: 'All Buffs' },
+                      ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b })),
+                    ]}
+                    ariaLabel="Filter by buff type"
+                  />
+                </>)}
 
+                {/* Clear Filters — single button at top of filter area (line 358) */}
+              </div>
                 </CardBody>
               </Card>
               {/* Sort Controls */}
@@ -463,7 +563,9 @@ export default function CollectionTab({
                     options={[
                       { value: 'copies', label: 'Default' },
                       { value: 'release', label: 'Release' },
+                      { value: 'dps', label: 'DPS Rank' },
                       { value: 'name', label: 'Name A-Z' },
+                      { value: 'tier', label: 'Tier' },
                     ]}
                     ariaLabel="Sort by"
                   />
