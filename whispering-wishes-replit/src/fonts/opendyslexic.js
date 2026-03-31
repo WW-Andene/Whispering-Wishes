@@ -1,4 +1,4 @@
-// OpenDyslexic font — base64 embedded, pure font swap
+// OpenDyslexic font — base64 embedded with manual per-element UI fixes
 export function getOpenDyslexicCSS() {
   return `
 @font-face {
@@ -15,5 +15,94 @@ export function getOpenDyslexicCSS() {
 }
 *, *::before, *::after { font-family: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
 :root { --font-display: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
+
+/* ═══ Manual per-element OpenDyslexic compensation ═══ */
+
+/* Nav tabs: reduce text + padding so 8 tabs still fit */
+html.dyslexic-font nav[role="tablist"] button {
+  font-size: 8px !important;
+  padding-left: 0.35rem !important;
+  padding-right: 0.35rem !important;
+}
+html.dyslexic-font nav[role="tablist"] button .text-\[10px\] {
+  font-size: 8px !important;
+}
+
+/* Team builder action buttons: tighter padding */
+html.dyslexic-font .kuro-btn.whitespace-nowrap {
+  font-size: 8px !important;
+  padding-left: 0.3rem !important;
+  padding-right: 0.3rem !important;
+}
+
+/* Sequence S0-S6 and Refinement R1-R5: smaller text to fit */
+html.dyslexic-font [role="radiogroup"] button {
+  font-size: 8px !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+}
+
+/* DPS number display: tighter letter spacing */
+html.dyslexic-font .kuro-number {
+  letter-spacing: -0.03em !important;
+}
+
+/* Quick-add buttons (Astrite +160 etc): smaller text */
+html.dyslexic-font .flex-wrap > button[class*="text-\[10px\]"] {
+  font-size: 8px !important;
+}
+
+/* CardHeader: prevent action buttons from wrapping onto title */
+html.dyslexic-font .kuro-label {
+  font-size: 9px !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Server selector in header */
+html.dyslexic-font .header-controls button {
+  font-size: 9px !important;
+}
+
+/* Banner card pity numbers: keep compact */
+html.dyslexic-font .text-base.kuro-number {
+  letter-spacing: -0.04em !important;
+}
+
+/* Grid filter buttons (Collection, Events counters) */
+html.dyslexic-font .grid-cols-3 button {
+  font-size: 8px !important;
+  padding-left: 0.2rem !important;
+  padding-right: 0.2rem !important;
+}
+
+/* Tabs inside cards (category tabs, view switchers) */
+html.dyslexic-font .kuro-tabs button,
+html.dyslexic-font [role="tablist"]:not(nav) button {
+  font-size: 9px !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Profile server region grid buttons */
+html.dyslexic-font .grid.grid-cols-3.sm\:grid-cols-5 button {
+  font-size: 8px !important;
+}
+
+/* Bookmark/save modal labels */
+html.dyslexic-font .kuro-input {
+  letter-spacing: -0.01em !important;
+}
+
+/* Stats badges (W/L/G indicators) */
+html.dyslexic-font span[class*="rounded"][class*="px-1"] {
+  font-size: 9px !important;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+}
+
+/* Echo preset buttons */
+html.dyslexic-font details button[class*="flex-1"][class*="text-\[10px\]"] {
+  font-size: 8px !important;
+}
+
 `;
 }
