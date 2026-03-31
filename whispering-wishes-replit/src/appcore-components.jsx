@@ -1238,7 +1238,8 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
   if (time.expired && !alwaysShow) return <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
-    // If expired but alwaysShow, show "0h 0m 0s" briefly until next tick updates
+    // If expired but alwaysShow and has recalcFn, skip rendering zeros — next tick will recalculate
+    if (recalcFn) return null;
     return <span className={`kuro-number text-xs ${TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple}`}>0h 0m 0s</span>;
   }
   

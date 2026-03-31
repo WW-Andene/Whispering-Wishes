@@ -134,6 +134,8 @@ export default function CalculatorTab({ state, dispatch }) {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="calc" />
 
+            <p className="text-gray-400 text-xs text-center px-2">Calculate your Convene probabilities by entering your resources below.</p>
+
             {/* Banner Selection */}
             <Card>
               <CardHeader action={<button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-[10px] flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button>}>Banner Selection</CardHeader>
@@ -253,6 +255,7 @@ export default function CalculatorTab({ state, dispatch }) {
                             {[1, 5, 10].map(amt => (
                               <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
                             ))}
+                            <button onClick={() => setCalc('radiant', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Radiant Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -264,6 +267,7 @@ export default function CalculatorTab({ state, dispatch }) {
                             {[1, 5, 10].map(amt => (
                               <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
                             ))}
+                            <button onClick={() => setCalc('forging', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Forging Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -279,6 +283,7 @@ export default function CalculatorTab({ state, dispatch }) {
                         {[1, 5, 10].map(amt => (
                           <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
                         ))}
+                        <button onClick={() => setCalc('lustrous', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Lustrous Tides">Clear</button>
                       </div>
                     </div>
                   )}

@@ -46,6 +46,8 @@ export default function AnalyticsTab({
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState(false);
   const [leaderboardSubmitting, setLeaderboardSubmitting] = useState(false);
+  const [rateLimitCooldown, setRateLimitCooldown] = useState(0);
+  const rateLimitTimerRef = useRef(null);
   const [leaderboardTab, setLeaderboardTab] = useState('rankings');
   const [communityPulls, setCommunityPulls] = useState(null);
   const [allLeaderboardEntries, setAllLeaderboardEntries] = useState([]);
@@ -75,6 +77,11 @@ export default function AnalyticsTab({
   const submittingRef = useRef(false);
   const leaderboardTrapRef = useFocusTrap(showLeaderboard);
   const trophyTrapRef = useFocusTrap(!!selectedTrophy);
+
+  // Clean up cooldown timer on unmount
+  useEffect(() => {
+    return () => { if (rateLimitTimerRef.current) clearInterval(rateLimitTimerRef.current); };
+  }, []);
 
   // ── Computed values ────────────────────────────────────────────────────────
   const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
@@ -251,6 +258,20 @@ export default function AnalyticsTab({
     if (submittingRef.current) return;
     if (!checkFirebaseRateLimit('leaderboard-submit')) {
       toast?.addToast?.('Please wait a few seconds before submitting again', 'warning');
+      // Start visual cooldown countdown (5 seconds to match FIREBASE_WRITE_COOLDOWN_MS)
+      if (!rateLimitTimerRef.current) {
+        setRateLimitCooldown(5);
+        rateLimitTimerRef.current = setInterval(() => {
+          setRateLimitCooldown(prev => {
+            if (prev <= 1) {
+              clearInterval(rateLimitTimerRef.current);
+              rateLimitTimerRef.current = null;
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
       return;
     }
     if (!leaderboardConsented) {
@@ -610,10 +631,10 @@ export default function AnalyticsTab({
                             </div>
                             <button
                               onClick={submitToLeaderboard}
-                              disabled={leaderboardSubmitting}
-                              className={`w-full kuro-btn active-cyan py-2 text-xs font-medium ${leaderboardSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              disabled={leaderboardSubmitting || rateLimitCooldown > 0}
+                              className={`w-full kuro-btn active-cyan py-2 text-xs font-medium ${leaderboardSubmitting || rateLimitCooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              {leaderboardSubmitting ? 'Submitting…' : 'Submit My Score'}
+                              {leaderboardSubmitting ? 'Submitting…' : rateLimitCooldown > 0 ? `Wait ${rateLimitCooldown}s…` : 'Submit My Score'}
                             </button>
                             <p className="text-gray-400 text-[10px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
@@ -704,6 +725,7 @@ export default function AnalyticsTab({
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
                               <div className="text-[10px] font-bold text-white truncate">{trophy.name}</div>
+                              {trophy.desc && <div className="text-[8px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
                             </div>
                           );
                         })}
@@ -854,7 +876,7 @@ export default function AnalyticsTab({
                         <div className="flex gap-1.5">
                           {allBuckets.map(label => (
                             <div key={label} className="flex-1 text-[10px] text-gray-400 text-center">
-                              {label.split('-')[0]}
+                              {label}
                             </div>
                           ))}
                         </div>
@@ -922,7 +944,7 @@ export default function AnalyticsTab({
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-1 mb-3">
+                    <div className="flex gap-1 mb-3 flex-wrap">
                       {['daily', 'weekly', 'monthly', 'yearly'].map(r => (
                         <button
                           key={r}
@@ -1150,7 +1172,7 @@ export default function AnalyticsTab({
                           <div className="flex gap-2 text-[10px]">
                             <span className="text-yellow-400">{hist.filter(p => p.rarity === 5).length} 5★</span>
                             <span className="text-purple-400">{hist.filter(p => p.rarity === 4).length} 4★</span>
-                            <span className="text-gray-400">Pity: {pity}/80</span>
+                            <span className="text-gray-400">Pity: {pity}/{HARD_PITY}</span>
                           </div>
                         </div>
                       );

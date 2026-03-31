@@ -63,14 +63,12 @@ export default function EventsTab({
                   <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
                   <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
                 </div>
-                {hasProgress && (
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
-                    </div>
-                    <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-400 rounded-full transition-[width] duration-300" style={{ width: `${totalAstrite > 0 ? (earnedAstrite / totalAstrite) * 100 : 0}%` }} />
                   </div>
-                )}
+                  <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
+                </div>
               </div>
             );
           })()}

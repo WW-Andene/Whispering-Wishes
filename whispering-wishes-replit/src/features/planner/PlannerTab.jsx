@@ -171,8 +171,8 @@ export default function PlannerTab({
                 <span className="text-gray-200">{i.label}</span>
                 <div className="flex items-center gap-2">
                   {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite}</span>}
-                  {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}RT</span>}
-                  {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}LT</span>}
+                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide — Featured banner pull ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
+                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide — Standard banner pull ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
                   {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
                   <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                 </div>
@@ -191,7 +191,7 @@ export default function PlannerTab({
           <CardHeader>By Banner End</CardHeader>
           <CardBody className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-[10px]">v{activeBanners.version} P{activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
+              <span className="text-gray-400 text-[10px]" title={`Game version ${activeBanners.version}, phase ${activeBanners.phase} — each version has two limited-time banner phases`}>Version {activeBanners.version} Phase {activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
               <CountdownTimer endDate={bannerEndDate} compact />
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -281,6 +281,11 @@ export default function PlannerTab({
           </div>
           <div className="p-2 bg-white/5 rounded-lg text-[10px] text-gray-400 text-center">
             Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
+          </div>
+          <div className="text-[10px] text-gray-500 text-center" style={{ marginTop: '-4px' }}>
+            <span title="How many Convenes needed for one copy (e.g. 80 at hard pity, 160 if guaranteed)">Base Convenes</span>{' × '}
+            <span title="Optional multiplier to plan for multiple goal sets at once">Multiplier</span>{' × '}
+            <span title="Number of copies of the selected banner target (from Calculator)">Copies</span>{' = total Convenes needed'}
           </div>
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-sm mb-2">
