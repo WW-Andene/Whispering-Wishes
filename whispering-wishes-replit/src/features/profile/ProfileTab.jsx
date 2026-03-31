@@ -1658,33 +1658,39 @@ Example: {"pulls":[...]}'
                     </div>
 
                     {/* Camera / Screenshot OCR */}
-                    {directCameraOpen ? (
-                      <div className="space-y-2">
-                        <div className="relative rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
-                          <video ref={directVideoRef} muted playsInline className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 border-2 border-emerald-400/30 rounded-lg pointer-events-none" />
-                          <div className="absolute top-2 right-2 flex gap-1.5">
-                            <button onClick={closeDirectCamera} className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors">
-                              <X size={14} />
-                            </button>
-                          </div>
+                    {directCameraOpen && createPortal(
+                      <div className="fixed inset-0 z-[9999] bg-black flex flex-col">
+                        <video ref={directVideoRef} muted playsInline className="flex-1 w-full object-cover" />
+                        <div className="absolute inset-0 pointer-events-none">
+                          <div className="absolute top-[15%] left-[10%] w-6 h-6 border-t-2 border-l-2 border-emerald-400/60 rounded-tl" />
+                          <div className="absolute top-[15%] right-[10%] w-6 h-6 border-t-2 border-r-2 border-emerald-400/60 rounded-tr" />
+                          <div className="absolute bottom-[25%] left-[10%] w-6 h-6 border-b-2 border-l-2 border-emerald-400/60 rounded-bl" />
+                          <div className="absolute bottom-[25%] right-[10%] w-6 h-6 border-b-2 border-r-2 border-emerald-400/60 rounded-br" />
                         </div>
-                        <button onClick={captureDirectCamera} className="kuro-btn active-emerald w-full py-2.5 text-xs font-medium">
-                          <Camera size={14} className="inline mr-1.5" />Capture
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-xs text-center" disabled={directScanStatus === 'scanning'}>
-                          <Camera size={14} className="inline mr-1.5" />
-                          {directScanStatus === 'scanning' ? 'Scanning...' : 'Open Camera'}
-                        </button>
-                        <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
-                          <Upload size={14} className="inline mr-1.5" />Upload Image
-                          <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
-                        </label>
-                      </div>
+                        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)' }}>
+                          <span className="text-white text-xs font-medium">Point at your Convene History URL</span>
+                          <button onClick={closeDirectCamera} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
+                            <X size={18} />
+                          </button>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-center" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
+                          <button onClick={captureDirectCamera} className="w-16 h-16 rounded-full border-4 border-white flex items-center justify-center active:scale-90 transition-transform">
+                            <div className="w-12 h-12 rounded-full bg-white" />
+                          </button>
+                        </div>
+                      </div>,
+                      document.body
                     )}
+                    <div className="flex gap-2">
+                      <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-xs text-center" disabled={directScanStatus === 'scanning'}>
+                        <Camera size={14} className="inline mr-1.5" />
+                        {directScanStatus === 'scanning' ? 'Scanning...' : 'Open Camera'}
+                      </button>
+                      <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
+                        <Upload size={14} className="inline mr-1.5" />Upload Image
+                        <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
+                      </label>
+                    </div>
                     {directScanStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">IDs extracted successfully</p>}
                     {directScanStatus === 'error' && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
 
