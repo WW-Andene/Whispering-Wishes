@@ -418,17 +418,24 @@ function WhisperingWishesInner() {
     el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
   }, [visualSettings.animationsEnabled]);
 
-  // Sync accessibility font class + CSS vars to <html>
+  // Sync accessibility font — inject <style> for maximum override specificity
   useEffect(() => {
-    const el = document.documentElement;
+    const STYLE_ID = 'ww-accessibility-font';
     const on = !!visualSettings.dyslexicFont;
-    el.classList.toggle('dyslexic-font', on);
+    document.documentElement.classList.toggle('dyslexic-font', on);
+    let tag = document.getElementById(STYLE_ID);
     if (on) {
-      el.style.setProperty('--font-display', "'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif");
-      el.style.setProperty('--font-data', "'Atkinson Hyperlegible', ui-monospace, SFMono-Regular, Menlo, monospace");
-    } else {
-      el.style.removeProperty('--font-display');
-      el.style.removeProperty('--font-data');
+      if (!tag) {
+        tag = document.createElement('style');
+        tag.id = STYLE_ID;
+        document.head.appendChild(tag);
+      }
+      tag.textContent = `
+        :root, html.dyslexic-font { --font-display: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'Atkinson Hyperlegible', ui-monospace, SFMono-Regular, Menlo, monospace !important; }
+        html.dyslexic-font, html.dyslexic-font *, html.dyslexic-font *::before, html.dyslexic-font *::after { font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif !important; }
+      `;
+    } else if (tag) {
+      tag.remove();
     }
   }, [visualSettings.dyslexicFont]);
 
