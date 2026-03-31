@@ -1041,7 +1041,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-card::after {
       content: '';
       position: absolute;
-      top: -1px;
+      top: -0.5px;
       left: 0;
       right: 0;
       height: 0.5px;
