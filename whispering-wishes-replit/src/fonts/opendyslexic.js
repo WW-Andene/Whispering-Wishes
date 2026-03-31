@@ -7,15 +7,13 @@ export function getOpenDyslexicCSS() {
 :root { --font-display: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
 
 
-/* Match OpenDyslexic visual size to Rajdhani — font-size-adjust normalizes x-height */
-/* Rajdhani aspect ratio ≈ 0.52, OpenDyslexic ≈ 0.58 → adjust to Rajdhani baseline */
-html.dyslexic-font, html.dyslexic-font *, html.dyslexic-font *::before, html.dyslexic-font *::after {
-  font-size-adjust: 0.52 !important;
-  letter-spacing: -0.02em !important;
+
+/* Exclude navbar and tight layout elements from font swap — keep Rajdhani for layout stability */
+html.dyslexic-font nav, html.dyslexic-font nav *, html.dyslexic-font nav *::before, html.dyslexic-font nav *::after {
+  font-family: 'Rajdhani', ui-sans-serif, system-ui, sans-serif !important;
 }
-/* Monospace/data elements need tighter spacing */
-html.dyslexic-font .kuro-number, html.dyslexic-font [style*="font-data"] {
-  letter-spacing: -0.04em !important;
+html.dyslexic-font [role="radiogroup"] button {
+  font-family: 'Rajdhani', ui-sans-serif, system-ui, sans-serif !important;
 }
 `;
 }
