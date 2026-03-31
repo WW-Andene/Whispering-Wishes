@@ -1041,10 +1041,10 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-card::after {
       content: '';
       position: absolute;
-      top: -1px;
+      top: -0.5px;
       left: 0;
       right: 0;
-      height: 1px;
+      height: 0.5px;
       background: linear-gradient(90deg,
         transparent 0%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
