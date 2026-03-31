@@ -1044,14 +1044,15 @@ const KuroStyles = memo(({ oledMode }) => (
       top: -1px;
       left: -1px;
       right: -1px;
-      height: 1px;
-      background: linear-gradient(90deg,
+      height: 0;
+      border-top: 1px solid transparent;
+      border-image: linear-gradient(90deg,
         transparent 0%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
         var(--shimmer-color-bright, rgba(255, 255, 255, 0.7)) 50%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 80%,
         transparent 100%
-      );
+      ) 1;
       animation: shimmer 3s ease-in-out infinite;
       z-index: 1;
     }
@@ -2230,7 +2231,7 @@ const KuroStyles = memo(({ oledMode }) => (
           var(--shadow-xl),
           0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.08)),
           0 0 50px var(--card-glow, rgba(100, 140, 200, 0.06)),
-          inset 0 1px 0 rgba(255, 255, 255, 0.10);
+          inset 0 0 0 1px rgba(255, 255, 255, 0.10);
       }
       .animations-full .collection-card:hover {
         transform: translateY(-6px) scale(1.03);
