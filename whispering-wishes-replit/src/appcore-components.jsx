@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, Users, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, Users, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown, SkipForward } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
