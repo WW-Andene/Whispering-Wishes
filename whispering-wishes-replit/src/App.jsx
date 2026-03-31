@@ -418,26 +418,24 @@ function WhisperingWishesInner() {
     el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
   }, [visualSettings.animationsEnabled]);
 
-  // Sync accessibility font — inject <style> for maximum override specificity
+  // Sync accessibility font — lazy-load base64-embedded OpenDyslexic
   useEffect(() => {
     const STYLE_ID = 'ww-accessibility-font';
     const on = !!visualSettings.dyslexicFont;
     document.documentElement.classList.toggle('dyslexic-font', on);
-    let tag = document.getElementById(STYLE_ID);
     if (on) {
-      if (!tag) {
-        tag = document.createElement('style');
-        tag.id = STYLE_ID;
-        document.head.appendChild(tag);
-      }
-      tag.textContent = `
-        @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Regular.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'OpenDyslexic'; src: url('/fonts/OpenDyslexic-Bold.woff') format('woff'); font-weight: 700; font-style: normal; font-display: swap; }
-        :root { --font-display: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; --font-data: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
-        *, *::before, *::after { font-family: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif !important; }
-      `;
-    } else if (tag) {
-      tag.remove();
+      import('./fonts/opendyslexic.js').then(({ getOpenDyslexicCSS }) => {
+        let tag = document.getElementById(STYLE_ID);
+        if (!tag) {
+          tag = document.createElement('style');
+          tag.id = STYLE_ID;
+          document.head.appendChild(tag);
+        }
+        tag.textContent = getOpenDyslexicCSS();
+      });
+    } else {
+      const tag = document.getElementById(STYLE_ID);
+      if (tag) tag.remove();
     }
   }, [visualSettings.dyslexicFont]);
 
