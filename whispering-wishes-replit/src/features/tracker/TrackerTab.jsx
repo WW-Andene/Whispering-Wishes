@@ -36,7 +36,10 @@ export default function TrackerTab({
   confirm,
 }) {
   const [trackerCategory, setTrackerCategoryRaw] = useState(() => {
-    try { return localStorage.getItem('ww-tracker-cat') || 'character'; } catch { return 'character'; }
+    try {
+      const v = localStorage.getItem('ww-tracker-cat');
+      return ['character', 'weapon', 'standard'].includes(v) ? v : 'character';
+    } catch { return 'character'; }
   });
   const setTrackerCategory = useCallback((v) => {
     setTrackerCategoryRaw(v);

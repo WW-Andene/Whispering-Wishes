@@ -237,12 +237,16 @@ export default function ProfileTab({
     setDirectCameraOpen(false);
   }, []);
 
-  // Auto-close camera when user leaves screen (tab switch, app switch, lock)
+  // Auto-close camera when user leaves screen or component unmounts
   useEffect(() => {
     if (!directCameraOpen) return;
     const onHide = () => { if (document.hidden) closeDirectCamera(); };
     document.addEventListener('visibilitychange', onHide);
-    return () => document.removeEventListener('visibilitychange', onHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      // Cleanup stream on unmount (e.g. tab switch while camera open)
+      directStreamRef.current?.getTracks().forEach(t => t.stop());
+    };
   }, [directCameraOpen, closeDirectCamera]);
 
   // ── Admin state ──────────────────────────────────────────────────────────

@@ -62,9 +62,13 @@ export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
   const allPulls = [];
   let lastRecordId = '0';
   let hasMore = true;
+  let pages = 0;
+  const MAX_PAGES = 100;
+  const FETCH_TIMEOUT = 10000;
 
   while (hasMore) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    if (++pages > MAX_PAGES) break;
 
     const u = new URL(baseUrl);
     u.searchParams.set('cardPoolType', String(cardPoolType));
@@ -75,10 +79,14 @@ export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
 
     let res;
     try {
-      res = await fetch(proxyUrl, { signal });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+      res = await fetch(proxyUrl, { signal: mergedSignal });
+      clearTimeout(timeout);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
-      throw new Error(`Network error: ${err.message}`);
+      throw new Error('Network error');
     }
 
     if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
@@ -212,7 +220,13 @@ export async function extractIdsFromImage(base64Image) {
     throw new Error(err?.error || `OCR failed (${res.status})`);
   }
 
-  const ids = await res.json();
+  const raw = await res.json();
+  // Validate response — only accept expected string fields
+  const ids = {
+    player_id: typeof raw.player_id === 'string' ? raw.player_id : null,
+    record_id: typeof raw.record_id === 'string' ? raw.record_id : null,
+    svr_id: typeof raw.svr_id === 'string' ? raw.svr_id : null,
+  };
   if (!ids.player_id && !ids.record_id) {
     throw new Error('IDs not found — try a clearer screenshot.');
   }
@@ -237,12 +251,14 @@ export function convertToImportFormat(fetchResult) {
   for (const [label, pulls] of Object.entries(fetchResult.pulls)) {
     const cardPoolType = labelToType[label] ?? 0;
     for (const pull of pulls) {
+      // Whitelist fields — don't spread untrusted API data
       allPulls.push({
-        ...pull,
         cardPoolType,
-        qualityLevel: pull.qualityLevel ?? pull.rarity ?? 3,
-        name: pull.name || pull.resourceName || 'Unknown',
-        time: pull.time || pull.createdAt || new Date().toISOString(),
+        qualityLevel: parseInt(pull.qualityLevel ?? pull.rarity ?? 3, 10),
+        name: String(pull.name || pull.resourceName || 'Unknown'),
+        time: String(pull.time || pull.createdAt || new Date().toISOString()),
+        resourceId: pull.resourceId ? String(pull.resourceId) : undefined,
+        resourceType: pull.resourceType ? String(pull.resourceType) : undefined,
       });
     }
   }

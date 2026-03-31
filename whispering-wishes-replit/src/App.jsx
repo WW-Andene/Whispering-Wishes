@@ -830,21 +830,9 @@ function WhisperingWishesInner() {
   const tabNavRef = useRef(null);
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
-    window.scrollTo(0, 0);
   }, []);
 
-  // Issue #136: Scroll to top when activeTab changes (safety net for all code paths)
   useEffect(() => { window.scrollTo(0, 0); }, [activeTab]);
-
-  // Issue #144: Offline indicator state
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-  useEffect(() => {
-    const goOnline = () => setIsOnline(true);
-    const goOffline = () => setIsOnline(false);
-    window.addEventListener('online', goOnline);
-    window.addEventListener('offline', goOffline);
-    return () => { window.removeEventListener('online', goOnline); window.removeEventListener('offline', goOffline); };
-  }, []);
 
   // Swipe navigation between tabs
   const swipeRef = useRef({ startX: 0, startY: 0, startTime: 0 });
@@ -1868,12 +1856,7 @@ function WhisperingWishesInner() {
         Skip to content
       </a>
       
-      {/* Issue #144: Offline indicator banner */}
-      {!isOnline && (
-        <div role="alert" className="sticky top-0 z-[60] text-center text-xs font-medium py-1.5 px-3" style={{ background: '#b91c1c', color: '#fff' }}>
-          You are offline — some features may be unavailable
-        </div>
-      )}
+      {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
       <header className="sticky top-0 z-50 border-b" style={{borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)', position: 'sticky', overflow: 'hidden'}}>

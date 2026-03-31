@@ -1,6 +1,9 @@
 // Vercel serverless function — proxies OCR requests to Groq Vision API
 // API key stored server-side via GROQ_API_KEY environment variable
 
+const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB base64 limit
+const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id'];
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -8,14 +11,24 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+    return res.status(500).json({ error: 'Service not configured' });
   }
+
+  res.setHeader('Cache-Control', 'no-store');
 
   try {
     const { image } = req.body;
-    if (!image) {
+    if (!image || typeof image !== 'string') {
       return res.status(400).json({ error: 'Missing image field (base64)' });
     }
+
+    // Input size validation
+    if (image.length > MAX_IMAGE_SIZE) {
+      return res.status(413).json({ error: 'Image too large (max 2MB)' });
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -23,6 +36,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'llama-3.2-90b-vision-preview',
         max_tokens: 300,
@@ -44,28 +58,34 @@ Respond ONLY with valid JSON — no markdown, no explanation:
         }],
       }),
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      return res.status(response.status).json({
-        error: err?.error?.message || `Groq API error ${response.status}`,
-      });
+      return res.status(502).json({ error: 'OCR service error' });
     }
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content ?? '';
 
-    // Parse the JSON from the response
-    let ids;
+    let parsed;
     try {
-      ids = JSON.parse(text.replace(/```json|```/g, '').trim());
+      parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
     } catch {
-      return res.status(422).json({ error: 'Could not parse OCR response', raw: text });
+      return res.status(422).json({ error: 'Could not parse OCR response' });
     }
 
-    res.setHeader('Cache-Control', 'no-store');
+    // Whitelist response fields — prevent prototype pollution or unexpected data
+    const ids = {};
+    for (const key of ALLOWED_KEYS) {
+      const val = parsed[key];
+      ids[key] = (typeof val === 'string' && val !== 'null' && val !== 'NULL') ? val : null;
+    }
+
     return res.status(200).json(ids);
   } catch (err) {
-    return res.status(500).json({ error: 'OCR proxy error', message: err.message });
+    if (err.name === 'AbortError') {
+      return res.status(504).json({ error: 'OCR timeout' });
+    }
+    return res.status(500).json({ error: 'OCR service error' });
   }
 }
