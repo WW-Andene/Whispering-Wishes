@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
-import { Archive, Crown, Sparkles, Star, Sword, Swords, X } from 'lucide-react';
+import { Archive, ArrowRight, Crown, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
 } from '../../appcore-data.js';
@@ -44,6 +44,15 @@ export default function TrackerTab({
           <TabErrorBoundary tabName="Tracker">
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="tracker" glowColor="gold" />
+
+            {/* Onboarding hint for new users with no imported data */}
+            {!state.profile.importedAt && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer">
+                <Upload size={14} className="text-cyan-400 flex-shrink-0" />
+                <span className="text-cyan-300/90 text-xs">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
+                <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
+              </div>
+            )}
 
             {/* Category Tabs */}
             <Card>

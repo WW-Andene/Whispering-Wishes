@@ -2008,6 +2008,7 @@ function WhisperingWishesInner() {
             editingImage={editingImage}
             setEditingImage={setEditingImage}
             toast={toast}
+            confirm={confirm}
           />
         )}
 

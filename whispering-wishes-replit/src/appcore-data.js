@@ -1931,8 +1931,8 @@ const EVENTS = {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // [SECTION:CONSTANTS]
-// WuWa gacha rates: 0.8% base, soft pity starts at 65, hard pity at 80
-const HARD_PITY = 80, SOFT_PITY_START = 65; // AVG_PITY (5-star) removed — P8-FIX: was unused dead code
+// WuWa gacha rates: 0.8% base, soft pity starts at 64, hard pity at 80
+const HARD_PITY = 80, SOFT_PITY_START = 64; // AVG_PITY (5-star) removed — P8-FIX: was unused dead code
 const LUNITE_DAILY_ASTRITE = 90; // P7-FIX: Extract magic number (7E)
 const ASTRITE_PER_PULL = 160;
 const BEGINNER_ASTRITE_PER_PULL = 128; // P14-FIX: NIT-2 — Extract magic number (beginner banner = 80% of standard cost)

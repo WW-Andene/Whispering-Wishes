@@ -34,6 +34,7 @@ export default function TeamsTab({
   editingImage,
   setEditingImage,
   toast,
+  confirm,
 }) {
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
@@ -1082,7 +1083,7 @@ export default function TeamsTab({
                           + Compare
                         </button>
                         <button
-                          onClick={() => { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); }}
+                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all characters from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
@@ -1125,9 +1126,9 @@ export default function TeamsTab({
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
                         {!teamSlots.some(s => s) && (
-                          <div className="col-span-3 text-center py-6">
-                            <div className="text-gray-500 text-sm mb-1">Empty Team</div>
-                            <p className="text-gray-600 text-[10px]">Tap a slot to add a Resonator</p>
+                          <div className="col-span-3 text-center py-4">
+                            <div className="text-gray-500 text-sm mb-1">No characters assigned</div>
+                            <p className="text-gray-600 text-[10px]">Tap a slot below to add a Resonator to this team</p>
                           </div>
                         )}
                         {teamSlots.map((charName, slotIdx) => {
@@ -1480,7 +1481,7 @@ export default function TeamsTab({
                                         )}
 
                                         {/* Advanced: Sequence + Refinement + Sonata (collapsible) */}
-                                        <details className="group">
+                                        <details className="group" open>
                                           <summary className="kuro-label cursor-pointer hover:text-gray-200 transition-colors select-none !flex !flex-row items-center gap-1 list-none [&::-webkit-details-marker]:hidden" style={{ display: 'flex', flexDirection: 'row', marginBottom: 0 }}>
                                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
                                             <span>Sequence · Refinement · Sonata</span>
@@ -1495,7 +1496,7 @@ export default function TeamsTab({
                                                   <button key={s}
                                                     role="radio"
                                                     aria-checked={isActive}
-                                                    className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    className={`flex-1 py-1.5 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                                     onClick={() => {
                                                       setTeamEquipment(prev => {
                                                         const n = { ...prev };
@@ -1518,7 +1519,7 @@ export default function TeamsTab({
                                                   <button key={r}
                                                     role="radio"
                                                     aria-checked={isActive}
-                                                    className={`w-7 py-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                                    className={`min-w-[36px] py-1.5 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                                     onClick={() => {
                                                       setTeamEquipment(prev => {
                                                         const n = { ...prev };
@@ -1670,7 +1671,7 @@ export default function TeamsTab({
                               <div className="kuro-stat kuro-stat-gold p-2 text-center">
                                 <div className="text-gray-400 text-[10px]">Perfect DPS</div>
                                 <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString()}/s</div>
-                                <div className="text-gray-500 text-[8px]">+rotation &amp; passives</div>
+                                <div className="text-gray-500 text-[8px]">+echo active skills</div>
                               </div>
                               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
                                 <div className="text-gray-400 text-[10px]">Synergy</div>
@@ -1780,7 +1781,7 @@ export default function TeamsTab({
                         return (
                         <Card id="team-dps-comparison">
                           <CardHeader action={
-                            <button onClick={() => { setTeamCompareEntries([]); haptic.light(); }}
+                            <button onClick={async () => { if (await confirm?.({ title: 'Clear comparison', message: 'Remove all comparison entries?', confirmLabel: 'Clear', destructive: true })) { setTeamCompareEntries([]); haptic.light(); } }}
                               className="kuro-btn text-[10px]"
                               aria-label="Clear all team comparisons">
                               Clear All

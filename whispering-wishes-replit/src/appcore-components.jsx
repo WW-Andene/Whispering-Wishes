@@ -5266,8 +5266,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-400 animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-orange-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
-                  <div className={`text-[10px] mt-0.5 ${stats.pity5 >= SOFT_PITY_START ? 'text-orange-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
+                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                  <div className={`text-[10px] mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>
@@ -5375,19 +5375,20 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           </div>
           {onStatusChange && (
             <div className="flex gap-1">
-              {status ? (
+              {!isDone && (
+                <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
+                  <Check size={10} className="inline -mt-0.5" /> Done
+                </button>
+              )}
+              {!isSkipped && (
+                <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
+                  <X size={10} className="inline -mt-0.5" /> Skip
+                </button>
+              )}
+              {status && (
                 <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
                   Undo
                 </button>
-              ) : (
-                <>
-                  <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
-                    <Check size={10} className="inline -mt-0.5" /> Done
-                  </button>
-                  <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
-                    <X size={10} className="inline -mt-0.5" /> Skip
-                  </button>
-                </>
               )}
             </div>
           )}
@@ -5983,8 +5984,8 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
               <div className="text-center">
-                <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
-                <div className="text-gray-400 text-[10px] mt-0.5">5★ Pity</div>
+                <div className={`font-bold text-sm ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : profileData.pity5 >= 75 ? 'text-red-400' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400' : 'text-cyan-400'}`}>{profileData.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                <div className={`text-[10px] mt-0.5 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? '★ GUARANTEED!' : profileData.pity5 >= 75 ? '⚠ High Pity!' : profileData.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
               </div>
               <div className="text-center">
                 <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>

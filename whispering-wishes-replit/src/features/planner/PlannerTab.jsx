@@ -24,6 +24,8 @@ export default function PlannerTab({
 }) {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
 
+  const isCalcDefaults = !state.calc.astrite && state.calc.charPity === 0 && state.calc.weapPity === 0 && !state.calc.charGuaranteed && !state.calc.radiant && !state.calc.forging && !state.calc.lustrous;
+
   const dailyIncome = useMemo(() => {
     return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
   }, [state.planner.dailyAstrite, state.planner.luniteActive]);
@@ -70,12 +72,19 @@ export default function PlannerTab({
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="planner" />
 
+      {isCalcDefaults && (
+        <div className="text-center text-gray-500" style={{ fontSize: '10px', padding: '4px 0' }}>
+          💡 Set up your pity &amp; banner in the Calculator tab for accurate projections.
+        </div>
+      )}
+
       <Card>
         <CardHeader>Daily Income</CardHeader>
         <CardBody className="space-y-3">
           <div>
             <label className="kuro-label" title="Includes Commissions, Dailies, etc.">Daily Astrite</label>
             <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, Math.floor(+e.target.value || 0)) })} className="kuro-input w-full" aria-label="Daily Astrite income" />
+            <div className="text-gray-500 text-[10px] mt-1">Avg. daily Astrite from commissions + dailies</div>
           </div>
           {state.planner.luniteActive && (
             <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-between">
@@ -209,6 +218,12 @@ export default function PlannerTab({
         <CardHeader>Income Projections</CardHeader>
         <CardBody>
           {/* MED-29: 30-day emphasized as primary planning horizon */}
+          {dailyIncome === 0 ? (
+            <div className="p-4 text-center rounded-lg" style={{ background: 'var(--bg-stat)' }}>
+              <div className="text-gray-400 text-sm mb-1">No daily income set</div>
+              <div className="text-gray-500 text-xs">Set your Daily Astrite income above to see projections.</div>
+            </div>
+          ) : (
           <div className="grid grid-cols-3 gap-2">
             {[7, 30, 90].map(days => (
               <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
@@ -219,6 +234,7 @@ export default function PlannerTab({
               </div>
             ))}
           </div>
+          )}
           {state.planner.luniteActive && (
             <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
               <span className="text-emerald-400 text-xs">Monthly Subscription Cost: </span>
@@ -289,6 +305,11 @@ export default function PlannerTab({
               <div className="text-gray-400 text-[10px]">Days to Goal</div>
             </div>
           </div>
+          {planData.goalDaysNeeded === Infinity && dailyIncome === 0 && (
+            <div className="p-2 bg-white/5 rounded-lg text-center">
+              <span className="text-gray-500 text-[10px]">Set a daily Astrite income to estimate days to goal.</span>
+            </div>
+          )}
           {planData.goalDaysNeeded !== Infinity && planData.goalDaysNeeded > 0 && (
             <div className="p-2 bg-white/5 rounded-lg text-center">
               <span className="text-gray-400 text-[10px]">Estimated: </span>
@@ -308,7 +329,8 @@ export default function PlannerTab({
             <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
               <div>
                 <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                <div className="text-gray-400 text-[10px]">{b.astrite} Astrite • P{b.charPity}/{b.weapPity}</div>
+                <div className="text-gray-400 text-[10px]">{b.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {b.selectedBanner === 'char' ? 'Res' : b.selectedBanner === 'weap' ? 'Wep' : 'Both'} • {b.astrite || 0} Astrite{b.lustrous ? ` • ${b.lustrous} Lustrous` : ''}</div>
+                <div className="text-gray-400 text-[10px]">P{b.charPity}/{b.weapPity}{b.charGuaranteed ? '(G)' : ''} • Std P{b.stdCharPity}/{b.stdWeapPity} • ×{b.charCopies}/{b.weapCopies}</div>
               </div>
               <div className="flex gap-1">
                 <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">Load</button>

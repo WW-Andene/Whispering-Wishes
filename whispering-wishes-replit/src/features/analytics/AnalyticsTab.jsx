@@ -643,7 +643,7 @@ export default function AnalyticsTab({
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
                                   {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-gray-400 text-[10px] flex-shrink-0" aria-label="Guaranteed">G<span className="sr-only"> (Guaranteed)</span></span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed — pity carried over from a previous lost 50/50" aria-label="Guaranteed">&#x1f6e1; Guar.</span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>

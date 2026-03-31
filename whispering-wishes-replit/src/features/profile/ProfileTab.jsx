@@ -1261,23 +1261,27 @@ export default function ProfileTab({
                       const next = visualSettings.animationsEnabled === 'off' ? 'on' : visualSettings.animationsEnabled === 'on' ? 'full' : 'off';
                       saveVisualSettings({ ...visualSettings, animationsEnabled: next });
                     }}
-                    className="relative w-[52px] h-[24px] rounded-full transition-colors flex-shrink-0"
+                    className="relative w-[72px] h-[24px] rounded-full transition-colors flex-shrink-0"
                     style={{ background: visualSettings.animationsEnabled === 'off' ? 'var(--bg-btn)' : visualSettings.animationsEnabled === 'on' ? '#a855f7' : '#d946ef' }}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled !== 'off'}
-                    aria-label="Toggle animations: off, on, full"
+                    aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()} — click to switch to ${visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF'}`}
+                    title={`Currently: ${visualSettings.animationsEnabled.toUpperCase()}. Click to cycle.`}
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[18px]' : 'left-[32px]'}`} />
+                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold tracking-wide text-white/80 pointer-events-none select-none">
+                      {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
+                    </span>
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[28px]' : 'left-[52px]'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
+                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-[10px] text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
                 )}
 
                 {/* Background Style Selector */}
@@ -1530,9 +1534,12 @@ Example: {"pulls":[...]}'
                 <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
                   <Download size={14} /> Export Backup
                 </button>
-                <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
-                  Reset All Data
-                </button>
+                <div className="border-t border-red-900/30 mt-4 pt-3">
+                  <p className="text-xs text-red-400/70 mb-2 text-center">Danger Zone</p>
+                  <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
+                    Reset All Data
+                  </button>
+                </div>
               </CardBody>
             </Card>
 
