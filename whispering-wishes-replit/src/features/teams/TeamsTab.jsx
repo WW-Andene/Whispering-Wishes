@@ -1027,6 +1027,18 @@ export default function TeamsTab({
                                 try {
                                   const data = JSON.parse(ev.target.result);
                                   if (!data.teams || !Array.isArray(data.teams)) throw new Error('Invalid format');
+                                  // Issue #102: Validate team structure before importing
+                                  for (let i = 0; i < data.teams.length; i++) {
+                                    const t = data.teams[i];
+                                    if (!t || typeof t !== 'object') throw new Error(`Team ${i + 1} is not a valid object`);
+                                    if (!Array.isArray(t.slots)) throw new Error(`Team ${i + 1} is missing slots array`);
+                                    if (t.name !== undefined && typeof t.name !== 'string') throw new Error(`Team ${i + 1} has invalid name`);
+                                    for (let j = 0; j < t.slots.length; j++) {
+                                      if (t.slots[j] !== null && t.slots[j] !== '' && typeof t.slots[j] !== 'string') {
+                                        throw new Error(`Team ${i + 1}, slot ${j + 1} has invalid value`);
+                                      }
+                                    }
+                                  }
                                   dispatch({ type: 'IMPORT_TEAMS', teams: data.teams, activeTeamIndex: data.activeTeamIndex });
                                   if (data.equipment && typeof data.equipment === 'object') {
                                     setTeamEquipment(data.equipment);

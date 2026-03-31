@@ -86,15 +86,6 @@ export default function PlannerTab({
             <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, Math.floor(+e.target.value || 0)) })} className="kuro-input w-full" aria-label="Daily Astrite income" />
             <div className="text-gray-500 text-[10px] mt-1">Avg. daily Astrite from commissions + dailies</div>
           </div>
-          {state.planner.luniteActive && (
-            <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Check size={14} className="text-emerald-400" />
-                <span className="text-emerald-400 text-xs">Lunite Subscription</span>
-              </div>
-              <span className="text-emerald-400 text-xs">+90/day</span>
-            </div>
-          )}
           <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
@@ -123,7 +114,10 @@ export default function PlannerTab({
                     <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d</div>
                   </div>
                 </div>
-                <span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.lunite.price}/mo</span>
+                <div className="text-right">
+                  <span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.lunite.price}/mo</span>
+                  {state.planner.luniteActive && <div className="text-emerald-400 text-[10px]">+90/day</div>}
+                </div>
               </div>
             </button>
             {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}

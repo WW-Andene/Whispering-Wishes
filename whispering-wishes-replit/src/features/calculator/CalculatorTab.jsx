@@ -10,7 +10,7 @@ import {
   PityCounterInput, CalcResultsCard,
 } from '../../appcore-components.jsx';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
-import { Crown, Swords, Sword, Star, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
+import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
 const CALC_DEFER_MS = 150;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
@@ -237,7 +237,7 @@ export default function CalculatorTab({ state, dispatch }) {
               <CardHeader>Resources</CardHeader>
               <CardBody className="space-y-3">
                   <div>
-                    <label className="kuro-label">Astrite</label>
+                    <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-yellow-400" />Astrite</label>
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
                     <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL).toLocaleString()} Convenes{Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL) > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString()})</span> : ''}</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
@@ -389,6 +389,9 @@ export default function CalculatorTab({ state, dispatch }) {
               <Card>
                 <CardHeader>Combined Analysis</CardHeader>
                 <CardBody>
+                    <p className="text-gray-400 text-[10px] mb-2 text-center">
+                      Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.charCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
+                    </p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">
                         <div className="text-2xl kuro-number text-emerald-400 font-extrabold">{combined.both}%</div>

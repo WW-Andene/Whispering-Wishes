@@ -17,7 +17,7 @@ import {
   FocusTrapModal,
 } from '../../appcore-providers.jsx';
 
-const FOCUS_DELAY_MS = 50;
+const FOCUS_DELAY_MS = 0;
 const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'character', label: 'Resonators', color: 'yellow' }),
   Object.freeze({ key: 'weapon', label: 'Weapons', color: 'pink' }),
@@ -85,12 +85,6 @@ export default function TrackerTab({
               <span className="text-gray-400">v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
             </div>
 
-            {new Date() > new Date(bannerEndDate) && (
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center content-layer">
-                <p className="text-yellow-400 text-xs font-medium">Banner period ended</p>
-                <p className="text-gray-400 text-[10px] mt-1">Banners updated — check back for the latest phase.</p>
-              </div>
-            )}
 
             {trackerCategory === 'character' && (
               <div className="space-y-2 banner-grid content-layer">

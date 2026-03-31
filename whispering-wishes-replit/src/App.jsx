@@ -82,7 +82,7 @@ const fetchWithTimeout = (url, options = {}) => {
     .finally(() => clearTimeout(timeoutId));
 };
 const DEBOUNCE_MS = 300;
-const FOCUS_DELAY_MS = 50;
+const FOCUS_DELAY_MS = 0;
 const CALC_DEFER_MS = 150;
 const MAX_ADMIN_ATTEMPTS = 5;
 const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;

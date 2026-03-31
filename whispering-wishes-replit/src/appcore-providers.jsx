@@ -277,7 +277,7 @@ const useFocusTrap = (isOpen) => {
     const el = ref.current;
     if (!el) return;
     const getFocusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const timer = setTimeout(() => { const f = getFocusable(); if (f.length) f[0].focus(); }, 50);
+    const raf = requestAnimationFrame(() => { const f = getFocusable(); if (f.length) f[0].focus(); });
     const handleKeyDown = (e) => {
       if (e.key !== 'Tab') return;
       // Re-query on each Tab press to catch dynamically rendered elements
@@ -288,7 +288,7 @@ const useFocusTrap = (isOpen) => {
       else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
     };
     el.addEventListener('keydown', handleKeyDown);
-    return () => { clearTimeout(timer); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus(); };
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus(); };
   }, [isOpen]);
   return ref;
 };
