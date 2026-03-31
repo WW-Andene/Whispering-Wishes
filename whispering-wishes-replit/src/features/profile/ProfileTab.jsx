@@ -1659,25 +1659,54 @@ Example: {"pulls":[...]}'
 
                     {/* Camera / Screenshot OCR */}
                     {directCameraOpen && createPortal(
-                      <div className="fixed inset-0 z-[9999] bg-black flex flex-col">
-                        <video ref={directVideoRef} muted playsInline className="flex-1 w-full object-cover" />
-                        <div className="absolute inset-0 pointer-events-none">
-                          <div className="absolute top-[15%] left-[10%] w-6 h-6 border-t-2 border-l-2 border-emerald-400/60 rounded-tl" />
-                          <div className="absolute top-[15%] right-[10%] w-6 h-6 border-t-2 border-r-2 border-emerald-400/60 rounded-tr" />
-                          <div className="absolute bottom-[25%] left-[10%] w-6 h-6 border-b-2 border-l-2 border-emerald-400/60 rounded-bl" />
-                          <div className="absolute bottom-[25%] right-[10%] w-6 h-6 border-b-2 border-r-2 border-emerald-400/60 rounded-br" />
+                      <div className="fixed inset-0 z-[9999] flex flex-col" style={{ background: 'linear-gradient(135deg, #080c14, #0f1520)' }}>
+                        {/* Video feed */}
+                        <div className="flex-1 relative mx-3 mt-3 mb-2 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(237,175,24,0.15)' }}>
+                          <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
+                          {/* Corner brackets — gold themed */}
+                          <div className="absolute inset-0 pointer-events-none">
+                            <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-yellow-500/50 rounded-tl-lg" />
+                            <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-yellow-500/50 rounded-tr-lg" />
+                            <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-yellow-500/50 rounded-bl-lg" />
+                            <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-yellow-500/50 rounded-br-lg" />
+                            {/* Center crosshair */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                              <div className="w-px h-6 bg-yellow-500/30 absolute left-1/2 -translate-x-1/2 -top-3" />
+                              <div className="h-px w-6 bg-yellow-500/30 absolute top-1/2 -translate-y-1/2 -left-3" />
+                            </div>
+                          </div>
+                          {/* Scan line animation */}
+                          <div className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-yellow-400/40 to-transparent pointer-events-none" style={{ animation: 'scanLine 3s ease-in-out infinite', top: '30%' }} />
                         </div>
-                        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)' }}>
-                          <span className="text-white text-xs font-medium">Point at your Convene History URL</span>
-                          <button onClick={closeDirectCamera} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
-                            <X size={18} />
+
+                        {/* Top header bar */}
+                        <div className="absolute top-0 left-0 right-0 p-3 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, rgba(8,12,20,0.95), rgba(8,12,20,0.5), transparent)', paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
+                          <div className="flex items-center gap-2.5">
+                            <img src={HEADER_ICON} alt="" className="w-7 h-7 rounded-lg" />
+                            <div>
+                              <p className="text-white text-[11px] font-semibold tracking-wide">Convene Scanner</p>
+                              <p className="text-yellow-500/60 text-[8px] uppercase tracking-widest">Whispering Wishes</p>
+                            </div>
+                          </div>
+                          <button onClick={closeDirectCamera} className="min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center text-gray-400 hover:text-white transition-colors" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <X size={16} />
                           </button>
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-center" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
-                          <button onClick={captureDirectCamera} className="w-16 h-16 rounded-full border-4 border-white flex items-center justify-center active:scale-90 transition-transform">
-                            <div className="w-12 h-12 rounded-full bg-white" />
+
+                        {/* Instruction text */}
+                        <div className="text-center px-4 py-1">
+                          <p className="text-gray-400 text-[10px]">Point camera at your Convene History URL in the browser</p>
+                        </div>
+
+                        {/* Bottom capture area */}
+                        <div className="flex items-center justify-center gap-6 pb-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+                          <button onClick={captureDirectCamera} className="w-[68px] h-[68px] rounded-full flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'linear-gradient(135deg, rgba(237,175,24,0.15), rgba(237,175,24,0.05))', border: '3px solid rgba(237,175,24,0.6)', boxShadow: '0 0 20px rgba(237,175,24,0.15)' }}>
+                            <div className="w-[52px] h-[52px] rounded-full" style={{ background: 'linear-gradient(135deg, rgba(237,175,24,0.9), rgba(245,158,11,0.9))' }} />
                           </button>
                         </div>
+
+                        {/* Scan line keyframes */}
+                        <style>{`@keyframes scanLine { 0%,100% { top: 20%; opacity: 0; } 50% { top: 70%; opacity: 1; } }`}</style>
                       </div>,
                       document.body
                     )}
