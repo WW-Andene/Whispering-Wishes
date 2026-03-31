@@ -855,10 +855,13 @@ export default function TeamsTab({
     if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) syn += 10;
     syn = Math.min(syn, 100);
     const warnings = [];
-    if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
-    if (mems.length < 3) warnings.push('Incomplete team');
-    const els = new Set(mems.map(m => m.d.element));
-    if (els.size === mems.length && mems.length >= 3) warnings.push('No element resonance');
+    if (mems.length < 3) {
+      warnings.push('Incomplete team');
+    } else {
+      if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
+      const els = new Set(mems.map(m => m.d.element));
+      if (els.size === mems.length) warnings.push('No element resonance');
+    }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
     // Build rotation timeline for visualizer
@@ -1131,7 +1134,7 @@ export default function TeamsTab({
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
                             <div className="text-gray-500 text-sm mb-1">No characters assigned</div>
-                            <p className="text-gray-600 text-[10px]">Tap a slot below to add a Resonator to this team</p>
+                            <p className="text-gray-600 text-[10px]">Select a slot below to add a Resonator to this team</p>
                           </div>
                         )}
                         {teamSlots.map((charName, slotIdx) => {
@@ -2105,7 +2108,7 @@ export default function TeamsTab({
                           <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
                           <p className="text-gray-400 text-[10px]">All echoes — select an enemy to fight against</p>
                         </div>
-                        <button onClick={() => setEnemyEchoModalOpen(false)} className="min-w-[36px] min-h-[36px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close"><X size={16} className="text-gray-400" /></button>
+                        <button onClick={() => setEnemyEchoModalOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close"><X size={16} className="text-gray-400" /></button>
                       </div>
                       {/* Search + Filters */}
                       <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">

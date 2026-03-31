@@ -215,7 +215,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -615,7 +615,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -789,7 +789,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -5293,19 +5293,19 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 });
 BannerCard.displayName = 'BannerCard';
 
-const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange }) => {
+const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
   const isRecurring = !isDaily && !isWeekly && event.resetType && /^~?\d+\s*(days?|d|h|m)?$/i.test(event.resetType.trim());
-  
+
   const endDate = useMemo(() => {
     if (isDaily) return getNextDailyReset(server);
     if (isWeekly) return getNextWeeklyReset(server);
     if (isRecurring) return getRecurringEventEnd(event.currentEnd, event.resetType, server);
     return getServerAdjustedEnd(event.currentEnd, server);
   }, [event, server, isDaily, isWeekly, isRecurring, resetTick]);
-  
+
   const handleExpire = useCallback(() => {
     if (isDaily || isWeekly || isRecurring) {
       setResetTick(t => t + 1);
@@ -5313,50 +5313,51 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       if (onStatusChange) onStatusChange(null);
     }
   }, [isDaily, isWeekly, isRecurring, onStatusChange]);
-  
+
   const recalcFn = useMemo(() => {
     if (isDaily) return () => getNextDailyReset(server);
     if (isWeekly) return () => getNextWeeklyReset(server);
     if (isRecurring) return () => getRecurringEventEnd(event.currentEnd, event.resetType, server);
     return null;
   }, [isDaily, isWeekly, isRecurring, server, event]);
-  
+
   const colors = EVENT_ACCENT_COLORS[event.accentColor] || EVENT_ACCENT_COLORS.cyan;
   const imgUrl = bannerImage;
-  
-  const maskGradient = visualSettings 
+
+  const maskGradient = visualSettings
     ? generateMaskGradient(visualSettings.shadowFadePosition, visualSettings.shadowFadeIntensity)
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
-  
+
   const isDone = status === 'done';
   const isSkipped = status === 'skipped';
-  
+  const dimmed = isSkipped || isExpired;
+
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, opacity: isSkipped ? 0.5 : 1 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.5 : 1 }}>
       {imgUrl && (
-        <img 
-          src={imgUrl} 
-          alt={event.name} 
+        <img
+          src={imgUrl}
+          alt={event.name}
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             zIndex: 1,
             opacity: pictureOpacity,
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient,
-            filter: isSkipped ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
+            filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
           }}
           loading="lazy"
           onError={hideOnError}
         />
       )}
-      
+
       {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
-      
+
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
+            <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
               {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
               {isSkipped && <X size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}
@@ -5364,16 +5365,22 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
-            <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
+            {isExpired ? (
+              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-400 border border-red-500/20">Expired</span>
+            ) : (
+              <>
+                <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+                <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
+              </>
+            )}
           </div>
         </div>
-        
+
         <div className="flex justify-between items-end">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
+          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isExpired ? 'bg-gray-500/20 text-gray-500' : isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
             {event.rewards}
           </div>
-          {onStatusChange && (
+          {onStatusChange && !isExpired && (
             <div className="flex gap-1">
               {!isDone && (
                 <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
@@ -5387,7 +5394,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
               )}
               {status && (
                 <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
-                  Undo
+                  {isDone ? 'Undo Done' : 'Undo Skip'}
                 </button>
               )}
             </div>

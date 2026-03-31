@@ -9,6 +9,10 @@ import {
   EVENTS, getServerOffset,
 } from '../../appcore-data.js';
 import {
+  getServerAdjustedEnd, getRecurringEventEnd,
+  getNextDailyReset, getNextWeeklyReset,
+} from '../../appcore-engine.js';
+import {
   Card, CardHeader, CardBody, EventCard, TabBackground, TabErrorBoundary,
   getActiveBanners,
 } from '../../appcore-components.jsx';
@@ -114,7 +118,22 @@ export default function EventsTab({
               No events currently tracked
             </div>
           );
-          return entries.map(([key, ev]) => (
+
+          // Determine which events are expired (non-recurring with past end date)
+          const now = Date.now();
+          const isEventExpired = (ev) => {
+            if (ev.dailyReset || ev.weeklyReset) return false;
+            const isRecurring = ev.resetType && /^~?\d+\s*(days?|d|h|m)?$/i.test(ev.resetType.trim());
+            if (isRecurring) return false;
+            if (!ev.currentEnd) return false;
+            const end = getServerAdjustedEnd(ev.currentEnd, state.server);
+            return end.getTime() <= now;
+          };
+
+          const active = entries.filter(([, ev]) => !isEventExpired(ev));
+          const expired = entries.filter(([, ev]) => isEventExpired(ev));
+
+          const renderCard = ([key, ev], isExpired) => (
             <EventCard
               key={key}
               event={{...ev, key}}
@@ -122,9 +141,26 @@ export default function EventsTab({
               bannerImage={eventImageMap[key] || ev.imageUrl}
               visualSettings={visualSettings}
               status={state.eventStatus[key]}
+              isExpired={isExpired}
               onStatusChange={(s) => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: s })}
             />
-          ));
+          );
+
+          return (
+            <>
+              {active.map((entry) => renderCard(entry, false))}
+              {expired.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 pt-2 pb-1">
+                    <div className="flex-1 h-px bg-gray-700/50" />
+                    <span className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Expired</span>
+                    <div className="flex-1 h-px bg-gray-700/50" />
+                  </div>
+                  {expired.map((entry) => renderCard(entry, true))}
+                </>
+              )}
+            </>
+          );
         })()}
       </div>
       <p className="text-gray-500 text-[10px] text-center content-layer sticky bottom-0 py-2" style={{ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)' }}>Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>

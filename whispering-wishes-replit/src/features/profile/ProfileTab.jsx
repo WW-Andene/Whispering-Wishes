@@ -1155,7 +1155,7 @@ export default function ProfileTab({
               <CardBody>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
                   {Object.keys(SERVERS).map(s => (
-                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
+                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[44px] py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
                 <p className="text-gray-400 text-[10px] mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
@@ -1305,7 +1305,7 @@ export default function ProfileTab({
                       ].map(bg => (
                         <button key={bg.id}
                           onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id })}
-                          className={`py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
+                          className={`min-h-[36px] py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
                           style={visualSettings.bgStyle !== bg.id ? { background: 'var(--bg-btn)' } : undefined}
                         >{bg.label}</button>
                       ))}
@@ -1320,7 +1320,7 @@ export default function ProfileTab({
                               const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
                               return <button key={res}
                                 onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
-                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                className={`flex-1 min-h-[32px] py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                 style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                               >{res}%</button>;
                             })}
@@ -1334,7 +1334,7 @@ export default function ProfileTab({
                               const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
                               return <button key={fps}
                                 onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
-                                className={`flex-1 py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                className={`flex-1 min-h-[32px] py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                 style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                               >{fps}</button>;
                             })}
