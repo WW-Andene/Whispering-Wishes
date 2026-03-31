@@ -1659,105 +1659,68 @@ Example: {"pulls":[...]}'
 
                     {/* Camera / Screenshot OCR */}
                     {directCameraOpen && createPortal(
-                      <div className="fixed inset-0 z-[9999] flex flex-col" style={{ background: '#05080e' }}>
-                        {/* Video feed with vignette */}
-                        <div className="flex-1 relative mx-2 mt-2 mb-1 rounded-xl overflow-hidden">
-                          <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
-                          {/* Vignette overlay */}
-                          <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 80px rgba(0,0,0,0.6), inset 0 0 160px rgba(0,0,0,0.3)' }} />
+                      <div className="fixed inset-0 z-[9999]">
+                        {/* Full-bleed video — no margins, no borders */}
+                        <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
 
-                          {/* HUD overlay */}
-                          <div className="absolute inset-0 pointer-events-none">
-                            {/* Corner L-brackets — thick, game-style */}
-                            <div className="absolute top-6 left-6">
-                              <div className="w-10 h-[3px] bg-yellow-400/70" />
-                              <div className="w-[3px] h-10 bg-yellow-400/70" />
-                            </div>
-                            <div className="absolute top-6 right-6">
-                              <div className="w-10 h-[3px] bg-yellow-400/70 ml-auto" />
-                              <div className="w-[3px] h-10 bg-yellow-400/70 ml-auto" />
-                            </div>
-                            <div className="absolute bottom-6 left-6">
-                              <div className="w-[3px] h-10 bg-yellow-400/70" />
-                              <div className="w-10 h-[3px] bg-yellow-400/70" />
-                            </div>
-                            <div className="absolute bottom-6 right-6">
-                              <div className="w-[3px] h-10 bg-yellow-400/70 ml-auto" />
-                              <div className="w-10 h-[3px] bg-yellow-400/70 ml-auto" />
-                            </div>
+                        {/* HUD overlay — all transparent, no opaque blocks */}
+                        <div className="absolute inset-0 pointer-events-none">
+                          {/* Corner brackets — app gold, same style as kuro-card-inner ::before/::after */}
+                          <div className="absolute top-16 left-5 w-8 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6 }} />
+                          <div className="absolute top-16 left-5 h-8 w-[2px]" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6 }} />
+                          <div className="absolute top-16 right-5 w-8 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6, marginLeft: 'auto' }} />
+                          <div className="absolute top-16 right-5 h-8 w-[2px] ml-auto" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6 }} />
+                          <div className="absolute bottom-28 left-5 h-8 w-[2px]" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6 }} />
+                          <div className="absolute bottom-20 left-5 w-8 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6 }} />
+                          <div className="absolute bottom-28 right-5 h-8 w-[2px] ml-auto" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6 }} />
+                          <div className="absolute bottom-20 right-5 w-8 h-[2px]" style={{ background: 'var(--color-gold, #edaf18)', opacity: 0.6, marginLeft: 'auto' }} />
 
-                            {/* Center reticle */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16">
-                              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1.5px] h-4 bg-yellow-400/40" />
-                              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] h-4 bg-yellow-400/40" />
-                              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[1.5px] w-4 bg-yellow-400/40" />
-                              <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[1.5px] w-4 bg-yellow-400/40" />
-                              <div className="absolute inset-[6px] rounded-full border border-yellow-400/20" />
-                            </div>
+                          {/* Sweep beam */}
+                          <div className="absolute left-0 right-0 h-[1px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 10%, rgba(237,175,24,0.35) 50%, transparent 90%)' }} />
 
-                            {/* HUD data readouts — top left */}
-                            <div className="absolute top-8 left-8 mt-[14px] ml-4 space-y-1">
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ animation: 'camPulse 2s infinite' }} />
-                                <span className="text-emerald-400 text-[8px] font-mono uppercase tracking-wider">Live</span>
-                              </div>
-                              <p className="text-white/30 text-[7px] font-mono">OCR · GROQ VISION</p>
-                            </div>
+                          {/* Live indicator */}
+                          <div className="absolute left-5 flex items-center gap-1.5" style={{ top: 'calc(4rem + 12px)' }}>
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ animation: 'camPulse 2s infinite' }} />
+                            <span className="text-emerald-400/80 text-[8px] font-mono uppercase tracking-wider drop-shadow-lg">Live</span>
+                          </div>
 
-                            {/* HUD data readouts — top right */}
-                            <div className="absolute top-8 right-8 mt-[14px] mr-4 text-right space-y-1">
-                              <p className="text-white/30 text-[7px] font-mono">{new Date().toLocaleTimeString()}</p>
-                              <p className="text-yellow-500/40 text-[7px] font-mono">RES: 1920x1080</p>
-                            </div>
-
-                            {/* Horizontal scan lines (subtle) */}
-                            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 3px)', backgroundSize: '100% 3px' }} />
-
-                            {/* Sweeping scan beam */}
-                            <div className="absolute left-0 right-0 h-[2px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 0%, rgba(237,175,24,0) 15%, rgba(237,175,24,0.5) 50%, rgba(237,175,24,0) 85%, transparent 100%)' }} />
-
-                            {/* Bottom instruction overlay */}
-                            <div className="absolute bottom-8 left-0 right-0 text-center">
-                              <p className="text-white/50 text-[9px] font-medium tracking-wider uppercase">Align URL within brackets</p>
-                            </div>
+                          {/* Instruction */}
+                          <div className="absolute bottom-[88px] left-0 right-0 text-center">
+                            <p className="text-white/40 text-[9px] font-medium tracking-wider uppercase drop-shadow-lg">Align URL within frame</p>
                           </div>
                         </div>
 
-                        {/* Top header — glass panel */}
-                        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2.5" style={{ background: 'rgba(5,8,14,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(237,175,24,0.1)', paddingTop: 'max(10px, env(safe-area-inset-top))' }}>
+                        {/* Top bar — transparent gradient, not a solid block */}
+                        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))', paddingBottom: '8px', background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)' }}>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(237,175,24,0.3)', boxShadow: '0 0 8px rgba(237,175,24,0.1)' }}>
+                            <div className="w-7 h-7 rounded-lg overflow-hidden shadow-lg" style={{ border: '1px solid rgba(237,175,24,0.25)' }}>
                               <img src={HEADER_ICON} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div>
-                              <p className="text-white text-[11px] font-semibold" style={{ letterSpacing: '0.08em' }}>CONVENE SCANNER</p>
-                              <p className="text-[7px] font-mono uppercase" style={{ color: 'rgba(237,175,24,0.5)', letterSpacing: '0.2em' }}>Whispering Wishes</p>
+                              <p className="text-white/90 text-[10px] font-semibold tracking-wide drop-shadow-lg">Convene Scanner</p>
+                              <p className="text-[7px] uppercase drop-shadow-lg" style={{ color: 'rgba(237,175,24,0.5)', letterSpacing: '0.15em' }}>Whispering Wishes</p>
                             </div>
                           </div>
-                          <button onClick={closeDirectCamera} className="min-w-[40px] min-h-[40px] rounded-lg flex items-center justify-center text-gray-500 hover:text-white active:scale-95 transition-all" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                            <X size={16} />
+                          <button onClick={closeDirectCamera} className="kuro-btn min-w-[40px] min-h-[40px] !rounded-xl flex items-center justify-center !p-0 pointer-events-auto" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <X size={16} className="text-gray-300" />
                           </button>
                         </div>
 
-                        {/* Bottom capture bar — glass panel */}
-                        <div className="flex items-center justify-center py-3" style={{ background: 'rgba(5,8,14,0.85)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(237,175,24,0.1)', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-                          <button onClick={captureDirectCamera} className="group relative active:scale-90 transition-transform">
-                            {/* Outer ring — animated glow */}
-                            <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center" style={{ border: '2px solid rgba(237,175,24,0.4)', animation: 'camGlow 3s ease-in-out infinite' }}>
-                              {/* Inner button */}
-                              <div className="w-[56px] h-[56px] rounded-full transition-all group-hover:scale-105" style={{ background: 'linear-gradient(135deg, #edaf18, #f59e0b)', boxShadow: '0 4px 20px rgba(237,175,24,0.3)' }}>
-                                <div className="w-full h-full rounded-full flex items-center justify-center">
-                                  <Camera size={20} className="text-black/80" />
-                                </div>
+                        {/* Bottom bar — transparent gradient with capture button */}
+                        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))', paddingTop: '20px', background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%)' }}>
+                          <button onClick={captureDirectCamera} className="active:scale-90 transition-transform pointer-events-auto">
+                            <div className="w-[64px] h-[64px] rounded-full flex items-center justify-center" style={{ border: '2px solid rgba(237,175,24,0.5)', animation: 'camGlow 3s ease-in-out infinite' }}>
+                              <div className="w-[50px] h-[50px] rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(237,175,24,0.85), rgba(245,158,11,0.85))', boxShadow: '0 2px 16px rgba(237,175,24,0.25)' }}>
+                                <Camera size={18} className="text-black/70" />
                               </div>
                             </div>
                           </button>
                         </div>
 
                         <style>{`
-                          @keyframes camScan { 0% { top: 10%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 85%; opacity: 0; } }
+                          @keyframes camScan { 0% { top: 15%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 80%; opacity: 0; } }
                           @keyframes camPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-                          @keyframes camGlow { 0%,100% { box-shadow: 0 0 8px rgba(237,175,24,0.2); border-color: rgba(237,175,24,0.3); } 50% { box-shadow: 0 0 20px rgba(237,175,24,0.4); border-color: rgba(237,175,24,0.6); } }
+                          @keyframes camGlow { 0%,100% { box-shadow: 0 0 6px rgba(237,175,24,0.15); } 50% { box-shadow: 0 0 16px rgba(237,175,24,0.3); } }
                         `}</style>
                       </div>,
                       document.body
