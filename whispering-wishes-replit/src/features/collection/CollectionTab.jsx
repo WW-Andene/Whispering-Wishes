@@ -314,7 +314,7 @@ export default function CollectionTab({
                       <Crown size={12} className="inline mr-1" />Characters
                     </button>
                     <button
-                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); }}
+                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
                       title="Weapons"
                       aria-label="View weapons"
@@ -323,7 +323,7 @@ export default function CollectionTab({
                       <Sword size={12} className="inline mr-1" />Weapons
                     </button>
                     <button
-                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionOwnedFilter('all'); }}
+                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
                       title="Echoes"
                       aria-label="View echoes"
@@ -452,7 +452,7 @@ export default function CollectionTab({
                     value={collectionOwnedFilter}
                     onChange={setCollectionOwnedFilter}
                     options={[
-                      { value: 'all', label: 'All Owned' },
+                      { value: 'all', label: 'Ownership' },
                       { value: 'owned', label: 'Owned' },
                       { value: 'not-owned', label: 'Not Owned' },
                     ]}

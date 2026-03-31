@@ -343,7 +343,7 @@ export default function AnalyticsTab({
                 <CardBody className="text-center py-8">
                   <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
                   <p className="text-gray-300 text-sm font-medium">Awaiting signal data</p>
-                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and pull analytics.</p>
+                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.</p>
                   <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
@@ -770,7 +770,7 @@ export default function AnalyticsTab({
                         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
                       </CardHeader>
                       <CardBody>
-                        <p className="text-gray-500 text-xs text-center py-4">Need 2+ five-star pulls to show distribution</p>
+                        <p className="text-gray-500 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
                       </CardBody>
                     </Card>
                   );

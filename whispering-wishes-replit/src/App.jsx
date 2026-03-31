@@ -814,7 +814,20 @@ function WhisperingWishesInner() {
   const tabNavRef = useRef(null);
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
-    window.scrollTo({ top: 0 });
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Issue #136: Scroll to top when activeTab changes (safety net for all code paths)
+  useEffect(() => { window.scrollTo(0, 0); }, [activeTab]);
+
+  // Issue #144: Offline indicator state
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => { window.removeEventListener('online', goOnline); window.removeEventListener('offline', goOffline); };
   }, []);
 
   // Swipe navigation between tabs
@@ -1188,7 +1201,7 @@ function WhisperingWishesInner() {
     // Banner diversity — pulled on multiple banner types
     const bannerTypesUsed = [featuredHist, weaponHist, stdCharHist, stdWeapHist].filter(h => h.length > 0).length;
     if (bannerTypesUsed >= 4) list.push({ id: 'diverse', name: 'Pioneer Podcast', desc: 'Convened on all banner types', icon: 'Trophy', color: '#06b6d4', tier: 'cyan' });
-    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Pioneer Intern', desc: 'Pulled on 3 different banner types — almost a real Pioneer', icon: 'Trophy', color: '#3b82f6', tier: 'blue' });
+    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Pioneer Intern', desc: 'Convened on 3 different banner types — almost a real Pioneer', icon: 'Trophy', color: '#3b82f6', tier: 'blue' });
 
     // ═══ CHARACTER OWNERSHIP PROGRESSION ═══
     const owned5Count = owned5StarChars.size;
@@ -1446,7 +1459,7 @@ function WhisperingWishesInner() {
     if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature — peak Forte optimization`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
     else if (sigCount >= 5) list.push({ id: 'sig5', name: 'Forte Synergy', desc: `${sigCount} characters with their signature weapon — built different`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
     else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Echo Equipped', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
-    else if (sigCount >= 1) list.push({ id: 'sig1', name: 'Signature Acquired', desc: 'Pulled a character and their signature weapon — BiS secured', icon: 'Sword', color: '#22c55e', tier: 'green' });
+    else if (sigCount >= 1) list.push({ id: 'sig1', name: 'Signature Acquired', desc: 'Convened a character and their signature weapon — BiS secured', icon: 'Sword', color: '#22c55e', tier: 'green' });
 
     // Speedrun — won 50/50 at low pity (<25)
     const speedrun5050 = featured5Stars.find(p => p.won5050 === true && p.pity > 0 && p.pity <= 20);
@@ -1582,7 +1595,7 @@ function WhisperingWishesInner() {
 
       // FIX #1: Detect own backup format (has 'state' key from handleExport)
       if (data.state && typeof data.state === 'object' && data.state.profile) {
-        const doRestore = await confirm?.('Restore full backup?', 'This will replace ALL current data (pulls, teams, settings) with the backup. Continue?', { confirmText: 'Restore', dangerous: true });
+        const doRestore = await confirm?.('Restore full backup?', 'This will replace ALL current data (Convenes, teams, settings) with the backup. Continue?', { confirmText: 'Restore', dangerous: true });
         if (!doRestore) return;
         dispatch({ type: 'LOAD_STATE', state: data.state });
         // Restore auxiliary data (visual settings, team equipment, etc.)
@@ -1837,6 +1850,13 @@ function WhisperingWishesInner() {
         Skip to content
       </a>
       
+      {/* Issue #144: Offline indicator banner */}
+      {!isOnline && (
+        <div role="alert" className="sticky top-0 z-[60] text-center text-xs font-medium py-1.5 px-3" style={{ background: '#b91c1c', color: '#fff' }}>
+          You are offline — some features may be unavailable
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 border-b" style={{borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)', position: 'sticky', overflow: 'hidden'}}>
         {/* Theme banner art background */}

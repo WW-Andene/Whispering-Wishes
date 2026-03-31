@@ -937,9 +937,12 @@ export default function TeamsTab({
                 haptic.success();
               };
 
-              const removeFromSlot = (slotIdx) => {
-                dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
-                haptic.light();
+              const removeFromSlot = async (slotIdx) => {
+                const charName = teamSlots[slotIdx];
+                if (await confirm?.({ title: 'Remove character', message: `Remove ${charName || 'this character'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
+                  dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
+                  haptic.light();
+                }
               };
 
               // All available characters for selection
