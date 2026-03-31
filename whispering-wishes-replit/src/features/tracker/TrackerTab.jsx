@@ -3,8 +3,7 @@
 // Banner tracking with pity counters, category tabs, and banner history archive
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from 'react';
-import { useSessionState } from '../../utils/useSessionState.js';
+import React, { useState, useCallback } from 'react';
 import { Archive, ArrowRight, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
@@ -36,7 +35,13 @@ export default function TrackerTab({
   toast,
   confirm,
 }) {
-  const [trackerCategory, setTrackerCategory] = useSessionState('ww-tracker-cat', 'character');
+  const [trackerCategory, setTrackerCategoryRaw] = useState(() => {
+    try { return localStorage.getItem('ww-tracker-cat') || 'character'; } catch { return 'character'; }
+  });
+  const setTrackerCategory = useCallback((v) => {
+    setTrackerCategoryRaw(v);
+    try { localStorage.setItem('ww-tracker-cat', v); } catch {}
+  }, []);
   const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [bannerHistorySearch, setBannerHistorySearch] = useState('');
 

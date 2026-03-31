@@ -1691,7 +1691,7 @@ export default function TeamsTab({
                               <div className="mt-2 space-y-1">
                                 {memberDps.map(m => (
                                   <div key={m.name} className="flex items-center gap-2">
-                                    <span className="text-[9px] text-gray-400 w-20 truncate">{m.name}</span>
+                                    <span className="text-[9px] text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
                                     <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
                                       <div className="h-full rounded-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
                                     </div>
@@ -1769,7 +1769,7 @@ export default function TeamsTab({
                               </div>
                             )}
                             {/* Accuracy note */}
-                            <p className="text-[10px] text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills.</p>
+                            <p className="text-[10px] text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills. Synergy is an approximate team composition score.</p>
                           </div>
                         </CardBody>
                       </Card>
