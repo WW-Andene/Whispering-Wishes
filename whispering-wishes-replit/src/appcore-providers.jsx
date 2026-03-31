@@ -1037,22 +1037,21 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast);
     }
     
-    /* Top shimmer line — on the border, bleeds outside corners */
+    /* Top shimmer line — exactly on the card border */
     .kuro-card::after {
       content: '';
       position: absolute;
       top: -1px;
-      left: -1px;
-      right: -1px;
-      height: 0;
-      border-top: 1px solid transparent;
-      border-image: linear-gradient(90deg,
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg,
         transparent 0%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
         var(--shimmer-color-bright, rgba(255, 255, 255, 0.7)) 50%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 80%,
         transparent 100%
-      ) 1;
+      );
       animation: shimmer 3s ease-in-out infinite;
       z-index: 1;
     }
