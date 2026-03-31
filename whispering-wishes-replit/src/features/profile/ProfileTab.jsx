@@ -1242,7 +1242,7 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
-                  <p className="text-cyan-400 text-[10px] text-center">✓ Swipe left/right on content area to navigate</p>
+                  <p className="text-cyan-300 text-xs text-center">✓ Swipe left/right on content area to navigate</p>
                 )}
 
                 {/* Animations Toggle — 3-state: off < on < full */}

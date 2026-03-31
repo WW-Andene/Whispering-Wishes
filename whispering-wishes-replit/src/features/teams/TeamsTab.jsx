@@ -1015,7 +1015,7 @@ export default function TeamsTab({
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
-                          <Download size={12} />
+                          <Download size={12} /> Export
                         </button>
                         <button
                           onClick={() => {
@@ -1042,7 +1042,7 @@ export default function TeamsTab({
                           className="kuro-btn kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
-                          <Upload size={12} />
+                          <Upload size={12} /> Import
                         </button>
                         <button
                           onClick={() => {
@@ -1828,6 +1828,11 @@ export default function TeamsTab({
                                 const perfectPct = (s.perfectDps / unifiedMax) * 100;
                                 return (
                                   <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
+                                    <div className="flex items-center justify-between mb-1.5 pr-8">
+                                      <span className="text-[10px] font-medium text-gray-300 truncate" title={entry.slots.filter(Boolean).join(' / ')}>
+                                        {entry.slots.filter(Boolean).join(' / ') || 'Empty Team'}
+                                      </span>
+                                    </div>
                                     <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
                                       className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
                                       aria-label="Remove this team from comparison">

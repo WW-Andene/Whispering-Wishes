@@ -143,6 +143,7 @@ export default function CalculatorTab({ state, dispatch }) {
                   {/* Featured Banners */}
                   <div className="space-y-2">
                     <div className="kuro-label" id="featured-convene-label">Featured Convene</div>
+                    <div className="text-gray-400 text-[10px] -mt-1">Limited-time banner</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="featured-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'char'); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char' ? 'active-gold' : ''}`}>
                         <Crown size={16} className="mx-auto mb-1.5" />Resonator
@@ -159,6 +160,7 @@ export default function CalculatorTab({ state, dispatch }) {
                   {/* Standard Banners */}
                   <div className="space-y-2">
                     <div className="kuro-label" id="standard-convene-label">Standard Convene</div>
+                    <div className="text-gray-400 text-[10px] -mt-1">Permanent banner</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="standard-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'char'); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char' ? 'active-cyan' : ''}`}>
                         <Star size={16} className="mx-auto mb-1.5" />Resonator
@@ -177,6 +179,9 @@ export default function CalculatorTab({ state, dispatch }) {
                     <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} aria-pressed={state.calc.charGuaranteed} aria-label={state.calc.charGuaranteed ? 'Guaranteed next 5-star: on' : '50/50 active: off'} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
                       {state.calc.charGuaranteed ? '✓ Guaranteed (100%)' : '⚠ 50/50 Active'}
                     </button>
+                  )}
+                  {state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' && (
+                    <p className="text-gray-400 text-[10px] text-center">Weapon banners do not have a guaranteed pity system.</p>
                   )}
               </CardBody>
             </Card>
@@ -423,7 +428,7 @@ export default function CalculatorTab({ state, dispatch }) {
           <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
                 <p>Banner: {state.calc.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {state.calc.selectedBanner === 'char' ? 'Resonator' : state.calc.selectedBanner === 'weap' ? 'Weapon' : 'Both'}</p>
                 <p>Astrite: {(+state.calc.astrite || 0).toLocaleString()} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
@@ -431,7 +436,7 @@ export default function CalculatorTab({ state, dispatch }) {
                 <p>Std Char Pity: {state.calc.stdCharPity} • Std Weap Pity: {state.calc.stdWeapPity}</p>
                 <p>Copies: Char ×{state.calc.charCopies} • Weap ×{state.calc.weapCopies} • Std Char ×{state.calc.stdCharCopies} • Std Weap ×{state.calc.stdWeapCopies}</p>
               </div>
-              <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || 'Unnamed' }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
+              <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
             </CardBody>
           </Card>
       </FocusTrapModal>

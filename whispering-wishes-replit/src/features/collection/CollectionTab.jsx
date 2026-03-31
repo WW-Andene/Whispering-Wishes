@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
 import {
-  CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, CHAR_BUFF_TABLE,
+  CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, ECHO_SETS, CHAR_BUFF_TABLE,
   RELEASE_ORDER, WEAPON_RELEASE_ORDER,
   ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS,
   ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
@@ -187,7 +187,18 @@ export default function CollectionTab({
 
   const filterEchoes = useCallback((echoNames) => {
     return echoNames.filter(name => {
-      if (collectionSearch && !name.toLowerCase().includes(collectionSearch.toLowerCase())) return false;
+      if (collectionSearch) {
+        const searchLower = collectionSearch.toLowerCase();
+        const nameLower = name.toLowerCase();
+        const data = ECHO_DATA[name];
+        const matchesName = nameLower.includes(searchLower);
+        const matchesSet = data?.sets?.some(s => s.toLowerCase().includes(searchLower));
+        const matchesBuff = Array.isArray(data?.buff)
+          ? data.buff.some(b => b.toLowerCase().includes(searchLower))
+          : data?.buff?.toLowerCase().includes(searchLower);
+        const matchesElement = data?.sets?.some(s => ECHO_SETS[s]?.element?.toLowerCase().includes(searchLower));
+        if (!matchesName && !matchesSet && !matchesBuff && !matchesElement) return false;
+      }
       const data = ECHO_DATA[name];
       if (!data) return true;
       if (collectionEchoSetFilter !== 'all' && !data.sets.includes(collectionEchoSetFilter)) return false;

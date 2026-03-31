@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
-import { Archive, ArrowRight, Crown, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
+import { Archive, ArrowRight, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import {
   BANNER_HISTORY,
 } from '../../appcore-data.js';
@@ -38,6 +38,7 @@ export default function TrackerTab({
 }) {
   const [trackerCategory, setTrackerCategory] = useSessionState('ww-tracker-cat', 'character');
   const [showBannerHistory, setShowBannerHistory] = useState(false);
+  const [bannerHistorySearch, setBannerHistorySearch] = useState('');
 
   return (
           <div role="tabpanel" id="tabpanel-tracker" aria-labelledby="tab-tracker" tabIndex="0">
@@ -226,17 +227,45 @@ export default function TrackerTab({
             </Card>
 
             {/* Banner History Modal */}
-            <FocusTrapModal isOpen={showBannerHistory} onClose={() => setShowBannerHistory(false)} className="" ariaLabel="Banner History" onClick={() => setShowBannerHistory(false)} centered>
+            <FocusTrapModal isOpen={showBannerHistory} onClose={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="" ariaLabel="Banner History" onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} centered>
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
                     <span className="text-white text-sm font-semibold">Banner History</span>
                   </div>
-                  <button onClick={() => setShowBannerHistory(false)} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
+                  <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
+                </div>
+                {/* Search / filter input */}
+                <div className="px-4 pt-3 pb-1">
+                  <div className="relative">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={bannerHistorySearch}
+                      onChange={e => setBannerHistorySearch(e.target.value)}
+                      placeholder="Search by name, version, or phase\u2026"
+                      className="w-full pl-8 pr-3 py-2 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                      aria-label="Filter banner history"
+                    />
+                  </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
-                  {BANNER_HISTORY.map(b => (
+                  {(() => {
+                    const q = bannerHistorySearch.trim().toLowerCase();
+                    const filtered = q
+                      ? BANNER_HISTORY.filter(b =>
+                          b.characters.some(c => c.toLowerCase().includes(q)) ||
+                          b.weapons.some(w => w.toLowerCase().includes(q)) ||
+                          `v${b.version}`.toLowerCase().includes(q) ||
+                          `p${b.phase}`.toLowerCase().includes(q) ||
+                          `${b.version}`.includes(q) ||
+                          `v${b.version} p${b.phase}`.toLowerCase().includes(q)
+                        )
+                      : BANNER_HISTORY;
+                    return filtered.length === 0
+                      ? <div className="text-center text-gray-500 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
+                      : filtered.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
@@ -282,7 +311,8 @@ export default function TrackerTab({
                       </div>
                       </div>
                     </div>
-                  ))}
+                  ));
+                  })()}
                 </div>
               </div></div>
             </FocusTrapModal>
