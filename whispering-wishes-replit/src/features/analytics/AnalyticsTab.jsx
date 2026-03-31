@@ -818,7 +818,7 @@ export default function AnalyticsTab({
                           Average pity: {avgPity}, range: {minPity} to {maxPity}.
                         </div>
                         {/* Histogram bars - neon glow style */}
-                        <div className="flex items-end gap-1.5 h-24 mb-2" aria-hidden="true">
+                        <div className="flex items-end gap-1.5 h-24 pt-5 mb-2" aria-hidden="true">
                           {allBuckets.map(label => {
                             const count = buckets[label] || 0;
                             const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
