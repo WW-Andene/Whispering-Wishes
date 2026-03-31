@@ -5254,7 +5254,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ minHeight: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <div className="absolute inset-0" style={{ zIndex: 1 }}>
           <img
@@ -5374,7 +5374,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   const dimmed = isSkipped || isExpired;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
       {imgUrl && (
         <img
           src={imgUrl}
@@ -5988,7 +5988,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const hasStats = profileData?.history?.length > 0;
   const isFull = visualSettings?.animationsEnabled === 'full';
   return (
-    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {bannerImage && (
         <img
           src={bannerImage}
