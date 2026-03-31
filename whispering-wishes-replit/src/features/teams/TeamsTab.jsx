@@ -1000,7 +1000,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex flex-wrap gap-1 items-center">
+                      <div className="flex gap-0.5 items-center">
                         <button
                           onClick={() => {
                             try {
@@ -1012,7 +1012,7 @@ export default function TeamsTab({
                               toast?.addToast?.('Teams exported!', 'success');
                             } catch { toast?.addToast?.('Export failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn text-[10px] px-1.5 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
                           <Download size={12} />
@@ -1081,7 +1081,7 @@ export default function TeamsTab({
                               haptic.light();
                             } catch { toast?.addToast?.('Share failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn text-[10px] px-1.5 py-1.5 whitespace-nowrap"
                           aria-label="Copy team build to clipboard"
                         >
                           <Share2 size={12} />
@@ -1095,14 +1095,15 @@ export default function TeamsTab({
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
-                          className="kuro-btn kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-primary active-gold text-[10px] px-1.5 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
+                          title="Compare"
                         >
-                          + Compare
+                          <Plus size={12} />
                         </button>
                         <button
                           onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all characters from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn text-[10px] px-1.5 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
                           <Trash2 size={12} />
