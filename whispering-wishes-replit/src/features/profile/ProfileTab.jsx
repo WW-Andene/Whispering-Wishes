@@ -140,7 +140,10 @@ export default function ProfileTab({
   const [directError, setDirectError] = useState('');
   const [directProgress, setDirectProgress] = useState({});
   const [directScanStatus, setDirectScanStatus] = useState('idle'); // idle|scanning|done|error
+  const [directCameraOpen, setDirectCameraOpen] = useState(false);
   const directAbortRef = useRef(null);
+  const directVideoRef = useRef(null);
+  const directStreamRef = useRef(null);
 
   const handleDirectUrlChange = useCallback((val) => {
     setDirectUrl(val);
@@ -194,6 +197,45 @@ export default function ProfileTab({
       setDirectError(err.message || 'Screenshot scan failed');
     }
   }, [toast]);
+
+  const openDirectCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      directStreamRef.current = stream;
+      setDirectCameraOpen(true);
+      // Attach stream to video element after render
+      setTimeout(() => {
+        if (directVideoRef.current) {
+          directVideoRef.current.srcObject = stream;
+          directVideoRef.current.play().catch(() => {});
+        }
+      }, 100);
+    } catch (err) {
+      toast?.addToast?.(err.name === 'NotAllowedError' ? 'Camera access denied' : `Camera error: ${err.message}`, 'error');
+    }
+  }, [toast]);
+
+  const captureDirectCamera = useCallback(() => {
+    const video = directVideoRef.current;
+    if (!video) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    // Stop stream
+    directStreamRef.current?.getTracks().forEach(t => t.stop());
+    setDirectCameraOpen(false);
+    // Convert canvas to blob and OCR
+    canvas.toBlob(blob => { if (blob) handleScreenshotOcr(blob); }, 'image/jpeg', 0.85);
+  }, [handleScreenshotOcr]);
+
+  const closeDirectCamera = useCallback(() => {
+    directStreamRef.current?.getTracks().forEach(t => t.stop());
+    setDirectCameraOpen(false);
+  }, []);
 
   // ── Admin state ──────────────────────────────────────────────────────────
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -1615,15 +1657,36 @@ Example: {"pulls":[...]}'
                       <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-[10px] font-mono" />
                     </div>
 
-                    {/* Screenshot OCR */}
-                    <div className="flex gap-2">
-                      <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
-                        <Camera size={14} className="inline mr-1.5" />
-                        {directScanStatus === 'scanning' ? 'Scanning...' : 'Scan Screenshot'}
-                        <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
-                      </label>
-                    </div>
+                    {/* Camera / Screenshot OCR */}
+                    {directCameraOpen ? (
+                      <div className="space-y-2">
+                        <div className="relative rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
+                          <video ref={directVideoRef} muted playsInline className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 border-2 border-emerald-400/30 rounded-lg pointer-events-none" />
+                          <div className="absolute top-2 right-2 flex gap-1.5">
+                            <button onClick={closeDirectCamera} className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        </div>
+                        <button onClick={captureDirectCamera} className="kuro-btn active-emerald w-full py-2.5 text-xs font-medium">
+                          <Camera size={14} className="inline mr-1.5" />Capture
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-xs text-center" disabled={directScanStatus === 'scanning'}>
+                          <Camera size={14} className="inline mr-1.5" />
+                          {directScanStatus === 'scanning' ? 'Scanning...' : 'Open Camera'}
+                        </button>
+                        <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
+                          <Upload size={14} className="inline mr-1.5" />Upload Image
+                          <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
+                        </label>
+                      </div>
+                    )}
                     {directScanStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">IDs extracted successfully</p>}
+                    {directScanStatus === 'error' && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
 
                     {/* Fetch button */}
                     {directStatus === 'fetching' ? (
