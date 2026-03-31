@@ -1432,28 +1432,28 @@ export default function ProfileTab({
                     {visualSettings.bgStyle !== 'none' && (
                       <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
                         <div className="flex items-center gap-3">
-                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">Resolution</div>
+                          <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">Resolution</div>
                           <div className="flex gap-1 flex-1">
                             {[25, 50, 100, 200].map(res => {
                               const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
                               const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
                               return <button key={res}
                                 onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
-                                className={`flex-1 min-h-[32px] py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                 style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                               >{res}%</button>;
                             })}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="text-gray-500 text-[9px] font-medium w-[56px] shrink-0">FPS</div>
+                          <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">FPS</div>
                           <div className="flex gap-1 flex-1">
                             {[15, 30, 45, 60].map(fps => {
                               const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
                               const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
                               return <button key={fps}
                                 onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
-                                className={`flex-1 min-h-[32px] py-1 rounded text-[9px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                 style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                               >{fps}</button>;
                             })}
@@ -1656,16 +1656,16 @@ Example: {"pulls":[...]}'
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="text-gray-500 text-[9px] block mb-0.5">player_id</label>
+                        <label className="text-gray-500 text-[10px] block mb-0.5">player_id</label>
                         <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder="e.g. 500123456" className="kuro-input w-full text-[10px] font-mono" />
                       </div>
                       <div>
-                        <label className="text-gray-500 text-[9px] block mb-0.5">record_id</label>
+                        <label className="text-gray-500 text-[10px] block mb-0.5">record_id</label>
                         <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-[10px] font-mono" />
                       </div>
                     </div>
                     <div>
-                      <label className="text-gray-500 text-[9px] block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
+                      <label className="text-gray-500 text-[10px] block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
                       <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-[10px] font-mono" />
                     </div>
 
@@ -1779,7 +1779,7 @@ Example: {"pulls":[...]}'
                     {directStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">Import complete!</p>}
                     {directError && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
 
-                    <p className="text-gray-500 text-[9px]">Open Convene History in-game, copy the URL from the browser address bar. The URL expires after a few minutes.</p>
+                    <p className="text-gray-500 text-[10px]">Open Convene History in-game, copy the URL from the browser address bar. The URL expires after a few minutes.</p>
                   </div>
                 )}
               </CardBody>

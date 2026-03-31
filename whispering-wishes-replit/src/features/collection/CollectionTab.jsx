@@ -297,13 +297,12 @@ export default function CollectionTab({
                 value={collectionSearch}
                 onChange={(e) => setCollectionSearch(e.target.value)}
                 placeholder="Search by name, DPS, Electro, Broadblade..."
-                className="w-full px-3 py-2 pl-8 rounded-lg text-xs border border-[var(--border-medium)] text-white placeholder-gray-500 focus:border-yellow-500/50 focus:outline-none transition-all"
-                style={{ background: 'var(--bg-btn)' }}
+                className="kuro-input w-full pl-8 text-xs"
                 aria-label="Search collection by keyword"
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
               {collectionSearch && (
-                <button onClick={() => setCollectionSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
+                <button onClick={() => setCollectionSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
                   <X size={14} />
                 </button>
               )}
@@ -360,7 +359,7 @@ export default function CollectionTab({
                   </button>
                 </div>
               )}
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
 
                 {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
                 {collectionView === 'items' && (<>

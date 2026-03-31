@@ -2132,7 +2132,7 @@ function WhisperingWishesInner() {
                 <Download size={14} className="text-yellow-400" />
                 <span className="text-white text-sm font-semibold">Backup</span>
               </div>
-              <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
+              <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>

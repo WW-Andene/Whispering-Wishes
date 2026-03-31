@@ -23,7 +23,7 @@ export default function WeaponSelector({
   return (
                   <FocusTrapModal isOpen={weaponSelectorOpen} onClose={() => setWeaponSelectorOpen(false)} className="" onClick={() => setWeaponSelectorOpen(false)} centered>
                       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                        <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
                             <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
                             <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>

@@ -1000,7 +1000,7 @@ export default function TeamsTab({
                   {/* Team Card — selector row + grid + stats all inside one Card */}
                   <Card>
                     <CardHeader action={
-                      <div className="flex gap-0.5 items-center">
+                      <div className="flex gap-1 items-center">
                         <button
                           onClick={() => {
                             try {
@@ -1257,7 +1257,7 @@ export default function TeamsTab({
                               const rc = roleColors[m.d.role] || roleColors.Support;
                               const isMain = m.name === mainDps.name;
                               return (
-                                <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2.5"
+                                <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2"
                                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
 
                                   {/* ── Section 1: Character Header ── */}
@@ -1682,22 +1682,22 @@ export default function TeamsTab({
                               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                                 <div className="text-gray-400 text-[10px]">Raw DPS</div>
                                 <div className="text-lg font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{rawDps.toLocaleString()}/s</div>
-                                <div className="text-gray-500 text-[8px]">equipment only</div>
+                                <div className="text-gray-500 text-[9px]">equipment only</div>
                               </div>
                               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
                                 <div className="text-gray-400 text-[10px]">Full DPS</div>
                                 <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString()}/s</div>
-                                <div className="text-gray-500 text-[8px]">+buffs &amp; debuffs</div>
+                                <div className="text-gray-500 text-[9px]">+buffs &amp; debuffs</div>
                               </div>
                               <div className="kuro-stat kuro-stat-gold p-2 text-center">
                                 <div className="text-gray-400 text-[10px]">Perfect DPS</div>
                                 <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString()}/s</div>
-                                <div className="text-gray-500 text-[8px]">+echo active skills</div>
+                                <div className="text-gray-500 text-[9px]">+echo active skills</div>
                               </div>
                               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
                                 <div className="text-gray-400 text-[10px]">Synergy</div>
                                 <div className={`text-lg font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}%</div>
-                                <div className="text-gray-500 text-[8px]">team comp</div>
+                                <div className="text-gray-500 text-[9px]">team comp</div>
                               </div>
                             </div>
 
@@ -1706,11 +1706,11 @@ export default function TeamsTab({
                               <div className="mt-2 space-y-1">
                                 {memberDps.map(m => (
                                   <div key={m.name} className="flex items-center gap-2">
-                                    <span className="text-[9px] text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
+                                    <span className="text-[10px] text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
                                     <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
                                       <div className="h-full rounded-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
                                     </div>
-                                    <span className="text-[9px] text-gray-500 w-8 text-right">{m.pct}%</span>
+                                    <span className="text-[10px] text-gray-500 w-8 text-right">{m.pct}%</span>
                                   </div>
                                 ))}
                               </div>
@@ -1741,7 +1741,7 @@ export default function TeamsTab({
                                     return (
                                       <div key={i} className="flex items-center gap-1">
                                         <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                                        <span className="text-[9px] text-gray-400">{seg.name} <span className="text-gray-500">{seg.duration}s</span></span>
+                                        <span className="text-[10px] text-gray-400">{seg.name} <span className="text-gray-500">{seg.duration}s</span></span>
                                       </div>
                                     );
                                   })}
@@ -1749,7 +1749,7 @@ export default function TeamsTab({
                                 {/* Buff uptime bars */}
                                 {rotationTimeline.buffs.length > 0 && (
                                   <div className="mt-2 pt-2 border-t border-[var(--border-medium)]/30 space-y-1">
-                                    <div className="text-[9px] text-gray-500 mb-1">Buff Windows</div>
+                                    <div className="text-[10px] text-gray-500 mb-1">Buff Windows</div>
                                     {rotationTimeline.buffs.slice(0, 6).map((buff, i) => {
                                       const startPct = Math.min((buff.start / rotationTimeline.totalTime) * 100, 100);
                                       const durPct = Math.min((buff.duration / rotationTimeline.totalTime) * 100, 100 - startPct);
@@ -2123,7 +2123,7 @@ export default function TeamsTab({
                   {/* Enemy Echo Selector Modal — same UI as character selector with collection filters */}
                   <FocusTrapModal isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)} className="" onClick={() => setEnemyEchoModalOpen(false)} centered>
                     <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-                      <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                      <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                         <div>
                           <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
                           <p className="text-gray-400 text-[10px]">All echoes — select an enemy to fight against</p>

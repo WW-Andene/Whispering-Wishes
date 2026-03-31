@@ -42,7 +42,7 @@ export default function EventsTab({
                 setActiveBanners(getActiveBanners());
                 toast?.addToast?.('Banner data refreshed!', 'success');
               }}
-              className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 rounded-lg hover:bg-white/5"
+              className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg hover:bg-white/5"
             >
               <RefreshCcw size={12} /> Refresh Timers
             </button>

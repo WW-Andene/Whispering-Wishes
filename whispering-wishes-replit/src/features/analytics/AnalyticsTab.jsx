@@ -428,8 +428,8 @@ export default function AnalyticsTab({
 
                 {/* Luck Leaderboard Modal */}
                 <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard" centered>
-                    <div className="kuro-card w-full max-w-sm max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-                      <div className="p-4 pb-2 border-b border-[var(--border-medium)]" data-sheet-header>
+                    <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+                      <div className="px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <h3 className="text-white font-semibold text-sm">Community</h3>
@@ -695,7 +695,7 @@ export default function AnalyticsTab({
                       {(() => {
                       
                       return (<>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                         {trophies.list.map(trophy => {
                           const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                           return (
@@ -721,7 +721,7 @@ export default function AnalyticsTab({
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
                               <div className="text-[10px] font-bold text-white truncate">{trophy.name}</div>
-                              {trophy.desc && <div className="text-[8px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
+                              {trophy.desc && <div className="text-[9px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
                             </div>
                           );
                         })}

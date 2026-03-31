@@ -277,7 +277,7 @@ export default function TrackerTab({
                     <Archive size={14} className="text-purple-400" />
                     <span className="text-white text-sm font-semibold">Banner History</span>
                   </div>
-                  <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
+                  <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search / filter input */}
                 <div className="px-4 pt-3 pb-1">
@@ -288,7 +288,7 @@ export default function TrackerTab({
                       value={bannerHistorySearch}
                       onChange={e => setBannerHistorySearch(e.target.value)}
                       placeholder="Search by name, version, or phase\u2026"
-                      className="w-full pl-8 pr-3 py-2 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                      className="kuro-input w-full pl-8 text-xs"
                       aria-label="Filter banner history"
                     />
                   </div>
@@ -369,7 +369,7 @@ export default function TrackerTab({
                     <span className="text-white text-sm font-semibold">Pull History</span>
                     <span className="text-gray-500 text-[10px]">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''} pulls)</span>
                   </div>
-                  <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-1.5 rounded-lg text-gray-400 hover:text-white active:scale-95 transition-all"><X size={16} /></button>
+                  <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search & filters */}
                 <div className="px-4 pt-3 pb-1 space-y-2">
@@ -380,7 +380,7 @@ export default function TrackerTab({
                       value={pullHistorySearch}
                       onChange={e => setPullHistorySearch(e.target.value)}
                       placeholder="Search by name..."
-                      className="w-full pl-8 pr-3 py-2 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-xs placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                      className="kuro-input w-full pl-8 text-xs"
                       aria-label="Filter pull history by name"
                     />
                   </div>
@@ -388,7 +388,7 @@ export default function TrackerTab({
                     <select
                       value={pullHistoryBannerFilter}
                       onChange={e => setPullHistoryBannerFilter(e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-[11px] focus:outline-none focus:border-cyan-500/50"
+                      className="kuro-input flex-1 px-2 py-1.5 text-xs"
                       aria-label="Filter by banner type"
                     >
                       <option value="all">All Banners</option>
@@ -401,7 +401,7 @@ export default function TrackerTab({
                     <select
                       value={pullHistoryRarityFilter}
                       onChange={e => setPullHistoryRarityFilter(e.target.value)}
-                      className="flex-1 px-2 py-1.5 rounded-lg border border-[var(--border-medium)] bg-black/30 text-white text-[11px] focus:outline-none focus:border-cyan-500/50"
+                      className="kuro-input flex-1 px-2 py-1.5 text-xs"
                       aria-label="Filter by rarity"
                     >
                       <option value="all">All Rarities</option>
@@ -426,7 +426,7 @@ export default function TrackerTab({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className={`text-xs font-semibold truncate ${rarityColor}`}>{pull.name || 'Unknown'}</span>
-                              <span className={`text-[9px] ${rarityColor} opacity-70`}>{stars}</span>
+                              <span className={`text-[10px] ${rarityColor} opacity-70`}>{stars}</span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] text-gray-500">{pull.banner}</span>
@@ -436,7 +436,7 @@ export default function TrackerTab({
                           {pull.timestamp && (
                             <div className="text-[10px] text-gray-500 text-right flex-shrink-0 whitespace-nowrap">
                               {new Date(pull.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              <div className="text-[9px] text-gray-600">{new Date(pull.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                              <div className="text-[10px] text-gray-600">{new Date(pull.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
                             </div>
                           )}
                         </div>

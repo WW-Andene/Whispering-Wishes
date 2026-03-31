@@ -79,7 +79,7 @@ export default function EchoSelector({
             });
             return (
               <>
-                <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div>
                     <h3 className="text-white font-semibold text-sm">Select Echo</h3>
                     <p className="text-gray-400 text-[10px]">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
@@ -272,7 +272,7 @@ export default function EchoSelector({
             };
             return (
               <>
-                <div className="p-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div className="flex items-center gap-2 min-w-0">
                     {collectionImages[echoName] ? (
                       <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
@@ -300,7 +300,7 @@ export default function EchoSelector({
                         })}
                       </div>
                       {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
-                        <div className="flex items-center gap-1 mt-1 text-[9px] text-orange-400/80">
+                        <div className="flex items-center gap-1 mt-1 text-[10px] text-orange-400/80">
                           <Star size={8} className="text-orange-400" fill="currentColor" />
                           <span>Recommended set for {charName}</span>
                         </div>
@@ -345,7 +345,7 @@ export default function EchoSelector({
                             Other: 10%
                           </span>
                         </div>
-                        <p className="text-[9px] text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
+                        <p className="text-[10px] text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
                       </div>
                     </div>
                   )}

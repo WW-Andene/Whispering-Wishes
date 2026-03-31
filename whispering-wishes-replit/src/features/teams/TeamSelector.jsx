@@ -47,7 +47,7 @@ export default function TeamSelector({
                         onClick={(e) => e.stopPropagation()}
                       >
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-3 border-b border-[var(--border-medium)]" data-sheet-header>
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
                             <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
                             <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
