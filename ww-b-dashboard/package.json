@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "cd client && npm install && npx vite build",
-    "start": "cd client && npm install && npx vite build && cd .. && node server.js"
+    "start": "node build-and-run.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
