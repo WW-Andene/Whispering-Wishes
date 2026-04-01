@@ -2,16 +2,12 @@
   "name": "ww-b-dashboard",
   "version": "1.0.0",
   "type": "module",
-  "description": "WW-B review dashboard",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "build": "cd client && npm install && npm run build"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "groq-sdk": "^0.12.0"
+    "express": "^4.21.0"
   },
   "engines": {
     "node": ">=18.0.0"
