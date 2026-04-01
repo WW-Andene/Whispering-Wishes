@@ -5767,7 +5767,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               isSelected={framingMode && editingImage === imageKey}
               owned={count > 0} collMask={collMask} collOpacity={collOpacity}
               glowClass={glowClass} ownedBg={ownedBg} ownedBorder={ownedBorder}
-              countLabel={count > 0 ? `${countPrefix}${countPrefix === 'S' ? count - 1 : count}` : ''} countColor={countColor}
+              countLabel={dataType === 'echo' ? '' : count > 0 ? `${countPrefix}${countPrefix === 'S' ? count - 1 : count}` : ''} countColor={countColor}
               framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
               onClickCard={dataLookup[name] ? () => setDetailModal({ show: true, type: dataType, name, imageUrl: imgUrl, framing: getImageFraming(imageKey) }) : null}
               isNew={isNew}
