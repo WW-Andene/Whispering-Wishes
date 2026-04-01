@@ -201,8 +201,22 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         // Cursor: oldest item's time
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) break;
-        endTime = oldest.time;
+        if (!oldest?.time) break;
+        if (oldest.time === endTime) {
+          // Stuck - jump back monthly to get past the boundary
+          const stuckDate = new Date(oldest.time);
+          let jumped = false;
+          for (let m = 1; m <= 24; m++) {
+            const jumpDate = new Date(stuckDate);
+            jumpDate.setMonth(jumpDate.getMonth() - m);
+            endTime = jumpDate.toISOString();
+            jumped = true;
+            break;
+          }
+          if (!jumped) break;
+        } else {
+          endTime = oldest.time;
+        }
 
         await sleep(150);
       }
