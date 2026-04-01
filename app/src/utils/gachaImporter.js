@@ -43,8 +43,9 @@ export function parseGachaUrl(raw) {
     const svrArea = get('svr_area');
     const resourcesId = get('resources_id');
     const gachaId = get('gacha_id');
+    const gachaType = get('gacha_type');
     const lang = get('lang') ?? 'en';
-    return { playerId, recordId, svrId, svrArea, resourcesId, gachaId, lang, valid: !!(playerId), href: u.href };
+    return { playerId, recordId, svrId, svrArea, resourcesId, gachaId, gachaType, lang, valid: !!(playerId), href: u.href };
   } catch {
     return { valid: false };
   }
@@ -77,7 +78,7 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
       cardPoolType: parseInt(cardPoolType, 10),
       cardPoolId: params.cardPoolId || '',
       languageCode: params.lang || 'en',
-      recordId: cursorRecordId,
+      recordId: params.recordId || '',
     };
 
     let res;
@@ -137,12 +138,14 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
       return {
         playerId: parsed.playerId || playerId,
         serverId: parsed.svrId || svrId || '',
+        recordId: parsed.recordId || recordId || '',
         cardPoolId: parsed.resourcesId || '',
+        gachaType: parsed.gachaType || '',
         lang: parsed.lang || 'en',
       };
     }
   }
-  return { playerId, serverId: svrId || '', cardPoolId: '', lang: 'en' };
+  return { playerId, serverId: svrId || '', recordId: recordId || '', cardPoolId: '', gachaType: '', lang: 'en' };
 }
 
 /**
