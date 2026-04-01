@@ -150,6 +150,7 @@ export async function fetchAllPools(params, signal, onProgress) {
         playerId: String(params.playerId),
         recordId: params.recordId || '',
         cardPoolType: Number(poolType),
+        serverId: params.serverId || '',
       };
 
       const controller = new AbortController();
