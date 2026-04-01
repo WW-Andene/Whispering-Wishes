@@ -145,22 +145,11 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // Paginate: API returns ~10 items per call.
-      // First call uses auth recordId, subsequent calls use last item's resourceId.
-      let currentRecordId = params.recordId || '';
-      for (let page = 0; page < 200; page++) {
-        if (signal?.aborted) break;
-        const pageParams = { ...params, recordId: currentRecordId };
-        const json = await fetchPage(pageParams, poolType, signal);
-        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-        if (!list.length) break;
-        poolItems.push(...list);
-        // Use last item's resourceId as cursor for next page
-        const lastResourceId = String(list[list.length - 1]?.resourceId ?? '');
-        if (!lastResourceId || lastResourceId === currentRecordId) break;
-        currentRecordId = lastResourceId;
-        await sleep(100);
-      }
+      // One call per pool type - API returns all currently available records
+      const pageParams = { ...params, recordId: params.recordId || '' };
+      const json = await fetchPage(pageParams, poolType, signal);
+      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+      poolItems.push(...list);
 
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
