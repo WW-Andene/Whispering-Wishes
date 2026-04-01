@@ -177,10 +177,12 @@ export default function ProfileTab({
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {
-        const errs = result._debug?.errors;
-        const firstErr = errs?.length ? errs[0] : null;
+        const dbg = result._debug || {};
+        const errs = dbg.errors?.length ? dbg.errors[0] : null;
+        const resp = dbg.firstResponse ? JSON.stringify(dbg.firstResponse) : null;
+        const sent = dbg.params ? `Sent: playerId=${dbg.params.playerId}, serverId=${(dbg.params.serverId||'').slice(0,8)}..., cardPoolId=${(dbg.params.cardPoolId||'').slice(0,8)}...` : '';
         setDirectStatus('error');
-        setDirectError(firstErr || 'API returned 0 convenes — the URL may be expired.');
+        setDirectError(errs || (resp ? `Response: ${resp.slice(0, 120)}` : 'No response') + (sent ? ` | ${sent}` : ''));
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
