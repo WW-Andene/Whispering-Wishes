@@ -14,7 +14,7 @@
 
 import { log, addChange } from './log.js';
 import { SCRAPER } from './config.js';
-import { isExistingUrl } from './protected.js';
+
 
 const IMGBB_API = 'https://api.imgbb.com/1/upload';
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -168,6 +168,12 @@ export async function processMissingImages(names, type, askClaudeFn, fetchPageFn
     if (!page.ok) {
       log.warn(`Could not fetch wiki page for ${name}`);
       continue;
+    }
+
+    const MAX_PAGE_SIZE = 2 * 1024 * 1024; // 2MB
+    if (page.content.length > MAX_PAGE_SIZE) {
+      log.warn(`Wiki page for ${name} exceeds 2MB — truncating`);
+      page.content = page.content.slice(0, MAX_PAGE_SIZE);
     }
 
     // Extract image URLs from HTML (src attributes)

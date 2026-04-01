@@ -128,7 +128,7 @@ export async function withCheckpoint(mode, stepName, stepFn) {
   // Check if already completed
   const cached = getCheckpoint(mode, stepName);
   if (cached !== null) {
-    return cached;
+    return { fromCheckpoint: true, result: cached };
   }
 
   // Run the step
@@ -141,7 +141,7 @@ export async function withCheckpoint(mode, stepName, stepFn) {
     : { completed: true, hadChanges: !!result };
 
   saveCheckpoint(mode, stepName, cacheable);
-  return result;
+  return { fromCheckpoint: false, result };
 }
 
 // ── Internal ─────────────────────────────────────────────────────────────────

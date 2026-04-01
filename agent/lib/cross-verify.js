@@ -91,9 +91,7 @@ export function crossVerify(extractions, fields, quorum = 2) {
  * @returns {Object[]} — [{ source: 'game8.co', data: {...} }]
  */
 export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
-  const results = [];
-
-  for (const source of sources) {
+  const results = await Promise.all(sources.map(async (source) => {
     const domain = getDomain(source.url);
     const prompt = extractionPrompt.replace('{SOURCE_CONTENT}', source.content.slice(0, 20000));
 
@@ -104,13 +102,18 @@ export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
         { maxTokens: 2048 }
       );
 
-      const data = JSON.parse(response.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
-      results.push({ source: domain, data, url: source.url });
+      let jsonStr = response.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+      const jsonMatch = jsonStr.match(/(\{[\s\S]*\})/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1];
+      }
+      const data = JSON.parse(jsonStr);
+      return { source: domain, data, url: source.url };
     } catch (err) {
       log.dim(`Extraction failed for ${domain}: ${err.message}`);
-      results.push({ source: domain, data: {}, url: source.url });
+      return { source: domain, data: {}, url: source.url };
     }
-  }
+  }));
 
   return results;
 }
@@ -120,18 +123,31 @@ export async function extractPerSource(sources, extractionPrompt, askClaudeFn) {
  * Higher agreement → higher confidence.
  */
 export function adjustConfidence(baseConfidence, agreement, sourceCount) {
-  if (sourceCount <= 1) return baseConfidence * 0.8; // Single source penalty
-  if (agreement >= 1.0) return Math.min(1.0, baseConfidence * 1.1); // Full agreement bonus
-  if (agreement >= 0.66) return baseConfidence; // 2/3 agree — neutral
-  return baseConfidence * 0.7; // Majority disagree — penalty
+  const base = Math.max(0, Math.min(1, baseConfidence));
+  let adjusted;
+  if (sourceCount <= 1) adjusted = base * 0.8;
+  else if (agreement >= 1.0) adjusted = base * 1.1;
+  else if (agreement >= 0.66) adjusted = base;
+  else adjusted = base * 0.7;
+  return Math.max(0, Math.min(1, adjusted));
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function normalize(value) {
-  if (typeof value === 'string') return value.trim().toLowerCase();
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    // Try to normalize as a date
+    const dateAttempt = new Date(trimmed);
+    if (!isNaN(dateAttempt.getTime()) && trimmed.length >= 8) {
+      if (/\d{4}[-/]?\d{2}[-/]?\d{2}/.test(trimmed) || /\w+ \d{1,2},? \d{4}/.test(trimmed)) {
+        return dateAttempt.toISOString();
+      }
+    }
+    return trimmed.toLowerCase();
+  }
   if (typeof value === 'number') return String(value);
-  if (Array.isArray(value)) return value.map(normalize).join(',');
+  if (Array.isArray(value)) return value.map(normalize).sort().join(',');
   if (value && typeof value === 'object') return JSON.stringify(value);
   return String(value);
 }

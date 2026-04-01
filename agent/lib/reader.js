@@ -41,10 +41,10 @@ export function extractAppVersion(source) {
  */
 export function extractCurrentBanners(source) {
   try {
-    const versionMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[^}]*version:\s*'([^']+)'/s);
-    const phaseMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[^}]*phase:\s*(\d+)/s);
-    const startMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[^}]*startDate:\s*'([^']+)'/s);
-    const endMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[^}]*endDate:\s*'([^']+)'/s);
+    const versionMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?version:\s*'([^']+)'/);
+    const phaseMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?phase:\s*(\d+)/);
+    const startMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?startDate:\s*'([^']+)'/);
+    const endMatch = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?endDate:\s*'([^']+)'/);
 
     // Extract character names from the characters array
     const charsBlock = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?characters:\s*\[([\s\S]*?)\]\s*,\s*weapons/);
@@ -55,7 +55,7 @@ export function extractCurrentBanners(source) {
     }
 
     // Extract weapon names
-    const weapBlock = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?weapons:\s*\[([\s\S]*?)\]\s*,\s*\/\//);
+    const weapBlock = source.match(/CURRENT_BANNERS\s*=\s*\{[\s\S]*?weapons:\s*\[([\s\S]*?)\](?:\s*,|\s*\})/);
     const weapNames = [];
     if (weapBlock) {
       const nameMatches = weapBlock[1].matchAll(/name:\s*['"]([^'"]+)['"]/g);
@@ -115,7 +115,7 @@ export function extractEvents(source) {
   const content = eventsBlock[1];
   
   // Match each event key and its properties
-  const eventMatches = content.matchAll(/(\w+):\s*\{([\s\S]*?)(?=\n\s*\w+:|$)/g);
+  const eventMatches = content.matchAll(/^  (\w+):\s*\{([\s\S]*?)\n  \}/gm);
   for (const m of eventMatches) {
     const key = m[1];
     const body = m[2];

@@ -6,9 +6,9 @@ Whispering Wishes is a companion app for Wuthering Waves, a gacha game. It helps
 
 The app is a client-side React SPA with most data stored in browser localStorage. Firebase Realtime Database is used for the leaderboard and presence tracking features.
 
-**Current Version**: 3.1.1
+**Current Version**: 3.2.3
 
-### Recent Changes (v3.1.1)
+### Recent Changes (v3.2.3)
 - Synced APP_VERSION with package.json
 - Added storage key migration from legacy keys (v2.0, v2.1) to current key (v2.2)
 - Fixed duplicate 'Tyro Gauntlets' weapon image entry that was overriding valid URL

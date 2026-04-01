@@ -1,0 +1,146 @@
+import './setup.js';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import { describe, it, expect } from 'vitest';
+
+import { CURRENT_BANNERS } from '../appcore-data.js';
+import { initialState } from '../appcore-engine.js';
+
+// Shared mock props
+const noop = () => {};
+const noopAsync = async () => false;
+const mockToast = { addToast: noop };
+const mockVS = {
+  animationsEnabled: 'on', bgStyle: 'none', swipeNavigation: false,
+  collectionFadePosition: 50, collectionFadeIntensity: 50,
+  collectionFadeDirection: 'down', collectionOpacity: 100,
+};
+const mockCD = {
+  chars5Counts: {}, chars4Counts: {},
+  weaps5Counts: {}, weaps4Counts: {}, weaps3Counts: {}, weaps2Counts: {}, weaps1Counts: {},
+  sortItems: (i) => i,
+};
+
+function renderComponent(Component, props) {
+  const html = renderToString(React.createElement(Component, props));
+  expect(html).toBeTruthy();
+  expect(html.length).toBeGreaterThan(50);
+  return html;
+}
+
+describe('Module imports', () => {
+  it('loads appcore-data.js', async () => {
+    const mod = await import('../appcore-data.js');
+    expect(mod.CHARACTER_DATA).toBeDefined();
+    expect(mod.CURRENT_BANNERS).toBeDefined();
+    expect(mod.WEAPON_DATA).toBeDefined();
+  });
+
+  it('loads appcore-engine.js', async () => {
+    const mod = await import('../appcore-engine.js');
+    expect(mod.initialState).toBeDefined();
+    expect(mod.reducer).toBeDefined();
+  });
+
+  it('loads appcore-providers.jsx', async () => {
+    const mod = await import('../appcore-providers.jsx');
+    expect(mod.FocusTrapModal).toBeDefined();
+    expect(mod.ToastProvider).toBeDefined();
+  });
+
+  it('loads appcore-components.jsx', async () => {
+    const mod = await import('../appcore-components.jsx');
+    expect(mod.Card).toBeDefined();
+    expect(mod.BannerCard).toBeDefined();
+  });
+});
+
+describe('Tab SSR rendering', () => {
+  it('renders TrackerTab', async () => {
+    const { default: C } = await import('../features/tracker/TrackerTab.jsx');
+    renderComponent(C, {
+      state: initialState, dispatch: noop, activeBanners: CURRENT_BANNERS,
+      visualSettings: mockVS, themeAccent: '#edaf18', collectionImages: {},
+      bannerEndDate: new Date().toISOString(), toast: mockToast, confirm: noopAsync,
+    });
+  });
+
+  it('renders EventsTab', async () => {
+    const { default: C } = await import('../features/events/EventsTab.jsx');
+    renderComponent(C, {
+      state: initialState, dispatch: noop, activeBanners: CURRENT_BANNERS,
+      setActiveBanners: noop, visualSettings: mockVS, toast: mockToast,
+    });
+  });
+
+  it('renders CalculatorTab', async () => {
+    const { default: C } = await import('../features/calculator/CalculatorTab.jsx');
+    renderComponent(C, { state: initialState, dispatch: noop });
+  });
+
+  it('renders PlannerTab', async () => {
+    const { default: C } = await import('../features/planner/PlannerTab.jsx');
+    renderComponent(C, {
+      state: initialState, dispatch: noop, activeBanners: CURRENT_BANNERS,
+      bannerEndDate: new Date().toISOString(), toast: mockToast, confirm: noopAsync,
+    });
+  });
+
+  it('renders AnalyticsTab', async () => {
+    const { default: C } = await import('../features/analytics/AnalyticsTab.jsx');
+    renderComponent(C, {
+      state: initialState, dispatch: noop, setActiveTab: noop,
+      overallStats: null, luckRating: null, trophies: null,
+      collectionImages: {}, toast: mockToast,
+      getFirebaseAuth: noopAsync, firebaseUrl: () => '', fetchWithTimeout: noopAsync,
+      hashUidForStorage: noopAsync, checkFirebaseRateLimit: () => true, FIREBASE_AVAILABLE: false,
+    });
+  });
+
+  it('renders CollectionTab', async () => {
+    const { default: C } = await import('../features/collection/CollectionTab.jsx');
+    renderComponent(C, {
+      state: initialState, collectionData: mockCD, collectionImages: {},
+      visualSettings: mockVS, setActiveTab: noop, setDetailModal: noop,
+      framingMode: false, editingImage: null, setEditingImage: noop,
+      activeBanners: CURRENT_BANNERS, withCacheBuster: (u) => u,
+      getImageFraming: () => ({}), refreshImages: noop, handleSetProfilePic: noop,
+    });
+  });
+
+  it('renders TeamsTab', async () => {
+    const { default: C } = await import('../features/teams/TeamsTab.jsx');
+    renderComponent(C, {
+      state: initialState, dispatch: noop, collectionImages: {},
+      collectionData: mockCD, getImageFraming: () => ({}),
+      framingMode: false, editingImage: null, setEditingImage: noop, toast: mockToast,
+    });
+  });
+
+  it('renders ProfileTab', async () => {
+    const { default: C } = await import('../features/profile/ProfileTab.jsx');
+    renderComponent(C, {
+      state: initialState, dispatch: noop, visualSettings: mockVS, saveVisualSettings: noop,
+      toast: mockToast, confirm: noopAsync, pwa: {},
+      imageFraming: {}, getImageFraming: () => ({}), saveImageFraming: noop,
+      editingImage: null, setEditingImage: noop, framingMode: false, setFramingMode: noop,
+      miniPanelPosition: 'bottom-right', saveMiniPanelPosition: noop,
+      getMiniPanelPositionClasses: () => '', updateEditingFraming: noop, resetEditingFraming: noop,
+      collectionImages: {}, customCollectionImages: {}, saveCollectionImages: noop,
+      detailModal: { show: false }, handleExport: noop, processImportData: noop,
+      activeBanners: CURRENT_BANNERS, setActiveBanners: noop,
+      overallStats: null, luckRating: null, ownedCharNames: new Set(),
+      trophies: null, trophyOverrides: {}, setTrophyOverrides: noop,
+      DEFAULT_VISUAL_SETTINGS: mockVS, getFirebaseAuth: noopAsync, firebaseUrl: () => '',
+      setActiveTab: noop, withCacheBuster: (u) => u,
+    });
+  });
+});
+
+describe('Full App', () => {
+  it('renders the complete app', async () => {
+    const { default: App } = await import('../App.jsx');
+    const html = renderToString(React.createElement(App));
+    expect(html.length).toBeGreaterThan(10000);
+  });
+});

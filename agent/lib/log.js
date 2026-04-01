@@ -38,4 +38,12 @@ const addChange = (category, description, confidence = 'HIGH') => {
 const getChangeLog = () => [...changeLog];
 const clearChangeLog = () => changeLog.length = 0;
 
-export { log, addChange, getChangeLog, clearChangeLog };
+const safeErrorMessage = (err, maxLen = 300) => {
+  const msg = (err?.message || String(err) || 'Unknown error')
+    .replace(/sk-ant-[a-zA-Z0-9_-]+/g, 'sk-***')
+    .replace(/Bearer\s+[a-zA-Z0-9_-]+/gi, 'Bearer ***')
+    .replace(/AIzaSy[a-zA-Z0-9_-]+/g, 'AIza***');
+  return msg.length > maxLen ? msg.slice(0, maxLen) + '...' : msg;
+};
+
+export { log, addChange, getChangeLog, clearChangeLog, safeErrorMessage };

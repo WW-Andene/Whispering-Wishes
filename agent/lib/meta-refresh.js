@@ -42,17 +42,39 @@ export function selectCharactersForRefresh(allCharNames, memory) {
 export async function refreshCharacterBuilds(characters, currentSource, askClaudeFn, buildSources) {
   if (!characters.length || !buildSources.length) return [];
 
-  // Extract current data for these characters
+  // Extract current data for these characters using balanced brace counting
   const currentData = {};
   for (const name of characters) {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`'${escaped}':\\s*\\{([\\s\\S]*?)\\n\\s*\\}`, 'm');
-    const match = currentSource.match(pattern);
-    if (match) {
-      const bestWeapon = match[1].match(/bestWeapon:\s*'([^']+)'/)?.[1] || '';
-      const bestEchoesMatch = match[1].match(/bestEchoes:\s*\[([^\]]+)\]/)?.[1] || '';
+    const headerPattern = new RegExp(`'${escaped}':\\s*\\{`);
+    const headerMatch = currentSource.match(headerPattern);
+    if (headerMatch) {
+      const startIdx = headerMatch.index + headerMatch[0].length;
+      // Use brace counting to find the matching closing brace, skipping strings
+      let depth = 1;
+      let inString = false, stringChar = '';
+      let i = startIdx;
+      for (; i < currentSource.length && depth > 0; i++) {
+        const c = currentSource[i];
+        if (inString) {
+          let backslashes = 0;
+          for (let j = i - 1; j >= 0 && currentSource[j] === '\\'; j--) {
+            backslashes++;
+          }
+          if (c === stringChar && backslashes % 2 === 0) {
+            inString = false;
+          }
+          continue;
+        }
+        if (c === "'" || c === '"' || c === '`') { inString = true; stringChar = c; }
+        else if (c === '{') depth++;
+        else if (c === '}') depth--;
+      }
+      const block = currentSource.slice(startIdx, i - 1);
+      const bestWeapon = block.match(/bestWeapon:\s*'([^']+)'/)?.[1] || '';
+      const bestEchoesMatch = block.match(/bestEchoes:\s*\[([^\]]+)\]/)?.[1] || '';
       const bestEchoes = [...bestEchoesMatch.matchAll(/'([^']+)'/g)].map(m => m[1]);
-      const teamsMatch = match[1].match(/teams:\s*\[([^\]]+)\]/)?.[1] || '';
+      const teamsMatch = block.match(/teams:\s*\[([^\]]+)\]/)?.[1] || '';
       const teams = [...teamsMatch.matchAll(/'([^']+)'/g)].map(m => m[1]);
       currentData[name] = { bestWeapon, bestEchoes, teams };
     }
@@ -112,18 +134,19 @@ Return ONLY the JSON.`;
  */
 export function applyMetaUpdates(updates, getBufferFn, loadBufferFn, memory, minConfidence = 0.85) {
   let changed = false;
+  let buf = getBufferFn(); // Read ONCE
 
   for (const update of updates) {
     if (update.confidence < minConfidence) continue;
 
-    const buf = getBufferFn();
     const escaped = update.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     if (update.field === 'bestWeapon' && typeof update.newValue === 'string') {
-      const pattern = new RegExp(`('${escaped}':[\\s\\S]*?bestWeapon:\\s*)'[^']*'`);
+      const pattern = new RegExp(`('${escaped}':\\s*\\{[^}]{0,2000}?bestWeapon:\\s*)'[^']*'`);
       const match = buf.match(pattern);
       if (match) {
-        loadBufferFn(buf.replace(match[0], `${match[1]}'${update.newValue}'`));
+        const safeValue = update.newValue.replace(/'/g, "\\'");
+        buf = buf.replace(match[0], `${match[1]}'${safeValue}'`);
         addChange('meta-refresh', `${update.name} bestWeapon → ${update.newValue}`);
         changed = true;
       }
@@ -134,7 +157,7 @@ export function applyMetaUpdates(updates, getBufferFn, loadBufferFn, memory, min
       const match = buf.match(pattern);
       if (match) {
         const newArr = `[${update.newValue.map(e => `'${e}'`).join(', ')}]`;
-        loadBufferFn(buf.replace(match[0], `${match[1]}${newArr}`));
+        buf = buf.replace(match[0], `${match[1]}${newArr}`);
         addChange('meta-refresh', `${update.name} bestEchoes updated`);
         changed = true;
       }
@@ -145,13 +168,14 @@ export function applyMetaUpdates(updates, getBufferFn, loadBufferFn, memory, min
       const match = buf.match(pattern);
       if (match) {
         const newArr = `[${update.newValue.map(t => `'${t}'`).join(', ')}]`;
-        loadBufferFn(buf.replace(match[0], `${match[1]}${newArr}`));
+        buf = buf.replace(match[0], `${match[1]}${newArr}`);
         addChange('meta-refresh', `${update.name} teams updated`);
         changed = true;
       }
     }
   }
 
+  if (changed) loadBufferFn(buf); // Write ONCE
   return changed;
 }
 

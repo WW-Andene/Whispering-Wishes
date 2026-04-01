@@ -37,7 +37,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { PATHS } from './config.js';
 import { log, addChange } from './log.js';
 import { executeShellSwap, checkRollbackNeeded } from './shell-swap.js';
@@ -159,9 +159,12 @@ function analyzeFeedback(memory) {
     if (entry.reverted) categories[cat].reverted++;
   }
 
-  // Identify toxic patterns — categories where >50% of patches fail
+  // Identify toxic patterns — categories where >50% of patches fail or >30% are reverted
   const toxic = Object.entries(categories)
-    .filter(([, v]) => v.fail > v.success && (v.fail + v.success) >= 2)
+    .filter(([, v]) => {
+      const total = v.fail + v.success;
+      return (v.fail > v.success && total >= 2) || (v.reverted > 0 && v.reverted / total > 0.3);
+    })
     .map(([k]) => k);
 
   // Identify strong patterns — categories where >80% succeed
@@ -183,6 +186,8 @@ function analyzeFeedback(memory) {
 // STEP 3: FULL VISION — Read entire agent source (not 4K snippets)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+function countLines(str) { let c = 1; for (let i = 0; i < str.length; i++) if (str.charCodeAt(i) === 10) c++; return c; }
+
 function readFullAgentSource() {
   const files = {};
   const allFiles = [...MODIFY_OK, ...NEVER_TOUCH];
@@ -191,11 +196,18 @@ function readFullAgentSource() {
     const fullPath = resolve(AGENT_DIR, relPath);
     if (existsSync(fullPath)) {
       const content = readFileSync(fullPath, 'utf-8');
-      files[relPath] = {
-        content,
-        lines: content.split('\n').length,
-        bytes: content.length,
-      };
+      if (NEVER_TOUCH.has(relPath)) {
+        const summary = content.split('\n').filter(line =>
+          line.startsWith('export ') || line.startsWith('//') || line.match(/^\s*\*/) || line.trim() === ''
+        ).join('\n');
+        files[relPath] = { content: `// [PROTECTED — summary only]\n${summary}`, lines: countLines(content), bytes: content.length };
+      } else {
+        files[relPath] = {
+          content,
+          lines: countLines(content),
+          bytes: content.length,
+        };
+      }
     }
   }
 
@@ -655,10 +667,15 @@ function checkBraces(source) {
 
   for (let i = 0; i < source.length; i++) {
     const c = source[i];
-    const prev = i > 0 ? source[i - 1] : '';
 
     if (inString) {
-      if (c === stringChar && prev !== '\\') inString = false;
+      let backslashes = 0;
+      for (let j = i - 1; j >= 0 && source[j] === '\\'; j--) {
+        backslashes++;
+      }
+      if (c === stringChar && backslashes % 2 === 0) {
+        inString = false;
+      }
       continue;
     }
 

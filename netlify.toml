@@ -1,7 +1,17 @@
 [build]
-  base = "whispering-wishes-replit"
+  base = "app"
   command = "npm run build"
   publish = "dist"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://i.ibb.co https://ibb.co https://i.imgur.com https://cdn.discordapp.com https://media.discordapp.net https://pbs.twimg.com https://raw.githubusercontent.com https://i.postimg.cc https://wuwa.gg https://wuwatracker.com https://*.googleapis.com https://static.wikia.nocookie.net data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
 
 [[redirects]]
   from = "/*"

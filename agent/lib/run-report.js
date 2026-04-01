@@ -19,22 +19,6 @@ import { getChangeLog } from './log.js';
 
 const REPORT_FILE = resolve(PATHS.repoRoot, 'agent/run-report.md');
 
-// Rough token estimates per Claude call type
-const TOKEN_ESTIMATES = {
-  analyzeBanners: { input: 8000, output: 1500 },
-  analyzeEvents: { input: 6000, output: 1000 },
-  analyzeNewCharacters: { input: 10000, output: 2000 },
-  analyzeNewWeapons: { input: 8000, output: 1500 },
-  generateCombatData: { input: 6000, output: 1000 },
-  findCharacterImage: { input: 4000, output: 200 },
-  findWeaponImage: { input: 4000, output: 200 },
-  findBannerImages: { input: 12000, output: 500 },
-  selfAudit: { input: 15000, output: 4000 },
-  enrichData: { input: 10000, output: 2000 },
-  evolution: { input: 20000, output: 4000 },
-  metaRefresh: { input: 10000, output: 2000 },
-};
-
 // Sonnet pricing per million tokens (as of early 2026)
 const SONNET_INPUT_COST = 3.0;   // $/M tokens
 const SONNET_OUTPUT_COST = 15.0; // $/M tokens
@@ -132,7 +116,7 @@ ${changes.length ? changes.map(c => `- **[${c.category}]** ${c.description}`).jo
   }
 
   // Reset for next run
-  apiCallLog = [];
+  apiCallLog.length = 0;
 
   return { totalCost, totalInputTokens, totalOutputTokens };
 }
@@ -141,5 +125,5 @@ ${changes.length ? changes.map(c => `- **[${c.category}]** ${c.description}`).jo
  * Reset the call log (for testing).
  */
 export function resetCallLog() {
-  apiCallLog = [];
+  apiCallLog.length = 0;
 }

@@ -28,25 +28,32 @@ const SCHEDULE_FILE = resolve(PATHS.repoRoot, 'agent/.schedule-hint.json');
  * @returns {{ urgency: 'normal'|'elevated'|'critical', hoursLeft: number, shouldRun: boolean }}
  */
 export function calculateUrgency(bannerEndDate, memory) {
-  const hoursLeft = (new Date(bannerEndDate).getTime() - Date.now()) / 3600000;
+  const endTime = new Date(bannerEndDate).getTime();
 
-  // Critical: within 6 hours of banner end (transition imminent)
-  if (hoursLeft <= 6 && hoursLeft > -6) {
-    return { urgency: 'critical', hoursLeft, shouldRun: true };
+  // Guard against invalid dates
+  if (isNaN(endTime)) {
+    log.warn(`Invalid banner end date: ${bannerEndDate}`);
+    return { urgency: 'normal', hoursLeft: Infinity, shouldRun: true };
   }
 
-  // Elevated: within 48 hours of banner end
-  if (hoursLeft <= 48 && hoursLeft > 0) {
-    return { urgency: 'elevated', hoursLeft, shouldRun: true };
-  }
+  const hoursLeft = (endTime - Date.now()) / 3600000;
 
-  // Post-transition: banner just ended (within last 6 hours)
-  // New banner data should be available — important to catch it
+  // Post-transition: banner ended within the last 6 hours — new data available
   if (hoursLeft <= 0 && hoursLeft > -6) {
     return { urgency: 'critical', hoursLeft, shouldRun: true };
   }
 
-  // Normal: no urgency
+  // Pre-transition: within 6 hours of banner end
+  if (hoursLeft > 0 && hoursLeft <= 6) {
+    return { urgency: 'critical', hoursLeft, shouldRun: true };
+  }
+
+  // Elevated: within 48 hours of banner end
+  if (hoursLeft > 6 && hoursLeft <= 48) {
+    return { urgency: 'elevated', hoursLeft, shouldRun: true };
+  }
+
+  // Normal: more than 48 hours or banner ended >6h ago
   return { urgency: 'normal', hoursLeft, shouldRun: true };
 }
 
@@ -111,7 +118,11 @@ export function writeScheduleHint(bannerEndDate) {
 export function readScheduleHint() {
   if (!existsSync(SCHEDULE_FILE)) return null;
   try {
-    return JSON.parse(readFileSync(SCHEDULE_FILE, 'utf-8'));
+    const hint = JSON.parse(readFileSync(SCHEDULE_FILE, 'utf-8'));
+    if (!hint || typeof hint.urgency !== 'string' || typeof hint.hoursLeft !== 'number') {
+      return null;
+    }
+    return hint;
   } catch {
     return null;
   }

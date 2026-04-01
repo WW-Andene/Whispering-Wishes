@@ -38,6 +38,25 @@ export function saveMemory(memory) {
   if (memory.patches.length > MAX_ENTRIES) memory.patches = memory.patches.slice(-MAX_ENTRIES);
   if (memory.failures.length > MAX_ENTRIES) memory.failures = memory.failures.slice(-MAX_ENTRIES);
 
+  // Cap checkedUrls and metaRefresh to prevent unbounded growth
+  const MAX_URL_ENTRIES = 500;
+
+  if (memory.checkedUrls && Object.keys(memory.checkedUrls).length > MAX_URL_ENTRIES) {
+    const entries = Object.entries(memory.checkedUrls);
+    entries.sort((a, b) => {
+      const aTime = new Date(a[1].checkedAt).getTime() || 0;
+      const bTime = new Date(b[1].checkedAt).getTime() || 0;
+      return bTime - aTime;
+    });
+    memory.checkedUrls = Object.fromEntries(entries.slice(0, MAX_URL_ENTRIES));
+  }
+
+  if (memory.metaRefresh && Object.keys(memory.metaRefresh).length > MAX_URL_ENTRIES) {
+    const entries = Object.entries(memory.metaRefresh);
+    entries.sort((a, b) => (b[1] || 0) - (a[1] || 0));
+    memory.metaRefresh = Object.fromEntries(entries.slice(0, MAX_URL_ENTRIES));
+  }
+
   try {
     writeFileSync(MEMORY_FILE, JSON.stringify(memory, null, 2));
     log.dim('Memory saved');
@@ -86,9 +105,14 @@ export function recordFailure(memory, category, description) {
  */
 export function wasRecentlyPatched(memory, description) {
   const cutoff = Date.now() - 48 * 3600000;
-  return memory.patches.some(p =>
-    p.description === description && new Date(p.timestamp).getTime() > cutoff
-  );
+  const normalizedDesc = description.toLowerCase().trim();
+  return memory.patches.some(p => {
+    if (new Date(p.timestamp).getTime() <= cutoff) return false;
+    const normalizedPatch = p.description.toLowerCase().trim();
+    return normalizedPatch === normalizedDesc
+      || normalizedPatch.includes(normalizedDesc)
+      || normalizedDesc.includes(normalizedPatch);
+  });
 }
 
 /**

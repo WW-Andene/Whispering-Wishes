@@ -64,6 +64,40 @@ Return ONLY the JSON.`;
 /**
  * Apply standard pool updates to the write buffer.
  */
+// Find a balanced bracket/paren section after a marker in source
+function findBalancedBracket(source, marker, open = '[', close = ']') {
+  const start = source.indexOf(marker);
+  if (start === -1) return null;
+  const openIdx = source.indexOf(open, start + marker.length);
+  if (openIdx === -1) return null;
+
+  let depth = 1;
+  let inStr = false, strCh = '';
+  for (let i = openIdx + 1; i < source.length; i++) {
+    const c = source[i];
+    if (inStr) {
+      let bs = 0;
+      for (let j = i - 1; j >= 0 && source[j] === '\\'; j--) bs++;
+      if (c === strCh && bs % 2 === 0) inStr = false;
+      continue;
+    }
+    if (c === "'" || c === '"') { inStr = true; strCh = c; continue; }
+    if (c === open) depth++;
+    else if (c === close) {
+      depth--;
+      if (depth === 0) {
+        return {
+          full: source.slice(start, i + 1),
+          inner: source.slice(openIdx + 1, i),
+          innerStart: openIdx + 1,
+          innerEnd: i,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 export function applyStandardPoolUpdates(analysis, getBufferFn, loadBufferFn, minConfidence = 0.85) {
   if (analysis.confidence < minConfidence) {
     if (analysis.standardCharsChanged || analysis.standardWeaponsChanged) {
@@ -78,21 +112,22 @@ export function applyStandardPoolUpdates(analysis, getBufferFn, loadBufferFn, mi
   // Add new standard characters
   if (analysis.newStandardChars?.length) {
     for (const name of analysis.newStandardChars) {
-      const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       // Add to STANDARD_5STAR_CHARACTERS Set
-      if (!buf.includes(`'${name}'`) || !buf.match(new RegExp(`STANDARD_5STAR_CHARACTERS[\\s\\S]*?'${escapedName}'`))) {
-        const setMatch = buf.match(/(const STANDARD_5STAR_CHARACTERS = new Set\(\[[\s\S]*?)(]\))/);
-        if (setMatch && !setMatch[1].includes(`'${name}'`)) {
-          buf = buf.replace(setMatch[0], `${setMatch[1]}, '${name}'${setMatch[2]}`);
-          addChange('standard-pool', `Added ${name} to STANDARD_5STAR_CHARACTERS`);
-          changed = true;
-        }
+      const section = findBalancedBracket(buf, 'const STANDARD_5STAR_CHARACTERS = new Set(', '[', ']');
+      if (section && !section.inner.includes(`'${name}'`)) {
+        const trimmed = section.inner.trimEnd();
+        const sep = trimmed.endsWith(',') || trimmed.endsWith('[') ? ' ' : ', ';
+        buf = buf.replace(section.full, section.full.replace(section.inner, section.inner.replace(/(\s*$)/, `${sep}'${name}'$1`)));
+        addChange('standard-pool', `Added ${name} to STANDARD_5STAR_CHARACTERS`);
+        changed = true;
       }
 
       // Add to CURRENT_BANNERS.standardCharacters
-      const stdCharsMatch = buf.match(/(standardCharacters:\s*\[[\s\S]*?)(])/);
-      if (stdCharsMatch && !stdCharsMatch[1].includes(`'${name}'`)) {
-        buf = buf.replace(stdCharsMatch[0], `${stdCharsMatch[1]}, '${name}'${stdCharsMatch[2]}`);
+      const scSection = findBalancedBracket(buf, 'standardCharacters:');
+      if (scSection && !scSection.inner.includes(`'${name}'`)) {
+        const trimmed = scSection.inner.trimEnd();
+        const sep = trimmed.endsWith(',') || trimmed.endsWith('[') ? ' ' : ', ';
+        buf = buf.replace(scSection.full, scSection.full.replace(scSection.inner, scSection.inner.replace(/(\s*$)/, `${sep}'${name}'$1`)));
         changed = true;
       }
     }
@@ -101,19 +136,20 @@ export function applyStandardPoolUpdates(analysis, getBufferFn, loadBufferFn, mi
   // Add new standard weapons
   if (analysis.newStandardWeapons?.length) {
     for (const weapon of analysis.newStandardWeapons) {
-      // Add to STANDARD_5STAR_WEAPONS Set
-      const wSetMatch = buf.match(/(const STANDARD_5STAR_WEAPONS = new Set\(\[[\s\S]*?)(]\))/);
-      if (wSetMatch && !wSetMatch[1].includes(`'${weapon.name}'`)) {
-        buf = buf.replace(wSetMatch[0], `${wSetMatch[1]},\n  '${weapon.name}'${wSetMatch[2]}`);
+      const wSection = findBalancedBracket(buf, 'const STANDARD_5STAR_WEAPONS = new Set(', '[', ']');
+      if (wSection && !wSection.inner.includes(`'${weapon.name}'`)) {
+        const trimmed = wSection.inner.trimEnd();
+        const sep = trimmed.endsWith(',') || trimmed.endsWith('[') ? '\n  ' : ',\n  ';
+        buf = buf.replace(wSection.full, wSection.full.replace(wSection.inner, wSection.inner.replace(/(\s*$)/, `${sep}'${weapon.name}'$1`)));
         addChange('standard-pool', `Added ${weapon.name} to STANDARD_5STAR_WEAPONS`);
         changed = true;
       }
 
       // Add to CURRENT_BANNERS.standardWeapons array
-      const stdWeapMatch = buf.match(/(standardWeapons:\s*\[[\s\S]*?)(],)/);
-      if (stdWeapMatch && !stdWeapMatch[1].includes(`'${weapon.name}'`)) {
+      const swSection = findBalancedBracket(buf, 'standardWeapons:');
+      if (swSection && !swSection.inner.includes(`'${weapon.name}'`)) {
         const entry = `\n    { name: '${weapon.name}', type: '${weapon.type}' },`;
-        buf = buf.replace(stdWeapMatch[0], `${stdWeapMatch[1]}${entry}\n  ${stdWeapMatch[2]}`);
+        buf = buf.replace(swSection.full, swSection.full.replace(swSection.inner, swSection.inner.replace(/(\s*$)/, `${entry}$1`)));
         changed = true;
       }
     }
@@ -126,5 +162,11 @@ export function applyStandardPoolUpdates(analysis, getBufferFn, loadBufferFn, mi
 function extractSet(source, varName) {
   const m = source.match(new RegExp(`const ${varName}\\s*=\\s*new Set\\(\\[([\\s\\S]*?)\\]\\)`));
   if (!m) return [];
-  return [...m[1].matchAll(/(?:'([^']+)'|"([^"]+)")/g)].map(x => x[1] || x[2]);
+  const items = [];
+  const pattern = /(?:'((?:[^'\\]|\\.)+)'|"((?:[^"\\]|\\.)+)")/g;
+  for (const match of m[1].matchAll(pattern)) {
+    const raw = match[1] || match[2];
+    items.push(raw.replace(/\\'/g, "'").replace(/\\"/g, '"'));
+  }
+  return items;
 }
