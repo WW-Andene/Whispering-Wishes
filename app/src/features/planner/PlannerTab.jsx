@@ -165,8 +165,8 @@ export default function PlannerTab({
                 <span className="text-gray-200">{i.label}</span>
                 <div className="flex items-center gap-2">
                   {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite}</span>}
-                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide — Featured banner pull ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
-                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide — Standard banner pull ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
+                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide - Featured banner Convene ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
+                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide - Standard banner Convene ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
                   {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
                   <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                 </div>
