@@ -146,7 +146,8 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // Paginate until empty response (cap at 500 as safety limit)
+      // Paginate until the API wraps back to page 1 data
+      let firstPageSig = null;
       for (let page = 1; page <= 500; page++) {
         if (signal?.aborted) break;
 
@@ -156,6 +157,15 @@ export async function fetchAllPools(params, signal, onProgress) {
         );
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
+
+        // Fingerprint this page by its first and last item
+        const sig = `${list[0]?.name}_${list[0]?.time}_${list[list.length-1]?.name}_${list[list.length-1]?.time}`;
+        if (page === 1) {
+          firstPageSig = sig;
+        } else if (sig === firstPageSig) {
+          // Wrapped back to page 1 - stop
+          break;
+        }
 
         poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
