@@ -100,7 +100,7 @@ export default function EventsTab({
         </CardBody>
       </Card>
 
-      <div className="space-y-2 event-grid">
+      <div className="space-y-3 event-grid">
         {(() => {
           const eventImageMap = {
             tacticalHologram: activeBanners.tacticalHologramImage,

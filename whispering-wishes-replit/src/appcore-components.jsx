@@ -5374,7 +5374,8 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   const dimmed = isSkipped || isExpired;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
+    <Card style={{ opacity: dimmed ? 0.6 : 1 }}>
+      <div className="relative overflow-hidden" style={{ minHeight: '190px', isolation: 'isolate' }}>
       {imgUrl && (
         <img
           src={imgUrl}
@@ -5444,7 +5445,8 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </Card>
   );
 });
 EventCard.displayName = 'EventCard';
