@@ -61,7 +61,7 @@ export function parseGachaUrl(raw) {
 async function fetchPage(params, cardPoolType, signal) {
   const FETCH_TIMEOUT = 10000;
   const body = {
-    playerId: parseInt(params.playerId, 10),
+    playerId: String(params.playerId),
     serverId: params.serverId || '',
     cardPoolType: parseInt(cardPoolType, 10),
     cardPoolId: params.cardPoolId || '',
