@@ -4,14 +4,15 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Sparkles, Swords, Sword, Star, User, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown } from 'lucide-react';
+import { Sparkles, Swords, Sword, Star, User, Users, TrendingUp, Check, Target, Zap, X, LayoutGrid, CheckCircle, AlertCircle, Gamepad2, Crown, Trophy, Flame, Diamond, Gift, Heart, Shield, TrendingDown, Fish, Clover, ChevronDown, SkipForward } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CHARACTER_DATA, WEAPON_DATA,
   DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS, haptic,
-  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE,
+  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS,
   MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
+  WEAPON_REFINE_SCALE,
   ECHO_DATA, ECHO_SETS,
   ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
 } from './appcore-data.js';
@@ -32,10 +33,17 @@ function _bgRidged(x,y,oct,seed){let v=0,a=0.5,f=1,t=0;for(let i=0;i<oct;i++){co
 
 // P11-FIX: Shared image error handler — replaces 11+ inline copies (Finding 12.6 / 11.1)
 // AUDIT-FIX L12: Use visibility:hidden instead of display:none to prevent layout shift (CLS)
+// Issue #148: Show fallback placeholder instead of silently hiding broken images
+const BROKEN_IMG_FALLBACK = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="rgba(255,255,255,0.08)"/><g transform="translate(12,12)" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="22 16 17 11 6 22"/><line x1="1" y1="1" x2="23" y2="23"/></g></svg>');
 const hideOnError = (e) => {
-  e.target.style.visibility = 'hidden';
-  e.target.setAttribute('aria-hidden', 'true');
-  e.target.alt = '';
+  const img = e.target;
+  img.src = BROKEN_IMG_FALLBACK;
+  img.style.objectFit = 'contain';
+  img.style.background = 'rgba(255,255,255,0.05)';
+  img.style.borderRadius = '4px';
+  img.removeAttribute('onerror');
+  img.onerror = null; // prevent infinite loop
+  img.setAttribute('aria-label', 'Image failed to load');
 };
 
 // Material item display helper — shows [icon] name ×qty
@@ -176,7 +184,7 @@ CardBody.displayName = 'CardBody';
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
 // Character Detail Modal
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage, onViewInTeams }) => {
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 
@@ -194,7 +202,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-[90vh]">
+       <div className="overflow-y-auto max-h-full">
         {/* Header with image */}
         <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
@@ -214,7 +222,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close character details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -229,9 +237,36 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
         </div>
-        
+
         {/* Content */}
         <div className="p-4 space-y-4">
+          {/* Tier + Info bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.tier && (
+              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
+                data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
+                data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
+                data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+                'bg-gray-500/20 text-gray-300 border border-gray-500/40'
+              }`}>
+                <span className="text-[9px] text-gray-400">ToA</span> {data.tier.toa}
+                <span className="text-gray-600 mx-0.5">|</span>
+                <span className="text-[9px] text-gray-400">WW</span> {data.tier.ww}
+              </div>
+            )}
+            {data.region && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{data.region}</span>
+            )}
+            {data.birthday && (
+              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{(() => {
+                const [m, d] = data.birthday.split('-');
+                const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${months[parseInt(m)]} ${parseInt(d)}`;
+              })()}</span>
+            )}
+          </div>
+
           {/* Description */}
           {data.desc && (() => {
             const dot = data.desc.indexOf('. ');
@@ -286,6 +321,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             )}
           </div>
+
+          {/* Quick action — view in teams */}
+          {onViewInTeams && (
+            <button onClick={onViewInTeams} className="w-full py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" style={{ background: 'var(--bg-btn)' }}>
+              <Users size={12} /> View in Team Builder
+            </button>
+          )}
 
           {/* Base Stats (Lv.90) */}
           {data.baseAtk && (
@@ -391,6 +433,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           )}
 
           {/* Best Echoes - enhanced */}
+          {data.bestEchoes?.length > 0 && (
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
             <div className="space-y-2">
@@ -414,7 +457,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             </div>
           </div>
-          
+          )}
+
           {/* Team Suggestions - with avatars */}
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
@@ -460,16 +504,41 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           </div>
 
-          {/* Skills */}
+          {/* Skills with Multipliers */}
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
+              <span className="text-[10px] text-gray-500 font-normal ml-auto">Lv.1 ATK%</span>
             </h3>
-            <div className="flex flex-wrap gap-1">
-              {data.skills.map((skill, i) => (
-                <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
-              ))}
-            </div>
+            {SKILL_MULTIPLIERS[name] ? (
+              <div className="space-y-0.5">
+                {SKILL_MULTIPLIERS[name].map(([type, skillName, mult], i) => {
+                  const typeColors = {
+                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
+                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
+                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
+                  };
+                  const typeBg = {
+                    'Basic ATK': 'bg-gray-500/10', 'Mid-air': 'bg-gray-500/10', 'Heavy ATK': 'bg-orange-500/10',
+                    'Charged ATK': 'bg-orange-500/10', 'Skill': 'bg-cyan-500/10', 'Liberation': 'bg-yellow-500/10',
+                    'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
+                  };
+                  return (
+                    <div key={i} className={`flex items-start gap-1.5 px-2 py-1 rounded ${typeBg[type] || 'bg-white/5'}`}>
+                      <span className={`text-[10px] font-medium w-14 shrink-0 pt-0.5 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
+                      <span className="text-[10px] text-gray-200 font-medium min-w-0 shrink-0">{skillName}</span>
+                      <span className="text-[10px] text-gray-400 ml-auto text-right pl-1">{mult}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {data.skills.map((skill, i) => (
+                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
+                ))}
+              </div>
+            )}
           </div>
           
           {/* Ascension Materials (Lv 1→90) */}
@@ -545,7 +614,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-[90vh]">
+       <div className="overflow-y-auto max-h-full">
         {/* Header */}
         <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''}`} style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
@@ -553,14 +622,12 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
-              {data.baseAtk && <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.baseAtk} Base ATK</span>}
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.stat}{data.subStatValue ? ` ${data.subStatValue}` : ''}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -568,9 +635,27 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             </div>
           </div>
         </div>
-        
+
         {/* Content */}
         <div className="p-4 space-y-3">
+          {/* 1. Stats bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.baseAtk && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+                <span className="text-[9px] text-gray-400">ATK</span>
+                <span className="text-xs font-bold text-red-400">{data.baseAtk}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
+              <span className="text-[9px] text-gray-400">{data.stat}</span>
+              <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
+            </div>
+            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => (
+              <span key={i} className="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
+            ))}
+          </div>
+
+          {/* 2. Description */}
           {data.desc && (() => {
             const sig = data.desc.match(/^(\w+ signature)\.\s*/);
             const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
@@ -585,24 +670,34 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               </div>
             );
           })()}
-          
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+
+          {/* 3. Passive */}
+          <div className={`p-3 rounded-xl border ${colors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
-            <div className={`text-xs ${colors.text}`}>{data.passive}</div>
+            <div className={`text-xs font-medium ${colors.text}`}>{data.passive}</div>
           </div>
-          
-          {data.bestFor && data.bestFor.length > 0 && (
-            <div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Best For</div>
-              <div className="flex flex-wrap gap-1">
-                {data.bestFor.map((char, i) => (
-                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
+
+          {/* 4. Refinement Scaling */}
+          {data.pv && Object.keys(data.pv).length > 0 && (
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Refinement Scaling</div>
+              <div className="grid grid-cols-5 gap-1">
+                {WEAPON_REFINE_SCALE.map((scale, i) => (
+                  <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
+                    <div className={`text-[9px] mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
+                    {Object.entries(data.pv).map(([stat, val]) => (
+                      <div key={stat} className="text-[9px] text-gray-300">
+                        <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
+                        <div className="text-gray-500 text-[8px]">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
+                      </div>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Ascension Materials */}
+          {/* 5. Ascension Materials */}
           {data.ascensionMaterials && (() => {
             const costs = data.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
             const forgeryTiers = FORGERY_MAT_TIERS[data.ascensionMaterials.forgery];
@@ -626,7 +721,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             );
           })()}
 
-          {/* EXP Materials */}
+          {/* 6. EXP Materials */}
           <div>
             <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
@@ -692,7 +787,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
         style={borderColor ? { borderColor: `${borderColor}80` } : {}}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-[90vh]">
+       <div className="overflow-y-auto max-h-full">
         {/* Header */}
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
@@ -701,12 +796,32 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              {/* Element badges from echo skill element(s) */}
+              {(() => {
+                const elements = [];
+                if (data.element) elements.push(data.element);
+                // Also extract additional elements mentioned as DMG in desc
+                const elNames = ['Glacio', 'Fusion', 'Electro', 'Aero', 'Spectro', 'Havoc'];
+                if (data.desc) {
+                  elNames.forEach(el => {
+                    if (!elements.includes(el) && new RegExp(el + '\\s*DMG', 'i').test(data.desc)) {
+                      elements.push(el);
+                    }
+                  });
+                }
+                return elements.map(el => {
+                  const ec = ELEMENT_COLORS[el];
+                  return ec ? (
+                    <span key={el} className="text-[10px] px-2 py-0.5 rounded font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
+                  ) : null;
+                });
+              })()}
               {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
                 const bc = ECHO_BUFF_COLORS[b] || buffColors;
                 return <span key={b} className={`text-[10px] px-2 py-0.5 rounded ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
@@ -718,38 +833,43 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
 
         {/* Content */}
         <div className="p-4 space-y-3">
-          {/* Description */}
-          {data.desc && (() => {
-            const parts = data.desc.split(/(?<=\.)\s+/);
-            const identity = parts[0] || '';
-            const skillParts = [];
-            const buffParts = [];
-            for (let i = 1; i < parts.length; i++) {
-              if (/grants?\s|Main slot/i.test(parts[i])) buffParts.push(parts[i]);
-              else skillParts.push(parts[i]);
-            }
-            return (
-              <div className="text-sm space-y-2">
-                <p className="text-gray-400 italic">{identity}</p>
-                {skillParts.length > 0 && (
-                  <div className="p-2.5 rounded-lg bg-white/5">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
-                    <p className="text-gray-300 text-xs leading-relaxed">{skillParts.join(' ')}</p>
-                  </div>
-                )}
-                {buffParts.length > 0 && (
-                  <div className="p-2.5 rounded-lg bg-white/5">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Buff</div>
-                    <p className="text-gray-300 text-xs leading-relaxed">{buffParts.join(' ')}</p>
-                  </div>
-                )}
+          {/* 1. Info bar — dmg value + sets */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.dmg > 0 && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+                <span className="text-[9px] text-gray-400">DMG</span>
+                <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
               </div>
-            );
-          })()}
+            )}
+            {data.sets.map(setName => {
+              const sc = getSetElementColor(setName);
+              return <span key={setName} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
+            })}
+          </div>
 
-          {/* Sonata Sets */}
+          {/* 2. Description (identity) */}
+          {data.desc && (
+            <p className="text-sm text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
+          )}
+
+          {/* 3. Enemy resistance (boss echoes with known resistance) */}
+          {data.enemyRes && (
+            <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(data.enemyRes).map(([el, val]) => (
+                  <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
+                    {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
+                  </span>
+                ))}
+                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Sonata Sets */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Available Sonata Sets</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Sonata Set Bonuses</div>
             <div className="space-y-2">
               {data.sets.map(setName => {
                 const setData = ECHO_SETS[setName];
@@ -772,7 +892,54 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* Main Stat Options (based on cost) */}
+          {/* 4. Skill — full description with highlighted numbers and tags */}
+          {data.desc && (() => {
+            const parts = data.desc.split(/(?<=\.)\s+/);
+            const allSkillText = parts.slice(1).join(' ');
+            if (!allSkillText) return null;
+            // Format text: element DMG = full phrase in element color, everything else = number-only in white
+            const formatSkillText = (text) => {
+              const result = [];
+              // Group 1: full element DMG phrase (colored by element)
+              // Group 2-4: number-only white highlights (%, s, x)
+              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*DMG)|([+-]?\d+(?:\.\d+)?%)|(\d+s)|(CD:\s*\d+s)|(x\d+)/gi;
+              let lastIndex = 0;
+              let match;
+              while ((match = regex.exec(text)) !== null) {
+                const m = match[0];
+                if (match.index > lastIndex) {
+                  result.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex, match.index)}</span>);
+                }
+                let color = '#ffffff';
+                // Group 1: element DMG — full phrase gets element color
+                if (match[1]) {
+                  if (/Glacio/i.test(m)) color = getBuffElementColor('Glacio DMG');
+                  else if (/Fusion/i.test(m)) color = getBuffElementColor('Fusion DMG');
+                  else if (/Electro/i.test(m)) color = getBuffElementColor('Electro DMG');
+                  else if (/Aero/i.test(m)) color = getBuffElementColor('Aero DMG');
+                  else if (/Spectro/i.test(m)) color = getBuffElementColor('Spectro DMG');
+                  else if (/Havoc/i.test(m)) color = getBuffElementColor('Havoc DMG');
+                  else if (/Physical/i.test(m)) color = '#a1a1aa';
+                }
+                result.push(
+                  <span key={match.index} className="font-semibold" style={{ color }}>{m}</span>
+                );
+                lastIndex = match.index + m.length;
+              }
+              if (lastIndex < text.length) {
+                result.push(<span key={lastIndex} className="text-gray-400">{text.slice(lastIndex)}</span>);
+              }
+              return result;
+            };
+            return (
+              <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+                <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
+              </div>
+            );
+          })()}
+
+          {/* 6. Main Stats */}
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
             <div className="flex flex-wrap gap-1">
@@ -791,17 +958,17 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             </div>
           </div>
 
-          {/* Buff Description */}
-          <div className="p-3 rounded-xl border" style={{ borderColor: `${primaryBuffColor}40`, background: `${primaryBuffColor}08` }}>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill Buff</div>
-            <div className="flex flex-wrap gap-1.5">
-              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => (
-                <span key={b} className="text-xs font-medium" style={{ color: getBuffElementColor(b) }}>{b}</span>
+          {/* 7. Substats */}
+          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
+            <div className="flex flex-wrap gap-1">
+              {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
+                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-[var(--border-medium)]">{s}</span>
               ))}
             </div>
           </div>
 
-          {/* Used By Characters */}
+          {/* 8. Recommended For */}
           {usedBy.length > 0 && (
             <div>
               <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Recommended For</div>
@@ -865,12 +1032,12 @@ class TabErrorBoundary extends React.Component {
                 <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
                 <div className="text-white font-bold text-sm mb-1">Something went wrong</div>
                 <p className="text-gray-400 text-xs mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
-                <button 
+                <button
                   onClick={() => this.setState({ hasError: false, error: null })}
                   className="kuro-btn active-cyan text-xs px-4 py-2"
-                  aria-label={`Retry loading the ${this.props.tabName || 'tab'} tab`}
+                  aria-label={`Reload the ${this.props.tabName || 'tab'} tab`}
                 >
-                  Try Again
+                  ↻ Reload
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left">
@@ -887,6 +1054,34 @@ class TabErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+// Issue #147: Skeleton loading placeholder for tab transitions
+const TabLoadingSkeleton = () => (
+  <div className="kuro-calc space-y-3 tab-content animate-pulse" aria-label="Loading tab content" role="status">
+    <div className="kuro-card">
+      <div className="kuro-card-inner">
+        <div className="kuro-body space-y-3 py-6">
+          <div className="h-4 bg-white/10 rounded w-1/3" />
+          <div className="h-3 bg-white/5 rounded w-2/3" />
+          <div className="h-3 bg-white/5 rounded w-1/2" />
+        </div>
+      </div>
+    </div>
+    <div className="kuro-card">
+      <div className="kuro-card-inner">
+        <div className="kuro-body space-y-3 py-6">
+          <div className="h-4 bg-white/10 rounded w-1/4" />
+          <div className="flex gap-2">
+            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-20 bg-white/5 rounded flex-1" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <span className="sr-only">Loading...</span>
+  </div>
+);
 
 // P6-FIX: Root-level error boundary — catches crashes outside individual tabs (MED)
 class AppErrorBoundary extends React.Component {
@@ -1078,7 +1273,8 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
   if (time.expired && !alwaysShow) return <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
-    // If expired but alwaysShow, show "0h 0m 0s" briefly until next tick updates
+    // If expired but alwaysShow and has recalcFn, skip rendering zeros — next tick will recalculate
+    if (recalcFn) return null;
     return <span className={`kuro-number text-xs ${TIMER_COLOR_MAP[color] || TIMER_COLOR_MAP.purple}`}>0h 0m 0s</span>;
   }
   
@@ -5058,7 +5254,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
-    <div className="relative overflow-hidden rounded-xl border" style={{ height: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ minHeight: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {imgUrl && (
         <div className="absolute inset-0" style={{ zIndex: 1 }}>
           <img
@@ -5096,7 +5292,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <div className={stats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-[10px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
-            {item.featured4Stars.map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+            {(item.featured4Stars || []).map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
       </div>
@@ -5106,11 +5302,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-base kuro-number ${isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
-                  <div className="text-gray-400 text-[10px] mt-0.5">5★ Pity</div>
+                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px] ml-0.5">/{HARD_PITY}</span></div>
+                  <div className={`text-[10px] mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>
+                  <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px] ml-0.5">/10</span></div>
                   <div className="text-gray-400 text-[10px] mt-0.5">4★ Pity</div>
                 </div>
                 <div className="text-center">
@@ -5119,9 +5315,13 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                 </div>
               </div>
               {/* MED-27: Escalated from text-[10px] to text-xs font-bold for visual weight */}
-              {isChar && (
+              {isChar ? (
                 <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
+                </div>
+              ) : (
+                <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-pink-500/20 text-pink-400 border border-pink-500/30'}`}>
+                  {stats.guaranteed ? '✓ Guaranteed' : 'No Guarantee'}
                 </div>
               )}
             </div>
@@ -5133,97 +5333,109 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 });
 BannerCard.displayName = 'BannerCard';
 
-const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange }) => {
+const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
   const isRecurring = !isDaily && !isWeekly && event.resetType && /^~?\d+\s*(days?|d|h|m)?$/i.test(event.resetType.trim());
-  
+
   const endDate = useMemo(() => {
     if (isDaily) return getNextDailyReset(server);
     if (isWeekly) return getNextWeeklyReset(server);
     if (isRecurring) return getRecurringEventEnd(event.currentEnd, event.resetType, server);
     return getServerAdjustedEnd(event.currentEnd, server);
   }, [event, server, isDaily, isWeekly, isRecurring, resetTick]);
-  
+
   const handleExpire = useCallback(() => {
-    if (isDaily || isWeekly || isRecurring) setResetTick(t => t + 1);
-  }, [isDaily, isWeekly, isRecurring]);
-  
+    if (isDaily || isWeekly || isRecurring) {
+      setResetTick(t => t + 1);
+      // Auto-reset done/skipped status on new cycle so recurring events start fresh
+      if (onStatusChange) onStatusChange(null);
+    }
+  }, [isDaily, isWeekly, isRecurring, onStatusChange]);
+
   const recalcFn = useMemo(() => {
     if (isDaily) return () => getNextDailyReset(server);
     if (isWeekly) return () => getNextWeeklyReset(server);
     if (isRecurring) return () => getRecurringEventEnd(event.currentEnd, event.resetType, server);
     return null;
   }, [isDaily, isWeekly, isRecurring, server, event]);
-  
+
   const colors = EVENT_ACCENT_COLORS[event.accentColor] || EVENT_ACCENT_COLORS.cyan;
   const imgUrl = bannerImage;
-  
-  const maskGradient = visualSettings 
+
+  const maskGradient = visualSettings
     ? generateMaskGradient(visualSettings.shadowFadePosition, visualSettings.shadowFadeIntensity)
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
-  
+
   const isDone = status === 'done';
   const isSkipped = status === 'skipped';
-  
+  const dimmed = isSkipped || isExpired;
+
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ height: '190px', isolation: 'isolate', zIndex: 5, opacity: isSkipped ? 0.5 : 1 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
       {imgUrl && (
-        <img 
-          src={imgUrl} 
-          alt={event.name} 
+        <img
+          src={imgUrl}
+          alt={event.name}
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             zIndex: 1,
             opacity: pictureOpacity,
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient,
-            filter: isSkipped ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
+            filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
           }}
           loading="lazy"
           onError={hideOnError}
         />
       )}
-      
+
       {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
-      
+
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
+            <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
               {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
-              {isSkipped && <X size={12} className="inline mr-1 -mt-0.5" />}
+              {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}
             </h4>
             <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
-            <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
+            {isExpired ? (
+              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-400 border border-red-500/20">Expired</span>
+            ) : (
+              <>
+                <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+                <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
+              </>
+            )}
           </div>
         </div>
-        
+
         <div className="flex justify-between items-end">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
+          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isExpired ? 'bg-gray-500/20 text-gray-500' : isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
             {event.rewards}
           </div>
-          {onStatusChange && (
+          {onStatusChange && !isExpired && (
             <div className="flex gap-1">
-              {status ? (
-                <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
-                  Undo
+              {!isDone && (
+                <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
+                  <Check size={10} className="inline -mt-0.5" /> Done
                 </button>
-              ) : (
-                <>
-                  <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
-                    <Check size={10} className="inline -mt-0.5" /> Done
-                  </button>
-                  <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
-                    <X size={10} className="inline -mt-0.5" /> Skip
-                  </button>
-                </>
+              )}
+              {!isSkipped && (
+                <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
+                  <SkipForward size={10} className="inline -mt-0.5" /> Skip
+                </button>
+              )}
+              {status && (
+                <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
+                  {isDone ? 'Undo Done' : 'Undo Skip'}
+                </button>
               )}
             </div>
           )}
@@ -5256,7 +5468,7 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic }) => {
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -5294,7 +5506,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
-      <div className="absolute inset-0 collection-img-wrap">
+      <div className="absolute inset-0 collection-img-wrap" style={{ maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)' }}>
         <img
           src={imgUrl}
           alt={name}
@@ -5303,6 +5515,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           style={{
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,
+            mixBlendMode: isEcho ? 'lighten' : undefined,
             filter: owned ? 'none' : 'grayscale(100%)',
             maskImage: collMask,
             WebkitMaskImage: collMask
@@ -5521,17 +5734,15 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
 KuroSelect.displayName = 'KuroSelect';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
-    <div className="kuro-empty-state relative py-3">
-      {/* §DST1: Ghost-grid — faded placeholder cards hint at the grid layout */}
-      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 mb-2" aria-hidden="true">
-        {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="ghost-grid-cell aspect-[3/4] rounded-lg border border-white/[0.04]" style={{ animationDelay: `${i * 0.08}s` }} />
-        ))}
-      </div>
-      <p className="text-gray-500 text-xs text-center">No items match your filters</p>
+    <div className="text-center py-8">
+      <div className="text-gray-500 text-sm mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
+      <p className="text-gray-600 text-[10px] mb-3">Try adjusting your filters or clearing them</p>
+      {hasActiveFilters && onClearFilters && (
+        <button onClick={onClearFilters} className="kuro-btn text-[10px] px-3 py-1.5 active-gold">Clear Filters</button>
+      )}
     </div>
   );
   const ownedCount = items.filter(([_, c]) => c > 0).length;
@@ -5557,12 +5768,15 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               isSelected={framingMode && editingImage === imageKey}
               owned={count > 0} collMask={collMask} collOpacity={collOpacity}
               glowClass={glowClass} ownedBg={ownedBg} ownedBorder={ownedBorder}
-              countLabel={count > 0 ? `${countPrefix}${countPrefix === 'S' ? count - 1 : count}` : ''} countColor={countColor}
+              countLabel={dataType === 'echo' ? '' : count > 0 ? `${countPrefix}${countPrefix === 'S' ? count - 1 : count}` : ''} countColor={countColor}
               framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
               onClickCard={dataLookup[name] ? () => setDetailModal({ show: true, type: dataType, name, imageUrl: imgUrl, framing: getImageFraming(imageKey) }) : null}
               isNew={isNew}
               isProfilePic={profilePic === name}
               onSetProfilePic={onSetProfilePic}
+              isCharOwned={ownedChars ? ownedChars.includes(name) : undefined}
+              onToggleOwned={toggleOwned}
+              isEcho={dataType === 'echo'}
             />
           );
         })}
@@ -5593,7 +5807,7 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
       </div>
       <div className="text-right">
         <span style={{ color: pity >= 65 ? softColor : color }} className={`text-2xl kuro-number ${pity >= 65 ? softPityClass : ''}`}>{pity}</span>
-        <span className="text-gray-200 text-sm">/80</span>
+        <span className="text-gray-200 text-sm ml-0.5">/80</span>
       </div>
     </div>
     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -5776,7 +5990,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const hasStats = profileData?.history?.length > 0;
   const isFull = visualSettings?.animationsEnabled === 'full';
   return (
-    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ height: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
       {bannerImage && (
         <img
           src={bannerImage}
@@ -5807,8 +6021,8 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
               <div className="text-center">
-                <div className="text-cyan-400 font-bold text-sm">{profileData.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
-                <div className="text-gray-400 text-[10px] mt-0.5">5★ Pity</div>
+                <div className={`font-bold text-sm ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : profileData.pity5 >= 75 ? 'text-red-400' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400' : 'text-cyan-400'}`}>{profileData.pity5}<span className="text-gray-400 text-[10px]">/{HARD_PITY}</span></div>
+                <div className={`text-[10px] mt-0.5 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? '★ GUARANTEED!' : profileData.pity5 >= 75 ? '⚠ High Pity!' : profileData.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
               </div>
               <div className="text-center">
                 <div className="text-purple-400 font-bold text-sm">{profileData.pity4}<span className="text-gray-400 text-[10px]">/10</span></div>
@@ -5911,7 +6125,7 @@ export {
   TabBackground, Card, CardHeader, CardBody,
   CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
   TabButton, PityRing, CountdownTimer,
-  AppErrorBoundary, TabErrorBoundary,
+  AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton,
   BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour,
   BannerCard, EventCard, ProbabilityBar,
   ADMIN_BANNER_KEY, ADMIN_HASH,

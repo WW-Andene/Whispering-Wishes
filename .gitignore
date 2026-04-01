@@ -9,3 +9,4 @@ agent/.checkpoint.json
 agent/.schedule-hint.json
 agent/.commit-msg.tmp
 agent/.memory.lock
+.claude/

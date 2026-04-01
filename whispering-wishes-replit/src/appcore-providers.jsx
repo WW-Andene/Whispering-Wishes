@@ -209,10 +209,11 @@ const ToastProvider = ({ children }) => {
     };
   }, []);
 
-  const addToast = useCallback((message, type = 'info', duration = 3000) => {
+  const addToast = useCallback((message, type = 'info', duration, onUndo = null) => {
+    if (duration === undefined) duration = type === 'error' ? 4500 : 3000;
     const id = generateUniqueId();
     setToasts(prev => {
-      const next = [...prev, { id, message, type }];
+      const next = [...prev, { id, message, type, onUndo }];
       return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next;
     });
     const timer = setTimeout(() => {
@@ -233,18 +234,28 @@ const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={contextValue}>
       {children}
       {/* MED-4: Toast z-index separated from install prompt */}
-      <div className="fixed bottom-24 left-3 right-3 z-[9500] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true">
+      <div className="fixed bottom-28 left-3 right-3 z-[9500] flex flex-col gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {toasts.map(toast => (
-          <div key={toast.id} className="px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto text-white border border-white/20" style={{
+          <div key={toast.id} className={`px-4 py-3 rounded-lg flex items-center gap-2 text-xs font-medium pointer-events-auto border ${toast.type === 'warning' ? 'text-amber-900 border-amber-300/40' : 'text-white border-white/20'}`} style={{
             animation: 'slideUp 0.2s ease-out',
-            background: toast.type === 'success' ? 'rgba(34,197,94,0.9)' : toast.type === 'error' ? 'rgba(248,113,113,0.9)' : toast.type === 'warning' ? 'rgba(237,175,24,0.9)' : 'rgba(56,189,248,0.9)',
+            background: toast.type === 'success' ? 'rgba(34,197,94,0.9)' : toast.type === 'error' ? 'rgba(248,113,113,0.9)' : toast.type === 'warning' ? 'rgba(252,211,77,0.95)' : 'rgba(56,189,248,0.9)',
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}
             {toast.type === 'error' && <AlertCircle size={16} />}
             {/* AUDIT-FIX N7: Use AlertTriangle for warnings to distinguish from errors */}
             {toast.type === 'warning' && <AlertTriangle size={16} />}
             {toast.type === 'info' && <Info size={16} />}
-            {toast.message}
+            <span className="flex-1">{toast.message}</span>
+            {toast.onUndo && (
+              <button onClick={() => {
+                toast.onUndo();
+                setToasts(prev => prev.filter(t => t.id !== toast.id));
+                const timer = timerRefs.current.get(toast.id);
+                if (timer) { clearTimeout(timer); timerRefs.current.delete(toast.id); }
+              }} className={`ml-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex-shrink-0 ${toast.type === 'warning' ? 'bg-amber-900/15 hover:bg-amber-900/25 text-amber-900' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
+                Undo
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -266,7 +277,7 @@ const useFocusTrap = (isOpen) => {
     const el = ref.current;
     if (!el) return;
     const getFocusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const timer = setTimeout(() => { const f = getFocusable(); if (f.length) f[0].focus(); }, 50);
+    const raf = requestAnimationFrame(() => { const f = getFocusable(); if (f.length) f[0].focus(); });
     const handleKeyDown = (e) => {
       if (e.key !== 'Tab') return;
       // Re-query on each Tab press to catch dynamically rendered elements
@@ -277,7 +288,7 @@ const useFocusTrap = (isOpen) => {
       else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
     };
     el.addEventListener('keydown', handleKeyDown);
-    return () => { clearTimeout(timer); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus(); };
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus(); };
   }, [isOpen]);
   return ref;
 };
@@ -325,7 +336,8 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
-      window.scrollTo(0, scrollY);
+      // Restore scroll position instantly to avoid visual jump on iOS
+      window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
     };
   }, [isOpen]);
 
@@ -404,7 +416,7 @@ const OnboardingModal = ({ onComplete }) => {
   const s = steps[step];
   
   return (
-    <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel="Welcome to Whispering Wishes" className="bg-black/90">
+    <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel="Welcome to Whispering Wishes" className="bg-black/90" centered>
       <div className={`relative overflow-hidden rounded-2xl border ${s.border} bg-gradient-to-r ${s.gradient} w-full max-w-xs`} style={{ backgroundColor: 'rgba(12, 16, 24, 0.12)', backdropFilter: 'blur(6px)', zIndex: 5 }}>
         {/* §E9-MC-F3: Angular decorative patterns matching HUD aesthetic */}
         <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none" aria-hidden="true">
@@ -999,7 +1011,7 @@ const KuroStyles = memo(({ oledMode }) => (
       box-shadow:
         var(--shadow-lg),
         0 0 0 1px var(--card-outline, rgba(255, 255, 255, 0.03)),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        inset 0 0 0 1px var(--card-inset, rgba(255, 255, 255, 0.05));
       transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     }
 
@@ -1012,7 +1024,7 @@ const KuroStyles = memo(({ oledMode }) => (
           var(--shadow-xl),
           0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.06)),
           0 0 40px var(--card-glow, rgba(100, 140, 200, 0.03)),
-          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          inset 0 0 0 1px var(--card-inset-hover, rgba(255, 255, 255, 0.08));
       }
     }
     
@@ -1025,14 +1037,14 @@ const KuroStyles = memo(({ oledMode }) => (
       transition: transform var(--transition-fast);
     }
     
-    /* Top shimmer line */
+    /* Top shimmer line — exactly on the card border */
     .kuro-card::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
+      top: -0.75px;
+      left: 11px;
+      right: 11px;
+      height: 0.75px;
       background: linear-gradient(90deg,
         transparent 0%,
         var(--shimmer-color, rgba(255, 255, 255, 0.45)) 20%,
@@ -1288,10 +1300,13 @@ const KuroStyles = memo(({ oledMode }) => (
 
     /* E5-BT2: Button hierarchy — primary (gold bg), ghost (transparent), danger (red) */
     .kuro-btn-primary {
-      background: rgba(237, 175, 24, 0.2);
-      border-color: rgba(237, 175, 24, 0.6);
-      color: #fef08a;
+      background: rgba(237, 175, 24, 0.15) !important;
+      border-color: rgba(237, 175, 24, 0.4) !important;
+      color: #edaf18 !important;
       font-weight: 600;
+    }
+    .kuro-btn-primary:hover {
+      background: rgba(237, 175, 24, 0.25) !important;
     }
     .kuro-btn-ghost {
       background: transparent;
@@ -1305,15 +1320,12 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
     .kuro-btn-danger {
-      background: rgba(239, 68, 68, 0.15);
-      border-color: rgba(239, 68, 68, 0.5);
-      color: #fca5a5;
+      background: rgba(239, 68, 68, 0.1) !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+      color: #f87171 !important;
     }
-    @media (hover: hover) {
-      .kuro-btn-danger:hover {
-        background: rgba(239, 68, 68, 0.25);
-        border-color: rgba(239, 68, 68, 0.7);
-      }
+    .kuro-btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2) !important;
     }
 
     /* Active states with glassy glow */
@@ -2218,7 +2230,7 @@ const KuroStyles = memo(({ oledMode }) => (
           var(--shadow-xl),
           0 0 0 1px var(--card-outline-hover, rgba(255, 255, 255, 0.08)),
           0 0 50px var(--card-glow, rgba(100, 140, 200, 0.06)),
-          inset 0 1px 0 rgba(255, 255, 255, 0.10);
+          inset 0 0 0 1px var(--card-inset-hover, rgba(255, 255, 255, 0.10));
       }
       .animations-full .collection-card:hover {
         transform: translateY(-6px) scale(1.03);

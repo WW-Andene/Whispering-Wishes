@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/__tests__/test-setup.js'],
+    include: ['src/__tests__/**/*.test.{js,jsx}'],
+  },
   server: {
     host: '0.0.0.0',
     port: 5000,
@@ -14,7 +20,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
-          'vendor-charts': ['recharts'],
         },
       },
     },

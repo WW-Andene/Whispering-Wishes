@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import {
+  APP_VERSION,
   SERVERS, getServerOffset,
   HARD_PITY, SOFT_PITY_START,
   LUNITE_DAILY_ASTRITE, ASTRITE_PER_PULL,
@@ -417,9 +418,36 @@ const ACTION = Object.freeze({
   CLEAR_TEAM_SLOT: 'CLEAR_TEAM_SLOT',
   CLEAR_TEAM: 'CLEAR_TEAM',
   RENAME_TEAM: 'RENAME_TEAM',
+  IMPORT_TEAMS: 'IMPORT_TEAMS',
   LOAD_STATE: 'LOAD_STATE',
   RESET: 'RESET',
+  UNDO: 'UNDO',
 });
+
+// Destructive actions that support undo
+const UNDOABLE_ACTIONS = new Set([
+  ACTION.CLEAR_TEAM, ACTION.CLEAR_TEAM_SLOT, ACTION.CLEAR_PROFILE,
+  ACTION.CLEAR_ALL_INCOME, ACTION.REMOVE_INCOME, ACTION.DELETE_BOOKMARK, ACTION.RESET,
+]);
+
+// Undo-aware reducer wrapper: snapshots state before destructive actions
+const MAX_UNDO_STACK = 10;
+const createUndoReducer = (baseReducer) => {
+  const undoStack = [];
+  return (state, action) => {
+    if (action.type === ACTION.UNDO) {
+      return undoStack.length > 0 ? undoStack.pop() : state;
+    }
+    if (UNDOABLE_ACTIONS.has(action.type)) {
+      if (undoStack.length >= MAX_UNDO_STACK) undoStack.shift();
+      undoStack.push(state);
+    }
+    return baseReducer(state, action);
+  };
+};
+
+// Check if undo is available (for UI)
+const canUndo = () => false; // placeholder — actual check is via undoReducer closure
 
 // [SECTION:STATE]
 const initialState = {
@@ -520,6 +548,12 @@ const loadFromStorage = () => {
     const parsed = JSON.parse(saved);
     // P10-FIX: Sanitize loaded state to prevent prototype pollution from tampered localStorage (Step 6 audit)
     const safeParsed = sanitizeStateObj(parsed);
+    // Version tracking: detect pre-migration data (no version field = v1)
+    const savedVersion = safeParsed.version || '1.0.0';
+    if (savedVersion !== APP_VERSION) {
+      console.info(`[WW] Data migration: loaded v${savedVersion}, app is v${APP_VERSION}`);
+      // Future migrations go here based on savedVersion
+    }
     return {
       ...initialState,
       ...sanitizeImportedState(safeParsed),
@@ -555,7 +589,7 @@ const loadFromStorage = () => {
 const saveToStorage = (state) => {
   if (!storageAvailable) return false; // Storage unavailable — save did not happen
   try {
-    const data = JSON.stringify(state);
+    const data = JSON.stringify({ ...state, version: APP_VERSION });
     // Warn if approaching 5MB localStorage limit (~80% = 4MB)
     if (data.length > 4 * 1024 * 1024) {
       console.warn('Storage approaching limit:', (data.length / 1024 / 1024).toFixed(1) + 'MB');
@@ -585,9 +619,9 @@ const reducer = (state, action) => {
       return { ...state, eventStatus: newStatus };
     }
     case ACTION.ADD_INCOME: {
-      const incAst = Math.floor(+action.income.astrite || 0);
-      const incRad = Math.floor(+action.income.radiant || 0);
-      const incLus = Math.floor(+action.income.lustrous || 0);
+      const incAst = Math.max(0, Math.floor(+action.income.astrite || 0));
+      const incRad = Math.max(0, Math.floor(+action.income.radiant || 0));
+      const incLus = Math.max(0, Math.floor(+action.income.lustrous || 0));
       return {
         ...state,
         planner: {
@@ -657,48 +691,50 @@ const reducer = (state, action) => {
         return [...existing, ...newEntries].sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
       };
       
+      // FIX #4: Recalculate pity from MERGED history (not just import batch)
+      const recalcPity = (history) => {
+        let pity5 = 0, pity4 = 0;
+        for (let i = history.length - 1; i >= 0; i--) {
+          if (history[i].rarity === 5) break;
+          pity5++;
+        }
+        for (let i = history.length - 1; i >= 0; i--) {
+          if (history[i].rarity >= 4) break;
+          pity4++;
+        }
+        return { pity5: Math.min(pity5, HARD_PITY), pity4: Math.min(pity4, HARD_PITY_4STAR) };
+      };
+
       if (action.bannerType === 'featured') {
         const merged = deduplicateMerge(state.profile.featured?.history, action.history);
-        // P9-FIX: Only update pity values if new entries were actually merged (Step 4 audit)
         const hadNewEntries = merged !== state.profile.featured?.history;
-        newProfile.featured = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.featured?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.featured?.pity4 ?? action.pity4), 
-          guaranteed: hadNewEntries ? (action.guaranteed || false) : (state.profile.featured?.guaranteed ?? false) 
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.featured?.pity5 ?? 0, pity4: state.profile.featured?.pity4 ?? 0 };
+        const fiveStars = merged.filter(p => p.rarity === 5);
+        const lastFive = fiveStars[fiveStars.length - 1];
+        newProfile.featured = {
+          history: merged, pity5, pity4,
+          guaranteed: hadNewEntries ? (lastFive?.won5050 === false) : (state.profile.featured?.guaranteed ?? false)
         };
       } else if (action.bannerType === 'weapon') {
         const merged = deduplicateMerge(state.profile.weapon?.history, action.history);
         const hadNewEntries = merged !== state.profile.weapon?.history;
-        newProfile.weapon = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.weapon?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.weapon?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.weapon?.pity5 ?? 0, pity4: state.profile.weapon?.pity4 ?? 0 };
+        newProfile.weapon = { history: merged, pity5, pity4 };
       } else if (action.bannerType === 'standardChar') {
         const merged = deduplicateMerge(state.profile.standardChar?.history, action.history);
         const hadNewEntries = merged !== state.profile.standardChar?.history;
-        newProfile.standardChar = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.standardChar?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.standardChar?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.standardChar?.pity5 ?? 0, pity4: state.profile.standardChar?.pity4 ?? 0 };
+        newProfile.standardChar = { history: merged, pity5, pity4 };
       } else if (action.bannerType === 'standardWeap') {
         const merged = deduplicateMerge(state.profile.standardWeap?.history, action.history);
         const hadNewEntries = merged !== state.profile.standardWeap?.history;
-        newProfile.standardWeap = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.standardWeap?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.standardWeap?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.standardWeap?.pity5 ?? 0, pity4: state.profile.standardWeap?.pity4 ?? 0 };
+        newProfile.standardWeap = { history: merged, pity5, pity4 };
       } else if (action.bannerType === 'beginner') {
         const merged = deduplicateMerge(state.profile.beginner?.history, action.history);
         const hadNewEntries = merged !== state.profile.beginner?.history;
-        newProfile.beginner = { 
-          history: merged, 
-          pity5: hadNewEntries ? action.pity5 : (state.profile.beginner?.pity5 ?? action.pity5), 
-          pity4: hadNewEntries ? action.pity4 : (state.profile.beginner?.pity4 ?? action.pity4) 
-        };
+        const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.beginner?.pity5 ?? 0, pity4: state.profile.beginner?.pity4 ?? 0 };
+        newProfile.beginner = { history: merged, pity5, pity4 };
       }
       return { ...state, profile: newProfile };
     }
@@ -758,6 +794,14 @@ const reducer = (state, action) => {
       );
       return { ...state, teams };
     }
+    case ACTION.IMPORT_TEAMS: {
+      if (!Array.isArray(action.teams) || action.teams.length !== 5) return state;
+      const teams = action.teams.map((t, i) => ({
+        name: (t?.name || `Team ${i + 1}`).slice(0, 20),
+        slots: Array.isArray(t?.slots) ? t.slots.slice(0, 3).map(s => typeof s === 'string' ? s : null) : [null, null, null],
+      }));
+      return { ...state, teams, activeTeamIndex: Math.max(0, Math.min(4, action.activeTeamIndex ?? state.activeTeamIndex)) };
+    }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
     case ACTION.LOAD_STATE: return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
     case ACTION.RESET: return initialState;
@@ -807,7 +851,7 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
   const pity4 = safePulls % HARD_PITY_4STAR;
   
   return {
-    successRate: successRate.toFixed(1),
+    successRate: successRate > 0 && successRate < 0.1 ? '<0.1' : successRate.toFixed(1),
     p1: pGe(1).toFixed(1),
     p2: pGe(2).toFixed(1),
     p3: pGe(3).toFixed(1),
@@ -835,6 +879,6 @@ export {
   getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset,
   initialState, STORAGE_KEY, storageAvailable,
   sanitizeStateObj, sanitizeImportedState,
-  loadFromStorage, saveToStorage, reducer, calcStats,
-  ACTION, // P15-FIX: MEDIUM-12 — Exported for use in dispatch call sites
+  loadFromStorage, saveToStorage, reducer, createUndoReducer, calcStats,
+  ACTION, UNDOABLE_ACTIONS,
 };

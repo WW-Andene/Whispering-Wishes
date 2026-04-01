@@ -1,0 +1,443 @@
+import React from 'react';
+import { Diamond, Star, X } from 'lucide-react';
+import {
+  haptic,
+  CHARACTER_DATA, ECHO_SETS,
+  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA,
+} from '../../appcore-data.js';
+import {
+  FocusTrapModal,
+} from '../../appcore-providers.jsx';
+import {
+  KuroSelect,
+  hideOnError,
+} from '../../appcore-components.jsx';
+
+export default function EchoSelector({
+  echoSelectorOpen,
+  setEchoSelectorOpen,
+  echoSelectorTarget,
+  echoSearch,
+  setEchoSearch,
+  echoSetFilter,
+  setEchoSetFilter,
+  echoBuffFilter,
+  setEchoBuffFilter,
+  echoStatPanel,
+  setEchoStatPanel,
+  setTeamEquipment,
+  teamEquipment,
+  setEchoSelectorTarget,
+  collectionImages,
+}) {
+  return (
+    <>
+      {/* Echo Selector Modal */}
+      <FocusTrapModal isOpen={echoSelectorOpen} onClose={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="" onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} centered>
+        <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+          {(() => {
+            const slotIdx = echoSelectorTarget.slotIdx;
+            const costNum = slotIdx === 0 ? 4 : slotIdx < 3 ? 3 : 1;
+            const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
+            const echoList = costNum === 4 ? ALL_4COST_ECHOES : costNum === 3 ? ALL_3COST_ECHOES : ALL_1COST_ECHOES;
+            const charData = CHARACTER_DATA[echoSelectorTarget.charName];
+            // Build recommended echoes from bestEchoes + matching sonata sets
+            const recommendedEchoes = new Set();
+            const recSets = new Set();
+            (charData?.bestEchoes || []).forEach(entry => {
+              // Direct echo name matches
+              echoList.forEach(en => { if (entry.toLowerCase().includes(en.toLowerCase())) recommendedEchoes.add(en); });
+              // Extract all set names from entries like "Eternal Radiance 5pc" or "Dream of the Lost 3pc + Havoc Eclipse 2pc"
+              entry.split('+').forEach(part => {
+                const setName = part.trim().replace(/\s+\d+pc$/i, '').trim();
+                if (ECHO_SETS[setName]) recSets.add(setName);
+              });
+            });
+            // Add echoes that belong to recommended sets
+            if (recSets.size > 0) {
+              echoList.forEach(en => {
+                const ed = ECHO_DATA[en];
+                if (ed?.sets?.some(s => recSets.has(s))) recommendedEchoes.add(en);
+              });
+            }
+            // Available sonata sets for this cost tier
+            const availableSets = [...new Set(echoList.flatMap(n => ECHO_DATA[n]?.sets || []))].sort();
+            const availableBuffs = [...new Set(echoList.flatMap(n => { const d = ECHO_DATA[n]; return d ? (Array.isArray(d.buff) ? d.buff : [d.buff]) : []; }))].sort();
+            const hasFilters = echoSetFilter !== 'all' || echoBuffFilter !== 'all';
+            // Filter
+            const filtered = echoList.filter(name => {
+              if (echoSearch && !name.toLowerCase().includes(echoSearch.toLowerCase())) return false;
+              const ed = ECHO_DATA[name];
+              if (!ed) return !echoSearch;
+              if (echoSetFilter !== 'all' && !ed.sets.includes(echoSetFilter)) return false;
+              if (echoBuffFilter !== 'all' && !(Array.isArray(ed.buff) ? ed.buff.includes(echoBuffFilter) : ed.buff === echoBuffFilter)) return false;
+              return true;
+            }).sort((a, b) => {
+              const aRec = recommendedEchoes.has(a) ? 0 : 1;
+              const bRec = recommendedEchoes.has(b) ? 0 : 1;
+              return aRec - bRec;
+            });
+            return (
+              <>
+                <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                  <div>
+                    <h3 className="text-white font-semibold text-sm">Select Echo</h3>
+                    <p className="text-gray-400 text-[10px]">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
+                  </div>
+                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
+                </div>
+                {/* Search + Filters */}
+                <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
+                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+                  <div className="flex gap-1.5">
+                    <KuroSelect
+                      value={echoSetFilter}
+                      onChange={v => setEchoSetFilter(v)}
+                      options={[
+                        { value: 'all', label: 'All Sets' },
+                        ...availableSets.map(s => ({ value: s, label: s })),
+                      ]}
+                      className="flex-1 text-[10px]"
+                    />
+                    <KuroSelect
+                      value={echoBuffFilter}
+                      onChange={v => setEchoBuffFilter(v)}
+                      options={[
+                        { value: 'all', label: 'All Buffs' },
+                        ...availableBuffs.map(b => ({ value: b, label: b })),
+                      ]}
+                      className="flex-1 text-[10px]"
+                    />
+                    {hasFilters && (
+                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="px-2 rounded border border-[var(--border-medium)] text-[10px] text-gray-400 hover:text-white transition-all">Clear</button>
+                    )}
+                  </div>
+                  {/* Recommendation indicator */}
+                  {recommendedEchoes.size > 0 && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-orange-400">
+                      <Star size={10} className="text-orange-400" fill="currentColor" />
+                      <span>Orange glow = recommended for {echoSelectorTarget.charName}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="overflow-y-auto flex-1 p-2">
+                  <div className="space-y-1">
+                    {/* Unequip option */}
+                    <button
+                      onClick={() => {
+                        const eqKey = echoSelectorTarget.teamIdx + ':' + echoSelectorTarget.charName;
+                        setTeamEquipment(prev => {
+                          const n = { ...prev };
+                          const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                          const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                          newEchoes[slotIdx] = null;
+                          n[eqKey] = { ...existing, echoes: newEchoes };
+                          try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                          return n;
+                        });
+                        setEchoSelectorOpen(false);
+                        setEchoSetFilter('all'); setEchoBuffFilter('all');
+                        haptic.light();
+                      }}
+                      className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                      style={{ background: 'var(--bg-btn)' }}
+                    >
+                      ✕ Unequip echo
+                    </button>
+                    {/* Echo list */}
+                    {filtered.map(name => {
+                        const ed = ECHO_DATA[name];
+                        const isRec = recommendedEchoes.has(name);
+                        const buffs = ed ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
+                        return (
+                          <button
+                            key={name}
+                            onClick={() => {
+                              const eqKey = echoSelectorTarget.teamIdx + ':' + echoSelectorTarget.charName;
+                              setTeamEquipment(prev => {
+                                const n = { ...prev };
+                                const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                                const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                                newEchoes[slotIdx] = { name, mainStat: null, substats: [] };
+                                n[eqKey] = { ...existing, echoes: newEchoes };
+                                try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                                return n;
+                              });
+                              setEchoSelectorOpen(false);
+                              setEchoSetFilter('all'); setEchoBuffFilter('all');
+                              // Open stat config immediately
+                              setEchoStatPanel({ teamIdx: echoSelectorTarget.teamIdx, charName: echoSelectorTarget.charName, slotIdx, echoName: name });
+                              haptic.success();
+                            }}
+                            className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isRec ? 'border-2 border-orange-400' : `border-${costColor}-500/30 bg-${costColor}-500/5`} hover:bg-${costColor}-500/10`}
+                            style={isRec ? { boxShadow: '0 0 20px rgba(251,146,60,0.5), 0 0 40px rgba(251,146,60,0.2), inset 0 0 15px rgba(251,146,60,0.15)', background: 'rgba(251,146,60,0.12)' } : {}}
+                          >
+                            <div className="flex items-center gap-2">
+                              {collectionImages[name] ? (
+                                <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
+                                  <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                </div>
+                              ) : (
+                                <Diamond size={14} className={isRec ? 'text-orange-400' : `text-${costColor}-400`} />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-white text-xs font-semibold truncate">{name}</span>
+                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>}
+                                </div>
+                                <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                  {buffs.map(b => <span key={b} className="text-[10px] text-gray-400">{b}</span>)}
+                                  {ed?.sets && <span className="text-[10px] text-gray-500">· {ed.sets.join(', ')}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    {filtered.length === 0 && (
+                      <div className="text-center py-6 text-gray-500 text-xs">No echoes match filters</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </FocusTrapModal>
+
+      {/* Echo Stat Configuration Panel */}
+      <FocusTrapModal isOpen={!!echoStatPanel} onClose={() => setEchoStatPanel(null)} className="" onClick={() => setEchoStatPanel(null)} centered>
+        <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+          {echoStatPanel && (() => {
+            const { teamIdx, charName, slotIdx, echoName } = echoStatPanel;
+            const eqKey = teamIdx + ':' + charName;
+            const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+            const echoEntry = eq.echoes?.[slotIdx];
+            const currentMainStat = (typeof echoEntry === 'object' && echoEntry) ? echoEntry.mainStat : null;
+            const currentSubstats = (typeof echoEntry === 'object' && echoEntry) ? (echoEntry.substats || []) : [];
+            const costNum = slotIdx === 0 ? 4 : slotIdx < 3 ? 3 : 1;
+            const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
+            const echoData = ECHO_DATA[echoName];
+            const mainStatOptions = costNum === 4
+              ? ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen']
+              : costNum === 3
+              ? ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen']
+              : ['ATK%', 'HP%', 'DEF%'];
+            const substatOptions = ['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'];
+            // Recommended stats based on character role/element
+            const cd = CHARACTER_DATA[charName];
+            const charEl = cd?.element;
+            const charRole = cd?.role;
+            const elDmgStat = charEl ? `${charEl} DMG` : null;
+            const isHealer = charRole === 'Healer';
+            const isSupport = charRole === 'Support';
+            const recMainStats = new Set();
+            const recSubstats = new Set();
+            // Recommended sonata sets for this character
+            const charRecSets = new Set();
+            (cd?.bestEchoes || []).forEach(entry => {
+              entry.split('+').forEach(part => {
+                const setName = part.trim().replace(/\s+\d+pc$/i, '').trim();
+                if (ECHO_SETS[setName]) charRecSets.add(setName);
+              });
+            });
+            if (isHealer) {
+              if (costNum === 4) { recMainStats.add('Healing Bonus'); }
+              else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); recMainStats.add('ATK%'); }
+              else { recMainStats.add('HP%'); }
+              ['HP%', 'ATK%', 'Energy Regen'].forEach(s => recSubstats.add(s));
+            } else if (isSupport) {
+              if (costNum === 4) { recMainStats.add('Energy Regen'); recMainStats.add('ATK%'); }
+              else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); recMainStats.add('ATK%'); }
+              else { recMainStats.add('ATK%'); }
+              ['ATK%', 'Energy Regen', 'Crit Rate', 'Crit DMG'].forEach(s => recSubstats.add(s));
+            } else {
+              // DPS (Main DPS / Sub DPS)
+              if (costNum === 4) { recMainStats.add('Crit Rate'); recMainStats.add('Crit DMG'); }
+              else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); }
+              else { recMainStats.add('ATK%'); }
+              ['Crit Rate', 'Crit DMG', 'ATK%', 'Energy Regen'].forEach(s => recSubstats.add(s));
+            }
+            const updateEchoData = (updates) => {
+              setTeamEquipment(prev => {
+                const n = { ...prev };
+                const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
+                const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                const cur = (typeof newEchoes[slotIdx] === 'object' && newEchoes[slotIdx]) ? newEchoes[slotIdx] : { name: echoName, mainStat: null, substats: [] };
+                newEchoes[slotIdx] = { ...cur, ...updates };
+                n[eqKey] = { ...existing, echoes: newEchoes };
+                try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                return n;
+              });
+            };
+            return (
+              <>
+                <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {collectionImages[echoName] ? (
+                      <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
+                        <img src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain" onError={hideOnError} />
+                      </div>
+                    ) : (
+                      <Diamond size={16} className={`text-${costColor}-400`} />
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="text-white font-semibold text-sm truncate">{echoName}</h3>
+                      <p className="text-gray-400 text-[10px]">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setEchoStatPanel(null)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>
+                </div>
+                <div className="overflow-y-auto flex-1 p-3 space-y-4">
+                  {/* Sonata sets — highlight recommended */}
+                  {echoData?.sets && (
+                    <div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sonata Sets</div>
+                      <div className="flex flex-wrap gap-1">
+                        {echoData.sets.map(s => {
+                          const isRec = charRecSets.has(s);
+                          return <span key={s} className={`text-[10px] px-2 py-0.5 rounded border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
+                        })}
+                      </div>
+                      {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
+                        <div className="flex items-center gap-1 mt-1 text-[10px] text-orange-400/80">
+                          <Star size={8} className="text-orange-400" fill="currentColor" />
+                          <span>Recommended set for {charName}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Echo Skill Details */}
+                  {echoData && (
+                    <div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill</div>
+                      <div className="p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+                        {echoData.dmg > 0 && (
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] text-gray-400">Damage:</span>
+                            <span className="text-xs font-bold text-yellow-400">{echoData.dmg}%</span>
+                            {echoData.element && echoData.element !== 'Healing' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{echoData.element}</span>
+                            )}
+                          </div>
+                        )}
+                        {echoData.dmg === 0 && (
+                          <div className="text-[10px] text-gray-500 mb-1">Utility / Healing (no damage)</div>
+                        )}
+                        <p className="text-[10px] text-gray-400 leading-relaxed">{echoData.desc}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enemy Stats (4-cost bosses only) */}
+                  {echoData?.enemyRes && (
+                    <div>
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">As Enemy</div>
+                      <div className="p-2 rounded-lg border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(echoData.enemyRes).map(([el, val]) => (
+                            <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                              {el.charAt(0).toUpperCase() + el.slice(1)} RES: {val}%
+                            </span>
+                          ))}
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">
+                            Other: 10%
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Main Stat Selection */}
+                  <div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="grid grid-cols-2 gap-1">
+                      {mainStatOptions.map(stat => {
+                        const isActive = currentMainStat === stat;
+                        const isRec = recMainStats.has(stat);
+                        return (
+                          <button key={stat}
+                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                            style={isRec && !isActive ? { boxShadow: '0 0 8px rgba(251,146,60,0.2)' } : {}}
+                            onClick={() => { updateEchoData({ mainStat: isActive ? null : stat }); haptic.light(); }}
+                          >
+                            {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Sub Stats Selection */}
+                  <div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="grid grid-cols-2 gap-1">
+                      {substatOptions.map(stat => {
+                        const isActive = currentSubstats.includes(stat);
+                        const atMax = currentSubstats.length >= 5 && !isActive;
+                        const isRec = recSubstats.has(stat);
+                        return (
+                          <button key={stat}
+                            disabled={atMax}
+                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : isRec ? 'border-orange-500/30 bg-orange-500/5 text-orange-300/80 hover:bg-orange-500/10' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                            onClick={() => {
+                              if (atMax) return;
+                              const newSubs = isActive ? currentSubstats.filter(s => s !== stat) : [...currentSubstats, stat];
+                              updateEchoData({ substats: newSubs });
+                              haptic.light();
+                            }}
+                          >
+                            {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        // Change echo — open selector
+                        setEchoStatPanel(null);
+                        setEchoSelectorTarget({ teamIdx, charName, slotIdx });
+                        setEchoSearch('');
+                        setEchoSelectorOpen(true);
+                        haptic.light();
+                      }}
+                      className="flex-1 py-2 rounded-lg text-xs border border-[var(--border-medium)] text-gray-400 hover:text-white hover:border-white/20 transition-all"
+                    >
+                      Change Echo
+                    </button>
+                    <button
+                      onClick={() => {
+                        // Unequip
+                        const eqKeyInner = teamIdx + ':' + charName;
+                        setTeamEquipment(prev => {
+                          const n = { ...prev };
+                          const existing = n[eqKeyInner] || { weapon: null, echoes: [null, null, null, null, null] };
+                          const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                          newEchoes[slotIdx] = null;
+                          n[eqKeyInner] = { ...existing, echoes: newEchoes };
+                          try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
+                          return n;
+                        });
+                        setEchoStatPanel(null);
+                        haptic.light();
+                      }}
+                      className="px-4 py-2 rounded-lg text-xs border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all"
+                    >
+                      Unequip
+                    </button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </FocusTrapModal>
+    </>
+  );
+}
