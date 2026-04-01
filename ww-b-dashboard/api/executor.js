@@ -1,29 +1,38 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WW-B Dashboard — Live Command Executor
-// Processes commands in real-time using Groq.
+// Calls Groq REST API directly — no SDK dependency needed.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { addFinding, createRun, completeRun, completeCommand } from './db.js';
 
-let groq = null;
-async function getGroq() {
-  if (!groq) {
-    const key = process.env.GROQ_API_KEY;
-    if (!key) return null;
-    try {
-      const { default: Groq } = await import('groq-sdk');
-      groq = new Groq({ apiKey: key });
-    } catch {
-      return null;
-    }
+async function callGroq(apiKey, messages) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      max_tokens: 4096,
+      temperature: 0.1,
+      messages,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Groq API ${res.status}: ${err.slice(0, 200)}`);
   }
-  return groq;
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || 'No response.';
 }
 
 export async function executeCommand(commandId, text) {
-  const client = await getGroq();
-  if (!client) {
-    completeCommand(commandId, 'Error: GROQ_API_KEY not set. Add it to your environment variables.');
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    completeCommand(commandId, 'Error: GROQ_API_KEY not set. Enter your key in the setup screen.');
     return;
   }
 
@@ -42,19 +51,11 @@ If you find issues, list them with severity:
 Be direct. Give actionable findings. No fluff.`;
 
   try {
-    const response = await client.chat.completions.create({
-      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-      max_tokens: 4096,
-      temperature: 0.1,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: text },
-      ],
-    });
+    const content = await callGroq(apiKey, [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: text },
+    ]);
 
-    const content = response.choices?.[0]?.message?.content || 'No response from Groq.';
-
-    // Save findings to database for the Review tab
     addFinding(runId, {
       category: 'command',
       severity: 'minor',
@@ -63,7 +64,7 @@ Be direct. Give actionable findings. No fluff.`;
       confidence: 0.7,
     });
 
-    completeRun(runId, `Command processed`);
+    completeRun(runId, 'Command processed');
     completeCommand(commandId, content);
 
   } catch (err) {
