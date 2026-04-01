@@ -31,13 +31,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid endpoint' });
     }
 
-    // Handle body — DV may pass string, Vercel passes parsed object
+    // Handle body — DV may pass string/buffer, Vercel passes parsed object
     let body = req.body;
+    if (Buffer.isBuffer(body)) body = body.toString('utf-8');
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
     }
-    if (!body || typeof body !== 'object' || !body.playerId) {
-      return res.status(400).json({ error: 'Invalid request body', debug: { bodyType: typeof req.body, hasBody: !!body } });
+    if (!body || typeof body !== 'object') {
+      return res.status(400).json({ error: 'No body', bodyType: typeof req.body });
+    }
+    if (!body.playerId) {
+      return res.status(400).json({ error: 'Missing playerId', keys: Object.keys(body) });
     }
 
     const targetUrl = `https://${ALLOWED_HOST}/gacha/${path}`;

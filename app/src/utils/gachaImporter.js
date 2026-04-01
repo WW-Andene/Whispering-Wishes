@@ -97,7 +97,10 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
       throw new Error('Network error');
     }
 
-    if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody?.error || `HTTP ${res.status}`);
+    }
 
     const json = await res.json();
     lastRawResponse = json;
