@@ -1,17 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WW-B Dashboard — Live Command Executor
-// Calls Groq REST API with real app context — no hallucination.
+// Loads relevant source files per command. No hallucination.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { addFinding, createRun, completeRun, completeCommand } from './db.js';
-import { buildAppContext } from './context.js';
-
-// Cache context so we don't re-read files every command
-let _appContext = null;
-function getAppContext() {
-  if (!_appContext) _appContext = buildAppContext();
-  return _appContext;
-}
+import { buildContext } from './context.js';
 
 async function callGroq(apiKey, messages) {
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -47,25 +40,25 @@ export async function executeCommand(commandId, text) {
   }
 
   const runId = createRun(commandId, 'command');
-  const appContext = getAppContext();
 
-  const systemPrompt = `You are WW-B, an audit agent for Whispering Wishes — a Wuthering Waves companion web app.
+  // Build context from actual source files relevant to this command
+  const appContext = buildContext(text);
 
-You have access to the REAL app source code below. Base ALL findings on actual code — never guess or make up issues.
+  const systemPrompt = `You are WW-B, an expert code auditor for Whispering Wishes (a Wuthering Waves companion web app).
 
-${appContext}
-
----
+You have the REAL source code loaded below. Base ALL findings on actual code you can see.
 
 RULES:
-- Only report issues you can trace to actual code above
-- If the code is too large to fully analyze, say what you checked and what you couldn't
-- Use severity levels: 🔴 CRITICAL, 🟠 MAJOR, 🔵 MINOR, ⚪ NIT
-- Be specific: mention function names, variable names, line patterns
-- If asked about something not in the context, say "I don't have that code loaded"`;
+- Reference specific code: function names, variable names, line patterns, actual logic
+- If you find a bug, quote the problematic code
+- If a file was truncated, say which parts you couldn't check
+- Never invent issues — only report what you can verify in the code
+- Severity: 🔴 CRITICAL (crashes/data loss), 🟠 MAJOR (wrong behavior), 🔵 MINOR (improvements), ⚪ NIT (cosmetic)
+
+${appContext}`;
 
   try {
-    console.log(`[WW-B] Calling Groq (context: ${(appContext.length / 1024).toFixed(1)}KB)...`);
+    console.log(`[WW-B] Calling Groq (${(appContext.length / 1024).toFixed(0)}KB context)...`);
     const content = await callGroq(apiKey, [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: text },
@@ -79,8 +72,8 @@ RULES:
       confidence: 0.7,
     });
 
-    console.log(`[WW-B] Done: ${content.slice(0, 80)}...`);
-    completeRun(runId, 'Command processed');
+    console.log(`[WW-B] Done (${content.length} chars)`);
+    completeRun(runId, 'Processed');
     completeCommand(commandId, content);
 
   } catch (err) {
