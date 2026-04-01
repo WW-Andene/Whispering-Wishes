@@ -5333,7 +5333,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 });
 BannerCard.displayName = 'BannerCard';
 
-const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
+const EventCard = memo(({ event, server, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
@@ -5360,12 +5360,6 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
     return null;
   }, [isDaily, isWeekly, isRecurring, server, event]);
 
-  const imgUrl = bannerImage;
-  const maskGradient = visualSettings
-    ? generateMaskGradient(visualSettings.shadowFadePosition, visualSettings.shadowFadeIntensity)
-    : generateMaskGradient();
-  const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
-
   const isDone = status === 'done';
   const isSkipped = status === 'skipped';
   const dimmed = isSkipped || isExpired;
@@ -5380,23 +5374,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   );
 
   return (
-    <Card style={{ ...(dimmed ? { opacity: 0.6 } : {}), position: 'relative', overflow: 'hidden' }}>
-      {imgUrl && (
-        <img
-          src={imgUrl}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-          style={{
-            zIndex: 0,
-            opacity: pictureOpacity * 0.35,
-            maskImage: maskGradient,
-            WebkitMaskImage: maskGradient,
-            filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none',
-          }}
-          loading="lazy"
-          onError={hideOnError}
-        />
-      )}
+    <Card style={dimmed ? { opacity: 0.6 } : undefined}>
       <CardHeader action={timerAction}>
         <span className={isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : ''}>
           {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}

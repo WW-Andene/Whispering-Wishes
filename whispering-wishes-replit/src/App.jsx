@@ -1959,9 +1959,7 @@ function WhisperingWishesInner() {
               <EventsTab
                 state={state}
                 dispatch={dispatch}
-                activeBanners={activeBanners}
                 setActiveBanners={setActiveBanners}
-                visualSettings={visualSettings}
                 toast={toast}
               />
             </React.Suspense>
