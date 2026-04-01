@@ -131,16 +131,15 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
  */
 export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
   if (rawUrl?.trim()) {
-    try {
-      const u = new URL(rawUrl.trim());
-      const get = (...keys) => keys.map(k => u.searchParams.get(k)).find(Boolean) ?? '';
+    const parsed = parseGachaUrl(rawUrl);
+    if (parsed.valid) {
       return {
-        playerId: get('playerId', 'player_id') || playerId,
-        serverId: get('svr_id', 'svrId', 'svr_area') || svrId || '',
-        cardPoolId: get('resources_id', 'gacha_id') || '',
-        lang: get('lang') || 'en',
+        playerId: parsed.playerId || playerId,
+        serverId: parsed.svrId || svrId || '',
+        cardPoolId: parsed.resourcesId || '',
+        lang: parsed.lang || 'en',
       };
-    } catch { /* fall through to manual */ }
+    }
   }
   return { playerId, serverId: svrId || '', cardPoolId: '', lang: 'en' };
 }
