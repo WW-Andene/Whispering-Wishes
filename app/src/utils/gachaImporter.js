@@ -180,14 +180,17 @@ export async function fetchAllPools(params, signal, onProgress) {
         poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
 
-        // Find oldest time, subtract 1s to get strictly older records
+        // Use oldest time as cursor for next page
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
         if (!oldest?.time) break;
-        const d = new Date(oldest.time);
-        d.setSeconds(d.getSeconds() - 1);
-        const newEndTime = d.toISOString();
-        if (newEndTime === endTime) break;
-        endTime = newEndTime;
+        if (oldest.time === endTime) {
+          // Stuck: skip past this timestamp entirely
+          const d = new Date(oldest.time);
+          d.setSeconds(d.getSeconds() - 1);
+          endTime = d.toISOString();
+        } else {
+          endTime = oldest.time;
+        }
 
         await sleep(150);
       }
