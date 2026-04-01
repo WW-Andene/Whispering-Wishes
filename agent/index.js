@@ -1,47 +1,39 @@
 #!/usr/bin/env node
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — Autonomous Update Agent v2
+// WHISPERING WISHES — WW-B Maintenance Agent
 //
-// Two operational modes:
-//   FULL  (daily at 00:00 UTC) — banners, events, characters, weapons, images,
-//         data enrichment, self-audit code improvements
-//   MICRO (every 6h: 06:00, 12:00, 18:00 UTC) — event timers, banner expiry,
-//         quick-fix audit
+// WW-B is an AUDIT-ONLY agent. It NEVER applies fixes directly.
+// It creates a WW-B_maintenance_(x) branch, audits the codebase,
+// simulates user scenarios to find bugs, and compiles all findings
+// into WW-B_comment_(x).md for human review.
+//
+// Evolution proposals are compiled but only applied when the comment
+// file is reviewed and approved by the maintainer.
 //
 // Usage:
-//   node index.js --mode=full|micro|audit  --only=banners|events|characters|images|audit
-//   node index.js --dry-run --no-git
+//   node index.js                     # Full audit cycle
+//   node index.js --mode=micro        # Quick check (events, banners)
+//   node index.js --dry-run           # Preview without branch/commit
+//   node index.js --only=audit        # Only run code audit
 //
-// Environment: GROQ_API_KEY (required), IMGBB_API_KEY (for images)
+// Environment: GROQ_API_KEY (required)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { SOURCES, THRESHOLDS, PATHS } from './lib/config.js';
 import { log, addChange, getChangeLog, clearChangeLog } from './lib/log.js';
 import { fetchPage, fetchAll } from './lib/scraper.js';
-import { analyzeBanners, analyzeEvents, analyzeNewCharacters, analyzeNewWeapons, generateCombatData, askClaude } from './lib/ai.js';
-import { readCurrentState, readDataFile } from './lib/reader.js';
-import { loadBuffer, getBuffer, flush, bumpVersion, updateCurrentBanners, addBannerHistoryEntry, updateEventDate, addCharacterEntry, addWeaponEntry, addToList, addToAllCharacters, addCombatDataEntry } from './lib/writer.js';
+import { analyzeBanners, analyzeEvents, analyzeNewCharacters, analyzeNewWeapons, askClaude } from './lib/ai.js';
+import { readCurrentState } from './lib/reader.js';
 import { validate } from './lib/validate.js';
-import { gitPublish, initBranch, logAction } from './lib/git.js';
-import { processMissingImages, findMissingImages } from './lib/images.js';
-import { runSelfAudit, applyPatches, enrichData } from './lib/audit.js';
-import { loadMemory, saveMemory, recordRun, recordPatch, recordFailure, wasRecentlyPatched } from './lib/memory.js';
+import { gitPublish, initBranch, logAction, writeCommentOnly } from './lib/git.js';
+import { runSelfAudit } from './lib/audit.js';
+import { loadMemory, saveMemory, recordRun } from './lib/memory.js';
 import { extractImageUrls, checkUrls, identifyDeadUrlOwners } from './lib/health.js';
 import { loadSkills } from './lib/skills.js';
-import { findEmptyBannerImages, findBannerImages, applyBannerImages } from './lib/banner-images.js';
-import { runEvolution, applyEvolutionPatches, checkEvolutionHealth } from './lib/evolution.js';
-import { checkRollbackNeeded } from './lib/shell-swap.js';
-import { selectCharactersForRefresh, refreshCharacterBuilds, applyMetaUpdates, recordRefresh } from './lib/meta-refresh.js';
-import { generateReport, recordApiCall } from './lib/run-report.js';
-import { checkStandardPool, applyStandardPoolUpdates } from './lib/standard-pool.js';
-import { closeStalePRs } from './lib/pr-cleanup.js';
-import { generateEntries, appendToChangelog, updateAppChangelog } from './lib/changelog.js';
-import { crossVerify, extractPerSource, adjustConfidence } from './lib/cross-verify.js';
-import { detectNewEvents, addNewEvent } from './lib/new-events.js';
-import { verifyDeployment } from './lib/deploy-check.js';
-import { shouldProceed, writeScheduleHint, calculateUrgency } from './lib/adaptive-schedule.js';
-import { withCheckpoint, clearCheckpoint, hasCheckpoint } from './lib/checkpoint.js';
-import { readFileSync } from 'fs';
+import { generateReport } from './lib/run-report.js';
+import { detectNewEvents } from './lib/new-events.js';
+import { shouldProceed, writeScheduleHint } from './lib/adaptive-schedule.js';
+import { runEvolution } from './lib/evolution.js';
 
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run') || process.env.DRY_RUN === 'true';
@@ -49,18 +41,15 @@ const NO_GIT = args.includes('--no-git');
 const MODE = args.find(a => a.startsWith('--mode='))?.split('=')[1] || 'full';
 const ONLY = args.find(a => a.startsWith('--only='))?.split('=')[1] || null;
 
-// Global state for cleanup on any exit path
 let _memory = null;
 let _startTime = Date.now();
 let _runNumber = 0;
 
-// BUG 11 FIX: Catch unhandled rejections
 process.on('unhandledRejection', (err) => {
   log.error(`Unhandled rejection: ${err?.message || err}`);
   safeExit(1);
 });
 
-/** Save memory and exit cleanly — used by every exit path */
 function safeExit(code) {
   if (_memory) {
     try { saveMemory(_memory); } catch {}
@@ -70,160 +59,104 @@ function safeExit(code) {
 }
 
 async function main() {
-  log.section(`WW UPDATE AGENT v2 [${MODE.toUpperCase()}]`);
+  log.section(`WW-B AUDIT AGENT [${MODE.toUpperCase()}]`);
   log.info(`Mode: ${MODE} | Dry run: ${DRY_RUN} | Only: ${ONLY || 'all'}`);
 
-  // Validate required environment
   if (!process.env.GROQ_API_KEY) {
-    log.error('GROQ_API_KEY is not set or is empty.');
-    log.error('Get a free key at https://console.groq.com/keys');
+    log.error('GROQ_API_KEY is not set. Get a free key at https://console.groq.com/keys');
     safeExit(1);
   }
   clearChangeLog();
   _startTime = Date.now();
 
-  // Create branch BEFORE any modifications
+  // Create branch BEFORE any work
   if (!DRY_RUN && !NO_GIT) {
     const { branch, runNumber } = initBranch();
     _runNumber = runNumber;
     if (!branch) { log.error('Failed to create WW-B branch — aborting'); safeExit(1); }
-    logAction('init', `WW-B maintenance run #${runNumber} started`, { mode: MODE, dryRun: DRY_RUN });
+    logAction('init', `WW-B audit run #${runNumber} started`, { mode: MODE });
   }
 
-  // Load persistent memory and skills
   _memory = loadMemory();
   const memory = _memory;
   loadSkills();
 
-  // Check if previous evolution patches caused problems
-  checkEvolutionHealth(memory);
-
-  // Check if a shell-swap needs rollback
-  const rollbackTo = checkRollbackNeeded(memory);
-  if (rollbackTo) {
-    log.warn(`Post-swap failure detected. Rollback to ${rollbackTo.slice(0, 8)} recommended.`);
-    log.warn('Run: git revert HEAD --no-edit && git push');
-    // Don't auto-revert — leave it for the PR review or manual action
-    addChange('rollback-warning', `Shell-swap may have caused failures. Known-good: ${rollbackTo.slice(0, 8)}`);
-  }
-
   const state = readCurrentState();
   if (!state.banners) { log.error('Failed to read state — aborting'); safeExit(1); }
-  loadBuffer(state.source);
 
   const hoursLeft = (new Date(state.banners.endDate).getTime() - Date.now()) / 3600000;
   log.info(`Banner v${state.banners.version} p${state.banners.phase} — ${hoursLeft.toFixed(0)}h left`);
 
-  // Adaptive scheduling: check if this run should proceed
+  // Adaptive scheduling
   const schedule = shouldProceed(MODE, state.banners.endDate);
-  if (!schedule.proceed) {
-    log.info(`Skipping: ${schedule.reason}`);
-    safeExit(0);
-  }
-  if (schedule.reason.includes('urgency')) {
-    log.warn(`Adaptive scheduling: ${schedule.reason}`);
-  }
+  if (!schedule.proceed) { log.info(`Skipping: ${schedule.reason}`); safeExit(0); }
   writeScheduleHint(state.banners.endDate);
 
-  // Deployment verification: check if previous changes deployed OK
-  await verifyDeployment(memory);
+  // ═══ RUN AUDIT TASKS ══════════════════════════════════════════════════════
+  if (MODE === 'micro') await microAudit(state, hoursLeft, memory);
+  else await fullAudit(state, hoursLeft, memory);
 
-  // Checkpoint: check if resuming from a crashed run
-  if (hasCheckpoint(MODE)) {
-    log.info('Checkpoint found — resuming from previous crashed run');
+  // ═══ WRITE REPORT — NEVER APPLY ═══════════════════════════════════════════
+  const findings = getChangeLog();
+  if (!findings.length) {
+    log.section('NO FINDINGS');
+    log.ok('Everything looks good.');
+  } else {
+    log.section(`${findings.length} FINDING(S) COMPILED`);
+    findings.forEach(c => log.info(`  [${c.category}] ${c.description}`));
   }
 
-  let hasChanges = false;
-
-  if (MODE === 'micro') hasChanges = await microCycle(state, hoursLeft, memory);
-  else if (MODE === 'audit') hasChanges = await auditCycle(state, memory);
-  else hasChanges = await fullCycle(state, hoursLeft, memory);
-
-  if (!hasChanges) { log.section('NO UPDATES'); log.ok('Everything current.'); recordRun(memory, MODE, 0, Date.now() - _startTime); safeExit(0); }
-
-  if (!DRY_RUN) bumpVersion(state.appVersion);
-  const v = validate(getBuffer());
-  if (!v.passed) { log.section('VALIDATION FAILED'); v.errors.forEach(e => log.error(`  ✗ ${e}`)); recordFailure(memory, 'validation', v.errors[0]); safeExit(1); }
-
-  // Generate changelog entries before flushing (needs change log)
-  const newVersion = getBuffer().match(/const APP_VERSION = '([^']+)'/)?.[1] || state.appVersion;
-  const changelogEntries = generateEntries(MODE, newVersion);
-  if (changelogEntries.length && !DRY_RUN) {
-    appendToChangelog(changelogEntries, newVersion);
-    updateAppChangelog(changelogEntries, getBuffer, loadBuffer);
-  }
-
-  if (!DRY_RUN) flush();
-
+  // Commit the comment file (findings only, no code changes)
   if (!DRY_RUN && !NO_GIT) {
-    // Clean up stale PRs before creating a new one
-    closeStalePRs();
-
-    const summary = getChangeLog().slice(0, 3).map(c => c.description).join('; ').slice(0, 72);
-    gitPublish(`${MODE}: ${summary}`, _runNumber);
+    writeCommentOnly(_runNumber);
   }
 
-  // Save memory and generate report
-  recordRun(memory, MODE, getChangeLog().length, Date.now() - _startTime);
+  recordRun(memory, MODE, findings.length, Date.now() - _startTime);
   saveMemory(memory);
   generateReport(MODE, Date.now() - _startTime, memory);
 
-  _sourceCache.clear();
-
   log.section('COMPLETE');
-  getChangeLog().forEach(c => log.ok(`  [${c.category}] ${c.description}`));
+  log.ok('All findings written to WW-B_comment_' + _runNumber + '.md');
+  log.ok('Review and approve before applying any changes.');
   if (DRY_RUN) log.warn('DRY RUN — no files modified');
 }
 
-// ═══ FULL CYCLE (daily 00:00 UTC) ════════════════════════════════════════════
-async function fullCycle(state, hoursLeft, memory) {
-  let c = false;
-  if (!ONLY || ONLY === 'banners')    { log.section('BANNERS');        if (await withCheckpoint(MODE, 'banners', () => doBanners(state))) c = true; }
-  if (!ONLY || ONLY === 'events')     { log.section('EVENTS');         if (await withCheckpoint(MODE, 'events', () => doEvents(state))) c = true; }
-  if (!ONLY || ONLY === 'events')     { log.section('NEW EVENTS');     if (await withCheckpoint(MODE, 'new-events', () => doNewEvents(state))) c = true; }
-  if (!ONLY || ONLY === 'characters') { log.section('ROSTER');         if (await withCheckpoint(MODE, 'roster', () => doRoster(state))) c = true; }
-  if (!ONLY || ONLY === 'images')     { log.section('IMAGES');         if (await withCheckpoint(MODE, 'images', () => doImages(state))) c = true; }
-  if (!ONLY || ONLY === 'banners' || ONLY === 'images') {
-    log.section('BANNER IMAGES');       if (await withCheckpoint(MODE, 'banner-images', () => doBannerImages(state))) c = true;
+// ═══ FULL AUDIT (daily) ═════════════════════════════════════════════════════
+async function fullAudit(state, hoursLeft, memory) {
+  if (!ONLY || ONLY === 'banners')    { log.section('CHECK BANNERS');    await checkBanners(state); }
+  if (!ONLY || ONLY === 'events')     { log.section('CHECK EVENTS');     await checkEvents(state); }
+  if (!ONLY || ONLY === 'events')     { log.section('CHECK NEW EVENTS'); await checkNewEvents(state); }
+  if (!ONLY || ONLY === 'characters') { log.section('CHECK ROSTER');     await checkRoster(state); }
+  if (!ONLY)                          { log.section('HEALTH CHECK');     await checkHealth(state, memory); }
+  if (!ONLY || ONLY === 'audit')      { log.section('CODE AUDIT');       await codeAudit(state, 'full', memory); }
+  if (!ONLY || ONLY === 'audit')      { log.section('USER SCENARIOS');   await userScenarioTests(state, memory); }
+  if (!ONLY)                          { log.section('EVOLUTION PLAN');   await evolutionPlan(state, memory); }
+  // Structural validation
+  log.section('VALIDATION');
+  const v = validate(state.source);
+  if (!v.passed) {
+    v.errors.forEach(e => { addChange('validation-error', e); logAction('validation', `Error: ${e}`); });
+  } else {
+    log.ok('Structural validation passed');
+    logAction('validation', 'All checks passed');
   }
-  if (!ONLY)                          { log.section('STANDARD POOL');  if (await withCheckpoint(MODE, 'std-pool', () => doStandardPool(state))) c = true; }
-  if (!ONLY)                          { log.section('META REFRESH');   if (await withCheckpoint(MODE, 'meta-refresh', () => doMetaRefresh(state, memory))) c = true; }
-  if (!ONLY)                          { log.section('HEALTH CHECK');   await withCheckpoint(MODE, 'health', () => doHealthCheck(state, memory)); }
-  if (!ONLY)                          { log.section('ENRICHMENT');     if (await withCheckpoint(MODE, 'enrichment', () => doEnrich(state))) c = true; }
-  if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'full', memory))) c = true; }
-  // Evolution disabled — Llama models are not reliable enough for self-modifying code
-  // if (!ONLY) { log.section('EVOLUTION'); await withCheckpoint(MODE, 'evolution', () => doEvolution(state, memory)); }
-  clearCheckpoint(); // Success — no need to resume
-  return c;
 }
 
-// ═══ MICRO CYCLE (6h intervals) ══════════════════════════════════════════════
-async function microCycle(state, hoursLeft, memory) {
-  let c = false;
-  log.section('MICRO — EVENTS');
-  if (await withCheckpoint(MODE, 'events', () => doEvents(state))) c = true;
+// ═══ MICRO AUDIT (6h intervals) ═════════════════════════════════════════════
+async function microAudit(state, hoursLeft, memory) {
+  log.section('MICRO — CHECK EVENTS');
+  await checkEvents(state);
   if (hoursLeft < THRESHOLDS.bannerExpiryBufferHours) {
     log.section('MICRO — BANNER EXPIRY');
-    log.warn(`${hoursLeft.toFixed(0)}h until banner expires — checking`);
-    if (await withCheckpoint(MODE, 'banners', () => doBanners(state))) c = true;
+    log.warn(`${hoursLeft.toFixed(0)}h until banner expires`);
+    await checkBanners(state);
   }
-  log.section('MICRO — BANNER IMAGES');
-  if (await withCheckpoint(MODE, 'banner-images', () => doBannerImages(state))) c = true;
-  log.section('MICRO — QUICK FIXES');
-  if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'micro', memory))) c = true;
-  clearCheckpoint();
-  return c;
+  log.section('MICRO — QUICK AUDIT');
+  await codeAudit(state, 'micro', memory);
 }
 
-// ═══ AUDIT-ONLY CYCLE ════════════════════════════════════════════════════════
-async function auditCycle(state, memory) {
-  log.section('SELF-AUDIT (standalone)');
-  return await doAudit(state, 'full', memory);
-}
+// ═══ CHECK TASKS (audit only, never apply) ══════════════════════════════════
 
-// ═══ TASK FUNCTIONS ══════════════════════════════════════════════════════════
-
-// Cache fetched sources within a single run to avoid duplicate requests
 const _sourceCache = new Map();
 async function fetchCached(sourceKey) {
   if (_sourceCache.has(sourceKey)) return _sourceCache.get(sourceKey);
@@ -233,259 +166,262 @@ async function fetchCached(sourceKey) {
   return ok;
 }
 
-async function doBanners(state) {
+async function checkBanners(state) {
   const ok = await fetchCached('banners');
-  
-  if (!ok.length) { log.warn('No banner sources'); return false; }
-  const a = await analyzeBanners(ok, state.banners);
-  if (!a.changed) { log.ok('Banners current'); logAction('banners', 'No changes detected'); return false; }
-  if (a.confidence < THRESHOLDS.autoApplyConfidence) { log.warn(`Low confidence ${(a.confidence*100).toFixed(0)}%`); logAction('banners', `Skipped — confidence ${(a.confidence*100).toFixed(0)}% below threshold`); return false; }
-  if (DRY_RUN) { log.json('[DRY] Banner', a.banner); return false; }
-  const old = state.banners;
-  addBannerHistoryEntry({ version: old.version, phase: old.phase, characters: old.characters.map(c=>c.name), weapons: old.weapons.map(w=>w.name), startDate: old.startDate.split('T')[0], endDate: old.endDate.split('T')[0] });
-  updateCurrentBanners(a.banner);
-  logAction('banners', `Updated to v${a.banner.version} p${a.banner.phase}`, { confidence: a.confidence, characters: a.banner.characters?.map(c => c.name) });
-  return true;
+  if (!ok.length) { log.warn('No banner sources'); return; }
+  try {
+    const a = await analyzeBanners(ok, state.banners);
+    if (!a.changed) { log.ok('Banners current'); logAction('banners', 'No changes needed'); return; }
+    addChange('banner-update-needed', `New banner detected (confidence: ${(a.confidence*100).toFixed(0)}%) — v${a.banner?.version} p${a.banner?.phase}`, a.confidence);
+    logAction('banners', 'Banner update available', {
+      confidence: a.confidence,
+      version: a.banner?.version,
+      phase: a.banner?.phase,
+      characters: a.banner?.characters?.map(c => c.name),
+      weapons: a.banner?.weapons?.map(w => w.name),
+      action: 'REQUIRES MANUAL APPLY',
+    });
+  } catch (e) { log.warn(`Banner check failed: ${e.message}`); logAction('banners', `Error: ${e.message}`); }
 }
 
-async function doEvents(state) {
+async function checkEvents(state) {
   const ok = await fetchCached('events');
-  if (!ok.length) { log.warn('No event sources'); return false; }
-  const a = await analyzeEvents(ok, state.events);
-  let c = false;
-  for (const u of (a.updates || [])) {
-    if (u.confidence >= THRESHOLDS.autoApplyConfidence) {
-      if (DRY_RUN) { log.info(`[DRY] ${u.eventKey} → ${u.newValue}`); continue; }
-      updateEventDate(u.eventKey, u.newValue); c = true;
-      logAction('events', `Updated ${u.eventKey} end date`, { old: u.oldValue, new: u.newValue, confidence: u.confidence });
+  if (!ok.length) { log.warn('No event sources'); return; }
+  try {
+    const a = await analyzeEvents(ok, state.events);
+    for (const u of (a.updates || [])) {
+      addChange('event-update-needed', `${u.eventKey}: ${u.oldValue} → ${u.newValue} (${(u.confidence*100).toFixed(0)}%)`, u.confidence);
+      logAction('events', `Date update available: ${u.eventKey}`, {
+        old: u.oldValue, new: u.newValue, confidence: u.confidence, reason: u.reason,
+        action: 'REQUIRES MANUAL APPLY',
+      });
     }
-  }
-  if (!c) log.ok('Events current');
-  return c;
+    if (!(a.updates || []).length) { log.ok('Events current'); logAction('events', 'No updates needed'); }
+  } catch (e) { log.warn(`Event check failed: ${e.message}`); logAction('events', `Error: ${e.message}`); }
 }
 
-async function doNewEvents(state) {
+async function checkNewEvents(state) {
   const ok = await fetchCached('events');
-  if (!ok.length) { log.warn('No sources for new event detection'); return false; }
-  const { newEvents } = await detectNewEvents(ok, state.events, askClaude);
-  if (!newEvents.length) { log.ok('No new events detected'); return false; }
-  if (DRY_RUN) { log.json('[DRY] New events', newEvents); return false; }
-  let c = false;
-  for (const event of newEvents) {
-    if (event.confidence >= THRESHOLDS.autoApplyConfidence) {
-      if (addNewEvent(event, getBuffer, loadBuffer)) c = true;
-    } else {
-      log.warn(`New event "${event.name}" confidence ${(event.confidence * 100).toFixed(0)}% — skipping`);
+  if (!ok.length) return;
+  try {
+    const { newEvents } = await detectNewEvents(ok, state.events, askClaude);
+    if (!newEvents.length) { log.ok('No new events detected'); return; }
+    for (const ev of newEvents) {
+      addChange('new-event-detected', `"${ev.name}" (${ev.resetType}, ${(ev.confidence*100).toFixed(0)}%)`, ev.confidence);
+      logAction('new-events', `New event found: ${ev.name}`, { ...ev, action: 'REQUIRES MANUAL APPLY' });
     }
-  }
-  return c;
+  } catch (e) { log.warn(`New event detection failed: ${e.message}`); }
 }
 
-async function doRoster(state) {
-  let c = false;
+async function checkRoster(state) {
   // Characters
   const cOk = await fetchCached('characters');
   if (cOk.length) {
-    const ca = await analyzeNewCharacters(cOk, state.characterNames);
-    for (const ch of (ca.newCharacters || [])) {
-      if (ch.confidence >= THRESHOLDS.autoApplyConfidence) {
-        if (DRY_RUN) { log.json('[DRY] char', ch); continue; }
-        addCharacterEntry(ch.name, ch); addToAllCharacters(ch.name);
-        addToList(ch.rarity === 5 ? 'ALL_5STAR_RESONATORS' : 'ALL_4STAR_RESONATORS', ch.name);
-        addToList('RELEASE_ORDER', ch.name); c = true;
+    try {
+      const ca = await analyzeNewCharacters(cOk, state.characterNames);
+      for (const ch of (ca.newCharacters || [])) {
+        addChange('new-character-detected', `${ch.name} (${ch.rarity}★ ${ch.element} ${ch.weapon}, ${(ch.confidence*100).toFixed(0)}%)`, ch.confidence);
+        logAction('roster', `New character found: ${ch.name}`, { ...ch, action: 'REQUIRES MANUAL APPLY' });
       }
-    }
-    if (c && !DRY_RUN) {
-      try {
-        const bOk = await fetchCached('builds');
-        if (bOk.length) {
-          const hc = (ca.newCharacters||[]).filter(x=>x.confidence>=THRESHOLDS.autoApplyConfidence);
-          const cd = await generateCombatData(hc, bOk);
-          if (Array.isArray(cd)) for (const [n,d,b,db] of cd) addCombatDataEntry(n,d,b,db);
-        }
-      } catch (e) { log.warn(`Combat data: ${e.message}`); }
-    }
+      if (!(ca.newCharacters || []).length) log.ok('Character roster current');
+    } catch (e) { log.warn(`Character check failed: ${e.message}`); }
   }
   // Weapons
   const wOk = await fetchCached('weapons');
   if (wOk.length) {
-    const wa = await analyzeNewWeapons(wOk, state.weaponNames);
-    for (const w of (wa.newWeapons || [])) {
-      if (w.confidence >= THRESHOLDS.autoApplyConfidence) {
-        if (DRY_RUN) { log.json('[DRY] weapon', w); continue; }
-        addWeaponEntry(w.name, w);
-        if (w.rarity === 5) { addToList('ALL_5STAR_WEAPONS', w.name); addToList('WEAPON_RELEASE_ORDER', w.name); }
-        else if (w.rarity === 4) addToList('ALL_4STAR_WEAPONS', w.name);
-        c = true;
+    try {
+      const wa = await analyzeNewWeapons(wOk, state.weaponNames);
+      for (const w of (wa.newWeapons || [])) {
+        addChange('new-weapon-detected', `${w.name} (${w.rarity}★ ${w.type}, ${(w.confidence*100).toFixed(0)}%)`, w.confidence);
+        logAction('roster', `New weapon found: ${w.name}`, { ...w, action: 'REQUIRES MANUAL APPLY' });
       }
-    }
+      if (!(wa.newWeapons || []).length) log.ok('Weapon roster current');
+    } catch (e) { log.warn(`Weapon check failed: ${e.message}`); }
   }
-  if (!c) log.ok('Roster current');
-  return c;
 }
 
-async function doImages(state) {
-  if (!process.env.IMGBB_API_KEY) { log.warn('IMGBB_API_KEY not set'); return false; }
-  const missing = findMissingImages(state.source, state.characterNames, state.weaponNames);
-  const total = missing.characters.length + missing.weapons.length;
-  if (!total) { log.ok('All images present'); return false; }
-  log.info(`${total} missing image(s)`);
-  if (DRY_RUN) { log.info('[DRY] Would process images'); return false; }
-  let c = false;
-  for (const [type, names] of [['character', missing.characters], ['weapon', missing.weapons]]) {
-    const real = names.filter(n => !n.startsWith('__'));
-    if (!real.length) continue;
-    const urls = await processMissingImages(real, type, askClaude, fetchPage);
-    for (const [name, url] of Object.entries(urls)) {
-      const buf = getBuffer();
-      const esc = name.includes("'") ? `"${name}"` : `'${name}'`;
-      const pat = new RegExp(`${esc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*'([^']*)'`);
-      const existing = buf.match(pat);
-      // PROTECTION: Only fill empty slots. Never overwrite existing URLs.
-      if (existing && (!existing[1] || existing[1] === '' || existing[1] === 'TBD')) {
-        loadBuffer(buf.replace(pat, `${esc}: '${url}'`));
-        c = true;
-      } else if (existing && existing[1]) {
-        log.dim(`Skipped ${name} — already has image: ${existing[1].slice(0, 50)}...`);
-      }
-    }
-  }
-  return c;
-}
-
-async function doEnrich(state) {
-  const ok = await fetchCached('builds');
-  if (!ok.length) { log.warn('No build sources'); return false; }
-  const updates = await enrichData(askClaude, state, ok);
-  if (!updates.length) { log.ok('Data complete'); return false; }
-  if (DRY_RUN) { log.json('[DRY] Enrichment', updates); return false; }
-  let c = false;
-  for (const u of updates) {
-    if (u.confidence < THRESHOLDS.autoApplyConfidence) continue;
-    // PROTECTION: Only fill TBD/empty placeholders, never overwrite real content
-    if (u.oldValue && u.oldValue !== 'TBD' && u.oldValue !== 'N/A' && u.oldValue !== '') {
-      log.dim(`Skipped enrichment for ${u.name}.${u.field} — existing value is not a placeholder`);
-      continue;
-    }
-    const buf = getBuffer();
-    const ci = buf.indexOf(`'${u.name}':`);
-    if (ci === -1) continue;
-    const fi = buf.indexOf(`'${u.oldValue}'`, ci);
-    if (fi === -1 || fi > ci + 2000) continue;
-    const nv = typeof u.newValue === 'string' ? `'${u.newValue}'` : JSON.stringify(u.newValue);
-    loadBuffer(buf.slice(0, fi) + nv + buf.slice(fi + `'${u.oldValue}'`.length));
-    addChange('enrichment', `${u.name}.${u.field}`); c = true;
-  }
-  return c;
-}
-
-async function doBannerImages(state) {
-  if (!process.env.IMGBB_API_KEY) { log.dim('IMGBB_API_KEY not set — skipping banner images'); return false; }
-  const emptySlots = findEmptyBannerImages(getBuffer());
-  if (!emptySlots.length) { log.ok('All banner images present'); return false; }
-  log.info(`Empty banner image slots: ${emptySlots.join(', ')}`);
-  if (DRY_RUN) { log.info('[DRY] Would search for banner images'); return false; }
-  const found = await findBannerImages(emptySlots, state.banners, askClaude, fetchPage);
-  if (!Object.keys(found).length) { log.dim('No banner images found yet — will retry next cycle'); return false; }
-  return await applyBannerImages(found, getBuffer, loadBuffer);
-}
-
-async function doStandardPool(state) {
-  const ok = await fetchCached('banners');
-  
-  if (!ok.length) { log.warn('No sources for standard pool check'); return false; }
-  const analysis = await checkStandardPool(ok, state.source, askClaude);
-  if (!analysis.standardCharsChanged && !analysis.standardWeaponsChanged) {
-    log.ok('Standard pool unchanged');
-    return false;
-  }
-  if (DRY_RUN) { log.json('[DRY] Standard pool', analysis); return false; }
-  return applyStandardPoolUpdates(analysis, getBuffer, loadBuffer);
-}
-
-async function doMetaRefresh(state, memory) {
-  const characters = selectCharactersForRefresh(state.characterNames, memory);
-  if (!characters.length) { log.ok('No characters due for refresh'); return false; }
-  const ok = await fetchCached('builds');
-  if (!ok.length) { log.warn('No build sources for meta refresh'); recordRefresh(memory, characters); return false; }
-  const updates = await refreshCharacterBuilds(characters, state.source, askClaude, ok);
-  recordRefresh(memory, characters);
-  if (!updates.length) { log.ok(`Meta check: ${characters.join(', ')} — no changes`); return false; }
-  log.info(`Meta refresh: ${updates.length} update(s) found`);
-  if (DRY_RUN) { log.json('[DRY] Meta updates', updates); return false; }
-  return applyMetaUpdates(updates, getBuffer, loadBuffer, memory);
-}
-
-async function doHealthCheck(state, memory) {
+async function checkHealth(state, memory) {
   const allUrls = extractImageUrls(state.source);
   const { getStaleUrls, recordUrlCheck } = await import('./lib/memory.js');
   const staleUrls = getStaleUrls(memory, allUrls);
   if (!staleUrls.length) { log.ok(`All ${allUrls.length} URLs checked recently`); return; }
-  log.info(`Checking ${staleUrls.length} stale URL(s) out of ${allUrls.length} total`);
+  log.info(`Checking ${staleUrls.length} stale URL(s)`);
   const { alive, dead } = await checkUrls(staleUrls);
-  // Record results in memory
   for (const url of alive) recordUrlCheck(memory, url, true);
   for (const d of dead) recordUrlCheck(memory, d.url, false);
   if (dead.length) {
     const owners = identifyDeadUrlOwners(state.source, dead);
-    for (const o of owners) log.warn(`Broken: ${o.name} → ${o.url} (${o.status})`);
+    for (const o of owners) {
+      addChange('broken-url', `${o.name}: ${o.url} (${o.status})`);
+      logAction('health', `Broken URL: ${o.name}`, { url: o.url, status: o.status });
+    }
+  } else {
+    log.ok('All checked URLs alive');
   }
 }
 
-async function doAudit(state, mode, memory = null) {
-  const patches = await runSelfAudit(askClaude, mode, state, memory);
-  if (!patches.length) { log.ok('No improvements found'); return false; }
-  if (DRY_RUN) { log.json('[DRY] Patches', patches); return false; }
+async function codeAudit(state, mode, memory) {
+  try {
+    const patches = await runSelfAudit(askClaude, mode, state, memory);
+    if (!patches.length) { log.ok('No issues found'); logAction('audit', 'Code audit clean'); return; }
+    // Compile findings — NEVER apply
+    for (const p of patches) {
+      addChange('audit-finding', `[${p.file}] ${p.description} (${(p.confidence*100).toFixed(0)}%)`, p.confidence);
+      logAction('audit', p.description, {
+        file: p.file,
+        confidence: p.confidence,
+        oldString: p.oldString?.slice(0, 200),
+        newString: p.newString?.slice(0, 200),
+        action: 'REQUIRES MANUAL APPLY',
+      });
+    }
+    log.info(`${patches.length} audit finding(s) compiled — review WW-B_comment_${_runNumber}.md`);
+  } catch (e) { log.warn(`Code audit failed: ${e.message}`); logAction('audit', `Error: ${e.message}`); }
+}
 
-  // Filter out recently-applied patches (memory dedup)
-  const fresh = memory
-    ? patches.filter(p => !wasRecentlyPatched(memory, p.description))
-    : patches;
+// ═══ USER SCENARIO TESTS ════════════════════════════════════════════════════
+// WW-B simulates user actions to find bugs — like a beta tester thinking
+// through real usage patterns and checking for edge cases.
 
-  if (fresh.length < patches.length) {
-    log.dim(`Filtered ${patches.length - fresh.length} recently-applied patch(es)`);
-  }
+async function userScenarioTests(state, memory) {
+  log.info('Running user scenario simulations...');
 
-  const { applied } = applyPatches(fresh, THRESHOLDS.autoApplyConfidence);
+  const scenarios = [
+    {
+      name: 'New player first launch',
+      prompt: `Simulate a brand new player opening the app for the first time. They have no pull data, no teams set up, nothing in collection. Walk through what they'd see and do. Check for:
+- Does the UI show sensible defaults (no NaN, no "undefined", no blank screens)?
+- Are there helpful empty states ("No pulls yet — import your history!")?
+- Is the onboarding flow clear?
+- Any broken UI when all counts are 0?`,
+    },
+    {
+      name: 'Banner transition edge case',
+      prompt: `The current banner ends in ${((new Date(state.banners.endDate).getTime() - Date.now()) / 3600000).toFixed(0)} hours. Simulate what happens when:
+- The banner has JUST expired (endDate is in the past)
+- The app hasn't been updated yet with new banner data
+- A user opens the tracker and tries to see their pity count
+Check for: countdown showing negative time, crash on expired banner, confusing messaging.`,
+    },
+    {
+      name: 'Collection overflow',
+      prompt: `A whale player has every character at S6 (max constellation) and every weapon at R5. They open the collection tab. Check for:
+- Do the counts display correctly (S6 not S7)?
+- Performance with all items shown?
+- Are "owned" filters working when everything is owned?
+- Profile picture selector with 60+ owned characters.`,
+    },
+    {
+      name: 'Data import edge cases',
+      prompt: `A user tries to import their pull history. Check for edge cases:
+- What if the Convene URL has expired?
+- What if they paste garbage text instead of a URL?
+- What if they import twice — are pulls deduplicated?
+- What if the import has pulls for a character not yet in the app's data?`,
+    },
+    {
+      name: 'Team builder stress test',
+      prompt: `A user builds a team with 3 characters. Check for:
+- What if they pick the same character twice?
+- What if they select a weapon not matching the character's weapon type?
+- What happens to DPS calculations with missing echo data?
+- Rotation timeline with characters that have no skill multiplier data.`,
+    },
+  ];
 
-  // Record applied patches in memory and action log
-  if (memory) {
-    for (const p of applied) {
-      recordPatch(memory, p.description, p.file);
-      logAction('audit', `Applied patch: ${p.description}`, { file: p.file, confidence: p.confidence });
+  const scenarioSystemPrompt = `You are WW-B, a QA tester for a Wuthering Waves companion web app. You simulate user scenarios and find bugs, edge cases, and UX issues.
+
+Given the app's source code context and a test scenario, analyze what would happen. Focus on:
+1. DATA ISSUES: NaN, undefined, null displayed to user, division by zero
+2. LOGIC BUGS: Wrong calculations, impossible states, race conditions
+3. UX PROBLEMS: Confusing UI, missing empty states, unclear error messages
+4. EDGE CASES: Boundary values, empty arrays, expired dates, missing data
+
+For each issue found, report:
+- severity: "critical" | "major" | "minor" | "nit"
+- description: What the bug/issue is
+- location: Which file/component is affected
+- scenario: How a user would trigger it
+- suggestion: How to fix it
+
+Return JSON: {"issues": [...]} or {"issues": []} if the scenario looks clean.`;
+
+  // Extract key sections of app code for context (keep it lean for Groq)
+  const codeContext = [
+    `APP_VERSION: ${state.appVersion}`,
+    `Characters: ${state.characterNames?.length || 0}`,
+    `Weapons: ${state.weaponNames?.length || 0}`,
+    `Banner: v${state.banners?.version} p${state.banners?.phase}, ends ${state.banners?.endDate}`,
+    `Events: ${Object.keys(state.events || {}).join(', ')}`,
+  ].join('\n');
+
+  for (const scenario of scenarios) {
+    log.info(`  Scenario: ${scenario.name}`);
+    try {
+      const response = await askClaude(scenarioSystemPrompt, `APP CONTEXT:\n${codeContext}\n\nSCENARIO: ${scenario.name}\n${scenario.prompt}\n\nReturn ONLY JSON.`, { maxTokens: 2048 });
+
+      let result;
+      try {
+        // Try to parse JSON from response
+        const match = response.match(/\{[\s\S]*\}/);
+        result = match ? JSON.parse(match[0]) : { issues: [] };
+      } catch {
+        result = { issues: [] };
+      }
+
+      if (result.issues?.length) {
+        for (const issue of result.issues) {
+          addChange(`scenario-${issue.severity || 'minor'}`, `[${scenario.name}] ${issue.description}`, 0.7);
+          logAction('scenario-test', `${scenario.name}: ${issue.description}`, {
+            severity: issue.severity,
+            location: issue.location,
+            scenario: issue.scenario,
+            suggestion: issue.suggestion,
+            action: 'REVIEW SUGGESTED FIX',
+          });
+        }
+        log.info(`    → ${result.issues.length} issue(s) found`);
+      } else {
+        log.ok(`    → Clean`);
+        logAction('scenario-test', `${scenario.name}: no issues found`);
+      }
+    } catch (e) {
+      log.warn(`    → Failed: ${e.message}`);
+      logAction('scenario-test', `${scenario.name}: error — ${e.message}`);
     }
   }
-
-  if (applied.some(p => p.file === 'appcore-data.js')) {
-    loadBuffer(readFileSync(PATHS.dataFile, 'utf-8'));
-  }
-  return applied.length > 0;
 }
 
-async function doEvolution(state, memory) {
-  if (DRY_RUN) { log.info('[DRY] Would run evolution cycle'); return; }
+// ═══ EVOLUTION PLAN (compile only, never apply) ═════════════════════════════
+// Evolution proposals are written to the comment file.
+// They are ONLY applied when the maintainer reviews and approves.
+
+async function evolutionPlan(state, memory) {
+  log.info('Generating evolution proposals...');
+  logAction('evolution', 'Generating proposals (compile only — requires approval)');
+
   try {
+    // Run evolution in plan-only mode — capture proposals without applying
     const results = await runEvolution(askClaude, memory, state);
 
-    if (results.patchesApplied) {
-      log.ok(`Agent evolved: ${results.patchesApplied} patch(es) applied`);
+    if (results.plan?.actions?.length) {
+      for (const action of results.plan.actions) {
+        addChange('evolution-proposal', `[${action.type}] ${action.description || action.file}`, 0.5);
+        logAction('evolution', `Proposal: ${action.description || action.file}`, {
+          type: action.type,
+          file: action.file,
+          rationale: action.rationale,
+          action: 'REQUIRES APPROVAL — review WW-B_comment file before applying',
+        });
+      }
+      log.info(`${results.plan.actions.length} evolution proposal(s) compiled`);
+    } else {
+      log.ok('No evolution proposals');
+      logAction('evolution', 'No improvements identified');
     }
-    if (results.filesCreated) {
-      log.ok(`Agent grew: ${results.filesCreated} new file(s) created`);
-    }
-    if (results.growthItemsExecuted) {
-      log.ok(`Growth plan: ${results.growthItemsExecuted} idea(s) logged`);
-    }
-
-    // If evolution modified agent data files, reload the buffer
-    if (results.patchesApplied) {
-      try {
-        loadBuffer(readFileSync(PATHS.dataFile, 'utf-8'));
-      } catch { /* data file wasn't touched */ }
-    }
-  } catch (err) {
-    log.warn(`Evolution cycle error: ${err.message}`);
-    recordFailure(memory, 'evolution', err.message);
+  } catch (e) {
+    log.warn(`Evolution planning failed: ${e.message}`);
+    logAction('evolution', `Error: ${e.message}`);
   }
 }
 
