@@ -143,12 +143,13 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
+      const seen = new Set();
       let endTime = '';
+      let prevEndTime = '';
 
-      for (let page = 0; page < 20; page++) {
+      for (let page = 0; page < 50; page++) {
         if (signal?.aborted) break;
 
-        // Build body with optional time cursor
         const body = {
           playerId: String(params.playerId),
           serverId: params.serverId || '',
@@ -178,21 +179,26 @@ export async function fetchAllPools(params, signal, onProgress) {
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        // Check for duplicate page
-        if (poolItems.length > 0) {
-          const lastExisting = poolItems[poolItems.length - 1];
-          const firstNew = list[0];
-          if (lastExisting.time === firstNew.time && lastExisting.name === firstNew.name && lastExisting.resourceId === firstNew.resourceId) {
-            break; // Same data, stop
+        // Add only unseen items (pages may overlap at boundaries)
+        let newCount = 0;
+        for (const item of list) {
+          const key = `${item.resourceId}_${item.time}_${item.name}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            poolItems.push(item);
+            newCount++;
           }
         }
 
-        poolItems.push(...list);
+        // If zero new items, we've exhausted all data
+        if (newCount === 0) break;
+
         onProgress?.(poolType, 'fetching', poolItems.length);
 
-        // Find oldest time in this batch for next cursor
+        // Find oldest time for next cursor
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) break;
+        if (!oldest?.time || oldest.time === prevEndTime) break;
+        prevEndTime = endTime;
         endTime = oldest.time;
 
         await sleep(150);
