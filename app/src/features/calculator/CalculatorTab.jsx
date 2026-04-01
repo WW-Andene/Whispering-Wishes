@@ -444,8 +444,8 @@ export default function CalculatorTab({ state, dispatch }) {
                 <p>Banner: {state.calc.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {state.calc.selectedBanner === 'char' ? 'Resonator' : state.calc.selectedBanner === 'weap' ? 'Weapon' : 'Both'}</p>
                 <p>Astrite: {(+state.calc.astrite || 0).toLocaleString()} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
                 <p>Resonator Pity: {state.calc.charPity}{state.calc.charGuaranteed ? ' (G)' : ''} • Weapon Pity: {state.calc.weapPity}</p>
-                <p>Standard Res. Pity: {state.calc.stdCharPity} • Standard Weapon Pity: {state.calc.stdWeapPity}</p>
-                <p>Copies: Resonator x{state.calc.charCopies} • Weapon x{state.calc.weapCopies} • Standard Res. x{state.calc.stdCharCopies} • Standard Weapon x{state.calc.stdWeapCopies}</p>
+                <p>Standard Resonator Pity: {state.calc.stdCharPity} • Standard Weapon Pity: {state.calc.stdWeapPity}</p>
+                <p>Copies: Resonator x{state.calc.charCopies} • Weapon x{state.calc.weapCopies} • Standard Resonator x{state.calc.stdCharCopies} • Standard Weapon x{state.calc.stdWeapCopies}</p>
               </div>
               <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
             </CardBody>

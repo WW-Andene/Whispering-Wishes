@@ -930,7 +930,7 @@ export default function AnalyticsTab({
                   <CardBody>
                     {/* Banner + Range filter buttons — always visible so user can switch even with empty data */}
                     <div className="flex gap-1 mb-2 flex-wrap">
-                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Standard Res.'], ['stdWeap', 'Standard Weapon']].map(([val, label]) => (
+                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Standard Resonator'], ['stdWeap', 'Standard Weapon']].map(([val, label]) => (
                         <button
                           key={val}
                           onClick={() => { setChartBanner(val); setChartOffset(9999); }}

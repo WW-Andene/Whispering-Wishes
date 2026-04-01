@@ -736,7 +736,7 @@ export default function ProfileTab({
     const bannerStats = [
       {l:'Featured',v:String(featHist.length),c:'#edaf18',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Weapon',v:String(weapBannerHist.length),c:'#c084fc',s:weapBannerHist.filter(p=>p.rarity===5).length+' ★5'},
-      {l:'Standard Res.',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Standard Resonator',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Standard Weapon',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Beginner',v:String(bgnHist.length),c:'#34d399',s:bgnHist.filter(p=>p.rarity===5).length+' ★5'},
     ];
