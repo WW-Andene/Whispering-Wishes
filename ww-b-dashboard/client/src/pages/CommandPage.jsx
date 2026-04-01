@@ -2,11 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../api.js';
 
 const card = { background: '#111118', border: '1px solid #1e1e2a', borderRadius: 10, padding: '.75rem', marginBottom: 6 };
-const terminal = {
-  background: '#0a0a0f', border: '1px solid #1e1e2a', borderRadius: 8,
-  padding: '10px 12px', fontSize: 12, fontFamily: 'monospace', lineHeight: 1.6,
-  maxHeight: 300, overflowY: 'auto', whiteSpace: 'pre-wrap', color: '#888',
-};
 
 const QUICK = [
   ['🔍 Full audit', 'Analyze the Whispering Wishes app codebase for bugs, UX issues, and edge cases. Check data consistency, look for potential crashes, NaN values, broken states.'],
@@ -20,77 +15,40 @@ export default function CommandPage() {
   const [text, setText] = useState('');
   const [cmds, setCmds] = useState([]);
   const [running, setRunning] = useState(false);
-  const [activeId, setActiveId] = useState(null);
-  const [logs, setLogs] = useState([]);
-  const [findings, setFindings] = useState(0);
-  const logsRef = useRef(null);
 
-  useEffect(() => { api('/commands').then(setCmds); }, []);
-  useEffect(() => { if (logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight; }, [logs]);
+  const refresh = () => api('/commands').then(setCmds);
+  useEffect(() => { refresh(); }, []);
+
+  // Poll while running
+  useEffect(() => {
+    if (!running) return;
+    const interval = setInterval(async () => {
+      const updated = await api('/commands');
+      setCmds(updated);
+      // Check if the latest command is done
+      const latest = updated[0];
+      if (latest && latest.status === 'done') {
+        setRunning(false);
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [running]);
 
   const send = async (t) => {
     const v = t || text.trim();
     if (!v || running) return;
     setRunning(true);
-    setLogs([{ type: 'status', text: `Sending: ${v.slice(0, 80)}...` }]);
-    setFindings(0);
     setText('');
-
-    try {
-      const { id } = await api('/commands', { text: v, type: 'instruction' });
-      setActiveId(id);
-
-      // Subscribe to SSE stream
-      const apiBase = new URL('.', window.location.href).href.replace(/\/$/, '');
-      const es = new EventSource(`${apiBase}/api/commands/${id}/stream`);
-
-      es.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-
-          if (data.type === 'done') {
-            es.close();
-            setRunning(false);
-            setActiveId(null);
-            // Refresh command history
-            api('/commands').then(setCmds);
-            return;
-          }
-
-          if (data.type === 'finding') {
-            setFindings(prev => prev + 1);
-            setLogs(prev => [...prev, { type: 'finding', text: `[${data.data.severity}] ${data.data.title}` }]);
-          } else if (data.type === 'error') {
-            setLogs(prev => [...prev, { type: 'error', text: data.text }]);
-          } else if (data.type === 'result') {
-            setLogs(prev => [...prev, { type: 'result', text: `Done: ${data.text}` }]);
-          } else {
-            setLogs(prev => [...prev, { type: 'log', text: data.text || JSON.stringify(data) }]);
-          }
-        } catch {}
-      };
-
-      es.onerror = () => {
-        es.close();
-        setRunning(false);
-        setActiveId(null);
-        setLogs(prev => [...prev, { type: 'log', text: 'Stream ended.' }]);
-        api('/commands').then(setCmds);
-      };
-
-    } catch (err) {
-      setLogs(prev => [...prev, { type: 'error', text: err.message }]);
-      setRunning(false);
-    }
+    await api('/commands', { text: v, type: 'instruction' });
+    // Immediately refresh to show pending command
+    refresh();
   };
-
-  const logColor = { finding: '#f59e0b', error: '#ef4444', result: '#22c55e', status: '#facc15', log: '#888' };
 
   return (
     <div>
       <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4, color: '#facc15' }}>Command WW-B</h2>
       <p style={{ fontSize: 12, color: '#666', marginBottom: '1rem' }}>
-        {running ? 'WW-B is working...' : 'Give instructions, share links, or tell WW-B what to do.'}
+        {running ? '⏳ WW-B is thinking...' : 'Give instructions, share links, or tell WW-B what to do.'}
       </p>
 
       {/* Quick actions */}
@@ -121,44 +79,35 @@ export default function CommandPage() {
             cursor: !text.trim() || running ? 'default' : 'pointer', fontFamily: 'inherit',
             background: !text.trim() || running ? '#1e1e2a' : '#facc15',
             color: !text.trim() || running ? '#666' : '#000',
-          }}>{running ? 'Working...' : 'Send'}</button>
+          }}>{running ? '⏳ Working...' : 'Send'}</button>
         </div>
       </div>
-
-      {/* Live output */}
-      {logs.length > 0 && (
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: running ? '#facc15' : '#22c55e' }}>
-              {running ? '● Live' : '✓ Complete'}
-            </span>
-            {findings > 0 && (
-              <span style={{ fontSize: 11, color: '#f59e0b' }}>{findings} finding(s) → Review tab</span>
-            )}
-          </div>
-          <div ref={logsRef} style={terminal}>
-            {logs.map((l, i) => (
-              <div key={i} style={{ color: logColor[l.type] || '#888', marginBottom: 2 }}>
-                {l.text}
-              </div>
-            ))}
-            {running && <div style={{ color: '#facc15' }}>▊</div>}
-          </div>
-        </div>
-      )}
 
       {/* History */}
       <h3 style={{ fontSize: 13, fontWeight: 600, marginTop: '1rem', marginBottom: '.5rem', color: '#888' }}>History</h3>
       {cmds.length === 0
         ? <div style={{ color: '#555', fontSize: 12, textAlign: 'center', padding: '2rem' }}>No commands yet.</div>
         : cmds.map(c => (
-          <div key={c.id} style={{ ...card, borderLeft: `3px solid ${c.status === 'done' ? '#22c55e' : c.status === 'pending' ? '#facc15' : '#555'}` }}>
-            <div style={{ fontSize: 13, marginBottom: 4, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{c.text.slice(0, 120)}{c.text.length > 120 ? '...' : ''}</div>
-            <div style={{ fontSize: 10, color: '#555' }}>
-              {new Date(c.created_at).toLocaleString()} · <span style={{ color: c.status === 'done' ? '#22c55e' : '#facc15' }}>{c.status}</span>
+          <div key={c.id} style={{
+            ...card,
+            borderLeft: `3px solid ${c.status === 'done' ? '#22c55e' : '#facc15'}`,
+          }}>
+            <div style={{ fontSize: 13, marginBottom: 4, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+              {c.text.slice(0, 200)}{c.text.length > 200 ? '...' : ''}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#555' }}>
+              <span>{new Date(c.created_at).toLocaleString()}</span>
+              <span style={{ color: c.status === 'done' ? '#22c55e' : '#facc15', fontWeight: 600 }}>
+                {c.status === 'done' ? '✓ Done' : '⏳ Working...'}
+              </span>
             </div>
             {c.result && (
-              <div style={{ fontSize: 11, color: '#888', marginTop: 6, background: '#0a0a0f', padding: '6px 8px', borderRadius: 6, whiteSpace: 'pre-wrap', maxHeight: 80, overflow: 'hidden' }}>
+              <div style={{
+                fontSize: 12, color: '#ccc', marginTop: 8, background: '#0a0a0f',
+                padding: '10px 12px', borderRadius: 8, whiteSpace: 'pre-wrap',
+                lineHeight: 1.6, maxHeight: 300, overflowY: 'auto',
+                border: '1px solid #1e1e2a',
+              }}>
                 {c.result}
               </div>
             )}
