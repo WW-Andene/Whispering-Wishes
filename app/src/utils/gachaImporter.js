@@ -144,7 +144,6 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
       let endTime = '';
-      let stuckCount = 0;
 
       for (let page = 0; page < 50; page++) {
         if (signal?.aborted) break;
@@ -182,19 +181,8 @@ export async function fetchAllPools(params, signal, onProgress) {
         onProgress?.(poolType, 'fetching', poolItems.length);
 
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time) break;
-
-        if (oldest.time === endTime) {
-          // Stuck on same timestamp - skip 1s back and try once more
-          stuckCount++;
-          if (stuckCount > 5) break; // Safety: max 5 skips
-          const d = new Date(oldest.time);
-          d.setSeconds(d.getSeconds() - 1);
-          endTime = d.toISOString();
-        } else {
-          stuckCount = 0;
-          endTime = oldest.time;
-        }
+        if (!oldest?.time || oldest.time === endTime) break;
+        endTime = oldest.time;
 
         await sleep(150);
       }
