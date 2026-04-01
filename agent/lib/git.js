@@ -117,9 +117,9 @@ export function createBranch() {
 export function commitChanges(summary, runNumber) {
   try {
     // Stage app files
-    exec('git add whispering-wishes-replit/src/appcore-data.js');
-    exec('git add whispering-wishes-replit/package.json');
-    exec('git add whispering-wishes-replit/public/sw.js');
+    exec('git add app/src/appcore-data.js');
+    exec('git add app/package.json');
+    exec('git add app/public/sw.js');
 
     // Write and stage the action log
     const commentFile = writeActionLog(runNumber);

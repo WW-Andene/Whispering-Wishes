@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 const REPO_ROOT = resolve(__dirname, '../../');
-const APP_SRC = resolve(REPO_ROOT, 'whispering-wishes-replit/src');
+const APP_SRC = resolve(REPO_ROOT, 'app/src');
 
 export const PATHS = {
   repoRoot: REPO_ROOT,
