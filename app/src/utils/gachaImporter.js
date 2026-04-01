@@ -64,7 +64,7 @@ async function fetchPage(params, cardPoolType, signal) {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
     cardPoolType: Number(cardPoolType),
-    cardPoolId: params.cardPoolId || '',
+    cardPoolId: '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
