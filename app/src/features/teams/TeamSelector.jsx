@@ -103,7 +103,7 @@ export default function TeamSelector({
                               value={teamRoleFilter}
                               onChange={setTeamRoleFilter}
                               options={[
-                                { value: 'all', label: 'All Rôles' },
+                                { value: 'all', label: 'All Roles' },
                                 { value: 'Main DPS', label: 'Main DPS' },
                                 { value: 'Sub DPS', label: 'Sub DPS' },
                                 { value: 'Support', label: 'Support' },
@@ -116,7 +116,7 @@ export default function TeamSelector({
                               value={teamDmgFilter}
                               onChange={setTeamDmgFilter}
                               options={[
-                                { value: 'all', label: 'Dmg Focus' },
+                                { value: 'all', label: 'Damage Focus' },
                                 { value: 'Basic ATK', label: 'Basic ATK' },
                                 { value: 'Heavy ATK', label: 'Heavy ATK' },
                                 { value: 'Skill', label: 'Skill' },

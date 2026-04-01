@@ -422,7 +422,7 @@ export default function CollectionTab({
                     value={collectionRoleFilter}
                     onChange={setCollectionRoleFilter}
                     options={[
-                      { value: 'all', label: 'All Rôles' },
+                      { value: 'all', label: 'All Roles' },
                       { value: 'Main DPS', label: 'Main DPS' },
                       { value: 'Sub DPS', label: 'Sub DPS' },
                       { value: 'Support', label: 'Support' },
