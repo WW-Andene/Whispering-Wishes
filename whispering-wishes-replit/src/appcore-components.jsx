@@ -5469,7 +5469,8 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 // [SECTION:ECHO-CHROMA-KEY]
 // Canvas-based background removal for echo images — replaces specific bg colors with transparency
 const echoChromaCache = new Map(); // url -> objectURL
-// Exact color match: #29292A (41, 41, 42)
+// #29292A (41, 41, 42) with 5% margin (~13 per channel)
+const ECHO_BG_MARGIN = 13;
 function chromaKeyEcho(img) {
   const w = img.naturalWidth, h = img.naturalHeight;
   const canvas = document.createElement('canvas');
@@ -5479,7 +5480,7 @@ function chromaKeyEcho(img) {
   const imageData = ctx.getImageData(0, 0, w, h);
   const d = imageData.data;
   for (let i = 0; i < d.length; i += 4) {
-    if (d[i] === 41 && d[i + 1] === 41 && d[i + 2] === 42) {
+    if (Math.abs(d[i] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 1] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 2] - 42) <= ECHO_BG_MARGIN) {
       d[i + 3] = 0;
     }
   }
