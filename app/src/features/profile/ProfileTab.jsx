@@ -181,6 +181,10 @@ export default function ProfileTab({
         setDirectError('No Convene data returned. The URL may be expired. Try getting a fresh one from the game.');
         return;
       }
+      // Temporary debug: show item keys to fix pagination
+      if (result._debug?.itemKeys) {
+        toast?.addToast?.(`Keys: ${result._debug.itemKeys}`, 'info');
+      }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
       const success = await processImportData(jsonStr);
       if (success) {

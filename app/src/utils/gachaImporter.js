@@ -111,9 +111,14 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
 
     allPulls.push(...list);
 
-    // Use last item's recordId as cursor for next page
-    const nextCursor = list[list.length - 1]?.recordId;
-    if (!nextCursor || nextCursor === currentRecordId) break;
+    // Use last item's ID as cursor for next page
+    const lastItem = list[list.length - 1];
+    const nextCursor = lastItem?.recordId || lastItem?.record_id || lastItem?.id;
+    if (!nextCursor || nextCursor === currentRecordId) {
+      // Log the last item's keys so we can find the right field
+      console.log('[pagination] No cursor found. Last item keys:', Object.keys(lastItem || {}), 'values sample:', JSON.stringify(lastItem).slice(0, 200));
+      break;
+    }
     currentRecordId = nextCursor;
 
     await sleep(300);
@@ -178,7 +183,11 @@ export async function fetchAllPools(params, signal, onProgress) {
     }
   }
 
-  return { pulls: allPulls, total, _debug: { firstResponse: debugFirstResponse, errors: debugErrors, params } };
+  // Grab keys from first item for debugging pagination
+  const firstPool = Object.values(allPulls)[0];
+  const sampleItem = firstPool?.[0];
+  const itemKeys = sampleItem ? Object.keys(sampleItem).join(',') : 'none';
+  return { pulls: allPulls, total, _debug: { firstResponse: debugFirstResponse, errors: debugErrors, params, itemKeys, sampleItem: sampleItem ? JSON.stringify(sampleItem).slice(0, 200) : null } };
 }
 
 /**
