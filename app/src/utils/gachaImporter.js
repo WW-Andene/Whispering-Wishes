@@ -85,8 +85,10 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
     if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
 
     const json = await res.json();
-    if (json?.code !== 0)
-      throw new Error(json?.message || `API error (code ${json?.code})`);
+    if (json?.code !== 0) {
+      console.error('[fetchPoolPulls] API response:', JSON.stringify(json));
+      throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
+    }
 
     const list = json?.data?.list;
     if (!list || list.length === 0) {

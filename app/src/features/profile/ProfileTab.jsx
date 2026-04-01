@@ -170,10 +170,19 @@ export default function ProfileTab({
         setDirectProgress(prev => ({ ...prev, [pool]: { status, count } }));
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
+      if (result.total === 0) {
+        setDirectStatus('error');
+        setDirectError('API returned 0 convenes — the record may be expired. Try getting a fresh URL from the game.');
+        return;
+      }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
-      await processImportData(jsonStr);
-      setDirectStatus('done');
-      toast?.addToast?.(`Imported ${result.total} Convenes!`, 'success');
+      const success = await processImportData(jsonStr);
+      if (success) {
+        setDirectStatus('done');
+      } else {
+        setDirectStatus('error');
+        setDirectError('Import processing failed');
+      }
     } catch (err) {
       if (err.name === 'AbortError') { setDirectStatus('idle'); return; }
       setDirectStatus('error');

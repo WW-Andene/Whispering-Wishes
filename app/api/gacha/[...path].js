@@ -55,6 +55,10 @@ export default async function handler(req, res) {
     clearTimeout(timeout);
 
     const data = await response.json();
+    // Log non-success responses for debugging
+    if (data?.code !== 0) {
+      console.error('[gacha-proxy] API error:', JSON.stringify(data));
+    }
     return res.status(response.status).json(data);
   } catch (err) {
     if (err.name === 'AbortError') {
