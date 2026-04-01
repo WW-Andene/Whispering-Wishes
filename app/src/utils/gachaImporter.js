@@ -138,6 +138,7 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
+  let debugInfo = '';
 
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
@@ -146,26 +147,57 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // Paginate until the API wraps back to already-seen data
-      const seenPages = new Set();
-      for (let page = 1; page <= 500; page++) {
-        if (signal?.aborted) break;
+      // First call: check if data is an object with pagination info
+      const firstJson = await fetchPage(
+        { ...params, recordId: params.recordId || '' },
+        poolType, signal, 1
+      );
+      // Log data type for debugging
+      if (poolType === 1) {
+        const dataType = Array.isArray(firstJson?.data) ? 'array' : typeof firstJson?.data;
+        const dataKeys = !Array.isArray(firstJson?.data) && firstJson?.data ? Object.keys(firstJson.data).join(',') : 'N/A';
+        const len = Array.isArray(firstJson?.data) ? firstJson.data.length : (firstJson?.data?.list?.length ?? '?');
+        debugInfo = `data type: ${dataType}, keys: ${dataKeys}, items: ${len}`;
+      }
 
-        const json = await fetchPage(
-          { ...params, recordId: params.recordId || '' },
-          poolType, signal, page
-        );
-        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-        if (!list.length) break;
+      const firstList = Array.isArray(firstJson?.data) ? firstJson.data : firstJson?.data?.list || [];
+      if (firstList.length) poolItems.push(...firstList);
 
-        // Full page fingerprint: every item's complete data
-        const sig = JSON.stringify(list);
-        if (seenPages.has(sig)) break;
-        seenPages.add(sig);
+      // If data is an object, it might have totalPages or similar
+      const totalPages = firstJson?.data?.totalPages || firstJson?.data?.pageCount || firstJson?.totalPages || null;
 
-        poolItems.push(...list);
-        onProgress?.(poolType, 'fetching', poolItems.length);
-        await sleep(80);
+      if (totalPages && totalPages > 1) {
+        for (let page = 2; page <= totalPages; page++) {
+          if (signal?.aborted) break;
+          const json = await fetchPage(
+            { ...params, recordId: params.recordId || '' },
+            poolType, signal, page
+          );
+          const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+          if (!list.length) break;
+          poolItems.push(...list);
+          onProgress?.(poolType, 'fetching', poolItems.length);
+          await sleep(80);
+        }
+      } else if (firstList.length > 0) {
+        // No totalPages info - paginate until we see a repeated page
+        const seenPages = new Set();
+        seenPages.add(JSON.stringify(firstList));
+        for (let page = 2; page <= 500; page++) {
+          if (signal?.aborted) break;
+          const json = await fetchPage(
+            { ...params, recordId: params.recordId || '' },
+            poolType, signal, page
+          );
+          const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+          if (!list.length) break;
+          const sig = JSON.stringify(list);
+          if (seenPages.has(sig)) break;
+          seenPages.add(sig);
+          poolItems.push(...list);
+          onProgress?.(poolType, 'fetching', poolItems.length);
+          await sleep(80);
+        }
       }
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
@@ -178,7 +210,7 @@ export async function fetchAllPools(params, signal, onProgress) {
     }
   }
 
-  return { pulls: allPulls, total, _debug: { params } };
+  return { pulls: allPulls, total, _debug: { params, debugInfo } };
 }
 
 /**
