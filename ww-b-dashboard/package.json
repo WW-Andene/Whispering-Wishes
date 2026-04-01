@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "cd client && npm install && npx vite build",
-    "start": "node server.js"
+    "start": "cd client && npm install && npx vite build && cd .. && node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
