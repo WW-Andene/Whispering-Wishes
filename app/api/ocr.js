@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: 'llama-3.2-90b-vision-preview',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         max_tokens: 300,
         messages: [{
           role: 'user',
