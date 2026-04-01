@@ -61,45 +61,65 @@ export function parseGachaUrl(raw) {
  */
 export async function fetchPoolPulls(params, cardPoolType, signal) {
   const FETCH_TIMEOUT = 10000;
+  const MAX_PAGES = 100;
+  const allPulls = [];
+  let currentRecordId = params.recordId || '';
+  let lastRawResponse = null;
 
-  const body = {
-    playerId: parseInt(params.playerId, 10),
-    serverId: params.serverId || '',
-    cardPoolType: parseInt(cardPoolType, 10),
-    cardPoolId: params.cardPoolId || '',
-    languageCode: params.lang || 'en',
-    recordId: params.recordId || '',
-  };
+  for (let page = 0; page < MAX_PAGES; page++) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
-  let res;
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-    res = await fetch('/api/gacha/record/query', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: mergedSignal,
-    });
-    clearTimeout(timeout);
-  } catch (err) {
-    if (err.name === 'AbortError') throw err;
-    throw new Error('Network error');
+    const body = {
+      playerId: parseInt(params.playerId, 10),
+      serverId: params.serverId || '',
+      cardPoolType: parseInt(cardPoolType, 10),
+      cardPoolId: params.cardPoolId || '',
+      languageCode: params.lang || 'en',
+      recordId: currentRecordId,
+    };
+
+    let res;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+      res = await fetch('/api/gacha/record/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: mergedSignal,
+      });
+      clearTimeout(timeout);
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      throw new Error('Network error');
+    }
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody?.error || `HTTP ${res.status}`);
+    }
+
+    const json = await res.json();
+    lastRawResponse = json;
+    if (json?.code !== 0) {
+      throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
+    }
+
+    const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+    if (!list.length) break;
+
+    allPulls.push(...list);
+
+    // Use last item's recordId as cursor for next page
+    const nextCursor = list[list.length - 1]?.recordId;
+    if (!nextCursor || nextCursor === currentRecordId) break;
+    currentRecordId = nextCursor;
+
+    await sleep(300);
   }
 
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => ({}));
-    throw new Error(errBody?.error || `HTTP ${res.status}`);
-  }
-
-  const json = await res.json();
-  if (json?.code !== 0) {
-    throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
-  }
-
-  const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-  return { pulls: list, rawResponse: json };
+  return { pulls: allPulls, rawResponse: lastRawResponse };
 }
 
 /**
