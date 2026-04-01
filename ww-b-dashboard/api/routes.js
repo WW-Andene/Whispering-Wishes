@@ -89,6 +89,19 @@ router.post('/commands/:id/complete', (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── Settings (API key) ─────────────────────────────────────────────────────
+
+router.get('/settings', (req, res) => {
+  res.json({ hasKey: !!process.env.GROQ_API_KEY });
+});
+
+router.post('/settings/key', (req, res) => {
+  const { key } = req.body;
+  if (!key?.trim()) return res.status(400).json({ error: 'key required' });
+  process.env.GROQ_API_KEY = key.trim();
+  res.json({ ok: true });
+});
+
 // ─── Stats ──────────────────────────────────────────────────────────────────
 
 router.get('/stats', (req, res) => res.json(getStats()));
