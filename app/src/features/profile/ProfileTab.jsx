@@ -1659,7 +1659,7 @@ Example: {"pulls":[...]}'
                       )}
                     </div>
                     <p className="text-gray-400 text-[10px]">
-                      💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
+                      Tip: In wuwatracker, go to Profile → Settings → Data → Export Pull History → Copy the JSON content
                     </p>
                   </div>
                 )}

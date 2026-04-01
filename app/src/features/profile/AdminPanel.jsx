@@ -362,7 +362,7 @@ export default function AdminPanel({
                       
                       {/* Privacy Notice */}
                       <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3 text-[10px] text-gray-400 space-y-1">
-                        <div className="text-gray-400 font-medium">🔒 Privacy</div>
+                        <div className="text-gray-400 font-medium">Privacy</div>
                         <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
                         <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
                       </div>

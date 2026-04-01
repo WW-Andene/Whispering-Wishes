@@ -74,7 +74,7 @@ export default function PlannerTab({
 
       {isCalcDefaults && (
         <div className="text-center text-gray-500" style={{ fontSize: '10px', padding: '4px 0' }}>
-          💡 Set up your pity &amp; banner in the Calculator tab for accurate projections.
+          Set up your pity &amp; banner in the Calculator tab for accurate projections.
         </div>
       )}
 
