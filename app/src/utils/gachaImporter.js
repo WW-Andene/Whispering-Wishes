@@ -137,39 +137,15 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
-  const FETCH_TIMEOUT = 15000;
-
-  // Minimal per-type: only playerId + recordId + cardPoolType
-  // (WuWa Tracker only asks users for player_id and record_id)
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
 
     try {
-      const body = {
-        playerId: String(params.playerId),
-        recordId: params.recordId || '',
-        cardPoolType: Number(poolType),
-        serverId: params.serverId || '',
-      };
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-
-      const res = await fetch('/api/gacha/record/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: mergedSignal,
-      });
-      clearTimeout(timeout);
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const json = await res.json();
-      if (json?.code !== 0) throw new Error(json?.message || `API error ${json?.code}`);
-
+      const json = await fetchPage(
+        { ...params, recordId: params.recordId || '' },
+        poolType, signal
+      );
       const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
       if (list.length > 0) {
         allPulls[POOL_LABELS[poolType]] = list;
