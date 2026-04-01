@@ -49,7 +49,7 @@ export default function EventsTab({
             <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
           </div>
         }>Events &amp; Resets</CardHeader>
-        <CardBody>
+        <CardBody className="space-y-2">
           {(() => {
             const eventEntries = Object.entries(EVENTS);
             const totalAstrite = eventEntries.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
@@ -58,7 +58,8 @@ export default function EventsTab({
             const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
             const skippedAstrite = skippedKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
             const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
-            return (
+            const pendingCount = eventEntries.length - doneKeys.length - skippedKeys.length;
+            return (<>
               <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
@@ -80,35 +81,24 @@ export default function EventsTab({
                   <span className="text-gray-400 text-[10px] flex-shrink-0">{doneKeys.length}/{eventEntries.length} done</span>
                 </div>
               </div>
-            );
+              <div className="flex gap-2">
+                <div className="flex-1 text-center py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="text-emerald-400 text-sm font-bold">{doneKeys.length}</div>
+                  <div className="text-gray-500 text-[10px]">Completed</div>
+                </div>
+                <div className="flex-1 text-center py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                  <div className="text-yellow-400 text-sm font-bold">{pendingCount}</div>
+                  <div className="text-gray-500 text-[10px]">Pending</div>
+                </div>
+                <div className="flex-1 text-center py-1.5 rounded-lg bg-gray-500/10 border border-gray-500/20">
+                  <div className="text-gray-400 text-sm font-bold">{skippedKeys.length}</div>
+                  <div className="text-gray-500 text-[10px]">Skipped</div>
+                </div>
+              </div>
+            </>);
           })()}
         </CardBody>
       </Card>
-      {/* Event summary counters */}
-      {(() => {
-        const eventEntries = Object.entries(EVENTS);
-        const doneCount = eventEntries.filter(([key]) => state.eventStatus[key] === 'done').length;
-        const skippedCount = eventEntries.filter(([key]) => state.eventStatus[key] === 'skipped').length;
-        const pendingCount = eventEntries.length - doneCount - skippedCount;
-        return (
-          <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5">
-            <div className="flex gap-2">
-              <div className="flex-1 text-center py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <div className="text-emerald-400 text-sm font-bold">{doneCount}</div>
-                <div className="text-gray-500 text-[10px]">Completed</div>
-              </div>
-              <div className="flex-1 text-center py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                <div className="text-yellow-400 text-sm font-bold">{pendingCount}</div>
-                <div className="text-gray-500 text-[10px]">Pending</div>
-              </div>
-              <div className="flex-1 text-center py-1.5 rounded-lg bg-gray-500/10 border border-gray-500/20">
-                <div className="text-gray-400 text-sm font-bold">{skippedCount}</div>
-                <div className="text-gray-500 text-[10px]">Skipped</div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
 
       <div className="space-y-2 event-grid">
         {(() => {
