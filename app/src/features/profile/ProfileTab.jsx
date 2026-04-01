@@ -721,7 +721,7 @@ export default function ProfileTab({
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
       {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
-      {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
+      {l:'5★',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
       {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
       {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
       {l:'Lost',v:String(overallStats?.lost5050??'--'),c:'#f87171'},
@@ -1611,7 +1611,7 @@ export default function ProfileTab({
                       <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
                         <div className="flex items-center justify-center gap-2 mb-2">
                           <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '60%', height: '12px' }} />
-                          <span className="text-yellow-400/80 text-[10px] font-medium animate-pulse">Processing…</span>
+                          <span className="text-yellow-400/80 text-[10px] font-medium animate-pulse">Importing...</span>
                         </div>
                         <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
                         <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB - parsing...</p>
@@ -1647,7 +1647,7 @@ Example: {"pulls":[...]}'
                         disabled={!pasteJsonText.trim()}
                         className={`kuro-btn flex-1 py-2 text-xs ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
                       >
-                        <Check size={14} className="inline mr-1.5" />Import Data
+                        <Check size={14} className="inline mr-1.5" />Import
                       </button>
                       {pasteJsonText && (
                         <button 
@@ -1659,7 +1659,7 @@ Example: {"pulls":[...]}'
                       )}
                     </div>
                     <p className="text-gray-400 text-[10px]">
-                      Tip: In WuWa Tracker, go to Profile → Settings → Data → Export Pull History → Copy the JSON content.
+                      Tip: In WuWa Tracker, go to Profile → Settings → Data → Export Convene History → Copy the JSON content.
                     </p>
                   </div>
                 )}
@@ -1864,7 +1864,7 @@ Example: {"pulls":[...]}'
                       <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2 py-3">
                           <Loader size={14} className="text-emerald-400 animate-spin" />
-                          <span className="text-emerald-400 text-xs">Importing Convenes...</span>
+                          <span className="text-emerald-400 text-xs">Importing...</span>
                         </div>
                         <div className="grid grid-cols-4 gap-1">
                           {Object.entries(directProgress).map(([pool, info]) => (

@@ -158,7 +158,7 @@ export default function PlannerTab({
       {state.planner.addedIncome.length > 0 && (
         <Card>
           {/* AUDIT-FIX H6: Confirm before clearing all purchases */}
-          <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear purchases', message: 'Remove all added purchases?', confirmLabel: 'Remove All', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
+          <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear all purchases', message: 'This will remove all added purchases.', confirmLabel: 'Clear all', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
           <CardBody className="space-y-2">
             {state.planner.addedIncome.map(i => (
               <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">

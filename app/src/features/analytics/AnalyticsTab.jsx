@@ -824,7 +824,7 @@ export default function AnalyticsTab({
                             const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
                             const color = getBarColor(label);
                             return (
-                              <div key={label} className="flex-1 flex flex-col items-center" title={`${label} pity: ${count} pull${count !== 1 ? 's' : ''}`}>
+                              <div key={label} className="flex-1 flex flex-col items-center" title={`${label} pity: ${count} Convene${count !== 1 ? 's' : ''}`}>
                                 <div className="w-full relative" style={{ height: '72px' }}>
                                   {count > 0 && (
                                     <div 

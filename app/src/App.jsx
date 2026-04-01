@@ -1619,7 +1619,7 @@ function WhisperingWishesInner() {
         throw new Error('Invalid data -"pulls" must be an array');
       }
       if (pulls.length === 0) {
-        throw new Error('No pull data found in import. If this is a backup file, it should contain a "state" key.');
+        throw new Error('No Convene data found in import. If this is a backup file, it should contain a "state" key.');
       }
 
       // FIX #2: Warn if importing from a different account
@@ -1658,7 +1658,7 @@ function WhisperingWishesInner() {
       const skippedCount = pulls.length - validPulls.length;
 
       if (validPulls.length === 0) {
-        throw new Error('No valid pull entries found - check data format');
+        throw new Error('No valid Convene entries found. Check data format.');
       }
       
       // Auto-save pre-import backup (mirrors restore flow) so users can recover if import corrupts data

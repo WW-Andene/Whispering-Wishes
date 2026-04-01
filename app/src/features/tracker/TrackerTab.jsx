@@ -56,8 +56,8 @@ export default function TrackerTab({
   const allPulls = useMemo(() => {
     const featured = (state.profile.featured?.history || []).map(p => ({ ...p, banner: 'Featured' }));
     const weapon = (state.profile.weapon?.history || []).map(p => ({ ...p, banner: 'Weapon' }));
-    const stdChar = (state.profile.standardChar?.history || []).map(p => ({ ...p, banner: 'Std Resonator' }));
-    const stdWeap = (state.profile.standardWeap?.history || []).map(p => ({ ...p, banner: 'Std Weapon' }));
+    const stdChar = (state.profile.standardChar?.history || []).map(p => ({ ...p, banner: 'Standard Resonator' }));
+    const stdWeap = (state.profile.standardWeap?.history || []).map(p => ({ ...p, banner: 'Standard Weapon' }));
     const beginner = (state.profile.beginner?.history || []).map(p => ({ ...p, banner: 'Beginner' }));
     return [...featured, ...weapon, ...stdChar, ...stdWeap, ...beginner]
       .sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
@@ -198,7 +198,7 @@ export default function TrackerTab({
                     className="w-full py-2.5 rounded-lg border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
-                    <Clock size={12} /> View Pull History ({allPulls.length} pulls)
+                    <Clock size={12} /> View Convene History ({allPulls.length})
                   </button>
                 </CardBody>
               </Card>
@@ -361,13 +361,13 @@ export default function TrackerTab({
             </FocusTrapModal>
 
             {/* Pull History Modal */}
-            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel="Pull History" onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered>
+            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel="Convene History" onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered>
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-cyan-400" />
-                    <span className="text-white text-sm font-semibold">Pull History</span>
-                    <span className="text-gray-500 text-[10px]">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''} pulls)</span>
+                    <span className="text-white text-sm font-semibold">Convene History</span>
+                    <span className="text-gray-500 text-[10px]">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
@@ -381,7 +381,7 @@ export default function TrackerTab({
                       onChange={e => setPullHistorySearch(e.target.value)}
                       placeholder="Search by name..."
                       className="kuro-input w-full pl-8 text-xs"
-                      aria-label="Filter pull history by name"
+                      aria-label="Filter Convene history by name"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -394,8 +394,8 @@ export default function TrackerTab({
                       <option value="all">All Banners</option>
                       <option value="Featured">Featured</option>
                       <option value="Weapon">Weapon</option>
-                      <option value="Std Resonator">Std Resonator</option>
-                      <option value="Std Weapon">Std Weapon</option>
+                      <option value="Standard Resonator">Standard Resonator</option>
+                      <option value="Standard Weapon">Standard Weapon</option>
                       <option value="Beginner">Beginner</option>
                     </select>
                     <select
@@ -405,16 +405,16 @@ export default function TrackerTab({
                       aria-label="Filter by rarity"
                     >
                       <option value="all">All Rarities</option>
-                      <option value="5">5-Star</option>
-                      <option value="4">4-Star</option>
-                      <option value="3">3-Star</option>
+                      <option value="5">5★</option>
+                      <option value="4">4★</option>
+                      <option value="3">3★</option>
                     </select>
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
                     <div className="text-center text-gray-500 text-xs py-6">
-                      {allPulls.length === 0 ? 'No pull history. Import your data in the Profile tab.' : `No pulls match your filters.`}
+                      {allPulls.length === 0 ? 'No Convene history. Import your data in the Profile tab.' : 'No Convenes match your filters.'}
                     </div>
                   ) : (
                     filteredPulls.map((pull, idx) => {
