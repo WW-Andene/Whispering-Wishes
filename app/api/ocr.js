@@ -40,6 +40,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         max_tokens: 300,
+        temperature: 0,
         messages: [{
           role: 'user',
           content: [
@@ -49,9 +50,18 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `This is a Wuthering Waves gacha/convene history URL screenshot.
-Extract player_id (or playerId), record_id (or recordId), and svr_id (or svrId / svr_area) from the URL.
-Respond ONLY with valid JSON — no markdown, no explanation:
+              text: `Look at this screenshot carefully. It contains a Wuthering Waves convene history URL with query parameters.
+
+Find these EXACT parameter values from the URL:
+- player_id (a 9-digit number like 500012345)
+- record_id (an alphanumeric string)
+- svr_id (a small number like 76 or 86)
+
+The URL parameters may be named: player_id, playerId, record_id, recordId, svr_id, svrId, or svr_area.
+
+Read each digit/character carefully. Do NOT guess — only extract what you can clearly see.
+
+Respond with ONLY this JSON (no markdown, no explanation):
 {"player_id":"VALUE_OR_NULL","record_id":"VALUE_OR_NULL","svr_id":"VALUE_OR_NULL"}`,
             },
           ],
