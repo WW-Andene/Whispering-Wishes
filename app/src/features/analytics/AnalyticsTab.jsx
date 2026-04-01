@@ -113,8 +113,8 @@ export default function AnalyticsTab({
     const pullLogFiveStars = [
       ...featured.map(p => ({...p, banner: 'Featured'})),
       ...weapon.map(p => ({...p, banner: 'Weapon'})),
-      ...stdChar.map(p => ({...p, banner: 'Std Char'})),
-      ...stdWeap.map(p => ({...p, banner: 'Std Weap'})),
+      ...stdChar.map(p => ({...p, banner: 'Standard Resonator'})),
+      ...stdWeap.map(p => ({...p, banner: 'Standard Weapon'})),
       ...beginner.map(p => ({...p, banner: 'Beginner'})),
     ].filter(p => p.rarity === 5 && p.name).sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
     const resHist = [...featured, ...stdChar, ...beginner.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
@@ -930,7 +930,7 @@ export default function AnalyticsTab({
                   <CardBody>
                     {/* Banner + Range filter buttons — always visible so user can switch even with empty data */}
                     <div className="flex gap-1 mb-2 flex-wrap">
-                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Std Char'], ['stdWeap', 'Std Weap']].map(([val, label]) => (
+                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Standard Res.'], ['stdWeap', 'Standard Weapon']].map(([val, label]) => (
                         <button
                           key={val}
                           onClick={() => { setChartBanner(val); setChartOffset(9999); }}

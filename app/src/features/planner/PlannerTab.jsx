@@ -332,7 +332,7 @@ export default function PlannerTab({
             <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
               <div>
                 <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                <div className="text-gray-400 text-[10px]">{b.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {b.selectedBanner === 'char' ? 'Res' : b.selectedBanner === 'weap' ? 'Wep' : 'Both'} • {b.astrite || 0} Astrite{b.lustrous ? ` • ${b.lustrous} Lustrous` : ''}</div>
+                <div className="text-gray-400 text-[10px]">{b.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {b.selectedBanner === 'char' ? 'Resonator' : b.selectedBanner === 'weap' ? 'Weapon' : 'Both'} • {b.astrite || 0} Astrite{b.lustrous ? ` • ${b.lustrous} Lustrous` : ''}</div>
                 <div className="text-gray-400 text-[10px]">P{b.charPity}/{b.weapPity}{b.charGuaranteed ? '(G)' : ''} • Std P{b.stdCharPity}/{b.stdWeapPity} • ×{b.charCopies}/{b.weapCopies}</div>
               </div>
               <div className="flex gap-1">
