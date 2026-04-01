@@ -6,6 +6,7 @@ import {
   addAction, getActions, getStats,
   addCommand, getCommands, completeCommand,
 } from './db.js';
+import { executeCommand, subscribeCommand } from './executor.js';
 
 const router = Router();
 
@@ -69,15 +70,27 @@ router.post('/runs/:id/actions', (req, res) => {
   res.json({ ok: true });
 });
 
-// ─── Commands (user → WW-B instructions) ────────────────────────────────────
+// ─── Commands (user → WW-B, executed live) ──────────────────────────────────
 
 router.get('/commands', (req, res) => res.json(getCommands(req.query.status || null)));
 
+// Send a command — executes immediately via Groq
 router.post('/commands', (req, res) => {
   const { text, type } = req.body;
   if (!text?.trim()) return res.status(400).json({ error: 'text required' });
   const id = addCommand(text.trim(), type || 'instruction');
+  // Fire and forget — client subscribes via SSE to get results
+  executeCommand(id, text.trim());
   res.json({ ok: true, id });
+});
+
+// SSE stream for live command output
+router.get('/commands/:id/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  subscribeCommand(parseInt(req.params.id), res);
 });
 
 router.post('/commands/:id/complete', (req, res) => {
