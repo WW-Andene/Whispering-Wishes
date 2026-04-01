@@ -57,10 +57,10 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
     if (++pages > MAX_PAGES) break;
 
     const body = {
-      playerId: params.playerId,
+      playerId: parseInt(params.playerId, 10) || params.playerId,
       serverId: params.serverId || '',
-      cardPoolType,
-      cardPoolId: '',
+      cardPoolType: parseInt(cardPoolType, 10),
+      cardPoolId: params.cardPoolId || '',
       languageCode: params.lang || 'en',
       recordId: cursorRecordId,
     };
@@ -118,11 +118,12 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
       return {
         playerId: get('playerId', 'player_id') || playerId,
         serverId: get('svr_id', 'svrId', 'svr_area') || svrId || '',
+        cardPoolId: get('resources_id', 'gacha_id') || '',
         lang: get('lang') || 'en',
       };
     } catch { /* fall through to manual */ }
   }
-  return { playerId, serverId: svrId || '', lang: 'en' };
+  return { playerId, serverId: svrId || '', cardPoolId: '', lang: 'en' };
 }
 
 /**
