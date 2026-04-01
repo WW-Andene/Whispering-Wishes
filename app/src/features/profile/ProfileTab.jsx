@@ -181,8 +181,6 @@ export default function ProfileTab({
         setDirectError('No Convene data returned. The URL may be expired. Try getting a fresh one from the game.');
         return;
       }
-      // Temporary: show API response structure
-      if (result._debug?.responseKeys) toast?.addToast?.(`API keys: ${result._debug.responseKeys}`, 'info');
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
       const success = await processImportData(jsonStr);
       if (success) {

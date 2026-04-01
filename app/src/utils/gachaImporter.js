@@ -139,8 +139,6 @@ export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
 
-  let responseKeys = null;
-
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
@@ -156,25 +154,18 @@ export async function fetchAllPools(params, signal, onProgress) {
         const json = await fetchPage(pageParams, poolType, signal);
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
 
-        // Capture response structure on first call
-        if (!responseKeys) {
-          responseKeys = Object.keys(json || {}).join(',');
-          if (json?.data && !Array.isArray(json.data)) {
-            responseKeys += ' | data keys: ' + Object.keys(json.data).join(',');
-          }
-        }
-
         if (!list.length) break;
+
+        const prevCount = poolItems.length;
         poolItems.push(...list);
 
-        // Page 2+: use "0" as cursor to get next batch
-        if (currentRecordId !== '0') {
-          currentRecordId = '0';
-        } else {
-          break;
-        }
+        // First call uses auth recordId, all subsequent use "0"
+        currentRecordId = '0';
 
-        await sleep(200);
+        // If we got the same count as before or very few items, no more pages
+        if (list.length < 5) break;
+
+        await sleep(250);
       }
 
       if (poolItems.length > 0) {
@@ -188,7 +179,7 @@ export async function fetchAllPools(params, signal, onProgress) {
     }
   }
 
-  return { pulls: allPulls, total, _debug: { params, responseKeys } };
+  return { pulls: allPulls, total, _debug: { params } };
 }
 
 /**
