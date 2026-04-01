@@ -1,0 +1,25 @@
+{
+  "name": "ww-b-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "WW-B review dashboard — view findings, approve/reject, manage maintenance runs",
+  "scripts": {
+    "dev": "concurrently \"node server.js\" \"npm run dev --prefix client\"",
+    "start": "node server.js",
+    "build": "npm run build --prefix client",
+    "install:all": "npm install && npm install --prefix client"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "groq-sdk": "^0.12.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

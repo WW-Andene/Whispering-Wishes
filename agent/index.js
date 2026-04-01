@@ -39,6 +39,7 @@ import { ask } from './lib/ai.js';
 import { checkBanners, checkEvents, checkCharacters, checkWeapons } from './lib/checks.js';
 import { runScenarios } from './lib/scenarios.js';
 import { runSelfAudit } from './lib/audit.js';
+import { isDashboardAvailable, createDashboardRun, pushFindings, pushAction, completeDashboardRun } from './lib/dashboard.js';
 
 // ─── CLI Args ───────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -50,6 +51,7 @@ const ONLY = args.find(a => a.startsWith('--only='))?.split('=')[1] || null;
 let _memory = null;
 let _startTime = Date.now();
 let _runNumber = 0;
+let _dashboardRunId = null;
 
 process.on('unhandledRejection', (err) => {
   log.error(`Unhandled rejection: ${err?.message || err}`);
@@ -89,6 +91,11 @@ async function main() {
     logAction('init', `WW-B run #${runNumber}`, { mode: MODE });
   }
 
+  // ── Dashboard ──────────────────────────────────────────────────────────────
+  if (await isDashboardAvailable()) {
+    _dashboardRunId = await createDashboardRun(_runNumber, MODE);
+  }
+
   // ── Load state ────────────────────────────────────────────────────────────
   _memory = loadMemory();
   loadSkills();
@@ -119,6 +126,21 @@ async function main() {
     findings.forEach(f => log.info(`  [${f.category}] ${f.description}`));
   }
 
+  // ── Push to dashboard ──────────────────────────────────────────────────────
+  if (_dashboardRunId && findings.length) {
+    const dashFindings = findings.map(f => ({
+      category: f.category,
+      severity: f.category.includes('critical') ? 'critical' : f.category.includes('major') ? 'major' : 'minor',
+      title: f.description,
+      confidence: typeof f.confidence === 'number' ? f.confidence : 0.7,
+    }));
+    await pushFindings(_dashboardRunId, dashFindings);
+    await completeDashboardRun(_dashboardRunId, `${findings.length} finding(s)`);
+    log.ok('Findings pushed to dashboard — review at your dashboard URL');
+  } else if (_dashboardRunId) {
+    await completeDashboardRun(_dashboardRunId, 'All clear');
+  }
+
   // ── Commit comment file ───────────────────────────────────────────────────
   if (!DRY_RUN && !NO_GIT) writeCommentOnly(_runNumber);
 
@@ -126,6 +148,7 @@ async function main() {
   saveMemory(_memory);
 
   log.section('DONE');
+  if (_dashboardRunId) log.ok('Review findings at your dashboard');
   log.ok(`Report: WW-B_comment_${_runNumber}.md`);
   if (DRY_RUN) log.warn('DRY RUN — nothing committed');
 }
