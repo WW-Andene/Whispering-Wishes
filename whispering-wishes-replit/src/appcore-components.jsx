@@ -5333,7 +5333,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 });
 BannerCard.displayName = 'BannerCard';
 
-const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
+const EventCard = memo(({ event, server, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
   const isDaily = event.dailyReset;
   const isWeekly = event.weeklyReset;
@@ -5349,7 +5349,6 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   const handleExpire = useCallback(() => {
     if (isDaily || isWeekly || isRecurring) {
       setResetTick(t => t + 1);
-      // Auto-reset done/skipped status on new cycle so recurring events start fresh
       if (onStatusChange) onStatusChange(null);
     }
   }, [isDaily, isWeekly, isRecurring, onStatusChange]);
@@ -5361,80 +5360,51 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
     return null;
   }, [isDaily, isWeekly, isRecurring, server, event]);
 
-  const colors = EVENT_ACCENT_COLORS[event.accentColor] || EVENT_ACCENT_COLORS.cyan;
-  const imgUrl = bannerImage;
-
-  const maskGradient = visualSettings
-    ? generateMaskGradient(visualSettings.shadowFadePosition, visualSettings.shadowFadeIntensity)
-    : generateMaskGradient();
-  const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
-
   const isDone = status === 'done';
   const isSkipped = status === 'skipped';
   const dimmed = isSkipped || isExpired;
 
+  const timerAction = isExpired ? (
+    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-400 border border-red-500/20">Expired</span>
+  ) : (
+    <div className="flex items-center gap-2">
+      <span className="text-gray-500 text-[10px]">{isDaily ? 'Resets in' : isWeekly ? 'Weekly' : 'Ends in'}</span>
+      <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} compact />
+    </div>
+  );
+
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
-      {imgUrl && (
-        <img
-          src={imgUrl}
-          alt={event.name}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            zIndex: 1,
-            opacity: pictureOpacity,
-            maskImage: maskGradient,
-            WebkitMaskImage: maskGradient,
-            filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
-          }}
-          loading="lazy"
-          onError={hideOnError}
-        />
-      )}
-
-      {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
-
-      <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
-        <div className="flex justify-between items-start">
-          <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
-              {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
-              {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
-              {event.name}
-            </h4>
-            <p className="text-gray-200 text-[10px]">{event.subtitle}</p>
-          </div>
-          <div className="text-right flex-shrink-0">
-            {isExpired ? (
-              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-400 border border-red-500/20">Expired</span>
-            ) : (
-              <>
-                <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
-                <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
-              </>
-            )}
-          </div>
-        </div>
-
+    <Card style={dimmed ? { opacity: 0.6 } : undefined}>
+      <CardHeader action={timerAction}>
+        <span className={isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : ''}>
+          {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
+          {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
+          {event.name}
+        </span>
+      </CardHeader>
+      <CardBody>
         <div className="flex justify-between items-end">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isExpired ? 'bg-gray-500/20 text-gray-500' : isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
-            {event.rewards}
+          <div>
+            {event.subtitle && <p className="text-gray-400 text-[10px] mb-1.5">{event.subtitle}</p>}
+            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isExpired ? 'bg-gray-500/20 text-gray-500' : isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'}`}>
+              {event.rewards}
+            </span>
           </div>
           {onStatusChange && !isExpired && (
             <div className="flex gap-1">
               {!isDone && (
-                <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
+                <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm text-[10px] bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30" aria-label={`Mark ${event.name} as done`}>
                   <Check size={10} className="inline -mt-0.5" /> Done
                 </button>
               )}
               {!isSkipped && (
-                <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
+                <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm text-[10px]" aria-label={`Skip ${event.name}`}>
                   <SkipForward size={10} className="inline -mt-0.5" /> Skip
                 </button>
               )}
               {status && (
-                <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
-                  {isDone ? 'Undo Done' : 'Undo Skip'}
+                <button onClick={() => onStatusChange(null)} className="kuro-btn kuro-btn-sm text-[10px]" aria-label={`Undo ${event.name} status`}>
+                  {isDone ? 'Undo' : 'Undo'}
                 </button>
               )}
             </div>
@@ -5443,8 +5413,8 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             <div className="text-gray-400 text-[10px]">{event.resetType}</div>
           )}
         </div>
-      </div>
-    </div>
+      </CardBody>
+    </Card>
   );
 });
 EventCard.displayName = 'EventCard';
