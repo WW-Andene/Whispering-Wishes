@@ -145,11 +145,52 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // One call per pool type - API returns all currently available records
-      const pageParams = { ...params, recordId: params.recordId || '' };
-      const json = await fetchPage(pageParams, poolType, signal);
-      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-      poolItems.push(...list);
+      // Paginate using page numbers
+      for (let page = 1; page <= 200; page++) {
+        if (signal?.aborted) break;
+        const body = {
+          cardPoolId: params.cardPoolId || '',
+          cardPoolType: Number(poolType),
+          languageCode: params.lang || 'en',
+          playerId: String(params.playerId),
+          recordId: params.recordId || '',
+          serverId: params.serverId || '',
+          page: page,
+        };
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+        let res;
+        try {
+          res = await fetch('/api/gacha/record/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: mergedSignal,
+          });
+          clearTimeout(timeout);
+        } catch (err) {
+          clearTimeout(timeout);
+          if (err.name === 'AbortError') throw err;
+          throw new Error('Network error');
+        }
+
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          throw new Error(errBody?.error || `HTTP ${res.status}`);
+        }
+
+        const json = await res.json();
+        if (json?.code !== 0) throw new Error(json?.message || `API error (code ${json?.code})`);
+
+        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+        if (!list.length) break;
+        poolItems.push(...list);
+        onProgress?.(poolType, 'fetching', poolItems.length);
+        await sleep(100);
+      }
 
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
