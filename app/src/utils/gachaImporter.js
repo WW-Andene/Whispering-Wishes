@@ -155,6 +155,7 @@ export async function fetchAllPools(params, signal, onProgress) {
           cardPoolId: params.cardPoolId || '',
           languageCode: params.lang || 'en',
           recordId: params.recordId || '',
+          size: 9999,
         };
         if (endTime) body.endTime = endTime;
 
