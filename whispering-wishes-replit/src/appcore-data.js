@@ -1833,13 +1833,13 @@ const RESONANCE_CHAIN_DATA = {
 // Events that end at 03:59 are server-local (follow daily reset)
 // Events that end at other times are global (same UTC moment)
 const EVENTS = {
-  dailyReset: { 
-    name: 'Daily Reset', 
-    subtitle: 'Daily Activities & Tacet Fields', 
-    description: 'Daily activity reset', 
-    resetType: 'Daily 4:00 AM', 
-    color: 'yellow', 
-    dailyReset: true, 
+  dailyReset: {
+    name: 'Daily Reset',
+    subtitle: 'Daily Activities & Tacet Fields',
+    description: 'Daily activity reset',
+    resetType: 'Daily 4:00 AM',
+    color: 'yellow',
+    dailyReset: true,
     rewards: 'Waveplates',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow'
@@ -1855,6 +1855,31 @@ const EVENTS = {
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: 'https://i.ibb.co/M5cLkMWf/file-00000000e8b071f480ded273f611ec2e.png'
+  },
+  illusiveRealm: {
+    name: 'Fantasies of the Thousand Gateways',
+    subtitle: 'Roguelike Mode',
+    description: 'Weekly reward reset',
+    resetType: 'Weekly (Monday)',
+    color: 'purple',
+    weeklyReset: true,
+    rewards: '160 Astrite',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
+    accentColor: 'purple',
+    imageUrl: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg'
+  },
+  pioneerPodcast: {
+    name: 'Pioneer Podcast',
+    subtitle: 'Event',
+    description: 'Limited-time event',
+    resetType: 'Version update',
+    color: 'yellow',
+    // Ends: Wed, 29 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
+    currentEnd: '2026-04-29T03:59:00Z',
+    rewards: '400 Astrite',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
+    accentColor: 'yellow',
+    imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
   },
   tacticalHologram: {
     name: 'Tactical Hologram: Synchronization',
@@ -1882,58 +1907,31 @@ const EVENTS = {
     accentColor: 'pink',
     imageUrl: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg'
   },
-  pioneerPodcast: {
-    name: 'Pioneer Podcast',
-    subtitle: 'Event',
-    description: 'Limited-time event',
-    resetType: 'Version update',
-    color: 'yellow',
-    // Ends: Wed, 29 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
-    currentEnd: '2026-04-29T03:59:00Z',
-    rewards: '400 Astrite',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
-    accentColor: 'yellow',
-    imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
-  },
-  whimperingWastes: { 
-    name: 'Whimpering Wastes', 
-    subtitle: 'Respawning Waters', 
-    description: 'Combat challenge with token system', 
-    resetType: '28 days', 
-    color: 'cyan', 
-    // Mon, 16 Feb 2026 04:00 - Mon, 16 Mar 2026 03:59 (Europe)
-    // Mar 16, 03:59 Europe = Mar 16, 02:59 UTC
-    currentEnd: '2026-03-16T02:59:00Z',
-    rewards: '800 Astrite',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
-    accentColor: 'cyan',
-    imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
-  },
-  towerOfAdversity: { 
+  towerOfAdversity: {
     name: 'Tower of Adversity: Hazard Zone',
-    subtitle: 'Endgame Challenge', 
-    description: 'Endgame combat challenge', 
-    resetType: '28 days', 
-    color: 'orange', 
+    subtitle: 'Endgame Challenge',
+    description: 'Endgame combat challenge',
+    resetType: '28 days',
+    color: 'orange',
     // Mon, 02 Feb 2026 04:00 - Mon, 02 Mar 2026 03:59 (Europe)
-    // Mar 2, 03:59 Europe = Mar 2, 02:59 UTC
     currentEnd: '2026-03-02T02:59:00Z',
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
     imageUrl: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg'
   },
-  illusiveRealm: { 
-    name: 'Fantasies of the Thousand Gateways', 
-    subtitle: 'Roguelike Mode', 
-    description: 'Weekly reward reset', 
-    resetType: 'Weekly (Monday)', 
-    color: 'purple', 
-    weeklyReset: true, 
-    rewards: '160 Astrite',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
-    accentColor: 'purple',
-    imageUrl: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg'
+  whimperingWastes: {
+    name: 'Whimpering Wastes',
+    subtitle: 'Respawning Waters',
+    description: 'Combat challenge with token system',
+    resetType: '28 days',
+    color: 'cyan',
+    // Mon, 16 Feb 2026 04:00 - Mon, 16 Mar 2026 03:59 (Europe)
+    currentEnd: '2026-03-16T02:59:00Z',
+    rewards: '800 Astrite',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
+    accentColor: 'cyan',
+    imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
 };
 
