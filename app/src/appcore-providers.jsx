@@ -2759,17 +2759,18 @@ const ConfirmProvider = ({ children }) => {
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      <FocusTrapModal isOpen={!!state} onClose={() => handleClose(false)} className="bg-black/80" onClick={() => handleClose(false)} ariaLabel={state?.title || 'Confirm'}>
+      <FocusTrapModal isOpen={!!state} onClose={() => handleClose(false)} className="bg-black/80" onClick={() => handleClose(false)} ariaLabel={state?.title || 'Confirm'} centered>
         {state && (
-          <div className="w-full sm:max-w-xs rounded-t-2xl sm:rounded-2xl overflow-hidden" style={{ background: 'var(--bg-card, #101218)' }} onClick={(e) => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 sm:hidden" data-sheet-header />
-            <div className="p-5 text-center">
-              <h3 className="text-white font-semibold text-sm mb-2">{state.title}</h3>
-              <p className="text-gray-400 text-xs leading-relaxed whitespace-pre-line">{state.message}</p>
-            </div>
-            <div className="border-t border-[var(--border-medium)] flex">
-              <button onClick={() => handleClose(false)} className="flex-1 py-3.5 text-sm text-gray-300 font-medium border-r border-[var(--border-medium)] active:bg-white/5 transition-colors">{state.cancelLabel}</button>
-              <button onClick={() => handleClose(true)} className={`flex-1 py-3.5 text-sm font-semibold active:bg-white/5 transition-colors ${state.destructive ? 'text-red-400' : 'text-cyan-400'}`}>{state.confirmLabel}</button>
+          <div className="kuro-card w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
+            <div className="kuro-card-inner rounded-2xl overflow-hidden">
+              <div className="p-5 text-center">
+                <h3 className="text-white font-semibold text-sm mb-2">{state.title}</h3>
+                <p className="text-gray-400 text-xs leading-relaxed whitespace-pre-line">{state.message}</p>
+              </div>
+              <div className="border-t border-[var(--border-medium)] flex">
+                <button onClick={() => handleClose(false)} className="flex-1 py-3.5 text-sm text-gray-300 font-medium border-r border-[var(--border-medium)] active:bg-white/5 transition-colors">{state.cancelLabel}</button>
+                <button onClick={() => handleClose(true)} className={`flex-1 py-3.5 text-sm font-semibold active:bg-white/5 transition-colors ${state.destructive ? 'text-red-400' : 'text-cyan-400'}`}>{state.confirmLabel}</button>
+              </div>
             </div>
           </div>
         )}
