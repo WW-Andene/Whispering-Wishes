@@ -5466,9 +5466,99 @@ ProbabilityBar.displayName = 'ProbabilityBar';
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
 const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27feda';
 
+// [SECTION:ECHO-CHROMA-KEY]
+// Canvas-based background removal for echo images — replaces specific bg colors with transparency
+const echoChromaCache = new Map(); // url -> objectURL
+const ECHO_BG_COLORS = [
+  [41, 41, 42],    // #29292A — flat dark gray background
+  [121, 96, 155],  // #79609B — gradient purple zone
+  [106, 103, 104], // #6A6768 — gradient gray zone
+];
+const ECHO_BG_TOLERANCE = 38; // color distance threshold
+
+function colorDistSq(r, g, b, tr, tg, tb) {
+  const dr = r - tr, dg = g - tg, db = b - tb;
+  return dr * dr + dg * dg + db * db;
+}
+
+function chromaKeyEcho(img) {
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, w, h);
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const d = imageData.data;
+  const tolSq = ECHO_BG_TOLERANCE * ECHO_BG_TOLERANCE;
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], g = d[i + 1], b = d[i + 2];
+    for (const [tr, tg, tb] of ECHO_BG_COLORS) {
+      const dist = colorDistSq(r, g, b, tr, tg, tb);
+      if (dist < tolSq) {
+        // Fade alpha based on how close the color is to the target
+        const ratio = Math.sqrt(dist) / ECHO_BG_TOLERANCE;
+        d[i + 3] = Math.round(d[i + 3] * ratio * ratio);
+        break;
+      }
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+function useEchoChromaKey(imgUrl, isEcho) {
+  const canvasRef = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!isEcho || !imgUrl) { setReady(false); return; }
+    // Check cache
+    if (echoChromaCache.has(imgUrl)) { setReady(true); return; }
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = chromaKeyEcho(img);
+        echoChromaCache.set(imgUrl, canvas);
+        setReady(true);
+      } catch { setReady(false); }
+    };
+    img.onerror = () => setReady(false);
+    img.src = imgUrl;
+  }, [imgUrl, isEcho]);
+
+  const paintRef = useCallback((el) => {
+    canvasRef.current = el;
+    if (!el || !isEcho || !imgUrl) return;
+    const cached = echoChromaCache.get(imgUrl);
+    if (cached) {
+      const ctx = el.getContext('2d');
+      el.width = cached.width; el.height = cached.height;
+      ctx.clearRect(0, 0, el.width, el.height);
+      ctx.drawImage(cached, 0, 0);
+    }
+  }, [imgUrl, isEcho, ready]);
+
+  // Repaint when ready changes
+  useEffect(() => {
+    if (!ready || !canvasRef.current || !isEcho || !imgUrl) return;
+    const cached = echoChromaCache.get(imgUrl);
+    if (cached && canvasRef.current) {
+      const el = canvasRef.current;
+      el.width = cached.width; el.height = cached.height;
+      const ctx = el.getContext('2d');
+      ctx.clearRect(0, 0, el.width, el.height);
+      ctx.drawImage(cached, 0, 0);
+    }
+  }, [ready, imgUrl, isEcho]);
+
+  return { paintRef, ready };
+}
+
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
 const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
+  const { paintRef, ready: echoReady } = useEchoChromaKey(imgUrl, isEcho);
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -5506,7 +5596,19 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
-      <div className="absolute inset-0 collection-img-wrap" style={{ maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)' }}>
+      <div className="absolute inset-0 collection-img-wrap" style={!isEcho ? { maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)' } : undefined}>
+        {isEcho && echoReady ? (
+          <canvas
+            ref={paintRef}
+            aria-label={name}
+            className="w-full h-full object-contain pointer-events-none"
+            style={{
+              transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+              opacity: owned ? collOpacity : 0.3,
+              filter: owned ? 'none' : 'grayscale(100%)',
+            }}
+          />
+        ) : (
         <img
           src={imgUrl}
           alt={name}
@@ -5515,13 +5617,13 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           style={{
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,
-            mixBlendMode: isEcho ? 'lighten' : undefined,
             filter: owned ? 'none' : 'grayscale(100%)',
             maskImage: collMask,
             WebkitMaskImage: collMask
           }}
           onError={hideOnError}
         />
+        )}
       </div>
     ) : (
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
