@@ -145,13 +145,31 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // One call per pool type - API returns all available records
-      const json = await fetchPage(
-        { ...params, recordId: params.recordId || '' },
-        poolType, signal
-      );
-      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-      poolItems.push(...list);
+      // Fetch all pages - use oldest item's time to request older records
+      let currentParams = { ...params, recordId: params.recordId || '' };
+      for (let page = 0; page < 20; page++) {
+        if (signal?.aborted) break;
+        const json = await fetchPage(currentParams, poolType, signal);
+        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+        if (!list.length) break;
+
+        const prevCount = poolItems.length;
+        poolItems.push(...list);
+
+        // Find oldest item's time to request older records
+        const oldest = list.reduce((min, item) =>
+          !min || item.time < min.time ? item : min, null);
+        if (!oldest) break;
+
+        // Try next batch with oldest timestamp as recordId
+        currentParams = { ...params, recordId: String(oldest.resourceId) };
+
+        // If we got fewer items than a full page, we're at the end
+        if (list.length < 50) break;
+
+        onProgress?.(poolType, 'fetching', poolItems.length);
+        await sleep(200);
+      }
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
         total += poolItems.length;
