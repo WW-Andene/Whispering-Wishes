@@ -4,7 +4,7 @@
 // player presence, trophy editing, collection image management
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, ClipboardList, Minus, Plus, RefreshCcw, Settings, X } from 'lucide-react';
 import { APP_VERSION, DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../appcore-data.js';
@@ -52,6 +52,8 @@ export default function AdminPanel({
   saveImageFraming,
   DEFAULT_VISUAL_SETTINGS,
 }) {
+  const [debugOutput, setDebugOutput] = useState('');
+  const [debugApiBody, setDebugApiBody] = useState('{"playerId":0,"serverId":"","cardPoolType":1,"cardPoolId":"","languageCode":"en","recordId":"0"}');
   if (!showAdminPanel) return null;
   return (
     <>
@@ -121,6 +123,12 @@ export default function AdminPanel({
                       className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'players' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                     >
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players
+                    </button>
+                    <button
+                      onClick={() => setAdminTab('debug')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'debug' ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Debug
                     </button>
                   </div>
 
@@ -838,6 +846,62 @@ export default function AdminPanel({
               {framingMode ? '✓ Framing Mode ON' : '⊞ Enable Framing Mode'}
             </button>
             
+                  {/* Debug Tab */}
+                  {adminTab === 'debug' && (
+                    <div className="space-y-3">
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                        <h3 className="text-red-400 text-sm font-medium mb-2">Import Debug</h3>
+                        <p className="text-gray-400 text-[10px] mb-2">Last import attempt debug data (stored in sessionStorage)</p>
+                        <button
+                          onClick={() => {
+                            try {
+                              const raw = sessionStorage.getItem('ww-import-debug');
+                              if (raw) {
+                                const dbg = JSON.parse(raw);
+                                setDebugOutput(JSON.stringify(dbg, null, 2));
+                              } else {
+                                setDebugOutput('No debug data — try an import first.');
+                              }
+                            } catch (e) { setDebugOutput('Error: ' + e.message); }
+                          }}
+                          className="kuro-btn text-[10px] py-1.5 w-full active-red mb-2"
+                        >
+                          Load Debug Data
+                        </button>
+                        {debugOutput && (
+                          <pre className="bg-black/50 border border-[var(--border-medium)] rounded-lg p-3 text-[9px] text-gray-300 font-mono overflow-auto max-h-[300px] whitespace-pre-wrap break-all">{debugOutput}</pre>
+                        )}
+                      </div>
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                        <h3 className="text-red-400 text-sm font-medium mb-2">Test API Call</h3>
+                        <p className="text-gray-400 text-[10px] mb-2">Send a raw POST to the gacha proxy</p>
+                        <textarea
+                          value={debugApiBody}
+                          onChange={(e) => setDebugApiBody(e.target.value)}
+                          className="kuro-input w-full text-[9px] font-mono h-24 mb-2"
+                          placeholder='{"playerId":604976175,"serverId":"...","cardPoolType":1,"cardPoolId":"","languageCode":"en","recordId":"0"}'
+                        />
+                        <button
+                          onClick={async () => {
+                            try {
+                              setDebugOutput('Fetching...');
+                              const res = await fetch('/api/gacha/record/query', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: debugApiBody,
+                              });
+                              const text = await res.text();
+                              setDebugOutput(`HTTP ${res.status}\n\n${text}`);
+                            } catch (e) { setDebugOutput('Fetch error: ' + e.message); }
+                          }}
+                          className="kuro-btn text-[10px] py-1.5 w-full active-cyan"
+                        >
+                          Send Request
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
             {/* Framing Controls - show when image selected */}
             {framingMode && editingImage && (
               <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">

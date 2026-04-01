@@ -177,14 +177,10 @@ export default function ProfileTab({
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {
-        const dbg = result._debug || {};
-        const resp = dbg.firstResponse ? JSON.stringify(dbg.firstResponse).slice(0, 200) : 'no response';
-        const errs = dbg.errors?.length ? dbg.errors.join('; ') : '';
-        console.error('[import-debug] params:', JSON.stringify(dbg.params));
-        console.error('[import-debug] first API response:', resp);
-        if (errs) console.error('[import-debug] errors:', errs);
+        // Store debug info for admin panel
+        try { sessionStorage.setItem('ww-import-debug', JSON.stringify(result._debug || {})); } catch {}
         setDirectStatus('error');
-        setDirectError(`0 convenes returned. API response: ${resp}${errs ? ' | Errors: ' + errs : ''}`);
+        setDirectError('0 convenes returned — check Debug tab in Admin panel for details.');
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
