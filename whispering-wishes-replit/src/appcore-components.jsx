@@ -5469,8 +5469,13 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 // [SECTION:ECHO-CHROMA-KEY]
 // Canvas-based background removal for echo images — replaces specific bg colors with transparency
 const echoChromaCache = new Map(); // url -> objectURL
-// #29292A (41, 41, 42) with 5% margin (~13 per channel)
+// Flood-fill from edges to remove background (#29292A ±13 per channel)
+// Only removes connected background regions touching the image border,
+// so dark pixels inside the echo creature are preserved.
 const ECHO_BG_MARGIN = 13;
+function isBgColor(d, i) {
+  return Math.abs(d[i] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 1] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 2] - 42) <= ECHO_BG_MARGIN;
+}
 function chromaKeyEcho(img) {
   const w = img.naturalWidth, h = img.naturalHeight;
   const canvas = document.createElement('canvas');
@@ -5479,9 +5484,34 @@ function chromaKeyEcho(img) {
   ctx.drawImage(img, 0, 0, w, h);
   const imageData = ctx.getImageData(0, 0, w, h);
   const d = imageData.data;
-  for (let i = 0; i < d.length; i += 4) {
-    if (Math.abs(d[i] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 1] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 2] - 42) <= ECHO_BG_MARGIN) {
-      d[i + 3] = 0;
+  const visited = new Uint8Array(w * h);
+  // Seed queue with all edge pixels that match the bg color
+  const queue = [];
+  for (let x = 0; x < w; x++) {
+    for (const y of [0, h - 1]) {
+      const idx = (y * w + x) * 4;
+      if (isBgColor(d, idx)) { queue.push(y * w + x); visited[y * w + x] = 1; }
+    }
+  }
+  for (let y = 1; y < h - 1; y++) {
+    for (const x of [0, w - 1]) {
+      const idx = (y * w + x) * 4;
+      if (isBgColor(d, idx)) { queue.push(y * w + x); visited[y * w + x] = 1; }
+    }
+  }
+  // BFS flood-fill
+  let head = 0;
+  while (head < queue.length) {
+    const pos = queue[head++];
+    const px = pos % w, py = (pos - px) / w;
+    d[pos * 4 + 3] = 0; // make transparent
+    for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nx = px + dx, ny = py + dy;
+      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+      const npos = ny * w + nx;
+      if (visited[npos]) continue;
+      visited[npos] = 1;
+      if (isBgColor(d, npos * 4)) queue.push(npos);
     }
   }
   ctx.putImageData(imageData, 0, 0);
