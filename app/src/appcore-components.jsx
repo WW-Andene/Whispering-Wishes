@@ -6077,7 +6077,7 @@ const IMPORT_GUIDE_DATA = {
       <>Use the <span className="text-gray-100 font-medium">camera scan</span> below to capture the URL from your screen</>,
       <>Or enter the <span className="text-gray-100 font-medium">IDs manually</span> from the URL</>,
     ],
-    footer: 'The URL is valid for about 24 hours only.',
+    footer: 'The URL expires after some time. Use it as soon as possible.',
   },
 };
 

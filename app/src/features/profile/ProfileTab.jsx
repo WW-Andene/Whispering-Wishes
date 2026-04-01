@@ -1888,7 +1888,7 @@ Example: {"pulls":[...]}'
                     {directStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">Import complete!</p>}
                     {directError && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
 
-                    <p className="text-gray-500 text-[10px]">Open Convene History in-game and copy the URL from the browser address bar. The URL expires after a few minutes.</p>
+                    <p className="text-gray-500 text-[10px]">Open Convene History in-game and copy the URL from the browser address bar. The URL expires after some time.</p>
                   </div>
                 )}
               </CardBody>
