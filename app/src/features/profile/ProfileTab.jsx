@@ -1672,7 +1672,43 @@ Example: {"pulls":[...]}'
 
                     {/* Camera / Screenshot OCR */}
                     {directCameraOpen && createPortal(
-                      <div className="fixed inset-0 z-[9999]">
+                      <div className="fixed inset-0 z-[9999]" style={{ touchAction: 'none' }} onTouchMove={(e) => {
+                        // Prevent page zoom on pinch
+                        if (e.touches.length >= 2) e.preventDefault();
+                      }} onTouchStart={(e) => {
+                        // Track pinch start distance
+                        if (e.touches.length === 2) {
+                          const dx = e.touches[0].clientX - e.touches[1].clientX;
+                          const dy = e.touches[0].clientY - e.touches[1].clientY;
+                          e.currentTarget._pinchStart = Math.hypot(dx, dy);
+                          e.currentTarget._zoomStart = e.currentTarget._currentZoom || 1;
+                        }
+                      }} onTouchEnd={(e) => {
+                        // Apply zoom to camera track
+                        if (e.currentTarget._pinchStart && directStreamRef.current) {
+                          const track = directStreamRef.current.getVideoTracks()[0];
+                          const caps = track?.getCapabilities?.();
+                          if (caps?.zoom) {
+                            const zoom = Math.min(Math.max(e.currentTarget._currentZoom || 1, caps.zoom.min), caps.zoom.max);
+                            track.applyConstraints({ advanced: [{ zoom }] }).catch(() => {});
+                          }
+                          e.currentTarget._pinchStart = null;
+                        }
+                      }} onTouchMoveCapture={(e) => {
+                        if (e.touches.length === 2 && e.currentTarget._pinchStart && directStreamRef.current) {
+                          const dx = e.touches[0].clientX - e.touches[1].clientX;
+                          const dy = e.touches[0].clientY - e.touches[1].clientY;
+                          const dist = Math.hypot(dx, dy);
+                          const scale = dist / e.currentTarget._pinchStart;
+                          const track = directStreamRef.current.getVideoTracks()[0];
+                          const caps = track?.getCapabilities?.();
+                          if (caps?.zoom) {
+                            const newZoom = Math.min(Math.max((e.currentTarget._zoomStart || 1) * scale, caps.zoom.min), caps.zoom.max);
+                            e.currentTarget._currentZoom = newZoom;
+                            track.applyConstraints({ advanced: [{ zoom: newZoom }] }).catch(() => {});
+                          }
+                        }
+                      }}>
                         <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
 
                         {/* Dim outside scan frame */}
