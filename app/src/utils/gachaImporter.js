@@ -72,9 +72,10 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
     if (++pages > MAX_PAGES) break;
 
     const body = {
-      playerId: String(params.playerId),
+      playerId: parseInt(params.playerId, 10),
       serverId: params.serverId || '',
-      cardPoolType: cardPoolType,
+      cardPoolType: parseInt(cardPoolType, 10),
+      cardPoolId: params.cardPoolId || '',
       languageCode: params.lang || 'en',
       recordId: cursorRecordId,
     };
