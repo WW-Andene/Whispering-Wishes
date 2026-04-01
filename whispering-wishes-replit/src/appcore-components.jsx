@@ -5506,7 +5506,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
-      <div className="absolute inset-0 collection-img-wrap">
+      <div className="absolute inset-0 collection-img-wrap" style={{ maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)' }}>
         <img
           src={imgUrl}
           alt={name}

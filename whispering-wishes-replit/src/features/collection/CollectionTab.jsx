@@ -578,7 +578,7 @@ export default function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={filterEchoes(ALL_4COST_ECHOES).map(name => [name, 0])}
+                items={filterEchoes(ALL_4COST_ECHOES).map(name => [name, 1])}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="" totalCount={ALL_4COST_ECHOES.length}
@@ -600,7 +600,7 @@ export default function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={filterEchoes(ALL_3COST_ECHOES).map(name => [name, 0])}
+                items={filterEchoes(ALL_3COST_ECHOES).map(name => [name, 1])}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="" totalCount={ALL_3COST_ECHOES.length}
@@ -622,7 +622,7 @@ export default function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={filterEchoes(ALL_1COST_ECHOES).map(name => [name, 0])}
+                items={filterEchoes(ALL_1COST_ECHOES).map(name => [name, 1])}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-cyan-500/10" ownedBorder="border-cyan-500/30"
                 countColor="text-cyan-400" countPrefix="" totalCount={ALL_1COST_ECHOES.length}
