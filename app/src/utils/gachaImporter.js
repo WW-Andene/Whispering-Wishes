@@ -94,14 +94,12 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
   }
 
   const json = await res.json();
-  const lastRawResponse = json;
   if (json?.code !== 0) {
-    console.error('[fetchPoolPulls] API response:', JSON.stringify(json));
     throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
   }
 
   const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-  return { pulls: list, rawResponse: lastRawResponse };
+  return { pulls: list, rawResponse: json };
 }
 
 /**

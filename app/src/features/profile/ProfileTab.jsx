@@ -177,13 +177,8 @@ export default function ProfileTab({
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {
-        const dbg = result._debug || {};
-        const errs = dbg.errors?.length ? dbg.errors[0] : null;
-        const resp = dbg.firstResponse ? JSON.stringify(dbg.firstResponse) : null;
-        const p = dbg.params || {};
-        const sent = `playerId=${p.playerId}, serverId=${(p.serverId||'').slice(0,8)}..., recordId=${(p.recordId||'MISSING').slice(0,8)}..., cardPoolId=${(p.cardPoolId||'').slice(0,8)}...`;
         setDirectStatus('error');
-        setDirectError(errs || (resp ? `${resp.slice(0, 100)}` : 'No response') + ` | ${sent}`);
+        setDirectError('No Convene data returned. The URL may be expired. Try getting a fresh one from the game.');
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
