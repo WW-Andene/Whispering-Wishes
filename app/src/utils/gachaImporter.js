@@ -65,6 +65,7 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
   let pages = 0;
   const MAX_PAGES = 100;
   const FETCH_TIMEOUT = 10000;
+  let lastRawResponse = null;
 
   while (hasMore) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -99,6 +100,7 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
     if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
 
     const json = await res.json();
+    lastRawResponse = json;
     if (json?.code !== 0) {
       console.error('[fetchPoolPulls] API response:', JSON.stringify(json));
       throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
@@ -113,7 +115,7 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
       await sleep(300);
     }
   }
-  return allPulls;
+  return { pulls: allPulls, rawResponse: lastRawResponse };
 }
 
 /**
@@ -150,24 +152,28 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
+  let debugFirstResponse = null;
+  const debugErrors = [];
 
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
     try {
-      const pulls = await fetchPoolPulls(params, poolType, signal);
-      if (pulls.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = pulls;
-        total += pulls.length;
+      const result = await fetchPoolPulls(params, poolType, signal);
+      if (!debugFirstResponse) debugFirstResponse = result.rawResponse;
+      if (result.pulls.length > 0) {
+        allPulls[POOL_LABELS[poolType]] = result.pulls;
+        total += result.pulls.length;
       }
-      onProgress?.(poolType, 'done', pulls.length);
+      onProgress?.(poolType, 'done', result.pulls.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
+      debugErrors.push(`Pool ${poolType}: ${err.message}`);
       onProgress?.(poolType, 'error', 0);
     }
   }
 
-  return { pulls: allPulls, total };
+  return { pulls: allPulls, total, _debug: { firstResponse: debugFirstResponse, errors: debugErrors, params } };
 }
 
 /**

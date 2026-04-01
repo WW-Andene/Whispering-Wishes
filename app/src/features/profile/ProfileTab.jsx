@@ -177,8 +177,14 @@ export default function ProfileTab({
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {
+        const dbg = result._debug || {};
+        const resp = dbg.firstResponse ? JSON.stringify(dbg.firstResponse).slice(0, 200) : 'no response';
+        const errs = dbg.errors?.length ? dbg.errors.join('; ') : '';
+        console.error('[import-debug] params:', JSON.stringify(dbg.params));
+        console.error('[import-debug] first API response:', resp);
+        if (errs) console.error('[import-debug] errors:', errs);
         setDirectStatus('error');
-        setDirectError('API returned 0 convenes — the record may be expired. Try getting a fresh URL from the game.');
+        setDirectError(`0 convenes returned. API response: ${resp}${errs ? ' | Errors: ' + errs : ''}`);
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
