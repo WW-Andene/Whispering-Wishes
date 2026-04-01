@@ -1,6 +1,5 @@
 // Vercel/DV serverless function — proxies POST requests to WuWa gacha API to avoid CORS
 const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
-const ALLOWED_PATH_PREFIX = 'record/query';
 
 export default async function handler(req, res) {
   // CORS preflight
@@ -21,30 +20,21 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
 
   try {
-    const pathSegments = req.query.path;
-    const path = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '';
-
-    if (path.includes('..') || path.includes('%2e') || path.includes('%2E')) {
-      return res.status(400).json({ error: 'Invalid path' });
-    }
-    if (!path.startsWith(ALLOWED_PATH_PREFIX)) {
-      return res.status(400).json({ error: 'Invalid endpoint' });
-    }
-
     // Handle body — DV may pass string/buffer, Vercel passes parsed object
     let body = req.body;
-    if (Buffer.isBuffer(body)) body = body.toString('utf-8');
+    if (typeof Buffer !== 'undefined' && Buffer.isBuffer(body)) body = body.toString('utf-8');
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
     }
     if (!body || typeof body !== 'object') {
-      return res.status(400).json({ error: 'No body', bodyType: typeof req.body });
+      return res.status(400).json({ error: 'No body' });
     }
     if (!body.playerId) {
-      return res.status(400).json({ error: 'Missing playerId', keys: Object.keys(body) });
+      return res.status(400).json({ error: 'Missing playerId' });
     }
 
-    const targetUrl = `https://${ALLOWED_HOST}/gacha/${path}`;
+    // Only one endpoint — hardcoded to avoid catch-all routing differences
+    const targetUrl = `https://${ALLOWED_HOST}/gacha/record/query`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
@@ -66,6 +56,6 @@ export default async function handler(req, res) {
     if (err.name === 'AbortError') {
       return res.status(504).json({ error: 'Upstream timeout' });
     }
-    return res.status(502).json({ error: 'Proxy error', debug: err.message });
+    return res.status(502).json({ error: 'Proxy error: ' + err.message });
   }
 }
