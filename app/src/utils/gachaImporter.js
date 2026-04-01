@@ -60,67 +60,48 @@ export function parseGachaUrl(raw) {
  * @returns {Promise<Array>} Array of pull records
  */
 export async function fetchPoolPulls(params, cardPoolType, signal) {
-  const allPulls = [];
-  let cursorRecordId = '0';
-  let hasMore = true;
-  let pages = 0;
-  const MAX_PAGES = 100;
   const FETCH_TIMEOUT = 10000;
-  let lastRawResponse = null;
 
-  while (hasMore) {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-    if (++pages > MAX_PAGES) break;
+  const body = {
+    playerId: parseInt(params.playerId, 10),
+    serverId: params.serverId || '',
+    cardPoolType: parseInt(cardPoolType, 10),
+    cardPoolId: params.cardPoolId || '',
+    languageCode: params.lang || 'en',
+    recordId: params.recordId || '',
+  };
 
-    const body = {
-      playerId: parseInt(params.playerId, 10),
-      serverId: params.serverId || '',
-      cardPoolType: parseInt(cardPoolType, 10),
-      cardPoolId: params.cardPoolId || '',
-      languageCode: params.lang || 'en',
-      recordId: params.recordId || '',
-    };
-
-    let res;
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-      res = await fetch('/api/gacha/record/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: mergedSignal,
-      });
-      clearTimeout(timeout);
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      throw new Error('Network error');
-    }
-
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}));
-      throw new Error(errBody?.error || `HTTP ${res.status}`);
-    }
-
-    const json = await res.json();
-    lastRawResponse = json;
-    if (json?.code !== 0) {
-      console.error('[fetchPoolPulls] API response:', JSON.stringify(json));
-      throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
-    }
-
-    // API may return data as array directly or nested in data.list
-    const list = Array.isArray(json?.data) ? json.data : json?.data?.list;
-    if (!list || list.length === 0) {
-      hasMore = false;
-    } else {
-      allPulls.push(...list);
-      cursorRecordId = list[list.length - 1].recordId || list[list.length - 1].record_id || '0';
-      await sleep(300);
-    }
+  let res;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+    res = await fetch('/api/gacha/record/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: mergedSignal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    throw new Error('Network error');
   }
-  return { pulls: allPulls, rawResponse: lastRawResponse };
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody?.error || `HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  const lastRawResponse = json;
+  if (json?.code !== 0) {
+    console.error('[fetchPoolPulls] API response:', JSON.stringify(json));
+    throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
+  }
+
+  const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+  return { pulls: list, rawResponse: lastRawResponse };
 }
 
 /**
