@@ -5466,111 +5466,9 @@ ProbabilityBar.displayName = 'ProbabilityBar';
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
 const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27feda';
 
-// [SECTION:ECHO-CHROMA-KEY]
-// Canvas-based background removal for echo images — replaces specific bg colors with transparency
-const echoChromaCache = new Map(); // url -> objectURL
-// Flood-fill from edges to remove background (#29292A ±13 per channel)
-// Only removes connected background regions touching the image border,
-// so dark pixels inside the echo creature are preserved.
-const ECHO_BG_MARGIN = 13;
-function isBgColor(d, i) {
-  return Math.abs(d[i] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 1] - 41) <= ECHO_BG_MARGIN && Math.abs(d[i + 2] - 42) <= ECHO_BG_MARGIN;
-}
-function chromaKeyEcho(img) {
-  const w = img.naturalWidth, h = img.naturalHeight;
-  const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(img, 0, 0, w, h);
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const d = imageData.data;
-  const visited = new Uint8Array(w * h);
-  // Seed queue with all edge pixels that match the bg color
-  const queue = [];
-  for (let x = 0; x < w; x++) {
-    for (const y of [0, h - 1]) {
-      const idx = (y * w + x) * 4;
-      if (isBgColor(d, idx)) { queue.push(y * w + x); visited[y * w + x] = 1; }
-    }
-  }
-  for (let y = 1; y < h - 1; y++) {
-    for (const x of [0, w - 1]) {
-      const idx = (y * w + x) * 4;
-      if (isBgColor(d, idx)) { queue.push(y * w + x); visited[y * w + x] = 1; }
-    }
-  }
-  // BFS flood-fill
-  let head = 0;
-  while (head < queue.length) {
-    const pos = queue[head++];
-    const px = pos % w, py = (pos - px) / w;
-    d[pos * 4 + 3] = 0; // make transparent
-    for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
-      const nx = px + dx, ny = py + dy;
-      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-      const npos = ny * w + nx;
-      if (visited[npos]) continue;
-      visited[npos] = 1;
-      if (isBgColor(d, npos * 4)) queue.push(npos);
-    }
-  }
-  ctx.putImageData(imageData, 0, 0);
-  return canvas;
-}
-
-function useEchoChromaKey(imgUrl, isEcho) {
-  const canvasRef = useRef(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (!isEcho || !imgUrl) { setReady(false); return; }
-    // Check cache
-    if (echoChromaCache.has(imgUrl)) { setReady(true); return; }
-    const img = new window.Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const canvas = chromaKeyEcho(img);
-        echoChromaCache.set(imgUrl, canvas);
-        setReady(true);
-      } catch { setReady(false); }
-    };
-    img.onerror = () => setReady(false);
-    img.src = imgUrl;
-  }, [imgUrl, isEcho]);
-
-  const paintRef = useCallback((el) => {
-    canvasRef.current = el;
-    if (!el || !isEcho || !imgUrl) return;
-    const cached = echoChromaCache.get(imgUrl);
-    if (cached) {
-      const ctx = el.getContext('2d');
-      el.width = cached.width; el.height = cached.height;
-      ctx.clearRect(0, 0, el.width, el.height);
-      ctx.drawImage(cached, 0, 0);
-    }
-  }, [imgUrl, isEcho, ready]);
-
-  // Repaint when ready changes
-  useEffect(() => {
-    if (!ready || !canvasRef.current || !isEcho || !imgUrl) return;
-    const cached = echoChromaCache.get(imgUrl);
-    if (cached && canvasRef.current) {
-      const el = canvasRef.current;
-      el.width = cached.width; el.height = cached.height;
-      const ctx = el.getContext('2d');
-      ctx.clearRect(0, 0, el.width, el.height);
-      ctx.drawImage(cached, 0, 0);
-    }
-  }, [ready, imgUrl, isEcho]);
-
-  return { paintRef, ready };
-}
-
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
 const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
-  const { paintRef, ready: echoReady } = useEchoChromaKey(imgUrl, isEcho);
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -5608,19 +5506,14 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
-      <div className="absolute inset-0 collection-img-wrap" style={!isEcho ? { maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)', WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)' } : undefined}>
-        {isEcho && echoReady ? (
-          <canvas
-            ref={paintRef}
-            aria-label={name}
-            className="w-full h-full object-contain pointer-events-none"
-            style={{
-              transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-              opacity: owned ? collOpacity : 0.3,
-              filter: owned ? 'none' : 'grayscale(100%)',
-            }}
-          />
-        ) : (
+      <div className="absolute inset-0 collection-img-wrap" style={{
+        maskImage: isEcho
+          ? 'radial-gradient(ellipse 75% 70% at center, black 45%, transparent 90%)'
+          : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+        WebkitMaskImage: isEcho
+          ? 'radial-gradient(ellipse 75% 70% at center, black 45%, transparent 90%)'
+          : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+      }}>
         <img
           src={imgUrl}
           alt={name}
@@ -5635,7 +5528,6 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           }}
           onError={hideOnError}
         />
-        )}
       </div>
     ) : (
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
