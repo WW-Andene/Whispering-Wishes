@@ -52,75 +52,53 @@ export function parseGachaUrl(raw) {
 }
 
 /**
- * Fetch all pulls for a single card pool type, paginated.
- * WuWa API uses POST with JSON body (not GET with query params).
- * @param {{ playerId: string, serverId: string, lang: string }} params
- * @param {number} cardPoolType - The pool type (1-7)
- * @param {AbortSignal} [signal] - Optional abort signal
- * @returns {Promise<Array>} Array of pull records
+ * Fetch a single page from the gacha API.
+ * @param {{ playerId: string, serverId: string, recordId: string, cardPoolId: string, lang: string }} params
+ * @param {number} cardPoolType
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<Array>} Array of pull records for this page
  */
-export async function fetchPoolPulls(params, cardPoolType, signal) {
+async function fetchPage(params, cardPoolType, signal) {
   const FETCH_TIMEOUT = 10000;
-  const MAX_PAGES = 100;
-  const allPulls = [];
-  let currentRecordId = params.recordId || '';
-  let lastRawResponse = null;
+  const body = {
+    playerId: parseInt(params.playerId, 10),
+    serverId: params.serverId || '',
+    cardPoolType: parseInt(cardPoolType, 10),
+    cardPoolId: params.cardPoolId || '',
+    languageCode: params.lang || 'en',
+    recordId: params.recordId || '',
+  };
 
-  for (let page = 0; page < MAX_PAGES; page++) {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
 
-    const body = {
-      playerId: parseInt(params.playerId, 10),
-      serverId: params.serverId || '',
-      cardPoolType: parseInt(cardPoolType, 10),
-      cardPoolId: params.cardPoolId || '',
-      languageCode: params.lang || 'en',
-      recordId: currentRecordId,
-    };
-
-    let res;
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-      res = await fetch('/api/gacha/record/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: mergedSignal,
-      });
-      clearTimeout(timeout);
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      throw new Error('Network error');
-    }
-
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}));
-      throw new Error(errBody?.error || `HTTP ${res.status}`);
-    }
-
-    const json = await res.json();
-    lastRawResponse = json;
-    if (json?.code !== 0) {
-      throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
-    }
-
-    const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-    if (!list.length) break;
-
-    allPulls.push(...list);
-
-    // Use last item's resourceId as cursor for next page
-    const lastItem = list[list.length - 1];
-    const nextCursor = lastItem?.resourceId;
-    if (!nextCursor || nextCursor === currentRecordId) break;
-    currentRecordId = nextCursor;
-
-    await sleep(300);
+  let res;
+  try {
+    res = await fetch('/api/gacha/record/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: mergedSignal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw err;
+    throw new Error('Network error');
   }
 
-  return { pulls: allPulls, rawResponse: lastRawResponse };
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody?.error || `HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  if (json?.code !== 0) {
+    throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
+  }
+
+  return Array.isArray(json?.data) ? json.data : json?.data?.list || [];
 }
 
 /**
@@ -156,34 +134,46 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * @returns {Promise<{ pulls: Object, total: number }>}
  */
 export async function fetchAllPools(params, signal, onProgress) {
-  const allPulls = {};
-  let total = 0;
-  let debugFirstResponse = null;
-  const debugErrors = [];
+  const MAX_PAGES = 50;
+  const allItems = [];
+  let currentRecordId = params.recordId || '';
 
-  for (const poolType of POOLS) {
-    if (signal?.aborted) break;
-    onProgress?.(poolType, 'fetching', 0);
-    try {
-      const result = await fetchPoolPulls(params, poolType, signal);
-      if (!debugFirstResponse) debugFirstResponse = result.rawResponse;
-      if (result.pulls.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = result.pulls;
-        total += result.pulls.length;
-      }
-      onProgress?.(poolType, 'done', result.pulls.length);
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      debugErrors.push(`Pool ${poolType}: ${err.message}`);
-      onProgress?.(poolType, 'error', 0);
-    }
+  // The API returns all pool types mixed together, paginated.
+  // Each page has ~165 items. Paginate by passing cardPoolType=1
+  // (the type doesn't filter - all types come back) with the
+  // last page's last item resourceId as the next recordId cursor.
+  for (let page = 0; page < MAX_PAGES; page++) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    onProgress?.(page + 1, 'fetching', allItems.length);
+
+    const pageParams = { ...params, recordId: currentRecordId };
+    const list = await fetchPage(pageParams, 1, signal);
+
+    if (!list.length) break;
+    allItems.push(...list);
+    onProgress?.(page + 1, 'done', allItems.length);
+
+    // Next page cursor: last item's resourceId becomes recordId
+    const lastItem = list[list.length - 1];
+    const nextCursor = String(lastItem?.resourceId ?? '');
+    if (!nextCursor || nextCursor === String(currentRecordId)) break;
+    currentRecordId = nextCursor;
+
+    await sleep(300);
   }
 
-  // Grab keys from first item for debugging pagination
-  const firstPool = Object.values(allPulls)[0];
-  const sampleItem = firstPool?.[0];
-  const itemKeys = sampleItem ? Object.keys(sampleItem).join(',') : 'none';
-  return { pulls: allPulls, total, _debug: { firstResponse: debugFirstResponse, errors: debugErrors, params, itemKeys, sampleItem: sampleItem ? JSON.stringify(sampleItem).slice(0, 200) : null } };
+  // Split items by pool type
+  const pullsByPool = {};
+  let total = 0;
+  for (const item of allItems) {
+    const poolType = item.cardPoolType;
+    const label = POOL_LABELS[poolType] || `Pool ${poolType}`;
+    if (!pullsByPool[label]) pullsByPool[label] = [];
+    pullsByPool[label].push(item);
+    total++;
+  }
+
+  return { pulls: pullsByPool, total, _debug: { params } };
 }
 
 /**
