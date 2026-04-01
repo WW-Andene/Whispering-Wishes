@@ -182,56 +182,75 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
         if (!oldest?.time || oldest.time === endTime) {
-          // Stuck - try fetching older records by jumping endTime back
-          // in monthly chunks until no more data
+          // Stuck - build a set of 5-star items we already have as stop markers
+          const known5Stars = new Set(
+            poolItems.filter(p => p.qualityLevel === 5).map(p => `${p.name}|${p.time}`)
+          );
+
+          // Jump back in monthly chunks to get older data
           const stuckTime = new Date(oldest.time);
+          let jumpEndTime = '';
           for (let jump = 1; jump <= 24; jump++) {
             if (signal?.aborted) break;
             const jumpDate = new Date(stuckTime);
             jumpDate.setMonth(jumpDate.getMonth() - jump);
-            const jumpBody = {
-              playerId: String(params.playerId),
-              serverId: params.serverId || '',
-              cardPoolType: Number(poolType),
-              cardPoolId: params.cardPoolId || '',
-              languageCode: params.lang || 'en',
-              recordId: params.recordId || '',
-              endTime: jumpDate.toISOString(),
-            };
-            const c2 = new AbortController();
-            const t2 = setTimeout(() => c2.abort(), 15000);
-            const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
-            try {
-              const r2 = await fetch('/api/gacha/record/query', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(jumpBody),
-                signal: s2,
-              });
-              clearTimeout(t2);
-              if (!r2.ok) break;
-              const j2 = await r2.json();
-              if (j2?.code !== 0) break;
-              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
-              if (!l2.length) continue; // This month empty, try older
-              // Only add items strictly older than the stuck point
-              const stuckIso = stuckTime.toISOString();
-              const newItems = l2.filter(item => item.time < stuckIso);
-              if (newItems.length > 0) {
-                poolItems.push(...newItems);
+
+            // Use endTime pagination within each jump
+            jumpEndTime = jumpDate.toISOString();
+            let jumpDone = false;
+
+            for (let jp = 0; jp < 10; jp++) {
+              if (signal?.aborted || jumpDone) break;
+              const jumpBody = {
+                playerId: String(params.playerId),
+                serverId: params.serverId || '',
+                cardPoolType: Number(poolType),
+                cardPoolId: params.cardPoolId || '',
+                languageCode: params.lang || 'en',
+                recordId: params.recordId || '',
+                endTime: jumpEndTime,
+              };
+              const c2 = new AbortController();
+              const t2 = setTimeout(() => c2.abort(), 15000);
+              const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
+              try {
+                const r2 = await fetch('/api/gacha/record/query', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(jumpBody),
+                  signal: s2,
+                });
+                clearTimeout(t2);
+                if (!r2.ok) { jumpDone = true; break; }
+                const j2 = await r2.json();
+                if (j2?.code !== 0) { jumpDone = true; break; }
+                const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
+                if (!l2.length) break;
+
+                // Add items, but stop if we hit a known 5-star (overlap detected)
+                let hitKnown = false;
+                for (const item of l2) {
+                  if (item.qualityLevel === 5) {
+                    const key = `${item.name}|${item.time}`;
+                    if (known5Stars.has(key)) {
+                      hitKnown = true;
+                      break;
+                    }
+                  }
+                  poolItems.push(item);
+                }
                 onProgress?.(poolType, 'fetching', poolItems.length);
-              }
-              // Continue backward from this new batch
-              const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
-              if (o2?.time) {
-                endTime = o2.time;
-                break; // Resume normal pagination from here
-              }
-            } catch { clearTimeout(t2); break; }
-            await sleep(150);
+                if (hitKnown) { jumpDone = true; break; }
+
+                const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
+                if (!o2?.time || o2.time === jumpEndTime) break;
+                jumpEndTime = o2.time;
+              } catch { clearTimeout(t2); jumpDone = true; break; }
+              await sleep(150);
+            }
+            if (jumpDone) break;
           }
-          if (endTime === oldest.time) break; // Still stuck, give up
-          continue;
+          break; // Done with this pool type
         }
         endTime = oldest.time;
 
