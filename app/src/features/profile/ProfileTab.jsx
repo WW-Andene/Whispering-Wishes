@@ -155,6 +155,8 @@ export default function ProfileTab({
       if (p.playerId) setDirectPlayerId(p.playerId);
       if (p.recordId) setDirectRecordId(p.recordId);
       if (p.svrId) setDirectSvrId(p.svrId);
+      if (p.resourcesId) setDirectResourcesId(p.resourcesId);
+      if (p.lang) setDirectLang(p.lang);
     }
   }, []);
 

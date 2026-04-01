@@ -24,13 +24,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  */
 export function parseGachaUrl(raw) {
   try {
-    const u = new URL(raw.trim());
-    const get = (...keys) => keys.map((k) => u.searchParams.get(k)).find(Boolean) ?? null;
+    const trimmed = raw.trim();
+    // WuWa URLs have params after #/record? — extract them from the hash fragment
+    let paramStr = '';
+    const hashIdx = trimmed.indexOf('#');
+    if (hashIdx !== -1) {
+      const afterHash = trimmed.slice(hashIdx + 1);
+      const qIdx = afterHash.indexOf('?');
+      if (qIdx !== -1) paramStr = afterHash.slice(qIdx + 1);
+    }
+    // Also check normal query string as fallback
+    const u = new URL(trimmed);
+    const params = new URLSearchParams(paramStr || u.search);
+    const get = (...keys) => keys.map((k) => params.get(k)).find(Boolean) ?? null;
     const playerId = get('playerId', 'player_id');
     const recordId = get('recordId', 'record_id');
-    const svrId = get('svr_id', 'svrId', 'svr_area');
+    const svrId = get('svr_id', 'svrId');
+    const svrArea = get('svr_area');
+    const resourcesId = get('resources_id');
+    const gachaId = get('gacha_id');
     const lang = get('lang') ?? 'en';
-    return { playerId, recordId, svrId, lang, valid: !!(playerId && recordId), href: u.href };
+    return { playerId, recordId, svrId, svrArea, resourcesId, gachaId, lang, valid: !!(playerId), href: u.href };
   } catch {
     return { valid: false };
   }
