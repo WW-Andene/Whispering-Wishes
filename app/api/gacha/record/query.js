@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     const targetUrl = `https://${ALLOWED_HOST}/gacha/record/query`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     const response = await fetch(targetUrl, {
       method: 'POST',

@@ -137,32 +137,56 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
+  const FETCH_TIMEOUT = 30000;
 
-  for (const poolType of POOLS) {
-    if (signal?.aborted) break;
-    onProgress?.(poolType, 'fetching', 0);
+  // Minimal body - WuWa Tracker only sends playerId + recordId
+  const body = {
+    playerId: String(params.playerId),
+    recordId: params.recordId || '',
+  };
 
-    try {
-      const poolItems = [];
+  onProgress?.(0, 'fetching', 0);
 
-      // Single call per pool type
-      const json = await fetchPage(
-        { ...params, recordId: params.recordId || '' },
-        poolType, signal
-      );
-      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-      poolItems.push(...list);
-      if (poolItems.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = poolItems;
-        total += poolItems.length;
-      }
-      onProgress?.(poolType, 'done', poolItems.length);
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      onProgress?.(poolType, 'error', 0);
-    }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+  let res;
+  try {
+    res = await fetch('/api/gacha/record/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: mergedSignal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw err;
+    throw new Error('Network error');
   }
 
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody?.error || `HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  if (json?.code !== 0) {
+    throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
+  }
+
+  const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+
+  // Split by pool type
+  for (const item of list) {
+    const label = POOL_LABELS[item.cardPoolType] || `Pool ${item.cardPoolType}`;
+    if (!allPulls[label]) allPulls[label] = [];
+    allPulls[label].push(item);
+    total++;
+  }
+
+  onProgress?.(0, 'done', total);
   return { pulls: allPulls, total };
 }
 
