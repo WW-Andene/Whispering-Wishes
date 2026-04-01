@@ -31,7 +31,11 @@ async function callGroq(apiKey, messages) {
 
 export async function executeCommand(commandId, text) {
   const apiKey = process.env.GROQ_API_KEY;
+  console.log(`[WW-B] Command #${commandId} received: "${text.slice(0, 50)}..."`);
+  console.log(`[WW-B] GROQ_API_KEY: ${apiKey ? 'set (' + apiKey.slice(0, 8) + '...)' : 'NOT SET'}`);
+
   if (!apiKey) {
+    console.log('[WW-B] No API key — aborting');
     completeCommand(commandId, 'Error: GROQ_API_KEY not set. Enter your key in the setup screen.');
     return;
   }
@@ -51,6 +55,7 @@ If you find issues, list them with severity:
 Be direct. Give actionable findings. No fluff.`;
 
   try {
+    console.log('[WW-B] Calling Groq API...');
     const content = await callGroq(apiKey, [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: text },
@@ -64,11 +69,13 @@ Be direct. Give actionable findings. No fluff.`;
       confidence: 0.7,
     });
 
+    console.log(`[WW-B] Groq responded: ${content.slice(0, 100)}...`);
     completeRun(runId, 'Command processed');
     completeCommand(commandId, content);
 
   } catch (err) {
     const msg = err.message?.slice(0, 300) || 'Unknown error';
+    console.error(`[WW-B] Groq error: ${msg}`);
     completeCommand(commandId, `Error: ${msg}`);
     completeRun(runId, `Error: ${msg}`);
   }
