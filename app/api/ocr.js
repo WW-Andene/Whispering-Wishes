@@ -2,7 +2,7 @@
 // API key stored server-side via GROQ_API_KEY environment variable
 
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB base64 limit (Groq allows up to 20MB)
-const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id'];
+const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -50,19 +50,24 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `This screenshot contains a Wuthering Waves convene history URL with query parameters.
+              text: `This screenshot shows a Wuthering Waves convene history URL. Extract ALL query parameters.
 
-Extract these EXACT values from the URL query string:
-- player_id (numeric, ~9 digits)
-- record_id (a 32-character hex string like 2ecbfdc78c42e4af288cdb85696eaa89)
-- svr_id (a 32-character hex string like 6eb2a235b30d05efd77bedb5cf60999e)
+The URL format is:
+https://aki-gm-resources-oversea.aki-game.net/aki/gacha/index.html#/record?svr_id=HEX32&player_id=NUMBER&lang=XX&gacha_id=NUMBER&gacha_type=NUMBER&svr_area=TEXT&record_id=HEX32&resources_id=HEX32&platform=TEXT
 
-Parameter names may appear as: player_id, playerId, record_id, recordId, svr_id, svrId, svr_area.
+Extract these values:
+- svr_id (32-char hex)
+- player_id (9-digit number)
+- record_id (32-char hex)
+- resources_id (32-char hex)
+- gacha_id (number like 100057)
+- lang (2-letter code like en, fr)
+- svr_area (like "global")
 
-Read every character carefully. Do NOT guess or invent values.
+Read every hex character carefully. Do NOT guess.
 
-Respond with ONLY this JSON (no markdown):
-{"player_id":"VALUE_OR_NULL","record_id":"VALUE_OR_NULL","svr_id":"VALUE_OR_NULL"}`,
+Respond with ONLY JSON (no markdown):
+{"player_id":"VALUE","record_id":"VALUE","svr_id":"VALUE","resources_id":"VALUE","gacha_id":"VALUE","lang":"VALUE","svr_area":"VALUE"}`,
             },
           ],
         }],

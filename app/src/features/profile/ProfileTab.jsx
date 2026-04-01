@@ -136,6 +136,8 @@ export default function ProfileTab({
   const [directPlayerId, setDirectPlayerId] = useState('');
   const [directRecordId, setDirectRecordId] = useState('');
   const [directSvrId, setDirectSvrId] = useState('');
+  const [directResourcesId, setDirectResourcesId] = useState('');
+  const [directLang, setDirectLang] = useState('en');
   const [directStatus, setDirectStatus] = useState('idle'); // idle|fetching|done|error
   const [directError, setDirectError] = useState('');
   const [directProgress, setDirectProgress] = useState({});
@@ -162,6 +164,8 @@ export default function ProfileTab({
     if (!pid) { setDirectError('player_id is required.'); return; }
     try {
       const params = buildFetchParams(directUrl, pid, rid, directSvrId);
+      if (directResourcesId) params.cardPoolId = directResourcesId;
+      if (directLang) params.lang = directLang;
       directAbortRef.current = new AbortController();
       setDirectStatus('fetching');
       setDirectError('');
@@ -199,6 +203,8 @@ export default function ProfileTab({
       if (ids.player_id) setDirectPlayerId(ids.player_id);
       if (ids.record_id) setDirectRecordId(ids.record_id);
       if (ids.svr_id) setDirectSvrId(ids.svr_id);
+      if (ids.resources_id) setDirectResourcesId(ids.resources_id);
+      if (ids.lang) setDirectLang(ids.lang);
       setDirectScanStatus('done');
       toast?.addToast?.('IDs extracted from screenshot!', 'success');
     } catch (err) {

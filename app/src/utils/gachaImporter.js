@@ -217,13 +217,14 @@ export async function extractIdsFromImage(base64Image) {
 
   const raw = await res.json();
   // Validate response — only accept expected string fields
-  const ids = {
-    player_id: typeof raw.player_id === 'string' ? raw.player_id : null,
-    record_id: typeof raw.record_id === 'string' ? raw.record_id : null,
-    svr_id: typeof raw.svr_id === 'string' ? raw.svr_id : null,
-  };
-  if (!ids.player_id && !ids.record_id) {
-    throw new Error('IDs not found — try a clearer screenshot.');
+  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
+  const ids = {};
+  for (const key of ALLOWED) {
+    const val = raw[key];
+    ids[key] = (typeof val === 'string' && val !== 'null' && val !== 'NULL' && val.trim()) ? val.trim() : null;
+  }
+  if (!ids.player_id) {
+    throw new Error('player_id not found — try a clearer screenshot.');
   }
   return ids;
 }
