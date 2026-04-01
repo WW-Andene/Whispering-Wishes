@@ -37,30 +37,16 @@ export function parseGachaUrl(raw) {
 }
 
 /**
- * Build a proxy URL to avoid CORS when fetching from the gacha API.
- * @param {string} originalUrl
- * @returns {string|null}
- */
-export function toProxyUrl(originalUrl) {
-  try {
-    const u = new URL(originalUrl);
-    const strippedPath = u.pathname.replace(/^\/gacha/, '');
-    return `/api/gacha${strippedPath}${u.search}`;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Fetch all pulls for a single card pool type, paginated.
- * @param {string} baseUrl - The base gacha API URL with playerId/recordId params
+ * WuWa API uses POST with JSON body (not GET with query params).
+ * @param {{ playerId: string, serverId: string, lang: string }} params
  * @param {number} cardPoolType - The pool type (1-7)
  * @param {AbortSignal} [signal] - Optional abort signal
  * @returns {Promise<Array>} Array of pull records
  */
-export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
+export async function fetchPoolPulls(params, cardPoolType, signal) {
   const allPulls = [];
-  let lastRecordId = '0';
+  let cursorRecordId = '0';
   let hasMore = true;
   let pages = 0;
   const MAX_PAGES = 100;
@@ -70,19 +56,26 @@ export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     if (++pages > MAX_PAGES) break;
 
-    const u = new URL(baseUrl);
-    u.searchParams.set('cardPoolType', String(cardPoolType));
-    u.searchParams.set('recordId', lastRecordId);
-
-    const proxyUrl = toProxyUrl(u.toString());
-    if (!proxyUrl) throw new Error('Invalid URL.');
+    const body = {
+      playerId: params.playerId,
+      serverId: params.serverId || '',
+      cardPoolType,
+      cardPoolId: '',
+      languageCode: params.lang || 'en',
+      recordId: cursorRecordId,
+    };
 
     let res;
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
       const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-      res = await fetch(proxyUrl, { signal: mergedSignal });
+      res = await fetch('/api/gacha/record/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: mergedSignal,
+      });
       clearTimeout(timeout);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
@@ -100,7 +93,7 @@ export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
       hasMore = false;
     } else {
       allPulls.push(...list);
-      lastRecordId = list[list.length - 1].recordId;
+      cursorRecordId = list[list.length - 1].recordId;
       await sleep(300);
     }
   }
@@ -108,37 +101,36 @@ export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
 }
 
 /**
- * Build the base API URL from parsed IDs.
- * @param {string} rawUrl - Original URL (or empty for fallback)
+ * Build fetch params from parsed URL or manual IDs.
+ * @param {string} rawUrl - Original URL (or empty for manual input)
  * @param {string} playerId
- * @param {string} recordId
+ * @param {string} recordId - Not used by API but kept for compatibility
  * @param {string} [svrId]
- * @returns {string}
+ * @returns {{ playerId: string, serverId: string, lang: string }}
  */
-export function buildBaseUrl(rawUrl, playerId, recordId, svrId) {
-  const usingFallback = !rawUrl.trim();
-  const src = usingFallback ? FALLBACK_API_BASE : rawUrl.trim();
-  const u = new URL(src);
-  if (usingFallback) {
-    u.searchParams.set('player_id', playerId);
-    u.searchParams.set('record_id', recordId);
-    if (svrId?.trim()) u.searchParams.set('svr_id', svrId.trim());
-  } else {
-    u.searchParams.set('playerId', playerId);
-    u.searchParams.set('recordId', recordId);
-    if (svrId?.trim()) u.searchParams.set('svr_id', svrId.trim());
+export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
+  if (rawUrl?.trim()) {
+    try {
+      const u = new URL(rawUrl.trim());
+      const get = (...keys) => keys.map(k => u.searchParams.get(k)).find(Boolean) ?? '';
+      return {
+        playerId: get('playerId', 'player_id') || playerId,
+        serverId: get('svr_id', 'svrId', 'svr_area') || svrId || '',
+        lang: get('lang') || 'en',
+      };
+    } catch { /* fall through to manual */ }
   }
-  return u.toString();
+  return { playerId, serverId: svrId || '', lang: 'en' };
 }
 
 /**
  * Fetch all pulls across all pool types.
- * @param {string} baseUrl
+ * @param {{ playerId: string, serverId: string, lang: string }} params
  * @param {AbortSignal} [signal]
  * @param {function} [onProgress] - Called with (poolType, status, count) for progress updates
  * @returns {Promise<{ pulls: Object, total: number }>}
  */
-export async function fetchAllPools(baseUrl, signal, onProgress) {
+export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
 
@@ -146,7 +138,7 @@ export async function fetchAllPools(baseUrl, signal, onProgress) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
     try {
-      const pulls = await fetchPoolPulls(baseUrl, poolType, signal);
+      const pulls = await fetchPoolPulls(params, poolType, signal);
       if (pulls.length > 0) {
         allPulls[POOL_LABELS[poolType]] = pulls;
         total += pulls.length;

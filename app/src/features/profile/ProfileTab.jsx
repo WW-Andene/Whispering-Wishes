@@ -7,7 +7,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Award, Camera, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Link, Loader, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Type, Upload, User, X } from 'lucide-react';
-import { parseGachaUrl, buildBaseUrl, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, POOL_LABELS } from '../../utils/gachaImporter.js';
+import { parseGachaUrl, buildFetchParams, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, POOL_LABELS } from '../../utils/gachaImporter.js';
 import {
   APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
   SERVERS, getServerOffset,
@@ -159,14 +159,14 @@ export default function ProfileTab({
   const handleDirectFetch = useCallback(async () => {
     const pid = directPlayerId.trim();
     const rid = directRecordId.trim();
-    if (!pid || !rid) { setDirectError('player_id and record_id are required.'); return; }
+    if (!pid) { setDirectError('player_id is required.'); return; }
     try {
-      const baseUrl = buildBaseUrl(directUrl, pid, rid, directSvrId);
+      const params = buildFetchParams(directUrl, pid, rid, directSvrId);
       directAbortRef.current = new AbortController();
       setDirectStatus('fetching');
       setDirectError('');
       setDirectProgress({});
-      const result = await fetchAllPools(baseUrl, directAbortRef.current.signal, (pool, status, count) => {
+      const result = await fetchAllPools(params, directAbortRef.current.signal, (pool, status, count) => {
         setDirectProgress(prev => ({ ...prev, [pool]: { status, count } }));
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
@@ -1857,8 +1857,8 @@ Example: {"pulls":[...]}'
                     ) : (
                       <button
                         onClick={handleDirectFetch}
-                        disabled={!directPlayerId.trim() || !directRecordId.trim()}
-                        className={`kuro-btn w-full py-2 text-xs ${directPlayerId.trim() && directRecordId.trim() ? 'active-emerald' : 'opacity-50'}`}
+                        disabled={!directPlayerId.trim()}
+                        className={`kuro-btn w-full py-2 text-xs ${directPlayerId.trim() ? 'active-emerald' : 'opacity-50'}`}
                       >
                         <Download size={14} className="inline mr-1.5" />Import from Server
                       </button>

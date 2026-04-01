@@ -1,21 +1,23 @@
-// Vercel serverless function — proxies requests to WuWa gacha API to avoid CORS
+// Vercel/DV serverless function — proxies POST requests to WuWa gacha API to avoid CORS
 const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
 const ALLOWED_PATH_PREFIX = 'record/query';
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
   }
 
-  // CORS — restrict to app origin
-  const origin = req.headers.origin || req.headers.referer || '';
-  if (ALLOWED_ORIGIN && !origin.includes(ALLOWED_ORIGIN)) {
-    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed — use POST' });
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+
+  const origin = req.headers.origin || req.headers.referer || '';
+  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Cache-Control', 'no-store');
 
   try {
@@ -30,18 +32,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid endpoint' });
     }
 
-    const query = new URLSearchParams(req.query);
-    query.delete('path');
+    // Validate body has expected fields
+    const body = req.body;
+    if (!body || typeof body !== 'object' || !body.playerId) {
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
 
-    const targetUrl = `https://${ALLOWED_HOST}/gacha/${path}?${query.toString()}`;
+    const targetUrl = `https://${ALLOWED_HOST}/gacha/${path}`;
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
 
     const response = await fetch(targetUrl, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json',
+      },
       signal: controller.signal,
+      body: JSON.stringify(body),
     });
     clearTimeout(timeout);
 
