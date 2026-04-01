@@ -188,23 +188,17 @@ export async function fetchAllPools(params, signal, onProgress) {
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        // Dedup: stop if we're getting repeated data
-        const prevSize = poolItems.length;
-        const seen = new Set(poolItems.map(p => `${p.resourceId}_${p.time}`));
-        for (const item of list) {
-          const key = `${item.resourceId}_${item.time}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            poolItems.push(item);
-          }
-        }
-        // If no new items were added, we've looped - stop
-        if (poolItems.length === prevSize) break;
+        // Detect loop: if this page's data is identical to any previous page, stop
+        const pageKey = list.map(i => `${i.resourceId}_${i.time}_${i.qualityLevel}_${i.name}`).join('|');
+        if (poolItems._lastPageKey === pageKey) break;
+        poolItems._lastPageKey = pageKey;
 
+        poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
         await sleep(100);
       }
 
+      delete poolItems._lastPageKey;
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
         total += poolItems.length;
