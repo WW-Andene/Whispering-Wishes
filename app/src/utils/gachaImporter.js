@@ -146,8 +146,8 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // Paginate pages 1 to 100
-      for (let page = 1; page <= 100; page++) {
+      // Paginate until empty response (cap at 500 as safety limit)
+      for (let page = 1; page <= 500; page++) {
         if (signal?.aborted) break;
 
         const json = await fetchPage(
