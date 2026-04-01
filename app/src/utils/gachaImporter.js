@@ -58,16 +58,17 @@ export function parseGachaUrl(raw) {
  * @param {AbortSignal} [signal]
  * @returns {Promise<Array>} Array of pull records for this page
  */
-async function fetchPage(params, cardPoolType, signal) {
+async function fetchPage(params, cardPoolType, signal, page) {
   const FETCH_TIMEOUT = 10000;
   const body = {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
-    cardPoolType: parseInt(cardPoolType, 10),
+    cardPoolType: Number(cardPoolType),
     cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
+  if (page != null) body.page = page;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
@@ -145,60 +146,21 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // Paginate using page numbers
-      for (let page = 1; page <= 200; page++) {
+      // Paginate pages 1 to 100
+      for (let page = 1; page <= 100; page++) {
         if (signal?.aborted) break;
-        const body = {
-          cardPoolId: params.cardPoolId || '',
-          cardPoolType: Number(poolType),
-          languageCode: params.lang || 'en',
-          playerId: String(params.playerId),
-          recordId: params.recordId || '',
-          serverId: params.serverId || '',
-          page: page,
-        };
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-
-        let res;
-        try {
-          res = await fetch('/api/gacha/record/query', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-            signal: mergedSignal,
-          });
-          clearTimeout(timeout);
-        } catch (err) {
-          clearTimeout(timeout);
-          if (err.name === 'AbortError') throw err;
-          throw new Error('Network error');
-        }
-
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody?.error || `HTTP ${res.status}`);
-        }
-
-        const json = await res.json();
-        if (json?.code !== 0) throw new Error(json?.message || `API error (code ${json?.code})`);
-
+        const json = await fetchPage(
+          { ...params, recordId: params.recordId || '' },
+          poolType, signal, page
+        );
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        // Detect loop: if this page's data is identical to any previous page, stop
-        const pageKey = list.map(i => `${i.resourceId}_${i.time}_${i.qualityLevel}_${i.name}`).join('|');
-        if (poolItems._lastPageKey === pageKey) break;
-        poolItems._lastPageKey = pageKey;
-
         poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
-        await sleep(100);
+        await sleep(80);
       }
-
-      delete poolItems._lastPageKey;
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
         total += poolItems.length;
