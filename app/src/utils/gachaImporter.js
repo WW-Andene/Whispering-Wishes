@@ -142,16 +142,67 @@ export async function fetchAllPools(params, signal, onProgress) {
     onProgress?.(poolType, 'fetching', 0);
 
     try {
-      const json = await fetchPage(
-        { ...params, recordId: params.recordId || '' },
-        poolType, signal
-      );
-      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-      if (list.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = list;
-        total += list.length;
+      const poolItems = [];
+      let endTime = '';
+
+      for (let page = 0; page < 20; page++) {
+        if (signal?.aborted) break;
+
+        // Build body with optional time cursor
+        const body = {
+          playerId: String(params.playerId),
+          serverId: params.serverId || '',
+          cardPoolType: Number(poolType),
+          cardPoolId: params.cardPoolId || '',
+          languageCode: params.lang || 'en',
+          recordId: params.recordId || '',
+        };
+        if (endTime) body.endTime = endTime;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+        const res = await fetch('/api/gacha/record/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: mergedSignal,
+        });
+        clearTimeout(timeout);
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        if (json?.code !== 0) throw new Error(json?.message || `API error ${json?.code}`);
+
+        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+        if (!list.length) break;
+
+        // Check for duplicate page
+        if (poolItems.length > 0) {
+          const lastExisting = poolItems[poolItems.length - 1];
+          const firstNew = list[0];
+          if (lastExisting.time === firstNew.time && lastExisting.name === firstNew.name && lastExisting.resourceId === firstNew.resourceId) {
+            break; // Same data, stop
+          }
+        }
+
+        poolItems.push(...list);
+        onProgress?.(poolType, 'fetching', poolItems.length);
+
+        // Find oldest time in this batch for next cursor
+        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
+        if (!oldest?.time || oldest.time === endTime) break;
+        endTime = oldest.time;
+
+        await sleep(150);
       }
-      onProgress?.(poolType, 'done', list.length);
+
+      if (poolItems.length > 0) {
+        allPulls[POOL_LABELS[poolType]] = poolItems;
+        total += poolItems.length;
+      }
+      onProgress?.(poolType, 'done', poolItems.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
       onProgress?.(poolType, 'error', 0);
