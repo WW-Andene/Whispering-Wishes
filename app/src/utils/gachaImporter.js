@@ -137,106 +137,52 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
-  const allItems = [];
-  const seenPages = new Set();
+  const FETCH_TIMEOUT = 15000;
 
-  // Fetch all types mixed, paginate with recordId cursor
-  let currentRecordId = params.recordId || '';
-
-  for (let page = 0; page < 50; page++) {
+  // Minimal per-type: only playerId + recordId + cardPoolType
+  // (WuWa Tracker only asks users for player_id and record_id)
+  for (const poolType of POOLS) {
     if (signal?.aborted) break;
-    onProgress?.(page, 'fetching', total);
+    onProgress?.(poolType, 'fetching', 0);
 
-    const body = {
-      playerId: String(params.playerId),
-      serverId: params.serverId || '',
-      languageCode: params.lang || 'en',
-      cardPoolId: params.cardPoolId || '',
-      recordId: currentRecordId,
-    };
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-
-    let res;
     try {
-      res = await fetch('/api/gacha/record/query', {
+      const body = {
+        playerId: String(params.playerId),
+        recordId: params.recordId || '',
+        cardPoolType: Number(poolType),
+      };
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+      const res = await fetch('/api/gacha/record/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
         signal: mergedSignal,
       });
       clearTimeout(timeout);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const json = await res.json();
+      if (json?.code !== 0) throw new Error(json?.message || `API error ${json?.code}`);
+
+      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+      if (list.length > 0) {
+        allPulls[POOL_LABELS[poolType]] = list;
+        total += list.length;
+      }
+      onProgress?.(poolType, 'done', list.length);
     } catch (err) {
-      clearTimeout(timeout);
       if (err.name === 'AbortError') throw err;
-      throw new Error('Network error');
+      onProgress?.(poolType, 'error', 0);
     }
-
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}));
-      throw new Error(errBody?.error || `HTTP ${res.status}`);
-    }
-
-    const json = await res.json();
-    if (json?.code !== 0) throw new Error(json?.message || `API error (code ${json?.code})`);
-
-    const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-    if (!list.length) break;
-
-    // Detect wrap-around using full page hash
-    const pageSig = JSON.stringify(list);
-    if (seenPages.has(pageSig)) break;
-    seenPages.add(pageSig);
-
-    allItems.push(...list);
-    total = allItems.length;
-
-    // Next cursor: use "0" after first auth call
-    currentRecordId = '0';
 
     await sleep(150);
   }
 
-  // If single-page approach got nothing or same as before, fall back to per-type
-  if (total <= 774) {
-    // Reset and try per-type
-    const perTypePulls = {};
-    let perTypeTotal = 0;
-    for (const poolType of POOLS) {
-      if (signal?.aborted) break;
-      onProgress?.(poolType, 'fetching', 0);
-      try {
-        const json = await fetchPage(
-          { ...params, recordId: params.recordId || '' },
-          poolType, signal
-        );
-        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-        if (list.length > 0) {
-          perTypePulls[POOL_LABELS[poolType]] = list;
-          perTypeTotal += list.length;
-        }
-        onProgress?.(poolType, 'done', list.length);
-      } catch (err) {
-        if (err.name === 'AbortError') throw err;
-        onProgress?.(poolType, 'error', 0);
-      }
-    }
-    // Use whichever got more
-    if (perTypeTotal >= total) {
-      return { pulls: perTypePulls, total: perTypeTotal };
-    }
-  }
-
-  // Split allItems by pool type
-  for (const item of allItems) {
-    const label = POOL_LABELS[item.cardPoolType] || `Pool ${item.cardPoolType}`;
-    if (!allPulls[label]) allPulls[label] = [];
-    allPulls[label].push(item);
-  }
-
-  onProgress?.(0, 'done', total);
   return { pulls: allPulls, total };
 }
 
