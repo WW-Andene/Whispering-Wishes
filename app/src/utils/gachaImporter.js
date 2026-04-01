@@ -234,8 +234,31 @@ export async function fetchAllPools(params, signal, onProgress) {
       }
 
       if (poolItems.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = poolItems;
-        total += poolItems.length;
+        // Dedup overlapping pages by comparing serialized items
+        // Items are sorted by time desc. Pages overlap at boundaries.
+        // Use JSON of each item (minus _dedup fields) as fingerprint.
+        // Count occurrences: keep up to the max count from any single page.
+        const sorted = [...poolItems].sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        // Split back into the original pages to find per-page counts
+        // Simpler: just keep items whose position-based fingerprint is unique
+        // Fingerprint = time + index-within-same-timestamp
+        const deduped = [];
+        const timeIndexMap = new Map();
+        for (const item of sorted) {
+          const timeKey = item.time;
+          const idx = timeIndexMap.get(timeKey) || 0;
+          const key = `${timeKey}|${idx}`;
+          timeIndexMap.set(timeKey, idx + 1);
+          if (!deduped._seen) deduped._seen = new Set();
+          if (!deduped._seen.has(key)) {
+            deduped._seen.add(key);
+            deduped.push(item);
+          }
+        }
+        delete deduped._seen;
+        allPulls[POOL_LABELS[poolType]] = deduped;
+        total += deduped.length;
       }
       onProgress?.(poolType, 'done', poolItems.length);
     } catch (err) {
