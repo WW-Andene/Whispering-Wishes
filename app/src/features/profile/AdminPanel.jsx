@@ -129,7 +129,7 @@ export default function AdminPanel({
                     <div className="space-y-4">
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
                         <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
-                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Add custom URLs to override or add missing ones.</p>
+                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
                         
                         {/* Get unique names from history */}
                         {(() => {

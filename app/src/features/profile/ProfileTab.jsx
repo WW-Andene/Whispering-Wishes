@@ -1333,7 +1333,7 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.oledMode && (
-                  <p className="text-emerald-400 text-[10px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
+                  <p className="text-emerald-400 text-[10px] text-center">OLED mode active — saves battery on OLED displays</p>
                 )}
 
                 {/* Dyslexic Font Toggle */}
@@ -1383,7 +1383,7 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
-                  <p className="text-cyan-300 text-xs text-center">✓ Swipe left/right on content area to navigate</p>
+                  <p className="text-cyan-300 text-xs text-center">Swipe left or right on content area to navigate</p>
                 )}
 
                 {/* Animations Toggle — 3-state: off < on < full */}
@@ -1416,13 +1416,13 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off — All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
+                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On — Background effects, transitions and glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full — Double animation intensity, breathing on all characters</p>
                 )}
 
                 {/* Background Style Selector */}
@@ -1620,7 +1620,7 @@ export default function ProfileTab({
                     <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
                       <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
                       <p className={`text-[10px] ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
-                        {isDragOver ? 'Drop JSON file here' : 'Upload or drag & drop JSON file from wuwatracker'}
+                        {isDragOver ? 'Drop JSON file here' : 'Upload or drag and drop a JSON file'}
                       </p>
                     </div>
                     )}
@@ -1634,7 +1634,7 @@ export default function ProfileTab({
                     <textarea
                       value={pasteJsonText}
                       onChange={(e) => setPasteJsonText(e.target.value)}
-                      placeholder='Paste your wuwatracker JSON here...
+                      placeholder='Paste your JSON data here...
 
 Example: {"pulls":[...]}'
                       className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
@@ -1659,7 +1659,7 @@ Example: {"pulls":[...]}'
                       )}
                     </div>
                     <p className="text-gray-400 text-[10px]">
-                      Tip: In wuwatracker, go to Profile → Settings → Data → Export Pull History → Copy the JSON content
+                      Tip: In WuWa Tracker, go to Profile → Settings → Data → Export Pull History → Copy the JSON content.
                     </p>
                   </div>
                 )}
@@ -1667,7 +1667,7 @@ Example: {"pulls":[...]}'
                 {/* Direct Import Method — fetch from WuWa API */}
                 {importMethod === 'direct' && (
                   <div className="space-y-2">
-                    <p className="text-gray-400 text-[10px]">Paste your Convene History URL or enter IDs manually.</p>
+                    <p className="text-gray-400 text-[10px]">Paste your Convene History URL below or enter IDs manually.</p>
                     <input
                       type="text"
                       value={directUrl}
@@ -1888,7 +1888,7 @@ Example: {"pulls":[...]}'
                     {directStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">Import complete!</p>}
                     {directError && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
 
-                    <p className="text-gray-500 text-[10px]">Open Convene History in-game, copy the URL from the browser address bar. The URL expires after a few minutes.</p>
+                    <p className="text-gray-500 text-[10px]">Open Convene History in-game and copy the URL from the browser address bar. The URL expires after a few minutes.</p>
                   </div>
                 )}
               </CardBody>
@@ -1950,20 +1950,20 @@ Example: {"pulls":[...]}'
                   <p className="font-medium text-gray-400">Data & Privacy</p>
                   <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
                   <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
-                  <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
+                  <p>This app does not require any special device permissions. Data import relies on files you manually provide or URLs from the game.</p>
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Third-Party Services</p>
-                  <p>This app recommends wuwatracker.com for data export. We are not affiliated with wuwatracker.com and are not responsible for their services, data handling, or availability.</p>
+                  <p>This app may reference third-party tools such as WuWa Tracker. We are not affiliated with these services and are not responsible for their data handling or availability.</p>
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
-                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - Event timeline & pity tracking</li>
-                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - Banner countdowns</li>
+                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> — event timeline and pity tracking</li>
+                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> — banner countdowns</li>
                   </ul>
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>
