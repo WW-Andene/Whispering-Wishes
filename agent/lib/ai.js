@@ -30,7 +30,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, retries = AI.maxRetries } = {}) {
   const api = getClient();
 
-  // Rate limiting
+  // Rate limiting (Groq free tier: 30 req/min)
   const elapsed = Date.now() - lastCallTime;
   if (elapsed < AI.rateLimitMs) {
     await sleep(AI.rateLimitMs - elapsed);
@@ -42,6 +42,7 @@ async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, r
       const response = await api.chat.completions.create({
         model: AI.model,
         max_tokens: maxTokens,
+        temperature: 0.1, // Low temperature for consistent structured output
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -66,11 +67,33 @@ async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, r
         throw sanitized;
       }
       log.warn(`Groq API attempt ${attempt + 1} failed: ${err.message}`);
-      await sleep(3000 * (attempt + 1));
+      // Longer backoff for rate limit errors
+      const backoff = err.status === 429 ? 10000 * (attempt + 1) : 3000 * (attempt + 1);
+      await sleep(backoff);
     }
   }
 
   throw new Error('Groq API: exhausted all retries without response');
+}
+
+/**
+ * Ask for JSON specifically — retries on parse failure with a reminder prompt.
+ * More reliable than single-shot for Llama models.
+ */
+async function askForJSON(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, jsonRetries = 2 } = {}) {
+  for (let attempt = 0; attempt <= jsonRetries; attempt++) {
+    const prompt = attempt === 0
+      ? userPrompt
+      : `${userPrompt}\n\nIMPORTANT: Your previous response was not valid JSON. Return ONLY a valid JSON object/array. No text before or after. No markdown. Just JSON.`;
+
+    const response = await askClaude(systemPrompt, prompt, { maxTokens });
+    try {
+      return extractJSON(response);
+    } catch (err) {
+      if (attempt === jsonRetries) throw err;
+      log.warn(`JSON parse failed (attempt ${attempt + 1}), retrying...`);
+    }
+  }
 }
 
 /**
@@ -115,17 +138,18 @@ function extractJSON(text) {
 // TASK-SPECIFIC AI FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const SYSTEM_BASE = `You are a Wuthering Waves game data extraction agent. Your job is to read web page content from game wikis and community sites, then extract structured game data in exact JSON format.
+const SYSTEM_BASE = `You are WW-B, a Wuthering Waves game data extraction agent. You read web content and return ONLY valid JSON. Never include explanation or markdown — just the JSON object.
 
-CRITICAL RULES:
-- Only return valid JSON. No commentary, no markdown, no explanation — just the JSON object.
-- Use EXACT game terminology: "Resonators" (not "characters"), "Convene" (not "pulls"), "Astrite" (not "currency").
-- Elements are exactly: Fusion, Electro, Aero, Glacio, Havoc, Spectro
-- Weapon types are exactly: Sword, Broadblade, Pistols, Gauntlets, Rectifier
-- Roles are exactly: Main DPS, Sub DPS, Support, Healer
-- All dates must be ISO 8601 UTC format
-- If data is ambiguous or cannot be confirmed from the sources, set a "confidence" field to a value between 0 and 1
-- If you cannot find certain data, use null rather than guessing`;
+RULES:
+1. Output ONLY valid JSON. No text before or after.
+2. Use exact terminology: "Resonators", "Convene", "Astrite"
+3. Elements: Fusion, Electro, Aero, Glacio, Havoc, Spectro
+4. Weapons: Sword, Broadblade, Pistols, Gauntlets, Rectifier
+5. Roles: Main DPS, Sub DPS, Support, Healer
+6. Dates: ISO 8601 UTC format
+7. Set "confidence": 0.0-1.0 when uncertain
+8. Use null for unknown data — never guess
+9. Be conservative: only report changes you are highly confident about`;
 
 /**
  * Analyze current banner status from multiple web sources.
@@ -186,8 +210,7 @@ If the banner HAS changed (new phase, new characters, new dates), return:
 Convert all dates to UTC. European CET = UTC+1 (winter), CEST = UTC+2 (summer, after last Sunday of March).
 Return ONLY the JSON object.`;
 
-  const response = await askClaude(SYSTEM_BASE, prompt);
-  return extractJSON(response);
+  return await askForJSON(SYSTEM_BASE, prompt);
 }
 
 /**
@@ -238,8 +261,7 @@ TASK: For each event, determine if the end date needs updating. Return JSON:
 If no updates are needed, return {"updates": [], "newEvents": []}
 Convert all dates to UTC. Return ONLY the JSON object.`;
 
-  const response = await askClaude(SYSTEM_BASE, prompt);
-  return extractJSON(response);
+  return await askForJSON(SYSTEM_BASE, prompt);
 }
 
 /**
@@ -284,8 +306,7 @@ Return JSON:
 If no new characters are found, return {"newCharacters": []}
 Return ONLY the JSON object.`;
 
-  const response = await askClaude(SYSTEM_BASE, prompt);
-  return extractJSON(response);
+  return await askForJSON(SYSTEM_BASE, prompt);
 }
 
 /**
@@ -329,8 +350,7 @@ Return JSON:
 If no new weapons found, return {"newWeapons": []}
 Return ONLY the JSON object.`;
 
-  const response = await askClaude(SYSTEM_BASE, prompt);
-  return extractJSON(response);
+  return await askForJSON(SYSTEM_BASE, prompt);
 }
 
 /**
@@ -380,8 +400,7 @@ Return a JSON array of arrays:
 
 Return ONLY the JSON array.`;
 
-  const response = await askClaude(SYSTEM_BASE, prompt, { maxTokens: 2048 });
-  return extractJSON(response);
+  return await askForJSON(SYSTEM_BASE, prompt, { maxTokens: 2048 });
 }
 
-export { askClaude, extractJSON };
+export { askClaude, askForJSON, extractJSON };

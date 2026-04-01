@@ -22,7 +22,7 @@ import { analyzeBanners, analyzeEvents, analyzeNewCharacters, analyzeNewWeapons,
 import { readCurrentState, readDataFile } from './lib/reader.js';
 import { loadBuffer, getBuffer, flush, bumpVersion, updateCurrentBanners, addBannerHistoryEntry, updateEventDate, addCharacterEntry, addWeaponEntry, addToList, addToAllCharacters, addCombatDataEntry } from './lib/writer.js';
 import { validate } from './lib/validate.js';
-import { gitPublish } from './lib/git.js';
+import { gitPublish, initBranch, logAction } from './lib/git.js';
 import { processMissingImages, findMissingImages } from './lib/images.js';
 import { runSelfAudit, applyPatches, enrichData } from './lib/audit.js';
 import { loadMemory, saveMemory, recordRun, recordPatch, recordFailure, wasRecentlyPatched } from './lib/memory.js';
@@ -52,6 +52,7 @@ const ONLY = args.find(a => a.startsWith('--only='))?.split('=')[1] || null;
 // Global state for cleanup on any exit path
 let _memory = null;
 let _startTime = Date.now();
+let _runNumber = 0;
 
 // BUG 11 FIX: Catch unhandled rejections
 process.on('unhandledRejection', (err) => {
@@ -80,6 +81,14 @@ async function main() {
   }
   clearChangeLog();
   _startTime = Date.now();
+
+  // Create branch BEFORE any modifications
+  if (!DRY_RUN && !NO_GIT) {
+    const { branch, runNumber } = initBranch();
+    _runNumber = runNumber;
+    if (!branch) { log.error('Failed to create WW-B branch — aborting'); safeExit(1); }
+    logAction('init', `WW-B maintenance run #${runNumber} started`, { mode: MODE, dryRun: DRY_RUN });
+  }
 
   // Load persistent memory and skills
   _memory = loadMemory();
@@ -151,7 +160,7 @@ async function main() {
     closeStalePRs();
 
     const summary = getChangeLog().slice(0, 3).map(c => c.description).join('; ').slice(0, 72);
-    gitPublish(`${MODE}: ${summary}`);
+    gitPublish(`${MODE}: ${summary}`, _runNumber);
   }
 
   // Save memory and generate report
@@ -182,7 +191,8 @@ async function fullCycle(state, hoursLeft, memory) {
   if (!ONLY)                          { log.section('HEALTH CHECK');   await withCheckpoint(MODE, 'health', () => doHealthCheck(state, memory)); }
   if (!ONLY)                          { log.section('ENRICHMENT');     if (await withCheckpoint(MODE, 'enrichment', () => doEnrich(state))) c = true; }
   if (!ONLY || ONLY === 'audit')      { log.section('SELF-AUDIT');     if (await withCheckpoint(MODE, 'audit', () => doAudit(state, 'full', memory))) c = true; }
-  if (!ONLY)                          { log.section('EVOLUTION');      await withCheckpoint(MODE, 'evolution', () => doEvolution(state, memory)); }
+  // Evolution disabled — Llama models are not reliable enough for self-modifying code
+  // if (!ONLY) { log.section('EVOLUTION'); await withCheckpoint(MODE, 'evolution', () => doEvolution(state, memory)); }
   clearCheckpoint(); // Success — no need to resume
   return c;
 }
@@ -228,12 +238,13 @@ async function doBanners(state) {
   
   if (!ok.length) { log.warn('No banner sources'); return false; }
   const a = await analyzeBanners(ok, state.banners);
-  if (!a.changed) { log.ok('Banners current'); return false; }
-  if (a.confidence < THRESHOLDS.autoApplyConfidence) { log.warn(`Low confidence ${(a.confidence*100).toFixed(0)}%`); return false; }
+  if (!a.changed) { log.ok('Banners current'); logAction('banners', 'No changes detected'); return false; }
+  if (a.confidence < THRESHOLDS.autoApplyConfidence) { log.warn(`Low confidence ${(a.confidence*100).toFixed(0)}%`); logAction('banners', `Skipped — confidence ${(a.confidence*100).toFixed(0)}% below threshold`); return false; }
   if (DRY_RUN) { log.json('[DRY] Banner', a.banner); return false; }
   const old = state.banners;
   addBannerHistoryEntry({ version: old.version, phase: old.phase, characters: old.characters.map(c=>c.name), weapons: old.weapons.map(w=>w.name), startDate: old.startDate.split('T')[0], endDate: old.endDate.split('T')[0] });
   updateCurrentBanners(a.banner);
+  logAction('banners', `Updated to v${a.banner.version} p${a.banner.phase}`, { confidence: a.confidence, characters: a.banner.characters?.map(c => c.name) });
   return true;
 }
 
@@ -246,6 +257,7 @@ async function doEvents(state) {
     if (u.confidence >= THRESHOLDS.autoApplyConfidence) {
       if (DRY_RUN) { log.info(`[DRY] ${u.eventKey} → ${u.newValue}`); continue; }
       updateEventDate(u.eventKey, u.newValue); c = true;
+      logAction('events', `Updated ${u.eventKey} end date`, { old: u.oldValue, new: u.newValue, confidence: u.confidence });
     }
   }
   if (!c) log.ok('Events current');
@@ -436,9 +448,12 @@ async function doAudit(state, mode, memory = null) {
 
   const { applied } = applyPatches(fresh, THRESHOLDS.autoApplyConfidence);
 
-  // Record applied patches in memory
+  // Record applied patches in memory and action log
   if (memory) {
-    for (const p of applied) recordPatch(memory, p.description, p.file);
+    for (const p of applied) {
+      recordPatch(memory, p.description, p.file);
+      logAction('audit', `Applied patch: ${p.description}`, { file: p.file, confidence: p.confidence });
+    }
   }
 
   if (applied.some(p => p.file === 'appcore-data.js')) {

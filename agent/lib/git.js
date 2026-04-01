@@ -1,17 +1,62 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WW Update Agent — Git Operations
-// Handles branching, committing, and pushing updates.
+// Handles branching, committing, pushing, and action logging.
+// Branch: WW-B_maintenance_(x)  |  Action log: WW-B_comment_(x)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { execSync, execFileSync } from 'child_process';
+import { writeFileSync } from 'fs';
+import { resolve } from 'path';
 import { PATHS, GIT } from './config.js';
 import { log, getChangeLog } from './log.js';
 
 const exec = (cmd) => execSync(cmd, { cwd: PATHS.repoRoot, encoding: 'utf-8', stdio: 'pipe' }).trim();
 
-/**
- * Check if git is available and repo is clean-ish.
- */
+// ─── Action Log ─────────────────────────────────────────────────────────────
+// Accumulates all actions taken during a run, written to WW-B_comment_(x)
+const _actionLog = [];
+
+export function logAction(category, description, details = null) {
+  const entry = {
+    time: new Date().toISOString(),
+    category,
+    description,
+    ...(details ? { details } : {}),
+  };
+  _actionLog.push(entry);
+}
+
+function writeActionLog(runNumber) {
+  const filename = `WW-B_comment_${runNumber}.md`;
+  const filepath = resolve(PATHS.repoRoot, filename);
+
+  const changes = getChangeLog();
+  const lines = [
+    `# WW-B Maintenance Report #${runNumber}`,
+    `**Date:** ${new Date().toISOString()}`,
+    `**Agent:** WW-B (Groq / ${process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'})`,
+    '',
+    '## Summary',
+    `- **Actions taken:** ${_actionLog.length}`,
+    `- **Changes applied:** ${changes.length}`,
+    '',
+    '## Changes',
+    ...changes.map(c => `- [${c.category}] ${c.description} (confidence: ${c.confidence})`),
+    '',
+    '## Action Log',
+    ...(_actionLog.length ? _actionLog.map(a =>
+      `### ${a.time} — [${a.category}] ${a.description}${a.details ? '\n```\n' + (typeof a.details === 'string' ? a.details : JSON.stringify(a.details, null, 2)) + '\n```' : ''}`
+    ) : ['No actions taken.']),
+    '',
+  ];
+
+  writeFileSync(filepath, lines.join('\n'), 'utf-8');
+  log.ok(`Action log written: ${filename}`);
+  return filename;
+}
+
+// ─── Git Operations ─────────────────────────────────────────────────────────
+
 export function checkGitStatus() {
   try {
     exec('git status --short');
@@ -22,9 +67,6 @@ export function checkGitStatus() {
   }
 }
 
-/**
- * Configure git author for the agent.
- */
 export function configureGit() {
   try {
     exec(`git config user.name "${GIT.authorName}"`);
@@ -36,47 +78,62 @@ export function configureGit() {
 }
 
 /**
- * Create and checkout a new branch for this update.
- * Branch name format: auto-update/YYYY-MM-DD-HHMMSS
+ * Find the next run number by checking existing WW-B_maintenance_ branches.
  */
-export function createBranch() {
-  const now = new Date();
-  const stamp = now.toISOString().replace(/[:-]/g, '').replace('T', '-').slice(0, 15);
-  const branch = `${GIT.branchPrefix}${stamp}`;
-
+function getNextRunNumber() {
   try {
-    exec(`git checkout -b ${branch}`);
-    log.ok(`Created branch: ${branch}`);
-    return branch;
-  } catch (err) {
-    log.error(`Failed to create branch: ${err.message}`);
-    return null;
+    const branches = exec('git branch -a --list *WW-B_maintenance_*');
+    if (!branches) return 1;
+    const numbers = branches
+      .split('\n')
+      .map(b => b.trim().replace(/.*WW-B_maintenance_/, ''))
+      .map(n => parseInt(n, 10))
+      .filter(n => !isNaN(n));
+    return numbers.length ? Math.max(...numbers) + 1 : 1;
+  } catch {
+    return 1;
   }
 }
 
 /**
- * Stage and commit all changes.
- * Returns the commit hash or null on failure.
+ * Create and checkout WW-B_maintenance_(x) branch.
+ * Must be called BEFORE any modifications.
  */
-export function commitChanges(summary) {
+export function createBranch() {
+  const runNumber = getNextRunNumber();
+  const branch = `${GIT.branchPrefix}${runNumber}`;
+
   try {
-    // Stage the specific files we modify
+    exec(`git checkout -b ${branch}`);
+    log.ok(`Created branch: ${branch}`);
+    logAction('git', `Created branch ${branch}`);
+    return { branch, runNumber };
+  } catch (err) {
+    log.error(`Failed to create branch: ${err.message}`);
+    return { branch: null, runNumber };
+  }
+}
+
+export function commitChanges(summary, runNumber) {
+  try {
+    // Stage app files
     exec('git add whispering-wishes-replit/src/appcore-data.js');
     exec('git add whispering-wishes-replit/package.json');
     exec('git add whispering-wishes-replit/public/sw.js');
 
-    // Check if there's anything to commit
+    // Write and stage the action log
+    const commentFile = writeActionLog(runNumber);
+    exec(`git add ${commentFile}`);
+
     const status = exec('git status --short');
     if (!status) {
       log.info('No changes to commit');
       return null;
     }
 
-    // Build commit message from change log
     const changes = getChangeLog();
     const changeLines = changes.map(c => `  - [${c.category}] ${c.description} (${c.confidence})`).join('\n');
-
-    const message = `${GIT.commitPrefix} ${summary}\n\nChanges:\n${changeLines}\n\nGenerated by WW Update Agent at ${new Date().toISOString()}`;
+    const message = `${GIT.commitPrefix} ${summary}\n\nChanges:\n${changeLines}\n\nGenerated by WW-B at ${new Date().toISOString()}`;
 
     execFileSync('git', ['commit', '-m', message], {
       cwd: PATHS.repoRoot,
@@ -86,6 +143,7 @@ export function commitChanges(summary) {
 
     const hash = exec('git rev-parse --short HEAD');
     log.ok(`Committed: ${hash} — ${summary}`);
+    logAction('git', `Committed ${hash}: ${summary}`);
     return hash;
   } catch (err) {
     log.error(`Commit failed: ${err.message}`);
@@ -93,13 +151,11 @@ export function commitChanges(summary) {
   }
 }
 
-/**
- * Push the current branch to origin.
- */
 export function pushBranch(branch) {
   try {
     exec(`git push origin ${branch}`);
     log.ok(`Pushed branch: ${branch}`);
+    logAction('git', `Pushed ${branch}`);
     return true;
   } catch (err) {
     log.error(`Push failed: ${err.message}`);
@@ -109,17 +165,23 @@ export function pushBranch(branch) {
 
 /**
  * Full git workflow: branch → commit → push
+ * Branch is created BEFORE any work, commit happens AFTER.
  */
-export function gitPublish(summary) {
-  if (!checkGitStatus()) return { branch: null, commit: null, pushed: false };
+export function gitPublish(summary, runNumber) {
+  const commit = commitChanges(summary, runNumber);
+  if (!commit) return { commit: null, pushed: false };
 
-  configureGit();
-  const branch = createBranch();
-  if (!branch) return { branch: null, commit: null, pushed: false };
-
-  const commit = commitChanges(summary);
-  if (!commit) return { branch, commit: null, pushed: false };
-
+  const branch = `${GIT.branchPrefix}${runNumber}`;
   const pushed = pushBranch(branch);
-  return { branch, commit, pushed };
+  return { commit, pushed };
+}
+
+/**
+ * Create the working branch before any modifications.
+ * Returns { branch, runNumber } or exits on failure.
+ */
+export function initBranch() {
+  if (!checkGitStatus()) return { branch: null, runNumber: 0 };
+  configureGit();
+  return createBranch();
 }

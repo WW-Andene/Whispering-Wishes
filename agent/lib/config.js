@@ -85,22 +85,23 @@ export const SCRAPER = {
   timeout: 15000,
   // Delay between requests to the same domain (ms)
   politenessDelay: 2000,
-  // Maximum content length to send to Claude (chars) — trim beyond this
-  maxContentLength: 60000,
+  // Maximum content length to send to Groq (chars) — Llama 128K context, keep prompts lean
+  maxContentLength: 40000,
 };
 
 // ─── Git Configuration ───────────────────────────────────────────────────────
 export const GIT = {
-  authorName: process.env.GIT_AUTHOR_NAME || 'WW Update Agent',
+  authorName: process.env.GIT_AUTHOR_NAME || 'WW-B',
   authorEmail: process.env.GIT_AUTHOR_EMAIL || 'agent@whisperingwishes.app',
-  branchPrefix: 'auto-update/',
-  commitPrefix: '[auto-update]',
+  branchPrefix: 'WW-B_maintenance_',
+  commitPrefix: '[WW-B]',
 };
 
 // ─── Update Thresholds ───────────────────────────────────────────────────────
 export const THRESHOLDS = {
   // Minimum confidence (0-1) to apply an update without manual review
-  autoApplyConfidence: 0.85,
+  // Raised to 0.92 for Groq/Llama — less reliable than Claude, needs higher bar
+  autoApplyConfidence: 0.92,
   // Banner end date: how many hours before expiry to trigger update check
   bannerExpiryBufferHours: 48,
   // Event end date: how many hours before expiry to trigger recurring advance
