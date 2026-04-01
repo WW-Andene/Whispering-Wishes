@@ -143,7 +143,7 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
-      const known5Stars = new Set();
+      const seenItems = new Set();
       let endTime = '';
 
       for (let page = 0; page < 50; page++) {
@@ -178,33 +178,27 @@ export async function fetchAllPools(params, signal, onProgress) {
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        // Add items, track 5-stars. Stop when a 5-star repeats (overlap).
-        let hitOverlap = false;
+        // Add items. Use full item fingerprint to detect overlap.
+        let overlapCount = 0;
         for (const item of list) {
-          if (item.qualityLevel === 5) {
-            const key = `${item.name}|${item.time}|${item.resourceId}`;
-            if (known5Stars.has(key)) {
-              hitOverlap = true;
-              break;
-            }
-            known5Stars.add(key);
+          const key = JSON.stringify(item);
+          if (seenItems.has(key)) {
+            overlapCount++;
+          } else {
+            seenItems.add(key);
+            poolItems.push(item);
           }
-          poolItems.push(item);
         }
 
         onProgress?.(poolType, 'fetching', poolItems.length);
-        if (hitOverlap) break;
 
-        // Cursor: use oldest 5-star's time (unique landmark).
-        // Fall back to oldest item's time.
-        const fiveStars = list.filter(p => p.qualityLevel === 5);
-        const oldest5 = fiveStars.length > 0
-          ? fiveStars.reduce((min, item) => item.time < min.time ? item : min, fiveStars[0])
-          : null;
-        const oldestAny = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        const newEndTime = oldest5?.time || oldestAny?.time;
-        if (!newEndTime || newEndTime === endTime) break;
-        endTime = newEndTime;
+        // If most of the page was duplicates, we've fully overlapped
+        if (overlapCount > list.length / 2) break;
+
+        // Cursor: oldest item's time
+        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
+        if (!oldest?.time || oldest.time === endTime) break;
+        endTime = oldest.time;
 
         await sleep(150);
       }
