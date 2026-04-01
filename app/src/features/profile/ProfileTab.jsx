@@ -180,9 +180,10 @@ export default function ProfileTab({
         const dbg = result._debug || {};
         const errs = dbg.errors?.length ? dbg.errors[0] : null;
         const resp = dbg.firstResponse ? JSON.stringify(dbg.firstResponse) : null;
-        const sent = dbg.params ? `Sent: playerId=${dbg.params.playerId}, serverId=${(dbg.params.serverId||'').slice(0,8)}..., cardPoolId=${(dbg.params.cardPoolId||'').slice(0,8)}...` : '';
+        const p = dbg.params || {};
+        const sent = `playerId=${p.playerId}, serverId=${(p.serverId||'').slice(0,8)}..., recordId=${(p.recordId||'MISSING').slice(0,8)}..., cardPoolId=${(p.cardPoolId||'').slice(0,8)}...`;
         setDirectStatus('error');
-        setDirectError(errs || (resp ? `Response: ${resp.slice(0, 120)}` : 'No response') + (sent ? ` | ${sent}` : ''));
+        setDirectError(errs || (resp ? `${resp.slice(0, 100)}` : 'No response') + ` | ${sent}`);
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
