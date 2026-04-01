@@ -135,45 +135,51 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  */
 export async function fetchAllPools(params, signal, onProgress) {
   const MAX_PAGES = 50;
-  const allItems = [];
-  let currentRecordId = params.recordId || '';
-
-  // The API returns all pool types mixed together, paginated.
-  // Each page has ~165 items. Paginate by passing cardPoolType=1
-  // (the type doesn't filter - all types come back) with the
-  // last page's last item resourceId as the next recordId cursor.
-  for (let page = 0; page < MAX_PAGES; page++) {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-    onProgress?.(page + 1, 'fetching', allItems.length);
-
-    const pageParams = { ...params, recordId: currentRecordId };
-    const list = await fetchPage(pageParams, 1, signal);
-
-    if (!list.length) break;
-    allItems.push(...list);
-    onProgress?.(page + 1, 'done', allItems.length);
-
-    // Next page cursor: last item's resourceId becomes recordId
-    const lastItem = list[list.length - 1];
-    const nextCursor = String(lastItem?.resourceId ?? '');
-    if (!nextCursor || nextCursor === String(currentRecordId)) break;
-    currentRecordId = nextCursor;
-
-    await sleep(300);
-  }
-
-  // Split items by pool type
-  const pullsByPool = {};
+  const allPulls = {};
   let total = 0;
-  for (const item of allItems) {
-    const poolType = item.cardPoolType;
-    const label = POOL_LABELS[poolType] || `Pool ${poolType}`;
-    if (!pullsByPool[label]) pullsByPool[label] = [];
-    pullsByPool[label].push(item);
-    total++;
+
+  // API filters by cardPoolType and may paginate.
+  // First request uses URL's record_id as auth. Subsequent pages use "0".
+  for (const poolType of POOLS) {
+    if (signal?.aborted) break;
+    onProgress?.(poolType, 'fetching', 0);
+
+    try {
+      const poolItems = [];
+      let currentRecordId = params.recordId || '';
+
+      for (let page = 0; page < MAX_PAGES; page++) {
+        if (signal?.aborted) break;
+
+        const pageParams = { ...params, recordId: currentRecordId };
+        const list = await fetchPage(pageParams, poolType, signal);
+        if (!list.length) break;
+
+        poolItems.push(...list);
+
+        // Page 2+: use "0" as cursor to get next batch
+        if (currentRecordId !== '0') {
+          currentRecordId = '0';
+        } else {
+          // Already tried "0", no more pages
+          break;
+        }
+
+        await sleep(200);
+      }
+
+      if (poolItems.length > 0) {
+        allPulls[POOL_LABELS[poolType]] = poolItems;
+        total += poolItems.length;
+      }
+      onProgress?.(poolType, 'done', poolItems.length);
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      onProgress?.(poolType, 'error', 0);
+    }
   }
 
-  return { pulls: pullsByPool, total, _debug: { params } };
+  return { pulls: allPulls, total, _debug: { params } };
 }
 
 /**

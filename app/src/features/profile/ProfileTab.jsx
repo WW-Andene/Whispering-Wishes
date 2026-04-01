@@ -172,8 +172,8 @@ export default function ProfileTab({
       setDirectStatus('fetching');
       setDirectError('');
       setDirectProgress({});
-      const result = await fetchAllPools(params, directAbortRef.current.signal, (page, status, totalSoFar) => {
-        setDirectProgress({ page, status, total: totalSoFar });
+      const result = await fetchAllPools(params, directAbortRef.current.signal, (pool, status, count) => {
+        setDirectProgress(prev => ({ ...prev, [pool]: { status, count } }));
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {

@@ -1717,7 +1717,7 @@ function WhisperingWishesInner() {
           const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
 
           return {
-            id: p.id || `imp_${generateUniqueId()}_${i}`,
+            id: p.id || (p.resourceId && p.time ? `${p.resourceId}_${new Date(p.time).getTime()}` : `imp_${generateUniqueId()}_${i}`),
             name,
             rarity,
             pity: rarity === 5 ? pity : 0,
