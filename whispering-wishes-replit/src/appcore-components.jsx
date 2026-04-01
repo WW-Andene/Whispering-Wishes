@@ -5469,18 +5469,7 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 // [SECTION:ECHO-CHROMA-KEY]
 // Canvas-based background removal for echo images — replaces specific bg colors with transparency
 const echoChromaCache = new Map(); // url -> objectURL
-const ECHO_BG_COLORS = [
-  [41, 41, 42],    // #29292A — flat dark gray background
-  [121, 96, 155],  // #79609B — gradient purple zone
-  [106, 103, 104], // #6A6768 — gradient gray zone
-];
-const ECHO_BG_TOLERANCE = 38; // color distance threshold
-
-function colorDistSq(r, g, b, tr, tg, tb) {
-  const dr = r - tr, dg = g - tg, db = b - tb;
-  return dr * dr + dg * dg + db * db;
-}
-
+// Exact color match: #29292A (41, 41, 42)
 function chromaKeyEcho(img) {
   const w = img.naturalWidth, h = img.naturalHeight;
   const canvas = document.createElement('canvas');
@@ -5489,17 +5478,9 @@ function chromaKeyEcho(img) {
   ctx.drawImage(img, 0, 0, w, h);
   const imageData = ctx.getImageData(0, 0, w, h);
   const d = imageData.data;
-  const tolSq = ECHO_BG_TOLERANCE * ECHO_BG_TOLERANCE;
   for (let i = 0; i < d.length; i += 4) {
-    const r = d[i], g = d[i + 1], b = d[i + 2];
-    for (const [tr, tg, tb] of ECHO_BG_COLORS) {
-      const dist = colorDistSq(r, g, b, tr, tg, tb);
-      if (dist < tolSq) {
-        // Fade alpha based on how close the color is to the target
-        const ratio = Math.sqrt(dist) / ECHO_BG_TOLERANCE;
-        d[i + 3] = Math.round(d[i + 3] * ratio * ratio);
-        break;
-      }
+    if (d[i] === 41 && d[i + 1] === 41 && d[i + 2] === 42) {
+      d[i + 3] = 0;
     }
   }
   ctx.putImageData(imageData, 0, 0);
