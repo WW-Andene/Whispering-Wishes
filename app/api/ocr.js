@@ -1,7 +1,7 @@
 // Vercel serverless function — proxies OCR requests to Groq Vision API
 // API key stored server-side via GROQ_API_KEY environment variable
 
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB base64 limit
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB base64 limit (Groq allows up to 20MB)
 const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id'];
 
 export default async function handler(req, res) {
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: 'llama-3.2-90b-vision-preview',
+        model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         max_tokens: 300,
         messages: [{
           role: 'user',
