@@ -111,14 +111,10 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
 
     allPulls.push(...list);
 
-    // Use last item's ID as cursor for next page
+    // Use last item's resourceId as cursor for next page
     const lastItem = list[list.length - 1];
-    const nextCursor = lastItem?.recordId || lastItem?.record_id || lastItem?.id;
-    if (!nextCursor || nextCursor === currentRecordId) {
-      // Log the last item's keys so we can find the right field
-      console.log('[pagination] No cursor found. Last item keys:', Object.keys(lastItem || {}), 'values sample:', JSON.stringify(lastItem).slice(0, 200));
-      break;
-    }
+    const nextCursor = lastItem?.resourceId;
+    if (!nextCursor || nextCursor === currentRecordId) break;
     currentRecordId = nextCursor;
 
     await sleep(300);
