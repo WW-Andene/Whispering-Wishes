@@ -72,10 +72,9 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
     if (++pages > MAX_PAGES) break;
 
     const body = {
-      playerId: parseInt(params.playerId, 10) || params.playerId,
+      playerId: String(params.playerId),
       serverId: params.serverId || '',
-      cardPoolType: parseInt(cardPoolType, 10),
-      cardPoolId: params.cardPoolId || '',
+      cardPoolType: cardPoolType,
       languageCode: params.lang || 'en',
       recordId: cursorRecordId,
     };
@@ -109,12 +108,13 @@ export async function fetchPoolPulls(params, cardPoolType, signal) {
       throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
     }
 
-    const list = json?.data?.list;
+    // API may return data as array directly or nested in data.list
+    const list = Array.isArray(json?.data) ? json.data : json?.data?.list;
     if (!list || list.length === 0) {
       hasMore = false;
     } else {
       allPulls.push(...list);
-      cursorRecordId = list[list.length - 1].recordId;
+      cursorRecordId = list[list.length - 1].recordId || list[list.length - 1].record_id || '0';
       await sleep(300);
     }
   }
