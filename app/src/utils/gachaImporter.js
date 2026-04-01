@@ -266,5 +266,5 @@ export function convertToImportFormat(fetchResult) {
   // Sort by time ascending
   allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  return JSON.stringify(allPulls);
+  return JSON.stringify({ pulls: allPulls, uid: fetchResult.playerId || '' });
 }
