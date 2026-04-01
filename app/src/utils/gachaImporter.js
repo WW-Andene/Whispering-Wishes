@@ -143,6 +143,7 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
+      const known5Stars = new Set();
       let endTime = '';
 
       for (let page = 0; page < 50; page++) {
@@ -177,82 +178,33 @@ export async function fetchAllPools(params, signal, onProgress) {
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        poolItems.push(...list);
-        onProgress?.(poolType, 'fetching', poolItems.length);
-
-        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) {
-          // Stuck - build a set of 5-star items we already have as stop markers
-          const known5Stars = new Set(
-            poolItems.filter(p => p.qualityLevel === 5).map(p => `${p.name}|${p.time}`)
-          );
-
-          // Jump back in monthly chunks to get older data
-          const stuckTime = new Date(oldest.time);
-          let jumpEndTime = '';
-          for (let jump = 1; jump <= 24; jump++) {
-            if (signal?.aborted) break;
-            const jumpDate = new Date(stuckTime);
-            jumpDate.setMonth(jumpDate.getMonth() - jump);
-
-            // Use endTime pagination within each jump
-            jumpEndTime = jumpDate.toISOString();
-            let jumpDone = false;
-
-            for (let jp = 0; jp < 10; jp++) {
-              if (signal?.aborted || jumpDone) break;
-              const jumpBody = {
-                playerId: String(params.playerId),
-                serverId: params.serverId || '',
-                cardPoolType: Number(poolType),
-                cardPoolId: params.cardPoolId || '',
-                languageCode: params.lang || 'en',
-                recordId: params.recordId || '',
-                endTime: jumpEndTime,
-              };
-              const c2 = new AbortController();
-              const t2 = setTimeout(() => c2.abort(), 15000);
-              const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
-              try {
-                const r2 = await fetch('/api/gacha/record/query', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(jumpBody),
-                  signal: s2,
-                });
-                clearTimeout(t2);
-                if (!r2.ok) { jumpDone = true; break; }
-                const j2 = await r2.json();
-                if (j2?.code !== 0) { jumpDone = true; break; }
-                const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
-                if (!l2.length) break;
-
-                // Add items, but stop if we hit a known 5-star (overlap detected)
-                let hitKnown = false;
-                for (const item of l2) {
-                  if (item.qualityLevel === 5) {
-                    const key = `${item.name}|${item.time}`;
-                    if (known5Stars.has(key)) {
-                      hitKnown = true;
-                      break;
-                    }
-                  }
-                  poolItems.push(item);
-                }
-                onProgress?.(poolType, 'fetching', poolItems.length);
-                if (hitKnown) { jumpDone = true; break; }
-
-                const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
-                if (!o2?.time || o2.time === jumpEndTime) break;
-                jumpEndTime = o2.time;
-              } catch { clearTimeout(t2); jumpDone = true; break; }
-              await sleep(150);
+        // Add items, track 5-stars. Stop when a 5-star repeats (overlap).
+        let hitOverlap = false;
+        for (const item of list) {
+          if (item.qualityLevel === 5) {
+            const key = `${item.name}|${item.time}|${item.resourceId}`;
+            if (known5Stars.has(key)) {
+              hitOverlap = true;
+              break;
             }
-            if (jumpDone) break;
+            known5Stars.add(key);
           }
-          break; // Done with this pool type
+          poolItems.push(item);
         }
-        endTime = oldest.time;
+
+        onProgress?.(poolType, 'fetching', poolItems.length);
+        if (hitOverlap) break;
+
+        // Cursor: use oldest 5-star's time (unique landmark).
+        // Fall back to oldest item's time.
+        const fiveStars = list.filter(p => p.qualityLevel === 5);
+        const oldest5 = fiveStars.length > 0
+          ? fiveStars.reduce((min, item) => item.time < min.time ? item : min, fiveStars[0])
+          : null;
+        const oldestAny = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
+        const newEndTime = oldest5?.time || oldestAny?.time;
+        if (!newEndTime || newEndTime === endTime) break;
+        endTime = newEndTime;
 
         await sleep(150);
       }
