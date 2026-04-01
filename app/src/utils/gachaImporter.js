@@ -214,8 +214,13 @@ export async function fetchAllPools(params, signal, onProgress) {
               if (j2?.code !== 0) break;
               const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
               if (!l2.length) continue; // This month empty, try older
-              poolItems.push(...l2);
-              onProgress?.(poolType, 'fetching', poolItems.length);
+              // Only add items strictly older than the stuck point
+              const stuckIso = stuckTime.toISOString();
+              const newItems = l2.filter(item => item.time < stuckIso);
+              if (newItems.length > 0) {
+                poolItems.push(...newItems);
+                onProgress?.(poolType, 'fetching', poolItems.length);
+              }
               // Continue backward from this new batch
               const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
               if (o2?.time) {
@@ -234,23 +239,8 @@ export async function fetchAllPools(params, signal, onProgress) {
       }
 
       if (poolItems.length > 0) {
-        // Dedup: sort by time desc, assign index per timestamp,
-        // remove items with duplicate time+index keys
-        const sorted = [...poolItems].sort((a, b) => new Date(b.time) - new Date(a.time));
-        const deduped = [];
-        const seen = new Set();
-        const timeIndexMap = new Map();
-        for (const item of sorted) {
-          const idx = timeIndexMap.get(item.time) || 0;
-          timeIndexMap.set(item.time, idx + 1);
-          const key = `${item.time}|${idx}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            deduped.push(item);
-          }
-        }
-        allPulls[POOL_LABELS[poolType]] = deduped;
-        total += deduped.length;
+        allPulls[POOL_LABELS[poolType]] = poolItems;
+        total += poolItems.length;
       }
       onProgress?.(poolType, 'done', poolItems.length);
     } catch (err) {
