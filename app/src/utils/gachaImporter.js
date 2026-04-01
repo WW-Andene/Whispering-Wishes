@@ -167,7 +167,7 @@ export async function fetchAllPools(baseUrl, signal, onProgress) {
  * @returns {Promise<string>} base64-encoded JPEG
  */
 export function compressImage(source) {
-  const MAX = 1200;
+  const MAX = 800;
 
   function scaleCanvas(srcCanvas) {
     let { width, height } = srcCanvas;
@@ -180,7 +180,7 @@ export function compressImage(source) {
     out.width = width;
     out.height = height;
     out.getContext('2d').drawImage(srcCanvas, 0, 0, width, height);
-    return out.toDataURL('image/jpeg', 0.85).split(',')[1];
+    return out.toDataURL('image/jpeg', 0.6).split(',')[1];
   }
 
   if (source instanceof HTMLCanvasElement) {
