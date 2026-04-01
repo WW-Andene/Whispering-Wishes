@@ -201,22 +201,67 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         // Cursor: oldest item's time
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time) break;
-        if (oldest.time === endTime) {
-          // Stuck - jump back monthly to get past the boundary
+        if (!oldest?.time || oldest.time === endTime) {
+          // Stuck - fetch older records by jumping endTime back monthly
           const stuckDate = new Date(oldest.time);
-          let jumped = false;
           for (let m = 1; m <= 24; m++) {
+            if (signal?.aborted) break;
             const jumpDate = new Date(stuckDate);
             jumpDate.setMonth(jumpDate.getMonth() - m);
-            endTime = jumpDate.toISOString();
-            jumped = true;
-            break;
+            const jumpBody = {
+              playerId: String(params.playerId),
+              serverId: params.serverId || '',
+              cardPoolType: Number(poolType),
+              cardPoolId: params.cardPoolId || '',
+              languageCode: params.lang || 'en',
+              recordId: params.recordId || '',
+              endTime: jumpDate.toISOString(),
+            };
+            const c2 = new AbortController();
+            const t2 = setTimeout(() => c2.abort(), 15000);
+            const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
+            try {
+              const r2 = await fetch('/api/gacha/record/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jumpBody),
+                signal: s2,
+              });
+              clearTimeout(t2);
+              if (!r2.ok) break;
+              const j2 = await r2.json();
+              if (j2?.code !== 0) break;
+              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
+              if (!l2.length) continue;
+              // Dedup with per-page counter
+              const jumpCounter = {};
+              let jumpNew = 0;
+              for (const item of l2) {
+                const base = `${item.cardPoolType}|${item.resourceId}|${item.qualityLevel}|${item.name}|${item.time}`;
+                const idx = jumpCounter[base] || 0;
+                jumpCounter[base] = idx + 1;
+                const key = `${base}|${idx}`;
+                if (!globalSeen.has(key)) {
+                  globalSeen.add(key);
+                  poolItems.push(item);
+                  jumpNew++;
+                }
+              }
+              onProgress?.(poolType, 'fetching', poolItems.length);
+              if (jumpNew === 0) continue;
+              // Resume normal pagination from this batch
+              const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
+              if (o2?.time) {
+                endTime = o2.time;
+                break;
+              }
+            } catch { clearTimeout(t2); break; }
+            await sleep(150);
           }
-          if (!jumped) break;
-        } else {
-          endTime = oldest.time;
+          if (endTime === oldest.time) break;
+          continue;
         }
+        endTime = oldest.time;
 
         await sleep(150);
       }
