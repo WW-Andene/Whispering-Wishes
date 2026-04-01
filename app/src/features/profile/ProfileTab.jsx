@@ -1864,7 +1864,7 @@ Example: {"pulls":[...]}'
                       <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2 py-3">
                           <Loader size={14} className="text-emerald-400 animate-spin" />
-                          <span className="text-emerald-400 text-xs">Fetching Convenes...</span>
+                          <span className="text-emerald-400 text-xs">Importing Convenes...</span>
                         </div>
                         <div className="grid grid-cols-4 gap-1">
                           {Object.entries(directProgress).map(([pool, info]) => (
@@ -1881,7 +1881,7 @@ Example: {"pulls":[...]}'
                         disabled={!directPlayerId.trim()}
                         className={`kuro-btn w-full py-2 text-xs ${directPlayerId.trim() ? 'active-emerald' : 'opacity-50'}`}
                       >
-                        <Download size={14} className="inline mr-1.5" />Import from Server
+                        <Download size={14} className="inline mr-1.5" />Import
                       </button>
                     )}
 

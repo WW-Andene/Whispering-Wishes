@@ -6056,7 +6056,7 @@ const IMPORT_GUIDE_DATA = {
       <>Open <span className="text-gray-100 font-medium">PowerShell</span> and paste this command:</>,
       <><code className="block bg-black/40 rounded px-2 py-1.5 text-[9px] font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
       <>The URL is <span className="text-gray-100 font-medium">automatically copied</span> to your clipboard</>,
-      <>Paste it in the <span className="text-gray-100 font-medium">URL field below</span> → Click Fetch</>,
+      <>Paste it in the <span className="text-gray-100 font-medium">URL field below</span> → Click Import</>,
     ],
     footer: 'The script only reads game logs — it does not modify anything.',
   },
@@ -6065,7 +6065,7 @@ const IMPORT_GUIDE_DATA = {
     steps: [
       <>Open WuWa → Convene → History → tap <span className="text-gray-100 font-medium">"View Details"</span></>,
       <>The in-game browser opens — copy the <span className="text-gray-100 font-medium">full URL</span> from the address bar</>,
-      <>Paste it in the <span className="text-gray-100 font-medium">URL field below</span> → Click Fetch</>,
+      <>Paste it in the <span className="text-gray-100 font-medium">URL field below</span> → Click Import</>,
     ],
     footer: 'URL expires after a few minutes — use it quickly.',
   },
