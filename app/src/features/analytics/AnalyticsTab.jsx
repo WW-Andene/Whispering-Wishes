@@ -408,7 +408,7 @@ export default function AnalyticsTab({
                 <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel="Leaderboard consent" centered>
                   <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
                     <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
-                      <h3 className="text-white font-semibold text-sm">Leaderboard — Data Sharing Notice</h3>
+                      <h3 className="text-white font-semibold text-sm">Leaderboard - Data Sharing Notice</h3>
                       <div className="text-gray-300 text-xs space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-400">
@@ -660,7 +660,7 @@ export default function AnalyticsTab({
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
                                   {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed — pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed - pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>

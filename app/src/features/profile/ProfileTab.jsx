@@ -574,7 +574,7 @@ export default function ProfileTab({
     const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
     const legacyHash = await hashPasswordSHA256(adminPassword);
     if (!saltedHash && !legacyHash && !pbkdf2Hash) {
-      toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
+      toast?.addToast?.('Hashing unavailable. HTTPS required', 'error');
       return;
     }
     if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH) || constantTimeCompare(saltedHash, ADMIN_HASH) || constantTimeCompare(legacyHash, ADMIN_HASH)) {
@@ -1224,7 +1224,7 @@ export default function ProfileTab({
       },'image/png');
     } catch (e) {
       console.error('ID card export failed (possible CORS tainted canvas):', e);
-      toast?.addToast?.('Failed to save ID card — try a different profile image', 'error');
+      toast?.addToast?.('Failed to save ID card. Try a different profile image', 'error');
     }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies, getImageFraming]);
 
@@ -1333,7 +1333,7 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.oledMode && (
-                  <p className="text-emerald-400 text-[10px] text-center">OLED mode active — saves battery on OLED displays</p>
+                  <p className="text-emerald-400 text-[10px] text-center">OLED mode active. Saves battery on OLED displays</p>
                 )}
 
                 {/* Dyslexic Font Toggle */}
@@ -1344,7 +1344,7 @@ export default function ProfileTab({
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">Accessibility Font</div>
-                      <div className="text-gray-400 text-[10px]">OpenDyslexic — easier to read</div>
+                      <div className="text-gray-400 text-[10px]">OpenDyslexic - easier to read</div>
                     </div>
                   </div>
                   <button
@@ -1416,13 +1416,13 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off — All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On — Background effects, transitions and glow</p>
+                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - Background effects, transitions and glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full — Double animation intensity, breathing on all characters</p>
+                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
                 )}
 
                 {/* Background Style Selector */}
@@ -1530,7 +1530,7 @@ export default function ProfileTab({
                   </div>
                   {visualSettings.theme !== 'default' && (() => {
                     const t = CHARACTER_THEMES.find(th => th.id === visualSettings.theme);
-                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} — {t.element} theme active</p> : null;
+                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} - {t.element} theme active</p> : null;
                   })()}
                 </div>
 
@@ -1614,7 +1614,7 @@ export default function ProfileTab({
                           <span className="text-yellow-400/80 text-[10px] font-medium animate-pulse">Processing…</span>
                         </div>
                         <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
-                        <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
+                        <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB - parsing...</p>
                       </div>
                     ) : (
                     <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
@@ -1962,8 +1962,8 @@ Example: {"pulls":[...]}'
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
-                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> — event timeline and pity tracking</li>
-                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> — banner countdowns</li>
+                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - event timeline and pity tracking</li>
+                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - banner countdowns</li>
                   </ul>
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>

@@ -246,7 +246,7 @@ export async function extractIdsFromImage(base64Image) {
     ids[key] = (typeof val === 'string' && val !== 'null' && val !== 'NULL' && val.trim()) ? val.trim() : null;
   }
   if (!ids.player_id) {
-    throw new Error('player_id not found — try a clearer screenshot.');
+    throw new Error('player_id not found. Try a clearer screenshot.');
   }
   return ids;
 }

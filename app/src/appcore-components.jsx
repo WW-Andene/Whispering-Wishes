@@ -6058,7 +6058,7 @@ const IMPORT_GUIDE_DATA = {
       <>The URL is <span className="text-gray-100 font-medium">automatically copied</span> to your clipboard</>,
       <>Paste it in the <span className="text-gray-100 font-medium">URL field</span> below and click <span className="text-gray-100 font-medium">Import</span></>,
     ],
-    footer: 'This script only reads game logs — it does not modify anything.',
+    footer: 'This script only reads game logs. It does not modify anything.',
   },
   android: {
     title: 'Android (11+)',
@@ -6067,7 +6067,7 @@ const IMPORT_GUIDE_DATA = {
       <>Copy the <span className="text-gray-100 font-medium">full URL</span> from the in-game browser address bar</>,
       <>Paste it in the <span className="text-gray-100 font-medium">URL field</span> below and click <span className="text-gray-100 font-medium">Import</span></>,
     ],
-    footer: 'The URL expires after a few minutes — use it quickly.',
+    footer: 'The URL expires after a few minutes. Use it quickly.',
   },
   ps5: {
     title: 'PS5',

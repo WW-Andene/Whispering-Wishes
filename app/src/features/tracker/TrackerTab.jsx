@@ -414,7 +414,7 @@ export default function TrackerTab({
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
                     <div className="text-center text-gray-500 text-xs py-6">
-                      {allPulls.length === 0 ? 'No pull history — import your data in the Profile tab.' : `No pulls match your filters.`}
+                      {allPulls.length === 0 ? 'No pull history. Import your data in the Profile tab.' : `No pulls match your filters.`}
                     </div>
                   ) : (
                     filteredPulls.map((pull, idx) => {
