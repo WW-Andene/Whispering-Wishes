@@ -1711,65 +1711,73 @@ Example: {"pulls":[...]}'
                       }}>
                         <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
 
-                        {/* Dim outside scan frame */}
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 18%, transparent 22%, transparent 72%, rgba(0,0,0,0.1) 76%, rgba(0,0,0,0.55) 100%)' }} />
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.35) 100%)' }} />
+                        {/* Dark overlay outside scan zone */}
+                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(10,14,22,0.85) 0%, rgba(10,14,22,0.4) 18%, transparent 23%, transparent 71%, rgba(10,14,22,0.4) 76%, rgba(10,14,22,0.85) 100%)' }} />
+                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(10,14,22,0.6) 0%, transparent 8%, transparent 92%, rgba(10,14,22,0.6) 100%)' }} />
 
-                        {/* Scan frame — kuro-card corner decorations */}
+                        {/* Scan zone — triple kuro-card border (outer/middle/inner) */}
                         <div className="absolute pointer-events-none" style={{ top: '20%', left: '5%', right: '5%', bottom: '25%' }}>
-                          {/* Top-right corner — kuro-card ::before style */}
-                          <div className="absolute top-2 right-2 w-3 h-3" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 4px 0 0', opacity: 0.85 }} />
-                          {/* Bottom-left corner — kuro-card ::after style */}
-                          <div className="absolute bottom-2 left-2 w-3 h-3" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 0 4px', opacity: 0.85 }} />
-                          {/* Top-left corner */}
-                          <div className="absolute top-2 left-2 w-3 h-3" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '4px 0 0 0', opacity: 0.85 }} />
-                          {/* Bottom-right corner */}
-                          <div className="absolute bottom-2 right-2 w-3 h-3" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 4px 0', opacity: 0.85 }} />
-                          {/* Frame border — subtle kuro-card style */}
-                          <div className="absolute inset-0 rounded-2xl" style={{ border: '1px solid var(--border-default, rgba(255,255,255,0.06))', opacity: 0.7 }} />
+                          {/* Outer border */}
+                          <div className="absolute inset-0 rounded-2xl" style={{ border: '1px solid rgba(255,255,255,0.04)' }} />
+                          {/* Middle border */}
+                          <div className="absolute rounded-2xl" style={{ inset: 3, border: '1px solid rgba(255,255,255,0.08)' }} />
+                          {/* Inner border */}
+                          <div className="absolute rounded-xl" style={{ inset: 6, border: '1px solid rgba(255,255,255,0.14)' }} />
+
+                          {/* Crosshair target in center */}
+                          <div className="absolute" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                            {/* Horizontal line */}
+                            <div style={{ position: 'absolute', width: 24, height: '0.5px', background: 'rgba(255,255,255,0.25)', top: 0, left: -12 }} />
+                            {/* Vertical line */}
+                            <div style={{ position: 'absolute', width: '0.5px', height: 24, background: 'rgba(255,255,255,0.25)', top: -12, left: 0 }} />
+                            {/* Center square */}
+                            <div style={{ position: 'absolute', width: 8, height: 8, border: '0.5px solid rgba(255,255,255,0.3)', top: -4, left: -4 }} />
+                          </div>
+
                           {/* Sweep beam */}
-                          <div className="absolute left-0 right-0 h-[1px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(237,175,24,0.35) 50%, transparent 95%)' }} />
+                          <div className="absolute left-0 right-0 h-[0.5px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.2) 50%, transparent 95%)' }} />
                         </div>
 
                         {/* Instruction */}
                         <div className="absolute left-0 right-0 text-center pointer-events-none" style={{ bottom: '27%' }}>
-                          <p className="text-white/35 text-[9px] font-medium tracking-wider uppercase drop-shadow-lg">Align URL within frame</p>
+                          <p className="text-white/25 text-[8px] font-medium tracking-wider uppercase drop-shadow-lg">Align URL within frame</p>
                         </div>
 
-                        {/* Top bar */}
+                        {/* Top bar — dark kuro style */}
                         <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))', paddingBottom: '8px' }}>
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg overflow-hidden shadow-lg" style={{ border: '1px solid rgba(237,175,24,0.25)' }}>
+                            <div className="w-7 h-7 rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                               <img src={HEADER_ICON} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div>
-                              <p className="text-white/90 text-[10px] font-semibold tracking-wide drop-shadow-lg">Convene Scanner</p>
-                              <p className="text-[7px] uppercase drop-shadow-lg" style={{ color: 'rgba(237,175,24,0.5)', letterSpacing: '0.15em' }}>Whispering Wishes</p>
+                              <p className="text-white/70 text-[10px] font-semibold tracking-wide drop-shadow-lg">Convene Scanner</p>
+                              <p className="text-white/20 text-[7px] uppercase drop-shadow-lg" style={{ letterSpacing: '0.15em' }}>Whispering Wishes</p>
                             </div>
                           </div>
-                          <button onClick={closeDirectCamera} className="kuro-btn min-w-[40px] min-h-[40px] !rounded-xl flex items-center justify-center !p-0 pointer-events-auto" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <X size={16} className="text-gray-300" />
+                          <button onClick={closeDirectCamera} className="pointer-events-auto flex items-center justify-center" style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(10,14,22,0.6)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <X size={14} className="text-white/50" />
                           </button>
                         </div>
 
-                        {/* Capture button — round, transparent, kuro-card outer edge */}
+                        {/* Capture button — shimmer ring, no corners */}
                         <div className="absolute bottom-0 left-0 right-0 flex justify-center" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
-                          <button onClick={captureDirectCamera} className="relative pointer-events-auto active:scale-90 transition-transform" style={{ width: 72, height: 72 }}>
-                            {/* Outer ring — kuro-card border style */}
-                            <div className="absolute inset-0 rounded-full" style={{ border: '1px solid var(--border-default, rgba(255,255,255,0.06))', background: 'var(--bg-card, rgba(10,14,22,0.5))', backdropFilter: 'blur(12px)' }}>
-                              {/* Kuro corner decorations on the circle */}
-                              <div className="absolute top-1 right-1 w-2.5 h-2.5" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 4px 0 0', opacity: 0.85 }} />
-                              <div className="absolute bottom-1 left-1 w-2.5 h-2.5" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 0 4px', opacity: 0.85 }} />
-                            </div>
-                            {/* Inner icon */}
+                          <button onClick={captureDirectCamera} className="relative pointer-events-auto active:scale-90 transition-transform" style={{ width: 68, height: 68 }}>
+                            {/* Outer shimmer ring */}
+                            <div className="absolute inset-0 rounded-full" style={{ border: '1.5px solid rgba(255,255,255,0.1)', background: 'rgba(10,14,22,0.5)', backdropFilter: 'blur(12px)' }} />
+                            {/* Shimmer highlight on ring */}
+                            <div className="absolute inset-0 rounded-full" style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%, transparent 100%)', animation: 'captureShimmer 3s linear infinite' }} />
+                            {/* Inner ring */}
+                            <div className="absolute rounded-full" style={{ inset: 4, border: '1px solid rgba(255,255,255,0.06)' }} />
+                            {/* Icon */}
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <Camera size={22} className="text-white/80" />
+                              <Camera size={20} className="text-white/60" />
                             </div>
                           </button>
                         </div>
 
                         <style>{`
                           @keyframes camScan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
+                          @keyframes captureShimmer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                         `}</style>
                       </div>,
                       document.body
