@@ -135,7 +135,6 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * @returns {Promise<{ pulls: Object, total: number }>}
  */
 export async function fetchAllPools(params, signal, onProgress) {
-  const MAX_PAGES = 50;
   const allPulls = {};
   let total = 0;
 
@@ -145,28 +144,12 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
-      let currentRecordId = params.recordId || '';
 
-      for (let page = 0; page < MAX_PAGES; page++) {
-        if (signal?.aborted) break;
-
-        const pageParams = { ...params, recordId: currentRecordId };
-        const json = await fetchPage(pageParams, poolType, signal);
-        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-
-        if (!list.length) break;
-
-        const prevCount = poolItems.length;
-        poolItems.push(...list);
-
-        // First call uses auth recordId, all subsequent use "0"
-        currentRecordId = '0';
-
-        // If we got the same count as before or very few items, no more pages
-        if (list.length < 5) break;
-
-        await sleep(250);
-      }
+      // One call per pool type - API returns all available records at once
+      const pageParams = { ...params, recordId: params.recordId || '' };
+      const json = await fetchPage(pageParams, poolType, signal);
+      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+      poolItems.push(...list);
 
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
