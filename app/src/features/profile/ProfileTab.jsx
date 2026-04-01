@@ -1566,10 +1566,10 @@ export default function ProfileTab({
             <Card>
               <CardHeader>Import Convene History</CardHeader>
               <CardBody className="space-y-3">
-                <p className="text-gray-300 text-[10px]">Import your Convene history from wuwatracker or compatible trackers.</p>
+                <p className="text-gray-300 text-[10px]">Import your Convene history directly from the game.</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
-                    <button key={k} onClick={() => setImportPlatform(k)} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
+                    <button key={k} onClick={() => { setImportPlatform(k); if (k === 'pc' || k === 'android') setImportMethod('direct'); if (k === 'ps5') setImportMethod('direct'); }} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
                       <Icon size={16} className="mx-auto mb-0.5" /><div className="text-[10px]">{l}</div>
                     </button>
                   ))}
