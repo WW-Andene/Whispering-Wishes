@@ -302,7 +302,8 @@ export default function ProfileTab({
       standardCharImg: b.standardCharBannerImage || '',
       standardWeapImg: b.standardWeapBannerImage || '',
       wwImg: b.whimperingWastesImage || '',
-      dpImg: b.doubledPawnsImage || '',
+      emImg: b.endstateMatrixImage || '',
+      ppImg: b.pioneerPodcastImage || '',
       toaImg: b.towerOfAdversityImage || '',
       irImg: b.illusiveRealmImage || '',
       drImg: b.dailyResetImage || '',
@@ -312,7 +313,7 @@ export default function ProfileTab({
   }, []);
   const [bannerForm, setBannerForm] = useState(() => buildBannerForm(activeBanners));
   const updateBannerForm = useCallback((field, value) => {
-    const imageFields = ['standardCharImg', 'standardWeapImg', 'wwImg', 'dpImg', 'toaImg', 'irImg', 'drImg', 'thImg', 'wbImg'];
+    const imageFields = ['standardCharImg', 'standardWeapImg', 'wwImg', 'emImg', 'ppImg', 'toaImg', 'irImg', 'drImg', 'thImg', 'wbImg'];
     if (imageFields.includes(field) || field.startsWith('charImages.') || field.startsWith('weapImages.')) {
       if (value && !isAllowedImageUrl(value)) return;
     }

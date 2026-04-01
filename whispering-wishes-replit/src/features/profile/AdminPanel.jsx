@@ -648,14 +648,14 @@ export default function AdminPanel({
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-300 text-[10px] w-28">Doubled Pawns</span>
+                        <span className="text-gray-300 text-[10px] w-28">Endstate Matrix</span>
                         <input
                           type="text"
                           placeholder="https://i.ibb.co/..."
-                          value={bannerForm.dpImg}
-                          onChange={(e) => updateBannerForm('dpImg', e.target.value)}
+                          value={bannerForm.emImg}
+                          onChange={(e) => updateBannerForm('emImg', e.target.value)}
                           className="kuro-input flex-1 text-[10px] py-1"
-                          aria-label="Doubled Pawns image URL"
+                          aria-label="Endstate Matrix image URL"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -736,8 +736,8 @@ export default function AdminPanel({
                           if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
                           if (endDate <= startDate) throw new Error('End date must be after start date');
                           // P10-FIX: Validate all static image URLs too (Step 6 audit)
-                          [bannerForm.standardCharImg, bannerForm.standardWeapImg, bannerForm.wwImg, bannerForm.dpImg, bannerForm.toaImg, bannerForm.irImg, bannerForm.drImg].forEach((url, i) => {
-                            const labels = ['Standard char banner', 'Standard weap banner', 'Whimpering Wastes', 'Doubled Pawns', 'Tower of Adversity', 'Illusive Realm', 'Daily reset'];
+                          [bannerForm.standardCharImg, bannerForm.standardWeapImg, bannerForm.wwImg, bannerForm.emImg, bannerForm.ppImg, bannerForm.toaImg, bannerForm.irImg, bannerForm.drImg].forEach((url, i) => {
+                            const labels = ['Standard char banner', 'Standard weap banner', 'Whimpering Wastes', 'Endstate Matrix', 'Pioneer Podcast', 'Tower of Adversity', 'Illusive Realm', 'Daily reset'];
                             if (url?.trim()) validateImgUrl(url.trim(), labels[i] + ' image');
                           });
                           const newBanners = {
@@ -751,7 +751,8 @@ export default function AdminPanel({
                             standardCharBannerImage: bannerForm.standardCharImg.trim(),
                             standardWeapBannerImage: bannerForm.standardWeapImg.trim(),
                             whimperingWastesImage: bannerForm.wwImg.trim(),
-                            doubledPawnsImage: bannerForm.dpImg.trim(),
+                            endstateMatrixImage: bannerForm.emImg.trim(),
+                            pioneerPodcastImage: bannerForm.ppImg.trim(),
                             towerOfAdversityImage: bannerForm.toaImg.trim(),
                             illusiveRealmImage: bannerForm.irImg.trim(),
                             dailyResetImage: bannerForm.drImg.trim(),

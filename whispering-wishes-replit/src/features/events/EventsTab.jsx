@@ -105,7 +105,8 @@ export default function EventsTab({
           const eventImageMap = {
             tacticalHologram: activeBanners.tacticalHologramImage,
             whimperingWastes: activeBanners.whimperingWastesImage,
-            doubledPawns: activeBanners.doubledPawnsImage,
+            endstateMatrix: activeBanners.endstateMatrixImage,
+            pioneerPodcast: activeBanners.pioneerPodcastImage,
             towerOfAdversity: activeBanners.towerOfAdversityImage,
             illusiveRealm: activeBanners.illusiveRealmImage,
             weeklyBoss: activeBanners.weeklyBossImage,

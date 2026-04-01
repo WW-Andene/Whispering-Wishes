@@ -143,10 +143,11 @@ const CURRENT_BANNERS = {
   weaponBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   eventBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
-  doubledPawnsImage: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg',
+  endstateMatrixImage: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg',
+  pioneerPodcastImage: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png',
   towerOfAdversityImage: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg',
   illusiveRealmImage: 'https://i.ibb.co/zcc2MxR/Fantasies-of-the-Thousand-Gateways.jpg',
-  tacticalHologramImage: 'https://i.ibb.co/mCTQX0kB/tactical-hologram-phantom-pain.avif',
+  tacticalHologramImage: 'https://i.ibb.co/CpjDZj8V/652896591-1275960654470518-5091818010205633369-n.jpg',
   weeklyBossImage: 'https://i.ibb.co/M5cLkMWf/file-00000000e8b071f480ded273f611ec2e.png',
   standardCharBannerImage: 'https://i.ibb.co/pjXgHN70/Tidal-Chorus-Banner-Art.webp',
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
@@ -1856,33 +1857,43 @@ const EVENTS = {
     imageUrl: 'https://i.ibb.co/M5cLkMWf/file-00000000e8b071f480ded273f611ec2e.png'
   },
   tacticalHologram: {
-    name: 'Tactical Hologram',
-    subtitle: 'Synchronization',
+    name: 'Tactical Hologram: Synchronization',
+    subtitle: 'Combat Challenge',
     description: 'Weekly boss challenge',
     resetType: 'Version update',
     color: 'cyan',
-    // Tue, 03 Feb 2026 10:45 - Sun, 05 Apr 2026 03:59 (Europe)
-    // P9-FIX: Apr 5 is after DST spring-forward (Mar 29) — Europe is CEST (UTC+2)
-    // Apr 5, 03:59 CEST = Apr 5, 01:59 UTC (was incorrectly 02:59 UTC assuming CET)
-    currentEnd: '2026-04-05T01:59:00Z',
+    // Ends: Wed, 29 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
+    currentEnd: '2026-04-29T03:59:00Z',
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    imageUrl: 'https://i.ibb.co/mCTQX0kB/tactical-hologram-phantom-pain.avif'
+    imageUrl: 'https://i.ibb.co/CpjDZj8V/652896591-1275960654470518-5091818010205633369-n.jpg'
   },
-  doubledPawns: { 
-    name: 'Doubled Pawns Matrix', 
-    subtitle: 'Pilot', 
-    description: 'High difficulty boss rush', 
-    resetType: 'Version update', 
-    color: 'pink', 
-    // Wed, 11 Feb 2026 21:00 - Thu, 19 Mar 2026 04:00 (Europe)
-    // Mar 19, 04:00 Europe = Mar 19, 03:00 UTC
-    currentEnd: '2026-03-19T03:00:00Z',
+  endstateMatrix: {
+    name: 'Endstate Matrix',
+    subtitle: 'Boss Rush',
+    description: 'High difficulty boss rush',
+    resetType: 'Version update',
+    color: 'pink',
+    // Ends: Thu, 30 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
+    currentEnd: '2026-04-30T03:59:00Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: 'https://i.ibb.co/G4fSsp4P/Doubled-Pawns-Matrix.jpg'
+    imageUrl: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg'
+  },
+  pioneerPodcast: {
+    name: 'Pioneer Podcast',
+    subtitle: 'Event',
+    description: 'Limited-time event',
+    resetType: 'Version update',
+    color: 'yellow',
+    // Ends: Wed, 29 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
+    currentEnd: '2026-04-29T03:59:00Z',
+    rewards: '400 Astrite',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
+    accentColor: 'yellow',
+    imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
   },
   whimperingWastes: { 
     name: 'Whimpering Wastes', 
@@ -1899,8 +1910,8 @@ const EVENTS = {
     imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
   towerOfAdversity: { 
-    name: 'Tower of Adversity', 
-    subtitle: 'Hazard Zone', 
+    name: 'Tower of Adversity: Hazard Zone',
+    subtitle: 'Endgame Challenge', 
     description: 'Endgame combat challenge', 
     resetType: '28 days', 
     color: 'orange', 
