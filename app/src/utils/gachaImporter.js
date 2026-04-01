@@ -144,6 +144,7 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
       let endTime = '';
+      let prevListSize = -1;
 
       for (let page = 0; page < 50; page++) {
         if (signal?.aborted) break;
@@ -180,19 +181,69 @@ export async function fetchAllPools(params, signal, onProgress) {
         poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
 
+        // Stop if page returned fewer items than before (approaching end)
+        if (list.length < prevListSize && prevListSize > 0) break;
+        prevListSize = list.length;
+
         // Use oldest time as cursor for next page
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time) break;
-        if (oldest.time === endTime) {
-          // Stuck: skip past this timestamp entirely
-          const d = new Date(oldest.time);
-          d.setSeconds(d.getSeconds() - 1);
-          endTime = d.toISOString();
-        } else {
-          endTime = oldest.time;
+        if (!oldest?.time || oldest.time === endTime) {
+          // Stuck on same timestamp. Try fetching with startTime instead
+          // to approach from the other direction
+          break;
         }
+        endTime = oldest.time;
 
         await sleep(150);
+      }
+
+      // Second pass: fetch from oldest known time going backward
+      // This catches items missed when endTime cursor gets stuck
+      if (endTime && poolItems.length > 0) {
+        let startTime = '';
+        const oldestSoFar = poolItems.reduce((min, item) => item.time < min.time ? item : min, poolItems[0]);
+        if (oldestSoFar?.time) {
+          // Fetch everything older than our oldest record
+          const d = new Date(oldestSoFar.time);
+          d.setSeconds(d.getSeconds() - 1);
+          let cursor = d.toISOString();
+
+          for (let page = 0; page < 50; page++) {
+            if (signal?.aborted) break;
+            const body2 = {
+              playerId: String(params.playerId),
+              serverId: params.serverId || '',
+              cardPoolType: Number(poolType),
+              cardPoolId: params.cardPoolId || '',
+              languageCode: params.lang || 'en',
+              recordId: params.recordId || '',
+              endTime: cursor,
+            };
+            const ctrl = new AbortController();
+            const to = setTimeout(() => ctrl.abort(), 15000);
+            const ms = signal ? AbortSignal.any?.([signal, ctrl.signal]) ?? ctrl.signal : ctrl.signal;
+            const r = await fetch('/api/gacha/record/query', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body2),
+              signal: ms,
+            });
+            clearTimeout(to);
+            if (!r.ok) break;
+            const j = await r.json();
+            if (j?.code !== 0) break;
+            const l = Array.isArray(j?.data) ? j.data : j?.data?.list || [];
+            if (!l.length) break;
+            poolItems.push(...l);
+            onProgress?.(poolType, 'fetching', poolItems.length);
+            const o = l.reduce((min, item) => item.time < min.time ? item : min, l[0]);
+            if (!o?.time || o.time === cursor) break;
+            const d2 = new Date(o.time);
+            d2.setSeconds(d2.getSeconds() - 1);
+            cursor = d2.toISOString();
+            await sleep(150);
+          }
+        }
       }
 
       if (poolItems.length > 0) {
