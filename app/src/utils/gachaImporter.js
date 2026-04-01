@@ -143,7 +143,8 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
-      let startTime = '';
+      let endTime = '';
+      let stuckCount = 0;
 
       for (let page = 0; page < 50; page++) {
         if (signal?.aborted) break;
@@ -156,7 +157,7 @@ export async function fetchAllPools(params, signal, onProgress) {
           languageCode: params.lang || 'en',
           recordId: params.recordId || '',
         };
-        if (startTime) body.startTime = startTime;
+        if (endTime) body.endTime = endTime;
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000);
@@ -180,12 +181,20 @@ export async function fetchAllPools(params, signal, onProgress) {
         poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
 
-        // Use newest time + 1s as startTime for next page
-        const newest = list.reduce((max, item) => item.time > max.time ? item : max, list[0]);
-        if (!newest?.time || newest.time === startTime) break;
-        const d = new Date(newest.time);
-        d.setSeconds(d.getSeconds() + 1);
-        startTime = d.toISOString();
+        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
+        if (!oldest?.time) break;
+
+        if (oldest.time === endTime) {
+          // Stuck on same timestamp - skip 1s back and try once more
+          stuckCount++;
+          if (stuckCount > 5) break; // Safety: max 5 skips
+          const d = new Date(oldest.time);
+          d.setSeconds(d.getSeconds() - 1);
+          endTime = d.toISOString();
+        } else {
+          stuckCount = 0;
+          endTime = oldest.time;
+        }
 
         await sleep(150);
       }
