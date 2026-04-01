@@ -1,179 +1,203 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WW-B Dashboard — Database (SQLite)
-// Stores findings, runs, approvals. Zero config, file-based.
+// WW-B Dashboard — JSON File Storage
+// Zero dependencies. Just reads/writes a JSON file.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import Database from 'better-sqlite3';
-import { existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '..', 'data');
+const DB_FILE = path.join(DATA_DIR, 'wwb.json');
+
 if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new Database(path.join(DATA_DIR, 'wwb.db'));
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+function load() {
+  try {
+    if (existsSync(DB_FILE)) return JSON.parse(readFileSync(DB_FILE, 'utf-8'));
+  } catch {}
+  return { runs: [], findings: [], actions: [], commands: [], nextId: 1 };
+}
 
-// ─── Schema ─────────────────────────────────────────────────────────────────
+function save(data) {
+  writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS runs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    run_number INTEGER NOT NULL,
-    mode TEXT NOT NULL DEFAULT 'full',
-    status TEXT NOT NULL DEFAULT 'pending',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    completed_at TEXT,
-    summary TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS findings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    run_id INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
-    category TEXT NOT NULL,
-    severity TEXT NOT NULL DEFAULT 'minor',
-    title TEXT NOT NULL,
-    description TEXT,
-    file TEXT,
-    old_value TEXT,
-    new_value TEXT,
-    confidence REAL DEFAULT 0.0,
-    status TEXT NOT NULL DEFAULT 'pending',
-    reviewed_at TEXT,
-    review_note TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS actions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    run_id INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
-    category TEXT NOT NULL,
-    description TEXT NOT NULL,
-    details TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_findings_run ON findings(run_id);
-  CREATE INDEX IF NOT EXISTS idx_findings_status ON findings(status);
-  CREATE INDEX IF NOT EXISTS idx_actions_run ON actions(run_id);
-`);
+function nextId(data) {
+  return data.nextId++;
+}
 
 // ─── Runs ───────────────────────────────────────────────────────────────────
 
 export function createRun(runNumber, mode = 'full') {
-  const stmt = db.prepare('INSERT INTO runs (run_number, mode) VALUES (?, ?)');
-  const result = stmt.run(runNumber, mode);
-  return result.lastInsertRowid;
+  const data = load();
+  const run = { id: nextId(data), run_number: runNumber, mode, status: 'pending', created_at: new Date().toISOString(), summary: '' };
+  data.runs.push(run);
+  save(data);
+  return run.id;
 }
 
 export function completeRun(runId, summary = '') {
-  db.prepare("UPDATE runs SET status = 'completed', completed_at = datetime('now'), summary = ? WHERE id = ?")
-    .run(summary, runId);
+  const data = load();
+  const run = data.runs.find(r => r.id === runId);
+  if (run) { run.status = 'completed'; run.completed_at = new Date().toISOString(); run.summary = summary; }
+  save(data);
 }
 
 export function getRuns(limit = 20) {
-  return db.prepare(`
-    SELECT r.*,
-      (SELECT COUNT(*) FROM findings WHERE run_id = r.id) as finding_count,
-      (SELECT COUNT(*) FROM findings WHERE run_id = r.id AND status = 'approved') as approved_count,
-      (SELECT COUNT(*) FROM findings WHERE run_id = r.id AND status = 'rejected') as rejected_count,
-      (SELECT COUNT(*) FROM findings WHERE run_id = r.id AND status = 'pending') as pending_count
-    FROM runs r ORDER BY r.created_at DESC LIMIT ?
-  `).all(limit);
+  const data = load();
+  return data.runs
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, limit)
+    .map(r => ({
+      ...r,
+      finding_count: data.findings.filter(f => f.run_id === r.id).length,
+      pending_count: data.findings.filter(f => f.run_id === r.id && f.status === 'pending').length,
+      approved_count: data.findings.filter(f => f.run_id === r.id && f.status === 'approved').length,
+      rejected_count: data.findings.filter(f => f.run_id === r.id && f.status === 'rejected').length,
+    }));
 }
 
 export function getRun(id) {
-  return db.prepare('SELECT * FROM runs WHERE id = ?').get(id);
+  return load().runs.find(r => r.id === id) || null;
 }
 
 // ─── Findings ───────────────────────────────────────────────────────────────
 
 export function addFinding(runId, finding) {
-  const stmt = db.prepare(`
-    INSERT INTO findings (run_id, category, severity, title, description, file, old_value, new_value, confidence)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  const result = stmt.run(
-    runId,
-    finding.category || 'general',
-    finding.severity || 'minor',
-    finding.title || finding.description || 'Untitled',
-    finding.description || '',
-    finding.file || null,
-    finding.old_value || finding.oldValue || null,
-    finding.new_value || finding.newValue || null,
-    finding.confidence || 0,
-  );
-  return result.lastInsertRowid;
+  const data = load();
+  const f = {
+    id: nextId(data), run_id: runId,
+    category: finding.category || 'general',
+    severity: finding.severity || 'minor',
+    title: finding.title || finding.description || '',
+    description: finding.description || '',
+    file: finding.file || null,
+    old_value: finding.old_value || finding.oldValue || null,
+    new_value: finding.new_value || finding.newValue || null,
+    confidence: finding.confidence || 0,
+    status: 'pending',
+    review_note: '',
+    created_at: new Date().toISOString(),
+  };
+  data.findings.push(f);
+  save(data);
+  return f.id;
 }
 
 export function addFindings(runId, findings) {
-  const insert = db.transaction((items) => {
-    for (const f of items) addFinding(runId, f);
-  });
-  insert(findings);
+  const data = load();
+  for (const finding of findings) {
+    data.findings.push({
+      id: nextId(data), run_id: runId,
+      category: finding.category || 'general',
+      severity: finding.severity || 'minor',
+      title: finding.title || finding.description || '',
+      description: finding.description || '',
+      file: finding.file || null,
+      old_value: finding.old_value || finding.oldValue || null,
+      new_value: finding.new_value || finding.newValue || null,
+      confidence: finding.confidence || 0,
+      status: 'pending', review_note: '',
+      created_at: new Date().toISOString(),
+    });
+  }
+  save(data);
 }
 
 export function getFindings(runId, status = null) {
-  if (status) {
-    return db.prepare('SELECT * FROM findings WHERE run_id = ? AND status = ? ORDER BY severity DESC, confidence DESC')
-      .all(runId, status);
-  }
-  return db.prepare('SELECT * FROM findings WHERE run_id = ? ORDER BY severity DESC, confidence DESC')
-    .all(runId);
+  const data = load();
+  let results = data.findings.filter(f => f.run_id === runId);
+  if (status) results = results.filter(f => f.status === status);
+  return results.sort((a, b) => {
+    const sev = { critical: 0, major: 1, minor: 2, nit: 3 };
+    return (sev[a.severity] || 9) - (sev[b.severity] || 9) || b.confidence - a.confidence;
+  });
 }
 
 export function getPendingFindings() {
-  return db.prepare(`
-    SELECT f.*, r.run_number FROM findings f
-    JOIN runs r ON f.run_id = r.id
-    WHERE f.status = 'pending'
-    ORDER BY f.created_at DESC
-  `).all();
+  const data = load();
+  const runs = Object.fromEntries(data.runs.map(r => [r.id, r.run_number]));
+  return data.findings
+    .filter(f => f.status === 'pending')
+    .map(f => ({ ...f, run_number: runs[f.run_id] || '?' }))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 export function reviewFinding(id, status, note = '') {
-  db.prepare("UPDATE findings SET status = ?, reviewed_at = datetime('now'), review_note = ? WHERE id = ?")
-    .run(status, note, id);
+  const data = load();
+  const f = data.findings.find(f => f.id === id);
+  if (f) { f.status = status; f.reviewed_at = new Date().toISOString(); f.review_note = note; }
+  save(data);
 }
 
 export function bulkReview(ids, status, note = '') {
-  const stmt = db.prepare("UPDATE findings SET status = ?, reviewed_at = datetime('now'), review_note = ? WHERE id = ?");
-  const update = db.transaction((items) => {
-    for (const id of items) stmt.run(status, note, id);
-  });
-  update(ids);
+  const data = load();
+  for (const id of ids) {
+    const f = data.findings.find(f => f.id === id);
+    if (f) { f.status = status; f.reviewed_at = new Date().toISOString(); f.review_note = note; }
+  }
+  save(data);
 }
 
 export function getApprovedFindings(runId = null) {
-  if (runId) {
-    return db.prepare("SELECT * FROM findings WHERE run_id = ? AND status = 'approved'").all(runId);
-  }
-  return db.prepare("SELECT * FROM findings WHERE status = 'approved' ORDER BY created_at DESC").all();
+  const data = load();
+  let results = data.findings.filter(f => f.status === 'approved');
+  if (runId) results = results.filter(f => f.run_id === runId);
+  return results;
 }
 
-// ─── Actions (audit log) ────────────────────────────────────────────────────
+// ─── Actions ────────────────────────────────────────────────────────────────
 
 export function addAction(runId, category, description, details = null) {
-  db.prepare('INSERT INTO actions (run_id, category, description, details) VALUES (?, ?, ?, ?)')
-    .run(runId, category, description, details ? JSON.stringify(details) : null);
+  const data = load();
+  data.actions.push({
+    id: nextId(data), run_id: runId, category, description,
+    details: details ? JSON.stringify(details) : null,
+    created_at: new Date().toISOString(),
+  });
+  save(data);
 }
 
 export function getActions(runId) {
-  return db.prepare('SELECT * FROM actions WHERE run_id = ? ORDER BY created_at ASC').all(runId);
+  return load().actions.filter(a => a.run_id === runId).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+}
+
+// ─── Commands (user instructions to WW-B) ───────────────────────────────────
+
+export function addCommand(text, type = 'instruction') {
+  const data = load();
+  const cmd = { id: nextId(data), text, type, status: 'pending', created_at: new Date().toISOString(), result: null };
+  data.commands.push(cmd);
+  save(data);
+  return cmd.id;
+}
+
+export function getCommands(status = null) {
+  const data = load();
+  let results = data.commands;
+  if (status) results = results.filter(c => c.status === status);
+  return results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+export function completeCommand(id, result) {
+  const data = load();
+  const cmd = data.commands.find(c => c.id === id);
+  if (cmd) { cmd.status = 'done'; cmd.result = result; }
+  save(data);
 }
 
 // ─── Stats ──────────────────────────────────────────────────────────────────
 
 export function getStats() {
-  const total = db.prepare('SELECT COUNT(*) as count FROM findings').get().count;
-  const approved = db.prepare("SELECT COUNT(*) as count FROM findings WHERE status = 'approved'").get().count;
-  const rejected = db.prepare("SELECT COUNT(*) as count FROM findings WHERE status = 'rejected'").get().count;
-  const pending = db.prepare("SELECT COUNT(*) as count FROM findings WHERE status = 'pending'").get().count;
-  const runs = db.prepare('SELECT COUNT(*) as count FROM runs').get().count;
-  return { total, approved, rejected, pending, runs };
+  const data = load();
+  return {
+    total: data.findings.length,
+    pending: data.findings.filter(f => f.status === 'pending').length,
+    approved: data.findings.filter(f => f.status === 'approved').length,
+    rejected: data.findings.filter(f => f.status === 'rejected').length,
+    runs: data.runs.length,
+    commands: data.commands.filter(c => c.status === 'pending').length,
+  };
 }
-
-export default db;

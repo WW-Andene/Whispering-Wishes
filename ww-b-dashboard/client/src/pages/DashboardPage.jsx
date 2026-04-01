@@ -24,24 +24,25 @@ export default function DashboardPage({ onViewRun }) {
 
       {/* Stats */}
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: '1rem' }}>
           <div style={metric}>
-            <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>Total Findings</div>
-            <div style={{ fontSize: 22, fontWeight: 700 }}>{stats.total}</div>
+            <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Pending</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#facc15' }}>{stats.pending}</div>
           </div>
           <div style={metric}>
-            <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>Pending</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#facc15' }}>{stats.pending}</div>
+            <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Approved</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#22c55e' }}>{stats.approved}</div>
           </div>
           <div style={metric}>
-            <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>Approved</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#22c55e' }}>{stats.approved}</div>
-          </div>
-          <div style={metric}>
-            <div style={{ fontSize: 11, color: '#666', marginBottom: 4 }}>Rejected</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: '#ef4444' }}>{stats.rejected}</div>
+            <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Rejected</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#ef4444' }}>{stats.rejected}</div>
           </div>
         </div>
+        {stats.commands > 0 && (
+          <div style={{ ...metric, marginBottom: '1rem', background: '#1c1917', border: '1px solid #facc1530' }}>
+            <span style={{ fontSize: 12, color: '#facc15' }}>{stats.commands} pending command(s) for WW-B</span>
+          </div>
+        )}
       )}
 
       {/* Recent runs */}

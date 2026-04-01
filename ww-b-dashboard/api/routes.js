@@ -1,121 +1,92 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// WW-B Dashboard — API Routes
-// ═══════════════════════════════════════════════════════════════════════════════
-
 import { Router } from 'express';
 import {
   createRun, completeRun, getRuns, getRun,
   addFindings, getFindings, getPendingFindings,
   reviewFinding, bulkReview, getApprovedFindings,
   addAction, getActions, getStats,
+  addCommand, getCommands, completeCommand,
 } from './db.js';
 
 const router = Router();
 
-// ─── Auth middleware ────────────────────────────────────────────────────────
-
-function auth(req, res, next) {
-  const token = req.headers['x-dashboard-token'] || req.query.token;
-  if (!process.env.DASHBOARD_TOKEN) return next(); // No token set = open
-  if (token === process.env.DASHBOARD_TOKEN) return next();
-  res.status(401).json({ error: 'Invalid token' });
-}
-
-router.use(auth);
-
 // ─── Runs ───────────────────────────────────────────────────────────────────
 
-// List all runs
-router.get('/runs', (req, res) => {
-  res.json(getRuns(parseInt(req.query.limit) || 20));
-});
+router.get('/runs', (req, res) => res.json(getRuns(parseInt(req.query.limit) || 20)));
 
-// Get single run with findings
 router.get('/runs/:id', (req, res) => {
-  const run = getRun(req.params.id);
-  if (!run) return res.status(404).json({ error: 'Run not found' });
-  const findings = getFindings(run.id);
-  const actions = getActions(run.id);
-  res.json({ ...run, findings, actions });
+  const run = getRun(parseInt(req.params.id));
+  if (!run) return res.status(404).json({ error: 'Not found' });
+  res.json({ ...run, findings: getFindings(run.id), actions: getActions(run.id) });
 });
 
-// WW-B creates a new run
 router.post('/runs', (req, res) => {
   const { runNumber, mode } = req.body;
   if (!runNumber) return res.status(400).json({ error: 'runNumber required' });
-  const id = createRun(runNumber, mode || 'full');
-  res.json({ id, runNumber });
+  res.json({ id: createRun(runNumber, mode || 'full'), runNumber });
 });
 
-// WW-B completes a run
 router.post('/runs/:id/complete', (req, res) => {
-  const { summary } = req.body;
-  completeRun(req.params.id, summary || '');
+  completeRun(parseInt(req.params.id), req.body.summary || '');
   res.json({ ok: true });
 });
 
 // ─── Findings ───────────────────────────────────────────────────────────────
 
-// WW-B pushes findings for a run
 router.post('/runs/:id/findings', (req, res) => {
-  const { findings } = req.body;
-  if (!Array.isArray(findings)) return res.status(400).json({ error: 'findings array required' });
-  addFindings(parseInt(req.params.id), findings);
-  res.json({ ok: true, count: findings.length });
+  if (!Array.isArray(req.body.findings)) return res.status(400).json({ error: 'findings array required' });
+  addFindings(parseInt(req.params.id), req.body.findings);
+  res.json({ ok: true, count: req.body.findings.length });
 });
 
-// Get findings for a run (optional ?status=pending|approved|rejected)
 router.get('/runs/:id/findings', (req, res) => {
   res.json(getFindings(parseInt(req.params.id), req.query.status || null));
 });
 
-// All pending findings across all runs
-router.get('/findings/pending', (req, res) => {
-  res.json(getPendingFindings());
-});
+router.get('/findings/pending', (req, res) => res.json(getPendingFindings()));
+router.get('/findings/approved', (req, res) => res.json(getApprovedFindings(req.query.runId ? parseInt(req.query.runId) : null)));
 
-// All approved findings (ready to apply)
-router.get('/findings/approved', (req, res) => {
-  res.json(getApprovedFindings(req.query.runId ? parseInt(req.query.runId) : null));
-});
+// ─── Review ─────────────────────────────────────────────────────────────────
 
-// ─── Review (approve/reject) ────────────────────────────────────────────────
-
-// Review a single finding
 router.post('/findings/:id/review', (req, res) => {
   const { status, note } = req.body;
-  if (!['approved', 'rejected', 'pending'].includes(status)) {
-    return res.status(400).json({ error: 'status must be approved, rejected, or pending' });
-  }
+  if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
   reviewFinding(parseInt(req.params.id), status, note || '');
   res.json({ ok: true });
 });
 
-// Bulk review multiple findings
 router.post('/findings/bulk-review', (req, res) => {
   const { ids, status, note } = req.body;
-  if (!Array.isArray(ids) || !status) return res.status(400).json({ error: 'ids array and status required' });
-  if (!['approved', 'rejected', 'pending'].includes(status)) {
-    return res.status(400).json({ error: 'status must be approved, rejected, or pending' });
-  }
+  if (!Array.isArray(ids) || !['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ error: 'Invalid' });
   bulkReview(ids, status, note || '');
   res.json({ ok: true, count: ids.length });
 });
 
-// ─── Actions (audit log) ────────────────────────────────────────────────────
+// ─── Actions ────────────────────────────────────────────────────────────────
 
-// WW-B logs an action
 router.post('/runs/:id/actions', (req, res) => {
   const { category, description, details } = req.body;
-  if (!description) return res.status(400).json({ error: 'description required' });
-  addAction(parseInt(req.params.id), category || 'general', description, details);
+  addAction(parseInt(req.params.id), category || 'general', description || '', details);
+  res.json({ ok: true });
+});
+
+// ─── Commands (user → WW-B instructions) ────────────────────────────────────
+
+router.get('/commands', (req, res) => res.json(getCommands(req.query.status || null)));
+
+router.post('/commands', (req, res) => {
+  const { text, type } = req.body;
+  if (!text?.trim()) return res.status(400).json({ error: 'text required' });
+  const id = addCommand(text.trim(), type || 'instruction');
+  res.json({ ok: true, id });
+});
+
+router.post('/commands/:id/complete', (req, res) => {
+  completeCommand(parseInt(req.params.id), req.body.result || '');
   res.json({ ok: true });
 });
 
 // ─── Stats ──────────────────────────────────────────────────────────────────
 
-router.get('/stats', (req, res) => {
-  res.json(getStats());
-});
+router.get('/stats', (req, res) => res.json(getStats()));
 
 export default router;
