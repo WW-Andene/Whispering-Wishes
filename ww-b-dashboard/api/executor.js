@@ -1,9 +1,17 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WW-B Dashboard — Live Command Executor
-// Calls Groq REST API directly — no SDK dependency needed.
+// Calls Groq REST API with real app context — no hallucination.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { addFinding, createRun, completeRun, completeCommand } from './db.js';
+import { buildAppContext } from './context.js';
+
+// Cache context so we don't re-read files every command
+let _appContext = null;
+function getAppContext() {
+  if (!_appContext) _appContext = buildAppContext();
+  return _appContext;
+}
 
 async function callGroq(apiKey, messages) {
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -31,31 +39,33 @@ async function callGroq(apiKey, messages) {
 
 export async function executeCommand(commandId, text) {
   const apiKey = process.env.GROQ_API_KEY;
-  console.log(`[WW-B] Command #${commandId} received: "${text.slice(0, 50)}..."`);
-  console.log(`[WW-B] GROQ_API_KEY: ${apiKey ? 'set (' + apiKey.slice(0, 8) + '...)' : 'NOT SET'}`);
+  console.log(`[WW-B] Command #${commandId}: "${text.slice(0, 60)}..."`);
 
   if (!apiKey) {
-    console.log('[WW-B] No API key — aborting');
-    completeCommand(commandId, 'Error: GROQ_API_KEY not set. Enter your key in the setup screen.');
+    completeCommand(commandId, 'Error: GROQ_API_KEY not set.');
     return;
   }
 
   const runId = createRun(commandId, 'command');
+  const appContext = getAppContext();
 
-  const systemPrompt = `You are WW-B, an audit agent for a Wuthering Waves companion web app called "Whispering Wishes".
+  const systemPrompt = `You are WW-B, an audit agent for Whispering Wishes — a Wuthering Waves companion web app.
 
-You receive instructions from the maintainer and respond clearly and concisely.
+You have access to the REAL app source code below. Base ALL findings on actual code — never guess or make up issues.
 
-If you find issues, list them with severity:
-- 🔴 CRITICAL: app-breaking bugs
-- 🟠 MAJOR: significant issues
-- 🔵 MINOR: small improvements
-- ⚪ NIT: cosmetic/minor
+${appContext}
 
-Be direct. Give actionable findings. No fluff.`;
+---
+
+RULES:
+- Only report issues you can trace to actual code above
+- If the code is too large to fully analyze, say what you checked and what you couldn't
+- Use severity levels: 🔴 CRITICAL, 🟠 MAJOR, 🔵 MINOR, ⚪ NIT
+- Be specific: mention function names, variable names, line patterns
+- If asked about something not in the context, say "I don't have that code loaded"`;
 
   try {
-    console.log('[WW-B] Calling Groq API...');
+    console.log(`[WW-B] Calling Groq (context: ${(appContext.length / 1024).toFixed(1)}KB)...`);
     const content = await callGroq(apiKey, [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: text },
@@ -69,13 +79,13 @@ Be direct. Give actionable findings. No fluff.`;
       confidence: 0.7,
     });
 
-    console.log(`[WW-B] Groq responded: ${content.slice(0, 100)}...`);
+    console.log(`[WW-B] Done: ${content.slice(0, 80)}...`);
     completeRun(runId, 'Command processed');
     completeCommand(commandId, content);
 
   } catch (err) {
     const msg = err.message?.slice(0, 300) || 'Unknown error';
-    console.error(`[WW-B] Groq error: ${msg}`);
+    console.error(`[WW-B] Error: ${msg}`);
     completeCommand(commandId, `Error: ${msg}`);
     completeRun(runId, `Error: ${msg}`);
   }
