@@ -182,8 +182,18 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         // Find oldest time for next cursor
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) break;
-        endTime = oldest.time;
+        if (!oldest?.time) break;
+
+        if (oldest.time === endTime) {
+          // Same timestamp - subtract 1ms to get records before this time
+          const d = new Date(oldest.time);
+          d.setMilliseconds(d.getMilliseconds() - 1);
+          const shifted = d.toISOString().replace('.999Z', '+00:00').replace('Z', '+00:00');
+          if (shifted === endTime) break; // Can't go further
+          endTime = shifted;
+        } else {
+          endTime = oldest.time;
+        }
 
         await sleep(150);
       }
