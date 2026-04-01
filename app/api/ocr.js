@@ -50,18 +50,18 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `Look at this screenshot carefully. It contains a Wuthering Waves convene history URL with query parameters.
+              text: `This screenshot contains a Wuthering Waves convene history URL with query parameters.
 
-Find these EXACT parameter values from the URL:
-- player_id (a 9-digit number like 500012345)
-- record_id (an alphanumeric string)
-- svr_id (a small number like 76 or 86)
+Extract these EXACT values from the URL query string:
+- player_id (numeric, ~9 digits)
+- record_id (a 32-character hex string like 2ecbfdc78c42e4af288cdb85696eaa89)
+- svr_id (a 32-character hex string like 6eb2a235b30d05efd77bedb5cf60999e)
 
-The URL parameters may be named: player_id, playerId, record_id, recordId, svr_id, svrId, or svr_area.
+Parameter names may appear as: player_id, playerId, record_id, recordId, svr_id, svrId, svr_area.
 
-Read each digit/character carefully. Do NOT guess — only extract what you can clearly see.
+Read every character carefully. Do NOT guess or invent values.
 
-Respond with ONLY this JSON (no markdown, no explanation):
+Respond with ONLY this JSON (no markdown):
 {"player_id":"VALUE_OR_NULL","record_id":"VALUE_OR_NULL","svr_id":"VALUE_OR_NULL"}`,
             },
           ],
