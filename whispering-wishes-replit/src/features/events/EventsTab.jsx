@@ -20,7 +20,9 @@ import {
 export default function EventsTab({
   state,
   dispatch,
+  activeBanners,
   setActiveBanners,
+  visualSettings,
   toast,
 }) {
   const refreshCooldownRef = useRef(0);
@@ -100,6 +102,15 @@ export default function EventsTab({
 
       <div className="space-y-3 event-grid">
         {(() => {
+          const eventImageMap = {
+            tacticalHologram: activeBanners.tacticalHologramImage,
+            whimperingWastes: activeBanners.whimperingWastesImage,
+            doubledPawns: activeBanners.doubledPawnsImage,
+            towerOfAdversity: activeBanners.towerOfAdversityImage,
+            illusiveRealm: activeBanners.illusiveRealmImage,
+            weeklyBoss: activeBanners.weeklyBossImage,
+            dailyReset: activeBanners.dailyResetImage,
+          };
           const entries = Object.entries(EVENTS);
           if (entries.length === 0) return (
             <div className="text-center py-8 text-gray-500 text-sm">
@@ -128,6 +139,8 @@ export default function EventsTab({
               key={key}
               event={{...ev, key}}
               server={state.server}
+              bannerImage={eventImageMap[key] || ev.imageUrl}
+              visualSettings={visualSettings}
               status={state.eventStatus[key]}
               isExpired={isExpired}
               onStatusChange={(s) => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: s })}
