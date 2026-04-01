@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 """
 Remove backgrounds from echo images and re-upload to ibb.co.
+Uses flood-fill from edges — lightweight, no AI model needed.
 
-Usage:
-  pip install Pillow rembg requests
+Usage (Termux or any Python 3.7+):
+  pip install Pillow requests
   python remove-echo-bg.py
 
-Outputs a JSON mapping of echo names to new ibb.co URLs.
-Paste the output into appcore-data.js DEFAULT_COLLECTION_IMAGES.
+Outputs JS mapping to paste into appcore-data.js DEFAULT_COLLECTION_IMAGES.
 """
 
 import requests
 import json
 import base64
 import sys
-import os
 from io import BytesIO
-from pathlib import Path
-from rembg import remove
+from collections import deque
 from PIL import Image
 
 IBB_API_KEY = "1cd9272f9b0306dc6d07085947ae0850"
+MARGIN = 13  # ±13 per channel (~5% of 255)
 
 ECHO_IMAGES = {
     "Whiff Whaff": "https://i.ibb.co/pvPDj2t6/Whiff-Whaff.png",
@@ -98,26 +97,57 @@ ECHO_IMAGES = {
 }
 
 
-def download_image(url):
-    resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
-    resp.raise_for_status()
-    return resp.content
+def is_bg(r, g, b):
+    """Check if pixel matches #29292A (41,41,42) within margin."""
+    return abs(r - 41) <= MARGIN and abs(g - 41) <= MARGIN and abs(b - 42) <= MARGIN
 
 
-def remove_background(image_bytes):
-    return remove(image_bytes)
+def flood_fill_remove(img):
+    """Flood-fill from edges to remove background. Returns RGBA image."""
+    img = img.convert("RGBA")
+    pixels = img.load()
+    w, h = img.size
+    visited = set()
+    queue = deque()
+
+    # Seed with edge pixels that match bg color
+    for x in range(w):
+        for y in (0, h - 1):
+            r, g, b, a = pixels[x, y]
+            if is_bg(r, g, b):
+                queue.append((x, y))
+                visited.add((x, y))
+    for y in range(1, h - 1):
+        for x in (0, w - 1):
+            r, g, b, a = pixels[x, y]
+            if is_bg(r, g, b):
+                queue.append((x, y))
+                visited.add((x, y))
+
+    # BFS flood-fill
+    while queue:
+        x, y = queue.popleft()
+        pixels[x, y] = (0, 0, 0, 0)  # transparent
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in visited:
+                visited.add((nx, ny))
+                r, g, b, a = pixels[nx, ny]
+                if is_bg(r, g, b):
+                    queue.append((nx, ny))
+
+    return img
 
 
-def upload_to_ibb(image_bytes, name):
-    b64 = base64.b64encode(image_bytes).decode("utf-8")
+def upload_to_ibb(img, name):
+    """Upload PIL image to ibb.co, return URL."""
+    buf = BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
     safe_name = name.replace(":", "").replace("'", "").replace(" ", "-")
     resp = requests.post(
         "https://api.imgbb.com/1/upload",
-        data={
-            "key": IBB_API_KEY,
-            "image": b64,
-            "name": f"{safe_name}-nobg",
-        },
+        data={"key": IBB_API_KEY, "image": b64, "name": f"{safe_name}-nobg"},
         timeout=60,
     )
     resp.raise_for_status()
@@ -128,35 +158,25 @@ def upload_to_ibb(image_bytes, name):
 
 
 def main():
-    output_dir = Path("echo-nobg")
-    output_dir.mkdir(exist_ok=True)
-
     results = {}
     failed = []
     total = len(ECHO_IMAGES)
 
     for i, (name, url) in enumerate(ECHO_IMAGES.items(), 1):
-        safe_name = name.replace(":", "").replace("'", "").replace(" ", "-")
-        local_path = output_dir / f"{safe_name}-nobg.png"
-
         print(f"[{i}/{total}] {name}...", end=" ", flush=True)
-
         try:
             # Download
-            print("downloading...", end=" ", flush=True)
-            img_bytes = download_image(url)
+            resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+            resp.raise_for_status()
+            img = Image.open(BytesIO(resp.content))
+            print("flood-fill...", end=" ", flush=True)
 
-            # Remove background
-            print("removing bg...", end=" ", flush=True)
-            nobg_bytes = remove_background(img_bytes)
+            # Remove background via flood-fill
+            result = flood_fill_remove(img)
 
-            # Save locally
-            with open(local_path, "wb") as f:
-                f.write(nobg_bytes)
-
-            # Upload to ibb.co
+            # Upload
             print("uploading...", end=" ", flush=True)
-            new_url = upload_to_ibb(nobg_bytes, name)
+            new_url = upload_to_ibb(result, name)
             results[name] = new_url
             print(f"OK -> {new_url}")
 
@@ -164,26 +184,24 @@ def main():
             print(f"FAILED: {e}")
             failed.append((name, str(e)))
 
-    # Write results
-    print(f"\n{'='*60}")
-    print(f"Done: {len(results)}/{total} succeeded, {len(failed)} failed")
-
+    # Summary
+    print(f"\n{'='*50}")
+    print(f"Done: {len(results)}/{total} OK, {len(failed)} failed")
     if failed:
-        print(f"\nFailed:")
+        print("\nFailed:")
         for name, err in failed:
             print(f"  - {name}: {err}")
 
-    # Output JS mapping
-    print(f"\n// Paste into DEFAULT_COLLECTION_IMAGES:")
-    print(f"// 1-Cost Echo images (background removed)")
+    # Output JS
+    print(f"\n  // 1-Cost Echo images (bg removed)")
     for name, url in results.items():
         escaped = name.replace("'", "\\'")
         print(f"  '{escaped}': '{url}',")
 
-    # Also save as JSON
+    # Save JSON
     with open("echo-nobg-urls.json", "w") as f:
         json.dump(results, f, indent=2)
-    print(f"\nFull results saved to echo-nobg-urls.json")
+    print(f"\nSaved to echo-nobg-urls.json")
 
 
 if __name__ == "__main__":
