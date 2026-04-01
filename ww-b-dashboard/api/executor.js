@@ -3,15 +3,19 @@
 // Processes commands in real-time using Groq. Streams progress via SSE.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import Groq from 'groq-sdk';
 import { addFinding, createRun, completeRun, completeCommand } from './db.js';
 
 let groq = null;
-function getGroq() {
+async function getGroq() {
   if (!groq) {
     const key = process.env.GROQ_API_KEY;
     if (!key) return null;
-    groq = new Groq({ apiKey: key });
+    try {
+      const { default: Groq } = await import('groq-sdk');
+      groq = new Groq({ apiKey: key });
+    } catch {
+      return null;
+    }
   }
   return groq;
 }
@@ -42,7 +46,7 @@ function emitDone(commandId) {
 // ─── Execute a command live ─────────────────────────────────────────────────
 
 export async function executeCommand(commandId, text) {
-  const client = getGroq();
+  const client = await getGroq();
   if (!client) {
     emit(commandId, { type: 'error', text: 'GROQ_API_KEY not set. Add it to your environment.' });
     completeCommand(commandId, 'Error: GROQ_API_KEY not set');
