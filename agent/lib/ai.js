@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WW Update Agent — AI Intelligence Layer
-// Uses Claude API to analyze web content, extract game data, and generate
-// precise code updates for appcore-data.js
+// Uses Groq API (OpenAI-compatible) to analyze web content, extract game data,
+// and generate precise code updates for appcore-data.js
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import Anthropic from '@anthropic-ai/sdk';
+import Groq from 'groq-sdk';
 import { AI, GAME, SCHEMAS } from './config.js';
 import { log } from './log.js';
 
@@ -13,10 +13,10 @@ let lastCallTime = 0;
 
 function getClient() {
   if (!client) {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY environment variable is required');
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY environment variable is required');
     }
-    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    client = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
   return client;
 }
@@ -24,7 +24,7 @@ function getClient() {
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 /**
- * Call Claude with rate limiting and retries.
+ * Call Groq with rate limiting and retries.
  * Returns the text response.
  */
 async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, retries = AI.maxRetries } = {}) {
@@ -39,20 +39,19 @@ async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, r
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       lastCallTime = Date.now();
-      const response = await api.messages.create({
+      const response = await api.chat.completions.create({
         model: AI.model,
         max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
       });
 
-      const text = response.content
-        .filter(b => b.type === 'text')
-        .map(b => b.text)
-        .join('\n');
+      const text = response.choices?.[0]?.message?.content || '';
 
       if (!text || !text.trim()) {
-        throw new Error('Claude returned empty text response');
+        throw new Error('Groq returned empty text response');
       }
 
       return text;
@@ -60,22 +59,22 @@ async function askClaude(systemPrompt, userPrompt, { maxTokens = AI.maxTokens, r
     } catch (err) {
       if (attempt === retries) {
         const safeMessage = (err.message || 'Unknown error').slice(0, 200);
-        log.error(`Claude API failed after ${retries + 1} attempts: ${safeMessage}`);
-        const sanitized = new Error(`Claude API failed after ${retries + 1} attempts: ${safeMessage}`);
+        log.error(`Groq API failed after ${retries + 1} attempts: ${safeMessage}`);
+        const sanitized = new Error(`Groq API failed after ${retries + 1} attempts: ${safeMessage}`);
         sanitized.code = err.code || 'API_FAILURE';
         sanitized.status = err.status;
         throw sanitized;
       }
-      log.warn(`Claude API attempt ${attempt + 1} failed: ${err.message}`);
+      log.warn(`Groq API attempt ${attempt + 1} failed: ${err.message}`);
       await sleep(3000 * (attempt + 1));
     }
   }
 
-  throw new Error('Claude API: exhausted all retries without response');
+  throw new Error('Groq API: exhausted all retries without response');
 }
 
 /**
- * Extract JSON from Claude's response (handles markdown code fences)
+ * Extract JSON from AI response (handles markdown code fences)
  */
 function extractJSON(text) {
   if (!text || typeof text !== 'string') {
@@ -116,7 +115,7 @@ function extractJSON(text) {
 // TASK-SPECIFIC AI FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const SYSTEM_BASE = `You are a Wuthering Waves game data extraction agent. Your job is to read web page content from game wikis and community sites, then extract structured game data in exact JSON format. 
+const SYSTEM_BASE = `You are a Wuthering Waves game data extraction agent. Your job is to read web page content from game wikis and community sites, then extract structured game data in exact JSON format.
 
 CRITICAL RULES:
 - Only return valid JSON. No commentary, no markdown, no explanation — just the JSON object.
@@ -133,7 +132,7 @@ CRITICAL RULES:
  * Returns structured banner data or null if no update needed.
  */
 export async function analyzeBanners(sourceContents, currentBannerData) {
-  log.info('Analyzing banner data with Claude...');
+  log.info('Analyzing banner data with Groq...');
 
   const prompt = `I need you to extract the CURRENT active Wuthering Waves banner information from these web sources.
 
@@ -195,9 +194,9 @@ Return ONLY the JSON object.`;
  * Analyze event timers and detect which events need date updates.
  */
 export async function analyzeEvents(sourceContents, currentEvents) {
-  log.info('Analyzing event data with Claude...');
+  log.info('Analyzing event data with Groq...');
 
-  const eventSummary = Object.entries(currentEvents).map(([key, ev]) => 
+  const eventSummary = Object.entries(currentEvents).map(([key, ev]) =>
     `  ${key}: "${ev.name}" — ends ${ev.currentEnd || 'N/A'} — reset: ${ev.resetType}`
   ).join('\n');
 
@@ -247,7 +246,7 @@ Convert all dates to UTC. Return ONLY the JSON object.`;
  * Analyze if new characters have been released that aren't in the app.
  */
 export async function analyzeNewCharacters(sourceContents, existingCharNames) {
-  log.info('Analyzing character data with Claude...');
+  log.info('Analyzing character data with Groq...');
 
   const prompt = `Check if there are any NEW Wuthering Waves Resonators (characters) that are NOT in the app's current list.
 
@@ -257,7 +256,7 @@ ${existingCharNames.join(', ')}
 WEB SOURCE CONTENT:
 ${sourceContents.map((s, i) => `\n--- SOURCE ${i + 1} (${s.url}) ---\n${s.content}`).join('\n')}
 
-TASK: Identify any playable Resonators that are currently available in-game but MISSING from the app's list. 
+TASK: Identify any playable Resonators that are currently available in-game but MISSING from the app's list.
 Do NOT include upcoming/leaked/unreleased characters — only those that are actually playable right now.
 
 Return JSON:
@@ -293,7 +292,7 @@ Return ONLY the JSON object.`;
  * Analyze if new weapons have been released.
  */
 export async function analyzeNewWeapons(sourceContents, existingWeaponNames) {
-  log.info('Analyzing weapon data with Claude...');
+  log.info('Analyzing weapon data with Groq...');
 
   const prompt = `Check if there are any NEW Wuthering Waves 5-star weapons that are NOT in the app's current list.
 

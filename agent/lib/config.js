@@ -69,10 +69,10 @@ export const GAME = {
 
 // ─── AI Configuration ────────────────────────────────────────────────────────
 export const AI = {
-  model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514',
+  model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
   maxTokens: 8192,
-  // Rate limiting: minimum ms between API calls
-  rateLimitMs: 1500,
+  // Rate limiting: minimum ms between API calls (Groq free tier: 30 req/min)
+  rateLimitMs: 2100,
   // Maximum retries for failed API calls
   maxRetries: 3,
 };
@@ -107,7 +107,7 @@ export const THRESHOLDS = {
   eventExpiryBufferHours: 24,
 };
 
-// ─── Schema templates for Claude API prompts ─────────────────────────────────
+// ─── Schema templates for AI prompts ─────────────────────────────────────────
 export const SCHEMAS = {
   bannerUpdate: {
     version: 'string (e.g. "3.2")',

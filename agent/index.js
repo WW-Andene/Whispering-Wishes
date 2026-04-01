@@ -12,7 +12,7 @@
 //   node index.js --mode=full|micro|audit  --only=banners|events|characters|images|audit
 //   node index.js --dry-run --no-git
 //
-// Environment: ANTHROPIC_API_KEY (required), IMGBB_API_KEY (for images)
+// Environment: GROQ_API_KEY (required), IMGBB_API_KEY (for images)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { SOURCES, THRESHOLDS, PATHS } from './lib/config.js';
@@ -73,10 +73,9 @@ async function main() {
   log.info(`Mode: ${MODE} | Dry run: ${DRY_RUN} | Only: ${ONLY || 'all'}`);
 
   // Validate required environment
-  if (!process.env.ANTHROPIC_API_KEY) {
-    log.error('ANTHROPIC_API_KEY is not set or is empty.');
-    log.error('Go to GitHub repo → Settings → Secrets → Actions');
-    log.error('Delete and re-create the secret. The key starts with sk-ant-api03-...');
+  if (!process.env.GROQ_API_KEY) {
+    log.error('GROQ_API_KEY is not set or is empty.');
+    log.error('Get a free key at https://console.groq.com/keys');
     safeExit(1);
   }
   clearChangeLog();

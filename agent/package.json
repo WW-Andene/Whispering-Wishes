@@ -12,7 +12,7 @@
     "characters": "node index.js --only=characters"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0"
+    "groq-sdk": "^0.12.0"
   },
   "engines": {
     "node": ">=18.0.0"
