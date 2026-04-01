@@ -187,7 +187,20 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
-        poolItems.push(...list);
+
+        // Dedup: stop if we're getting repeated data
+        const prevSize = poolItems.length;
+        const seen = new Set(poolItems.map(p => `${p.resourceId}_${p.time}`));
+        for (const item of list) {
+          const key = `${item.resourceId}_${item.time}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            poolItems.push(item);
+          }
+        }
+        // If no new items were added, we've looped - stop
+        if (poolItems.length === prevSize) break;
+
         onProgress?.(poolType, 'fetching', poolItems.length);
         await sleep(100);
       }
