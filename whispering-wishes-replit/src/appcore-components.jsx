@@ -5468,7 +5468,7 @@ const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned }) => {
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -5515,6 +5515,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           style={{
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,
+            mixBlendMode: isEcho ? 'lighten' : undefined,
             filter: owned ? 'none' : 'grayscale(100%)',
             maskImage: collMask,
             WebkitMaskImage: collMask
@@ -5775,6 +5776,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               onSetProfilePic={onSetProfilePic}
               isCharOwned={ownedChars ? ownedChars.includes(name) : undefined}
               onToggleOwned={toggleOwned}
+              isEcho={dataType === 'echo'}
             />
           );
         })}
