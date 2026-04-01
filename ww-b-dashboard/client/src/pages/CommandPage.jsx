@@ -41,7 +41,8 @@ export default function CommandPage() {
       setActiveId(id);
 
       // Subscribe to SSE stream
-      const es = new EventSource(`/api/commands/${id}/stream`);
+      const apiBase = new URL('.', window.location.href).href.replace(/\/$/, '');
+      const es = new EventSource(`${apiBase}/api/commands/${id}/stream`);
 
       es.onmessage = (e) => {
         try {
