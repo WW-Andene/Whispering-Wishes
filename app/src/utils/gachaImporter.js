@@ -98,7 +98,8 @@ async function fetchPage(params, cardPoolType, signal) {
     throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
   }
 
-  return Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+  // Return full response so caller can check for pagination metadata
+  return json;
 }
 
 /**
@@ -138,8 +139,8 @@ export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
 
-  // API filters by cardPoolType and may paginate.
-  // First request uses URL's record_id as auth. Subsequent pages use "0".
+  let responseKeys = null;
+
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
@@ -152,16 +153,24 @@ export async function fetchAllPools(params, signal, onProgress) {
         if (signal?.aborted) break;
 
         const pageParams = { ...params, recordId: currentRecordId };
-        const list = await fetchPage(pageParams, poolType, signal);
-        if (!list.length) break;
+        const json = await fetchPage(pageParams, poolType, signal);
+        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
 
+        // Capture response structure on first call
+        if (!responseKeys) {
+          responseKeys = Object.keys(json || {}).join(',');
+          if (json?.data && !Array.isArray(json.data)) {
+            responseKeys += ' | data keys: ' + Object.keys(json.data).join(',');
+          }
+        }
+
+        if (!list.length) break;
         poolItems.push(...list);
 
         // Page 2+: use "0" as cursor to get next batch
         if (currentRecordId !== '0') {
           currentRecordId = '0';
         } else {
-          // Already tried "0", no more pages
           break;
         }
 
@@ -179,7 +188,7 @@ export async function fetchAllPools(params, signal, onProgress) {
     }
   }
 
-  return { pulls: allPulls, total, _debug: { params } };
+  return { pulls: allPulls, total, _debug: { params, responseKeys } };
 }
 
 /**
