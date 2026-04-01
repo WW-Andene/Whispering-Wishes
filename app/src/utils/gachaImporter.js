@@ -182,7 +182,40 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         // Use oldest time as cursor for next page
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) break;
+        if (!oldest?.time) break;
+        if (oldest.time === endTime) {
+          // Stuck: try narrowing with endTime 1s before the stuck timestamp
+          const d = new Date(oldest.time);
+          d.setSeconds(d.getSeconds() - 1);
+          const jumped = d.toISOString();
+          // Do one more fetch with the jumped time
+          const body2 = { ...body, endTime: jumped };
+          const ctrl = new AbortController();
+          const to2 = setTimeout(() => ctrl.abort(), 15000);
+          const ms2 = signal ? AbortSignal.any?.([signal, ctrl.signal]) ?? ctrl.signal : ctrl.signal;
+          try {
+            const r2 = await fetch('/api/gacha/record/query', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body2), signal: ms2,
+            });
+            clearTimeout(to2);
+            if (r2.ok) {
+              const j2 = await r2.json();
+              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
+              if (l2.length > 0) {
+                poolItems.push(...l2);
+                onProgress?.(poolType, 'fetching', poolItems.length);
+                const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
+                if (o2?.time && o2.time !== jumped) {
+                  endTime = o2.time;
+                  await sleep(150);
+                  continue; // Keep paginating from the new position
+                }
+              }
+            }
+          } catch { /* ignore */ }
+          break; // Can't advance further
+        }
         endTime = oldest.time;
 
         await sleep(150);
