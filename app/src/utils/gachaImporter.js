@@ -145,11 +145,19 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
 
-      // One call per pool type - API returns all available records at once
-      const pageParams = { ...params, recordId: params.recordId || '' };
-      const json = await fetchPage(pageParams, poolType, signal);
-      const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-      poolItems.push(...list);
+      // Paginate: first call with auth recordId, then increment "1","2","3"...
+      let currentRecordId = params.recordId || '';
+      for (let page = 0; page < 20; page++) {
+        if (signal?.aborted) break;
+        const pageParams = { ...params, recordId: currentRecordId };
+        const json = await fetchPage(pageParams, poolType, signal);
+        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+        if (!list.length) break;
+        poolItems.push(...list);
+        // Next page: use incrementing number as cursor
+        currentRecordId = String(page + 1);
+        await sleep(200);
+      }
 
       if (poolItems.length > 0) {
         allPulls[POOL_LABELS[poolType]] = poolItems;
