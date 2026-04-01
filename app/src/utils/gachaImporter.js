@@ -143,7 +143,7 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
-      const seenItems = new Set();
+      const globalSeen = new Set();
       let endTime = '';
 
       for (let page = 0; page < 50; page++) {
@@ -178,22 +178,26 @@ export async function fetchAllPools(params, signal, onProgress) {
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        // Add items. Use full item fingerprint to detect overlap.
-        let overlapCount = 0;
+        // Build per-page keys: base fields + occurrence index within this page
+        const pageCounter = {};
+        let newCount = 0;
         for (const item of list) {
-          const key = JSON.stringify(item);
-          if (seenItems.has(key)) {
-            overlapCount++;
-          } else {
-            seenItems.add(key);
+          const base = `${item.cardPoolType}|${item.resourceId}|${item.qualityLevel}|${item.name}|${item.time}`;
+          const idx = pageCounter[base] || 0;
+          pageCounter[base] = idx + 1;
+          const key = `${base}|${idx}`;
+
+          if (!globalSeen.has(key)) {
+            globalSeen.add(key);
             poolItems.push(item);
+            newCount++;
           }
         }
 
         onProgress?.(poolType, 'fetching', poolItems.length);
 
-        // If most of the page was duplicates, we've fully overlapped
-        if (overlapCount > list.length / 2) break;
+        // If zero new items, we've fully overlapped - stop
+        if (newCount === 0) break;
 
         // Cursor: oldest item's time
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
