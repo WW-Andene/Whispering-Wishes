@@ -155,7 +155,6 @@ export async function fetchAllPools(params, signal, onProgress) {
           cardPoolId: params.cardPoolId || '',
           languageCode: params.lang || 'en',
           recordId: params.recordId || '',
-          size: 9999,
         };
         if (endTime) body.endTime = endTime;
 
@@ -182,7 +181,53 @@ export async function fetchAllPools(params, signal, onProgress) {
         onProgress?.(poolType, 'fetching', poolItems.length);
 
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) break;
+        if (!oldest?.time || oldest.time === endTime) {
+          // Stuck - try fetching older records by jumping endTime back
+          // in monthly chunks until no more data
+          const stuckTime = new Date(oldest.time);
+          for (let jump = 1; jump <= 24; jump++) {
+            if (signal?.aborted) break;
+            const jumpDate = new Date(stuckTime);
+            jumpDate.setMonth(jumpDate.getMonth() - jump);
+            const jumpBody = {
+              playerId: String(params.playerId),
+              serverId: params.serverId || '',
+              cardPoolType: Number(poolType),
+              cardPoolId: params.cardPoolId || '',
+              languageCode: params.lang || 'en',
+              recordId: params.recordId || '',
+              endTime: jumpDate.toISOString(),
+            };
+            const c2 = new AbortController();
+            const t2 = setTimeout(() => c2.abort(), 15000);
+            const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
+            try {
+              const r2 = await fetch('/api/gacha/record/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jumpBody),
+                signal: s2,
+              });
+              clearTimeout(t2);
+              if (!r2.ok) break;
+              const j2 = await r2.json();
+              if (j2?.code !== 0) break;
+              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
+              if (!l2.length) continue; // This month empty, try older
+              poolItems.push(...l2);
+              onProgress?.(poolType, 'fetching', poolItems.length);
+              // Continue backward from this new batch
+              const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
+              if (o2?.time) {
+                endTime = o2.time;
+                break; // Resume normal pagination from here
+              }
+            } catch { clearTimeout(t2); break; }
+            await sleep(150);
+          }
+          if (endTime === oldest.time) break; // Still stuck, give up
+          continue;
+        }
         endTime = oldest.time;
 
         await sleep(150);
