@@ -5388,7 +5388,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{
             zIndex: 0,
-            opacity: pictureOpacity,
+            opacity: pictureOpacity * 0.35,
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient,
             filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none',
