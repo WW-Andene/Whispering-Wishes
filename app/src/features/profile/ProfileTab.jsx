@@ -177,10 +177,10 @@ export default function ProfileTab({
       });
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {
-        // Store debug info for admin panel
-        try { sessionStorage.setItem('ww-import-debug', JSON.stringify(result._debug || {})); } catch {}
+        const errs = result._debug?.errors;
+        const firstErr = errs?.length ? errs[0] : null;
         setDirectStatus('error');
-        setDirectError('0 convenes returned — check Debug tab in Admin panel for details.');
+        setDirectError(firstErr || 'API returned 0 convenes — the URL may be expired.');
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });

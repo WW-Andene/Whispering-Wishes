@@ -24,7 +24,6 @@ export default async function handler(req, res) {
     const pathSegments = req.query.path;
     const path = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '';
 
-    // Validate path — block traversal and restrict to allowed prefix
     if (path.includes('..') || path.includes('%2e') || path.includes('%2E')) {
       return res.status(400).json({ error: 'Invalid path' });
     }
@@ -32,10 +31,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid endpoint' });
     }
 
-    // Validate body has expected fields
-    const body = req.body;
+    // Handle body — DV may pass string, Vercel passes parsed object
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'Invalid JSON body' }); }
+    }
     if (!body || typeof body !== 'object' || !body.playerId) {
-      return res.status(400).json({ error: 'Invalid request body' });
+      return res.status(400).json({ error: 'Invalid request body', debug: { bodyType: typeof req.body, hasBody: !!body } });
     }
 
     const targetUrl = `https://${ALLOWED_HOST}/gacha/${path}`;
@@ -55,15 +57,11 @@ export default async function handler(req, res) {
     clearTimeout(timeout);
 
     const data = await response.json();
-    // Log non-success responses for debugging
-    if (data?.code !== 0) {
-      console.error('[gacha-proxy] API error:', JSON.stringify(data));
-    }
     return res.status(response.status).json(data);
   } catch (err) {
     if (err.name === 'AbortError') {
       return res.status(504).json({ error: 'Upstream timeout' });
     }
-    return res.status(502).json({ error: 'Proxy error' });
+    return res.status(502).json({ error: 'Proxy error', debug: err.message });
   }
 }
