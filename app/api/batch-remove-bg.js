@@ -1,10 +1,8 @@
 // Vercel serverless function — batch background removal for echo images
-// Processes one image at a time (call repeatedly from client)
+// Processes one image at a time (call repeatedly from admin panel)
 // Usage: POST /api/batch-remove-bg  { "name": "Echo Name", "imageUrl": "https://..." }
+// Auth: x-admin-key header must match ADMIN_HASH env var (same hash as admin panel)
 // Returns: { "name": "Echo Name", "resultUrl": "data:image/png;base64,..." }
-//
-// The client loops through all echoes, calling this endpoint for each.
-// Results come back as base64 data URLs ready to upload to ibb.co or save.
 
 const HF_MODEL = 'briaai/RMBG-1.4';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
@@ -20,9 +18,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'HuggingFace API key not configured' });
   }
 
-  // Simple auth — reuse admin hash check to prevent abuse
+  // Auth — must match the admin hash stored in Vercel env vars
   const adminKey = req.headers['x-admin-key'];
-  if (adminKey !== process.env.ADMIN_BATCH_KEY) {
+  if (!adminKey || adminKey !== process.env.ADMIN_HASH) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

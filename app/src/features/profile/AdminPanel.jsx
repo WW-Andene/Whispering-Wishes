@@ -13,7 +13,7 @@ import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
-import { ADMIN_BANNER_KEY } from '../../shared/components/BannerCard.jsx';
+import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { storageAvailable } from '../../core/storage.js';
@@ -25,17 +25,15 @@ const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', '
 
 // ═══ Echo Background Removal Tool ═══════════════════════════════════════════
 // Batch-processes all echo images through HuggingFace BRIA-RMBG-1.4 via /api/batch-remove-bg
-function EchoBgRemover({ toast }) {
+function EchoBgRemover({ toast, adminHash }) {
   const [status, setStatus] = useState('idle'); // idle | running | done | error
   const [progress, setProgress] = useState({ done: 0, total: 0, current: '' });
   const [results, setResults] = useState([]); // { name, ok, resultUrl?, error? }
-  const [adminKey, setAdminKey] = useState('');
   const abortRef = useRef(false);
 
   const allEchoes = Object.entries(ECHO_DATA).filter(([, d]) => d.imageUrl).map(([name, d]) => ({ name, imageUrl: d.imageUrl }));
 
   const runBatch = async () => {
-    if (!adminKey.trim()) { toast?.addToast?.('Enter the admin batch key', 'error'); return; }
     abortRef.current = false;
     setStatus('running');
     setResults([]);
@@ -50,7 +48,7 @@ function EchoBgRemover({ toast }) {
       try {
         const res = await fetch('/api/batch-remove-bg', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey.trim() },
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminHash },
           body: JSON.stringify({ name: echo.name, imageUrl: echo.imageUrl }),
         });
         if (!res.ok) {
@@ -93,21 +91,9 @@ function EchoBgRemover({ toast }) {
       <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-3">
         <p className="text-pink-400 text-xs font-medium mb-1">Echo Background Removal</p>
         <p className="text-gray-400 text-[10px]">
-          Removes backgrounds from all {allEchoes.length} echo images using HuggingFace AI.
-          Requires HF_API_KEY and ADMIN_BATCH_KEY configured in Vercel env vars.
+          Removes backgrounds from all {allEchoes.length} echo images using HuggingFace AI (BRIA-RMBG-1.4).
+          Requires HF_API_KEY + ADMIN_HASH in Vercel env vars. Download results as PNGs and re-upload to ibb.co.
         </p>
-      </div>
-
-      <div>
-        <label className="text-gray-400 text-[10px] block mb-1">Admin Batch Key</label>
-        <input
-          type="password"
-          value={adminKey}
-          onChange={e => setAdminKey(e.target.value)}
-          placeholder="Enter ADMIN_BATCH_KEY..."
-          className="kuro-input w-full text-xs"
-          disabled={status === 'running'}
-        />
       </div>
 
       <div className="flex gap-2">
@@ -937,7 +923,7 @@ export default function AdminPanel({
                   )}
 
                   {/* ═══ ECHO BACKGROUND REMOVAL TAB ═══ */}
-                  {adminTab === 'echobg' && <EchoBgRemover toast={toast} />}
+                  {adminTab === 'echobg' && <EchoBgRemover toast={toast} adminHash={ADMIN_HASH} />}
                 </>
               )}
             </div>
