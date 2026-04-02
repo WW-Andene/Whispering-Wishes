@@ -1706,8 +1706,10 @@ function WhisperingWishesInner() {
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = `whispering-wishes-backup-${new Date().toISOString().slice(0,10)}.json`;
+                    document.body.appendChild(a);
                     a.click();
-                    URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
                     toast?.addToast?.('Backup downloaded!', 'success');
                   } catch {
                     toast?.addToast?.('Download failed', 'error');

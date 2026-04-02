@@ -156,8 +156,9 @@ export default function TeamsTab({
                               const data = JSON.stringify({ teams: state.teams, activeTeamIndex: state.activeTeamIndex, equipment: teamEquipment }, null, 2);
                               const blob = new Blob([data], { type: 'application/json' });
                               const url = URL.createObjectURL(blob);
-                              const a = document.createElement('a'); a.href = url; a.download = 'ww-teams.json'; a.click();
-                              URL.revokeObjectURL(url);
+                              const a = document.createElement('a'); a.href = url; a.download = 'ww-teams.json';
+                              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                              setTimeout(() => URL.revokeObjectURL(url), 100);
                               toast?.addToast?.('Teams exported!', 'success');
                             } catch { toast?.addToast?.('Export failed', 'error'); }
                           }}
