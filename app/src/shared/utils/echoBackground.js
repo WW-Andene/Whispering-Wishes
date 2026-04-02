@@ -25,7 +25,7 @@ export function eraseEchoBg(src, opts = {}) {
   if (pending.has(src)) return pending.get(src);
 
   const {
-    darkThreshold = 8,
+    darkThreshold = 15,
     colorTolerance = 32,
     saturationThreshold = 0.16,
     edgeErosion = 1,
