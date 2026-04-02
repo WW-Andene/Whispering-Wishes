@@ -227,22 +227,9 @@ export async function fetchAllPools(params, signal, onProgress) {
         await sleep(150);
       }
 
-      // Dedup: each timestamp has exactly 1 or 10 items.
-      // Keep max 10 per timestamp.
       if (poolItems.length > 0) {
-        const timeCounts = {};
-        const deduped = [];
-        // Sort newest first
-        poolItems.sort((a, b) => new Date(b.time) - new Date(a.time));
-        for (const item of poolItems) {
-          const count = timeCounts[item.time] || 0;
-          if (count < 10) {
-            timeCounts[item.time] = count + 1;
-            deduped.push(item);
-          }
-        }
-        allPulls[POOL_LABELS[poolType]] = deduped;
-        total += deduped.length;
+        allPulls[POOL_LABELS[poolType]] = poolItems;
+        total += poolItems.length;
       }
       onProgress?.(poolType, 'done', poolItems.length);
     } catch (err) {
