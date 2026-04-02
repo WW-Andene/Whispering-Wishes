@@ -75,8 +75,8 @@ const initialState = {
     uid: '', importedAt: null,
     username: '', // User-set display name
     profilePic: '', // Character name for profile pic (from collection) or '' for default icon
-    featured: { history: [], pity5: 0, pity4: 0, guaranteed: false },
-    weapon: { history: [], pity5: 0, pity4: 0 },
+    featured: { history: [], pity5: 0, pity4: 0, guaranteed: false, guaranteed4Star: false },
+    weapon: { history: [], pity5: 0, pity4: 0, guaranteed4Star: false },
     standardChar: { history: [], pity5: 0, pity4: 0 },
     standardWeap: { history: [], pity5: 0, pity4: 0 },
     beginner: { history: [], pity5: 0, pity4: 0 },
@@ -220,13 +220,17 @@ const reducer = (state, action) => {
         const lastFive = fiveStars[fiveStars.length - 1];
         newProfile.featured = {
           history: merged, pity5, pity4,
-          guaranteed: hadNewEntries ? (lastFive?.won5050 === false) : (state.profile.featured?.guaranteed ?? false)
+          guaranteed: hadNewEntries ? (lastFive?.won5050 === false) : (state.profile.featured?.guaranteed ?? false),
+          guaranteed4Star: hadNewEntries ? (action.guaranteed4Star ?? false) : (state.profile.featured?.guaranteed4Star ?? false),
         };
       } else if (action.bannerType === 'weapon') {
         const merged = deduplicateMerge(state.profile.weapon?.history, action.history);
         const hadNewEntries = merged !== state.profile.weapon?.history;
         const { pity5, pity4 } = hadNewEntries ? recalcPity(merged) : { pity5: state.profile.weapon?.pity5 ?? 0, pity4: state.profile.weapon?.pity4 ?? 0 };
-        newProfile.weapon = { history: merged, pity5, pity4 };
+        newProfile.weapon = {
+          history: merged, pity5, pity4,
+          guaranteed4Star: hadNewEntries ? (action.guaranteed4Star ?? false) : (state.profile.weapon?.guaranteed4Star ?? false),
+        };
       } else if (action.bannerType === 'standardChar') {
         const merged = deduplicateMerge(state.profile.standardChar?.history, action.history);
         const hadNewEntries = merged !== state.profile.standardChar?.history;

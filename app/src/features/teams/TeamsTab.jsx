@@ -245,6 +245,7 @@ export default function TeamsTab({
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
+                          title={teamCompareEntries.length >= 5 ? 'Max 5 comparisons' : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? 'Add characters first' : 'Add to comparison'}
                           className="kuro-btn kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
                         >

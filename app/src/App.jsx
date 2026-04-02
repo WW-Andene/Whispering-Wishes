@@ -1263,7 +1263,21 @@ function WhisperingWishesInner() {
           const lastFive = fiveStars[fiveStars.length - 1];
           // Weapon Event Convene has no 50/50 - guaranteed is only relevant for character banners
           const guaranteed = type === 'featured' && lastFive?.won5050 === false;
-          dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, uid: data.uid || data.playerId });
+          // 4-star guarantee: check if last 4-star was off-banner (not one of the featured 4-stars)
+          let guaranteed4Star = false;
+          if (type === 'featured' || type === 'weapon') {
+            const fourStars = history.filter(p => p.rarity === 4);
+            const lastFour = fourStars[fourStars.length - 1];
+            if (lastFour) {
+              const featured4Names = type === 'featured'
+                ? (activeBanners.characters || []).flatMap(c => c.featured4Stars || [])
+                : (activeBanners.weapons || []).flatMap(w => w.featured4Stars || []);
+              if (featured4Names.length > 0) {
+                guaranteed4Star = !featured4Names.includes(lastFour.name);
+              }
+            }
+          }
+          dispatch({ type: 'IMPORT_HISTORY', bannerType: type, history, pity5: currentPity5, pity4: currentPity4, guaranteed, guaranteed4Star, uid: data.uid || data.playerId });
           totalImported += history.length;
         }
       });

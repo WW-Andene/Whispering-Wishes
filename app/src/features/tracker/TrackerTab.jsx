@@ -123,7 +123,8 @@ export default function TrackerTab({
                       pity5: state.profile.featured.pity5,
                       pity4: state.profile.featured.pity4,
                       totalPulls: state.profile.featured.history.length,
-                      guaranteed: state.profile.featured.guaranteed
+                      guaranteed: state.profile.featured.guaranteed,
+                      guaranteed4Star: state.profile.featured.guaranteed4Star,
                     } : null}
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
@@ -149,7 +150,8 @@ export default function TrackerTab({
                     stats={state.profile.weapon.history.length ? {
                       pity5: state.profile.weapon.pity5,
                       pity4: state.profile.weapon.pity4,
-                      totalPulls: state.profile.weapon.history.length
+                      totalPulls: state.profile.weapon.history.length,
+                      guaranteed4Star: state.profile.weapon.guaranteed4Star,
                     } : null}
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
@@ -427,6 +429,8 @@ export default function TrackerTab({
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] text-gray-500">{pull.banner}</span>
                               {pull.pity > 0 && <span className="text-[10px] text-gray-400">Pity: <span className={pull.rarity === 5 && pull.pity >= 70 ? 'text-red-400' : ''}>{pull.pity}</span></span>}
+                              {pull.rarity === 5 && pull.won5050 === true && <span className="text-[10px] text-emerald-400 font-medium">Won 50/50</span>}
+                              {pull.rarity === 5 && pull.won5050 === false && <span className="text-[10px] text-red-400 font-medium">Lost 50/50</span>}
                             </div>
                           </div>
                           {pull.timestamp && (
