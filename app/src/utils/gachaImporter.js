@@ -143,7 +143,6 @@ export async function fetchAllPools(params, signal, onProgress) {
 
     try {
       const poolItems = [];
-      const globalSeen = new Set();
       let endTime = '';
 
       for (let page = 0; page < 50; page++) {
@@ -178,45 +177,18 @@ export async function fetchAllPools(params, signal, onProgress) {
         const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
         if (!list.length) break;
 
-        // Build per-page keys: base fields + occurrence index within this page
-        const pageCounter = {};
-        let newCount = 0;
-        for (const item of list) {
-          const base = `${item.cardPoolType}|${item.resourceId}|${item.qualityLevel}|${item.name}|${item.time}`;
-          const idx = pageCounter[base] || 0;
-          pageCounter[base] = idx + 1;
-          const key = `${base}|${idx}`;
-
-          if (!globalSeen.has(key)) {
-            globalSeen.add(key);
-            poolItems.push(item);
-            newCount++;
-          }
-        }
-
+        poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
 
-        // If zero new items, we've fully overlapped - stop
-        if (newCount === 0) break;
-
-        // Cursor: oldest item's time
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
         if (!oldest?.time || oldest.time === endTime) {
-          // Stuck - fetch older records by jumping endTime back monthly
+          // Stuck - jump back monthly
           const stuckDate = new Date(oldest.time);
           for (let m = 1; m <= 24; m++) {
             if (signal?.aborted) break;
             const jumpDate = new Date(stuckDate);
             jumpDate.setMonth(jumpDate.getMonth() - m);
-            const jumpBody = {
-              playerId: String(params.playerId),
-              serverId: params.serverId || '',
-              cardPoolType: Number(poolType),
-              cardPoolId: params.cardPoolId || '',
-              languageCode: params.lang || 'en',
-              recordId: params.recordId || '',
-              endTime: jumpDate.toISOString(),
-            };
+            const jumpBody = { ...body, endTime: jumpDate.toISOString() };
             const c2 = new AbortController();
             const t2 = setTimeout(() => c2.abort(), 15000);
             const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
@@ -233,28 +205,10 @@ export async function fetchAllPools(params, signal, onProgress) {
               if (j2?.code !== 0) break;
               const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
               if (!l2.length) continue;
-              // Dedup with per-page counter
-              const jumpCounter = {};
-              let jumpNew = 0;
-              for (const item of l2) {
-                const base = `${item.cardPoolType}|${item.resourceId}|${item.qualityLevel}|${item.name}|${item.time}`;
-                const idx = jumpCounter[base] || 0;
-                jumpCounter[base] = idx + 1;
-                const key = `${base}|${idx}`;
-                if (!globalSeen.has(key)) {
-                  globalSeen.add(key);
-                  poolItems.push(item);
-                  jumpNew++;
-                }
-              }
+              poolItems.push(...l2);
               onProgress?.(poolType, 'fetching', poolItems.length);
-              if (jumpNew === 0) continue;
-              // Resume normal pagination from this batch
               const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
-              if (o2?.time) {
-                endTime = o2.time;
-                break;
-              }
+              if (o2?.time) { endTime = o2.time; break; }
             } catch { clearTimeout(t2); break; }
             await sleep(150);
           }
@@ -262,13 +216,25 @@ export async function fetchAllPools(params, signal, onProgress) {
           continue;
         }
         endTime = oldest.time;
-
         await sleep(150);
       }
 
+      // Dedup: each timestamp has exactly 1 or 10 items.
+      // Keep max 10 per timestamp.
       if (poolItems.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = poolItems;
-        total += poolItems.length;
+        const timeCounts = {};
+        const deduped = [];
+        // Sort newest first
+        poolItems.sort((a, b) => new Date(b.time) - new Date(a.time));
+        for (const item of poolItems) {
+          const count = timeCounts[item.time] || 0;
+          if (count < 10) {
+            timeCounts[item.time] = count + 1;
+            deduped.push(item);
+          }
+        }
+        allPulls[POOL_LABELS[poolType]] = deduped;
+        total += deduped.length;
       }
       onProgress?.(poolType, 'done', poolItems.length);
     } catch (err) {
