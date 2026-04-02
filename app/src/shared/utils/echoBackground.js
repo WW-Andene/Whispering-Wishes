@@ -25,11 +25,11 @@ export function eraseEchoBg(src, opts = {}) {
   if (pending.has(src)) return pending.get(src);
 
   const {
-    darkThreshold = 40,
-    colorTolerance = 8,
+    darkThreshold = 30,
+    colorTolerance = 16,
     saturationThreshold = 0.16,
     edgeErosion = 1,
-    cornerCrop = true,
+    cornerCrop = false,
   } = opts;
 
   const promise = new Promise((resolve) => {
