@@ -254,8 +254,8 @@ export default function CalculatorTab({ state, dispatch }) {
                     <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-cyan-400" />Lunite <span className="text-gray-500 font-normal">(converts to Astrite 1:1)</span></label>
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => setCalc('lunite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[300, 680, 1000].map(amt => (
-                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" aria-label={`Add ${amt} Lunite`}>+{amt}</button>
+                      {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString()} Lunite (${tip})`}>+{amt.toLocaleString()}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('lunite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Lunite">Clear</button>
                     </div>
