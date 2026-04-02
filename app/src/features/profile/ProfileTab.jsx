@@ -26,11 +26,19 @@ import AdminPanel from './AdminPanel.jsx';
 // Module-level constants (copied from App.jsx — profile/admin specific)
 const MAX_USERNAME_LENGTH = 24;
 const MAX_ADMIN_ATTEMPTS = 3;
-const ADMIN_LOCKOUT_MS = 24 * 60 * 60 * 1000;
+// Escalating lockout: 24h → 1 week → 1 month → permanent ban (after 3 lockouts)
+const LOCKOUT_ESCALATION = [
+  24 * 60 * 60 * 1000,      // 1st lockout: 24 hours
+  7 * 24 * 60 * 60 * 1000,  // 2nd lockout: 1 week
+  30 * 24 * 60 * 60 * 1000, // 3rd lockout: 1 month
+];
+const MAX_LOCKOUTS_BEFORE_BAN = 3;
 const ADMIN_TAP_TIMEOUT_MS = 1500;
 const formatLockoutRemaining = (ms) => {
-  const h = Math.floor(ms / 3600000);
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
   const m = Math.ceil((ms % 3600000) / 60000);
+  if (d > 0) return `${d}d ${h}h`;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 };
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
@@ -129,19 +137,16 @@ export default function ProfileTab({
   const [adminMiniMode, setAdminMiniMode] = useState(false);
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
+      // Check permanent ban
+      if (localStorage.getItem('ww-admin-banned') === 'true') return Infinity;
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
-      const failCount = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10);
       if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
         return parseInt(lockoutUntil, 10);
       }
+      // Lockout expired — clear fail counter (but keep lockdownCount for escalation)
       if (lockoutUntil) {
         localStorage.removeItem('ww-admin-lockout');
         localStorage.removeItem('ww-admin-fails');
-      }
-      if (failCount >= MAX_ADMIN_ATTEMPTS * 3) {
-        const extendedLockout = Date.now() + ADMIN_LOCKOUT_MS * 4;
-        localStorage.setItem('ww-admin-lockout', String(extendedLockout));
-        return extendedLockout;
       }
     } catch (err) { silentCatch(err, 'admin lockout init'); }
     return false;
@@ -279,6 +284,10 @@ export default function ProfileTab({
     setAdminTapCount(newCount);
     if (newCount >= 5) {
       try {
+        if (localStorage.getItem('ww-admin-banned') === 'true') {
+          toast?.addToast?.('Admin permanently locked.', 'error');
+          adminTapCountRef.current = 0; setAdminTapCount(0); return;
+        }
         const lockoutUntil = localStorage.getItem('ww-admin-lockout');
         if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
           toast?.addToast?.(`Admin locked for ${formatLockoutRemaining(parseInt(lockoutUntil, 10) - Date.now())}. Try again later.`, 'error');
@@ -351,6 +360,9 @@ export default function ProfileTab({
       return;
     }
     const now = Date.now();
+    // Check permanent ban
+    try { if (localStorage.getItem('ww-admin-banned') === 'true') { toast?.addToast?.('Admin permanently locked.', 'error'); return; } } catch {}
+    if (adminSessionLockUntilRef.current === Infinity) { toast?.addToast?.('Admin permanently locked.', 'error'); return; }
     if (adminSessionLockUntilRef.current > now) {
       toast?.addToast?.(`Too many failed attempts. Try again in ${formatLockoutRemaining(adminSessionLockUntilRef.current - now)}.`, 'error');
       return;
@@ -383,22 +395,37 @@ export default function ProfileTab({
         localStorage.setItem('ww-admin-fails', storageFails.toString());
         const totalFails = Math.max(sessionFails, storageFails);
         if (totalFails >= MAX_ADMIN_ATTEMPTS) {
-          const lockoutTime = now + ADMIN_LOCKOUT_MS;
-          adminSessionLockUntilRef.current = lockoutTime;
-          localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
-          setAdminLockedUntil(lockoutTime);
-          setShowAdminPanel(false);
-          setAdminPassword('');
-          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+          // Escalate lockout: count how many times we've been locked out before
+          const lockdownCount = parseInt(localStorage.getItem('ww-admin-lockdowns') || '0', 10);
+          if (lockdownCount >= MAX_LOCKOUTS_BEFORE_BAN) {
+            // Permanent ban after 3+ lockouts
+            localStorage.setItem('ww-admin-banned', 'true');
+            adminSessionLockUntilRef.current = Infinity;
+            setAdminLockedUntil(Infinity);
+            setShowAdminPanel(false);
+            setAdminPassword('');
+            toast?.addToast?.('Admin permanently locked.', 'error');
+          } else {
+            const lockoutDuration = LOCKOUT_ESCALATION[Math.min(lockdownCount, LOCKOUT_ESCALATION.length - 1)];
+            const lockoutTime = now + lockoutDuration;
+            adminSessionLockUntilRef.current = lockoutTime;
+            localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
+            localStorage.setItem('ww-admin-lockdowns', (lockdownCount + 1).toString());
+            localStorage.setItem('ww-admin-fails', '0');
+            setAdminLockedUntil(lockoutTime);
+            setShowAdminPanel(false);
+            setAdminPassword('');
+            toast?.addToast?.(`Too many failed attempts. Locked for ${formatLockoutRemaining(lockoutDuration)}.`, 'error');
+          }
         } else {
           toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - totalFails} attempts remaining)`, 'error');
         }
       } catch {
         if (sessionFails >= MAX_ADMIN_ATTEMPTS) {
-          adminSessionLockUntilRef.current = now + ADMIN_LOCKOUT_MS;
+          adminSessionLockUntilRef.current = now + LOCKOUT_ESCALATION[0];
           setShowAdminPanel(false);
           setAdminPassword('');
-          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+          toast?.addToast?.(`Too many failed attempts. Locked for ${formatLockoutRemaining(LOCKOUT_ESCALATION[0])}.`, 'error');
         } else {
           toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - sessionFails} attempts remaining)`, 'error');
         }
