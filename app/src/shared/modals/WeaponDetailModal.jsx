@@ -1,0 +1,175 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — shared/modals/WeaponDetailModal.jsx
+// WeaponDetailModal
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import React from 'react';
+import { Swords, Star, TrendingUp, X } from 'lucide-react';
+import {
+  WEAPON_DATA, MATERIAL_IMAGES,
+  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
+  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
+  WEAPON_REFINE_SCALE,
+} from '../../appcore-data.js';
+import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { hideOnError } from '../utils/imageHelpers.js';
+
+// Material item display helper
+const MaterialItem = ({ name, qty }) => {
+  const img = MATERIAL_IMAGES[name];
+  return (
+    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-[var(--border-medium)] min-w-0">
+      {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] text-gray-300 truncate leading-tight">{name}</div>
+        {qty != null && qty > 0 && <div className="text-[10px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
+      </div>
+    </div>
+  );
+};
+
+const WEAPON_RARITY_COLORS = {
+  5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
+  4: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
+  3: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/50' },
+  2: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50' },
+  1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
+};
+const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
+  const data = WEAPON_DATA[name];
+  if (!data) return null;
+
+  const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
+
+  return (
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
+      <div
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
+        onClick={e => e.stopPropagation()}
+      >
+       <div className="overflow-y-auto max-h-full">
+        {/* Header */}
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''}`} style={{ contain: 'paint' }} data-sheet-header>
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          {imageUrl && (
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
+            <X size={16} />
+          </button>
+          <div className="absolute bottom-3 left-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
+            </div>
+            <h2 className="text-xl font-semibold text-white">{name}</h2>
+            <div className="flex items-center gap-0.5 mt-0.5">
+              {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-3">
+          {/* 1. Stats bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {data.baseAtk && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+                <span className="text-[9px] text-gray-400">ATK</span>
+                <span className="text-xs font-bold text-red-400">{data.baseAtk}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
+              <span className="text-[9px] text-gray-400">{data.stat}</span>
+              <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
+            </div>
+            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => (
+              <span key={i} className="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
+            ))}
+          </div>
+
+          {/* 2. Description */}
+          {data.desc && (() => {
+            const sig = data.desc.match(/^(\w+ signature)\.\s*/);
+            const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
+            const dot = rest.indexOf('. ');
+            const lore = dot > 0 ? rest.slice(0, dot + 1) : null;
+            const effect = dot > 0 ? rest.slice(dot + 2) : rest;
+            return (
+              <div className="text-sm space-y-1">
+                {sig && <div className="text-[10px] text-gray-500 uppercase tracking-wider">{sig[1]}</div>}
+                {lore && <p className="text-gray-400 italic">{lore}</p>}
+                <p className="text-gray-300">{effect}</p>
+              </div>
+            );
+          })()}
+
+          {/* 3. Passive */}
+          <div className={`p-3 rounded-xl border ${colors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
+            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
+            <div className={`text-xs font-medium ${colors.text}`}>{data.passive}</div>
+          </div>
+
+          {/* 4. Refinement Scaling */}
+          {data.pv && Object.keys(data.pv).length > 0 && (
+            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Refinement Scaling</div>
+              <div className="grid grid-cols-5 gap-1">
+                {WEAPON_REFINE_SCALE.map((scale, i) => (
+                  <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
+                    <div className={`text-[9px] mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
+                    {Object.entries(data.pv).map(([stat, val]) => (
+                      <div key={stat} className="text-[9px] text-gray-300">
+                        <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
+                        <div className="text-gray-500 text-[8px]">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 5. Ascension Materials */}
+          {data.ascensionMaterials && (() => {
+            const costs = data.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
+            const forgeryTiers = FORGERY_MAT_TIERS[data.ascensionMaterials.forgery];
+            const commonTiers = COMMON_MAT_TIERS[data.ascensionMaterials.common];
+            return (
+              <div>
+                <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+                  <Swords size={14} className="text-orange-400" /> Ascension Materials
+                </h3>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {forgeryTiers && <>
+                    <MaterialItem name={forgeryTiers[0]} qty={costs.forgeryT3} />
+                    <MaterialItem name={forgeryTiers[1]} qty={costs.forgeryT4} />
+                  </>}
+                  {commonTiers && <>
+                    <MaterialItem name={commonTiers[0]} qty={costs.commonT3} />
+                    <MaterialItem name={commonTiers[1]} qty={costs.commonT4} />
+                  </>}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* 6. EXP Materials */}
+          <div>
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+            </h3>
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(data.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4).filter(([, qty]) => qty > 0).map(([mat, qty]) => (
+                <MaterialItem key={mat} name={mat} qty={qty} />
+              ))}
+            </div>
+          </div>
+        </div>
+       </div>
+      </div>
+    </FocusTrapModal>
+  );
+};
+
+export { WeaponDetailModal };

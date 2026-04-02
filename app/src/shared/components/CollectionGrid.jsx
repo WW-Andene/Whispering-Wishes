@@ -1,0 +1,177 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — shared/components/CollectionGrid.jsx
+// CollectionGridSection component
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import React, { useState, memo } from 'react';
+import { User, Crown } from 'lucide-react';
+import { CHARACTER_DATA, haptic } from '../../appcore-data.js';
+import { hideOnError } from '../utils/imageHelpers.js';
+
+// Internal: CollectionGridCard
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
+  const cardStateClass = isSelected
+    ? 'border-emerald-500 ring-2 ring-emerald-500/50'
+    : isProfilePic
+      ? ownedBg
+      : owned
+        ? `${ownedBg} ${ownedBorder} ${glowClass}`
+        : 'bg-neutral-800/50 border-neutral-700/50';
+  const cardClassName = `relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${cardStateClass}`;
+  return (
+  <div
+    className={cardClassName}
+    style={{ height: '140px', contain: 'paint', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
+    role="button"
+    tabIndex={0}
+    aria-label={`${name}${owned ? `, owned${count > 1 ? ` ×${count}` : ''}` : ', not owned'}${isProfilePic ? ', current profile picture' : ''}${isNew ? ', new' : ''}`}
+    onClick={() => {
+      if (framingMode) {
+        setEditingImage(imageKey);
+      } else if (onClickCard) {
+        haptic.light();
+        onClickCard();
+      }
+    }}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (framingMode) {
+          setEditingImage(imageKey);
+        } else if (onClickCard) {
+          haptic.light();
+          onClickCard();
+        }
+      }
+    }}
+  >
+    {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
+    {imgUrl ? (
+      <div className="absolute inset-0 collection-img-wrap" style={{
+        maskImage: isEcho
+          ? 'radial-gradient(ellipse 75% 70% at center, black 45%, transparent 90%)'
+          : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+        WebkitMaskImage: isEcho
+          ? 'radial-gradient(ellipse 75% 70% at center, black 45%, transparent 90%)'
+          : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+      }}>
+        <img
+          src={imgUrl}
+          alt={name}
+          loading="lazy"
+          className="w-full h-full object-contain pointer-events-none"
+          style={{
+            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+            opacity: owned ? collOpacity : 0.3,
+            filter: owned ? 'none' : 'grayscale(100%)',
+            maskImage: collMask,
+            WebkitMaskImage: collMask
+          }}
+          onError={hideOnError}
+        />
+      </div>
+    ) : (
+      <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
+    )}
+    {isNew && (
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(237,175,24,0.5)', textShadow: 'none'}}>New</div>
+    )}
+    {/* Profile pic setter — top-right corner */}
+    {owned && !framingMode && onSetProfilePic && (
+      <button
+        className={`profile-pic-btn absolute z-20 flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
+        style={{ top: '4px', right: '4px', width: '22px', height: '22px', minHeight: '22px', borderRadius: '6px', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
+        title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
+        aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
+      >
+        <Crown size={12} />
+      </button>
+    )}
+    {isSelected && (
+      <div className="absolute top-1 right-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+        <span className="text-black text-[10px]">✓</span>
+      </div>
+    )}
+    <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+      {owned ? (
+        <div className={`${countColor} font-bold text-xl`}>{countLabel}</div>
+      ) : (
+        <div className="text-gray-500 font-bold text-xl">—</div>
+      )}
+      <div className={`text-[10px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
+    </div>
+  </div>
+  );
+}, (prev, next) =>
+  prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
+  prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
+  prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
+  prev.isProfilePic === next.isProfilePic &&
+  prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
+);
+CollectionGridCard.displayName = 'CollectionGridCard';
+
+// Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (items.length === 0) return (
+    <div className="text-center py-8">
+      <div className="text-gray-500 text-sm mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
+      <p className="text-gray-600 text-[10px] mb-3">Try adjusting your filters or clearing them</p>
+      {hasActiveFilters && onClearFilters && (
+        <button onClick={onClearFilters} className="kuro-btn text-[10px] px-3 py-1.5 active-gold">Clear Filters</button>
+      )}
+    </div>
+  );
+  const ownedCount = items.filter(([_, c]) => c > 0).length;
+  // When collapsed, show 3 rows worth of items (3 cols on mobile = 9 items)
+  const COLLAPSED_ROWS = 3;
+  const collapsedCount = COLLAPSED_ROWS * 3; // 3 cols on mobile
+  const showItems = collapsible && !expanded ? items.slice(0, collapsedCount) : items;
+  const canCollapse = collapsible && items.length > collapsedCount;
+  return (
+    <>
+      <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{items.length} shown{hasActiveFilters ? ` (${totalCount} total)` : ''}</div>
+      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+        {showItems.map(([name, count]) => {
+          const imgUrl = collectionImages[name];
+          const imageKey = `collection-${name}`;
+          const isNew = isCharacter
+            ? activeBanners.characters?.some(c => c.name === name && c.isNew)
+            : activeBanners.weapons?.some(w => w.name === name && w.isNew);
+          return (
+            <CollectionGridCard
+              key={name} name={name} count={count}
+              imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
+              isSelected={framingMode && editingImage === imageKey}
+              owned={count > 0} collMask={collMask} collOpacity={collOpacity}
+              glowClass={glowClass} ownedBg={ownedBg} ownedBorder={ownedBorder}
+              countLabel={dataType === 'echo' ? '' : count > 0 ? `${countPrefix}${countPrefix === 'S' ? count - 1 : count}` : ''} countColor={countColor}
+              framingMode={framingMode} setEditingImage={setEditingImage} imageKey={imageKey}
+              onClickCard={dataLookup[name] ? () => setDetailModal({ show: true, type: dataType, name, imageUrl: imgUrl, framing: getImageFraming(imageKey) }) : null}
+              isNew={isNew}
+              isProfilePic={profilePic === name}
+              onSetProfilePic={onSetProfilePic}
+              isCharOwned={ownedChars ? ownedChars.includes(name) : undefined}
+              onToggleOwned={toggleOwned}
+              isEcho={dataType === 'echo'}
+            />
+          );
+        })}
+      </div>
+      {canCollapse && (
+        <button
+          onClick={() => setExpanded(prev => !prev)}
+          className="w-full mt-2 py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-[10px] font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1"
+          style={{ background: 'var(--bg-btn)' }}
+        >
+          {expanded ? 'Show Less' : `Show All (${items.length})`}
+        </button>
+      )}
+    </>
+  );
+});
+CollectionGridSection.displayName = 'CollectionGridSection';
+
+export { CollectionGridSection };
