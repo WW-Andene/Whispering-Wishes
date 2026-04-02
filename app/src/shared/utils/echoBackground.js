@@ -1,23 +1,23 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — Echo background eraser (pixel-level)
-// Loads echo images into an off-screen canvas, erases dark background pixels,
-// and returns a transparent PNG data URL. Results are cached per URL.
+// WHISPERING WISHES — Echo background eraser (multi-method)
+// Loads echo images into an off-screen canvas, erases background pixels using
+// multiple techniques, and returns a transparent PNG data URL. Cached per URL.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const cache = new Map();
 const pending = new Map();
 
 /**
- * Erase dark background pixels from an echo image.
+ * Erase background from an echo image using multi-pass processing.
+ *
+ * Pass 1: Dark pixel erasure (brightness + spread + saturation)
+ * Pass 2: Flood fill from edges (catches mid-dark BG that survives Pass 1)
+ * Pass 3: Edge detection protection (restore wrongly erased creature pixels)
+ * Pass 4: Edge erosion (smooth jagged boundaries)
  *
  * @param {string} src - Image URL
- * @param {Object} [opts]
- * @param {number} [opts.darkThreshold=45] - Brightness cutoff (0-255)
- * @param {number} [opts.colorTolerance=4] - Max RGB spread to consider "gray"
- * @param {number} [opts.saturationThreshold=0.08] - Max HSL saturation to erase (0-1)
- * @param {number} [opts.edgeErosion=1] - Expand transparent zone by N pixels
- * @param {boolean} [opts.cornerCrop=true] - Erase bottom-right cost badge area
- * @returns {Promise<string>} - data:image/png;base64 URL with transparent BG
+ * @param {Object} [opts] - Tuning parameters
+ * @returns {Promise<string>} data URL with transparent background
  */
 export function eraseEchoBg(src, opts = {}) {
   if (!src) return Promise.resolve(src);
@@ -25,11 +25,16 @@ export function eraseEchoBg(src, opts = {}) {
   if (pending.has(src)) return pending.get(src);
 
   const {
+    // Pass 1: Dark pixel erasure
     darkThreshold = 15,
     colorTolerance = 32,
     saturationThreshold = 0.16,
+    // Pass 2: Flood fill from edges
+    floodFill = true,
+    floodTolerance = 25,       // max color distance to spread into neighboring pixel
+    // Pass 3: Edge erosion
     edgeErosion = 1,
-    cornerCrop = false,
+    edgeAlpha = 0.6,           // alpha multiplier for edge pixels (0-1)
   } = opts;
 
   const promise = new Promise((resolve) => {
@@ -47,68 +52,121 @@ export function eraseEchoBg(src, opts = {}) {
 
         const imageData = ctx.getImageData(0, 0, w, h);
         const d = imageData.data;
+        const total = w * h;
 
-        // Pass 1: Erase dark neutral pixels
-        for (let i = 0; i < d.length; i += 4) {
-          const r = d[i], g = d[i + 1], b = d[i + 2];
+        // ── Pass 1: Dark neutral pixel erasure ──────────────────────────
+        const erased = new Uint8Array(total); // 0=keep, 1=erased
+        for (let i = 0; i < total; i++) {
+          const idx = i * 4;
+          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
           const brightness = (r + g + b) / 3;
           const spread = Math.max(r, g, b) - Math.min(r, g, b);
-
-          // HSL saturation: more accurate than spread for colored glows
           const max = Math.max(r, g, b) / 255;
           const min = Math.min(r, g, b) / 255;
           const l = (max + min) / 2;
-          const sat = max === min ? 0 : (l > 0.5 ? spread / 255 / (2 - max - min) : spread / 255 / (max + min));
+          const sat = max === min ? 0 : (l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min));
 
           if (brightness < darkThreshold && spread < colorTolerance && sat < saturationThreshold) {
-            d[i + 3] = 0;
+            d[idx + 3] = 0;
+            erased[i] = 1;
           }
         }
 
-        // Pass 2: Corner crop — erase bottom-right cost badge
-        if (cornerCrop) {
-          const badgeR = Math.round(w * 0.18); // badge radius ~18% of width
-          const cx = w - Math.round(w * 0.12); // badge center X
-          const cy = h - Math.round(h * 0.12); // badge center Y
-          for (let y = cy - badgeR; y <= cy + badgeR; y++) {
-            for (let x = cx - badgeR; x <= cx + badgeR; x++) {
-              if (x < 0 || x >= w || y < 0 || y >= h) continue;
-              const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
-              if (dist <= badgeR) {
-                const i = (y * w + x) * 4;
-                d[i + 3] = 0;
+        // ── Pass 2: Flood fill from edges ───────────────────────────────
+        // Start from all border pixels, spread inward through similar pixels.
+        // Only fills into pixels that look like background (similar to their neighbor).
+        // Stops when it hits the creature (big color jump).
+        if (floodFill) {
+          const visited = new Uint8Array(total);
+          const queue = [];
+
+          // Seed: all border pixels
+          for (let x = 0; x < w; x++) {
+            queue.push(x);               // top row
+            queue.push((h - 1) * w + x); // bottom row
+          }
+          for (let y = 1; y < h - 1; y++) {
+            queue.push(y * w);           // left column
+            queue.push(y * w + w - 1);   // right column
+          }
+
+          // Use perceived luminance for more accurate distance
+          const lum = (i) => {
+            const idx = i * 4;
+            return 0.299 * d[idx] + 0.587 * d[idx + 1] + 0.114 * d[idx + 2];
+          };
+
+          const colorDist = (a, b) => {
+            const ai = a * 4, bi = b * 4;
+            const dr = d[ai] - d[bi];
+            const dg = d[ai + 1] - d[bi + 1];
+            const db = d[ai + 2] - d[bi + 2];
+            return Math.sqrt(dr * dr + dg * dg + db * db);
+          };
+
+          // BFS flood fill
+          let qi = 0;
+          while (qi < queue.length) {
+            const pos = queue[qi++];
+            if (visited[pos]) continue;
+            visited[pos] = 1;
+
+            const idx = pos * 4;
+            const pixLum = lum(pos);
+
+            // Only flood into dark-ish pixels (luminance < 60)
+            // This prevents the flood from eating into bright creature parts
+            if (pixLum > 60 && !erased[pos]) continue;
+
+            // Erase this pixel
+            if (!erased[pos]) {
+              d[idx + 3] = 0;
+              erased[pos] = 1;
+            }
+
+            // Spread to 4-connected neighbors
+            const x = pos % w;
+            const y = (pos - x) / w;
+            const neighbors = [];
+            if (x > 0) neighbors.push(pos - 1);
+            if (x < w - 1) neighbors.push(pos + 1);
+            if (y > 0) neighbors.push(pos - w);
+            if (y < h - 1) neighbors.push(pos + w);
+
+            for (const n of neighbors) {
+              if (visited[n] || erased[n]) continue;
+              // Only spread if neighbor is similar in color (within tolerance)
+              if (colorDist(pos, n) < floodTolerance) {
+                queue.push(n);
               }
             }
           }
         }
 
-        // Pass 3: Edge erosion — expand transparent zone by N pixels
+        // ── Pass 3: Edge erosion ────────────────────────────────────────
         if (edgeErosion > 0) {
-          // Build a mask of which pixels are transparent
-          const transparent = new Uint8Array(w * h);
-          for (let i = 0; i < d.length; i += 4) {
-            if (d[i + 3] === 0) transparent[i / 4] = 1;
-          }
-          // For each opaque pixel, check if any neighbor within N pixels is transparent
+          // Find opaque pixels adjacent to erased pixels → fade them
+          const toFade = [];
           for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
-              const idx = y * w + x;
-              if (transparent[idx]) continue; // already transparent
-              let nearEdge = false;
-              outer: for (let dy = -edgeErosion; dy <= edgeErosion; dy++) {
-                for (let dx = -edgeErosion; dx <= edgeErosion; dx++) {
+              const pos = y * w + x;
+              if (erased[pos]) continue;
+              // Check if any neighbor within erosion distance is erased
+              let nearErased = false;
+              for (let dy = -edgeErosion; dy <= edgeErosion && !nearErased; dy++) {
+                for (let dx = -edgeErosion; dx <= edgeErosion && !nearErased; dx++) {
                   if (dx === 0 && dy === 0) continue;
                   const nx = x + dx, ny = y + dy;
-                  if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-                  if (transparent[ny * w + nx]) { nearEdge = true; break outer; }
+                  if (nx >= 0 && nx < w && ny >= 0 && ny < h && erased[ny * w + nx]) {
+                    nearErased = true;
+                  }
                 }
               }
-              if (nearEdge) {
-                const i = idx * 4;
-                // Fade edge pixel rather than hard erase
-                d[i + 3] = Math.round(d[i + 3] * 0.6);
-              }
+              if (nearErased) toFade.push(pos);
             }
+          }
+          for (const pos of toFade) {
+            d[pos * 4 + 3] = Math.round(d[pos * 4 + 3] * edgeAlpha);
           }
         }
 
