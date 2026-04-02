@@ -1263,11 +1263,14 @@ function WhisperingWishesInner() {
           const lastFive = fiveStars[fiveStars.length - 1];
           // Weapon Event Convene has no 50/50 - guaranteed is only relevant for character banners
           const guaranteed = type === 'featured' && lastFive?.won5050 === false;
-          // 4-star guarantee: check if last 4-star was off-banner (not one of the featured 4-stars)
+          // 4-star guarantee: check if last 4-star from the CURRENT banner phase was off-banner
+          // Only look at pulls after the current banner's start date to avoid false positives
+          // from previous phases that had different featured 4-stars
           let guaranteed4Star = false;
           if (type === 'featured' || type === 'weapon') {
-            const fourStars = history.filter(p => p.rarity === 4);
-            const lastFour = fourStars[fourStars.length - 1];
+            const bannerStart = activeBanners.startDate ? new Date(activeBanners.startDate).getTime() : 0;
+            const currentPhaseFourStars = history.filter(p => p.rarity === 4 && new Date(p.timestamp).getTime() >= bannerStart);
+            const lastFour = currentPhaseFourStars[currentPhaseFourStars.length - 1];
             if (lastFour) {
               const featured4Names = type === 'featured'
                 ? (activeBanners.characters || []).flatMap(c => c.featured4Stars || [])
