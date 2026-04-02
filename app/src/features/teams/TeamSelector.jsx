@@ -1,17 +1,10 @@
 import React from 'react';
 import { Search, Star, Users, X } from 'lucide-react';
-import {
-  haptic,
-  CHARACTER_DATA,
-  getElementColor, getElementBg, getElementBorder,
-} from '../../appcore-data.js';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  KuroSelect,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 export default function TeamSelector({
   teamSelectorOpen,

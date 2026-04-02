@@ -20,42 +20,30 @@
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
 import { AlertCircle, Archive, BarChart3, Calculator, Calendar, Check, ChevronDown, Crown, Diamond, Download, Fish, Flame, Gamepad2, Gift, Heart, Info, Menu, Settings, Shield, Sparkles, Star, Sword, Swords, Target, TrendingDown, TrendingUp, Trophy, User, Users, X, Zap } from 'lucide-react';
-// --- appcore-data.js ---
-import {
-  APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic, generateUniqueId,
-  calculateLuckRating, SERVERS, getServerOffset,
-  CURRENT_BANNERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL,
-  DEFAULT_COLLECTION_IMAGES, RELEASE_ORDER,
-  ALL_5STAR_RESONATORS, ALL_5STAR_WEAPONS,
-  ALL_4STAR_RESONATORS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS,
-  ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS,
-  TAB_ORDER,
-  getElementColor,
-  CHARACTER_THEMES,
-} from './appcore-data.js';
-// --- appcore-engine.js ---
-import {
-  getServerAdjustedEnd,
-  initialState, STORAGE_KEY, storageAvailable,
-  sanitizeStateObj, sanitizeImportedState,
-  loadFromStorage, saveToStorage, reducer, createUndoReducer,
-  ACTION, UNDOABLE_ACTIONS,
-} from './appcore-engine.js';
-// --- appcore-providers.jsx ---
-import {
-  PWAProvider, usePWA, ToastProvider, useToast,
-  useFocusTrap, FocusTrapModal,
-  ConfirmProvider, useConfirm,
-  OnboardingModal, KuroStyles,
-} from './appcore-providers.jsx';
-// --- appcore-components.jsx ---
-import {
-  CharacterDetailModal, WeaponDetailModal, EchoDetailModal,
-  TabButton,
-  AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton,
-  BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour,
-  getActiveBanners,
-} from './appcore-components.jsx';
+// --- data ---
+import { ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
+import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES } from './data/banners.js';
+import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, SERVERS, TAB_ORDER, getServerOffset } from './data/constants.js';
+import { haptic, generateUniqueId, calculateLuckRating, getElementColor } from './utils/helpers.js';
+// --- core ---
+import { ACTION, UNDOABLE_ACTIONS, createUndoReducer, initialState, reducer } from './core/reducer.js';
+import { STORAGE_KEY, storageAvailable, loadFromStorage, saveToStorage, sanitizeStateObj, sanitizeImportedState } from './core/storage.js';
+import { getServerAdjustedEnd } from './core/time.js';
+// --- providers ---
+import { PWAProvider, usePWA } from './providers/PWAProvider.jsx';
+import { ToastProvider, useToast } from './providers/ToastProvider.jsx';
+import { ConfirmProvider, useConfirm } from './providers/ConfirmProvider.jsx';
+import { FocusTrapModal, useFocusTrap } from './providers/FocusTrapModal.jsx';
+import { KuroStyles } from './providers/KuroStyles.jsx';
+import { OnboardingModal } from './providers/OnboardingModal.jsx';
+// --- shared ---
+import { CharacterDetailModal } from './shared/modals/CharacterDetailModal.jsx';
+import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
+import { EchoDetailModal } from './shared/modals/EchoDetailModal.jsx';
+import { TabButton } from './shared/components/Card.jsx';
+import { AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton } from './shared/errors/ErrorBoundaries.jsx';
+import { BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour } from './shared/backgrounds/Backgrounds.jsx';
+import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // --- Feature tabs ---
 import EventsTab from './features/events/EventsTab.jsx';
 import TrackerTab from './features/tracker/TrackerTab.jsx';

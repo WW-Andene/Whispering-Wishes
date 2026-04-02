@@ -1,15 +1,10 @@
 import React from 'react';
 import { Sword, X } from 'lucide-react';
-import {
-  haptic,
-  CHARACTER_DATA, WEAPON_DATA,
-} from '../../appcore-data.js';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { haptic } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 export default function WeaponSelector({
   weaponSelectorOpen,

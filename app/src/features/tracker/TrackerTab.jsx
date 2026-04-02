@@ -5,17 +5,13 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
-import {
-  BANNER_HISTORY,
-} from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  BannerCard, StandardBannerSection,
-  hideOnError,
-} from '../../appcore-components.jsx';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
+import { BANNER_HISTORY } from '../../data/banners.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { BannerCard, StandardBannerSection } from '../../shared/components/BannerCard.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 
 const FOCUS_DELAY_MS = 0;
 const TRACKER_CATEGORIES = Object.freeze([

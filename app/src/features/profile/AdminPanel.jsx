@@ -7,15 +7,16 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, ClipboardList, Minus, Plus, RefreshCcw, Settings, X } from 'lucide-react';
-import { APP_VERSION, DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody,
-  KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  ADMIN_BANNER_KEY,
-  hideOnError,
-} from '../../appcore-components.jsx';
-import { storageAvailable } from '../../appcore-engine.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { APP_VERSION } from '../../data/constants.js';
+import { DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../data/banners.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
+import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
+import { ADMIN_BANNER_KEY } from '../../shared/components/BannerCard.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { storageAvailable } from '../../core/storage.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 // Recharts removed — using native SVG for charts
 
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';

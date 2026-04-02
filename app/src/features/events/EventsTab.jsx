@@ -5,17 +5,13 @@
 
 import React, { useMemo, useRef } from 'react';
 import { RefreshCcw, Calendar, CheckCircle, Clock } from 'lucide-react';
-import {
-  EVENTS, getServerOffset,
-} from '../../appcore-data.js';
-import {
-  getServerAdjustedEnd, getRecurringEventEnd,
-  getNextDailyReset, getNextWeeklyReset,
-} from '../../appcore-engine.js';
-import {
-  Card, CardHeader, CardBody, EventCard, TabBackground, TabErrorBoundary,
-  getActiveBanners,
-} from '../../appcore-components.jsx';
+import { EVENTS } from '../../data/banners.js';
+import { getServerOffset } from '../../data/constants.js';
+import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { EventCard, getActiveBanners } from '../../shared/components/BannerCard.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 
 export default function EventsTab({
   state,

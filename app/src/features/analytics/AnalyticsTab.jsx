@@ -5,13 +5,16 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
-import { MEDAL_COLORS, calculateLuckRating, ALL_CHARACTERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../appcore-data.js';
-import { storageAvailable } from '../../appcore-engine.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  TROPHY_ICON_MAP, hideOnError,
-} from '../../appcore-components.jsx';
-import { FocusTrapModal, useFocusTrap } from '../../appcore-providers.jsx';
+import { ALL_CHARACTERS } from '../../data/characters.js';
+import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../data/constants.js';
+import { calculateLuckRating } from '../../utils/helpers.js';
+import { storageAvailable } from '../../core/storage.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
 
 const LEADERBOARD_DISPLAY_LIMIT = 20;
 

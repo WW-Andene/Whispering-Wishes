@@ -5,14 +5,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { Calendar, Check, ChevronDown, Minus, Plus } from 'lucide-react';
-import {
-  ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY,
-  SUBSCRIPTIONS, generateUniqueId,
-} from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  CountdownTimer, KuroSelect,
-} from '../../appcore-components.jsx';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
+import { generateUniqueId } from '../../utils/helpers.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 export default function PlannerTab({
   state,

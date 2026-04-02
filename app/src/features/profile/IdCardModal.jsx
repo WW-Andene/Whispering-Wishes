@@ -5,9 +5,11 @@
 
 import React from 'react';
 import { Crown, Download, Monitor, Smartphone, Star, X } from 'lucide-react';
-import { CHARACTER_DATA, HEADER_ICON, ALL_CHARACTERS } from '../../appcore-data.js';
-import { TROPHY_ICON_MAP, hideOnError } from '../../appcore-components.jsx';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { CHARACTER_DATA, ALL_CHARACTERS } from '../../data/characters.js';
+import { HEADER_ICON } from '../../data/constants.js';
+import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 

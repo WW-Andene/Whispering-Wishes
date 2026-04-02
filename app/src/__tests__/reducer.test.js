@@ -3,7 +3,7 @@
  * Tests all reducer actions, undo system, and state transitions.
  */
 import { describe, it, expect } from 'vitest';
-import { reducer, createUndoReducer, initialState, ACTION, UNDOABLE_ACTIONS } from '../appcore-engine.js';
+import { reducer, createUndoReducer, initialState, ACTION, UNDOABLE_ACTIONS } from '../core/reducer.js';
 
 describe('Reducer — basic actions', () => {
   it('SET_SERVER changes server', () => {

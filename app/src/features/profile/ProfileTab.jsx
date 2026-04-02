@@ -7,30 +7,19 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Award, Check, ChevronDown, Crown, Diamond, Download, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
-import {
-  APP_VERSION, HEADER_ICON, haptic,
-  SERVERS, getServerOffset,
-  CURRENT_BANNERS, CHARACTER_DATA,
-  DEFAULT_COLLECTION_IMAGES, ALL_CHARACTERS,
-  ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS,
-  ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
-  getElementColor, getElementBg,
-  CHARACTER_THEMES,
-} from '../../appcore-data.js';
-import {
-  storageAvailable,
-} from '../../appcore-engine.js';
-import {
-  useFocusTrap, FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  TROPHY_ICON_MAP, TabBackground,
-  Card, CardHeader, CardBody,
-  TabErrorBoundary,
-  ADMIN_BANNER_KEY, ADMIN_HASH,
-  VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
+import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES } from '../../data/banners.js';
+import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
+import { storageAvailable } from '../../core/storage.js';
+import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
+import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 

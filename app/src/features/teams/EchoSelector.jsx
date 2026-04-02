@@ -1,17 +1,11 @@
 import React from 'react';
 import { Diamond, Star, X } from 'lucide-react';
-import {
-  haptic,
-  CHARACTER_DATA, ECHO_SETS,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA,
-} from '../../appcore-data.js';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  KuroSelect,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
+import { haptic } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 export default function EchoSelector({
   echoSelectorOpen,

@@ -1,21 +1,14 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, X, Zap } from 'lucide-react';
-import {
-  haptic,
-  CHARACTER_DATA, WEAPON_DATA, ECHO_SETS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
-  WEAPON_REFINE_SCALE,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA,
-  ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES,
-  getElementColor, getElementBg, getElementBorder,
-} from '../../appcore-data.js';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  Card, CardHeader, CardBody,
-  KuroSelect,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
+import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
+import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,

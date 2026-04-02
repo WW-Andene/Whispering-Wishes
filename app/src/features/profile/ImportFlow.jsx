@@ -7,11 +7,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Camera, Check, ClipboardList, Download, Gamepad2, Link, Loader, Monitor, Smartphone, Upload, X } from 'lucide-react';
 import { parseGachaUrl, buildFetchParams, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, POOL_LABELS } from '../../utils/gachaImporter.js';
-import { MAX_IMPORT_SIZE_MB } from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody,
-  ImportGuide,
-} from '../../appcore-components.jsx';
+import { MAX_IMPORT_SIZE_MB } from '../../data/constants.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { ImportGuide } from '../../shared/components/ImportGuide.jsx';
 import ConveneScanner from './ConveneScanner.jsx';
 
 export default function ImportFlow({

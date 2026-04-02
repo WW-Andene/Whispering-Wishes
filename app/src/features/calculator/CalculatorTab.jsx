@@ -3,13 +3,15 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS, haptic } from '../../appcore-data.js';
-import { calcStats } from '../../appcore-engine.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  PityCounterInput, CalcResultsCard,
-} from '../../appcore-components.jsx';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/constants.js';
+import { haptic } from '../../utils/helpers.js';
+import { calcStats } from '../../core/calcStats.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { PityCounterInput } from '../../shared/components/PityCounterInput.jsx';
+import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
 const CALC_DEFER_MS = 150;

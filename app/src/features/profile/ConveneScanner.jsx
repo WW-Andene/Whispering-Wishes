@@ -6,7 +6,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { Camera, X } from 'lucide-react';
-import { HEADER_ICON } from '../../appcore-data.js';
+import { HEADER_ICON } from '../../data/constants.js';
 
 export default function ConveneScanner({
   directCameraOpen,

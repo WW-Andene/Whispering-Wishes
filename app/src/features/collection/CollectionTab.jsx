@@ -6,20 +6,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
-import {
-  CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, ECHO_SETS, CHAR_BUFF_TABLE,
-  RELEASE_ORDER, WEAPON_RELEASE_ORDER,
-  ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS,
-  ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES,
-  ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES,
-  ALL_CHARACTERS,
-} from '../../appcore-data.js';
-import {
-  generateVerticalMaskGradient,
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  KuroSelect, CollectionGridSection,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
+import { WEAPON_RELEASE_ORDER, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
+import { generateVerticalMaskGradient } from '../../shared/utils/maskGradient.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 
 export default function CollectionTab({
   state,

@@ -3,12 +3,11 @@
  * Verifies all game data is complete, consistent, and correctly structured.
  */
 import { describe, it, expect } from 'vitest';
-import {
-  CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, ECHO_SETS,
-  CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES,
-  ALL_CHARACTERS, CURRENT_BANNERS, WEAPON_REFINE_SCALE,
-} from '../appcore-data.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, ALL_CHARACTERS } from '../data/characters.js';
+import { WEAPON_DATA } from '../data/weapons.js';
+import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../data/echoes.js';
+import { CURRENT_BANNERS } from '../data/banners.js';
+import { WEAPON_REFINE_SCALE } from '../data/constants.js';
 
 describe('CHARACTER_DATA integrity', () => {
   const chars = Object.entries(CHARACTER_DATA);

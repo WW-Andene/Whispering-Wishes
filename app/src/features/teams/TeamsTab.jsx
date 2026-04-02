@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Download, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
-import {
-  haptic,
-  CHARACTER_DATA,
-  RELEASE_ORDER,
-  ALL_5STAR_RESONATORS,
-  ALL_4STAR_RESONATORS,
-  getElementColor, getElementBg, getElementBorder,
-} from '../../appcore-data.js';
-import {
-  TabBackground,
-  Card, CardHeader, CardBody,
-  TabErrorBoundary,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import TeamSelector from './TeamSelector.jsx';
 import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
