@@ -56,6 +56,8 @@ export default function TeamsTab({
   const [echoStatPanel, setEchoStatPanel] = useState(null);
   const [renamingTeamIdx, setRenamingTeamIdx] = useState(null);
   const [renameValue, setRenameValue] = useState('');
+  const longPressRef = useRef(null);
+  const startRename = (idx, name) => { setRenamingTeamIdx(idx); setRenameValue(name); haptic.medium(); };
   const damageCalcRef = useRef(null);
 
 
@@ -295,7 +297,10 @@ export default function TeamsTab({
                               aria-selected={isActive}
                               tabIndex={isActive ? 0 : -1}
                               onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
-                              onDoubleClick={() => { if (isActive) { setRenamingTeamIdx(idx); setRenameValue(team.name); } }}
+                              onDoubleClick={() => { if (isActive) startRename(idx, team.name); }}
+                              onTouchStart={() => { if (isActive) longPressRef.current = setTimeout(() => startRename(idx, team.name), 500); }}
+                              onTouchEnd={() => { clearTimeout(longPressRef.current); }}
+                              onTouchMove={() => { clearTimeout(longPressRef.current); }}
                               className={`kuro-btn flex-1 min-w-0 flex items-center justify-center gap-1 ${
                                 isActive ? 'active-gold' : ''
                               }`}
