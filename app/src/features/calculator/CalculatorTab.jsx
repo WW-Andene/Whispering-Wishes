@@ -24,6 +24,15 @@ export default function CalculatorTab({ state, dispatch }) {
 
   const setCalc = useCallback((f, v) => dispatch({ type: 'SET_CALC', field: f, value: v }), [dispatch]);
 
+  // F-F02: Flash input border amber when value is clamped at max
+  const clampFlashRef = useRef(null);
+  const flashClamp = useCallback((inputEl) => {
+    if (!inputEl) return;
+    inputEl.classList.add('kuro-input-error');
+    clearTimeout(clampFlashRef.current);
+    clampFlashRef.current = setTimeout(() => inputEl.classList.remove('kuro-input-error'), 400);
+  }, []);
+
   // ── Deferred calc (debounced DP computation) ─────────────────────────────
   // P15-FIX: MEDIUM-16 — Initial deferredCalc is null to defer first DP computation
   // until after first paint, preventing jank on calculator tab open.
@@ -242,7 +251,8 @@ export default function CalculatorTab({ state, dispatch }) {
               <CardBody className="space-y-3">
                   <div>
                     <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-yellow-400" />Astrite</label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
+                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('astrite', clamped); }} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
+                    <span className="text-gray-600 text-[10px]">Max {MAX_ASTRITE.toLocaleString('en-US')}</span>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
                         <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
@@ -252,7 +262,7 @@ export default function CalculatorTab({ state, dispatch }) {
                   </div>
                   <div>
                     <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-cyan-400" />Lunite <span className="text-gray-500 font-normal">(converts to Astrite 1:1)</span></label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => setCalc('lunite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
+                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('lunite', clamped); }} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
                         <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
