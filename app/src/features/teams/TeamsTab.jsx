@@ -54,6 +54,8 @@ export default function TeamsTab({
   const [echoSetFilter, setEchoSetFilter] = useState('all');
   const [echoBuffFilter, setEchoBuffFilter] = useState('all');
   const [echoStatPanel, setEchoStatPanel] = useState(null);
+  const [renamingTeamIdx, setRenamingTeamIdx] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
   const damageCalcRef = useRef(null);
 
 
@@ -269,6 +271,23 @@ export default function TeamsTab({
                         {state.teams.map((team, idx) => {
                           const hasChars = team.slots.some(s => s);
                           const isActive = state.activeTeamIndex === idx;
+                          const isRenaming = renamingTeamIdx === idx;
+                          if (isRenaming) {
+                            return (
+                              <input
+                                key={`rename-${idx}`}
+                                type="text"
+                                value={renameValue}
+                                onChange={e => setRenameValue(e.target.value.slice(0, 20))}
+                                onBlur={() => { dispatch({ type: 'RENAME_TEAM', teamIndex: idx, name: renameValue }); setRenamingTeamIdx(null); }}
+                                onKeyDown={e => { if (e.key === 'Enter') { e.target.blur(); } else if (e.key === 'Escape') { setRenamingTeamIdx(null); } }}
+                                className="kuro-input flex-1 min-w-0 text-center text-xs py-1.5"
+                                maxLength={20}
+                                autoFocus
+                                aria-label={`Rename team ${idx + 1}`}
+                              />
+                            );
+                          }
                           return (
                             <button
                               key={idx}
@@ -276,6 +295,7 @@ export default function TeamsTab({
                               aria-selected={isActive}
                               tabIndex={isActive ? 0 : -1}
                               onClick={() => { dispatch({ type: 'SET_ACTIVE_TEAM', index: idx }); haptic.light(); }}
+                              onDoubleClick={() => { if (isActive) { setRenamingTeamIdx(idx); setRenameValue(team.name); } }}
                               className={`kuro-btn flex-1 min-w-0 flex items-center justify-center gap-1 ${
                                 isActive ? 'active-gold' : ''
                               }`}
