@@ -653,7 +653,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                 </div>
                 <div className="text-center">
                   <div className="text-purple-400 font-bold text-sm">{stats.pity4}<span className="text-gray-400 text-[10px] ml-0.5">/10</span></div>
-                  <div className={`text-[10px] mt-0.5 ${stats.guaranteed4Star ? 'text-emerald-400 font-medium' : 'text-gray-400'}`}>{stats.guaranteed4Star ? '4★ Guaranteed' : '4★ Pity'}</div>
+                  <div className={`text-[10px] mt-0.5 ${stats.guaranteed4Star ? 'text-emerald-400 font-medium' : 'text-gray-400'}`}>{stats.guaranteed4Star ? '4★ Featured ✓' : '4★ Pity'}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-white font-bold text-sm">{stats.totalPulls}</div>
