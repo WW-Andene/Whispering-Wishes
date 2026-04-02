@@ -78,12 +78,12 @@ const SUBSCRIPTIONS = {
   weekly: { name: 'Weekly Subscription', price: 9.99, astrite: 1600, lunite: 680, duration: 7, desc: '1600 Astrite + 680 Lunite over 7 days' },
   bpInsider: { name: 'Pioneer Podcast - Insider', price: 9.99, astrite: 680, radiant: 5, lustrous: 2, desc: '680 Astrite + 5 Radiant Tides + 2 Lustrous Tides' },
   bpConnoisseur: { name: 'Pioneer Podcast - Connoisseur', price: 19.99, astrite: 680, radiant: 5, lustrous: 5, desc: '680 Astrite + 5 Radiant Tides + 5 Lustrous Tides' },
-  directTop60: { name: 'Direct Top-Up (60)', price: 0.99, astrite: 60, desc: '60 Astrite' },
-  directTop300: { name: 'Direct Top-Up (300)', price: 4.99, astrite: 300, desc: '300 Astrite' },
-  directTop980: { name: 'Direct Top-Up (980)', price: 14.99, astrite: 980, desc: '980 Astrite' },
-  directTop1980: { name: 'Direct Top-Up (1980)', price: 29.99, astrite: 1980, desc: '1980 Astrite' },
-  directTop3280: { name: 'Direct Top-Up (3280)', price: 49.99, astrite: 3280, desc: '3280 Astrite' },
-  directTop6480: { name: 'Direct Top-Up (6480)', price: 99.99, astrite: 6480, desc: '6480 Astrite' },
+  directTop60: { name: 'Direct Top-Up (60)', price: 0.99, lunite: 60, desc: '60 Lunite' },
+  directTop300: { name: 'Direct Top-Up (300)', price: 4.99, lunite: 300, desc: '300 Lunite' },
+  directTop980: { name: 'Direct Top-Up (980)', price: 14.99, lunite: 980, desc: '980 Lunite' },
+  directTop1980: { name: 'Direct Top-Up (1980)', price: 29.99, lunite: 1980, desc: '1980 Lunite' },
+  directTop3280: { name: 'Direct Top-Up (3280)', price: 49.99, lunite: 3280, desc: '3280 Lunite' },
+  directTop6480: { name: 'Direct Top-Up (6480)', price: 99.99, lunite: 6480, desc: '6480 Lunite' },
 };
 
 // P12-FIX: Input safety caps to prevent browser freeze from extreme values (Step 14 audit — HIGH-10e)
