@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
 import { ALL_CHARACTERS } from '../../data/characters.js';
-import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../data/constants.js';
+import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -15,8 +15,6 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
-
-const LEADERBOARD_DISPLAY_LIMIT = 20;
 
 export default function AnalyticsTab({
   state,
@@ -609,7 +607,7 @@ export default function AnalyticsTab({
                           </div>
                           {communityStats.totalPullsAll > 0 && (
                             <div className="flex justify-between text-[10px]">
-                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total Convenes tracked</span>
+                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString('en-US')} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
@@ -1110,8 +1108,8 @@ export default function AnalyticsTab({
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Astrite Spent (in-game)</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString('en-US')}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString('en-US')}</div><div className="text-gray-400 text-[10px]">Astrite Spent (in-game)</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[10px]">Won 50/50</div></div>

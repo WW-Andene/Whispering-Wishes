@@ -223,7 +223,7 @@ export default function TeamsTab({
                               const lines = [`Team: ${team.name || 'Team ' + (state.activeTeamIndex + 1)}`];
                               lines.push(charParts.join(' | '));
                               if (stats) {
-                                lines.push(`Raw: ${stats.rawDps.toLocaleString()}/s | Full: ${stats.realDps.toLocaleString()}/s | Perfect: ${stats.perfectDps.toLocaleString()}/s`);
+                                lines.push(`Raw: ${stats.rawDps.toLocaleString('en-US')}/s | Full: ${stats.realDps.toLocaleString('en-US')}/s | Perfect: ${stats.perfectDps.toLocaleString('en-US')}/s`);
                               }
                               const text = lines.join('\n');
                               navigator.clipboard.writeText(text);
@@ -241,7 +241,7 @@ export default function TeamsTab({
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
                             if (!slots.some(s => s)) return;
                             if (teamCompareEntries.length >= 5) return;
-                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: slots.slice(), teamIdx: state.activeTeamIndex }]);
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: structuredClone(slots), teamIdx: state.activeTeamIndex }]);
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}

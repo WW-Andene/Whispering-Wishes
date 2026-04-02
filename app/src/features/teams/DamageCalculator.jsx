@@ -54,9 +54,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
     const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
 
+    const _passiveCache = new Map();
     const parsePassive = (passive, element) => {
+      const cacheKey = `${passive || ''}|${element || ''}`;
+      if (_passiveCache.has(cacheKey)) return _passiveCache.get(cacheKey);
       const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0 };
-      if (!passive) return r;
+      if (!passive) { _passiveCache.set(cacheKey, r); return r; }
       const p = passive.toLowerCase();
       const atkMatch = p.match(/atk\s*\+(\d+)%/);
       if (atkMatch) r.atkPct += parseInt(atkMatch[1]);
@@ -87,6 +90,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (defMatch) r.defIgnore += parseInt(defMatch[1]);
       const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);
       if (resMatch) r.resShred += parseInt(resMatch[1]);
+      _passiveCache.set(cacheKey, r);
       return r;
     };
 
@@ -928,9 +932,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div>
                     <div className="kuro-label">Base Stats (Lv.90)</div>
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString()}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
                       <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">ATK {m.charAtk}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString()}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
                       <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
                     </div>
                   </div>
@@ -1208,7 +1212,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div>
                       <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString()}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString('en-US')}</span>
                         <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
                         <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
                         <span className="text-[10px] px-2 py-0.5 rounded font-medium"
@@ -1260,17 +1264,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             <div className="grid grid-cols-2 gap-2">
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Raw DPS</div>
-                <div className="text-lg font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{rawDps.toLocaleString()}/s</div>
+                <div className="text-lg font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{rawDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[9px]">equipment only</div>
               </div>
               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Full DPS</div>
-                <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString()}/s</div>
+                <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[9px]">+buffs &amp; debuffs</div>
               </div>
               <div className="kuro-stat kuro-stat-gold p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Perfect DPS</div>
-                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString()}/s</div>
+                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[9px]">+echo active skills</div>
               </div>
               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
@@ -1456,7 +1460,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       <div key={bi} className={bi < 2 ? 'mb-1' : 'mb-0.5'}>
                         <div className="flex items-baseline justify-between mb-0.5">
                           <span className="text-gray-400 text-[10px]">{bar.label}</span>
-                          <span className="font-bold text-xs kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString()}/s</span>
+                          <span className="font-bold text-xs kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
                         </div>
                         <div className="relative h-4 rounded" style={{ background: 'transparent' }}>
                           <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
@@ -1501,7 +1505,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   </thead>
                   <tbody>
                     {[
-                      ['Eff. ATK', e => e.stats.effAtk?.toLocaleString()],
+                      ['Eff. ATK', e => e.stats.effAtk?.toLocaleString('en-US')],
                       ['Crit Rate', e => Math.min(e.stats.critRate, 100).toFixed(1) + '%'],
                       ['Crit DMG', e => e.stats.critDmg?.toFixed(1) + '%'],
                       ['Elem DMG', e => e.stats.elemDmg?.toFixed(1) + '%'],

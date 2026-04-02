@@ -510,7 +510,7 @@ export default function ProfileTab({
     } : null;
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
-      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
+      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString('en-US')??'--',c:'#e2e8f0'},
       {l:'5★',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
       {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
       {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
@@ -871,7 +871,7 @@ export default function ProfileTab({
       if(tList.length>0)metaLine1+=tList.length+' Trophies';
       if(impDate)metaLine1+=(metaLine1?' · ':'')+impDate;
       if(metaLine1)ctx.fillText(metaLine1,bx+15,metaY);
-      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+15,metaY+16);
+      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString('en-US')+' Astrite',bx+15,metaY+16);
       // Convene Stats inside profile panel
       const statCellH=36,statStartY=metaY+(overallStats?.totalAstrite?36:21);
       drawStats(bx+9,statStartY,leftW-18,statCellH,16);
@@ -952,7 +952,7 @@ export default function ProfileTab({
       let metaLine='';
       if(tList.length>0)metaLine+=tList.length+' Trophies';
       if(impDate)metaLine+=(metaLine?' · ':'')+impDate;
-      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString()+' Astrite';
+      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString('en-US')+' Astrite';
       if(metaLine)ctx.fillText(metaLine,ix+15,metaY2);
       // Convene Stats inside profile panel
       const pStatY=metaY2+30;

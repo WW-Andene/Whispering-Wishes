@@ -190,19 +190,19 @@ export default function PlannerTab({
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd.toLocaleString()}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd.toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">Total Convenes</div>
               </div>
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString()}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">Earned Convenes</div>
               </div>
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Total Astrite'}</div>
               </div>
             </div>
-            <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString()} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString()} Lunite` : ''} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+            <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''} + {planData.incomeByEnd.toLocaleString('en-US')} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
           </CardBody>
         </Card>
       )}
@@ -222,9 +222,9 @@ export default function PlannerTab({
             {[7, 30, 90].map(days => (
               <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
                 <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
-                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString()}</div>
+                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">Convenes</div>
-                <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
+                <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString('en-US')} Astrite</div>
               </div>
             ))}
           </div>
@@ -288,7 +288,7 @@ export default function PlannerTab({
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-400">Target</span>
-              <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Astrite)</span>
+              <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString('en-US')} Astrite)</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }} role="progressbar" aria-valuenow={planData.goalProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Goal progress: ${planData.goalProgress.toFixed(1)}%`}>
               <div className={`h-full transition-[width] duration-300 ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
@@ -300,11 +300,11 @@ export default function PlannerTab({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="kuro-stat p-3 text-center">
-              <div className="text-yellow-400 kuro-number text-xl">{planData.goalNeeded.toLocaleString()}</div>
+              <div className="text-yellow-400 kuro-number text-xl">{planData.goalNeeded.toLocaleString('en-US')}</div>
               <div className="text-gray-400 text-[10px]">Astrite Needed</div>
             </div>
             <div className="kuro-stat p-3 text-center">
-              <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded.toLocaleString()}</div>
+              <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded.toLocaleString('en-US')}</div>
               <div className="text-gray-400 text-[10px]">Days to Goal</div>
             </div>
           </div>

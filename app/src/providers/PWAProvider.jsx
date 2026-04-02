@@ -144,7 +144,10 @@ const PWAProvider = ({ children }) => {
   const promptInstall = useCallback(async () => {
     if (!installPrompt) return false;
     installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
+    const { outcome } = await Promise.race([
+      installPrompt.userChoice,
+      new Promise(resolve => setTimeout(() => resolve({ outcome: 'dismissed' }), 10000))
+    ]);
     setInstallPrompt(null);
     return outcome === 'accepted';
   }, [installPrompt]);

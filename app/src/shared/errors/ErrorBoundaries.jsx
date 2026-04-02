@@ -45,7 +45,7 @@ class TabErrorBoundary extends React.Component {
                 {this.state.error && (
                   <details className="mt-3 text-left">
                     <summary className="text-gray-400 text-[10px] cursor-pointer">Error details</summary>
-                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}</pre>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
                   </details>
                 )}
               </div>
@@ -126,7 +126,7 @@ class AppErrorBoundary extends React.Component {
             {this.state.error && (
               <details style={{ marginTop: 16, textAlign: 'left' }}>
                 <summary style={{ color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>Error details</summary>
-                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{this.state.error.message}</pre>
+                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
               </details>
             )}
           </div>

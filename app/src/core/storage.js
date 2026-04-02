@@ -67,7 +67,20 @@ const loadFromStorage = () => {
     const savedVersion = safeParsed.version || '1.0.0';
     if (savedVersion !== APP_VERSION) {
       console.info(`[WW] Data migration: loaded v${savedVersion}, app is v${APP_VERSION}`);
-      // Future migrations go here based on savedVersion
+      // Schema migrations — add entries when state shape changes between versions.
+      // Each key is "fromVersion" and the value mutates safeParsed in-place.
+      // Migrations run in order for users who skip versions (e.g., 3.2.0 → 3.3.0 → 3.4.0).
+      const migrations = {
+        // Example for future use:
+        // '3.2.3': (data) => { if (data.calc && !('newField' in data.calc)) data.calc.newField = ''; },
+      };
+      const sortedVersions = Object.keys(migrations).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      for (const ver of sortedVersions) {
+        if (savedVersion.localeCompare(ver, undefined, { numeric: true }) < 0) {
+          try { migrations[ver](safeParsed); console.info(`[WW] Applied migration: ${ver}`); }
+          catch (e) { console.warn(`[WW] Migration ${ver} failed:`, e); }
+        }
+      }
     }
     return {
       ...initialState,
@@ -108,6 +121,9 @@ const saveToStorage = (state) => {
     // Warn if approaching 5MB localStorage limit (~80% = 4MB)
     if (data.length > 4 * 1024 * 1024) {
       console.warn('Storage approaching limit:', (data.length / 1024 / 1024).toFixed(1) + 'MB');
+      window.dispatchEvent(new CustomEvent('ww-storage-warning', {
+        detail: { sizeMB: (data.length / 1024 / 1024).toFixed(1), message: 'Storage is nearly full. Consider exporting your data as a backup.' }
+      }));
     }
     localStorage.setItem(STORAGE_KEY, data);
     return true;

@@ -3,7 +3,7 @@
 // Extracted from ProfileTab.jsx
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Camera, X } from 'lucide-react';
 import { HEADER_ICON } from '../../data/constants.js';
@@ -15,6 +15,8 @@ export default function ConveneScanner({
   directVideoRef,
   directStreamRef,
 }) {
+  const pinchRef = useRef({ start: null, zoomStart: 1, currentZoom: 1 });
+
   if (!directCameraOpen) return null;
 
   return createPortal(
@@ -26,31 +28,31 @@ export default function ConveneScanner({
       if (e.touches.length === 2) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
-        e.currentTarget._pinchStart = Math.hypot(dx, dy);
-        e.currentTarget._zoomStart = e.currentTarget._currentZoom || 1;
+        pinchRef.current.start = Math.hypot(dx, dy);
+        pinchRef.current.zoomStart = pinchRef.current.currentZoom;
       }
-    }} onTouchEnd={(e) => {
+    }} onTouchEnd={() => {
       // Apply zoom to camera track
-      if (e.currentTarget._pinchStart && directStreamRef.current) {
+      if (pinchRef.current.start && directStreamRef.current) {
         const track = directStreamRef.current.getVideoTracks()[0];
         const caps = track?.getCapabilities?.();
         if (caps?.zoom) {
-          const zoom = Math.min(Math.max(e.currentTarget._currentZoom || 1, caps.zoom.min), caps.zoom.max);
+          const zoom = Math.min(Math.max(pinchRef.current.currentZoom, caps.zoom.min), caps.zoom.max);
           track.applyConstraints({ advanced: [{ zoom }] }).catch(() => {});
         }
-        e.currentTarget._pinchStart = null;
+        pinchRef.current.start = null;
       }
     }} onTouchMoveCapture={(e) => {
-      if (e.touches.length === 2 && e.currentTarget._pinchStart && directStreamRef.current) {
+      if (e.touches.length === 2 && pinchRef.current.start && directStreamRef.current) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const dist = Math.hypot(dx, dy);
-        const scale = dist / e.currentTarget._pinchStart;
+        const scale = dist / pinchRef.current.start;
         const track = directStreamRef.current.getVideoTracks()[0];
         const caps = track?.getCapabilities?.();
         if (caps?.zoom) {
-          const newZoom = Math.min(Math.max((e.currentTarget._zoomStart || 1) * scale, caps.zoom.min), caps.zoom.max);
-          e.currentTarget._currentZoom = newZoom;
+          const newZoom = Math.min(Math.max(pinchRef.current.zoomStart * scale, caps.zoom.min), caps.zoom.max);
+          pinchRef.current.currentZoom = newZoom;
           track.applyConstraints({ advanced: [{ zoom: newZoom }] }).catch(() => {});
         }
       }

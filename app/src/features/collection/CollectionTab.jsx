@@ -3,7 +3,7 @@
 // Gacha collection gallery with filtering, sorting, and image framing
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
@@ -36,6 +36,13 @@ export default function CollectionTab({
   // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
   const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'copies');
   const [collectionSearch, setCollectionSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimerRef = useRef(null);
+  const handleSearchChange = useCallback((val) => {
+    setCollectionSearch(val);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(val), 150);
+  }, []);
   const [collectionCategoryFilter, setCollectionCategoryFilter] = useSessionState('ww-coll-cat', 'all');
   const [collectionWeaponFilter, setCollectionWeaponFilter] = useSessionState('ww-coll-weap', 'all');
   const [collectionElementFilter, setCollectionElementFilter] = useSessionState('ww-coll-elem', 'all');
@@ -139,8 +146,8 @@ export default function CollectionTab({
       if (collectionOwnedFilter === 'not-owned' && ownedChars.includes(name)) return false;
       if (collectionCategoryFilter === 'character' && !isCharacter) return false;
       if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
-      if (collectionSearch) {
-        const searchLower = collectionSearch.toLowerCase();
+      if (debouncedSearch) {
+        const searchLower = debouncedSearch.toLowerCase();
         const searchTags = getSearchTags(name, isCharacter);
         if (!searchTags.includes(searchLower)) return false;
       }
@@ -164,10 +171,10 @@ export default function CollectionTab({
       }
       return true;
     });
-  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
+  }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
 
   const clearCollectionFilters = useCallback(() => {
-    setCollectionSearch('');
+    handleSearchChange('');
     setCollectionCategoryFilter('all');
     setCollectionWeaponFilter('all');
     setCollectionElementFilter('all');
@@ -183,8 +190,8 @@ export default function CollectionTab({
 
   const filterEchoes = useCallback((echoNames) => {
     return echoNames.filter(name => {
-      if (collectionSearch) {
-        const searchLower = collectionSearch.toLowerCase();
+      if (debouncedSearch) {
+        const searchLower = debouncedSearch.toLowerCase();
         const nameLower = name.toLowerCase();
         const data = ECHO_DATA[name];
         const matchesName = nameLower.includes(searchLower);
@@ -201,11 +208,11 @@ export default function CollectionTab({
       if (collectionEchoBuffFilter !== 'all' && !(Array.isArray(data.buff) ? data.buff.includes(collectionEchoBuffFilter) : data.buff === collectionEchoBuffFilter)) return false;
       return true;
     });
-  }, [collectionSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
+  }, [debouncedSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
   const hasActiveFilters = useMemo(() =>
-    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all' || collectionOwnedFilter !== 'all'),
-    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
+    !!(debouncedSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all' || collectionOwnedFilter !== 'all'),
+    [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
   );
 
   // Extended sort: apply DPS/name/tier sorting on top of the base sortItems result
@@ -291,14 +298,14 @@ export default function CollectionTab({
               <input
                 type="text"
                 value={collectionSearch}
-                onChange={(e) => setCollectionSearch(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search by name, DPS, Electro, Broadblade..."
                 className="kuro-input w-full pl-8 text-xs"
                 aria-label="Search collection by keyword"
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
               {collectionSearch && (
-                <button onClick={() => setCollectionSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
+                <button onClick={() => handleSearchChange('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
                   <X size={14} />
                 </button>
               )}

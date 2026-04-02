@@ -50,7 +50,7 @@ const UNDOABLE_ACTIONS = new Set([
 ]);
 
 // Undo-aware reducer wrapper: snapshots state before destructive actions
-const MAX_UNDO_STACK = 10;
+const MAX_UNDO_STACK = 5;
 const createUndoReducer = (baseReducer) => {
   const undoStack = [];
   return (state, action) => {
@@ -195,7 +195,7 @@ const reducer = (state, action) => {
       const deduplicateMerge = (existing, incoming) => {
         if (!Array.isArray(incoming) || incoming.length === 0) return existing || [];
         if (!Array.isArray(existing) || existing.length === 0) return incoming;
-        const makeKey = (p) => `${p.timestamp || ''}|${p.name || ''}|${p.rarity || ''}|${p.id || ''}`;
+        const makeKey = (p) => JSON.stringify([p.timestamp || '', p.name || '', p.rarity || '', p.id || '']);
         const existingKeys = new Set(existing.map(makeKey));
         const newEntries = incoming.filter(p => !existingKeys.has(makeKey(p)));
         if (newEntries.length === 0) return existing; // All duplicates

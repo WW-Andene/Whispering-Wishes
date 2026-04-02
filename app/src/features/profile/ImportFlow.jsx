@@ -38,6 +38,7 @@ export default function ImportFlow({
   const directAbortRef = useRef(null);
   const directVideoRef = useRef(null);
   const directStreamRef = useRef(null);
+  const cameraTimerRef = useRef(null);
 
   const handleDirectUrlChange = useCallback((val) => {
     setDirectUrl(val);
@@ -115,8 +116,9 @@ export default function ImportFlow({
       });
       directStreamRef.current = stream;
       setDirectCameraOpen(true);
-      // Attach stream to video element after render
-      setTimeout(() => {
+      // Attach stream to video element after render (cleared on unmount via cameraTimerRef)
+      clearTimeout(cameraTimerRef.current);
+      cameraTimerRef.current = setTimeout(() => {
         if (directVideoRef.current) {
           directVideoRef.current.srcObject = stream;
           directVideoRef.current.play().catch(() => {});
@@ -153,6 +155,7 @@ export default function ImportFlow({
     document.addEventListener('visibilitychange', onHide);
     return () => {
       document.removeEventListener('visibilitychange', onHide);
+      clearTimeout(cameraTimerRef.current);
       // Cleanup stream on unmount (e.g. tab switch while camera open)
       directStreamRef.current?.getTracks().forEach(t => t.stop());
     };

@@ -19,11 +19,10 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         : 'bg-neutral-800/50 border-neutral-700/50';
   const cardClassName = `relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${cardStateClass}`;
   return (
-  <div
+  <button
+    type="button"
     className={cardClassName}
-    style={{ height: '140px', contain: 'paint', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
-    role="button"
-    tabIndex={0}
+    style={{ height: '140px', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     aria-label={`${name}${owned ? `, owned${count > 1 ? ` ×${count}` : ''}` : ', not owned'}${isProfilePic ? ', current profile picture' : ''}${isNew ? ', new' : ''}`}
     onClick={() => {
       if (framingMode) {
@@ -31,17 +30,6 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       } else if (onClickCard) {
         haptic.light();
         onClickCard();
-      }
-    }}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        if (framingMode) {
-          setEditingImage(imageKey);
-        } else if (onClickCard) {
-          haptic.light();
-          onClickCard();
-        }
       }
     }}
   >
@@ -101,7 +89,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       )}
       <div className={`text-[10px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
     </div>
-  </div>
+  </button>
   );
 }, (prev, next) =>
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&

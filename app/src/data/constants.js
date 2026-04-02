@@ -96,6 +96,11 @@ const MAX_CALC_PULLS = 2000;
 // 4-star pity constants
 const HARD_PITY_4STAR = 10; // Guaranteed 4★ every 10 pulls
 const FEATURED_4STAR_RATE = 0.5; // 50% chance for featured 4-star
+// Exact expected value: Σ(k=1..9) k×0.06×0.94^(k-1) + 10×0.94^9 ≈ 7.69 pulls per 4-star
+const AVG_PULLS_PER_4STAR = 7.69;
+// 50/50 + guarantee system: average 1.5 four-star pulls per featured copy
+const AVG_4STAR_PULLS_PER_FEATURED = 1.5;
+const LEADERBOARD_DISPLAY_LIMIT = 20;
 
 // [SECTION:MATERIAL_IMAGES] — Material icon URLs for collection detail modals
 const MATERIAL_IMAGES = {
@@ -417,6 +422,9 @@ export {
   MAX_CALC_PULLS,
   HARD_PITY_4STAR,
   FEATURED_4STAR_RATE,
+  AVG_PULLS_PER_4STAR,
+  AVG_4STAR_PULLS_PER_FEATURED,
+  LEADERBOARD_DISPLAY_LIMIT,
   MATERIAL_IMAGES,
   COMMON_MAT_TIERS,
   FORGERY_MAT_TIERS,

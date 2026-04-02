@@ -1855,7 +1855,7 @@ function WhisperingWishesInner() {
                       if (!raw) { toast?.addToast?.('No pre-import backup found', 'error'); return; }
                       const data = JSON.parse(raw);
                       if (!data?.state || typeof data.state !== 'object') { toast?.addToast?.('Invalid pre-import backup', 'error'); return; }
-                      if (!await confirm({ title: 'Restore pre-import backup', message: `Restore backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown date'}?\nThis will revert to the state before your last import.`, confirmLabel: 'Restore', destructive: true })) return;
+                      if (!await confirm({ title: 'Restore pre-import backup', message: `Restore backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString('en-US') : 'unknown date'}?\nThis will revert to the state before your last import.`, confirmLabel: 'Restore', destructive: true })) return;
                       dispatch({ type: 'LOAD_STATE', state: data.state });
                       toast?.addToast?.('Pre-import backup restored!', 'success');
                       setShowExportModal(false);

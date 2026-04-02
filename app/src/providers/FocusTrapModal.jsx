@@ -18,7 +18,7 @@ const useFocusTrap = (isOpen) => {
     const el = ref.current;
     if (!el) return;
     const getFocusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const raf = requestAnimationFrame(() => { const f = getFocusable(); if (f.length) f[0].focus(); });
+    const raf = requestAnimationFrame(() => { const f = getFocusable(); if (f.length) f[0].focus(); else if (el) { el.tabIndex = -1; el.focus(); } });
     const handleKeyDown = (e) => {
       if (e.key !== 'Tab') return;
       // Re-query on each Tab press to catch dynamically rendered elements

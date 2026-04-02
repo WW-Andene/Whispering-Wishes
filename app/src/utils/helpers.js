@@ -62,7 +62,7 @@ const calculateLuckRating = (avgPity, numFiveStars) => {
   const d = 0.3989422804014327; // 1/√(2π)
   const p = d * Math.exp(-absZ * absZ / 2) * (t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))));
   const cdf = zScore >= 0 ? 1 - p : p;
-  const percentile = Math.min(99, Math.max(1, Math.round(cdf * 100)));
+  const percentile = Math.max(0, Math.min(100, Math.round(cdf * 100)));
 
   // WuWa lore hierarchy: Civilian < Drifter < Resonator < Sentinel < Arbiter
   // Color scale: white < green < blue < purple < gold

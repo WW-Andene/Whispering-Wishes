@@ -193,7 +193,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">HP</div>
-                  <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString()}</div>
+                  <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">ATK</div>
@@ -201,7 +201,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">DEF</div>
-                  <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString()}</div>
+                  <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">Energy</div>

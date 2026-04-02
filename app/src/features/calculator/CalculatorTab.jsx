@@ -245,7 +245,7 @@ export default function CalculatorTab({ state, dispatch }) {
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString()} Astrite (${tip})`}>+{amt.toLocaleString()}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
                     </div>
@@ -255,7 +255,7 @@ export default function CalculatorTab({ state, dispatch }) {
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => setCalc('lunite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString()} Lunite (${tip})`}>+{amt.toLocaleString()}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('lunite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Lunite">Clear</button>
                     </div>
@@ -263,7 +263,7 @@ export default function CalculatorTab({ state, dispatch }) {
                   {(() => {
                     const combined = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
                     const totalConvenes = Math.floor(combined / ASTRITE_PER_PULL);
-                    return <p className="text-gray-400 text-[10px]">= {totalConvenes.toLocaleString()} Convenes from {(+state.calc.astrite || 0).toLocaleString()} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString()} Lunite` : ''}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString()})</span> : ''}</p>;
+                    return <p className="text-gray-400 text-[10px]">= {totalConvenes.toLocaleString('en-US')} Convenes from {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString('en-US')})</span> : ''}</p>;
                   })()}
 
                   {/* Featured banner resources */}
@@ -351,30 +351,30 @@ export default function CalculatorTab({ state, dispatch }) {
                     <div className="flex justify-around items-center">
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-yellow-400 kuro-number text-xl">{charPulls.toLocaleString()}</div>
+                          <div className="text-yellow-400 kuro-number text-xl">{charPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString()} + {(+state.calc.radiant || 0).toLocaleString()} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {(+state.calc.radiant || 0).toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-pink-400 kuro-number text-xl">{weapPulls.toLocaleString()}</div>
+                          <div className="text-pink-400 kuro-number text-xl">{weapPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString()} + {(+state.calc.forging || 0).toLocaleString()} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {(+state.calc.forging || 0).toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls.toLocaleString()}</div>
+                          <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString()} + {astriteAllocation.stdCharLustrous.toLocaleString()} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls.toLocaleString()}</div>
+                          <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString()} + {astriteAllocation.stdWeapLustrous.toLocaleString()} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -457,7 +457,7 @@ export default function CalculatorTab({ state, dispatch }) {
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
                 <p>Banner: {state.calc.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {state.calc.selectedBanner === 'char' ? 'Resonator' : state.calc.selectedBanner === 'weap' ? 'Weapon' : 'Both'}</p>
-                <p>Astrite: {(+state.calc.astrite || 0).toLocaleString()} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
+                <p>Astrite: {(+state.calc.astrite || 0).toLocaleString('en-US')} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
                 <p>Resonator Pity: {state.calc.charPity}{state.calc.charGuaranteed ? ' (G)' : ''} • Weapon Pity: {state.calc.weapPity}</p>
                 <p>Standard Resonator Pity: {state.calc.stdCharPity} • Standard Weapon Pity: {state.calc.stdWeapPity}</p>
                 <p>Copies: Resonator x{state.calc.charCopies} • Weapon x{state.calc.weapCopies} • Standard Resonator x{state.calc.stdCharCopies} • Standard Weapon x{state.calc.stdWeapCopies}</p>

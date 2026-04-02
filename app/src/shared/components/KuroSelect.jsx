@@ -45,7 +45,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
         <div
           className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5"
           role="listbox"
-          aria-label={ariaLabel}
+          aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
         >
           {options.map(opt => {
             const active = opt.value === value;

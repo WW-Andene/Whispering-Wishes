@@ -8,6 +8,7 @@ import {
   ASTRITE_PER_PULL,
   MAX_CALC_PULLS,
   HARD_PITY_4STAR, FEATURED_4STAR_RATE,
+  AVG_PULLS_PER_4STAR, AVG_4STAR_PULLS_PER_FEATURED,
 } from '../appcore-data.js';
 
 // [SECTION:SIMULATION]
@@ -292,13 +293,12 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, 
 
   // 4-star calculations
   // WuWa 4★ mechanics: 6% base rate + hard pity at 10
-  // Exact expected value: Σ(k=1..9) k×0.06×0.94^(k-1) + 10×0.94^9 = 7.69 pulls per 4-star
-  const AVG_PULLS_PER_4STAR = 7.69;
+  // AVG_PULLS_PER_4STAR imported from constants (7.69 — exact expected value)
   const fourStarCount = Math.round(safePulls / AVG_PULLS_PER_4STAR);
   // Featured banners: 50/50 system with guarantee (lose → next guaranteed featured)
   // Average 1.5 four-star pulls per featured 4-star copy (50% win + 50% lose then guaranteed)
   // 3 featured 4-stars per banner share the featured pool equally
-  const AVG_4STAR_PULLS_PER_FEATURED = 1.5; // due to 50/50 + guarantee
+  // AVG_4STAR_PULLS_PER_FEATURED imported from constants (1.5 — 50/50 + guarantee)
   const featuredFourStarCount = isFeaturedBanner ? Math.round(fourStarCount / AVG_4STAR_PULLS_PER_FEATURED) : fourStarCount;
   const pity4 = safePulls % HARD_PITY_4STAR;
 
