@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useRef } from 'react';
-import { RefreshCcw, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { RefreshCcw, Calendar } from 'lucide-react';
 import { EVENTS } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
