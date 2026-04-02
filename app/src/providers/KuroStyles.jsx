@@ -1494,7 +1494,9 @@ const KuroStyles = memo(({ oledMode }) => (
     }
 
     /* CP-F2: Golden-ratio layout split for desktop Stats/Planner overview */
-    @media (min-width: 1024px) {
+    /* ENCAPSULATED: Desktop layout disabled — mobile is the only layout.
+       To re-enable, restore min-width to 1024px here and in the block below. */
+    @media (min-width: 99999px) {
       .desktop-grid-golden {
         display: grid;
         grid-template-columns: 1fr 0.618fr;
@@ -2020,8 +2022,8 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-backdrop-filter: blur(var(--blur-md));
     }
 
-    /* DESKTOP LAYOUT */
-    @media (min-width: 1024px) {
+    /* ENCAPSULATED: Desktop layout — disabled. To re-enable, restore min-width to 1024px. */
+    @media (min-width: 99999px) {
       /* Root */
       .desktop-layout {
         display: block !important;
@@ -2260,7 +2262,8 @@ const KuroStyles = memo(({ oledMode }) => (
 
     }
 
-    @media (min-width: 1440px) {
+    /* ENCAPSULATED: Wide desktop layout — disabled. To re-enable, restore min-width to 1440px. */
+    @media (min-width: 99999px) {
       .desktop-layout > main { padding-right: calc(160px + 1rem) !important; }
       .desktop-ad-margin { width: 180px; }
       .desktop-ad-margin .ad-slot { width: 160px; }
