@@ -400,7 +400,7 @@ export default function AnalyticsTab({
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
                           {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
+                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.0), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>
