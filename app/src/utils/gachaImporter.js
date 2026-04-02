@@ -188,7 +188,15 @@ export async function fetchAllPools(params, signal, onProgress) {
             if (signal?.aborted) break;
             const jumpDate = new Date(stuckDate);
             jumpDate.setMonth(jumpDate.getMonth() - m);
-            const jumpBody = { ...body, endTime: jumpDate.toISOString() };
+            const jumpBody = {
+              playerId: String(params.playerId),
+              serverId: params.serverId || '',
+              cardPoolType: Number(poolType),
+              cardPoolId: params.cardPoolId || '',
+              languageCode: params.lang || 'en',
+              recordId: params.recordId || '',
+              endTime: jumpDate.toISOString(),
+            };
             const c2 = new AbortController();
             const t2 = setTimeout(() => c2.abort(), 15000);
             const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
