@@ -182,12 +182,13 @@ export async function fetchAllPools(params, signal, onProgress) {
 
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
         if (!oldest?.time || oldest.time === endTime) {
-          // Stuck - jump back monthly
-          const stuckDate = new Date(oldest.time);
-          for (let m = 1; m <= 24; m++) {
+          // Stuck - try fetching older records by jumping endTime back
+          // in monthly chunks until no more data
+          const stuckTime = new Date(oldest.time);
+          for (let jump = 1; jump <= 24; jump++) {
             if (signal?.aborted) break;
-            const jumpDate = new Date(stuckDate);
-            jumpDate.setMonth(jumpDate.getMonth() - m);
+            const jumpDate = new Date(stuckTime);
+            jumpDate.setMonth(jumpDate.getMonth() - jump);
             const jumpBody = {
               playerId: String(params.playerId),
               serverId: params.serverId || '',
@@ -212,18 +213,23 @@ export async function fetchAllPools(params, signal, onProgress) {
               const j2 = await r2.json();
               if (j2?.code !== 0) break;
               const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
-              if (!l2.length) continue;
+              if (!l2.length) continue; // This month empty, try older
               poolItems.push(...l2);
               onProgress?.(poolType, 'fetching', poolItems.length);
+              // Continue backward from this new batch
               const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
-              if (o2?.time) { endTime = o2.time; break; }
+              if (o2?.time) {
+                endTime = o2.time;
+                break; // Resume normal pagination from here
+              }
             } catch { clearTimeout(t2); break; }
             await sleep(150);
           }
-          if (endTime === oldest.time) break;
+          if (endTime === oldest.time) break; // Still stuck, give up
           continue;
         }
         endTime = oldest.time;
+
         await sleep(150);
       }
 
