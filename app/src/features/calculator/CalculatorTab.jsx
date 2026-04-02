@@ -389,7 +389,7 @@ export default function CalculatorTab({ state, dispatch }) {
                 Calculating…
               </div>
             )}
-            <div aria-live="polite" aria-atomic="false" className={`banner-grid space-y-3 lg:space-y-0 transition-opacity ${isCalcPending ? 'opacity-50' : 'opacity-100'}`}>
+            <div aria-live="polite" aria-atomic="false" className={`banner-grid space-y-3 lg:space-y-0 transition-opacity ${isCalcPending ? 'opacity-50 animate-pulse' : 'opacity-100'}`}>
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && charStats && (
               <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}

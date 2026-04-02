@@ -6,6 +6,14 @@
 import React, { memo } from 'react';
 import { Card, CardHeader, CardBody } from './Card.jsx';
 
+const getSuccessColor = (rate) => {
+  const r = parseFloat(rate);
+  if (r >= 75) return 'text-emerald-400';
+  if (r >= 50) return 'text-yellow-300';
+  if (r >= 25) return 'text-orange-400';
+  return 'text-red-400';
+};
+
 // Results card — eliminates ~160 lines of copy-paste across 4 calculator results
 const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copies, isFeatured = true }) => (
   <Card>
@@ -13,7 +21,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
     <CardBody className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
         <div className={`kuro-stat ${accentStatClass}`}>
-          <div className={`text-3xl kuro-number ${parseFloat(stats.successRate) >= 75 ? 'text-emerald-400' : parseFloat(stats.successRate) >= 50 ? 'text-yellow-300' : parseFloat(stats.successRate) >= 25 ? 'text-orange-400' : 'text-red-400'}`}>{stats.successRate}%</div>
+          <div className={`text-3xl kuro-number ${getSuccessColor(stats.successRate)}`}>{stats.successRate}%</div>
           <div className="text-gray-400 text-[10px] mt-1">P(≥{copies} copies)</div>
         </div>
         <div className="kuro-stat kuro-stat-cyan">

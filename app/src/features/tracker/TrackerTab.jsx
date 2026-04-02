@@ -132,9 +132,9 @@ export default function TrackerTab({
                     timerColor="yellow"
                   />
                 )) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
+                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
                     <Sparkles size={24} className="mx-auto mb-2 opacity-50" />
-                    No active character banners
+                    No active Resonator banners
                   </div>
                 )}
               </div>
@@ -159,7 +159,7 @@ export default function TrackerTab({
                     timerColor="pink"
                   />
                 )) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
+                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
                     <Sword size={24} className="mx-auto mb-2 opacity-50" />
                     No active weapon banners
                   </div>

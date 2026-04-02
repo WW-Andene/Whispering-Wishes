@@ -17,7 +17,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       : owned
         ? `${ownedBg} ${ownedBorder} ${glowClass}`
         : 'bg-neutral-800/50 border-neutral-700/50';
-  const cardClassName = `relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${cardStateClass}`;
+  const cardClassName = `relative overflow-hidden border rounded text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${cardStateClass}`;
   return (
   <button
     type="button"

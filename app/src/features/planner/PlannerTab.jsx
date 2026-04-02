@@ -327,7 +327,7 @@ export default function PlannerTab({
         <CardHeader>Saved States</CardHeader>
         <CardBody className="space-y-2">
           {state.bookmarks.length === 0 ? (
-            <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">Awaiting archived states. Save a configuration in the Calculator to create a bookmark.</p>
+            <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No saved states yet — head to the Calculator and tap Save to bookmark a configuration.</p>
           ) : state.bookmarks.map(b => (
             <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
               <div>

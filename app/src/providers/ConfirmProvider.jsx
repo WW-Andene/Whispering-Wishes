@@ -3,7 +3,7 @@
 // Native-style confirmation modal (replaces window.confirm).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useCallback, useRef, createContext, useContext } from 'react';
+import { useState, useCallback, useRef, useEffect, createContext, useContext } from 'react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 
 // [SECTION:CONFIRM-DIALOG] — Native-style confirmation modal (replaces window.confirm)
@@ -14,7 +14,14 @@ const ConfirmProvider = ({ children }) => {
   const [state, setState] = useState(null);
   const resolveRef = useRef(null);
 
+  // F-I04: Reject stale promise on unmount to prevent memory leak
+  useEffect(() => {
+    return () => { resolveRef.current?.(false); resolveRef.current = null; };
+  }, []);
+
   const confirm = useCallback(({ title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', destructive = false }) => {
+    // Resolve any pending confirm before opening a new one
+    resolveRef.current?.(false);
     return new Promise((resolve) => {
       resolveRef.current = resolve;
       setState({ title, message, confirmLabel, cancelLabel, destructive });
