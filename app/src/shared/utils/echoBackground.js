@@ -15,7 +15,7 @@ const pending = new Map();
  * @param {number} [darkThreshold=35] - Pixels with brightness below this → transparent (0-255)
  * @returns {Promise<string>} - data:image/png;base64 URL with transparent BG
  */
-export function eraseEchoBg(src, darkThreshold = 35) {
+export function eraseEchoBg(src, darkThreshold = 45, colorTolerance = 8) {
   if (!src) return Promise.resolve(src);
   if (cache.has(src)) return Promise.resolve(cache.get(src));
   if (pending.has(src)) return pending.get(src);
@@ -37,8 +37,12 @@ export function eraseEchoBg(src, darkThreshold = 35) {
         const d = imageData.data;
 
         for (let i = 0; i < d.length; i += 4) {
-          const brightness = (d[i] + d[i + 1] + d[i + 2]) / 3;
-          if (brightness < darkThreshold) {
+          const r = d[i], g = d[i + 1], b = d[i + 2];
+          const brightness = (r + g + b) / 3;
+          const spread = Math.max(r, g, b) - Math.min(r, g, b);
+          // Erase dark pixels that are also near-neutral (low color spread)
+          // Colored pixels survive even if dark (creature glows, elemental effects)
+          if (brightness < darkThreshold && spread < colorTolerance) {
             d[i + 3] = 0;
           }
         }
