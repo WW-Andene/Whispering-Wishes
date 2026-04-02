@@ -25,9 +25,9 @@ export function eraseEchoBg(src, opts = {}) {
   if (pending.has(src)) return pending.get(src);
 
   const {
-    darkThreshold = 45,
-    colorTolerance = 4,
-    saturationThreshold = 0.08,
+    darkThreshold = 40,
+    colorTolerance = 8,
+    saturationThreshold = 0.16,
     edgeErosion = 1,
     cornerCrop = true,
   } = opts;
@@ -106,7 +106,7 @@ export function eraseEchoBg(src, opts = {}) {
               if (nearEdge) {
                 const i = idx * 4;
                 // Fade edge pixel rather than hard erase
-                d[i + 3] = Math.round(d[i + 3] * 0.3);
+                d[i + 3] = Math.round(d[i + 3] * 0.6);
               }
             }
           }
