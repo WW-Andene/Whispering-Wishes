@@ -43,7 +43,7 @@ export default function CalculatorTab({ state, dispatch }) {
   // ── Smart astrite allocation for "Both" mode ─────────────────────────────
   // P2-FIX: Uses deferredCalc so heavy DP isn't triggered on every slider tick
   const astriteAllocation = useMemo(() => {
-    const totalAstrite = +effectiveCalc.astrite || 0;
+    const totalAstrite = (+effectiveCalc.astrite || 0) + (+effectiveCalc.lunite || 0); // Lunite converts to Astrite 1:1
     const totalPulls = Math.floor(totalAstrite / ASTRITE_PER_PULL);
     const radiant = +effectiveCalc.radiant || 0;
     const forging = +effectiveCalc.forging || 0;
@@ -96,7 +96,7 @@ export default function CalculatorTab({ state, dispatch }) {
       stdCharLustrous,
       stdWeapLustrous,
     };
-  }, [effectiveCalc.astrite, effectiveCalc.radiant, effectiveCalc.forging, effectiveCalc.lustrous, effectiveCalc.selectedBanner, effectiveCalc.allocPriority, effectiveCalc.stdAllocPriority]);
+  }, [effectiveCalc.astrite, effectiveCalc.lunite, effectiveCalc.radiant, effectiveCalc.forging, effectiveCalc.lustrous, effectiveCalc.selectedBanner, effectiveCalc.allocPriority, effectiveCalc.stdAllocPriority]);
 
   // Calculate pulls for each banner type using allocation
   const { charTotal: charPulls, weapTotal: weapPulls, stdCharTotal: stdCharPulls, stdWeapTotal: stdWeapPulls } = astriteAllocation;
@@ -243,15 +243,28 @@ export default function CalculatorTab({ state, dispatch }) {
                   <div>
                     <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-yellow-400" />Astrite</label>
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => setCalc('astrite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
-                    <p className="text-gray-400 text-[10px] mt-1.5">= {Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL).toLocaleString()} Convenes{Math.floor((+state.calc.astrite || 0) / ASTRITE_PER_PULL) > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString()})</span> : ''}</p>
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {/* AUDIT-FIX M32+L20: Use "Convene(s)" consistently, capitalize Astrite */}
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
                         <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString()} Astrite (${tip})`}>+{amt.toLocaleString()}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
                     </div>
                   </div>
+                  <div>
+                    <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-cyan-400" />Lunite <span className="text-gray-500 font-normal">(converts to Astrite 1:1)</span></label>
+                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => setCalc('lunite', Math.max(0, Math.min(MAX_ASTRITE, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
+                    <div className="flex gap-1 mt-2 flex-wrap">
+                      {[300, 680, 1000].map(amt => (
+                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" aria-label={`Add ${amt} Lunite`}>+{amt}</button>
+                      ))}
+                      <button onClick={() => setCalc('lunite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Lunite">Clear</button>
+                    </div>
+                  </div>
+                  {(() => {
+                    const combined = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
+                    const totalConvenes = Math.floor(combined / ASTRITE_PER_PULL);
+                    return <p className="text-gray-400 text-[10px]">= {totalConvenes.toLocaleString()} Convenes from {(+state.calc.astrite || 0).toLocaleString()} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString()} Lunite` : ''}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString()})</span> : ''}</p>;
+                  })()}
 
                   {/* Featured banner resources */}
                   {state.calc.bannerCategory === 'featured' && (

@@ -30,7 +30,7 @@ export default function PlannerTab({
   }, [state.planner.dailyAstrite, state.planner.luniteActive]);
 
   const planData = useMemo(() => {
-    const currentAstrite = +state.calc.astrite || 0;
+    const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0); // Lunite converts to Astrite 1:1
     const bannerEnd = new Date(bannerEndDate);
     const now = new Date();
     const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
@@ -121,7 +121,7 @@ export default function PlannerTab({
             </button>
             {/* Weekly sub: Lunite converts to Astrite at 1:1 — astrite field includes converted Lunite value */}
             {/* AUDIT-FIX L22: Toast feedback for purchases */}
-            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
+            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
               <div className="flex items-center justify-between w-full">
                 <div>
                   <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
@@ -163,7 +163,8 @@ export default function PlannerTab({
               <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
                 <span className="text-gray-200">{i.label}</span>
                 <div className="flex items-center gap-2">
-                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite}</span>}
+                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite} Astrite</span>}
+                  {i.lunite > 0 && <span className="text-cyan-400">+{i.lunite} Lunite</span>}
                   {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide - Featured banner Convene ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
                   {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide - Standard banner Convene ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
                   {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
@@ -201,7 +202,7 @@ export default function PlannerTab({
                 <div className="text-gray-400 text-[10px]">Total Astrite</div>
               </div>
             </div>
-            <div className="text-gray-400 text-[10px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+            <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString()} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString()} Lunite` : ''} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
           </CardBody>
         </Card>
       )}

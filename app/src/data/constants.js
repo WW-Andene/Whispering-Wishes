@@ -74,8 +74,8 @@ const BEGINNER_ASTRITE_PER_PULL = 128; // P14-FIX: NIT-2 — Extract magic numbe
 
 // Subscription and top-up prices (USD) - Updated January 2026
 const SUBSCRIPTIONS = {
-  lunite: { name: 'Lunite Subscription', price: 4.99, astrite: 3000, daily: 90, duration: 30, luniteBonus: 300, desc: '300 Lunite + 90 Astrite/day × 30 days (3000 total Astrite)' },
-  weekly: { name: 'Weekly Subscription', price: 9.99, astrite: 2280, luniteBonus: 680, duration: 7, desc: '680 Lunite + 1600 Astrite over 7 days (2280 total Astrite)' },
+  lunite: { name: 'Lunite Subscription', price: 4.99, astrite: 2700, lunite: 300, daily: 90, duration: 30, desc: '300 Lunite + 90 Astrite/day × 30 days' },
+  weekly: { name: 'Weekly Subscription', price: 9.99, astrite: 1600, lunite: 680, duration: 7, desc: '680 Lunite + 1600 Astrite over 7 days' },
   bpInsider: { name: 'Pioneer Podcast - Insider', price: 9.99, astrite: 680, radiant: 5, lustrous: 2, desc: '680 Astrite + 5 Radiant Tides + 2 Lustrous Tides' },
   bpConnoisseur: { name: 'Pioneer Podcast - Connoisseur', price: 19.99, astrite: 680, radiant: 5, lustrous: 5, desc: '680 Astrite + 5 Radiant Tides + 5 Lustrous Tides' },
   directTop60: { name: 'Direct Top-Up (60)', price: 0.99, astrite: 60, desc: '60 Astrite' },

@@ -89,7 +89,7 @@ const initialState = {
     stdCharPity: 0, stdCharCopies: 1,
     stdWeapPity: 0, stdWeapCopies: 1,
     char4StarCopies: 1, weap4StarCopies: 1, stdChar4StarCopies: 1, stdWeap4StarCopies: 1,
-    astrite: '', radiant: '', forging: '', lustrous: '',
+    astrite: '', lunite: '', radiant: '', forging: '', lustrous: '',
     allocPriority: 50, // 0-100: 0=all weapon, 50=balanced, 100=all char (featured banners)
     stdAllocPriority: 50, // Same for standard banners — independent control
   },
@@ -126,6 +126,7 @@ const reducer = (state, action) => {
     }
     case ACTION.ADD_INCOME: {
       const incAst = Math.max(0, Math.floor(+action.income.astrite || 0));
+      const incLun = Math.max(0, Math.floor(+action.income.lunite || 0));
       const incRad = Math.max(0, Math.floor(+action.income.radiant || 0));
       const incLus = Math.max(0, Math.floor(+action.income.lustrous || 0));
       return {
@@ -137,6 +138,7 @@ const reducer = (state, action) => {
         calc: {
           ...state.calc,
           astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + incAst)),
+          lunite: String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + incLun)),
           radiant: String((+state.calc.radiant || 0) + incRad),
           lustrous: String((+state.calc.lustrous || 0) + incLus),
         },
@@ -153,7 +155,8 @@ const reducer = (state, action) => {
         },
         calc: {
           ...state.calc,
-          astrite: String(Math.max(0, (+state.calc.astrite || 0) - item.astrite)),
+          astrite: String(Math.max(0, (+state.calc.astrite || 0) - (item.astrite || 0))),
+          lunite: String(Math.max(0, (+state.calc.lunite || 0) - (item.lunite || 0))),
           radiant: String(Math.max(0, (+state.calc.radiant || 0) - (item.radiant || 0))),
           lustrous: String(Math.max(0, (+state.calc.lustrous || 0) - (item.lustrous || 0))),
         },
@@ -161,6 +164,7 @@ const reducer = (state, action) => {
     }
     case ACTION.CLEAR_ALL_INCOME: {
       const totalAst = state.planner.addedIncome.reduce((s, i) => s + (i.astrite || 0), 0);
+      const totalLun = state.planner.addedIncome.reduce((s, i) => s + (i.lunite || 0), 0);
       const totalRad = state.planner.addedIncome.reduce((s, i) => s + (i.radiant || 0), 0);
       const totalLus = state.planner.addedIncome.reduce((s, i) => s + (i.lustrous || 0), 0);
       return {
@@ -169,6 +173,7 @@ const reducer = (state, action) => {
         calc: {
           ...state.calc,
           astrite: String(Math.max(0, (+state.calc.astrite || 0) - totalAst)),
+          lunite: String(Math.max(0, (+state.calc.lunite || 0) - totalLun)),
           radiant: String(Math.max(0, (+state.calc.radiant || 0) - totalRad)),
           lustrous: String(Math.max(0, (+state.calc.lustrous || 0) - totalLus)),
         },
