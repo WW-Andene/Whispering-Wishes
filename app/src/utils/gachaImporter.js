@@ -355,5 +355,17 @@ export function convertToImportFormat(fetchResult) {
   // Sort by time ascending
   allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  return JSON.stringify({ pulls: allPulls, uid: fetchResult.playerId || '' });
+  // Dedup overlapping pages: max 10 items per cardPoolType+time combo
+  const deduped = [];
+  const timeCounts = {};
+  for (const pull of allPulls) {
+    const key = `${pull.cardPoolType}|${pull.time}`;
+    const count = timeCounts[key] || 0;
+    if (count < 10) {
+      timeCounts[key] = count + 1;
+      deduped.push(pull);
+    }
+  }
+
+  return JSON.stringify({ pulls: deduped, uid: fetchResult.playerId || '' });
 }
