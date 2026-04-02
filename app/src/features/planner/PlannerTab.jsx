@@ -110,7 +110,7 @@ export default function PlannerTab({
                   </span>
                   <div>
                     <div className={`text-xs font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
-                    <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d</div>
+                    <div className="text-gray-300 text-[10px]">300 Lunite (= 300 Astrite) + {SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -119,7 +119,7 @@ export default function PlannerTab({
                 </div>
               </div>
             </button>
-            {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}
+            {/* Weekly sub: Lunite converts to Astrite at 1:1 — astrite field includes converted Lunite value */}
             {/* AUDIT-FIX L22: Toast feedback for purchases */}
             <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
               <div className="flex items-center justify-between w-full">
