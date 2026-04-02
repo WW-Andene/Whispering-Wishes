@@ -15,7 +15,7 @@ const pending = new Map();
  * @param {number} [darkThreshold=35] - Pixels with brightness below this → transparent (0-255)
  * @returns {Promise<string>} - data:image/png;base64 URL with transparent BG
  */
-export function eraseEchoBg(src, darkThreshold = 45, colorTolerance = 8) {
+export function eraseEchoBg(src, darkThreshold = 50, colorTolerance = 8) {
   if (!src) return Promise.resolve(src);
   if (cache.has(src)) return Promise.resolve(cache.get(src));
   if (pending.has(src)) return pending.get(src);
