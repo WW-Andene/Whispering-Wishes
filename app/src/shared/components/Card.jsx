@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { memo, useRef, useEffect } from 'react';
-import { haptic } from '../../appcore-data.js';
+import { haptic } from '../../utils/helpers.js';
 
 const Card = memo(({ children, className = '', style = {} }) => <div className={`kuro-card ${className}`} style={style}><div className="kuro-card-inner">{children}</div></div>);
 Card.displayName = 'Card';
