@@ -291,18 +291,27 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, 
   const missingPulls5Star = Math.max(0, Math.ceil(expectedToTarget) - safePulls);
 
   // 4-star calculations
-  // Expected 4-stars from pulls: on average 1 per HARD_PITY_4STAR (10) pulls
-  const fourStarCount = Math.floor(safePulls / HARD_PITY_4STAR);
-  const featuredFourStarCount = isFeaturedBanner ? Math.floor(fourStarCount * FEATURED_4STAR_RATE) : fourStarCount;
+  // WuWa 4★ mechanics: 6% base rate + hard pity at 10 = ~1 four-star per 8.33 pulls average
+  // Community-confirmed average rate with pity: ~12% (= 1 per ~8.33 pulls)
+  const AVG_PULLS_PER_4STAR = 8.33;
+  const fourStarCount = Math.round(safePulls / AVG_PULLS_PER_4STAR);
+  // Featured banners: 50/50 system with guarantee (lose → next guaranteed featured)
+  // Average 1.5 four-star pulls per featured 4-star copy (50% win + 50% lose then guaranteed)
+  // 3 featured 4-stars per banner share the featured pool equally
+  const AVG_4STAR_PULLS_PER_FEATURED = 1.5; // due to 50/50 + guarantee
+  const featuredFourStarCount = isFeaturedBanner ? Math.round(fourStarCount / AVG_4STAR_PULLS_PER_FEATURED) : fourStarCount;
   const pity4 = safePulls % HARD_PITY_4STAR;
 
   // 4-star target: calculate how many pulls are needed to reach the target
+  // The user's 4-star target = total featured 4-star copies they want (any of the 3 featured)
   let missingPulls4Star = 0;
   if (safe4StarCopies > 0) {
-    // On featured banners: ~50% of 4-stars are featured, so need ~2× pulls per featured 4-star copy
-    // On standard banners: all 4-stars count, so need ~HARD_PITY_4STAR pulls per copy
-    const pullsPer4Star = isFeaturedBanner ? HARD_PITY_4STAR / FEATURED_4STAR_RATE : HARD_PITY_4STAR;
-    const expectedPullsFor4Star = Math.ceil(safe4StarCopies * pullsPer4Star);
+    // Featured banners: ~8.33 pulls per 4-star × 1.5 four-star pulls per featured = ~12.5 pulls per featured 4-star
+    // Standard banners: ~8.33 pulls per 4-star (all count, no featured distinction)
+    const pullsPerTarget4Star = isFeaturedBanner
+      ? AVG_PULLS_PER_4STAR * AVG_4STAR_PULLS_PER_FEATURED  // ~12.5 pulls per featured 4★
+      : AVG_PULLS_PER_4STAR;                                  // ~8.33 pulls per 4★
+    const expectedPullsFor4Star = Math.ceil(safe4StarCopies * pullsPerTarget4Star);
     missingPulls4Star = Math.max(0, expectedPullsFor4Star - safePulls);
   }
 
