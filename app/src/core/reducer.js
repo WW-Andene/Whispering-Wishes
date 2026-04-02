@@ -182,7 +182,8 @@ const reducer = (state, action) => {
     }
     // SYNC_PITY removed - calculator is fully independent from history
     case ACTION.IMPORT_HISTORY: {
-      const newProfile = { ...state.profile, importedAt: new Date().toISOString(), uid: action.uid || state.profile.uid };
+      const safeUid = action.uid ? String(action.uid).slice(0, 32) : state.profile.uid;
+      const newProfile = { ...state.profile, importedAt: new Date().toISOString(), uid: safeUid };
       
       // Deduplicate: merge new history with existing, filtering out entries that match by timestamp + name + rarity
       // P9-FIX: Added rarity and id to dedup key to reduce collision risk for duplicate 3★ weapons (Step 4 audit)
@@ -302,10 +303,12 @@ const reducer = (state, action) => {
     }
     case ACTION.IMPORT_TEAMS: {
       if (!Array.isArray(action.teams) || action.teams.length !== 5) return state;
-      const teams = action.teams.map((t, i) => ({
-        name: (t?.name || `Team ${i + 1}`).slice(0, 20),
-        slots: Array.isArray(t?.slots) ? t.slots.slice(0, 3).map(s => typeof s === 'string' ? s : null) : [null, null, null],
-      }));
+      const teams = action.teams.map((t, i) => {
+        const rawSlots = Array.isArray(t?.slots) ? t.slots.slice(0, 3).map(s => typeof s === 'string' ? s : null) : [null, null, null];
+        const seen = new Set();
+        const slots = rawSlots.map(s => { if (s && seen.has(s)) return null; if (s) seen.add(s); return s; });
+        return { name: (t?.name || `Team ${i + 1}`).slice(0, 20), slots };
+      });
       return { ...state, teams, activeTeamIndex: Math.max(0, Math.min(4, action.activeTeamIndex ?? state.activeTeamIndex)) };
     }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)

@@ -208,7 +208,7 @@ export default function ImportFlow({
       toast?.addToast?.('Please paste your JSON data first', 'error');
       return;
     }
-    processImportData(pasteJsonText).then(() => setPasteJsonText('')).catch(() => {});
+    processImportData(pasteJsonText).then((ok) => { if (ok) setPasteJsonText(''); }).catch(() => {});
   }, [pasteJsonText, processImportData, toast]);
 
   return (

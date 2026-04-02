@@ -322,7 +322,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <Swords size={14} className="text-pink-400" /> Team Comps
             </h3>
             <div className="space-y-2">
-              {data.teams.map((team, i) => {
+              {(data.teams || []).map((team, i) => {
                 const members = parseTeamMembers(team);
                 const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m] || (m.includes('Rover') && DEFAULT_COLLECTION_IMAGES['Rover']));
                 return (
@@ -391,7 +391,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             ) : (
               <div className="flex flex-wrap gap-1">
-                {data.skills.map((skill, i) => (
+                {(data.skills || []).map((skill, i) => (
                   <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
                 ))}
               </div>
@@ -404,12 +404,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
-              <MaterialItem name={data.ascension.boss} qty={RESONATOR_ASCENSION_COSTS.boss} />
-              <MaterialItem name={data.ascension.specialty} qty={RESONATOR_ASCENSION_COSTS.specialty} />
-              {COMMON_MAT_TIERS[data.ascension.common] && <>
-                <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
-                <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
-              </>}
+              {data.ascension ? <>
+                <MaterialItem name={data.ascension.boss} qty={RESONATOR_ASCENSION_COSTS.boss} />
+                <MaterialItem name={data.ascension.specialty} qty={RESONATOR_ASCENSION_COSTS.specialty} />
+                {COMMON_MAT_TIERS[data.ascension.common] && <>
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
+                </>}
+              </> : <div className="text-gray-500 text-[10px] col-span-2">No ascension data</div>}
             </div>
           </div>
 

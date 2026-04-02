@@ -114,7 +114,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                 <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
               </div>
             )}
-            {data.sets.map(setName => {
+            {(data.sets || []).map(setName => {
               const sc = getSetElementColor(setName);
               return <span key={setName} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
             })}
@@ -144,7 +144,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Sonata Set Bonuses</div>
             <div className="space-y-2">
-              {data.sets.map(setName => {
+              {(data.sets || []).map(setName => {
                 const setData = ECHO_SETS[setName];
                 const setColor = getSetElementColor(setName);
                 return (

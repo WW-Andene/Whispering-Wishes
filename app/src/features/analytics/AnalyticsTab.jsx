@@ -599,7 +599,7 @@ export default function AnalyticsTab({
                               <div className="text-gray-400 text-[10px]">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
-                              <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate ?? '—'}%</div>
+                              <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate != null ? `${communityStats.globalWinRate}%` : '—'}</div>
                               <div className="text-gray-400 text-[10px]">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">

@@ -189,11 +189,11 @@ export default function PlannerTab({
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd.toLocaleString()}</div>
                 <div className="text-gray-400 text-[10px]">Total Convenes</div>
               </div>
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString()}</div>
                 <div className="text-gray-400 text-[10px]">Earned Convenes</div>
               </div>
               <div className="kuro-stat p-2 text-center">
