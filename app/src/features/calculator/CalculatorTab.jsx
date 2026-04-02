@@ -103,10 +103,10 @@ export default function CalculatorTab({ state, dispatch }) {
 
   // Calculate stats for each banner type
   // P2-FIX: Uses deferredCalc so DP arrays aren't allocated 60x/sec during slider drag
-  const charStats = useMemo(() => deferredCalc ? calcStats(charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, true, effectiveCalc.charCopies) : null, [deferredCalc, charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, effectiveCalc.charCopies]);
-  const weapStats = useMemo(() => deferredCalc ? calcStats(weapPulls, effectiveCalc.weapPity, false, false, effectiveCalc.weapCopies) : null, [deferredCalc, weapPulls, effectiveCalc.weapPity, effectiveCalc.weapCopies]);
-  const stdCharStats = useMemo(() => deferredCalc ? calcStats(stdCharPulls, effectiveCalc.stdCharPity, false, false, effectiveCalc.stdCharCopies) : null, [deferredCalc, stdCharPulls, effectiveCalc.stdCharPity, effectiveCalc.stdCharCopies]);
-  const stdWeapStats = useMemo(() => deferredCalc ? calcStats(stdWeapPulls, effectiveCalc.stdWeapPity, false, false, effectiveCalc.stdWeapCopies) : null, [deferredCalc, stdWeapPulls, effectiveCalc.stdWeapPity, effectiveCalc.stdWeapCopies]);
+  const charStats = useMemo(() => deferredCalc ? calcStats(charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, true, effectiveCalc.charCopies, effectiveCalc.char4StarCopies, true) : null, [deferredCalc, charPulls, effectiveCalc.charPity, effectiveCalc.charGuaranteed, effectiveCalc.charCopies, effectiveCalc.char4StarCopies]);
+  const weapStats = useMemo(() => deferredCalc ? calcStats(weapPulls, effectiveCalc.weapPity, false, false, effectiveCalc.weapCopies, effectiveCalc.weap4StarCopies, true) : null, [deferredCalc, weapPulls, effectiveCalc.weapPity, effectiveCalc.weapCopies, effectiveCalc.weap4StarCopies]);
+  const stdCharStats = useMemo(() => deferredCalc ? calcStats(stdCharPulls, effectiveCalc.stdCharPity, false, false, effectiveCalc.stdCharCopies, effectiveCalc.stdChar4StarCopies, false) : null, [deferredCalc, stdCharPulls, effectiveCalc.stdCharPity, effectiveCalc.stdCharCopies, effectiveCalc.stdChar4StarCopies]);
+  const stdWeapStats = useMemo(() => deferredCalc ? calcStats(stdWeapPulls, effectiveCalc.stdWeapPity, false, false, effectiveCalc.stdWeapCopies, effectiveCalc.stdWeap4StarCopies, false) : null, [deferredCalc, stdWeapPulls, effectiveCalc.stdWeapPity, effectiveCalc.stdWeapCopies, effectiveCalc.stdWeap4StarCopies]);
 
   // Combined stats for "Both" mode
   const combined = useMemo(() => {

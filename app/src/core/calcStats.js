@@ -260,26 +260,27 @@ const minPullsForProb = (isWeapon, targetK, minProb, startPity = 0, startGuar = 
 };
 
 // [SECTION:CALCULATIONS]
-const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
+const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, isFeaturedBanner = true) => {
   // Defensive input validation — clamp to valid ranges
   const safePulls = Math.max(0, Math.min(MAX_CALC_PULLS, Math.floor(pulls) || 0)); // P12-FIX: Cap at MAX_CALC_PULLS (Step 14 — HIGH-10e)
   const safePity = Math.max(0, Math.min(MAX_PITY, Math.floor(pity) || 0));
   const safeCopies = Math.max(0, Math.floor(copies) || 0);
+  const safe4StarCopies = Math.max(0, Math.floor(fourStarCopies) || 0);
   const isWeapon = !isChar;
   const startGuar = guaranteed ? 1 : 0;
-  
+
   // Use exact DP formula for probability distribution
   const dist = computeGachaDist(safePulls, isWeapon, safePity, startGuar, Math.max(safeCopies, 7));
-  
+
   // P(X >= k) cumulative probabilities
   const pGe = (k) => getCumulativeProb(dist, k) * 100;
-  
+
   // Expected value and standard deviation
   const stats = computeGachaStats(dist);
-  
+
   // Expected pulls to reach target copies
   const expectedToTarget = expectedPullsToTarget(isWeapon, safeCopies, safePity, startGuar);
-  
+
   // Worst case: hard pity every time, always losing 50/50 (subtract current pity progress)
   // Guarantee only applies to the FIRST copy — subsequent copies can still lose 50/50
   // Weapon banners are 100% featured — no 50/50, so worst case is simply HARD_PITY * copies
@@ -287,14 +288,27 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
     ? (HARD_PITY * 2 * safeCopies - (guaranteed ? HARD_PITY : 0) - safePity)
     : (HARD_PITY * safeCopies - safePity));
   const successRate = pGe(safeCopies);
-  const missingPulls = Math.max(0, Math.ceil(expectedToTarget) - safePulls);
-  
-  // 4-star calculations (estimate: assumes hard pity every 10 pulls, ignores actual 4★ pity counter)
-  // This is a floor estimate — actual 4★ count is typically higher due to base rate hits
+  const missingPulls5Star = Math.max(0, Math.ceil(expectedToTarget) - safePulls);
+
+  // 4-star calculations
+  // Expected 4-stars from pulls: on average 1 per HARD_PITY_4STAR (10) pulls
   const fourStarCount = Math.floor(safePulls / HARD_PITY_4STAR);
-  const featuredFourStarCount = Math.floor(fourStarCount * FEATURED_4STAR_RATE);
+  const featuredFourStarCount = isFeaturedBanner ? Math.floor(fourStarCount * FEATURED_4STAR_RATE) : fourStarCount;
   const pity4 = safePulls % HARD_PITY_4STAR;
-  
+
+  // 4-star target: calculate how many pulls are needed to reach the target
+  let missingPulls4Star = 0;
+  if (safe4StarCopies > 0) {
+    // On featured banners: ~50% of 4-stars are featured, so need ~2× pulls per featured 4-star copy
+    // On standard banners: all 4-stars count, so need ~HARD_PITY_4STAR pulls per copy
+    const pullsPer4Star = isFeaturedBanner ? HARD_PITY_4STAR / FEATURED_4STAR_RATE : HARD_PITY_4STAR;
+    const expectedPullsFor4Star = Math.ceil(safe4StarCopies * pullsPer4Star);
+    missingPulls4Star = Math.max(0, expectedPullsFor4Star - safePulls);
+  }
+
+  // Overall missing pulls: the larger of 5-star and 4-star requirements
+  const missingPulls = Math.max(missingPulls5Star, missingPulls4Star);
+
   return {
     successRate: successRate > 0 && successRate < 0.1 ? '<0.1' : successRate.toFixed(1),
     p1: pGe(1).toFixed(1),
@@ -305,9 +319,12 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies) => {
     p6: pGe(6).toFixed(1),
     p7: pGe(7).toFixed(1),
     missingPulls,
+    missingPulls5Star,
+    missingPulls4Star,
     missingAstrite: missingPulls * ASTRITE_PER_PULL,
     fourStarCount,
     featuredFourStarCount,
+    fourStarTarget: safe4StarCopies,
     pity4,
     // New stats from DP formula
     expectedCopies: stats.expected.toFixed(2),

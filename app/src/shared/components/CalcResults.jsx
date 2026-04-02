@@ -33,14 +33,43 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
       </div>
       {isFeatured ? (
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span><div className="text-gray-400 text-[10px] mt-0.5">4★ Expected</div></div>
-          <div className="kuro-stat kuro-stat-purple"><span className="text-purple-400 kuro-number">~{stats.featuredFourStarCount}</span><div className="text-gray-400 text-[10px] mt-0.5">Featured 4★</div></div>
+          <div className="kuro-stat kuro-stat-purple">
+            <span className="text-purple-400 kuro-number">~{stats.featuredFourStarCount}</span>
+            {stats.fourStarTarget > 0 ? (
+              <div className={`text-[10px] mt-0.5 ${stats.featuredFourStarCount >= stats.fourStarTarget ? 'text-emerald-400' : 'text-orange-400'}`}>
+                Featured 4★ ({stats.featuredFourStarCount}/{stats.fourStarTarget})
+              </div>
+            ) : (
+              <div className="text-gray-400 text-[10px] mt-0.5">Featured 4★</div>
+            )}
+          </div>
+          <div className="kuro-stat kuro-stat-purple">
+            <span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span>
+            <div className="text-gray-400 text-[10px] mt-0.5">4★ Total</div>
+          </div>
         </div>
       ) : (
-        <div className="kuro-stat kuro-stat-purple text-xs">
-          <span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span>
-          <div className="text-gray-400 text-[10px] mt-0.5">4★ Expected</div>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="kuro-stat kuro-stat-purple">
+            <span className="text-purple-400 kuro-number">~{stats.fourStarCount}</span>
+            {stats.fourStarTarget > 0 ? (
+              <div className={`text-[10px] mt-0.5 ${stats.fourStarCount >= stats.fourStarTarget ? 'text-emerald-400' : 'text-orange-400'}`}>
+                4★ Expected ({stats.fourStarCount}/{stats.fourStarTarget})
+              </div>
+            ) : (
+              <div className="text-gray-400 text-[10px] mt-0.5">4★ Expected</div>
+            )}
+          </div>
+          {stats.missingPulls4Star > 0 && (
+            <div className="kuro-stat kuro-stat-purple">
+              <span className="text-orange-400 kuro-number">{stats.missingPulls4Star}</span>
+              <div className="text-orange-400 text-[10px] mt-0.5">4★ Convenes Needed</div>
+            </div>
+          )}
         </div>
+      )}
+      {stats.missingPulls4Star > 0 && stats.missingPulls4Star > stats.missingPulls5Star && (
+        <p className="text-[10px] text-orange-400 text-center">4★ target requires more Convenes than 5★ target</p>
       )}
       {/* AUDIT-FIX M33: Accurate method label — DP is exact for ≤500 pulls, MC simulation for larger values */}
       <p className="text-[10px] text-gray-400 text-center mx-auto" style={{maxWidth: 'none'}}>Rates: 0.8% base, soft pity 65-79, hard pity 80. DP + Monte Carlo hybrid.</p>
