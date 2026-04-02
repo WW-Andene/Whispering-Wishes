@@ -26,7 +26,7 @@ export function eraseEchoBg(src, opts = {}) {
 
   const {
     darkThreshold = 30,
-    colorTolerance = 16,
+    colorTolerance = 8,
     saturationThreshold = 0.16,
     edgeErosion = 1,
     cornerCrop = false,
