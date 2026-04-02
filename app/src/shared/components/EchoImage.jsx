@@ -23,7 +23,7 @@ const EchoImage = ({ src, alt, className, style, ...rest }) => {
       src={processedSrc || src}
       alt={alt}
       className={className}
-      style={{ mixBlendMode: 'lighten', ...style }}
+      style={style}
       onError={hideOnError}
       {...rest}
     />
