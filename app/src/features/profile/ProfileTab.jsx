@@ -25,9 +25,14 @@ import AdminPanel from './AdminPanel.jsx';
 
 // Module-level constants (copied from App.jsx — profile/admin specific)
 const MAX_USERNAME_LENGTH = 24;
-const MAX_ADMIN_ATTEMPTS = 5;
-const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const MAX_ADMIN_ATTEMPTS = 3;
+const ADMIN_LOCKOUT_MS = 24 * 60 * 60 * 1000;
 const ADMIN_TAP_TIMEOUT_MS = 1500;
+const formatLockoutRemaining = (ms) => {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.ceil((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+};
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
@@ -276,8 +281,7 @@ export default function ProfileTab({
       try {
         const lockoutUntil = localStorage.getItem('ww-admin-lockout');
         if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
-          const remaining = Math.ceil((parseInt(lockoutUntil, 10) - Date.now()) / 60000);
-          toast?.addToast?.(`Admin locked for ${remaining}m. Try again later.`, 'error');
+          toast?.addToast?.(`Admin locked for ${formatLockoutRemaining(parseInt(lockoutUntil, 10) - Date.now())}. Try again later.`, 'error');
           adminTapCountRef.current = 0;
           setAdminTapCount(0);
           return;
@@ -348,15 +352,13 @@ export default function ProfileTab({
     }
     const now = Date.now();
     if (adminSessionLockUntilRef.current > now) {
-      const remaining = Math.ceil((adminSessionLockUntilRef.current - now) / 60000);
-      toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+      toast?.addToast?.(`Too many failed attempts. Try again in ${formatLockoutRemaining(adminSessionLockUntilRef.current - now)}.`, 'error');
       return;
     }
     try {
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
       if (lockoutUntil && now < parseInt(lockoutUntil, 10)) {
-        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - now) / 60000);
-        toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+        toast?.addToast?.(`Too many failed attempts. Try again in ${formatLockoutRemaining(parseInt(lockoutUntil, 10) - now)}.`, 'error');
         return;
       }
     } catch {}

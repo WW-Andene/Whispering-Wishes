@@ -73,8 +73,8 @@ const fetchWithTimeout = (url, options = {}) => {
 const DEBOUNCE_MS = 300;
 const FOCUS_DELAY_MS = 0;
 const CALC_DEFER_MS = 150;
-const MAX_ADMIN_ATTEMPTS = 5;
-const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const MAX_ADMIN_ATTEMPTS = 3;
+const ADMIN_LOCKOUT_MS = 24 * 60 * 60 * 1000;
 const ADMIN_TAP_TIMEOUT_MS = 1500;
 const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 const MAX_USERNAME_LENGTH = 24;
