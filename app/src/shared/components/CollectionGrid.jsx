@@ -3,13 +3,22 @@
 // CollectionGridSection component
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, memo } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA, haptic } from '../../appcore-data.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { eraseEchoBg } from '../utils/echoBackground.js';
 
 // Internal: CollectionGridCard
 const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
+  // Pixel-level background removal for echo images
+  const [processedUrl, setProcessedUrl] = useState(isEcho ? null : imgUrl);
+  useEffect(() => {
+    if (!isEcho || !imgUrl) { setProcessedUrl(imgUrl); return; }
+    let cancelled = false;
+    eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); });
+    return () => { cancelled = true; };
+  }, [imgUrl, isEcho]);
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -37,24 +46,21 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {imgUrl ? (
       <div className="absolute inset-0 collection-img-wrap" style={{
         maskImage: isEcho
-          ? 'radial-gradient(ellipse 70% 65% at center 45%, black 35%, transparent 80%)'
+          ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
         WebkitMaskImage: isEcho
-          ? 'radial-gradient(ellipse 70% 65% at center 45%, black 35%, transparent 80%)'
+          ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
       }}>
         <img
-          src={imgUrl}
+          src={processedUrl || imgUrl}
           alt={name}
           loading="lazy"
           className="w-full h-full object-contain pointer-events-none"
           style={{
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,
-            filter: owned
-              ? (isEcho ? 'contrast(1.15) brightness(1.05)' : 'none')
-              : (isEcho ? 'grayscale(100%) contrast(1.15)' : 'grayscale(100%)'),
-            mixBlendMode: isEcho ? 'lighten' : undefined,
+            filter: owned ? 'none' : 'grayscale(100%)',
             maskImage: collMask,
             WebkitMaskImage: collMask
           }}
