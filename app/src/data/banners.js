@@ -196,7 +196,7 @@ const EVENTS = {
     color: 'orange',
     // Mon, 02 Feb 2026 04:00 - Mon, 02 Mar 2026 03:59 (Europe)
     currentEnd: '2026-03-02T02:59:00Z',
-    rewards: '800 Astrite',
+    rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
     imageUrl: 'https://i.ibb.co/QF335JVv/Tower-of-Adversity-Banner-Art.jpg'
