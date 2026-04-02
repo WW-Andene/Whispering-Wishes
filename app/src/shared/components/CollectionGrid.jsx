@@ -61,6 +61,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,
             filter: owned ? 'none' : 'grayscale(100%)',
+            mixBlendMode: isEcho ? 'lighten' : undefined,
             maskImage: collMask,
             WebkitMaskImage: collMask
           }}
