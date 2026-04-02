@@ -199,7 +199,7 @@ export default function PlannerTab({
               </div>
               <div className="kuro-stat p-2 text-center">
                 <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
-                <div className="text-gray-400 text-[10px]">Total Astrite</div>
+                <div className="text-gray-400 text-[10px]">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Total Astrite'}</div>
               </div>
             </div>
             <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString()} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString()} Lunite` : ''} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
