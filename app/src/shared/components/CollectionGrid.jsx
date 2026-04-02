@@ -37,10 +37,10 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {imgUrl ? (
       <div className="absolute inset-0 collection-img-wrap" style={{
         maskImage: isEcho
-          ? 'radial-gradient(ellipse 75% 70% at center, black 45%, transparent 90%)'
+          ? 'radial-gradient(ellipse 70% 65% at center 45%, black 35%, transparent 80%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
         WebkitMaskImage: isEcho
-          ? 'radial-gradient(ellipse 75% 70% at center, black 45%, transparent 90%)'
+          ? 'radial-gradient(ellipse 70% 65% at center 45%, black 35%, transparent 80%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
       }}>
         <img
@@ -51,7 +51,10 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           style={{
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,
-            filter: owned ? 'none' : 'grayscale(100%)',
+            filter: owned
+              ? (isEcho ? 'contrast(1.15) brightness(1.05)' : 'none')
+              : (isEcho ? 'grayscale(100%) contrast(1.15)' : 'grayscale(100%)'),
+            mixBlendMode: isEcho ? 'lighten' : undefined,
             maskImage: collMask,
             WebkitMaskImage: collMask
           }}
