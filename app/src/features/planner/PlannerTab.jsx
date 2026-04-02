@@ -23,7 +23,7 @@ export default function PlannerTab({
 }) {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
 
-  const isCalcDefaults = !state.calc.astrite && !state.calc.lunite && state.calc.charPity === 0 && state.calc.weapPity === 0 && !state.calc.charGuaranteed && !state.calc.radiant && !state.calc.forging && !state.calc.lustrous;
+
 
   const dailyIncome = useMemo(() => {
     return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
@@ -70,12 +70,6 @@ export default function PlannerTab({
     <TabErrorBoundary tabName="Planner">
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="planner" />
-
-      {isCalcDefaults && (
-        <div className="text-center text-gray-500" style={{ fontSize: '10px', padding: '4px 0' }}>
-          Set up your pity &amp; banner in the Calculator tab for accurate projections.
-        </div>
-      )}
 
       <Card>
         <CardHeader>Daily Income</CardHeader>

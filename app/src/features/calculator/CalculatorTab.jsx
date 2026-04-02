@@ -147,8 +147,6 @@ export default function CalculatorTab({ state, dispatch }) {
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="calc" />
 
-            <p className="text-gray-400 text-xs text-center px-2">Calculate your Convene probabilities by entering your resources below.</p>
-
             {/* Banner Selection */}
             <Card>
               <CardHeader action={<button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-[10px] flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button>}>Banner Selection</CardHeader>
