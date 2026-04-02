@@ -173,7 +173,7 @@ export default function PlannerTab({
             ))}
             <div className="pt-2 border-t border-[var(--border-medium)] flex justify-between text-xs">
               <span className="text-gray-400">Total Spent</span>
-              <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + i.price, 0).toFixed(2)}</span>
+              <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + (+i.price || 0), 0).toFixed(2)}</span>
             </div>
           </CardBody>
         </Card>

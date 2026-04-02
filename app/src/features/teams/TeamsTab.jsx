@@ -172,6 +172,7 @@ export default function TeamsTab({
                                 try {
                                   const data = JSON.parse(ev.target.result);
                                   if (!data.teams || !Array.isArray(data.teams)) throw new Error('Invalid format');
+                                  if (data.teams.length !== 5) throw new Error(`Expected 5 teams, got ${data.teams.length}`);
                                   // Issue #102: Validate team structure before importing
                                   for (let i = 0; i < data.teams.length; i++) {
                                     const t = data.teams[i];

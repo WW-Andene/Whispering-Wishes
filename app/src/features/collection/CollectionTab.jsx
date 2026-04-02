@@ -197,7 +197,7 @@ export default function CollectionTab({
       }
       const data = ECHO_DATA[name];
       if (!data) return true;
-      if (collectionEchoSetFilter !== 'all' && !data.sets.includes(collectionEchoSetFilter)) return false;
+      if (collectionEchoSetFilter !== 'all' && !(data.sets || []).includes(collectionEchoSetFilter)) return false;
       if (collectionEchoBuffFilter !== 'all' && !(Array.isArray(data.buff) ? data.buff.includes(collectionEchoBuffFilter) : data.buff === collectionEchoBuffFilter)) return false;
       return true;
     });
