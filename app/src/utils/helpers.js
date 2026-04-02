@@ -65,7 +65,7 @@ const calculateLuckRating = (avgPity, numFiveStars) => {
   const percentile = Math.min(99, Math.max(1, Math.round(cdf * 100)));
 
   // WuWa-themed rank names (5 tiers for better distribution)
-  if (percentile >= 90) return { rating: 'Arbiter', color: '#edaf18', tier: 'S+', percentile };
+  if (percentile >= 90) return { rating: 'Arbiter', color: '#edaf18', tier: 'SSS', percentile };
   if (percentile >= 70) return { rating: 'Sentinel', color: '#a855f7', tier: 'S', percentile };
   if (percentile >= 40) return { rating: 'Resonator', color: '#3b82f6', tier: 'A', percentile };
   if (percentile >= 20) return { rating: 'Drifter', color: '#6b7280', tier: 'B', percentile };
