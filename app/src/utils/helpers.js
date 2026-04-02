@@ -40,8 +40,9 @@ const generateUniqueId = () => {
 //   Mean pity at 5★ = 53.5 pulls, Std dev = 22.7 pulls (single draw).
 // For N 5★ pulls, the sample mean has std dev = 22.7/√N (central limit theorem).
 // We use max(N, 3) to avoid extreme percentiles from tiny samples.
-const LUCK_MEAN_PITY = 53.5;
-const LUCK_STD_DEV_SINGLE = 22.7;
+// Computed from app's soft pity model: SOFT_PITY_START=64, HARD_PITY=80, BASE_RATE=0.8%
+const LUCK_MEAN_PITY = 53.0;
+const LUCK_STD_DEV_SINGLE = 22.4;
 
 const calculateLuckRating = (avgPity, numFiveStars) => {
   if (!avgPity || avgPity === '—') return null;
