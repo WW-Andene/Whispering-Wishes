@@ -23,7 +23,7 @@ const GACHA_EPS = 1e-15;
 // before clamping, but Math.min ensures it returns exactly 1.0. The DP table accesses
 // getPullRate(80) via nextPity = Math.min(MAX_PITY, p+1), which is correct — pity 80 = guaranteed.
 const BASE_5STAR_RATE = 0.008; // 0.8%
-const SOFT_PITY_STEPS = MAX_PITY - SOFT_PITY_START; // 80 - 65 = 15 steps
+const SOFT_PITY_STEPS = MAX_PITY - SOFT_PITY_START; // 80 - 64 = 16 steps
 const getPullRate = (pity) => {
   if (pity < SOFT_PITY_START) return BASE_5STAR_RATE;
   return Math.min(BASE_5STAR_RATE + ((pity - SOFT_PITY_START + 1) / SOFT_PITY_STEPS) * (1.0 - BASE_5STAR_RATE), 1.0);
@@ -291,9 +291,9 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, 
   const missingPulls5Star = Math.max(0, Math.ceil(expectedToTarget) - safePulls);
 
   // 4-star calculations
-  // WuWa 4★ mechanics: 6% base rate + hard pity at 10 = ~1 four-star per 8.33 pulls average
-  // Community-confirmed average rate with pity: ~12% (= 1 per ~8.33 pulls)
-  const AVG_PULLS_PER_4STAR = 8.33;
+  // WuWa 4★ mechanics: 6% base rate + hard pity at 10
+  // Exact expected value: Σ(k=1..9) k×0.06×0.94^(k-1) + 10×0.94^9 = 7.69 pulls per 4-star
+  const AVG_PULLS_PER_4STAR = 7.69;
   const fourStarCount = Math.round(safePulls / AVG_PULLS_PER_4STAR);
   // Featured banners: 50/50 system with guarantee (lose → next guaranteed featured)
   // Average 1.5 four-star pulls per featured 4-star copy (50% win + 50% lose then guaranteed)
@@ -306,11 +306,11 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, 
   // The user's 4-star target = total featured 4-star copies they want (any of the 3 featured)
   let missingPulls4Star = 0;
   if (safe4StarCopies > 0) {
-    // Featured banners: ~8.33 pulls per 4-star × 1.5 four-star pulls per featured = ~12.5 pulls per featured 4-star
-    // Standard banners: ~8.33 pulls per 4-star (all count, no featured distinction)
+    // Featured banners: ~7.69 pulls per 4-star × 1.5 four-star pulls per featured = ~11.5 pulls per featured 4-star
+    // Standard banners: ~7.69 pulls per 4-star (all count, no featured distinction)
     const pullsPerTarget4Star = isFeaturedBanner
-      ? AVG_PULLS_PER_4STAR * AVG_4STAR_PULLS_PER_FEATURED  // ~12.5 pulls per featured 4★
-      : AVG_PULLS_PER_4STAR;                                  // ~8.33 pulls per 4★
+      ? AVG_PULLS_PER_4STAR * AVG_4STAR_PULLS_PER_FEATURED  // ~11.5 pulls per featured 4★
+      : AVG_PULLS_PER_4STAR;                                  // ~7.69 pulls per 4★
     const expectedPullsFor4Star = Math.ceil(safe4StarCopies * pullsPerTarget4Star);
     missingPulls4Star = Math.max(0, expectedPullsFor4Star - safePulls);
   }
