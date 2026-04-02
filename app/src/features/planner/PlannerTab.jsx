@@ -221,7 +221,7 @@ export default function PlannerTab({
             {[7, 30, 90].map(days => (
               <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
                 <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
-                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
+                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString()}</div>
                 <div className="text-gray-400 text-[10px]">Convenes</div>
                 <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
               </div>
@@ -303,7 +303,7 @@ export default function PlannerTab({
               <div className="text-gray-400 text-[10px]">Astrite Needed</div>
             </div>
             <div className="kuro-stat p-3 text-center">
-              <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded}</div>
+              <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded.toLocaleString()}</div>
               <div className="text-gray-400 text-[10px]">Days to Goal</div>
             </div>
           </div>
