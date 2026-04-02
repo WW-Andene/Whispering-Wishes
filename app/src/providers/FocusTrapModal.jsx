@@ -1,0 +1,142 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — FocusTrapModal
+// Accessible modal with focus trapping, escape key, drag-to-dismiss, scroll lock.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import { useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+
+// [SECTION:A11Y_HOOKS] - Accessibility hooks for modal focus trapping & escape key
+// P14-FIX: MEDIUM-22 — Re-query focusable elements on each Tab keypress instead of caching.
+// Dynamic modals may render content after the trap is set up, so the focusable list can become stale.
+const useFocusTrap = (isOpen) => {
+  const ref = useRef(null);
+  const previousFocusRef = useRef(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    previousFocusRef.current = document.activeElement;
+    const el = ref.current;
+    if (!el) return;
+    const getFocusable = () => el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const raf = requestAnimationFrame(() => { const f = getFocusable(); if (f.length) f[0].focus(); });
+    const handleKeyDown = (e) => {
+      if (e.key !== 'Tab') return;
+      // Re-query on each Tab press to catch dynamically rendered elements
+      const nodes = getFocusable();
+      if (!nodes.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+      else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
+    };
+    el.addEventListener('keydown', handleKeyDown);
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus(); };
+  }, [isOpen]);
+  return ref;
+};
+// Modal stack prevents multiple modals from all closing on a single Escape press.
+// Only the most recently opened (topmost) modal responds to Escape.
+const _modalStack = [];
+const useEscapeKey = (isOpen, onClose) => {
+  const idRef = useRef(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const id = Symbol('modal');
+    idRef.current = id;
+    _modalStack.push({ id, onClose });
+    const handler = (e) => {
+      if (e.key === 'Escape' && _modalStack.length > 0 && _modalStack[_modalStack.length - 1].id === id) {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => {
+      document.removeEventListener('keydown', handler);
+      const idx = _modalStack.findIndex(m => m.id === id);
+      if (idx !== -1) _modalStack.splice(idx, 1);
+    };
+  }, [isOpen, onClose]);
+};
+
+// P12-FIX: Reusable modal wrapper with focus trapping + escape handling for inline modals (Step 11 audit — MEDIUM-6d)
+const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick, centered = false }) => {
+  const focusTrapRef = useFocusTrap(isOpen);
+  useEscapeKey(isOpen, onClose);
+  const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
+  const sheetRef = useRef(null);
+  // Prevent background scroll when modal is open (fixes iOS Safari scroll bleed)
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      // Restore scroll position instantly to avoid visual jump on iOS
+      window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
+    };
+  }, [isOpen]);
+
+  // Drag-to-dismiss handlers (mobile bottom sheet) — only from header zone
+  const onTouchStart = useCallback((e) => {
+    // Only allow drag from the header area (handle bar + header row)
+    const target = e.target;
+    const header = target.closest('[data-sheet-header]');
+    if (!header) return;
+    dragRef.current = { startY: e.touches[0].clientY, currentY: 0, dragging: true };
+  }, []);
+  const onTouchMove = useCallback((e) => {
+    if (!dragRef.current.dragging) return;
+    const dy = e.touches[0].clientY - dragRef.current.startY;
+    if (dy < 0) return; // only drag down
+    dragRef.current.currentY = dy;
+    const sheet = sheetRef.current;
+    if (sheet) sheet.style.transform = `translateY(${dy}px)`;
+  }, []);
+  const onTouchEnd = useCallback(() => {
+    if (!dragRef.current.dragging) return;
+    dragRef.current.dragging = false;
+    const sheet = sheetRef.current;
+    if (dragRef.current.currentY > 100) {
+      // Dismiss
+      if (sheet) sheet.style.transform = 'translateY(100%)';
+      setTimeout(onClose, 150);
+    } else {
+      // Snap back
+      if (sheet) sheet.style.transform = '';
+    }
+    dragRef.current.currentY = 0;
+  }, [onClose]);
+
+  if (!isOpen) return null;
+  return createPortal(
+    <div
+      ref={focusTrapRef}
+      className={`fixed inset-0 z-[100] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} ${className}`}
+      style={{ backdropFilter: 'blur(2px) brightness(0.4)', WebkitBackdropFilter: 'blur(2px) brightness(0.4)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
+      <div
+        ref={sheetRef}
+        className={`w-full sm:contents ${centered ? 'flex items-center justify-center' : ''}`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ transition: 'transform 0.2s ease-out', animation: centered ? 'scaleIn 0.3s ease-out' : 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+      >
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+export { useFocusTrap, useEscapeKey, FocusTrapModal };
