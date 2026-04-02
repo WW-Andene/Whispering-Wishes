@@ -3,7 +3,7 @@
 // Usage: POST /api/remove-bg  { "imageUrl": "https://i.ibb.co/..." }
 // Returns: PNG image with transparent background
 
-const HF_MODEL = 'briaai/RMBG-1.4';
+const HF_MODEL = 'briaai/RMBG-2.0';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 const MAX_RETRIES = 3;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB

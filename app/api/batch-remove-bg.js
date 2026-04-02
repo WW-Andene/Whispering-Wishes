@@ -4,7 +4,7 @@
 // Auth: x-admin-key header must match ADMIN_HASH env var (same hash as admin panel)
 // Returns: { "name": "Echo Name", "resultUrl": "data:image/png;base64,..." }
 
-const HF_MODEL = 'briaai/RMBG-1.4';
+const HF_MODEL = 'briaai/RMBG-2.0';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 const MAX_RETRIES = 3;
 

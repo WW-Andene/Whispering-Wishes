@@ -27,7 +27,7 @@ ECHOES_JS = Path(__file__).parent.parent / "app" / "src" / "data" / "echoes.js"
 OUTPUT_DIR = Path(__file__).parent / "echo-images-nobg"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-HF_MODEL = "briaai/RMBG-1.4"
+HF_MODEL = "briaai/RMBG-2.0"
 HF_API_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 
 
