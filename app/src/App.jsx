@@ -1481,6 +1481,7 @@ function WhisperingWishesInner() {
                 bannerEndDate={bannerEndDate}
                 toast={toast}
                 confirm={confirm}
+                setActiveTab={setActiveTab}
               />
             </React.Suspense>
           </TabErrorBoundary>
