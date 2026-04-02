@@ -24,138 +24,226 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  */
 export function parseGachaUrl(raw) {
   try {
-    const u = new URL(raw.trim());
-    const get = (...keys) => keys.map((k) => u.searchParams.get(k)).find(Boolean) ?? null;
+    const trimmed = raw.trim();
+    // WuWa URLs have params after #/record? — extract them from the hash fragment
+    let paramStr = '';
+    const hashIdx = trimmed.indexOf('#');
+    if (hashIdx !== -1) {
+      const afterHash = trimmed.slice(hashIdx + 1);
+      const qIdx = afterHash.indexOf('?');
+      if (qIdx !== -1) paramStr = afterHash.slice(qIdx + 1);
+    }
+    // Also check normal query string as fallback
+    const u = new URL(trimmed);
+    const params = new URLSearchParams(paramStr || u.search);
+    const get = (...keys) => keys.map((k) => params.get(k)).find(Boolean) ?? null;
     const playerId = get('playerId', 'player_id');
     const recordId = get('recordId', 'record_id');
-    const svrId = get('svr_id', 'svrId', 'svr_area');
+    const svrId = get('svr_id', 'svrId');
+    const svrArea = get('svr_area');
+    const resourcesId = get('resources_id');
+    const gachaId = get('gacha_id');
+    const gachaType = get('gacha_type');
     const lang = get('lang') ?? 'en';
-    return { playerId, recordId, svrId, lang, valid: !!(playerId && recordId), href: u.href };
+    return { playerId, recordId, svrId, svrArea, resourcesId, gachaId, gachaType, lang, valid: !!(playerId), href: u.href };
   } catch {
     return { valid: false };
   }
 }
 
 /**
- * Build a proxy URL to avoid CORS when fetching from the gacha API.
- * @param {string} originalUrl
- * @returns {string|null}
+ * Fetch a single page from the gacha API.
+ * @param {{ playerId: string, serverId: string, recordId: string, cardPoolId: string, lang: string }} params
+ * @param {number} cardPoolType
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<Array>} Array of pull records for this page
  */
-export function toProxyUrl(originalUrl) {
-  try {
-    const u = new URL(originalUrl);
-    const strippedPath = u.pathname.replace(/^\/gacha/, '');
-    return `/api/gacha${strippedPath}${u.search}`;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Fetch all pulls for a single card pool type, paginated.
- * @param {string} baseUrl - The base gacha API URL with playerId/recordId params
- * @param {number} cardPoolType - The pool type (1-7)
- * @param {AbortSignal} [signal] - Optional abort signal
- * @returns {Promise<Array>} Array of pull records
- */
-export async function fetchPoolPulls(baseUrl, cardPoolType, signal) {
-  const allPulls = [];
-  let lastRecordId = '0';
-  let hasMore = true;
-  let pages = 0;
-  const MAX_PAGES = 100;
+async function fetchPage(params, cardPoolType, signal) {
   const FETCH_TIMEOUT = 10000;
+  const body = {
+    playerId: String(params.playerId),
+    serverId: params.serverId || '',
+    cardPoolType: Number(cardPoolType),
+    cardPoolId: params.cardPoolId || '',
+    languageCode: params.lang || 'en',
+    recordId: params.recordId || '',
+  };
 
-  while (hasMore) {
-    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-    if (++pages > MAX_PAGES) break;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+  const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
 
-    const u = new URL(baseUrl);
-    u.searchParams.set('cardPoolType', String(cardPoolType));
-    u.searchParams.set('recordId', lastRecordId);
-
-    const proxyUrl = toProxyUrl(u.toString());
-    if (!proxyUrl) throw new Error('Invalid URL.');
-
-    let res;
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-      const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-      res = await fetch(proxyUrl, { signal: mergedSignal });
-      clearTimeout(timeout);
-    } catch (err) {
-      if (err.name === 'AbortError') throw err;
-      throw new Error('Network error');
-    }
-
-    if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`);
-
-    const json = await res.json();
-    if (json?.code !== 0)
-      throw new Error(json?.message || `API error (code ${json?.code})`);
-
-    const list = json?.data?.list;
-    if (!list || list.length === 0) {
-      hasMore = false;
-    } else {
-      allPulls.push(...list);
-      lastRecordId = list[list.length - 1].recordId;
-      await sleep(300);
-    }
+  let res;
+  try {
+    res = await fetch('/api/gacha/record/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: mergedSignal,
+    });
+    clearTimeout(timeout);
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw err;
+    throw new Error('Network error');
   }
-  return allPulls;
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody?.error || `HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  if (json?.code !== 0) {
+    throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
+  }
+
+  // Return full response so caller can check for pagination metadata
+  return json;
 }
 
 /**
- * Build the base API URL from parsed IDs.
- * @param {string} rawUrl - Original URL (or empty for fallback)
+ * Build fetch params from parsed URL or manual IDs.
+ * @param {string} rawUrl - Original URL (or empty for manual input)
  * @param {string} playerId
- * @param {string} recordId
+ * @param {string} recordId - Not used by API but kept for compatibility
  * @param {string} [svrId]
- * @returns {string}
+ * @returns {{ playerId: string, serverId: string, lang: string }}
  */
-export function buildBaseUrl(rawUrl, playerId, recordId, svrId) {
-  const usingFallback = !rawUrl.trim();
-  const src = usingFallback ? FALLBACK_API_BASE : rawUrl.trim();
-  const u = new URL(src);
-  if (usingFallback) {
-    u.searchParams.set('player_id', playerId);
-    u.searchParams.set('record_id', recordId);
-    if (svrId?.trim()) u.searchParams.set('svr_id', svrId.trim());
-  } else {
-    u.searchParams.set('playerId', playerId);
-    u.searchParams.set('recordId', recordId);
-    if (svrId?.trim()) u.searchParams.set('svr_id', svrId.trim());
+export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
+  if (rawUrl?.trim()) {
+    const parsed = parseGachaUrl(rawUrl);
+    if (parsed.valid) {
+      return {
+        playerId: parsed.playerId || playerId,
+        serverId: parsed.svrId || svrId || '',
+        recordId: parsed.recordId || recordId || '',
+        cardPoolId: parsed.resourcesId || '',
+        gachaType: parsed.gachaType || '',
+        lang: parsed.lang || 'en',
+      };
+    }
   }
-  return u.toString();
+  return { playerId, serverId: svrId || '', recordId: recordId || '', cardPoolId: '', gachaType: '', lang: 'en' };
 }
 
 /**
  * Fetch all pulls across all pool types.
- * @param {string} baseUrl
+ * @param {{ playerId: string, serverId: string, lang: string }} params
  * @param {AbortSignal} [signal]
  * @param {function} [onProgress] - Called with (poolType, status, count) for progress updates
  * @returns {Promise<{ pulls: Object, total: number }>}
  */
-export async function fetchAllPools(baseUrl, signal, onProgress) {
+export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
   let total = 0;
-
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
+
     try {
-      const pulls = await fetchPoolPulls(baseUrl, poolType, signal);
-      if (pulls.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = pulls;
-        total += pulls.length;
+      const poolItems = [];
+      let endTime = '';
+
+      for (let page = 0; page < 50; page++) {
+        if (signal?.aborted) break;
+
+        const body = {
+          playerId: String(params.playerId),
+          serverId: params.serverId || '',
+          cardPoolType: Number(poolType),
+          cardPoolId: params.cardPoolId || '',
+          languageCode: params.lang || 'en',
+          recordId: params.recordId || '',
+        };
+        if (endTime) body.endTime = endTime;
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+        const res = await fetch('/api/gacha/record/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: mergedSignal,
+        });
+        clearTimeout(timeout);
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        if (json?.code !== 0) throw new Error(json?.message || `API error ${json?.code}`);
+
+        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+        if (!list.length) break;
+
+        poolItems.push(...list);
+        onProgress?.(poolType, 'fetching', poolItems.length);
+
+        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
+        if (!oldest?.time || oldest.time === endTime) {
+          // Stuck - try fetching older records by jumping endTime back
+          // in monthly chunks until no more data
+          const stuckTime = new Date(oldest.time);
+          for (let jump = 1; jump <= 24; jump++) {
+            if (signal?.aborted) break;
+            const jumpDate = new Date(stuckTime);
+            jumpDate.setMonth(jumpDate.getMonth() - jump);
+            const jumpBody = {
+              playerId: String(params.playerId),
+              serverId: params.serverId || '',
+              cardPoolType: Number(poolType),
+              cardPoolId: params.cardPoolId || '',
+              languageCode: params.lang || 'en',
+              recordId: params.recordId || '',
+              endTime: jumpDate.toISOString(),
+            };
+            const c2 = new AbortController();
+            const t2 = setTimeout(() => c2.abort(), 15000);
+            const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
+            try {
+              const r2 = await fetch('/api/gacha/record/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jumpBody),
+                signal: s2,
+              });
+              clearTimeout(t2);
+              if (!r2.ok) break;
+              const j2 = await r2.json();
+              if (j2?.code !== 0) break;
+              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
+              if (!l2.length) continue; // This month empty, try older
+              poolItems.push(...l2);
+              onProgress?.(poolType, 'fetching', poolItems.length);
+              // Continue backward from this new batch
+              const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
+              if (o2?.time) {
+                endTime = o2.time;
+                break; // Resume normal pagination from here
+              }
+            } catch { clearTimeout(t2); break; }
+            await sleep(150);
+          }
+          if (endTime === oldest.time) break; // Still stuck, give up
+          continue;
+        }
+        endTime = oldest.time;
+
+        await sleep(150);
       }
-      onProgress?.(poolType, 'done', pulls.length);
+
+      if (poolItems.length > 0) {
+        allPulls[POOL_LABELS[poolType]] = poolItems;
+        total += poolItems.length;
+      }
+      onProgress?.(poolType, 'done', poolItems.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
       onProgress?.(poolType, 'error', 0);
     }
+
+    await sleep(150);
   }
 
   return { pulls: allPulls, total };
@@ -167,7 +255,7 @@ export async function fetchAllPools(baseUrl, signal, onProgress) {
  * @returns {Promise<string>} base64-encoded JPEG
  */
 export function compressImage(source) {
-  const MAX = 800;
+  const MAX = 1200;
 
   function scaleCanvas(srcCanvas) {
     let { width, height } = srcCanvas;
@@ -180,7 +268,7 @@ export function compressImage(source) {
     out.width = width;
     out.height = height;
     out.getContext('2d').drawImage(srcCanvas, 0, 0, width, height);
-    return out.toDataURL('image/jpeg', 0.6).split(',')[1];
+    return out.toDataURL('image/jpeg', 0.7).split(',')[1];
   }
 
   if (source instanceof HTMLCanvasElement) {
@@ -222,13 +310,14 @@ export async function extractIdsFromImage(base64Image) {
 
   const raw = await res.json();
   // Validate response — only accept expected string fields
-  const ids = {
-    player_id: typeof raw.player_id === 'string' ? raw.player_id : null,
-    record_id: typeof raw.record_id === 'string' ? raw.record_id : null,
-    svr_id: typeof raw.svr_id === 'string' ? raw.svr_id : null,
-  };
-  if (!ids.player_id && !ids.record_id) {
-    throw new Error('IDs not found — try a clearer screenshot.');
+  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
+  const ids = {};
+  for (const key of ALLOWED) {
+    const val = raw[key];
+    ids[key] = (typeof val === 'string' && val !== 'null' && val !== 'NULL' && val.trim()) ? val.trim() : null;
+  }
+  if (!ids.player_id) {
+    throw new Error('player_id not found. Try a clearer screenshot.');
   }
   return ids;
 }
@@ -266,5 +355,17 @@ export function convertToImportFormat(fetchResult) {
   // Sort by time ascending
   allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  return JSON.stringify(allPulls);
+  // Dedup overlapping pages: max 10 items per cardPoolType+time combo
+  const deduped = [];
+  const timeCounts = {};
+  for (const pull of allPulls) {
+    const key = `${pull.cardPoolType}|${pull.time}`;
+    const count = timeCounts[key] || 0;
+    if (count < 10) {
+      timeCounts[key] = count + 1;
+      deduped.push(pull);
+    }
+  }
+
+  return JSON.stringify({ pulls: deduped, uid: fetchResult.playerId || '' });
 }

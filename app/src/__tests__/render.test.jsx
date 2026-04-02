@@ -3,8 +3,8 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { describe, it, expect } from 'vitest';
 
-import { CURRENT_BANNERS } from '../appcore-data.js';
-import { initialState } from '../appcore-engine.js';
+import { CURRENT_BANNERS } from '../data/banners.js';
+import { initialState } from '../core/reducer.js';
 
 // Shared mock props
 const noop = () => {};

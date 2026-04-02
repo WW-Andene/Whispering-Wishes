@@ -4,43 +4,43 @@
 //           Admin panel modal, Admin mini window
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { Award, Camera, Check, ChevronDown, ClipboardList, Crown, Diamond, Download, Gamepad2, Link, Loader, Monitor, RefreshCcw, Settings, Smartphone, Sparkles, Star, Type, Upload, User, X } from 'lucide-react';
-import { parseGachaUrl, buildBaseUrl, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, POOL_LABELS } from '../../utils/gachaImporter.js';
-import {
-  APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, haptic,
-  SERVERS, getServerOffset,
-  CURRENT_BANNERS, CHARACTER_DATA,
-  DEFAULT_COLLECTION_IMAGES, ALL_CHARACTERS,
-  ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS,
-  ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
-  getElementColor, getElementBg,
-  CHARACTER_THEMES,
-} from '../../appcore-data.js';
-import {
-  storageAvailable,
-} from '../../appcore-engine.js';
-import {
-  useFocusTrap, FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  TROPHY_ICON_MAP, TabBackground,
-  Card, CardHeader, CardBody,
-  TabErrorBoundary,
-  ADMIN_BANNER_KEY, ADMIN_HASH,
-  VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  ImportGuide, getActiveBanners,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Award, Check, ChevronDown, Crown, Diamond, Download, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
+import ImportFlow from './ImportFlow.jsx';
+import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
+import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES } from '../../data/banners.js';
+import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
+import { storageAvailable } from '../../core/storage.js';
+import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
+import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 
 // Module-level constants (copied from App.jsx — profile/admin specific)
 const MAX_USERNAME_LENGTH = 24;
-const MAX_ADMIN_ATTEMPTS = 5;
-const ADMIN_LOCKOUT_MS = 5 * 60 * 1000;
+const MAX_ADMIN_ATTEMPTS = 3;
+// Escalating lockout: 24h → 1 week → 1 month → permanent ban (after 3 lockouts)
+const LOCKOUT_ESCALATION = [
+  24 * 60 * 60 * 1000,      // 1st lockout: 24 hours
+  7 * 24 * 60 * 60 * 1000,  // 2nd lockout: 1 week
+  30 * 24 * 60 * 60 * 1000, // 3rd lockout: 1 month
+];
+const MAX_LOCKOUTS_BEFORE_BAN = 3;
 const ADMIN_TAP_TIMEOUT_MS = 1500;
+const formatLockoutRemaining = (ms) => {
+  const d = Math.floor(ms / 86400000);
+  const h = Math.floor((ms % 86400000) / 3600000);
+  const m = Math.ceil((ms % 3600000) / 60000);
+  if (d > 0) return `${d}d ${h}h`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+};
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
@@ -123,131 +123,8 @@ export default function ProfileTab({
   withCacheBuster,
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
-  const [importPlatform, setImportPlatform] = useState(null);
-  const [importMethod, setImportMethod] = useState('file');
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [importStatus, setImportStatus] = useState(null);
-  const [pasteJsonText, setPasteJsonText] = useState('');
   const [showIdCard, setShowIdCard] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
-
-  // ── Direct import state ──────────────────────────────────────────────────
-  const [directUrl, setDirectUrl] = useState('');
-  const [directPlayerId, setDirectPlayerId] = useState('');
-  const [directRecordId, setDirectRecordId] = useState('');
-  const [directSvrId, setDirectSvrId] = useState('');
-  const [directStatus, setDirectStatus] = useState('idle'); // idle|fetching|done|error
-  const [directError, setDirectError] = useState('');
-  const [directProgress, setDirectProgress] = useState({});
-  const [directScanStatus, setDirectScanStatus] = useState('idle'); // idle|scanning|done|error
-  const [directCameraOpen, setDirectCameraOpen] = useState(false);
-  const directAbortRef = useRef(null);
-  const directVideoRef = useRef(null);
-  const directStreamRef = useRef(null);
-
-  const handleDirectUrlChange = useCallback((val) => {
-    setDirectUrl(val);
-    setDirectError('');
-    const p = parseGachaUrl(val);
-    if (p.valid) {
-      if (p.playerId) setDirectPlayerId(p.playerId);
-      if (p.recordId) setDirectRecordId(p.recordId);
-      if (p.svrId) setDirectSvrId(p.svrId);
-    }
-  }, []);
-
-  const handleDirectFetch = useCallback(async () => {
-    const pid = directPlayerId.trim();
-    const rid = directRecordId.trim();
-    if (!pid || !rid) { setDirectError('player_id and record_id are required.'); return; }
-    try {
-      const baseUrl = buildBaseUrl(directUrl, pid, rid, directSvrId);
-      directAbortRef.current = new AbortController();
-      setDirectStatus('fetching');
-      setDirectError('');
-      setDirectProgress({});
-      const result = await fetchAllPools(baseUrl, directAbortRef.current.signal, (pool, status, count) => {
-        setDirectProgress(prev => ({ ...prev, [pool]: { status, count } }));
-      });
-      if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
-      const jsonStr = convertToImportFormat({ ...result, playerId: pid });
-      await processImportData(jsonStr);
-      setDirectStatus('done');
-      toast?.addToast?.(`Imported ${result.total} Convenes!`, 'success');
-    } catch (err) {
-      if (err.name === 'AbortError') { setDirectStatus('idle'); return; }
-      setDirectStatus('error');
-      setDirectError(err.message || 'Import failed');
-    }
-  }, [directUrl, directPlayerId, directRecordId, directSvrId, processImportData, toast]);
-
-  const handleScreenshotOcr = useCallback(async (file) => {
-    if (!file) return;
-    setDirectScanStatus('scanning');
-    try {
-      const base64 = await compressImage(file);
-      const ids = await extractIdsFromImage(base64);
-      if (ids.player_id) setDirectPlayerId(ids.player_id);
-      if (ids.record_id) setDirectRecordId(ids.record_id);
-      if (ids.svr_id) setDirectSvrId(ids.svr_id);
-      setDirectScanStatus('done');
-      toast?.addToast?.('IDs extracted from screenshot!', 'success');
-    } catch (err) {
-      setDirectScanStatus('error');
-      setDirectError(err.message || 'Screenshot scan failed');
-    }
-  }, [toast]);
-
-  const openDirectCamera = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        audio: false,
-      });
-      directStreamRef.current = stream;
-      setDirectCameraOpen(true);
-      // Attach stream to video element after render
-      setTimeout(() => {
-        if (directVideoRef.current) {
-          directVideoRef.current.srcObject = stream;
-          directVideoRef.current.play().catch(() => {});
-        }
-      }, 100);
-    } catch (err) {
-      toast?.addToast?.(err.name === 'NotAllowedError' ? 'Camera access denied' : `Camera error: ${err.message}`, 'error');
-    }
-  }, [toast]);
-
-  const captureDirectCamera = useCallback(() => {
-    const video = directVideoRef.current;
-    if (!video) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    // Stop stream
-    directStreamRef.current?.getTracks().forEach(t => t.stop());
-    setDirectCameraOpen(false);
-    // Convert canvas to blob and OCR
-    canvas.toBlob(blob => { if (blob) handleScreenshotOcr(blob); }, 'image/jpeg', 0.85);
-  }, [handleScreenshotOcr]);
-
-  const closeDirectCamera = useCallback(() => {
-    directStreamRef.current?.getTracks().forEach(t => t.stop());
-    setDirectCameraOpen(false);
-  }, []);
-
-  // Auto-close camera when user leaves screen or component unmounts
-  useEffect(() => {
-    if (!directCameraOpen) return;
-    const onHide = () => { if (document.hidden) closeDirectCamera(); };
-    document.addEventListener('visibilitychange', onHide);
-    return () => {
-      document.removeEventListener('visibilitychange', onHide);
-      // Cleanup stream on unmount (e.g. tab switch while camera open)
-      directStreamRef.current?.getTracks().forEach(t => t.stop());
-    };
-  }, [directCameraOpen, closeDirectCamera]);
 
   // ── Admin state ──────────────────────────────────────────────────────────
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -260,19 +137,16 @@ export default function ProfileTab({
   const [adminMiniMode, setAdminMiniMode] = useState(false);
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
+      // Check permanent ban
+      if (localStorage.getItem('ww-admin-banned') === 'true') return Infinity;
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
-      const failCount = parseInt(localStorage.getItem('ww-admin-fails') || '0', 10);
       if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
         return parseInt(lockoutUntil, 10);
       }
+      // Lockout expired — clear fail counter (but keep lockdownCount for escalation)
       if (lockoutUntil) {
         localStorage.removeItem('ww-admin-lockout');
         localStorage.removeItem('ww-admin-fails');
-      }
-      if (failCount >= MAX_ADMIN_ATTEMPTS * 3) {
-        const extendedLockout = Date.now() + ADMIN_LOCKOUT_MS * 4;
-        localStorage.setItem('ww-admin-lockout', String(extendedLockout));
-        return extendedLockout;
       }
     } catch (err) { silentCatch(err, 'admin lockout init'); }
     return false;
@@ -401,59 +275,6 @@ export default function ProfileTab({
     }
   }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
 
-  // ── Import handlers (moved from App.jsx — they use tab-local state) ────
-  const handleFileImport = useCallback((e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const MAX_IMPORT_SIZE = MAX_IMPORT_SIZE_MB * 1024 * 1024;
-    if (file.size > MAX_IMPORT_SIZE) {
-      toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
-      e.target.value = '';
-      return;
-    }
-    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      processImportData(ev.target.result).catch(() => {}).finally(() => setImportStatus(null));
-    };
-    reader.onerror = () => {
-      toast?.addToast?.('Failed to read file', 'error');
-      setImportStatus(null);
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  }, [processImportData, toast]);
-
-  const handleFileDrop = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    const file = e.dataTransfer?.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith('.json')) {
-      toast?.addToast?.('Please drop a .json file', 'error');
-      return;
-    }
-    const MAX_IMPORT_SIZE = MAX_IMPORT_SIZE_MB * 1024 * 1024;
-    if (file.size > MAX_IMPORT_SIZE) {
-      toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
-      return;
-    }
-    setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
-    const reader = new FileReader();
-    reader.onload = (ev) => { processImportData(ev.target.result).catch(() => {}).finally(() => setImportStatus(null)); };
-    reader.onerror = () => { toast?.addToast?.('Failed to read file', 'error'); setImportStatus(null); };
-    reader.readAsText(file);
-  }, [processImportData, toast]);
-
-  const handlePasteImport = useCallback(() => {
-    if (!pasteJsonText.trim()) {
-      toast?.addToast?.('Please paste your JSON data first', 'error');
-      return;
-    }
-    processImportData(pasteJsonText).then(() => setPasteJsonText('')).catch(() => {});
-  }, [pasteJsonText, processImportData, toast]);
-
   // ── Admin handlers ─────────────────────────────────────────────────────
   const handleAdminTap = useCallback(async () => {
     if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
@@ -463,10 +284,13 @@ export default function ProfileTab({
     setAdminTapCount(newCount);
     if (newCount >= 5) {
       try {
+        if (localStorage.getItem('ww-admin-banned') === 'true') {
+          toast?.addToast?.('Admin permanently locked.', 'error');
+          adminTapCountRef.current = 0; setAdminTapCount(0); return;
+        }
         const lockoutUntil = localStorage.getItem('ww-admin-lockout');
         if (lockoutUntil && Date.now() < parseInt(lockoutUntil, 10)) {
-          const remaining = Math.ceil((parseInt(lockoutUntil, 10) - Date.now()) / 60000);
-          toast?.addToast?.(`Admin locked for ${remaining}m. Try again later.`, 'error');
+          toast?.addToast?.(`Admin locked for ${formatLockoutRemaining(parseInt(lockoutUntil, 10) - Date.now())}. Try again later.`, 'error');
           adminTapCountRef.current = 0;
           setAdminTapCount(0);
           return;
@@ -536,16 +360,17 @@ export default function ProfileTab({
       return;
     }
     const now = Date.now();
+    // Check permanent ban
+    try { if (localStorage.getItem('ww-admin-banned') === 'true') { toast?.addToast?.('Admin permanently locked.', 'error'); return; } } catch {}
+    if (adminSessionLockUntilRef.current === Infinity) { toast?.addToast?.('Admin permanently locked.', 'error'); return; }
     if (adminSessionLockUntilRef.current > now) {
-      const remaining = Math.ceil((adminSessionLockUntilRef.current - now) / 60000);
-      toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+      toast?.addToast?.(`Too many failed attempts. Try again in ${formatLockoutRemaining(adminSessionLockUntilRef.current - now)}.`, 'error');
       return;
     }
     try {
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
       if (lockoutUntil && now < parseInt(lockoutUntil, 10)) {
-        const remaining = Math.ceil((parseInt(lockoutUntil, 10) - now) / 60000);
-        toast?.addToast?.(`Too many failed attempts. Try again in ${remaining}m.`, 'error');
+        toast?.addToast?.(`Too many failed attempts. Try again in ${formatLockoutRemaining(parseInt(lockoutUntil, 10) - now)}.`, 'error');
         return;
       }
     } catch {}
@@ -553,7 +378,7 @@ export default function ProfileTab({
     const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
     const legacyHash = await hashPasswordSHA256(adminPassword);
     if (!saltedHash && !legacyHash && !pbkdf2Hash) {
-      toast?.addToast?.('Hashing unavailable — HTTPS required', 'error');
+      toast?.addToast?.('Hashing unavailable. HTTPS required', 'error');
       return;
     }
     if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH) || constantTimeCompare(saltedHash, ADMIN_HASH) || constantTimeCompare(legacyHash, ADMIN_HASH)) {
@@ -570,22 +395,37 @@ export default function ProfileTab({
         localStorage.setItem('ww-admin-fails', storageFails.toString());
         const totalFails = Math.max(sessionFails, storageFails);
         if (totalFails >= MAX_ADMIN_ATTEMPTS) {
-          const lockoutTime = now + ADMIN_LOCKOUT_MS;
-          adminSessionLockUntilRef.current = lockoutTime;
-          localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
-          setAdminLockedUntil(lockoutTime);
-          setShowAdminPanel(false);
-          setAdminPassword('');
-          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+          // Escalate lockout: count how many times we've been locked out before
+          const lockdownCount = parseInt(localStorage.getItem('ww-admin-lockdowns') || '0', 10);
+          if (lockdownCount >= MAX_LOCKOUTS_BEFORE_BAN) {
+            // Permanent ban after 3+ lockouts
+            localStorage.setItem('ww-admin-banned', 'true');
+            adminSessionLockUntilRef.current = Infinity;
+            setAdminLockedUntil(Infinity);
+            setShowAdminPanel(false);
+            setAdminPassword('');
+            toast?.addToast?.('Admin permanently locked.', 'error');
+          } else {
+            const lockoutDuration = LOCKOUT_ESCALATION[Math.min(lockdownCount, LOCKOUT_ESCALATION.length - 1)];
+            const lockoutTime = now + lockoutDuration;
+            adminSessionLockUntilRef.current = lockoutTime;
+            localStorage.setItem('ww-admin-lockout', lockoutTime.toString());
+            localStorage.setItem('ww-admin-lockdowns', (lockdownCount + 1).toString());
+            localStorage.setItem('ww-admin-fails', '0');
+            setAdminLockedUntil(lockoutTime);
+            setShowAdminPanel(false);
+            setAdminPassword('');
+            toast?.addToast?.(`Too many failed attempts. Locked for ${formatLockoutRemaining(lockoutDuration)}.`, 'error');
+          }
         } else {
           toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - totalFails} attempts remaining)`, 'error');
         }
       } catch {
         if (sessionFails >= MAX_ADMIN_ATTEMPTS) {
-          adminSessionLockUntilRef.current = now + ADMIN_LOCKOUT_MS;
+          adminSessionLockUntilRef.current = now + LOCKOUT_ESCALATION[0];
           setShowAdminPanel(false);
           setAdminPassword('');
-          toast?.addToast?.('Too many failed attempts. Admin locked for 5 minutes.', 'error');
+          toast?.addToast?.(`Too many failed attempts. Locked for ${formatLockoutRemaining(LOCKOUT_ESCALATION[0])}.`, 'error');
         } else {
           toast?.addToast?.(`Incorrect password (${MAX_ADMIN_ATTEMPTS - sessionFails} attempts remaining)`, 'error');
         }
@@ -699,8 +539,8 @@ export default function ProfileTab({
     } : null;
     const sts = [
       {l:'Avg Pity',v:overallStats?.avgPity??'--',c:'#edaf18'},
-      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString()??'--',c:'#e2e8f0'},
-      {l:'5-Star',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
+      {l:'Total Convenes',v:overallStats?.totalPulls?.toLocaleString('en-US')??'--',c:'#e2e8f0'},
+      {l:'5★',v:String(overallStats?.fiveStars??'--'),c:'#c084fc'},
       {l:'50/50 Win',v:overallStats?.winRate?overallStats.winRate+'%':'--',c:'#4ade80'},
       {l:'Won',v:String(overallStats?.won5050??'--'),c:'#4ade80'},
       {l:'Lost',v:String(overallStats?.lost5050??'--'),c:'#f87171'},
@@ -715,8 +555,8 @@ export default function ProfileTab({
     const bannerStats = [
       {l:'Featured',v:String(featHist.length),c:'#edaf18',s:featHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Weapon',v:String(weapBannerHist.length),c:'#c084fc',s:weapBannerHist.filter(p=>p.rarity===5).length+' ★5'},
-      {l:'Std. Char',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
-      {l:'Std. Weap',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Standard Resonator',v:String(stdCHist.length),c:'#60a5fa',s:stdCHist.filter(p=>p.rarity===5).length+' ★5'},
+      {l:'Standard Weapon',v:String(stdWHist.length),c:'#60a5fa',s:stdWHist.filter(p=>p.rarity===5).length+' ★5'},
       {l:'Beginner',v:String(bgnHist.length),c:'#34d399',s:bgnHist.filter(p=>p.rarity===5).length+' ★5'},
     ];
 
@@ -1060,7 +900,7 @@ export default function ProfileTab({
       if(tList.length>0)metaLine1+=tList.length+' Trophies';
       if(impDate)metaLine1+=(metaLine1?' · ':'')+impDate;
       if(metaLine1)ctx.fillText(metaLine1,bx+15,metaY);
-      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString()+' Astrite',bx+15,metaY+16);
+      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString('en-US')+' Astrite',bx+15,metaY+16);
       // Convene Stats inside profile panel
       const statCellH=36,statStartY=metaY+(overallStats?.totalAstrite?36:21);
       drawStats(bx+9,statStartY,leftW-18,statCellH,16);
@@ -1141,7 +981,7 @@ export default function ProfileTab({
       let metaLine='';
       if(tList.length>0)metaLine+=tList.length+' Trophies';
       if(impDate)metaLine+=(metaLine?' · ':'')+impDate;
-      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString()+' Astrite';
+      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString('en-US')+' Astrite';
       if(metaLine)ctx.fillText(metaLine,ix+15,metaY2);
       // Convene Stats inside profile panel
       const pStatY=metaY2+30;
@@ -1203,7 +1043,7 @@ export default function ProfileTab({
       },'image/png');
     } catch (e) {
       console.error('ID card export failed (possible CORS tainted canvas):', e);
-      toast?.addToast?.('Failed to save ID card — try a different profile image', 'error');
+      toast?.addToast?.('Failed to save ID card. Try a different profile image', 'error');
     }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies, getImageFraming]);
 
@@ -1312,7 +1152,7 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.oledMode && (
-                  <p className="text-emerald-400 text-[10px] text-center">✓ OLED mode active - saves battery on OLED displays</p>
+                  <p className="text-emerald-400 text-[10px] text-center">OLED mode active. Saves battery on OLED displays</p>
                 )}
 
                 {/* Dyslexic Font Toggle */}
@@ -1323,7 +1163,7 @@ export default function ProfileTab({
                     </div>
                     <div>
                       <div className="text-white text-xs font-medium">Accessibility Font</div>
-                      <div className="text-gray-400 text-[10px]">OpenDyslexic — easier to read</div>
+                      <div className="text-gray-400 text-[10px]">OpenDyslexic - easier to read</div>
                     </div>
                   </div>
                   <button
@@ -1362,7 +1202,7 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
-                  <p className="text-cyan-300 text-xs text-center">✓ Swipe left/right on content area to navigate</p>
+                  <p className="text-cyan-300 text-xs text-center">Swipe left or right on content area to navigate</p>
                 )}
 
                 {/* Animations Toggle — 3-state: off < on < full */}
@@ -1395,13 +1235,13 @@ export default function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>OFF — All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>ON — Background effects, transitions & glow</p>
+                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - Background effects, transitions and glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>FULL — 2× animation intensity, breathing on all characters</p>
+                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
                 )}
 
                 {/* Background Style Selector */}
@@ -1509,7 +1349,7 @@ export default function ProfileTab({
                   </div>
                   {visualSettings.theme !== 'default' && (() => {
                     const t = CHARACTER_THEMES.find(th => th.id === visualSettings.theme);
-                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} — {t.element} theme active</p> : null;
+                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} - {t.element} theme active</p> : null;
                   })()}
                 </div>
 
@@ -1542,249 +1382,10 @@ export default function ProfileTab({
               </CardBody>
             </Card>
 
-            <Card>
-              <CardHeader>Import Convene History</CardHeader>
-              <CardBody className="space-y-3">
-                <p className="text-gray-300 text-[10px]">Import your Convene history from wuwatracker or compatible trackers.</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
-                    <button key={k} onClick={() => setImportPlatform(k)} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
-                      <Icon size={16} className="mx-auto mb-0.5" /><div className="text-[10px]">{l}</div>
-                    </button>
-                  ))}
-                </div>
-                {/* P4-FIX: Data-driven import guides — eliminates ~90 lines of copy-paste */}
-                {importPlatform && <ImportGuide platform={importPlatform} />}
-                
-                {/* Import Method Selector */}
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => setImportMethod('file')}
-                    className={`kuro-btn py-2 text-xs ${importMethod === 'file' ? 'active-gold' : ''}`}
-                  >
-                    <Upload size={14} className="inline mr-1.5" />File
-                  </button>
-                  <button
-                    onClick={() => setImportMethod('paste')}
-                    className={`kuro-btn py-2 text-xs ${importMethod === 'paste' ? 'active-gold' : ''}`}
-                  >
-                    <ClipboardList size={14} className="inline mr-1.5" />Paste
-                  </button>
-                  <button
-                    onClick={() => setImportMethod('direct')}
-                    className={`kuro-btn py-2 text-xs ${importMethod === 'direct' ? 'active-emerald' : ''}`}
-                  >
-                    <Link size={14} className="inline mr-1.5" />Direct
-                  </button>
-                </div>
-                
-                {/* File Upload Method — P8-FIX: Now supports drag-and-drop */}
-                {importMethod === 'file' && (
-                  <label
-                    className="block"
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
-                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
-                    onDrop={handleFileDrop}
-                  >
-                    {importStatus ? (
-                      <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '60%', height: '12px' }} />
-                          <span className="text-yellow-400/80 text-[10px] font-medium animate-pulse">Processing…</span>
-                        </div>
-                        <p className="text-yellow-400 text-[10px] font-medium kuro-number">{importStatus.fileName}</p>
-                        <p className="text-gray-500 text-[10px] mt-0.5">{importStatus.fileSize} KB — parsing...</p>
-                      </div>
-                    ) : (
-                    <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
-                      <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
-                      <p className={`text-[10px] ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
-                        {isDragOver ? 'Drop JSON file here' : 'Upload or drag & drop JSON file from wuwatracker'}
-                      </p>
-                    </div>
-                    )}
-                    <input type="file" accept=".json" onChange={handleFileImport} className="hidden" />
-                  </label>
-                )}
-                
-                {/* Paste JSON Method */}
-                {importMethod === 'paste' && (
-                  <div className="space-y-2">
-                    <textarea
-                      value={pasteJsonText}
-                      onChange={(e) => setPasteJsonText(e.target.value)}
-                      placeholder='Paste your wuwatracker JSON here...
-
-Example: {"pulls":[...]}'
-                      className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
-                      spellCheck={false}
-                      aria-label="Paste import JSON data"
-                    />
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={handlePasteImport}
-                        disabled={!pasteJsonText.trim()}
-                        className={`kuro-btn flex-1 py-2 text-xs ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
-                      >
-                        <Check size={14} className="inline mr-1.5" />Import Data
-                      </button>
-                      {pasteJsonText && (
-                        <button 
-                          onClick={() => setPasteJsonText('')}
-                          className="kuro-btn px-3 py-2 text-xs"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-gray-400 text-[10px]">
-                      💡 In wuwatracker: Profile → Settings → Data → Export Pull History → Copy the JSON content
-                    </p>
-                  </div>
-                )}
-
-                {/* Direct Import Method — fetch from WuWa API */}
-                {importMethod === 'direct' && (
-                  <div className="space-y-2">
-                    <p className="text-gray-400 text-[10px]">Paste your Convene History URL or enter IDs manually.</p>
-                    <input
-                      type="text"
-                      value={directUrl}
-                      onChange={(e) => handleDirectUrlChange(e.target.value)}
-                      placeholder="Paste Convene History URL here..."
-                      className="kuro-input w-full text-[10px] font-mono"
-                      spellCheck={false}
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-gray-500 text-[10px] block mb-0.5">player_id</label>
-                        <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder="e.g. 500123456" className="kuro-input w-full text-[10px] font-mono" />
-                      </div>
-                      <div>
-                        <label className="text-gray-500 text-[10px] block mb-0.5">record_id</label>
-                        <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-[10px] font-mono" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-gray-500 text-[10px] block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
-                      <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-[10px] font-mono" />
-                    </div>
-
-                    {/* Camera / Screenshot OCR */}
-                    {directCameraOpen && createPortal(
-                      <div className="fixed inset-0 z-[9999]">
-                        <video ref={directVideoRef} muted playsInline className="absolute inset-0 w-full h-full object-cover" />
-
-                        {/* Dim outside scan frame */}
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 18%, transparent 22%, transparent 72%, rgba(0,0,0,0.1) 76%, rgba(0,0,0,0.55) 100%)' }} />
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 8%, transparent 92%, rgba(0,0,0,0.35) 100%)' }} />
-
-                        {/* Scan frame — kuro-card corner decorations */}
-                        <div className="absolute pointer-events-none" style={{ top: '20%', left: '5%', right: '5%', bottom: '25%' }}>
-                          {/* Top-right corner — kuro-card ::before style */}
-                          <div className="absolute top-2 right-2 w-3 h-3" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 4px 0 0', opacity: 0.85 }} />
-                          {/* Bottom-left corner — kuro-card ::after style */}
-                          <div className="absolute bottom-2 left-2 w-3 h-3" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 0 4px', opacity: 0.85 }} />
-                          {/* Top-left corner */}
-                          <div className="absolute top-2 left-2 w-3 h-3" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '4px 0 0 0', opacity: 0.85 }} />
-                          {/* Bottom-right corner */}
-                          <div className="absolute bottom-2 right-2 w-3 h-3" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 4px 0', opacity: 0.85 }} />
-                          {/* Frame border — subtle kuro-card style */}
-                          <div className="absolute inset-0 rounded-2xl" style={{ border: '1px solid var(--border-default, rgba(255,255,255,0.06))', opacity: 0.7 }} />
-                          {/* Sweep beam */}
-                          <div className="absolute left-0 right-0 h-[1px]" style={{ animation: 'camScan 4s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(237,175,24,0.35) 50%, transparent 95%)' }} />
-                        </div>
-
-                        {/* Instruction */}
-                        <div className="absolute left-0 right-0 text-center pointer-events-none" style={{ bottom: '27%' }}>
-                          <p className="text-white/35 text-[9px] font-medium tracking-wider uppercase drop-shadow-lg">Align URL within frame</p>
-                        </div>
-
-                        {/* Top bar */}
-                        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))', paddingBottom: '8px' }}>
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-lg overflow-hidden shadow-lg" style={{ border: '1px solid rgba(237,175,24,0.25)' }}>
-                              <img src={HEADER_ICON} alt="" className="w-full h-full object-cover" />
-                            </div>
-                            <div>
-                              <p className="text-white/90 text-[10px] font-semibold tracking-wide drop-shadow-lg">Convene Scanner</p>
-                              <p className="text-[7px] uppercase drop-shadow-lg" style={{ color: 'rgba(237,175,24,0.5)', letterSpacing: '0.15em' }}>Whispering Wishes</p>
-                            </div>
-                          </div>
-                          <button onClick={closeDirectCamera} className="kuro-btn min-w-[40px] min-h-[40px] !rounded-xl flex items-center justify-center !p-0 pointer-events-auto" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <X size={16} className="text-gray-300" />
-                          </button>
-                        </div>
-
-                        {/* Capture button — round, transparent, kuro-card outer edge */}
-                        <div className="absolute bottom-0 left-0 right-0 flex justify-center" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
-                          <button onClick={captureDirectCamera} className="relative pointer-events-auto active:scale-90 transition-transform" style={{ width: 72, height: 72 }}>
-                            {/* Outer ring — kuro-card border style */}
-                            <div className="absolute inset-0 rounded-full" style={{ border: '1px solid var(--border-default, rgba(255,255,255,0.06))', background: 'var(--bg-card, rgba(10,14,22,0.5))', backdropFilter: 'blur(12px)' }}>
-                              {/* Kuro corner decorations on the circle */}
-                              <div className="absolute top-1 right-1 w-2.5 h-2.5" style={{ borderTop: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRight: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 4px 0 0', opacity: 0.85 }} />
-                              <div className="absolute bottom-1 left-1 w-2.5 h-2.5" style={{ borderBottom: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderLeft: '1px solid var(--border-bright, rgba(255,255,255,0.15))', borderRadius: '0 0 0 4px', opacity: 0.85 }} />
-                            </div>
-                            {/* Inner icon */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Camera size={22} className="text-white/80" />
-                            </div>
-                          </button>
-                        </div>
-
-                        <style>{`
-                          @keyframes camScan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
-                        `}</style>
-                      </div>,
-                      document.body
-                    )}
-                    <div className="flex gap-2">
-                      <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-xs text-center" disabled={directScanStatus === 'scanning'}>
-                        <Camera size={14} className="inline mr-1.5" />
-                        {directScanStatus === 'scanning' ? 'Scanning...' : 'Open Camera'}
-                      </button>
-                      <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
-                        <Upload size={14} className="inline mr-1.5" />Upload Image
-                        <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
-                      </label>
-                    </div>
-                    {directScanStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">IDs extracted successfully</p>}
-                    {directScanStatus === 'error' && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
-
-                    {/* Fetch button */}
-                    {directStatus === 'fetching' ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2 py-3">
-                          <Loader size={14} className="text-emerald-400 animate-spin" />
-                          <span className="text-emerald-400 text-xs">Fetching Convenes...</span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-1">
-                          {Object.entries(directProgress).map(([pool, info]) => (
-                            <div key={pool} className={`text-center p-1 rounded text-[8px] ${info.status === 'done' ? 'text-emerald-400 bg-emerald-500/10' : info.status === 'error' ? 'text-red-400 bg-red-500/10' : 'text-gray-400 bg-white/5'}`}>
-                              {POOL_LABELS[pool]?.split(' ')[0] || pool}: {info.count || '...'}
-                            </div>
-                          ))}
-                        </div>
-                        <button onClick={() => directAbortRef.current?.abort()} className="kuro-btn w-full py-1.5 text-xs text-red-400">Cancel</button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={handleDirectFetch}
-                        disabled={!directPlayerId.trim() || !directRecordId.trim()}
-                        className={`kuro-btn w-full py-2 text-xs ${directPlayerId.trim() && directRecordId.trim() ? 'active-emerald' : 'opacity-50'}`}
-                      >
-                        <Download size={14} className="inline mr-1.5" />Import from Server
-                      </button>
-                    )}
-
-                    {directStatus === 'done' && <p className="text-emerald-400 text-[10px] text-center">Import complete!</p>}
-                    {directError && <p className="text-red-400 text-[10px] text-center">{directError}</p>}
-
-                    <p className="text-gray-500 text-[10px]">Open Convene History in-game, copy the URL from the browser address bar. The URL expires after a few minutes.</p>
-                  </div>
-                )}
-              </CardBody>
-            </Card>
+            <ImportFlow
+              processImportData={processImportData}
+              toast={toast}
+            />
             </div>{/* end desktop-grid-2 */}
 
             {state.profile.importedAt && (
@@ -1804,7 +1405,6 @@ Example: {"pulls":[...]}'
                   <Download size={14} /> Export Backup
                 </button>
                 <div className="border-t border-red-900/30 mt-4 pt-3">
-                  <p className="text-xs text-red-400/70 mb-2 text-center">Danger Zone</p>
                   <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
                     Reset All Data
                   </button>
@@ -1843,20 +1443,20 @@ Example: {"pulls":[...]}'
                   <p className="font-medium text-gray-400">Data & Privacy</p>
                   <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
                   <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
-                  <p>This app does not require any special device permissions. Data import relies on files you manually provide from third-party tools like wuwatracker.com.</p>
+                  <p>This app does not require any special device permissions. Data import relies on files you manually provide or URLs from the game.</p>
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Third-Party Services</p>
-                  <p>This app recommends wuwatracker.com for data export. We are not affiliated with wuwatracker.com and are not responsible for their services, data handling, or availability.</p>
+                  <p>This app may reference third-party tools such as WuWa Tracker. We are not affiliated with these services and are not responsible for their data handling or availability.</p>
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Data Sources & Attribution</p>
                   <p>Banner schedules, event timings, and countdown data are sourced from:</p>
                   <ul className="list-disc list-inside ml-2 space-y-0.5">
-                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - Event timeline & pity tracking</li>
-                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - Banner countdowns</li>
+                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - event timeline and pity tracking</li>
+                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - banner countdowns</li>
                   </ul>
                   <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
                 </div>

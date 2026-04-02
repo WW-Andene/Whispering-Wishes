@@ -5,15 +5,16 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
-import { MEDAL_COLORS, calculateLuckRating, ALL_CHARACTERS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL } from '../../appcore-data.js';
-import { storageAvailable } from '../../appcore-engine.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  TROPHY_ICON_MAP, hideOnError,
-} from '../../appcore-components.jsx';
-import { FocusTrapModal, useFocusTrap } from '../../appcore-providers.jsx';
-
-const LEADERBOARD_DISPLAY_LIMIT = 20;
+import { ALL_CHARACTERS } from '../../data/characters.js';
+import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
+import { calculateLuckRating } from '../../utils/helpers.js';
+import { storageAvailable } from '../../core/storage.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
 
 export default function AnalyticsTab({
   state,
@@ -113,8 +114,8 @@ export default function AnalyticsTab({
     const pullLogFiveStars = [
       ...featured.map(p => ({...p, banner: 'Featured'})),
       ...weapon.map(p => ({...p, banner: 'Weapon'})),
-      ...stdChar.map(p => ({...p, banner: 'Std Char'})),
-      ...stdWeap.map(p => ({...p, banner: 'Std Weap'})),
+      ...stdChar.map(p => ({...p, banner: 'Standard Resonator'})),
+      ...stdWeap.map(p => ({...p, banner: 'Standard Weapon'})),
       ...beginner.map(p => ({...p, banner: 'Beginner'})),
     ].filter(p => p.rarity === 5 && p.name).sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
     const resHist = [...featured, ...stdChar, ...beginner.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
@@ -397,7 +398,7 @@ export default function AnalyticsTab({
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
                           {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.5), adjusted for sample size</p>
+                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.0), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>
@@ -408,7 +409,7 @@ export default function AnalyticsTab({
                 <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel="Leaderboard consent" centered>
                   <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
                     <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
-                      <h3 className="text-white font-semibold text-sm">Leaderboard — Data Sharing Notice</h3>
+                      <h3 className="text-white font-semibold text-sm">Leaderboard - Data Sharing Notice</h3>
                       <div className="text-gray-300 text-xs space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-400">
@@ -596,7 +597,7 @@ export default function AnalyticsTab({
                               <div className="text-gray-400 text-[10px]">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
-                              <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate ?? '—'}%</div>
+                              <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate != null ? `${communityStats.globalWinRate}%` : '—'}</div>
                               <div className="text-gray-400 text-[10px]">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
@@ -606,7 +607,7 @@ export default function AnalyticsTab({
                           </div>
                           {communityStats.totalPullsAll > 0 && (
                             <div className="flex justify-between text-[10px]">
-                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString()} total Convenes tracked</span>
+                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString('en-US')} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
@@ -660,7 +661,7 @@ export default function AnalyticsTab({
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
                                   {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed — pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed - pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
@@ -824,7 +825,7 @@ export default function AnalyticsTab({
                             const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
                             const color = getBarColor(label);
                             return (
-                              <div key={label} className="flex-1 flex flex-col items-center" title={`${label} pity: ${count} pull${count !== 1 ? 's' : ''}`}>
+                              <div key={label} className="flex-1 flex flex-col items-center" title={`${label} pity: ${count} Convene${count !== 1 ? 's' : ''}`}>
                                 <div className="w-full relative" style={{ height: '72px' }}>
                                   {count > 0 && (
                                     <div 
@@ -930,7 +931,7 @@ export default function AnalyticsTab({
                   <CardBody>
                     {/* Banner + Range filter buttons — always visible so user can switch even with empty data */}
                     <div className="flex gap-1 mb-2 flex-wrap">
-                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Std Char'], ['stdWeap', 'Std Weap']].map(([val, label]) => (
+                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Standard Resonator'], ['stdWeap', 'Standard Weapon']].map(([val, label]) => (
                         <button
                           key={val}
                           onClick={() => { setChartBanner(val); setChartOffset(9999); }}
@@ -1107,8 +1108,8 @@ export default function AnalyticsTab({
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString()}</div><div className="text-gray-400 text-[10px]">Astrite Spent (in-game)</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString('en-US')}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString('en-US')}</div><div className="text-gray-400 text-[10px]">Astrite Spent (in-game)</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[10px]">Won 50/50</div></div>

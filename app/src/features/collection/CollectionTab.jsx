@@ -3,23 +3,19 @@
 // Gacha collection gallery with filtering, sorting, and image framing
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, X } from 'lucide-react';
-import {
-  CHARACTER_DATA, WEAPON_DATA, ECHO_DATA, ECHO_SETS, CHAR_BUFF_TABLE,
-  RELEASE_ORDER, WEAPON_RELEASE_ORDER,
-  ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS,
-  ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS,
-  ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES,
-  ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES,
-  ALL_CHARACTERS,
-} from '../../appcore-data.js';
-import {
-  generateVerticalMaskGradient,
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  KuroSelect, CollectionGridSection,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
+import { WEAPON_RELEASE_ORDER, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
+import { generateVerticalMaskGradient } from '../../shared/utils/maskGradient.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 
 export default function CollectionTab({
   state,
@@ -40,6 +36,13 @@ export default function CollectionTab({
   // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
   const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'copies');
   const [collectionSearch, setCollectionSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimerRef = useRef(null);
+  const handleSearchChange = useCallback((val) => {
+    setCollectionSearch(val);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(val), 150);
+  }, []);
   const [collectionCategoryFilter, setCollectionCategoryFilter] = useSessionState('ww-coll-cat', 'all');
   const [collectionWeaponFilter, setCollectionWeaponFilter] = useSessionState('ww-coll-weap', 'all');
   const [collectionElementFilter, setCollectionElementFilter] = useSessionState('ww-coll-elem', 'all');
@@ -143,8 +146,8 @@ export default function CollectionTab({
       if (collectionOwnedFilter === 'not-owned' && ownedChars.includes(name)) return false;
       if (collectionCategoryFilter === 'character' && !isCharacter) return false;
       if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
-      if (collectionSearch) {
-        const searchLower = collectionSearch.toLowerCase();
+      if (debouncedSearch) {
+        const searchLower = debouncedSearch.toLowerCase();
         const searchTags = getSearchTags(name, isCharacter);
         if (!searchTags.includes(searchLower)) return false;
       }
@@ -168,10 +171,10 @@ export default function CollectionTab({
       }
       return true;
     });
-  }, [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
+  }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
 
   const clearCollectionFilters = useCallback(() => {
-    setCollectionSearch('');
+    handleSearchChange('');
     setCollectionCategoryFilter('all');
     setCollectionWeaponFilter('all');
     setCollectionElementFilter('all');
@@ -187,8 +190,8 @@ export default function CollectionTab({
 
   const filterEchoes = useCallback((echoNames) => {
     return echoNames.filter(name => {
-      if (collectionSearch) {
-        const searchLower = collectionSearch.toLowerCase();
+      if (debouncedSearch) {
+        const searchLower = debouncedSearch.toLowerCase();
         const nameLower = name.toLowerCase();
         const data = ECHO_DATA[name];
         const matchesName = nameLower.includes(searchLower);
@@ -201,15 +204,15 @@ export default function CollectionTab({
       }
       const data = ECHO_DATA[name];
       if (!data) return true;
-      if (collectionEchoSetFilter !== 'all' && !data.sets.includes(collectionEchoSetFilter)) return false;
+      if (collectionEchoSetFilter !== 'all' && !(data.sets || []).includes(collectionEchoSetFilter)) return false;
       if (collectionEchoBuffFilter !== 'all' && !(Array.isArray(data.buff) ? data.buff.includes(collectionEchoBuffFilter) : data.buff === collectionEchoBuffFilter)) return false;
       return true;
     });
-  }, [collectionSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
+  }, [debouncedSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
   const hasActiveFilters = useMemo(() =>
-    !!(collectionSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all' || collectionOwnedFilter !== 'all'),
-    [collectionSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
+    !!(debouncedSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all' || collectionOwnedFilter !== 'all'),
+    [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
   );
 
   // Extended sort: apply DPS/name/tier sorting on top of the base sortItems result
@@ -275,13 +278,13 @@ export default function CollectionTab({
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-[10px]">
-                  <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Res</div></div>
-                  <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Res</div></div>
-                  <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Wep</div></div>
-                  <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">4★ Wep</div></div>
-                  <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">3★ Wep</div></div>
-                  <div><div className="text-green-400 font-bold">{ownedWeaps2}<span className="text-gray-500 font-normal">/{ALL_2STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">2★ Wep</div></div>
-                  <div><div className="text-gray-400 font-bold">{ownedWeaps1}<span className="text-gray-500 font-normal">/{ALL_1STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">1★ Wep</div></div>
+                  <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Resonator</div></div>
+                  <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Resonator</div></div>
+                  <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Weapon</div></div>
+                  <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">4★ Weapon</div></div>
+                  <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">3★ Weapon</div></div>
+                  <div><div className="text-green-400 font-bold">{ownedWeaps2}<span className="text-gray-500 font-normal">/{ALL_2STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">2★ Weapon</div></div>
+                  <div><div className="text-gray-400 font-bold">{ownedWeaps1}<span className="text-gray-500 font-normal">/{ALL_1STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">1★ Weapon</div></div>
                 </div>
               </CardBody></Card>
             );
@@ -295,14 +298,14 @@ export default function CollectionTab({
               <input
                 type="text"
                 value={collectionSearch}
-                onChange={(e) => setCollectionSearch(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search by name, DPS, Electro, Broadblade..."
                 className="kuro-input w-full pl-8 text-xs"
                 aria-label="Search collection by keyword"
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
               {collectionSearch && (
-                <button onClick={() => setCollectionSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
+                <button onClick={() => handleSearchChange('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
                   <X size={14} />
                 </button>
               )}
@@ -422,7 +425,7 @@ export default function CollectionTab({
                     value={collectionRoleFilter}
                     onChange={setCollectionRoleFilter}
                     options={[
-                      { value: 'all', label: 'All Rôles' },
+                      { value: 'all', label: 'All Roles' },
                       { value: 'Main DPS', label: 'Main DPS' },
                       { value: 'Sub DPS', label: 'Sub DPS' },
                       { value: 'Support', label: 'Support' },

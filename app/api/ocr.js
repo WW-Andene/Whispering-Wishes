@@ -2,7 +2,7 @@
 // API key stored server-side via GROQ_API_KEY environment variable
 
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB base64 limit (Groq allows up to 20MB)
-const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id'];
+const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -40,6 +40,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         max_tokens: 300,
+        temperature: 0,
         messages: [{
           role: 'user',
           content: [
@@ -49,10 +50,24 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `This is a Wuthering Waves gacha/convene history URL screenshot.
-Extract player_id (or playerId), record_id (or recordId), and svr_id (or svrId / svr_area) from the URL.
-Respond ONLY with valid JSON — no markdown, no explanation:
-{"player_id":"VALUE_OR_NULL","record_id":"VALUE_OR_NULL","svr_id":"VALUE_OR_NULL"}`,
+              text: `This screenshot shows a Wuthering Waves convene history URL. Extract ALL query parameters.
+
+The URL format is:
+https://aki-gm-resources-oversea.aki-game.net/aki/gacha/index.html#/record?svr_id=HEX32&player_id=NUMBER&lang=XX&gacha_id=NUMBER&gacha_type=NUMBER&svr_area=TEXT&record_id=HEX32&resources_id=HEX32&platform=TEXT
+
+Extract these values:
+- svr_id (32-char hex)
+- player_id (9-digit number)
+- record_id (32-char hex)
+- resources_id (32-char hex)
+- gacha_id (number like 100057)
+- lang (2-letter code like en, fr)
+- svr_area (like "global")
+
+Read every hex character carefully. Do NOT guess.
+
+Respond with ONLY JSON (no markdown):
+{"player_id":"VALUE","record_id":"VALUE","svr_id":"VALUE","resources_id":"VALUE","gacha_id":"VALUE","lang":"VALUE","svr_area":"VALUE"}`,
             },
           ],
         }],

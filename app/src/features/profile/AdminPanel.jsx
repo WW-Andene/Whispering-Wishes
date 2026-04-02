@@ -4,22 +4,152 @@
 // player presence, trophy editing, collection image management
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown, ClipboardList, Minus, Plus, RefreshCcw, Settings, X } from 'lucide-react';
-import { APP_VERSION, DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody,
-  KuroSelect, CollectionGridSection, VisualSliderGroup, VISUAL_SLIDER_CONFIGS,
-  ADMIN_BANNER_KEY,
-  hideOnError,
-} from '../../appcore-components.jsx';
-import { storageAvailable } from '../../appcore-engine.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { APP_VERSION } from '../../data/constants.js';
+import { DEFAULT_COLLECTION_IMAGES, CURRENT_BANNERS } from '../../data/banners.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
+import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
+import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { ECHO_DATA } from '../../data/echoes.js';
+import { storageAvailable } from '../../core/storage.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 // Recharts removed — using native SVG for charts
 
 const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
+
+// ═══ Echo Background Removal Tool ═══════════════════════════════════════════
+// Batch-processes all echo images through HuggingFace BRIA-RMBG-1.4 via /api/batch-remove-bg
+function EchoBgRemover({ toast, adminHash }) {
+  const [status, setStatus] = useState('idle'); // idle | running | done | error
+  const [progress, setProgress] = useState({ done: 0, total: 0, current: '' });
+  const [results, setResults] = useState([]); // { name, ok, resultUrl?, error? }
+  const abortRef = useRef(false);
+
+  const allEchoes = Object.entries(ECHO_DATA).filter(([, d]) => d.imageUrl).map(([name, d]) => ({ name, imageUrl: d.imageUrl }));
+
+  const runBatch = async () => {
+    abortRef.current = false;
+    setStatus('running');
+    setResults([]);
+    const total = allEchoes.length;
+    setProgress({ done: 0, total, current: '' });
+    const batchResults = [];
+
+    for (let i = 0; i < total; i++) {
+      if (abortRef.current) break;
+      const echo = allEchoes[i];
+      setProgress({ done: i, total, current: echo.name });
+      try {
+        const res = await fetch('/api/batch-remove-bg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminHash },
+          body: JSON.stringify({ name: echo.name, imageUrl: echo.imageUrl }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          batchResults.push({ name: echo.name, ok: false, error: err.error || `HTTP ${res.status}` });
+        } else {
+          const data = await res.json();
+          batchResults.push({ name: echo.name, ok: true, resultUrl: data.resultUrl, size: data.size });
+        }
+      } catch (err) {
+        batchResults.push({ name: echo.name, ok: false, error: err.message });
+      }
+      setResults([...batchResults]);
+    }
+    setProgress(p => ({ ...p, done: batchResults.length, current: '' }));
+    setStatus(abortRef.current ? 'idle' : 'done');
+    const ok = batchResults.filter(r => r.ok).length;
+    toast?.addToast?.(`Done! ${ok}/${total} backgrounds removed.`, ok === total ? 'success' : 'warning');
+  };
+
+  const downloadAll = () => {
+    const ok = results.filter(r => r.ok);
+    if (!ok.length) return;
+    // Download each as individual PNG (mobile-friendly — one at a time)
+    ok.forEach((r, i) => {
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = r.resultUrl;
+        a.download = `${r.name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')}-nobg.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, i * 300); // stagger downloads 300ms apart
+    });
+    toast?.addToast?.(`Downloading ${ok.length} images...`, 'info');
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-3">
+        <p className="text-pink-400 text-xs font-medium mb-1">Echo Background Removal</p>
+        <p className="text-gray-400 text-[10px]">
+          Removes backgrounds from all {allEchoes.length} echo images using HuggingFace AI (BRIA-RMBG-1.4).
+          Requires HF_API_KEY + ADMIN_HASH in Vercel env vars. Download results as PNGs and re-upload to ibb.co.
+        </p>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={runBatch}
+          disabled={status === 'running'}
+          className={`kuro-btn flex-1 text-xs py-2 ${status === 'running' ? 'opacity-50' : 'active-pink'}`}
+        >
+          {status === 'running' ? `Processing ${progress.done}/${progress.total}...` : status === 'done' ? 'Run Again' : `Remove BG (${allEchoes.length} images)`}
+        </button>
+        {status === 'running' && (
+          <button onClick={() => { abortRef.current = true; }} className="kuro-btn text-xs py-2 text-red-400 border-red-500/30">
+            Stop
+          </button>
+        )}
+      </div>
+
+      {status === 'running' && (
+        <div>
+          <div className="h-2 rounded-full overflow-hidden bg-white/5">
+            <div className="h-full bg-pink-500 transition-all duration-300 rounded-full" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
+          </div>
+          <p className="text-gray-400 text-[10px] mt-1 truncate">Processing: {progress.current}</p>
+        </div>
+      )}
+
+      {results.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <p className="text-gray-400 text-[10px]">
+              {results.filter(r => r.ok).length} succeeded, {results.filter(r => !r.ok).length} failed
+            </p>
+            {results.some(r => r.ok) && (
+              <button onClick={downloadAll} className="kuro-btn text-[10px] px-3 py-1 active-emerald">
+                Download All PNGs
+              </button>
+            )}
+          </div>
+
+          <div className="max-h-48 overflow-y-auto space-y-1">
+            {results.map(r => (
+              <div key={r.name} className={`flex items-center gap-2 text-[10px] px-2 py-1 rounded ${r.ok ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                <span>{r.ok ? '✓' : '✗'}</span>
+                <span className="flex-1 truncate">{r.name}</span>
+                {r.ok && r.resultUrl && (
+                  <a href={r.resultUrl} download={`${r.name}-nobg.png`} className="text-cyan-400 underline">Save</a>
+                )}
+                {!r.ok && <span className="text-gray-500 truncate">{r.error}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminPanel({
   showAdminPanel, setShowAdminPanel,
@@ -122,6 +252,12 @@ export default function AdminPanel({
                     >
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players
                     </button>
+                    <button
+                      onClick={() => setAdminTab('echobg')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'echobg' ? 'bg-pink-500/10 text-pink-400 border border-pink-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Echo BG
+                    </button>
                   </div>
 
                   {/* Collection Tab */}
@@ -129,7 +265,7 @@ export default function AdminPanel({
                     <div className="space-y-4">
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
                         <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
-                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Add custom URLs to override or add missing ones.</p>
+                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
                         
                         {/* Get unique names from history */}
                         {(() => {
@@ -362,9 +498,9 @@ export default function AdminPanel({
                       
                       {/* Privacy Notice */}
                       <div className="bg-white/5 border border-[var(--border-medium)] rounded-lg p-3 text-[10px] text-gray-400 space-y-1">
-                        <div className="text-gray-400 font-medium">🔒 Privacy</div>
-                        <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat — just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
-                        <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats — visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
+                        <div className="text-gray-400 font-medium">Privacy</div>
+                        <p><span className="text-emerald-400/80">Open Sessions</span> = every open tab/browser visiting the app. Tracked via anonymous heartbeat. Just a random session ID and a timestamp. No UID, no device info, no IP, no personal data stored. Sessions expire after 2 minutes of inactivity.</p>
+                        <p><span className="text-gray-300">Registered Players</span> = users who submitted their score to the leaderboard. This list shows their full UID and stats, visible only in this admin panel. The public leaderboard always shows masked IDs.</p>
                       </div>
                       
                       {/* Error Display */}
@@ -785,6 +921,9 @@ export default function AdminPanel({
                   </div>
                     </>
                   )}
+
+                  {/* ═══ ECHO BACKGROUND REMOVAL TAB ═══ */}
+                  {adminTab === 'echobg' && <EchoBgRemover toast={toast} adminHash={ADMIN_HASH} />}
                 </>
               )}
             </div>

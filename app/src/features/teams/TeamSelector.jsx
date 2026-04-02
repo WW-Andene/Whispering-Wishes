@@ -1,17 +1,10 @@
 import React from 'react';
 import { Search, Star, Users, X } from 'lucide-react';
-import {
-  haptic,
-  CHARACTER_DATA,
-  getElementColor, getElementBg, getElementBorder,
-} from '../../appcore-data.js';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
-import {
-  KuroSelect,
-  hideOnError,
-} from '../../appcore-components.jsx';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 export default function TeamSelector({
   teamSelectorOpen,
@@ -103,7 +96,7 @@ export default function TeamSelector({
                               value={teamRoleFilter}
                               onChange={setTeamRoleFilter}
                               options={[
-                                { value: 'all', label: 'All Rôles' },
+                                { value: 'all', label: 'All Roles' },
                                 { value: 'Main DPS', label: 'Main DPS' },
                                 { value: 'Sub DPS', label: 'Sub DPS' },
                                 { value: 'Support', label: 'Support' },
@@ -116,7 +109,7 @@ export default function TeamSelector({
                               value={teamDmgFilter}
                               onChange={setTeamDmgFilter}
                               options={[
-                                { value: 'all', label: 'Dmg Focus' },
+                                { value: 'all', label: 'Damage Focus' },
                                 { value: 'Basic ATK', label: 'Basic ATK' },
                                 { value: 'Heavy ATK', label: 'Heavy ATK' },
                                 { value: 'Skill', label: 'Skill' },

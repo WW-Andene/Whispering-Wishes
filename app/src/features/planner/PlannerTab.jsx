@@ -5,14 +5,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { Calendar, Check, ChevronDown, Minus, Plus } from 'lucide-react';
-import {
-  ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY,
-  SUBSCRIPTIONS, generateUniqueId,
-} from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  CountdownTimer, KuroSelect,
-} from '../../appcore-components.jsx';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
+import { generateUniqueId } from '../../utils/helpers.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 export default function PlannerTab({
   state,
@@ -24,14 +23,14 @@ export default function PlannerTab({
 }) {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
 
-  const isCalcDefaults = !state.calc.astrite && state.calc.charPity === 0 && state.calc.weapPity === 0 && !state.calc.charGuaranteed && !state.calc.radiant && !state.calc.forging && !state.calc.lustrous;
+
 
   const dailyIncome = useMemo(() => {
     return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
   }, [state.planner.dailyAstrite, state.planner.luniteActive]);
 
   const planData = useMemo(() => {
-    const currentAstrite = +state.calc.astrite || 0;
+    const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0); // Lunite converts to Astrite 1:1
     const bannerEnd = new Date(bannerEndDate);
     const now = new Date();
     const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
@@ -72,12 +71,6 @@ export default function PlannerTab({
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="planner" />
 
-      {isCalcDefaults && (
-        <div className="text-center text-gray-500" style={{ fontSize: '10px', padding: '4px 0' }}>
-          💡 Set up your pity &amp; banner in the Calculator tab for accurate projections.
-        </div>
-      )}
-
       <Card>
         <CardHeader>Daily Income</CardHeader>
         <CardBody className="space-y-3">
@@ -111,7 +104,7 @@ export default function PlannerTab({
                   </span>
                   <div>
                     <div className={`text-xs font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
-                    <div className="text-gray-300 text-[10px]">300 Lunite + {SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d</div>
+                    <div className="text-gray-300 text-[10px]">{SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d + 300 Lunite</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -120,9 +113,9 @@ export default function PlannerTab({
                 </div>
               </div>
             </button>
-            {/* Weekly sub: Lunite is a separate in-game currency (not tracked here), only Astrite counts toward pulls */}
+            {/* Weekly sub: Lunite converts to Astrite at 1:1 — astrite field includes converted Lunite value */}
             {/* AUDIT-FIX L22: Toast feedback for purchases */}
-            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
+            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
               <div className="flex items-center justify-between w-full">
                 <div>
                   <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
@@ -132,7 +125,7 @@ export default function PlannerTab({
               </div>
             </button>
             {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                 <div className="flex items-center justify-between w-full">
                   <div>
                     <div className="text-gray-200 text-xs font-medium">{s.name}</div>
@@ -144,7 +137,7 @@ export default function PlannerTab({
             ))}
             <div className="kuro-label mt-3">Direct Top-Ups</div>
             {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
                 <div className="flex items-center justify-between w-full">
                   <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
                   <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
@@ -158,15 +151,16 @@ export default function PlannerTab({
       {state.planner.addedIncome.length > 0 && (
         <Card>
           {/* AUDIT-FIX H6: Confirm before clearing all purchases */}
-          <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear purchases', message: 'Remove all added purchases?', confirmLabel: 'Remove All', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
+          <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear all purchases', message: 'This will remove all added purchases.', confirmLabel: 'Clear all', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
           <CardBody className="space-y-2">
             {state.planner.addedIncome.map(i => (
               <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
                 <span className="text-gray-200">{i.label}</span>
                 <div className="flex items-center gap-2">
-                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite}</span>}
-                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide — Featured banner pull ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
-                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide — Standard banner pull ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
+                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite} Astrite</span>}
+                  {i.lunite > 0 && <span className="text-cyan-400">+{i.lunite} Lunite</span>}
+                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide - Featured banner Convene ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
+                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide - Standard banner Convene ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
                   {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
                   <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
                 </div>
@@ -174,7 +168,7 @@ export default function PlannerTab({
             ))}
             <div className="pt-2 border-t border-[var(--border-medium)] flex justify-between text-xs">
               <span className="text-gray-400">Total Spent</span>
-              <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + i.price, 0).toFixed(2)}</span>
+              <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + (+i.price || 0), 0).toFixed(2)}</span>
             </div>
           </CardBody>
         </Card>
@@ -190,19 +184,19 @@ export default function PlannerTab({
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd.toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">Total Convenes</div>
               </div>
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL)}</div>
+                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">Earned Convenes</div>
               </div>
               <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString()}</div>
-                <div className="text-gray-400 text-[10px]">Total Astrite</div>
+                <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString('en-US')}</div>
+                <div className="text-gray-400 text-[10px]">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Total Astrite'}</div>
               </div>
             </div>
-            <div className="text-gray-400 text-[10px] text-center">Current {planData.currentAstrite.toLocaleString()} + {planData.incomeByEnd.toLocaleString()} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+            <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''} + {planData.incomeByEnd.toLocaleString('en-US')} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
           </CardBody>
         </Card>
       )}
@@ -222,9 +216,9 @@ export default function PlannerTab({
             {[7, 30, 90].map(days => (
               <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
                 <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
-                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL)}</div>
+                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
                 <div className="text-gray-400 text-[10px]">Convenes</div>
-                <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString()} Astrite</div>
+                <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString('en-US')} Astrite</div>
               </div>
             ))}
           </div>
@@ -288,7 +282,7 @@ export default function PlannerTab({
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-400">Target</span>
-              <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString()} Astrite)</span>
+              <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString('en-US')} Astrite)</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }} role="progressbar" aria-valuenow={planData.goalProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Goal progress: ${planData.goalProgress.toFixed(1)}%`}>
               <div className={`h-full transition-[width] duration-300 ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
@@ -300,11 +294,11 @@ export default function PlannerTab({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="kuro-stat p-3 text-center">
-              <div className="text-yellow-400 kuro-number text-xl">{planData.goalNeeded.toLocaleString()}</div>
+              <div className="text-yellow-400 kuro-number text-xl">{planData.goalNeeded.toLocaleString('en-US')}</div>
               <div className="text-gray-400 text-[10px]">Astrite Needed</div>
             </div>
             <div className="kuro-stat p-3 text-center">
-              <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded}</div>
+              <div className="text-yellow-400 kuro-number text-xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded.toLocaleString('en-US')}</div>
               <div className="text-gray-400 text-[10px]">Days to Goal</div>
             </div>
           </div>
@@ -319,6 +313,9 @@ export default function PlannerTab({
               <span className="text-yellow-400 text-xs font-medium">{new Date(Date.now() + planData.goalDaysNeeded * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
             </div>
           )}
+          {planData.goalNeeded >= 16000 && (
+            <p className="text-gray-500 text-[10px] text-center mt-1">≈ ${Math.ceil(planData.goalNeeded / 60).toLocaleString('en-US')} via top-up at best rate (~60 Astrite/$1)</p>
+          )}
         </CardBody>
       </Card>
 
@@ -327,12 +324,12 @@ export default function PlannerTab({
         <CardHeader>Saved States</CardHeader>
         <CardBody className="space-y-2">
           {state.bookmarks.length === 0 ? (
-            <p className="kuro-empty-state text-gray-500 text-xs text-center py-3">Awaiting archived states. Save a configuration in the Calculator to create a bookmark.</p>
+            <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No saved states yet — head to the Calculator and tap Save to bookmark a configuration.</p>
           ) : state.bookmarks.map(b => (
             <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
               <div>
                 <div className="text-gray-200 text-xs font-medium">{b.name}</div>
-                <div className="text-gray-400 text-[10px]">{b.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {b.selectedBanner === 'char' ? 'Res' : b.selectedBanner === 'weap' ? 'Wep' : 'Both'} • {b.astrite || 0} Astrite{b.lustrous ? ` • ${b.lustrous} Lustrous` : ''}</div>
+                <div className="text-gray-400 text-[10px]">{b.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {b.selectedBanner === 'char' ? 'Resonator' : b.selectedBanner === 'weap' ? 'Weapon' : 'Both'} • {b.astrite || 0} Astrite{b.lustrous ? ` • ${b.lustrous} Lustrous` : ''}</div>
                 <div className="text-gray-400 text-[10px]">P{b.charPity}/{b.weapPity}{b.charGuaranteed ? '(G)' : ''} • Std P{b.stdCharPity}/{b.stdWeapPity} • ×{b.charCopies}/{b.weapCopies}</div>
               </div>
               <div className="flex gap-1">

@@ -5,17 +5,13 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
-import {
-  BANNER_HISTORY,
-} from '../../appcore-data.js';
-import {
-  Card, CardHeader, CardBody, TabBackground, TabErrorBoundary,
-  BannerCard, StandardBannerSection,
-  hideOnError,
-} from '../../appcore-components.jsx';
-import {
-  FocusTrapModal,
-} from '../../appcore-providers.jsx';
+import { BANNER_HISTORY } from '../../data/banners.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
+import { BannerCard, StandardBannerSection } from '../../shared/components/BannerCard.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 
 const FOCUS_DELAY_MS = 0;
 const TRACKER_CATEGORIES = Object.freeze([
@@ -34,6 +30,7 @@ export default function TrackerTab({
   bannerEndDate,
   toast,
   confirm,
+  setActiveTab,
 }) {
   const [trackerCategory, setTrackerCategoryRaw] = useState(() => {
     try {
@@ -56,8 +53,8 @@ export default function TrackerTab({
   const allPulls = useMemo(() => {
     const featured = (state.profile.featured?.history || []).map(p => ({ ...p, banner: 'Featured' }));
     const weapon = (state.profile.weapon?.history || []).map(p => ({ ...p, banner: 'Weapon' }));
-    const stdChar = (state.profile.standardChar?.history || []).map(p => ({ ...p, banner: 'Std Resonator' }));
-    const stdWeap = (state.profile.standardWeap?.history || []).map(p => ({ ...p, banner: 'Std Weapon' }));
+    const stdChar = (state.profile.standardChar?.history || []).map(p => ({ ...p, banner: 'Standard Resonator' }));
+    const stdWeap = (state.profile.standardWeap?.history || []).map(p => ({ ...p, banner: 'Standard Weapon' }));
     const beginner = (state.profile.beginner?.history || []).map(p => ({ ...p, banner: 'Beginner' }));
     return [...featured, ...weapon, ...stdChar, ...stdWeap, ...beginner]
       .sort((a, b) => new Date(b.timestamp ?? 0) - new Date(a.timestamp ?? 0));
@@ -81,12 +78,12 @@ export default function TrackerTab({
             <TabBackground id="tracker" glowColor="gold" />
 
             {/* Onboarding hint for new users with no imported data */}
-            {!state.profile.importedAt && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer">
+            {!state.profile.importedAt && setActiveTab && (
+              <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all text-left">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
                 <span className="text-cyan-300/90 text-xs">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
-              </div>
+              </button>
             )}
 
             {/* Category Tabs */}
@@ -127,16 +124,17 @@ export default function TrackerTab({
                       pity5: state.profile.featured.pity5,
                       pity4: state.profile.featured.pity4,
                       totalPulls: state.profile.featured.history.length,
-                      guaranteed: state.profile.featured.guaranteed
+                      guaranteed: state.profile.featured.guaranteed,
+                      guaranteed4Star: state.profile.featured.guaranteed4Star,
                     } : null}
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
                     timerColor="yellow"
                   />
                 )) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
+                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
                     <Sparkles size={24} className="mx-auto mb-2 opacity-50" />
-                    No active character banners
+                    No active Resonator banners
                   </div>
                 )}
               </div>
@@ -153,14 +151,15 @@ export default function TrackerTab({
                     stats={state.profile.weapon.history.length ? {
                       pity5: state.profile.weapon.pity5,
                       pity4: state.profile.weapon.pity4,
-                      totalPulls: state.profile.weapon.history.length
+                      totalPulls: state.profile.weapon.history.length,
+                      guaranteed4Star: state.profile.weapon.guaranteed4Star,
                     } : null}
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
                     timerColor="pink"
                   />
                 )) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
+                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
                     <Sword size={24} className="mx-auto mb-2 opacity-50" />
                     No active weapon banners
                   </div>
@@ -198,7 +197,7 @@ export default function TrackerTab({
                     className="w-full py-2.5 rounded-lg border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
-                    <Clock size={12} /> View Pull History ({allPulls.length} pulls)
+                    <Clock size={12} /> View Convene History ({allPulls.length})
                   </button>
                 </CardBody>
               </Card>
@@ -361,13 +360,13 @@ export default function TrackerTab({
             </FocusTrapModal>
 
             {/* Pull History Modal */}
-            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel="Pull History" onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered>
+            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel="Convene History" onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered>
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-cyan-400" />
-                    <span className="text-white text-sm font-semibold">Pull History</span>
-                    <span className="text-gray-500 text-[10px]">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''} pulls)</span>
+                    <span className="text-white text-sm font-semibold">Convene History</span>
+                    <span className="text-gray-500 text-[10px]">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
@@ -381,7 +380,7 @@ export default function TrackerTab({
                       onChange={e => setPullHistorySearch(e.target.value)}
                       placeholder="Search by name..."
                       className="kuro-input w-full pl-8 text-xs"
-                      aria-label="Filter pull history by name"
+                      aria-label="Filter Convene history by name"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -394,8 +393,8 @@ export default function TrackerTab({
                       <option value="all">All Banners</option>
                       <option value="Featured">Featured</option>
                       <option value="Weapon">Weapon</option>
-                      <option value="Std Resonator">Std Resonator</option>
-                      <option value="Std Weapon">Std Weapon</option>
+                      <option value="Standard Resonator">Standard Resonator</option>
+                      <option value="Standard Weapon">Standard Weapon</option>
                       <option value="Beginner">Beginner</option>
                     </select>
                     <select
@@ -405,16 +404,16 @@ export default function TrackerTab({
                       aria-label="Filter by rarity"
                     >
                       <option value="all">All Rarities</option>
-                      <option value="5">5-Star</option>
-                      <option value="4">4-Star</option>
-                      <option value="3">3-Star</option>
+                      <option value="5">5★</option>
+                      <option value="4">4★</option>
+                      <option value="3">3★</option>
                     </select>
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
                     <div className="text-center text-gray-500 text-xs py-6">
-                      {allPulls.length === 0 ? 'No pull history — import your data in the Profile tab.' : `No pulls match your filters.`}
+                      {allPulls.length === 0 ? 'No Convene history. Import your data in the Profile tab.' : 'No Convenes match your filters.'}
                     </div>
                   ) : (
                     filteredPulls.map((pull, idx) => {
@@ -431,6 +430,8 @@ export default function TrackerTab({
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-[10px] text-gray-500">{pull.banner}</span>
                               {pull.pity > 0 && <span className="text-[10px] text-gray-400">Pity: <span className={pull.rarity === 5 && pull.pity >= 70 ? 'text-red-400' : ''}>{pull.pity}</span></span>}
+                              {pull.rarity === 5 && pull.won5050 === true && <span className="text-[10px] text-emerald-400 font-medium">Won 50/50</span>}
+                              {pull.rarity === 5 && pull.won5050 === false && <span className="text-[10px] text-red-400 font-medium">Lost 50/50</span>}
                             </div>
                           </div>
                           {pull.timestamp && (

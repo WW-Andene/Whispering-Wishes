@@ -5,6 +5,20 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    // ═══════════════════════════════════════════════════════════════════════
+    // ENCAPSULATED: Desktop layout is disabled. Mobile is the only layout.
+    // The lg:/xl:/2xl: breakpoint classes still exist in source code but
+    // never activate because these screens are set to unreachable widths.
+    // To re-enable desktop layout, restore:
+    //   lg: '1024px', xl: '1280px', '2xl': '1536px'
+    // ═══════════════════════════════════════════════════════════════════════
+    screens: {
+      'sm': '640px',    // small phone → wider phone (active, mobile-responsive)
+      'md': '768px',    // phone → tablet (active, mobile-responsive)
+      'lg': '99999px',  // ENCAPSULATED — desktop layout disabled
+      'xl': '99999px',  // ENCAPSULATED — desktop layout disabled
+      '2xl': '99999px', // ENCAPSULATED — desktop layout disabled
+    },
     extend: {
       // D-TYPE-1: Display + data font families for cyberpunk-luxe character
       fontFamily: {

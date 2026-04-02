@@ -1,0 +1,140 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — shared/errors/ErrorBoundaries.jsx
+// AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import React from 'react';
+import { AlertCircle } from 'lucide-react';
+
+// Error Boundary — catches crashes per tab so one broken tab doesn't kill the app
+class TabErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, prevTabName: props.tabName };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  static getDerivedStateFromProps(nextProps, prevState) {
+    // Reset error when tab changes (tabName prop changes)
+    if (prevState.prevTabName !== undefined && prevState.prevTabName !== nextProps.tabName) {
+      return { hasError: false, error: null, prevTabName: nextProps.tabName };
+    }
+    return { prevTabName: nextProps.tabName };
+  }
+  componentDidCatch(error, info) {
+    console.error(`[${this.props.tabName || 'Tab'}] Crash:`, error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="kuro-calc space-y-3 tab-content">
+          <div className="kuro-card">
+            <div className="kuro-card-inner">
+              <div className="kuro-body text-center py-8">
+                <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
+                <div className="text-white font-bold text-sm mb-1">Something went wrong</div>
+                <p className="text-gray-400 text-xs mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
+                <button
+                  onClick={() => this.setState({ hasError: false, error: null })}
+                  className="kuro-btn active-cyan text-xs px-4 py-2"
+                  aria-label={`Reload the ${this.props.tabName || 'tab'} tab`}
+                >
+                  ↻ Reload
+                </button>
+                {this.state.error && (
+                  <details className="mt-3 text-left">
+                    <summary className="text-gray-400 text-[10px] cursor-pointer">Error details</summary>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+                  </details>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// Issue #147: Skeleton loading placeholder for tab transitions
+const TabLoadingSkeleton = () => (
+  <div className="kuro-calc space-y-3 tab-content animate-pulse" aria-label="Loading tab content" role="status">
+    <div className="kuro-card">
+      <div className="kuro-card-inner">
+        <div className="kuro-body space-y-3 py-6">
+          <div className="h-4 bg-white/10 rounded w-1/3" />
+          <div className="h-3 bg-white/5 rounded w-2/3" />
+          <div className="h-3 bg-white/5 rounded w-1/2" />
+        </div>
+      </div>
+    </div>
+    <div className="kuro-card">
+      <div className="kuro-card-inner">
+        <div className="kuro-body space-y-3 py-6">
+          <div className="h-4 bg-white/10 rounded w-1/4" />
+          <div className="flex gap-2">
+            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-20 bg-white/5 rounded flex-1" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <span className="sr-only">Loading...</span>
+  </div>
+);
+
+// P6-FIX: Root-level error boundary — catches crashes outside individual tabs (MED)
+class AppErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('[App] Fatal crash:', error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#080c12', color: '#fff', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+          {/* §E10-ER-F3: Red border accent to distinguish app-level crash from tab-level */}
+          <div style={{ textAlign: 'center', maxWidth: 420, border: '1px solid rgba(239,68,68,0.4)', borderRadius: 16, padding: '2rem', background: 'rgba(239,68,68,0.05)' }}>
+            <div style={{ fontSize: 48, marginBottom: 16, color: '#ef4444' }}>!</div>
+            <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Whispering Wishes crashed</h1>
+            <p style={{ color: '#9ca3af', fontSize: 14, marginBottom: 24 }}>Something unexpected went wrong. Your data is safe in local storage.</p>
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              style={{ padding: '10px 24px', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee', borderRadius: 8, cursor: 'pointer', fontSize: 14, marginRight: 8, outline: 'none' }}
+              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(6,182,212,0.5)'; }}
+              onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#d1d5db', borderRadius: 8, cursor: 'pointer', fontSize: 14, outline: 'none' }}
+              onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.3)'; }}
+              onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
+            >
+              Reload Page
+            </button>
+            {this.state.error && (
+              <details style={{ marginTop: 16, textAlign: 'left' }}>
+                <summary style={{ color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>Error details</summary>
+                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+              </details>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export { AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton };

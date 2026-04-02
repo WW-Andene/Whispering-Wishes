@@ -4,18 +4,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useRef } from 'react';
-import { RefreshCcw, Calendar, CheckCircle, Clock } from 'lucide-react';
-import {
-  EVENTS, getServerOffset,
-} from '../../appcore-data.js';
-import {
-  getServerAdjustedEnd, getRecurringEventEnd,
-  getNextDailyReset, getNextWeeklyReset,
-} from '../../appcore-engine.js';
-import {
-  Card, CardHeader, CardBody, EventCard, TabBackground, TabErrorBoundary,
-  getActiveBanners,
-} from '../../appcore-components.jsx';
+import { RefreshCcw, Calendar } from 'lucide-react';
+import { EVENTS } from '../../data/banners.js';
+import { getServerOffset } from '../../data/constants.js';
+import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { EventCard, getActiveBanners } from '../../shared/components/BannerCard.jsx';
+import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 
 export default function EventsTab({
   state,
@@ -63,7 +59,7 @@ export default function EventsTab({
               <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-xs font-medium">{hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
-                  <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString()} / ${totalAstrite.toLocaleString()}` : totalAstrite.toLocaleString()} Astrite</span>
+                  <span className="text-yellow-400 font-bold text-sm">{hasProgress ? `${earnedAstrite.toLocaleString('en-US')} / ${totalAstrite.toLocaleString('en-US')}` : totalAstrite.toLocaleString('en-US')} Astrite</span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex">
