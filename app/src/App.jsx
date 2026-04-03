@@ -1204,10 +1204,11 @@ function WhisperingWishesInner() {
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
           const poolType = p.cardPoolType ?? p.gachaType;
-          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 1;
-          if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 2;
-          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 3;
-          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 4;
+          // Kuro API cardPoolType: 1=Std Resonator, 2=Std Weapon, 3=Featured Resonator, 4=Featured Weapon, 5/6=Beginner, 7=Collab
+          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 3;
+          if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 4;
+          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 1;
+          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 2;
           if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 5 || poolType === 6 || poolType === 7;
           return false;
         });
@@ -1302,10 +1303,11 @@ function WhisperingWishesInner() {
         }
       });
       
-      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
-      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
-      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
-      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
+      // Kuro API: 1=Std Resonator, 2=Std Weapon, 3=Featured Resonator, 4=Featured Weapon, 5/6=Beginner, 7=Collab
+      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
+      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
+      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
+      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
       const bc = pulls.filter(p => [5, 6, 7].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
       if (fc) parts.push(`${fc} char`);

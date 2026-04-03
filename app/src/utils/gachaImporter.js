@@ -4,12 +4,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const POOL_LABELS = {
-  1: 'Standard',
-  2: 'Novice',
+  1: 'Standard Resonator',
+  2: 'Standard Weapon',
   3: 'Featured Resonator',
   4: 'Featured Weapon',
-  5: 'Resonator (Alt)',
-  6: 'Weapon (Alt)',
+  5: 'Beginner Resonator',
+  6: 'Beginner Weapon',
   7: 'Collab',
 };
 export const POOLS = [1, 2, 3, 4, 5, 6, 7];
