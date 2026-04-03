@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Minus, Plus, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
 import { EVENTS, BANNER_HISTORY } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
@@ -151,14 +151,14 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       }
     }
 
-    // Past banner phases from BANNER_HISTORY
+    // Past banner phases from BANNER_HISTORY (limit to 3 most recent per month to avoid flooding)
     const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
+    let pastBannerCount = 0;
     for (const bh of BANNER_HISTORY) {
+      if (pastBannerCount >= 3) break;
       const bhStart = new Date(bh.startDate);
       const bhEnd = new Date(bh.endDate);
-      // Skip if entirely outside this month
       if (bhEnd < monthStart || bhStart > monthEnd) continue;
-      // Skip the current active banner (already shown above)
       if (activeBanners && bh.version === activeBanners.version && bh.phase === activeBanners.phase) continue;
       const pStart = Math.max(0, Math.floor((bhStart - monthStart) / 86400000));
       const pEnd = Math.min(cal.daysInMonth - 1, Math.floor((bhEnd - monthStart) / 86400000));
@@ -168,6 +168,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const endLabel = bhEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const charNames = bh.characters?.slice(0, 2).join(', ') || '';
         bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true });
+        pastBannerCount++;
       }
     }
 
@@ -207,9 +208,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const evEnd = new Date(ev.currentEnd);
         const ended = evEnd < today;
         if (ended) {
-          // Show ended events at their real position
+          // Show ended events at their real end position; events lack startDate so
+          // show up to 14 days before end as a reasonable approximation of their duration
           const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
-          const eStart = Math.max(0, eEnd - Math.min(13, eEnd)); // show up to 14 days of the event's tail
+          const eStart = Math.max(0, eEnd - Math.min(13, eEnd));
           if (eEnd >= 0) {
             const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended: true, endLabel });
@@ -362,7 +364,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* ── VIEW 2: Chronology ────────────────────────────────────────────── */}
 
         <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-md)' }}>
-          <div style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}>Chronology</div>
+          <div style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}><GanttChart size={12} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Chronology</div>
 
           {/* V5-02: Day scale header — show 1st, every 5th, and last for readability */}
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cal.daysInMonth}, 1fr)`, marginBottom: '4px' }}>
@@ -425,11 +427,11 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`,
                     height: '100%', borderRadius: 'var(--radius-sm)',
                     background: bar.ended ? `${bar.color}15` : `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
-                    border: `1px solid ${bar.color}${bar.ended ? '40' : '60'}`,
+                    border: `1px ${bar.pastBanner ? 'dashed' : 'solid'} ${bar.color}${bar.ended ? '40' : '60'}`,
                     boxShadow: bar.ended ? 'none' : `0 0 8px ${bar.color}20`,
                     display: 'flex', alignItems: 'center', padding: '0 6px',
                     overflow: 'hidden', minWidth: '0',
-                    opacity: bar.ended ? 0.6 : 1,
+                    opacity: bar.pastBanner ? 0.45 : bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
                     {bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
