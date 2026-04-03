@@ -19,8 +19,9 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 // ASTRITE CALENDAR v9 — Two views: Page Calendar + Chronology
 // ══════════════════════════════════════════════════════════════════════════════
 
-// 8 colors — one per meaning. Gold reserved for today/notes.
+// 9 colors — one per meaning.
 const EVENT_COLORS = {
+  weeklyBoss:        '#3b82f6',  // marine (blue-500)
   endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
   towerOfAdversity:  '#dc2626',  // carmin (red)
   whimperingWastes:  '#06b6d4',  // cyan
@@ -28,7 +29,7 @@ const EVENT_COLORS = {
   pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
   illusiveRealm:     '#c4b5fd',  // lavender
 };
-const BANNER_COLOR = '#94a3b8';
+const BANNER_COLOR = '#edaf18';  // gold
 
 const getActiveEvents = (date) => {
   const result = [];
@@ -273,10 +274,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-md)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}>Chronology</div>
 
-          {/* Day scale header */}
-          <div className="flex" style={{ marginBottom: '4px' }}>
-            {[1, Math.ceil(cal.daysInMonth / 4), Math.ceil(cal.daysInMonth / 2), Math.ceil(cal.daysInMonth * 3 / 4), cal.daysInMonth].map((d, i) => (
-              <span key={i} style={{ flex: 1, fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: i === 0 ? 'left' : i === 4 ? 'right' : 'center' }}>{d}</span>
+          {/* Day scale header — every day */}
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cal.daysInMonth}, 1fr)`, marginBottom: '4px' }}>
+            {Array.from({ length: cal.daysInMonth }, (_, i) => (
+              <span key={i} style={{ fontSize: '8px', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: 'center' }}>{i + 1}</span>
             ))}
           </div>
 
