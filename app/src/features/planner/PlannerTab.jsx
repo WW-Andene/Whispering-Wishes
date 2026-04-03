@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
-import { EVENTS } from '../../data/banners.js';
+import { EVENTS, BANNER_HISTORY } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
@@ -148,6 +148,26 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
         const endLabel = bannerEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel });
+      }
+    }
+
+    // Past banner phases from BANNER_HISTORY
+    const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
+    for (const bh of BANNER_HISTORY) {
+      const bhStart = new Date(bh.startDate);
+      const bhEnd = new Date(bh.endDate);
+      // Skip if entirely outside this month
+      if (bhEnd < monthStart || bhStart > monthEnd) continue;
+      // Skip the current active banner (already shown above)
+      if (activeBanners && bh.version === activeBanners.version && bh.phase === activeBanners.phase) continue;
+      const pStart = Math.max(0, Math.floor((bhStart - monthStart) / 86400000));
+      const pEnd = Math.min(cal.daysInMonth - 1, Math.floor((bhEnd - monthStart) / 86400000));
+      if (pEnd >= pStart) {
+        const ended = bhEnd < today;
+        const label = `v${bh.version} P${bh.phase}`;
+        const endLabel = bhEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const charNames = bh.characters?.slice(0, 2).join(', ') || '';
+        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true });
       }
     }
 
@@ -525,9 +545,9 @@ export default function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('daily')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('daily'); } }} aria-expanded={!collapsed.daily}>
           <CardHeader action={<>
-            <span className="text-yellow-400 kuro-number text-xs font-bold mr-2">{dailyIncome}/day</span>
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.daily ? '' : 'rotate-180'}`} />
-          </>}>Daily Income</CardHeader>
+            <span className="text-yellow-400 kuro-number text-xs font-bold">{dailyIncome}/day</span>
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.daily ? '' : 'rotate-180'}`} />
+          </>}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Daily Income</CardHeader>
         </div>
         {!collapsed.daily && (
           <CardBody className="space-y-3">
@@ -538,7 +558,7 @@ export default function PlannerTab({
             </div>
             <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <div className="flex justify-between items-center">
-                <span className="text-yellow-400 text-sm font-medium"><Calendar size={14} className="inline mr-1.5 -mt-0.5" />Daily Income</span>
+                <span className="text-yellow-400 text-sm font-medium">Total</span>
                 <span className="text-yellow-400 font-bold kuro-number text-base">{dailyIncome} Astrite</span>
               </div>
               <div className="text-gray-400 text-[10px] mt-1">≈ <span className="kuro-number">{(dailyIncome / ASTRITE_PER_PULL).toFixed(2)}</span> Convenes/day • <span className="kuro-number">{Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)}</span> Convenes/month</div>
@@ -551,8 +571,8 @@ export default function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
           <CardHeader action={<>
-            {state.planner.addedIncome.length > 0 && <span className="text-emerald-400 text-[10px] mr-2">{state.planner.addedIncome.length} added</span>}
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${showIncomePanel ? 'rotate-180' : ''}`} />
+            {state.planner.addedIncome.length > 0 && <span className="text-emerald-400 text-[10px]">{state.planner.addedIncome.length} added</span>}
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${showIncomePanel ? 'rotate-180' : ''}`} />
           </>}>Purchases</CardHeader>
         </div>
         {showIncomePanel && (
@@ -694,8 +714,8 @@ export default function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('goal')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('goal'); } }} aria-expanded={!collapsed.goal}>
           <CardHeader action={<>
-            <span className="text-gray-400 text-[10px] mr-2">{planData.goalProgress.toFixed(0)}%</span>
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.goal ? '' : 'rotate-180'}`} />
+            <span className="text-gray-400 text-[10px]">{planData.goalProgress.toFixed(0)}%</span>
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.goal ? '' : 'rotate-180'}`} />
           </>}>Goal Progress</CardHeader>
         </div>
         {!collapsed.goal && (
@@ -789,8 +809,8 @@ export default function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('saved')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('saved'); } }} aria-expanded={!collapsed.saved}>
           <CardHeader action={<>
-            {state.bookmarks.length > 0 && <span className="text-cyan-400 text-[10px] mr-2">{state.bookmarks.length}</span>}
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.saved ? '' : 'rotate-180'}`} />
+            {state.bookmarks.length > 0 && <span className="text-cyan-400 text-[10px]">{state.bookmarks.length}</span>}
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.saved ? '' : 'rotate-180'}`} />
           </>}>Saved States</CardHeader>
         </div>
         {!collapsed.saved && (
