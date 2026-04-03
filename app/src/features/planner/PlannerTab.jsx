@@ -146,7 +146,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const bEnd = Math.min(cal.daysInMonth - 1, Math.floor((bannerEnd - monthStart) / 86400000));
       if (bEnd >= bStart) {
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
-        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft });
+        const endLabel = bannerEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel });
       }
     }
 
@@ -158,7 +159,27 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const astrite = parseInt(ev.rewards, 10) || 0;
 
       if (ev.weeklyReset) {
-        bars.push({ key, label: ev.name, color, start: 0, end: cal.daysInMonth - 1, astrite, weekly: true });
+        // Split weekly events into Monday-Sunday segments to show reset boundaries
+        const mondays = [];
+        for (let d = 1; d <= cal.daysInMonth; d++) {
+          const date = new Date(cal.year, cal.month, d);
+          if (date.getDay() === 1) mondays.push(d - 1); // 0-indexed day position
+        }
+        // Build week segments: each runs from Monday to next Monday-1 (or month end)
+        const segments = [];
+        // First segment: month start → first Monday-1 (partial week)
+        if (mondays.length > 0 && mondays[0] > 0) {
+          segments.push({ start: 0, end: mondays[0] - 1 });
+        }
+        for (let i = 0; i < mondays.length; i++) {
+          const segStart = mondays[i];
+          const segEnd = i + 1 < mondays.length ? mondays[i + 1] - 1 : cal.daysInMonth - 1;
+          segments.push({ start: segStart, end: segEnd });
+        }
+        if (mondays.length === 0) {
+          segments.push({ start: 0, end: cal.daysInMonth - 1 });
+        }
+        bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
       } else if (ev.currentEnd) {
         const evEnd = new Date(ev.currentEnd);
         const ended = evEnd < today;
@@ -170,7 +191,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
           if (eEnd >= eStart) {
             const daysLeft = Math.max(0, Math.ceil((evEnd - today) / 86400000));
-            bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, daysLeft });
+            const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, daysLeft, endLabel });
           }
         }
       }
@@ -328,32 +350,53 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               return null;
             })()}
             {chronoBars.map((bar) => {
+              const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.endLabel ? ` — ends ${bar.endLabel}` : ''}${bar.daysLeft != null ? ` — ${bar.daysLeft}d left` : ''}${bar.weekly ? ' (resets weekly Mon)' : ''}${bar.ended ? ' (ended)' : ''}`;
+
+              // Weekly events: render segmented bars showing Mon-Sun reset boundaries
+              if (bar.weekly && bar.segments) {
+                return (
+                  <div key={bar.key} title={tooltipText} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
+                    {bar.segments.map((seg, si) => {
+                      const segLeft = (seg.start / cal.daysInMonth) * 100;
+                      const segWidth = ((seg.end - seg.start + 1) / cal.daysInMonth) * 100;
+                      return (
+                        <div key={si} style={{
+                          position: 'absolute', left: `${segLeft}%`, width: `calc(${segWidth}% - 2px)`,
+                          height: '100%', borderRadius: 'var(--radius-sm)',
+                          background: `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
+                          border: `1px solid ${bar.color}60`,
+                          display: 'flex', alignItems: 'center', padding: '0 4px',
+                          overflow: 'hidden', minWidth: '0',
+                        }}>
+                          {si === 0 && <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>}
+                          {si === 0 && bar.astrite > 0 && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}/wk</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
+              // Non-weekly events: single bar with end date label
               const leftPct = (bar.start / cal.daysInMonth) * 100;
               const widthPct = ((bar.end - bar.start + 1) / cal.daysInMonth) * 100;
-              // U6-05: Tooltip with full details on hover/long-press
               return (
-                <div key={bar.key} title={`${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.daysLeft != null ? ` — ${bar.daysLeft} day${bar.daysLeft !== 1 ? 's' : ''} left` : ''}${bar.weekly ? ' (weekly)' : ''}${bar.ended ? ' (ended)' : ''}`} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
+                <div key={bar.key} title={tooltipText} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
                   <div style={{
-                    position: 'absolute',
-                    left: `${leftPct}%`,
-                    width: `${widthPct}%`,
-                    height: '100%',
-                    borderRadius: 'var(--radius-sm)',
+                    position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`,
+                    height: '100%', borderRadius: 'var(--radius-sm)',
                     background: bar.ended ? `${bar.color}15` : `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
                     border: `1px solid ${bar.color}${bar.ended ? '40' : '60'}`,
                     boxShadow: bar.ended ? 'none' : `0 0 8px ${bar.color}20`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 6px',
-                    overflow: 'hidden',
-                    minWidth: '0',
+                    display: 'flex', alignItems: 'center', padding: '0 6px',
+                    overflow: 'hidden', minWidth: '0',
                     opacity: bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
                     {bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>ended</span>}
                     {bar.astrite > 0 && !bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
+                    {bar.endLabel && !bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>→{bar.endLabel}</span>}
                     {bar.daysLeft != null && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
-                    {bar.weekly && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>wk</span>}
                   </div>
                 </div>
               );
@@ -367,7 +410,13 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: '10px', color: 'var(--text-disabled)', marginTop: 'var(--space-sm)' }}>
             <span className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
             {Object.entries(EVENT_COLORS).map(([key, color]) => (
-              <span key={key} className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: color, display: 'inline-block' }} />{EVENTS[key]?.name || key}</span>
+              <span key={key} className="flex items-center gap-1">
+                {EVENTS[key]?.weeklyReset
+                  ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
+                  : <span style={{ width: '16px', height: '4px', borderRadius: '2px', background: color, display: 'inline-block' }} />
+                }
+                {EVENTS[key]?.name || key}
+              </span>
             ))}
           </div>
         </div>
