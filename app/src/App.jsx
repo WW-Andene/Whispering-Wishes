@@ -1333,8 +1333,11 @@ function WhisperingWishesInner() {
       }
       
       return true;
-    } catch (err) { 
-      toast?.addToast?.('Import failed: ' + err.message, 'error'); 
+    } catch (err) {
+      // F4-01: Show user-friendly message; hide raw JS errors (TypeError, ReferenceError)
+      const isUserError = err instanceof SyntaxError || err.message?.startsWith?.('Import') || err.message?.startsWith?.('Invalid') || err.message?.startsWith?.('No ');
+      const msg = isUserError ? err.message : 'Could not process this file. Please check the format and try again.';
+      toast?.addToast?.('Import failed: ' + msg, 'error');
       return false;
     }
   }, [toast, dispatch, IMPORT_NAME_ALIASES]);

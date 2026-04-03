@@ -174,7 +174,7 @@ export default function ImportFlow({
     setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
     reader.onload = (ev) => {
-      processImportData(ev.target.result).catch(() => {}).finally(() => setImportStatus(null));
+      processImportData(ev.target.result).catch((err) => { toast?.addToast?.('Import failed: ' + (err?.message || 'Unknown error'), 'error'); }).finally(() => setImportStatus(null));
     };
     reader.onerror = () => {
       toast?.addToast?.('Failed to read file', 'error');
@@ -201,7 +201,7 @@ export default function ImportFlow({
     }
     setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
-    reader.onload = (ev) => { processImportData(ev.target.result).catch(() => {}).finally(() => setImportStatus(null)); };
+    reader.onload = (ev) => { processImportData(ev.target.result).catch((err) => { toast?.addToast?.('Import failed: ' + (err?.message || 'Unknown error'), 'error'); }).finally(() => setImportStatus(null)); };
     reader.onerror = () => { toast?.addToast?.('Failed to read file', 'error'); setImportStatus(null); };
     reader.readAsText(file);
   }, [processImportData, toast]);
@@ -211,7 +211,7 @@ export default function ImportFlow({
       toast?.addToast?.('Please paste your JSON data first', 'error');
       return;
     }
-    processImportData(pasteJsonText).then((ok) => { if (ok) setPasteJsonText(''); }).catch(() => {});
+    processImportData(pasteJsonText).then((ok) => { if (ok) setPasteJsonText(''); }).catch((err) => { toast?.addToast?.('Import failed: ' + (err?.message || 'Unknown error'), 'error'); });
   }, [pasteJsonText, processImportData, toast]);
 
   return (
