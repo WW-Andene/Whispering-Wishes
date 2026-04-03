@@ -4,13 +4,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const POOL_LABELS = {
-  1: 'Novice',
-  2: 'Featured Weapon',
-  3: 'Standard Resonator',
-  4: 'Standard Weapon',
-  5: 'Featured Resonator',
-  6: 'Beginner Resonator',
-  7: 'Beginner Weapon',
+  1: 'Standard Resonator',
+  2: 'Standard Weapon',
+  3: 'Featured Resonator',
+  4: 'Featured Weapon',
+  5: 'Beginner Resonator',
+  6: 'Beginner Weapon',
+  7: 'Beginner Collab',
+  8: 'Pool 8',
+  9: 'Pool 9',
+  10: 'Pool 10',
 };
 // Scan wider range — some pool types may have been added or renumbered
 export const POOLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -325,13 +328,8 @@ export async function extractIdsFromImage(base64Image) {
 
 /**
  * Convert raw API pull data to the format processImportData expects.
- * Remaps Kuro API pool numbering → WuWaTracker/app numbering.
- *
- * Kuro API:      1=Novice, 2=FeatWeap, 3=StdChar, 4=StdWeap, 5=FeatChar, 6=BegChar, 7=BegWeap
- * App/WuWaTracker: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5=BegChar, 6=BegWeap, 7=Collab
+ * Preserves the original API cardPoolType — processImportData handles the mapping.
  */
-const API_TO_APP_POOL = { 1: 5, 2: 4, 3: 1, 4: 2, 5: 3, 6: 5, 7: 6 };
-
 export function convertToImportFormat(fetchResult) {
   const allPulls = [];
 
@@ -342,11 +340,8 @@ export function convertToImportFormat(fetchResult) {
   }
 
   for (const [label, pulls] of Object.entries(fetchResult.pulls)) {
-    const apiType = labelToApiType[label] ?? 0;
-    // Remap API numbering → app/WuWaTracker numbering
-    const cardPoolType = API_TO_APP_POOL[apiType] ?? apiType;
+    const cardPoolType = labelToApiType[label] ?? 0;
     for (const pull of pulls) {
-      // Whitelist fields — don't spread untrusted API data
       allPulls.push({
         cardPoolType,
         qualityLevel: parseInt(pull.qualityLevel ?? pull.rarity ?? 3, 10),
@@ -361,17 +356,34 @@ export function convertToImportFormat(fetchResult) {
   // Sort by time ascending
   allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  // Dedup overlapping pages: max 10 items per cardPoolType+time combo
+  // Dedup overlapping pages by resourceId (unique per pull) — not by time which causes mass collisions
   const deduped = [];
-  const timeCounts = {};
+  const seen = new Set();
   for (const pull of allPulls) {
-    const key = `${pull.cardPoolType}|${pull.time}`;
-    const count = timeCounts[key] || 0;
-    if (count < 10) {
-      timeCounts[key] = count + 1;
+    const key = pull.resourceId ? `${pull.cardPoolType}|${pull.resourceId}|${pull.time}` : `${pull.cardPoolType}|${pull.name}|${pull.time}`;
+    if (!seen.has(key)) {
+      seen.add(key);
       deduped.push(pull);
     }
   }
 
-  return JSON.stringify({ pulls: deduped, uid: fetchResult.playerId || '' });
+  // Build diagnostic log for admin panel
+  const diagByPool = {};
+  for (const p of deduped) {
+    const pt = p.cardPoolType;
+    if (!diagByPool[pt]) diagByPool[pt] = { count: 0, fiveStars: [] };
+    diagByPool[pt].count++;
+    if (p.qualityLevel === 5) diagByPool[pt].fiveStars.push(p.name);
+  }
+  const diagnosticLog = Object.entries(diagByPool)
+    .sort(([a], [b]) => a - b)
+    .map(([pt, d]) => `Pool ${pt} (${POOL_LABELS[pt] || '?'}): ${d.count} pulls${d.fiveStars.length ? ' — 5★: ' + d.fiveStars.join(', ') : ''}`)
+    .join('\n');
+
+  return JSON.stringify({
+    pulls: deduped,
+    uid: fetchResult.playerId || '',
+    _diagnostic: `Fetched ${allPulls.length} → deduped ${deduped.length}\n${diagnosticLog}`,
+    _source: 'api',
+  });
 }

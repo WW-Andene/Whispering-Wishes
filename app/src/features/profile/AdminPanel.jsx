@@ -258,6 +258,12 @@ export default function AdminPanel({
                     >
                       Echo BG
                     </button>
+                    <button
+                      onClick={() => setAdminTab('diag')}
+                      className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === 'diag' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                    >
+                      Import Log
+                    </button>
                   </div>
 
                   {/* Collection Tab */}
@@ -924,6 +930,33 @@ export default function AdminPanel({
 
                   {/* ═══ ECHO BACKGROUND REMOVAL TAB ═══ */}
                   {adminTab === 'echobg' && <EchoBgRemover toast={toast} adminHash={ADMIN_HASH} />}
+
+                  {/* ═══ IMPORT DIAGNOSTIC LOG ═══ */}
+                  {adminTab === 'diag' && (() => {
+                    let diag = null;
+                    try { diag = JSON.parse(localStorage.getItem('ww-import-diagnostic')); } catch {}
+                    return (
+                      <div className="space-y-3">
+                        <div className="text-xs text-gray-400">Last import diagnostic{diag?.timestamp ? ` — ${new Date(diag.timestamp).toLocaleString()}` : ''}</div>
+                        {diag?.log ? (
+                          <pre className="text-[10px] font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
+                        ) : (
+                          <div className="text-gray-500 text-xs text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
+                        )}
+                        {diag && (
+                          <button onClick={() => {
+                            const blob = new Blob([JSON.stringify(diag, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `ww-import-diagnostic-${new Date().toISOString().slice(0,10)}.json`;
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                            setTimeout(() => URL.revokeObjectURL(url), 100);
+                          }} className="kuro-btn w-full text-xs">Download Diagnostic Log</button>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </>
               )}
             </div>

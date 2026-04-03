@@ -1156,6 +1156,16 @@ function WhisperingWishesInner() {
         throw new Error('No Convene data found in import. If this is a backup file, it should contain a "state" key.');
       }
 
+      // Show diagnostic log if available (from direct API fetch)
+      if (data._diagnostic) {
+        console.log('[Import Diagnostic]', data._diagnostic);
+        // Store for admin panel
+        try { localStorage.setItem('ww-import-diagnostic', JSON.stringify({ timestamp: new Date().toISOString(), log: data._diagnostic, pullCount: pulls.length })); } catch {}
+      }
+
+      // Detect import source — API direct fetch vs WuWaTracker/file import
+      const isApiSource = data._source === 'api';
+
       // FIX #2: Warn if importing from a different account
       const importUid = data.uid || data.playerId || '';
       const existingUid = stateRef.current.profile.uid || '';
@@ -1203,19 +1213,22 @@ function WhisperingWishesInner() {
 
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
-          const poolType = p.cardPoolType ?? p.gachaType;
-          // Two numbering systems exist:
-          // - WuWaTracker export: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5=BegChar, 6=BegWeap, 7=Collab
-          // - Kuro API direct:   1=Novice, 2=FeatWeap, 3=StdChar, 4=StdWeap, 5=FeatChar, 6=BegChar, 7=BegWeap
-          // Detect source: WuWaTracker files have 'siteVersion' or 'isSorted' fields
-          // For raw API imports, convertToImportFormat already remaps to WuWaTracker numbering
-          // So by the time we reach here, all data uses WuWaTracker numbering:
-          //   1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5/6/7=Beginner
-          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 3;
-          if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 4;
-          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 1;
-          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 2;
-          if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 5 || poolType === 6 || poolType === 7;
+          if (p.bannerType) {
+            if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character';
+            if (type === 'weapon') return p.bannerType === 'weapon';
+            if (type === 'standardChar') return p.bannerType === 'standard-char';
+            if (type === 'standardWeap') return p.bannerType === 'standard-weapon';
+            if (type === 'beginner') return p.bannerType === 'beginner';
+            return false;
+          }
+          // Pool numbering: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5+=Beginner
+          // Same for both Kuro API (with gachaId) and WuWaTracker exports
+          const pt = p.cardPoolType ?? p.gachaType;
+          if (type === 'standardChar') return pt === 1;
+          if (type === 'standardWeap') return pt === 2;
+          if (type === 'featured') return pt === 3;
+          if (type === 'weapon') return pt === 4;
+          if (type === 'beginner') return pt === 5 || pt === 6 || pt === 7;
           return false;
         });
         
