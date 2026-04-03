@@ -91,7 +91,7 @@ export default function TeamsTab({
 
               const removeFromSlot = async (slotIdx) => {
                 const charName = teamSlots[slotIdx];
-                if (await confirm?.({ title: 'Remove character', message: `Remove ${charName || 'this character'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
+                if (await confirm?.({ title: 'Remove Resonator', message: `Remove ${charName || 'this Resonator'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
                   dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
                   haptic.light();
                 }
@@ -255,7 +255,7 @@ export default function TeamsTab({
                           + Compare
                         </button>
                         <button
-                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all characters from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
+                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
