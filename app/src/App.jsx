@@ -80,16 +80,7 @@ const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 const MAX_USERNAME_LENGTH = 24;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
-// C1-03: XOR lengths instead of early return to avoid leaking password length via timing
-const constantTimeCompare = (a, b) => {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  const len = Math.max(a.length, b.length);
-  let result = a.length ^ b.length;
-  for (let i = 0; i < len; i++) {
-    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
-  }
-  return result === 0;
-};
+import { constantTimeCompare } from './utils/constantTimeCompare.js'; // I4-01: deduplicated
 const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
