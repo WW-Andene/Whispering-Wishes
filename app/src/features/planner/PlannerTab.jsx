@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from 'react';
-import { Calendar, Check, ChevronDown, Minus, Plus } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
 import { generateUniqueId } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -12,6 +12,127 @@ import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+
+// ── Astrite Income Calendar ──────────────────────────────────────────────────
+function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners }) {
+  const [monthOffset, setMonthOffset] = useState(0);
+
+  const calendarData = useMemo(() => {
+    const now = new Date();
+    const viewDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const bannerEnd = new Date(bannerEndDate);
+    bannerEnd.setHours(23, 59, 59, 999);
+
+    // Build day data
+    const days = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d);
+      date.setHours(0, 0, 0, 0);
+      const isPast = date < today;
+      const isToday = date.getTime() === today.getTime();
+      const isBannerPeriod = date <= bannerEnd && date >= today;
+      const daysSinceToday = Math.max(0, Math.floor((date - today) / 86400000));
+      const cumulativeAstrite = isPast ? 0 : dailyIncome * (daysSinceToday + 1) + planData.currentAstrite;
+      const cumulativeConvenes = Math.floor(cumulativeAstrite / ASTRITE_PER_PULL);
+
+      days.push({ day: d, date, isPast, isToday, isBannerPeriod, cumulativeAstrite, cumulativeConvenes, dailyIncome: isPast ? 0 : dailyIncome });
+    }
+
+    const monthName = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return { year, month, firstDay, daysInMonth, days, monthName };
+  }, [monthOffset, dailyIncome, bannerEndDate, planData.currentAstrite]);
+
+  const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+  return (
+    <Card>
+      <CardHeader>
+        <Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />
+        Astrite Calendar
+      </CardHeader>
+      <CardBody className="space-y-2">
+        {/* Month navigation */}
+        <div className="flex items-center justify-between">
+          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Previous month">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-gray-200 text-sm font-medium">{calendarData.monthName}</span>
+          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Next month">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7 gap-0.5 text-center">
+          {WEEKDAYS.map(d => (
+            <div key={d} className="text-gray-500 text-[9px] font-medium py-1">{d}</div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 gap-0.5">
+          {/* Empty cells for days before the 1st */}
+          {Array.from({ length: calendarData.firstDay }, (_, i) => (
+            <div key={`empty-${i}`} className="aspect-square" />
+          ))}
+          {/* Day cells */}
+          {calendarData.days.map(d => {
+            const bgClass = d.isToday
+              ? 'bg-yellow-500/20 border-yellow-500/50'
+              : d.isBannerPeriod
+                ? 'bg-cyan-500/8 border-cyan-500/20'
+                : d.isPast
+                  ? 'bg-white/2 border-transparent'
+                  : 'bg-white/5 border-[var(--border-subtle)]';
+            return (
+              <div
+                key={d.day}
+                className={`aspect-square rounded border p-0.5 flex flex-col items-center justify-center relative ${bgClass}`}
+                title={d.isPast ? `Day ${d.day}` : `Day ${d.day}: ${d.cumulativeAstrite.toLocaleString('en-US')} Astrite (${d.cumulativeConvenes} Convenes)`}
+              >
+                <span className={`text-[10px] leading-none ${d.isToday ? 'text-yellow-400 font-bold' : d.isPast ? 'text-gray-600' : 'text-gray-300'}`}>
+                  {d.day}
+                </span>
+                {!d.isPast && dailyIncome > 0 && (
+                  <span className={`text-[7px] leading-none mt-0.5 kuro-number ${d.isToday ? 'text-yellow-500' : d.isBannerPeriod ? 'text-cyan-400' : 'text-gray-500'}`}>
+                    {d.cumulativeConvenes}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-3 justify-center text-[9px] text-gray-500 pt-1">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-yellow-500/30" /> Today</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-cyan-500/15 border border-cyan-500/30" /> Banner period</span>
+          <span className="flex items-center gap-1"><span className="text-[8px] kuro-number text-gray-400">42</span> Cumulative Convenes</span>
+        </div>
+
+        {/* Month summary */}
+        {dailyIncome > 0 && (
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="kuro-stat p-2 text-center">
+              <div className="text-yellow-400 kuro-number text-lg">{(dailyIncome * calendarData.daysInMonth).toLocaleString('en-US')}</div>
+              <div className="text-gray-400 text-[9px]">Astrite this month</div>
+            </div>
+            <div className="kuro-stat p-2 text-center">
+              <div className="text-yellow-400 kuro-number text-lg">{Math.floor(dailyIncome * calendarData.daysInMonth / ASTRITE_PER_PULL)}</div>
+              <div className="text-gray-400 text-[9px]">Convenes this month</div>
+            </div>
+          </div>
+        )}
+      </CardBody>
+    </Card>
+  );
+}
 
 export default function PlannerTab({
   state,
@@ -23,14 +144,12 @@ export default function PlannerTab({
 }) {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
 
-
-
   const dailyIncome = useMemo(() => {
     return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
   }, [state.planner.dailyAstrite, state.planner.luniteActive]);
 
   const planData = useMemo(() => {
-    const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0); // Lunite converts to Astrite 1:1
+    const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
     const bannerEnd = new Date(bannerEndDate);
     const now = new Date();
     const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
@@ -71,6 +190,10 @@ export default function PlannerTab({
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="planner" />
 
+      {/* 1. Astrite Income Calendar — visual overview of daily income accumulation */}
+      <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} />
+
+      {/* 2. Daily Income — set the rate that drives everything */}
       <Card>
         <CardHeader>Daily Income</CardHeader>
         <CardBody className="space-y-3">
@@ -89,149 +212,7 @@ export default function PlannerTab({
         </CardBody>
       </Card>
 
-      <Card>
-        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
-          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
-        </div>
-        {showIncomePanel && (
-          <CardBody className="space-y-2">
-            <div className="kuro-label">Subscriptions</div>
-            <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={`Lunite Subscription: ${state.planner.luniteActive ? 'active' : 'inactive'}`} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
-                    {state.planner.luniteActive && <Check size={10} />}
-                  </span>
-                  <div>
-                    <div className={`text-xs font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
-                    <div className="text-gray-300 text-[10px]">{SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d + 300 Lunite</div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.lunite.price}/mo</span>
-                  {state.planner.luniteActive && <div className="text-emerald-400 text-[10px]">+90/day</div>}
-                </div>
-              </div>
-            </button>
-            {/* Weekly sub: Lunite converts to Astrite at 1:1 — astrite field includes converted Lunite value */}
-            {/* AUDIT-FIX L22: Toast feedback for purchases */}
-            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
-              <div className="flex items-center justify-between w-full">
-                <div>
-                  <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
-                  <div className="text-gray-300 text-[10px]">{SUBSCRIPTIONS.weekly.desc}</div>
-                </div>
-                <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.weekly.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
-              </div>
-            </button>
-            {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
-                <div className="flex items-center justify-between w-full">
-                  <div>
-                    <div className="text-gray-200 text-xs font-medium">{s.name}</div>
-                    <div className="text-gray-300 text-[10px]">{s.desc}</div>
-                  </div>
-                  <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
-                </div>
-              </button>
-            ))}
-            <div className="kuro-label mt-3">Direct Top-Ups</div>
-            {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
-                <div className="flex items-center justify-between w-full">
-                  <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
-                  <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
-                </div>
-              </button>
-            ))}
-          </CardBody>
-        )}
-      </Card>
-
-      {state.planner.addedIncome.length > 0 && (
-        <Card>
-          {/* AUDIT-FIX H6: Confirm before clearing all purchases */}
-          <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear all purchases', message: 'This will remove all added purchases.', confirmLabel: 'Clear all', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
-          <CardBody className="space-y-2">
-            {state.planner.addedIncome.map(i => (
-              <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
-                <span className="text-gray-200">{i.label}</span>
-                <div className="flex items-center gap-2">
-                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite} Astrite</span>}
-                  {i.lunite > 0 && <span className="text-cyan-400">+{i.lunite} Lunite</span>}
-                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide - Featured banner Convene ticket">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
-                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide - Standard banner Convene ticket">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
-                  {/* AUDIT-FIX H6: Confirm before removing individual purchase */}
-                  <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
-                </div>
-              </div>
-            ))}
-            <div className="pt-2 border-t border-[var(--border-medium)] flex justify-between text-xs">
-              <span className="text-gray-400">Total Spent</span>
-              <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + (+i.price || 0), 0).toFixed(2)}</span>
-            </div>
-          </CardBody>
-        </Card>
-      )}
-
-      {planData.daysLeft > 0 && (
-        <Card>
-          <CardHeader>By Banner End</CardHeader>
-          <CardBody className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-400 text-[10px]" title={`Game version ${activeBanners.version}, phase ${activeBanners.phase} — each version has two limited-time banner phases`}>Version {activeBanners.version} Phase {activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
-              <CountdownTimer endDate={bannerEndDate} compact />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd.toLocaleString('en-US')}</div>
-                <div className="text-gray-400 text-[10px]">Total Convenes</div>
-              </div>
-              <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
-                <div className="text-gray-400 text-[10px]">Earned Convenes</div>
-              </div>
-              <div className="kuro-stat p-2 text-center">
-                <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString('en-US')}</div>
-                <div className="text-gray-400 text-[10px]">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Total Astrite'}</div>
-              </div>
-            </div>
-            <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''} + {planData.incomeByEnd.toLocaleString('en-US')} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* Income Projections */}
-      <Card>
-        <CardHeader>Income Projections</CardHeader>
-        <CardBody>
-          {/* MED-29: 30-day emphasized as primary planning horizon */}
-          {dailyIncome === 0 ? (
-            <div className="p-4 text-center rounded-lg" style={{ background: 'var(--bg-stat)' }}>
-              <div className="text-gray-400 text-sm mb-1">No daily income set</div>
-              <div className="text-gray-500 text-xs">Set your Daily Astrite income above to see projections.</div>
-            </div>
-          ) : (
-          <div className="grid grid-cols-3 gap-2">
-            {[7, 30, 90].map(days => (
-              <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
-                <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
-                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
-                <div className="text-gray-400 text-[10px]">Convenes</div>
-                <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString('en-US')} Astrite</div>
-              </div>
-            ))}
-          </div>
-          )}
-          {state.planner.luniteActive && (
-            <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
-              <span className="text-emerald-400 text-xs">Monthly Subscription Cost: </span>
-              <span className="text-emerald-400 font-bold text-xs">${SUBSCRIPTIONS.lunite.price}/month</span>
-            </div>
-          )}
-        </CardBody>
-      </Card>
-
+      {/* 3. Goal Progress — what you're saving for */}
       <Card>
         <CardHeader>Goal Progress</CardHeader>
         <CardBody className="space-y-3">
@@ -319,7 +300,148 @@ export default function PlannerTab({
         </CardBody>
       </Card>
 
-      {/* AUDIT-FIX M21: Always show Saved States card with empty state message */}
+      {/* 3. By Banner End — how much you'll have when the current banner expires */}
+      {planData.daysLeft > 0 && (
+        <Card>
+          <CardHeader>By Banner End</CardHeader>
+          <CardBody className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400 text-[10px]" title={`Game version ${activeBanners.version}, phase ${activeBanners.phase}`}>Version {activeBanners.version} Phase {activeBanners.phase} ends in {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''}</span>
+              <CountdownTimer endDate={bannerEndDate} compact />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="kuro-stat p-2 text-center">
+                <div className="text-yellow-400 kuro-number text-xl">{planData.convenesByEnd.toLocaleString('en-US')}</div>
+                <div className="text-gray-400 text-[10px]">Total Convenes</div>
+              </div>
+              <div className="kuro-stat p-2 text-center">
+                <div className="text-yellow-400 kuro-number text-xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
+                <div className="text-gray-400 text-[10px]">Earned Convenes</div>
+              </div>
+              <div className="kuro-stat p-2 text-center">
+                <div className="text-yellow-400 kuro-number text-xl">{planData.totalAstriteByEnd.toLocaleString('en-US')}</div>
+                <div className="text-gray-400 text-[10px]">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Total Astrite'}</div>
+              </div>
+            </div>
+            <div className="text-gray-400 text-[10px] text-center">Current {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''} + {planData.incomeByEnd.toLocaleString('en-US')} earned ({dailyIncome}/day × {planData.daysLeft}d)</div>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* 4. Income Projections — 7/30/90 day forecasts */}
+      <Card>
+        <CardHeader>Income Projections</CardHeader>
+        <CardBody>
+          {dailyIncome === 0 ? (
+            <div className="p-4 text-center rounded-lg" style={{ background: 'var(--bg-stat)' }}>
+              <div className="text-gray-400 text-sm mb-1">No daily income set</div>
+              <div className="text-gray-500 text-xs">Set your Daily Astrite income below to see projections.</div>
+            </div>
+          ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {[7, 30, 90].map(days => (
+              <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
+                <div className="text-gray-400 text-[10px] mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
+                <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-3xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
+                <div className="text-gray-400 text-[10px]">Convenes</div>
+                <div className="text-gray-400 text-[10px]">{(dailyIncome * days).toLocaleString('en-US')} Astrite</div>
+              </div>
+            ))}
+          </div>
+          )}
+          {state.planner.luniteActive && (
+            <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
+              <span className="text-emerald-400 text-xs">Monthly Subscription Cost: </span>
+              <span className="text-emerald-400 font-bold text-xs">${SUBSCRIPTIONS.lunite.price}/month</span>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {/* 5. Purchases */}
+      <Card>
+        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${showIncomePanel ? 'rotate-180' : ''}`} />}>Add Purchases</CardHeader>
+        </div>
+        {showIncomePanel && (
+          <CardBody className="space-y-2">
+            <div className="kuro-label">Subscriptions</div>
+            <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={`Lunite Subscription: ${state.planner.luniteActive ? 'active' : 'inactive'}`} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
+                    {state.planner.luniteActive && <Check size={10} />}
+                  </span>
+                  <div>
+                    <div className={`text-xs font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
+                    <div className="text-gray-300 text-[10px]">{SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d + 300 Lunite</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.lunite.price}/mo</span>
+                  {state.planner.luniteActive && <div className="text-emerald-400 text-[10px]">+90/day</div>}
+                </div>
+              </div>
+            </button>
+            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
+              <div className="flex items-center justify-between w-full">
+                <div>
+                  <div className="text-gray-200 text-xs font-medium">{SUBSCRIPTIONS.weekly.name}</div>
+                  <div className="text-gray-300 text-[10px]">{SUBSCRIPTIONS.weekly.desc}</div>
+                </div>
+                <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${SUBSCRIPTIONS.weekly.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
+              </div>
+            </button>
+            {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
+              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <div className="text-gray-200 text-xs font-medium">{s.name}</div>
+                    <div className="text-gray-300 text-[10px]">{s.desc}</div>
+                  </div>
+                  <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
+                </div>
+              </button>
+            ))}
+            <div className="kuro-label mt-3">Direct Top-Ups</div>
+            {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
+              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+                <div className="flex items-center justify-between w-full">
+                  <div><div className="text-gray-200 text-xs font-medium">{s.name}</div><div className="text-gray-300 text-[10px]">{s.desc}</div></div>
+                  <div className="flex items-center gap-1"><span className="text-emerald-400 text-xs">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
+                </div>
+              </button>
+            ))}
+          </CardBody>
+        )}
+      </Card>
+
+      {/* Added purchases summary */}
+      {state.planner.addedIncome.length > 0 && (
+        <Card>
+          <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear all purchases', message: 'This will remove all added purchases.', confirmLabel: 'Clear all', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all added purchases">Clear All</button>}>Added Purchases</CardHeader>
+          <CardBody className="space-y-2">
+            {state.planner.addedIncome.map(i => (
+              <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-xs">
+                <span className="text-gray-200">{i.label}</span>
+                <div className="flex items-center gap-2">
+                  {i.astrite > 0 && <span className="text-yellow-400">+{i.astrite} Astrite</span>}
+                  {i.lunite > 0 && <span className="text-cyan-400">+{i.lunite} Lunite</span>}
+                  {i.radiant > 0 && <span className="text-yellow-400" title="Radiant Tide">+{i.radiant} Radiant Tide{i.radiant !== 1 ? 's' : ''}</span>}
+                  {i.lustrous > 0 && <span className="text-cyan-400" title="Lustrous Tide">+{i.lustrous} Lustrous Tide{i.lustrous !== 1 ? 's' : ''}</span>}
+                  <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove purchase: ${i.label}`}><Minus size={12} /></button>
+                </div>
+              </div>
+            ))}
+            <div className="pt-2 border-t border-[var(--border-medium)] flex justify-between text-xs">
+              <span className="text-gray-400">Total Spent</span>
+              <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + (+i.price || 0), 0).toFixed(2)}</span>
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* 7. Saved States */}
       <Card>
         <CardHeader>Saved States</CardHeader>
         <CardBody className="space-y-2">
@@ -334,7 +456,6 @@ export default function PlannerTab({
               </div>
               <div className="flex gap-1">
                 <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">Load</button>
-                {/* AUDIT-FIX H6: Confirm before deleting bookmark */}
                 <button onClick={async () => { if (await confirm({ title: 'Delete bookmark', message: `Delete bookmark "${b.name}"?`, confirmLabel: 'Delete', destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
               </div>
             </div>
