@@ -651,7 +651,7 @@ function WhisperingWishesInner() {
 
   // Cache-busting for images (version-based, only refreshes on manual refresh)
   // Initial value is an arbitrary version token; replaced with Date.now() on manual refresh
-  const [imageCacheBuster, setImageCacheBuster] = useState('v3.2.2');
+  const [imageCacheBuster, setImageCacheBuster] = useState(APP_VERSION);
   const refreshImages = useCallback(() => {
     setImageCacheBuster(String(Date.now()));
     // Also clear SW image cache
@@ -1304,7 +1304,8 @@ function WhisperingWishesInner() {
       // P12-FIX: Check storage capacity after import (Step 14 audit - LOW-10a)
       if (storageAvailable) {
         try {
-          const currentSize = (localStorage.getItem(STORAGE_KEY) || '').length;
+          const stored = localStorage.getItem(STORAGE_KEY) || '';
+          const currentSize = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(stored).length : stored.length * 2;
           if (currentSize > STORAGE_WARNING_THRESHOLD) {
             toast?.addToast?.(`Storage at ${(currentSize / 1024 / 1024).toFixed(1)}MB of ~5MB. Consider exporting a backup.`, 'warning');
           }

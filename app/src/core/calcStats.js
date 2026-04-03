@@ -299,7 +299,8 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, 
   // Average 1.5 four-star pulls per featured 4-star copy (50% win + 50% lose then guaranteed)
   // 3 featured 4-stars per banner share the featured pool equally
   // AVG_4STAR_PULLS_PER_FEATURED imported from constants (1.5 — 50/50 + guarantee)
-  const featuredFourStarCount = isFeaturedBanner ? Math.round(fourStarCount / AVG_4STAR_PULLS_PER_FEATURED) : fourStarCount;
+  // Compute featured count directly from pulls to avoid double-rounding (A1-01)
+  const featuredFourStarCount = isFeaturedBanner ? Math.round(safePulls / (AVG_PULLS_PER_4STAR * AVG_4STAR_PULLS_PER_FEATURED)) : fourStarCount;
   const pity4 = safePulls % HARD_PITY_4STAR;
 
   // 4-star target: calculate how many pulls are needed to reach the target
@@ -319,7 +320,8 @@ const calcStats = (pulls, pity, guaranteed, isChar, copies, fourStarCopies = 0, 
   const missingPulls = Math.max(missingPulls5Star, missingPulls4Star);
 
   return {
-    successRate: successRate > 0 && successRate < 0.1 ? '<0.1' : successRate.toFixed(1),
+    successRate: successRate > 0 && successRate < 0.1 ? '0.0' : successRate.toFixed(1),
+    successRateBelow01: successRate > 0 && successRate < 0.1,
     p1: pGe(1).toFixed(1),
     p2: pGe(2).toFixed(1),
     p3: pGe(3).toFixed(1),
