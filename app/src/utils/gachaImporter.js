@@ -12,7 +12,8 @@ export const POOL_LABELS = {
   6: 'Beginner Resonator',
   7: 'Beginner Weapon',
 };
-export const POOLS = [1, 2, 3, 4, 5, 6, 7];
+// Scan wider range — some pool types may have been added or renumbered
+export const POOLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export const FALLBACK_API_BASE = 'https://gmserver-api.aki-game2.net/gacha/record/query';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -119,12 +120,85 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
         serverId: parsed.svrId || svrId || '',
         recordId: parsed.recordId || recordId || '',
         cardPoolId: parsed.resourcesId || '',
+        gachaId: parsed.gachaId || '',
         gachaType: parsed.gachaType || '',
+        svrArea: parsed.svrArea || '',
         lang: parsed.lang || 'en',
       };
     }
   }
-  return { playerId, serverId: svrId || '', recordId: recordId || '', cardPoolId: '', gachaType: '', lang: 'en' };
+  return { playerId, serverId: svrId || '', recordId: recordId || '', cardPoolId: '', gachaId: '', gachaType: '', svrArea: '', lang: 'en' };
+}
+
+/**
+ * Fetch one page from the API. Returns { list, rawJson }.
+ */
+async function fetchOnePage(params, poolType, endTime, signal) {
+  const body = {
+    playerId: String(params.playerId),
+    serverId: params.serverId || '',
+    cardPoolType: Number(poolType),
+    cardPoolId: params.cardPoolId || '',
+    languageCode: params.lang || 'en',
+    recordId: params.recordId || '',
+  };
+  if (params.gachaId) body.gachaId = String(params.gachaId);
+  if (params.gachaType) body.gachaType = String(params.gachaType);
+  if (params.svrArea) body.svrArea = String(params.svrArea);
+  if (endTime) body.endTime = endTime;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+  try {
+    const res = await fetch('/api/gacha/record/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: mergedSignal,
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return { list: [], error: `HTTP ${res.status}` };
+    const json = await res.json();
+    if (json?.code !== 0) return { list: [], error: json?.message || `code ${json?.code}` };
+    const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+    return { list, rawJson: json };
+  } catch (err) {
+    clearTimeout(timeout);
+    return { list: [], error: err.message };
+  }
+}
+
+/**
+ * Paginate a single pool type until exhausted.
+ */
+async function fetchPoolFull(params, poolType, signal, onProgress) {
+  const items = [];
+  let endTime = '';
+  const seenTimes = new Set();
+
+  for (let page = 0; page < 500; page++) {
+    if (signal?.aborted) break;
+
+    const { list, error } = await fetchOnePage(params, poolType, endTime, signal);
+    if (error || !list.length) break;
+
+    items.push(...list);
+    onProgress?.(poolType, 'fetching', items.length);
+
+    // Find the oldest record's time for pagination
+    const oldest = list.reduce((min, item) => (item.time || '') < (min.time || '') ? item : min, list[0]);
+    if (!oldest?.time) break;
+
+    // Stuck detection: if we've seen this exact endTime before, we're looping
+    if (seenTimes.has(oldest.time)) break;
+    seenTimes.add(oldest.time);
+    endTime = oldest.time;
+
+    await sleep(150);
+  }
+  return items;
 }
 
 /**
@@ -132,85 +206,48 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * @param {{ playerId: string, serverId: string, lang: string }} params
  * @param {AbortSignal} [signal]
  * @param {function} [onProgress] - Called with (poolType, status, count) for progress updates
- * @returns {Promise<{ pulls: Object, total: number }>}
+ * @returns {Promise<{ pulls: Object, total: number, debug: Array }>}
  */
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
+  const debug = [];
   let total = 0;
+
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
 
     try {
-      const poolItems = [];
-      let endTime = '';
-      let prevOldestKey = '';
+      const items = await fetchPoolFull(params, poolType, signal, onProgress);
 
-      // No arbitrary page limit — paginate until API returns empty
-      for (let page = 0; ; page++) {
-        if (signal?.aborted) break;
-
-        const body = {
-          playerId: String(params.playerId),
-          serverId: params.serverId || '',
-          cardPoolType: Number(poolType),
-          cardPoolId: params.cardPoolId || '',
-          languageCode: params.lang || 'en',
-          recordId: params.recordId || '',
-        };
-        if (params.gachaId) body.gachaId = String(params.gachaId);
-        if (params.gachaType) body.gachaType = String(params.gachaType);
-        if (endTime) body.endTime = endTime;
-
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
-        const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-
-        const res = await fetch('/api/gacha/record/query', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-          signal: mergedSignal,
-        });
-        clearTimeout(timeout);
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        if (json?.code !== 0) throw new Error(json?.message || `API error ${json?.code}`);
-
-        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-        if (!list.length) break;
-
-        poolItems.push(...list);
-        onProgress?.(poolType, 'fetching', poolItems.length);
-
-        // Find oldest record — use resourceId+time as key to avoid false stuck on same-timestamp batches
-        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        const oldestKey = `${oldest?.resourceId || ''}|${oldest?.time || ''}`;
-        if (!oldest?.time || oldestKey === prevOldestKey) break; // Truly stuck — same exact record
-        prevOldestKey = oldestKey;
-        endTime = oldest.time;
-
-        // Safety cap at 500 pages (~5000 pulls) to prevent infinite loops
-        if (page >= 500) break;
-
-        await sleep(150);
+      const label = POOL_LABELS[poolType] || `Pool ${poolType}`;
+      if (items.length > 0) {
+        allPulls[label] = items;
+        total += items.length;
       }
 
-      if (poolItems.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = poolItems;
-        total += poolItems.length;
-      }
-      onProgress?.(poolType, 'done', poolItems.length);
+      // Debug info for diagnostics
+      const fiveStars = items.filter(i => parseInt(i.qualityLevel, 10) === 5).map(i => i.name);
+      debug.push({ poolType, label, count: items.length, fiveStars });
+      onProgress?.(poolType, 'done', items.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
+      debug.push({ poolType, label: POOL_LABELS[poolType] || `Pool ${poolType}`, count: 0, error: err.message });
       onProgress?.(poolType, 'error', 0);
     }
 
     await sleep(150);
   }
 
-  return { pulls: allPulls, total };
+  // Log diagnostic summary to console
+  console.group('[Convene Import] Pool scan results');
+  for (const d of debug) {
+    console.log(`Pool ${d.poolType} (${d.label}): ${d.count} pulls${d.error ? ` — ERROR: ${d.error}` : ''}${d.fiveStars?.length ? ` — 5★: ${d.fiveStars.join(', ')}` : ''}`);
+  }
+  console.log(`Total: ${total}`);
+  console.groupEnd();
+
+  return { pulls: allPulls, total, debug };
 }
 
 /**
