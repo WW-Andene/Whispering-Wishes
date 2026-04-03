@@ -21,14 +21,14 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 // Line colors — one color = one meaning. Gold reserved for brand (today/selection/notes).
 const LINE_COLORS = {
-  yellow: '#fbbf24',   // amber-400 — Pioneer Podcast, Weekly Boss (NOT gold #edaf18)
+  yellow: '#a3e635',   // lime-400 — Pioneer Podcast, Weekly Boss (distinct from gold #edaf18)
   purple: '#a855f7',   // Fantasies of the Thousand Gateways
   cyan:   '#06b6d4',   // Tactical Hologram, Whimpering Wastes
   pink:   '#ec4899',   // Endstate Matrix
   orange: '#f97316',   // Tower of Adversity
 };
-// Banner: muted slate with glow — visible but doesn't dominate event lines
-const BANNER_COLOR = '#64748b';
+// Banner: bright enough to see on dark bg, but neutral so it doesn't steal from event lines
+const BANNER_COLOR = '#94a3b8';
 
 const getActiveEvents = (date) => {
   const result = [];
@@ -84,8 +84,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const events = isPast ? [] : getActiveEvents(date);
       const eventAstrite = events.reduce((s, e) => s + e.astrite, 0);
       const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      // Green state: today if dailies done, past days always considered done
-      const isDailyDone = isToday ? dailyDone : isPast;
+      // Green state: only today when dailies marked done — we don't know past days
+      const isDailyDone = isToday && dailyDone;
       days.push({
         day: d, date, dateKey, isPast, isToday, isBanner, earned, events, eventAstrite,
         note: calendarNotes?.[dateKey] || '', isDailyDone,
@@ -159,24 +159,22 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                   {row.map((d, ci) => {
                     if (!d) return <div key={`e${ci}`} style={{ aspectRatio: '1', borderRadius: 'var(--radius-sm)', background: 'var(--bg-stat)', opacity: 0.3 }} />;
                     const isSel = selectedDay === d.dateKey;
-                    const isGreen = d.isDailyDone && !d.isPast;
-                    const isPastGreen = d.isDailyDone && d.isPast;
+                    const isGreen = d.isDailyDone;
                     return (
                       <button key={d.day} type="button" disabled={d.isPast} onClick={() => handleTap(d)}
                         className="active:scale-95 transition-transform"
                         style={{
                           aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
                           background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))'
-                            : isPastGreen ? 'linear-gradient(to top, rgba(34,197,94,0.10), rgba(34,197,94,0.04))'
                             : 'var(--bg-stat)',
-                          border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid #edaf18' : isGreen ? '1px solid rgba(34,197,94,0.4)' : isPastGreen ? '1px solid rgba(34,197,94,0.16)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
-                          boxShadow: isSel ? '0 0 8px rgba(237,175,24,0.3)' : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
+                          border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
+                          boxShadow: isSel ? '0 0 8px rgba(255,255,255,0.15)' : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
                           transition: 'all var(--transition-fast)',
                         }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                           <span style={{
                             fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-data)',
-                            color: d.isToday ? '#edaf18' : isPastGreen ? 'rgba(34,197,94,0.4)' : d.isPast ? 'var(--text-disabled)' : isGreen ? '#22c55e' : isSel ? '#edaf18' : 'var(--text-secondary)',
+                            color: d.isToday ? '#edaf18' : d.isPast ? 'var(--text-disabled)' : isGreen ? '#22c55e' : isSel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                           }}>{d.day}</span>
                           {d.note && !d.isPast && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', marginTop: '2px' }} />}
                         </div>
@@ -205,9 +203,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
         {/* Legend — one color = one meaning */}
         <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
-          <span className="flex items-center gap-1"><span style={{ width: '12px', height: '12px', borderRadius: 'var(--radius-sm)', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Daily</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-sm)', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
+          <span className="flex items-center gap-1"><span style={{ width: '12px', height: '12px', borderRadius: 'var(--radius-sm)', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
           <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
-          <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.purple, display: 'inline-block' }} />Weekly</span>
+          <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.purple, display: 'inline-block' }} /><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.yellow, display: 'inline-block' }} />Weekly</span>
           <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.cyan, display: 'inline-block' }} /><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.orange, display: 'inline-block' }} /><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.pink, display: 'inline-block' }} />Events</span>
           <span className="flex items-center gap-1"><span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
         </div>
@@ -225,11 +224,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               <button onClick={() => setSelectedDay(null)} className="flex items-center justify-center text-gray-400 hover:text-white transition-colors" style={{ width: '44px', height: '44px' }} aria-label="Close"><X size={14} /></button>
             </div>
 
-            {(sel.earned > 0 || sel.eventAstrite > 0) && (
+            {(dailyIncome > 0 || sel.eventAstrite > 0) && !sel.isPast && (
               <div className="flex gap-4" style={{ fontSize: '10px', marginBottom: 'var(--space-sm)' }}>
-                {sel.earned > 0 && <span><span className="text-yellow-400 kuro-number font-bold">{sel.earned.toLocaleString('en-US')}</span> <span style={{ color: 'var(--text-muted)' }}>Astrite</span></span>}
+                {dailyIncome > 0 && <span><span className="text-yellow-400 kuro-number font-bold">{dailyIncome.toLocaleString('en-US')}</span> <span style={{ color: 'var(--text-muted)' }}>Astrite/day</span></span>}
                 {sel.eventAstrite > 0 && <span><span className="kuro-number font-bold" style={{ color: selEvents[0]?.color || '#a855f7' }}>+{sel.eventAstrite}</span> <span style={{ color: 'var(--text-muted)' }}>from {selEvents.length} event{selEvents.length !== 1 ? 's' : ''}</span></span>}
-                <span><span className="text-cyan-400 kuro-number font-bold">{Math.floor((sel.earned + sel.eventAstrite) / ASTRITE_PER_PULL)}</span> <span style={{ color: 'var(--text-muted)' }}>Convenes</span></span>
               </div>
             )}
 
@@ -244,14 +242,14 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             )}
 
             <div className="flex gap-2">
-              <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Goal or note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} />
+              <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} />
               <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
             </div>
 
             {sel.note && (
               <div className="flex items-center gap-2" style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-sm) var(--space-md)', borderRadius: 'var(--radius-md)', background: 'var(--bg-stat)' }}>
                 <span className="flex-1" style={{ fontSize: '12px', lineHeight: '1.4', color: 'var(--text-body)' }}>{sel.note}</span>
-                <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center rounded-full bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: '24px', height: '24px' }} aria-label="Delete note"><X size={12} /></button>
+                <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: '24px', height: '24px', borderRadius: 'var(--radius-sm)' }} aria-label="Delete note"><X size={12} /></button>
               </div>
             )}
           </div>
@@ -259,9 +257,9 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
         {dailyIncome > 0 && (
           <div className="text-center" style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-            <span className="text-yellow-400 kuro-number font-bold">{(dailyIncome * cal.daysInMonth).toLocaleString('en-US')}</span> Astrite
+            <span className="text-yellow-400 kuro-number font-bold">{dailyIncome.toLocaleString('en-US')}</span> Astrite/day
             <span style={{ margin: '0 8px' }}>&middot;</span>
-            <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome * cal.daysInMonth / ASTRITE_PER_PULL)}</span> Convenes this month
+            <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome / ASTRITE_PER_PULL * cal.daysInMonth)}</span> Convenes/month
           </div>
         )}
       </CardBody>
