@@ -546,7 +546,7 @@ export default function PlannerTab({
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('daily')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('daily'); } }} aria-expanded={!collapsed.daily}>
           <CardHeader action={<>
             <span className="text-yellow-400 kuro-number text-xs font-bold">{dailyIncome}/day</span>
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.daily ? '' : 'rotate-180'}`} />
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.daily ? '' : 'rotate-180'}`} />
           </>}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Daily Income</CardHeader>
         </div>
         {!collapsed.daily && (
@@ -572,7 +572,7 @@ export default function PlannerTab({
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
           <CardHeader action={<>
             {state.planner.addedIncome.length > 0 && <span className="text-emerald-400 text-[10px]">{state.planner.addedIncome.length} added</span>}
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${showIncomePanel ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${showIncomePanel ? 'rotate-180' : ''}`} />
           </>}>Purchases</CardHeader>
         </div>
         {showIncomePanel && (
@@ -684,7 +684,7 @@ export default function PlannerTab({
           <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('banner')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('banner'); } }} aria-expanded={!collapsed.banner}>
             <CardHeader action={<>
               <CountdownTimer endDate={bannerEndDate} compact />
-              <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.banner ? '' : 'rotate-180'}`} />
+              <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.banner ? '' : 'rotate-180'}`} />
             </>}>By Banner End</CardHeader>
           </div>
           {!collapsed.banner && (
@@ -715,7 +715,7 @@ export default function PlannerTab({
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('goal')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('goal'); } }} aria-expanded={!collapsed.goal}>
           <CardHeader action={<>
             <span className="text-gray-400 text-[10px]">{planData.goalProgress.toFixed(0)}%</span>
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.goal ? '' : 'rotate-180'}`} />
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.goal ? '' : 'rotate-180'}`} />
           </>}>Goal Progress</CardHeader>
         </div>
         {!collapsed.goal && (
@@ -810,7 +810,7 @@ export default function PlannerTab({
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('saved')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('saved'); } }} aria-expanded={!collapsed.saved}>
           <CardHeader action={<>
             {state.bookmarks.length > 0 && <span className="text-cyan-400 text-[10px]">{state.bookmarks.length}</span>}
-            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ml-1 ${collapsed.saved ? '' : 'rotate-180'}`} />
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.saved ? '' : 'rotate-180'}`} />
           </>}>Saved States</CardHeader>
         </div>
         {!collapsed.saved && (

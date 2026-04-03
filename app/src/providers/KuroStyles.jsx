@@ -651,6 +651,9 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-header-action {
       position: relative;
       z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
     /* Utility class for content layering above backgrounds */
