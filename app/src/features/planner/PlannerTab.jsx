@@ -3,9 +3,10 @@
 // Resource income planning and goal tracking
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from 'react';
-import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus, Star, Clock, Swords, Sparkles } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
+import { EVENTS } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
@@ -13,23 +14,59 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
+// ── Pity-style color for earned Convenes (matches analytics pull log) ────────
+const getConveneColor = (convenes) => {
+  if (convenes <= 5) return '#6b7280';   // gray — barely started
+  if (convenes <= 20) return '#22c55e';  // green — building up
+  if (convenes <= 40) return '#4ade80';  // light green — decent
+  if (convenes <= 60) return '#edaf18';  // gold — solid
+  if (convenes <= 80) return '#f97316';  // orange — close to pity
+  return '#ef4444';                       // red — guaranteed territory
+};
+
+// ── Event markers for calendar days ──────────────────────────────────────────
+const getDayEvents = (date, eventStatus) => {
+  const markers = [];
+  const dow = date.getDay(); // 0=Sun
+  // Daily reset — every day
+  if (eventStatus?.dailyReset === 'done') markers.push({ type: 'daily', color: '#edaf18', label: 'Daily' });
+  // Weekly resets — Monday (1)
+  if (dow === 1) {
+    if (EVENTS.weeklyBoss) markers.push({ type: 'weekly', color: '#a855f7', label: 'Boss' });
+    if (EVENTS.illusiveRealm) markers.push({ type: 'weekly', color: '#a855f7', label: 'Realm' });
+  }
+  // Timed events — check if date falls within event period
+  for (const [key, ev] of Object.entries(EVENTS)) {
+    if (ev.dailyReset || ev.weeklyReset) continue;
+    if (!ev.currentEnd) continue;
+    const evEnd = new Date(ev.currentEnd);
+    // Event is active if date is before end (we don't know exact start for all)
+    if (date <= evEnd) {
+      const astrite = parseInt(ev.rewards, 10);
+      if (astrite > 0) markers.push({ type: 'event', color: ev.accentColor === 'purple' ? '#a855f7' : ev.accentColor === 'cyan' ? '#22d3ee' : '#edaf18', label: ev.name.slice(0, 8), astrite });
+    }
+  }
+  return markers;
+};
+
 // ── Astrite Income Calendar ──────────────────────────────────────────────────
-function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners }) {
+function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote }) {
   const [monthOffset, setMonthOffset] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [noteInput, setNoteInput] = useState('');
 
   const calendarData = useMemo(() => {
     const now = new Date();
     const viewDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
-    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const bannerEnd = new Date(bannerEndDate);
     bannerEnd.setHours(23, 59, 59, 999);
 
-    // Build day data
     const days = [];
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month, d);
@@ -38,15 +75,34 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners }
       const isToday = date.getTime() === today.getTime();
       const isBannerPeriod = date <= bannerEnd && date >= today;
       const daysSinceToday = Math.max(0, Math.floor((date - today) / 86400000));
-      const cumulativeAstrite = isPast ? 0 : dailyIncome * (daysSinceToday + 1) + planData.currentAstrite;
-      const cumulativeConvenes = Math.floor(cumulativeAstrite / ASTRITE_PER_PULL);
+      // Earned convenes only — don't include current Astrite
+      const earnedAstrite = isPast ? 0 : dailyIncome * (daysSinceToday + (isToday ? 0 : 1));
+      const earnedConvenes = Math.floor(earnedAstrite / ASTRITE_PER_PULL);
+      const events = !isPast ? getDayEvents(date, eventStatus) : [];
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const note = calendarNotes?.[dateKey] || '';
 
-      days.push({ day: d, date, isPast, isToday, isBannerPeriod, cumulativeAstrite, cumulativeConvenes, dailyIncome: isPast ? 0 : dailyIncome });
+      days.push({ day: d, date, dateKey, isPast, isToday, isBannerPeriod, earnedAstrite, earnedConvenes, events, note });
     }
 
     const monthName = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     return { year, month, firstDay, daysInMonth, days, monthName };
-  }, [monthOffset, dailyIncome, bannerEndDate, planData.currentAstrite]);
+  }, [monthOffset, dailyIncome, bannerEndDate, eventStatus, calendarNotes]);
+
+  const handleDayClick = useCallback((d) => {
+    if (d.isPast) return;
+    if (selectedDay === d.dateKey) { setSelectedDay(null); return; }
+    setSelectedDay(d.dateKey);
+    setNoteInput(d.note);
+  }, [selectedDay]);
+
+  const saveNote = useCallback(() => {
+    if (selectedDay && onSetNote) {
+      onSetNote(selectedDay, noteInput.trim());
+    }
+    setSelectedDay(null);
+    setNoteInput('');
+  }, [selectedDay, noteInput, onSetNote]);
 
   const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
@@ -62,7 +118,9 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners }
           <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Previous month">
             <ChevronLeft size={16} />
           </button>
-          <span className="text-gray-200 text-sm font-medium">{calendarData.monthName}</span>
+          <button onClick={() => setMonthOffset(0)} className="text-gray-200 text-sm font-medium hover:text-yellow-400 transition-colors" aria-label="Go to current month">
+            {calendarData.monthName}
+          </button>
           <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Next month">
             <ChevronRight size={16} />
           </button>
@@ -77,43 +135,111 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners }
 
         {/* Calendar grid */}
         <div className="grid grid-cols-7 gap-0.5">
-          {/* Empty cells for days before the 1st */}
           {Array.from({ length: calendarData.firstDay }, (_, i) => (
             <div key={`empty-${i}`} className="aspect-square" />
           ))}
-          {/* Day cells */}
           {calendarData.days.map(d => {
-            const bgClass = d.isToday
-              ? 'bg-yellow-500/20 border-yellow-500/50'
-              : d.isBannerPeriod
-                ? 'bg-cyan-500/8 border-cyan-500/20'
-                : d.isPast
-                  ? 'bg-white/2 border-transparent'
-                  : 'bg-white/5 border-[var(--border-subtle)]';
+            const conveneColor = d.earnedConvenes > 0 ? getConveneColor(d.earnedConvenes) : null;
+            const isSelected = selectedDay === d.dateKey;
+            const hasNote = !!d.note;
+            const hasEvents = d.events.length > 0;
             return (
-              <div
+              <button
                 key={d.day}
-                className={`aspect-square rounded border p-0.5 flex flex-col items-center justify-center relative ${bgClass}`}
-                title={d.isPast ? `Day ${d.day}` : `Day ${d.day}: ${d.cumulativeAstrite.toLocaleString('en-US')} Astrite (${d.cumulativeConvenes} Convenes)`}
+                type="button"
+                onClick={() => handleDayClick(d)}
+                disabled={d.isPast}
+                className={`aspect-square rounded border p-0.5 flex flex-col items-center justify-center relative transition-all ${
+                  isSelected ? 'border-yellow-400 ring-1 ring-yellow-400/50'
+                  : d.isToday ? 'border-yellow-500/60'
+                  : d.isBannerPeriod ? 'border-cyan-500/30'
+                  : d.isPast ? 'border-transparent'
+                  : 'border-[var(--border-subtle)]'
+                }`}
+                style={{
+                  background: d.isToday ? 'rgba(237,175,24,0.15)'
+                    : d.isBannerPeriod && conveneColor ? `${conveneColor}12`
+                    : d.isPast ? 'rgba(255,255,255,0.02)'
+                    : 'rgba(255,255,255,0.03)',
+                }}
+                title={d.isPast ? `Day ${d.day}` : `Day ${d.day}: +${d.earnedAstrite.toLocaleString('en-US')} Astrite (${d.earnedConvenes} Convenes earned)${d.note ? `\n📝 ${d.note}` : ''}`}
               >
-                <span className={`text-[10px] leading-none ${d.isToday ? 'text-yellow-400 font-bold' : d.isPast ? 'text-gray-600' : 'text-gray-300'}`}>
+                {/* Day number */}
+                <span className={`text-[10px] leading-none font-medium ${d.isToday ? 'text-yellow-400' : d.isPast ? 'text-gray-600' : 'text-gray-300'}`}>
                   {d.day}
                 </span>
-                {!d.isPast && dailyIncome > 0 && (
-                  <span className={`text-[7px] leading-none mt-0.5 kuro-number ${d.isToday ? 'text-yellow-500' : d.isBannerPeriod ? 'text-cyan-400' : 'text-gray-500'}`}>
-                    {d.cumulativeConvenes}
+                {/* Earned convenes with pity-style color */}
+                {!d.isPast && dailyIncome > 0 && d.earnedConvenes > 0 && (
+                  <span className="text-[7px] leading-none mt-0.5 kuro-number font-bold" style={{ color: conveneColor }}>
+                    {d.earnedConvenes}
                   </span>
                 )}
-              </div>
+                {/* Event dot indicators */}
+                {hasEvents && (
+                  <div className="flex gap-px mt-px">
+                    {d.events.slice(0, 3).map((ev, i) => (
+                      <span key={i} className="w-1 h-1 rounded-full" style={{ background: ev.color }} />
+                    ))}
+                  </div>
+                )}
+                {/* Note indicator */}
+                {hasNote && <span className="absolute top-0 right-0.5 text-[6px] leading-none">📝</span>}
+              </button>
             );
           })}
         </div>
 
+        {/* Selected day detail + note editor */}
+        {selectedDay && (() => {
+          const d = calendarData.days.find(dd => dd.dateKey === selectedDay);
+          if (!d) return null;
+          return (
+            <div className="p-3 rounded-lg border border-yellow-500/30" style={{ background: 'var(--bg-elevated)' }}>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <div className="text-gray-200 text-xs font-medium">{d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</div>
+                  {d.earnedConvenes > 0 && (
+                    <div className="text-[10px] mt-0.5">
+                      <span style={{ color: getConveneColor(d.earnedConvenes) }} className="kuro-number font-bold">{d.earnedConvenes}</span>
+                      <span className="text-gray-400"> Convenes earned by this day</span>
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => setSelectedDay(null)} className="text-gray-500 text-xs p-1">✕</button>
+              </div>
+              {/* Events for this day */}
+              {d.events.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {d.events.map((ev, i) => (
+                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded-full border" style={{ color: ev.color, borderColor: `${ev.color}40`, background: `${ev.color}10` }}>
+                      {ev.label}{ev.astrite ? ` +${ev.astrite}` : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Note input */}
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={noteInput}
+                  onChange={e => setNoteInput(e.target.value.slice(0, 50))}
+                  onKeyDown={e => { if (e.key === 'Enter') saveNote(); }}
+                  placeholder="Add a note..."
+                  className="kuro-input flex-1 text-[10px] py-1.5 px-2"
+                  aria-label="Calendar day note"
+                />
+                <button onClick={saveNote} className="kuro-btn text-[10px] px-2 py-1 active-gold">Save</button>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Legend */}
-        <div className="flex items-center gap-3 justify-center text-[9px] text-gray-500 pt-1">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-yellow-500/30" /> Today</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-cyan-500/15 border border-cyan-500/30" /> Banner period</span>
-          <span className="flex items-center gap-1"><span className="text-[8px] kuro-number text-gray-400">42</span> Cumulative Convenes</span>
+        <div className="flex items-center gap-3 justify-center text-[9px] text-gray-500 pt-1 flex-wrap">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{ background: 'rgba(237,175,24,0.2)', border: '1px solid rgba(237,175,24,0.5)' }} /> Today</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-cyan-500/10 border border-cyan-500/30" /> Banner</span>
+          <span className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-yellow-400" /><span className="w-1 h-1 rounded-full bg-purple-400" /> Events</span>
+          <span className="flex items-center gap-1"><span className="text-[8px]">📝</span> Note</span>
         </div>
 
         {/* Month summary */}
@@ -143,6 +269,20 @@ export default function PlannerTab({
   confirm,
 }) {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
+  // Calendar notes stored in localStorage
+  const [calendarNotes, setCalendarNotes] = useState(() => {
+    try { const v = localStorage.getItem('ww-calendar-notes'); return v ? JSON.parse(v) : {}; } catch { return {}; }
+  });
+  const handleSetNote = useCallback((dateKey, note) => {
+    setCalendarNotes(prev => {
+      const next = { ...prev };
+      if (note) next[dateKey] = note; else delete next[dateKey];
+      try { localStorage.setItem('ww-calendar-notes', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+  // Collapsible card state
+  const [collapsed, setCollapsed] = useState({});
 
   const dailyIncome = useMemo(() => {
     return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
@@ -191,7 +331,7 @@ export default function PlannerTab({
       <TabBackground id="planner" />
 
       {/* 1. Astrite Income Calendar — visual overview of daily income accumulation */}
-      <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} />
+      <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} />
 
       {/* 2. Daily Income — set the rate that drives everything */}
       <Card>
