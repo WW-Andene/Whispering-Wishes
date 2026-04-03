@@ -46,14 +46,15 @@ import { AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton } from './shared
 import { BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour } from './shared/backgrounds/Backgrounds.jsx';
 import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // --- Feature tabs ---
+// D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting
 import EventsTab from './features/events/EventsTab.jsx';
 import TrackerTab from './features/tracker/TrackerTab.jsx';
-import PlannerTab from './features/planner/PlannerTab.jsx';
-import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
-import CalculatorTab from './features/calculator/CalculatorTab.jsx';
-import CollectionTab from './features/collection/CollectionTab.jsx';
-import TeamsTab from './features/teams/TeamsTab.jsx';
-import ProfileTab from './features/profile/ProfileTab.jsx';
+const PlannerTab = React.lazy(() => import('./features/planner/PlannerTab.jsx'));
+const AnalyticsTab = React.lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
+const CalculatorTab = React.lazy(() => import('./features/calculator/CalculatorTab.jsx'));
+const CollectionTab = React.lazy(() => import('./features/collection/CollectionTab.jsx'));
+const TeamsTab = React.lazy(() => import('./features/teams/TeamsTab.jsx'));
+const ProfileTab = React.lazy(() => import('./features/profile/ProfileTab.jsx'));
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 // 8.1 fix: Fetch wrapper with AbortController timeout - fails fast on network loss
@@ -79,15 +80,7 @@ const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 const MAX_USERNAME_LENGTH = 24;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
 const ADMIN_SALT = 'whispering-wishes-v3-admin';
-const constantTimeCompare = (a, b) => {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-};
+import { constantTimeCompare } from './utils/constantTimeCompare.js'; // I4-01: deduplicated
 const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
@@ -225,6 +218,9 @@ function WhisperingWishesInner() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showServerDropdown, setShowServerDropdown] = useState(false);
+  // Admin panel state lifted to App so mini panel survives tab switches
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminMiniMode, setAdminMiniMode] = useState(false);
 
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
@@ -648,7 +644,7 @@ function WhisperingWishesInner() {
 
   // Cache-busting for images (version-based, only refreshes on manual refresh)
   // Initial value is an arbitrary version token; replaced with Date.now() on manual refresh
-  const [imageCacheBuster, setImageCacheBuster] = useState('v3.2.2');
+  const [imageCacheBuster, setImageCacheBuster] = useState(APP_VERSION);
   const refreshImages = useCallback(() => {
     setImageCacheBuster(String(Date.now()));
     // Also clear SW image cache
@@ -1119,12 +1115,34 @@ function WhisperingWishesInner() {
         if (!doRestore) return;
         dispatch({ type: 'LOAD_STATE', state: data.state });
         // Restore auxiliary data (visual settings, team equipment, etc.)
-        if (data.aux) {
-          try { if (data.aux.visualSettings) localStorage.setItem('whispering-wishes-visual', JSON.stringify(data.aux.visualSettings)); } catch {}
-          try { if (data.aux.imageFraming) localStorage.setItem('whispering-wishes-framing', JSON.stringify(data.aux.imageFraming)); } catch {}
-          try { if (data.aux.collectionImages) localStorage.setItem('whispering-wishes-images', JSON.stringify(data.aux.collectionImages)); } catch {}
-          try { if (data.aux.trophyOverrides) localStorage.setItem('whispering-wishes-trophy-overrides', JSON.stringify(data.aux.trophyOverrides)); } catch {}
-          try { if (data.aux.teamEquipment) localStorage.setItem('ww-team-equipment', JSON.stringify(data.aux.teamEquipment)); } catch {}
+        // B4-01: Use correct constant keys (was writing to wrong hardcoded keys)
+        // B4-02: Sanitize aux data to match restore flow (App.jsx:1826-1842)
+        if (data.aux && typeof data.aux === 'object') {
+          try {
+            if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+              localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+              setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+            }
+            if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+              localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+              setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+            }
+            if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+              localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+              setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+            }
+            if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+              localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+              setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+            }
+            if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
+              localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+            }
+            // U6-01: Restore calendar notes from backup (import path)
+            if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+              localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
+            }
+          } catch {}
         }
         toast?.addToast?.(`Backup restored! (v${data.version || '?'}, ${data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'unknown date'})`, 'success');
         return;
@@ -1301,7 +1319,8 @@ function WhisperingWishesInner() {
       // P12-FIX: Check storage capacity after import (Step 14 audit - LOW-10a)
       if (storageAvailable) {
         try {
-          const currentSize = (localStorage.getItem(STORAGE_KEY) || '').length;
+          const stored = localStorage.getItem(STORAGE_KEY) || '';
+          const currentSize = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(stored).length : stored.length * 2;
           if (currentSize > STORAGE_WARNING_THRESHOLD) {
             toast?.addToast?.(`Storage at ${(currentSize / 1024 / 1024).toFixed(1)}MB of ~5MB. Consider exporting a backup.`, 'warning');
           }
@@ -1309,8 +1328,11 @@ function WhisperingWishesInner() {
       }
       
       return true;
-    } catch (err) { 
-      toast?.addToast?.('Import failed: ' + err.message, 'error'); 
+    } catch (err) {
+      // F4-01: Show user-friendly message; hide raw JS errors (TypeError, ReferenceError)
+      const isUserError = err instanceof SyntaxError || err.message?.startsWith?.('Import') || err.message?.startsWith?.('Invalid') || err.message?.startsWith?.('No ');
+      const msg = isUserError ? err.message : 'Could not process this file. Please check the format and try again.';
+      toast?.addToast?.('Import failed: ' + msg, 'error');
       return false;
     }
   }, [toast, dispatch, IMPORT_NAME_ALIASES]);
@@ -1323,6 +1345,8 @@ function WhisperingWishesInner() {
     try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
     try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
     try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
+    // U6-01: Include calendar notes in backup
+    try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
     const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state, ...(Object.keys(aux).length > 0 ? { aux } : {}) };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
@@ -1596,8 +1620,9 @@ function WhisperingWishesInner() {
         )}
 
 
-        {/* [SECTION:TAB-PROFILE] */}
-        {activeTab === 'profile' && (
+        {/* [SECTION:TAB-PROFILE] — keep mounted when admin mini panel is open so portal survives tab switches */}
+        {(activeTab === 'profile' || (showAdminPanel && adminMiniMode)) && (
+          <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Profile">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ProfileTab
@@ -1639,9 +1664,14 @@ function WhisperingWishesInner() {
             firebaseUrl={firebaseUrl}
             setActiveTab={setActiveTab}
             withCacheBuster={withCacheBuster}
+            showAdminPanel={showAdminPanel}
+            setShowAdminPanel={setShowAdminPanel}
+            adminMiniMode={adminMiniMode}
+            setAdminMiniMode={setAdminMiniMode}
           />
             </React.Suspense>
           </TabErrorBoundary>
+          </div>
         )}
 
       </main>
@@ -1830,6 +1860,10 @@ function WhisperingWishesInner() {
                         }
                         if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
                           localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+                        }
+                        // U6-01: Restore calendar notes from backup
+                        if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+                          localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
                         }
                       } catch {}
                     }

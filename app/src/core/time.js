@@ -59,7 +59,8 @@ const getRecurringEventEnd = (currentEnd, resetType, server) => {
   if (!match) return adjusted;
   const cycleMs = parseInt(match[1], 10) * 86400000;
   if (cycleMs <= 0) return adjusted; // P9-FIX: guard zero/negative cycle (LOW-5d)
-  const cycles = Math.ceil((now - end) / cycleMs);
+  // Use floor+1 to ensure next cycle end is strictly in the future (A3-01)
+  const cycles = Math.floor((now - end) / cycleMs) + 1;
   return new Date(end + cycles * cycleMs).toISOString();
 };
 

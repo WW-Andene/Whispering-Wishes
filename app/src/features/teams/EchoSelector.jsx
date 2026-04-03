@@ -6,6 +6,7 @@ import { haptic } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { EchoImage } from '../../shared/components/EchoImage.jsx';
 
 export default function EchoSelector({
   echoSelectorOpen,
@@ -169,7 +170,7 @@ export default function EchoSelector({
                             <div className="flex items-center gap-2">
                               {collectionImages[name] ? (
                                 <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
-                                  <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                  <EchoImage src={collectionImages[name]} alt={name} className="w-full h-full object-contain" noBgProcess={ECHO_DATA[name]?.noBgProcess} />
                                 </div>
                               ) : (
                                 <Diamond size={14} className={isRec ? 'text-orange-400' : `text-${costColor}-400`} />
@@ -270,7 +271,7 @@ export default function EchoSelector({
                   <div className="flex items-center gap-2 min-w-0">
                     {collectionImages[echoName] ? (
                       <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
-                        <img src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain" onError={hideOnError} />
+                        <EchoImage src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain" noBgProcess={ECHO_DATA[echoName]?.noBgProcess} />
                       </div>
                     ) : (
                       <Diamond size={16} className={`text-${costColor}-400`} />

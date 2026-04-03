@@ -151,7 +151,7 @@ const KuroStyles = memo(({ oledMode }) => (
       --element-spectro: #edaf18;
       /* Rarity colors */
       --rarity-5star: rgba(var(--color-gold), 1);
-      --rarity-4star: rgba(var(--color-purple), 1);
+      --rarity-4star: var(--accent-purple); /* G1-01: use lighter purple (#c084fc ~5.1:1) for AA text contrast */
       /* State colors — CL-F2 + MED-11 */
       --state-error: #f87171;   /* oklch(68% 0.18 15°) */
       --state-success: #2dd4bf; /* oklch(72% 0.16 170°) */
@@ -651,6 +651,9 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-header-action {
       position: relative;
       z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
     /* Utility class for content layering above backgrounds */
@@ -1942,15 +1945,15 @@ const KuroStyles = memo(({ oledMode }) => (
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Breathing zoom on character images ── */
+    /* ── Breathing zoom — only active on FULL animation mode ── */
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.03); }
     }
-    .breath-zoom {
+    .animations-full .breath-zoom {
       animation: breathZoom 5s ease-in-out infinite !important;
     }
-    .collection-card .collection-img-wrap {
+    .animations-full .collection-card .collection-img-wrap {
       animation: breathZoom 6s ease-in-out infinite !important;
     }
 

@@ -46,15 +46,7 @@ const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 const currentYear = new Date().getFullYear();
 import { silentCatch } from '../../utils/silentCatch.js';
-const constantTimeCompare = (a, b) => {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-};
+import { constantTimeCompare } from '../../utils/constantTimeCompare.js'; // I4-01: deduplicated
 const isAllowedImageUrl = (url) => {
   if (!url || typeof url !== 'string') return false;
   try {
@@ -121,20 +113,21 @@ export default function ProfileTab({
   setActiveTab,
   // Cache busting (for admin collection images)
   withCacheBuster,
+  // Admin panel state (lifted to App.jsx so mini panel survives tab switches)
+  showAdminPanel, setShowAdminPanel,
+  adminMiniMode, setAdminMiniMode,
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
-  // ── Admin state ──────────────────────────────────────────────────────────
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  // ── Admin state (showAdminPanel + adminMiniMode from props — survives tab switches) ──
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminTapCount, setAdminTapCount] = useState(0);
   const adminTapTimerRef = useRef(null);
   const adminTapCountRef = useRef(0);
   const [adminTab, setAdminTab] = useState('banners');
-  const [adminMiniMode, setAdminMiniMode] = useState(false);
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
       // Check permanent ban

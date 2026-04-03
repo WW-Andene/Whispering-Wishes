@@ -1,6 +1,12 @@
 node_modules/
 dist/
 
+# Environment files (secrets, API keys)
+.env
+.env.local
+app/.env
+app/.env.local
+
 # Agent runtime memory (local to each environment)
 agent/.memory.json
 agent/node_modules/

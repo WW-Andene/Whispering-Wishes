@@ -68,7 +68,7 @@ const calculateLuckRating = (avgPity, numFiveStars) => {
   // Color scale: white < green < blue < purple < gold
   if (percentile >= 90) return { rating: 'Arbiter', color: '#edaf18', tier: 'S', percentile };
   if (percentile >= 70) return { rating: 'Sentinel', color: '#a855f7', tier: 'A', percentile };
-  if (percentile >= 40) return { rating: 'Resonator', color: '#3b82f6', tier: 'B', percentile };
+  if (percentile >= 40) return { rating: 'Resonator', color: '#60a5fa', tier: 'B', percentile };
   if (percentile >= 20) return { rating: 'Drifter', color: '#22c55e', tier: 'C', percentile };
   return { rating: 'Civilian', color: '#e8ecf2', tier: 'D', percentile };
 };
@@ -87,7 +87,7 @@ const ELEMENT_COLORS = {
   Heal:    { hex: '#22c55e', bg: 'rgba(34,197,94,0.15)',  border: 'rgba(34,197,94,0.4)' },
   Support: { hex: '#60a5fa', bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.4)' },
   ATK:     { hex: '#ef4444', bg: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.4)' },
-  Shield:  { hex: '#3b82f6', bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.4)' },
+  Shield:  { hex: '#60a5fa', bg: 'rgba(96,165,250,0.15)', border: 'rgba(96,165,250,0.4)' },
   Physical:{ hex: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: 'rgba(148,163,184,0.4)' },
 };
 const getElementColor = (el) => ELEMENT_COLORS[el]?.hex || '#6b7280';

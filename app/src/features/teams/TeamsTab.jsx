@@ -91,7 +91,7 @@ export default function TeamsTab({
 
               const removeFromSlot = async (slotIdx) => {
                 const charName = teamSlots[slotIdx];
-                if (await confirm?.({ title: 'Remove character', message: `Remove ${charName || 'this character'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
+                if (await confirm?.({ title: 'Remove Resonator', message: `Remove ${charName || 'this Resonator'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
                   dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
                   haptic.light();
                 }
@@ -242,7 +242,9 @@ export default function TeamsTab({
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
                             if (!slots.some(s => s)) return;
                             if (teamCompareEntries.length >= 5) return;
-                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: structuredClone(slots), teamIdx: state.activeTeamIndex }]);
+                            // H1-01: fallback for browsers without structuredClone (Safari <15.4)
+                            const clonedSlots = typeof structuredClone === 'function' ? structuredClone(slots) : JSON.parse(JSON.stringify(slots));
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: clonedSlots, teamIdx: state.activeTeamIndex }]);
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
@@ -253,7 +255,7 @@ export default function TeamsTab({
                           + Compare
                         </button>
                         <button
-                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all characters from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
+                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
                           className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >

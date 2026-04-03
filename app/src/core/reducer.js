@@ -195,7 +195,8 @@ const reducer = (state, action) => {
       const deduplicateMerge = (existing, incoming) => {
         if (!Array.isArray(incoming) || incoming.length === 0) return existing || [];
         if (!Array.isArray(existing) || existing.length === 0) return incoming;
-        const makeKey = (p) => JSON.stringify([p.timestamp || '', p.name || '', p.rarity || '', p.id || '']);
+        // B4-03: Use ms-precision timestamp in dedup key to reduce collision risk
+        const makeKey = (p) => JSON.stringify([p.id || '', new Date(p.timestamp || 0).getTime(), p.name || '', p.rarity || '']);
         const existingKeys = new Set(existing.map(makeKey));
         const newEntries = incoming.filter(p => !existingKeys.has(makeKey(p)));
         if (newEntries.length === 0) return existing; // All duplicates

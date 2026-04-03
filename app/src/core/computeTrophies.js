@@ -84,7 +84,7 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     if (all4ResOwned) list.push({ id: '4res', name: 'Sonata Effect', desc: 'All 4★ Resonators in your roster', icon: 'Heart', color: '#a855f7', tier: 'purple' });
     if (all5WeapOwned) list.push({ id: '5weap', name: 'Forgemaster', desc: 'All 5★ Weapons acquired', icon: 'Swords', color: '#ec4899', tier: 'gold' });
     if (all4WeapOwned) list.push({ id: '4weap', name: 'Armory of Jinzhou', desc: 'All 4★ Weapons in your arsenal', icon: 'Sword', color: '#a855f7', tier: 'purple' });
-    if (all3WeapOwned) list.push({ id: '3weap', name: 'Data Bank: Full', desc: 'Every 3★ Weapon catalogued', icon: 'Shield', color: '#3b82f6', tier: 'blue' });
+    if (all3WeapOwned) list.push({ id: '3weap', name: 'Data Bank: Full', desc: 'Every 3★ Weapon catalogued', icon: 'Shield', color: '#60a5fa', tier: 'blue' });
     
     // ═══ LUCK TROPHIES ═══
     if (earliest5Star === 1) list.push({ id: 'pity1', name: 'Pity 1. Screenshot or Fake.', desc: '5★ on the first Convene. nobody believes you', icon: 'Crown', color: '#edaf18', tier: 'legendary' });
@@ -145,9 +145,9 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     else if (isWhale) list.push({ id: 'whale', name: 'Kuro Employee of the Month', desc: '1000+ Convenes - they know you by name', icon: 'Fish', color: '#06b6d4', tier: 'cyan' });
     else if (totalPulls >= 750) list.push({ id: '750', name: 'Terminal Stage', desc: '750+ Convenes - the Lament hit your wallet', icon: 'Fish', color: '#a855f7', tier: 'purple' });
     else if (totalPulls >= 500) list.push({ id: '500', name: 'Down the Rabbit Hole', desc: '500+ Convenes - no turning back', icon: 'Diamond', color: '#a855f7', tier: 'purple' });
-    else if (totalPulls >= 300) list.push({ id: '300', name: 'Sunk Cost Fallacy', desc: '300+ Convenes - too deep to quit, too broke to continue', icon: 'Diamond', color: '#3b82f6', tier: 'blue' });
-    else if (totalPulls >= 200) list.push({ id: '200', name: 'Rover\'s Allowance: Gone', desc: '200+ Convenes - emotionally and financially invested', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
-    else if (totalPulls >= 100) list.push({ id: '100', name: 'First Steps', desc: '100+ Convenes', icon: 'Gamepad2', color: '#3b82f6', tier: 'blue' });
+    else if (totalPulls >= 300) list.push({ id: '300', name: 'Sunk Cost Fallacy', desc: '300+ Convenes - too deep to quit, too broke to continue', icon: 'Diamond', color: '#60a5fa', tier: 'blue' });
+    else if (totalPulls >= 200) list.push({ id: '200', name: 'Rover\'s Allowance: Gone', desc: '200+ Convenes - emotionally and financially invested', icon: 'Gamepad2', color: '#60a5fa', tier: 'blue' });
+    else if (totalPulls >= 100) list.push({ id: '100', name: 'First Steps', desc: '100+ Convenes', icon: 'Gamepad2', color: '#60a5fa', tier: 'blue' });
     
     // 5★ count milestones
     const total5Stars = all5Stars.length;
@@ -156,8 +156,8 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     else if (total5Stars >= 50) list.push({ id: '50stars', name: 'Addicted', desc: `${total5Stars} five-stars obtained - this is a problem`, icon: 'Star', color: '#edaf18', tier: 'gold' });
     else if (total5Stars >= 35) list.push({ id: '35stars', name: 'Tacet Discord Hoarder', desc: `${total5Stars} five-stars obtained - your roster IS the Tacet Discord`, icon: 'Star', color: '#a855f7', tier: 'purple' });
     else if (total5Stars >= 25) list.push({ id: '25stars', name: 'Stargazer', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#a855f7', tier: 'purple' });
-    else if (total5Stars >= 15) list.push({ id: '15stars', name: 'Sequence Node: Farming', desc: `${total5Stars} five-stars obtained - the grind is real`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
-    else if (total5Stars >= 10) list.push({ id: '10stars', name: 'Rising Star', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#3b82f6', tier: 'blue' });
+    else if (total5Stars >= 15) list.push({ id: '15stars', name: 'Sequence Node: Farming', desc: `${total5Stars} five-stars obtained - the grind is real`, icon: 'Star', color: '#60a5fa', tier: 'blue' });
+    else if (total5Stars >= 10) list.push({ id: '10stars', name: 'Rising Star', desc: `${total5Stars} five-stars obtained`, icon: 'Star', color: '#60a5fa', tier: 'blue' });
     else if (total5Stars >= 5) list.push({ id: '5stars', name: 'First Expedition', desc: `${total5Stars} five-stars obtained - your team is forming`, icon: 'Star', color: '#22c55e', tier: 'green' });
 
     // First 5★
@@ -166,7 +166,7 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     // Banner diversity - pulled on multiple banner types
     const bannerTypesUsed = [featuredHist, weaponHist, stdCharHist, stdWeapHist].filter(h => h.length > 0).length;
     if (bannerTypesUsed >= 4) list.push({ id: 'diverse', name: 'Pioneer Podcast', desc: 'Convened on all banner types', icon: 'Trophy', color: '#06b6d4', tier: 'cyan' });
-    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Pioneer Intern', desc: 'Convened on 3 different banner types - almost a real Pioneer', icon: 'Trophy', color: '#3b82f6', tier: 'blue' });
+    else if (bannerTypesUsed === 3) list.push({ id: 'diverse3', name: 'Pioneer Intern', desc: 'Convened on 3 different banner types - almost a real Pioneer', icon: 'Trophy', color: '#60a5fa', tier: 'blue' });
 
     // ═══ CHARACTER OWNERSHIP PROGRESSION ═══
     const owned5Count = owned5StarChars.size;
@@ -174,14 +174,14 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     else if (owned5Count >= 25) list.push({ id: 'own25', name: 'Sonata Library: Full', desc: `${owned5Count} unique 5★ Resonators - you ARE the tier list`, icon: 'Crown', color: '#edaf18', tier: 'gold' });
     else if (owned5Count >= 20) list.push({ id: 'own20', name: 'Jinzhou Housing Crisis', desc: `${owned5Count} unique 5★ Resonators - where do they all sleep`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
     else if (owned5Count >= 15) list.push({ id: 'own15', name: 'Forte Circuit Overload', desc: `${owned5Count} unique 5★ Resonators - too many builds to farm`, icon: 'Sparkles', color: '#a855f7', tier: 'purple' });
-    else if (owned5Count >= 10) list.push({ id: 'own10', name: 'Union Level: Whale', desc: `${owned5Count} unique 5★ Resonators - the roster is stacked`, icon: 'Sparkles', color: '#3b82f6', tier: 'blue' });
+    else if (owned5Count >= 10) list.push({ id: 'own10', name: 'Union Level: Whale', desc: `${owned5Count} unique 5★ Resonators - the roster is stacked`, icon: 'Sparkles', color: '#60a5fa', tier: 'blue' });
     else if (owned5Count >= 5) list.push({ id: 'own5', name: 'First Expedition Team', desc: `${owned5Count} unique 5★ Resonators - your party is forming`, icon: 'Sparkles', color: '#22c55e', tier: 'green' });
 
     // ═══ WEAPON OWNERSHIP PROGRESSION ═══
     const owned5WeapCount = owned5StarWeaps.size;
     if (owned5WeapCount >= 20) list.push({ id: 'weap20', name: 'Forgery Domain Resident', desc: `${owned5WeapCount} unique 5★ Weapons - open a museum in Jinzhou`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
     else if (owned5WeapCount >= 15) list.push({ id: 'weap15', name: 'Sonance Casket: Stuffed', desc: `${owned5WeapCount} unique 5★ Weapons - inventory management simulator`, icon: 'Swords', color: '#a855f7', tier: 'purple' });
-    else if (owned5WeapCount >= 10) list.push({ id: 'weap10', name: 'Pioneer\'s Arsenal', desc: `${owned5WeapCount} unique 5★ Weapons - a blade for every occasion`, icon: 'Swords', color: '#3b82f6', tier: 'blue' });
+    else if (owned5WeapCount >= 10) list.push({ id: 'weap10', name: 'Pioneer\'s Arsenal', desc: `${owned5WeapCount} unique 5★ Weapons - a blade for every occasion`, icon: 'Swords', color: '#60a5fa', tier: 'blue' });
     else if (owned5WeapCount >= 5) list.push({ id: 'weap5', name: 'Tacet Field Sweep', desc: `${owned5WeapCount} unique 5★ Weapons - the field has been cleared`, icon: 'Sword', color: '#22c55e', tier: 'green' });
     else if (owned5WeapCount >= 3) list.push({ id: 'weap3', name: 'First Forgery Run', desc: `${owned5WeapCount} unique 5★ Weapons - your collection begins`, icon: 'Sword', color: '#22c55e', tier: 'green' });
 
@@ -266,7 +266,7 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     // Weapon banner pull volume
     const weapBannerPulls = weaponHist.length;
     if (weapBannerPulls >= 500) list.push({ id: 'weapvol5', name: 'Weapon Banner Prisoner', desc: `${weapBannerPulls} weapon banner Convenes - this is a lifestyle choice`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
-    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner Convenes -"it's a DPS increase bro"`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+    else if (weapBannerPulls >= 200) list.push({ id: 'weapvol2', name: 'Signature Cope', desc: `${weapBannerPulls} weapon banner Convenes -"it's a DPS increase bro"`, icon: 'Sword', color: '#60a5fa', tier: 'blue' });
 
     // More weapon Convenes than character Convenes
     if (weapBannerPulls > 0 && featuredHist.length > 0 && weapBannerPulls > featuredHist.length) {
@@ -423,7 +423,7 @@ export function computeTrophies(profile, overallStats, trophyOverrides) {
     const sigCount = sigPairs.filter(([char, weap]) => owned5StarChars.has(char) && owned5StarWeaps.has(weap)).length;
     if (sigCount >= 10) list.push({ id: 'sig10', name: 'Tuning Complete', desc: `${sigCount} characters with their signature - peak Forte optimization`, icon: 'Swords', color: '#edaf18', tier: 'gold' });
     else if (sigCount >= 5) list.push({ id: 'sig5', name: 'Forte Synergy', desc: `${sigCount} characters with their signature weapon - built different`, icon: 'Sword', color: '#a855f7', tier: 'purple' });
-    else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Echo Equipped', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#3b82f6', tier: 'blue' });
+    else if (sigCount >= 3) list.push({ id: 'sig3', name: 'Echo Equipped', desc: `${sigCount} characters with their signature weapon`, icon: 'Sword', color: '#60a5fa', tier: 'blue' });
     else if (sigCount >= 1) list.push({ id: 'sig1', name: 'Signature Acquired', desc: 'Convened a character and their signature weapon - BiS secured', icon: 'Sword', color: '#22c55e', tier: 'green' });
 
     // Speedrun - won 50/50 at low pity (<25)

@@ -9,6 +9,7 @@ import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { EchoImage } from '../../shared/components/EchoImage.jsx';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -997,7 +998,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     }}
                                   >
                                     {echoName && collectionImages[echoName] ? (
-                                      <img src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                      <EchoImage src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain rounded-lg" noBgProcess={ECHO_DATA[echoName]?.noBgProcess} />
                                     ) : echoName ? (
                                       <>
                                         <Diamond size={12} className={`text-${costColor}-400`} />
