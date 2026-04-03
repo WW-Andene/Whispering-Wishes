@@ -31,24 +31,31 @@ const EVENT_COLORS = {
 };
 const BANNER_COLOR = '#edaf18';  // gold
 
+// Derive event start date from resetType for accurate date ranges
+const getEventStart = (ev) => {
+  if (!ev.currentEnd) return null;
+  const end = new Date(ev.currentEnd);
+  if (ev.resetType === '28 days') return new Date(end.getTime() - 28 * 86400000);
+  // 'Version update' events: started when current game version launched
+  return BANNER_HISTORY.length > 0 ? new Date(BANNER_HISTORY[0].startDate) : new Date();
+};
+
 const getActiveEvents = (date) => {
   const result = [];
-  const dow = date.getDay();
-  const monday = new Date(date);
-  monday.setDate(date.getDate() - ((dow + 6) % 7));
-  monday.setHours(0, 0, 0, 0);
-  if (monday <= date) {
-    for (const [key, ev] of Object.entries(EVENTS)) {
-      if (!ev.weeklyReset || !ev.rewards) continue;
-      const color = EVENT_COLORS[key];
-      if (!color) continue;
-      const a = parseInt(ev.rewards, 10) || 0;
-      result.push({ key, name: ev.name, astrite: a, color });
-    }
+  // Weekly events are always active
+  for (const [key, ev] of Object.entries(EVENTS)) {
+    if (!ev.weeklyReset || !ev.rewards) continue;
+    const color = EVENT_COLORS[key];
+    if (!color) continue;
+    const a = parseInt(ev.rewards, 10) || 0;
+    result.push({ key, name: ev.name, astrite: a, color });
   }
+  // Non-weekly events: check if date falls within derived start→end range
   for (const [key, ev] of Object.entries(EVENTS)) {
     if (ev.dailyReset || ev.weeklyReset || !ev.currentEnd) continue;
-    if (date <= new Date(ev.currentEnd)) {
+    const evEnd = new Date(ev.currentEnd);
+    const evStart = getEventStart(ev);
+    if (date <= evEnd && (!evStart || date >= evStart)) {
       const color = EVENT_COLORS[key];
       if (!color) continue;
       const a = parseInt(ev.rewards, 10) || 0;
@@ -172,7 +179,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       }
     }
 
-    // Event bars — show all events, even ended ones
+    // Event bars — derive start dates from resetType for accuracy
     for (const [key, ev] of Object.entries(EVENTS)) {
       if (ev.dailyReset) continue;
       const color = EVENT_COLORS[key];
@@ -186,10 +193,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           const date = new Date(cal.year, cal.month, d);
           if (date.getDay() === 1) mondays.push(d - 1); // 0-indexed day position
         }
-        // Build week segments: each runs from Monday to next Monday-1 (or month end)
         const segments = [];
         const todayIdx = Math.floor((today - monthStart) / 86400000);
-        // First segment: month start → first Monday-1 (partial week)
         if (mondays.length > 0 && mondays[0] > 0) {
           const partialEnd = mondays[0] - 1;
           segments.push({ start: 0, end: partialEnd, isCurrent: todayIdx >= 0 && todayIdx <= partialEnd });
@@ -206,16 +211,17 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
       } else if (ev.currentEnd) {
         const evEnd = new Date(ev.currentEnd);
-        // Skip if event ended before this month starts
-        if (evEnd < monthStart) continue;
+        const evStart = getEventStart(ev) || monthStart;
+        // Skip if event doesn't overlap this month
+        if (evEnd < monthStart || evStart > monthEnd) continue;
         const ended = evEnd < today;
-        // Bar spans from month start (no startDate in data) to event end or month end
-        const eStart = 0;
+        const eStart = Math.max(0, Math.floor((evStart - monthStart) / 86400000));
         const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
         if (eEnd >= eStart) {
           const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const startLabel = evStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const daysLeft = ended ? undefined : Math.max(0, Math.ceil((evEnd - today) / 86400000));
-          bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended, endLabel, daysLeft });
+          bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft });
         }
       }
     }
@@ -381,7 +387,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               return null;
             })()}
             {chronoBars.map((bar) => {
-              const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.endLabel ? ` — ends ${bar.endLabel}` : ''}${bar.daysLeft != null ? ` — ${bar.daysLeft}d left` : ''}${bar.weekly ? ' (resets weekly Mon)' : ''}${bar.ended ? ' (ended)' : ''}`;
+              const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.startLabel && bar.endLabel ? ` — ${bar.startLabel} → ${bar.endLabel}` : bar.endLabel ? ` — ends ${bar.endLabel}` : ''}${bar.daysLeft != null ? ` (${bar.daysLeft}d left)` : ''}${bar.weekly ? ' (resets weekly Mon)' : ''}${bar.ended ? ' (ended)' : ''}`;
 
               // Weekly events: render segmented bars showing Mon-Sun reset boundaries
               if (bar.weekly && bar.segments) {
@@ -400,8 +406,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                           display: 'flex', alignItems: 'center', padding: '0 4px',
                           overflow: 'hidden', minWidth: '0',
                         }}>
-                          <span style={{ fontSize: '10px', color: bar.color, fontWeight: si === 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
-                            {si === 0 ? bar.label : (bar.astrite > 0 ? `+${bar.astrite}` : bar.label.split(' ')[0])}
+                          <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                            {bar.label}
                           </span>
                         </div>
                       );
@@ -428,7 +434,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
                     {bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
                     {bar.astrite > 0 && !bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
-                    {bar.endLabel && !bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>→{bar.endLabel}</span>}
+                    {bar.endLabel && !bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.startLabel ? `${bar.startLabel}→` : '→'}{bar.endLabel}</span>}
                     {bar.daysLeft != null && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
                   </div>
                 </div>
