@@ -1138,6 +1138,10 @@ function WhisperingWishesInner() {
             if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
               localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
             }
+            // U6-01: Restore calendar notes from backup (import path)
+            if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+              localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
+            }
           } catch {}
         }
         toast?.addToast?.(`Backup restored! (v${data.version || '?'}, ${data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'unknown date'})`, 'success');
@@ -1341,6 +1345,8 @@ function WhisperingWishesInner() {
     try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
     try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
     try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
+    // U6-01: Include calendar notes in backup
+    try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
     const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state, ...(Object.keys(aux).length > 0 ? { aux } : {}) };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
@@ -1854,6 +1860,10 @@ function WhisperingWishesInner() {
                         }
                         if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
                           localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+                        }
+                        // U6-01: Restore calendar notes from backup
+                        if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+                          localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
                         }
                       } catch {}
                     }

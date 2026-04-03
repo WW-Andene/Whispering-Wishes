@@ -3,7 +3,7 @@
 // Resource income planning and goal tracking
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
 import { EVENTS } from '../../data/banners.js';
@@ -81,7 +81,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const isBanner = date <= bannerEnd && date >= today;
       const daysFwd = Math.max(0, Math.floor((date - today) / 86400000));
       const earned = isPast ? 0 : dailyIncome * (daysFwd + (isToday ? 0 : 1));
-      const events = isPast ? [] : getActiveEvents(date);
+      // U6-07: Show events on all days (not just future) for consistency with chronology
+      const events = getActiveEvents(date);
       const eventAstrite = events.reduce((s, e) => s + e.astrite, 0);
       const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const isDailyDone = isToday && dailyDone;
@@ -94,7 +95,27 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [monthOffset, dailyIncome, bannerEndDate, calendarNotes, eventStatus]);
 
   const sel = selectedDay ? cal.days.find(d => d.dateKey === selectedDay) : null;
-  const handleTap = useCallback((d) => { if (d.isPast) return; setSelectedDay(prev => prev === d.dateKey ? null : d.dateKey); setNoteInput(d.note); }, []);
+  // U6-02: Allow tapping past days (read-only — can view notes/events but not add new notes)
+  const handleTap = useCallback((d) => { setSelectedDay(prev => prev === d.dateKey ? null : d.dateKey); setNoteInput(d.note); }, []);
+  // U6-06: Arrow key navigation for calendar grid
+  const gridRef = useRef(null);
+  const handleGridKeyDown = useCallback((e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const grid = gridRef.current;
+    if (!grid) return;
+    const buttons = Array.from(grid.querySelectorAll('button[data-day]'));
+    const idx = buttons.indexOf(document.activeElement);
+    if (idx === -1) { buttons[0]?.focus(); return; }
+    let next = idx;
+    if (e.key === 'ArrowRight') next = Math.min(idx + 1, buttons.length - 1);
+    else if (e.key === 'ArrowLeft') next = Math.max(idx - 1, 0);
+    else if (e.key === 'ArrowDown') next = Math.min(idx + 7, buttons.length - 1);
+    else if (e.key === 'ArrowUp') next = Math.max(idx - 7, 0);
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = buttons.length - 1;
+    buttons[next]?.focus();
+  }, []);
   const saveNote = useCallback(() => { if (!selectedDay || !onSetNote || !noteInput.trim()) return; onSetNote(selectedDay, noteInput.trim()); setNoteInput(''); }, [selectedDay, noteInput, onSetNote]);
   const deleteNote = useCallback(() => { if (!selectedDay || !onSetNote) return; onSetNote(selectedDay, ''); setNoteInput(''); }, [selectedDay, onSetNote]);
 
@@ -166,9 +187,14 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
         {/* Month nav */}
         <div className="flex items-center justify-between">
-          <button onClick={() => { setMonthOffset(p => p - 1); setSelectedDay(null); }} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Previous month"><ChevronLeft size={16} /></button>
-          <button onClick={() => { setMonthOffset(0); setSelectedDay(null); }} className="text-gray-100 text-sm font-bold tracking-wide hover:text-yellow-400 transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{cal.monthName}</button>
-          <button onClick={() => { setMonthOffset(p => p + 1); setSelectedDay(null); }} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Next month"><ChevronRight size={16} /></button>
+          {/* U6-04: Don't clear selectedDay on month nav — panel hides naturally, note input preserved */}
+          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Previous month"><ChevronLeft size={16} /></button>
+          {/* U6-03: Show "Today" pill when viewing a non-current month */}
+          <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-sm font-bold tracking-wide hover:text-yellow-400 transition-colors" style={{ fontFamily: 'var(--font-display)' }} title={monthOffset !== 0 ? 'Jump to current month' : undefined}>
+            {cal.monthName}
+            {monthOffset !== 0 && <span style={{ fontSize: '9px', marginLeft: '6px', padding: '1px 6px', borderRadius: '9999px', background: 'rgba(237,175,24,0.15)', border: '1px solid rgba(237,175,24,0.3)', color: '#edaf18', verticalAlign: 'middle' }}>Today</span>}
+          </button>
+          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Next month"><ChevronRight size={16} /></button>
         </div>
 
         {/* Weekday headers */}
@@ -178,8 +204,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           ))}
         </div>
 
-        {/* Day grid — no event lines */}
-        <div className="space-y-1">
+        {/* U6-06: Day grid with arrow key navigation */}
+        <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label="Calendar days">
           {rows.map((row, ri) => (
             <div key={ri} className="grid grid-cols-7 gap-1">
               {row.map((d, ci) => {
@@ -187,8 +213,9 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                 const isSel = selectedDay === d.dateKey;
                 const isGreen = d.isDailyDone;
                 return (
-                  <button key={d.day} type="button" disabled={d.isPast} onClick={() => handleTap(d)}
+                  <button key={d.day} type="button" data-day={d.day} onClick={() => handleTap(d)}
                     className="active:scale-95 transition-transform"
+                    aria-label={`${d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? ' (today)' : ''}${d.note ? ' (has note)' : ''}`}
                     style={{
                       aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
                       background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : 'var(--bg-stat)',
@@ -211,10 +238,11 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         </div>
 
         {/* Calendar legend — only calendar-specific items */}
+        {/* V5-05: Standardized 8px indicators */}
         <div className="flex items-center gap-3 justify-center" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
-          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-sm)', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
-          <span className="flex items-center gap-1"><span style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
-          <span className="flex items-center gap-1"><span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
         </div>
 
         {/* Detail panel */}
@@ -240,17 +268,20 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             {selEvents.length > 0 && (
               <div className="flex flex-wrap gap-1" style={{ marginBottom: 'var(--space-sm)' }}>
                 {selEvents.map(ev => (
-                  <span key={ev.key} style={{ fontSize: '10px', padding: '4px 8px', borderRadius: 'var(--radius-full)', color: ev.color, border: `1px solid ${ev.color}40`, background: `${ev.color}10` }}>
+                  <span key={ev.key} style={{ fontSize: '10px', padding: '4px 8px', borderRadius: 'var(--radius-full)', color: ev.color, border: `1px solid ${ev.color}40`, background: `${ev.color}1a` }}>
                     {ev.name}{ev.astrite > 0 ? ` +${ev.astrite} Astrite` : ''}
                   </span>
                 ))}
               </div>
             )}
 
-            <div className="flex gap-2">
-              <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} />
-              <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
-            </div>
+            {/* U6-02: Hide note input for past days (read-only view) */}
+            {!sel.isPast && (
+              <div className="flex gap-2">
+                <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} />
+                <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
+              </div>
+            )}
 
             {sel.note && (
               <div className="flex items-center gap-2" style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-sm) var(--space-md)', borderRadius: 'var(--radius-md)', background: 'var(--bg-stat)' }}>
@@ -274,35 +305,49 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-md)' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}>Chronology</div>
 
-          {/* Day scale header — every day */}
+          {/* V5-02: Day scale header — show 1st, every 5th, and last for readability */}
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cal.daysInMonth}, 1fr)`, marginBottom: '4px' }}>
-            {Array.from({ length: cal.daysInMonth }, (_, i) => (
-              <span key={i} style={{ fontSize: '8px', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: 'center' }}>{i + 1}</span>
-            ))}
+            {Array.from({ length: cal.daysInMonth }, (_, i) => {
+              const day = i + 1;
+              const show = day === 1 || day % 5 === 0 || day === cal.daysInMonth;
+              return <span key={i} style={{ fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: 'center' }}>{show ? day : ''}</span>;
+            })}
           </div>
 
           {/* Chronology bars */}
           <div style={{ position: 'relative' }}>
+            {/* V5-01: Today marker line */}
+            {(() => {
+              const today = new Date(); today.setHours(0, 0, 0, 0);
+              const monthStart = new Date(cal.year, cal.month, 1);
+              const todayIdx = Math.floor((today - monthStart) / 86400000);
+              if (todayIdx >= 0 && todayIdx < cal.daysInMonth) {
+                const leftPct = ((todayIdx + 0.5) / cal.daysInMonth) * 100;
+                return <div style={{ position: 'absolute', left: `${leftPct}%`, top: 0, bottom: 0, width: '2px', background: '#edaf18', opacity: 0.5, zIndex: 2, borderRadius: '1px', pointerEvents: 'none' }} aria-hidden="true" />;
+              }
+              return null;
+            })()}
             {chronoBars.map((bar) => {
               const leftPct = (bar.start / cal.daysInMonth) * 100;
               const widthPct = ((bar.end - bar.start + 1) / cal.daysInMonth) * 100;
               return (
-                <div key={bar.key} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
+                {/* U6-05: Tooltip with full details on hover/long-press */}
+                <div key={bar.key} title={`${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.daysLeft != null ? ` — ${bar.daysLeft} day${bar.daysLeft !== 1 ? 's' : ''} left` : ''}${bar.weekly ? ' (weekly)' : ''}${bar.ended ? ' (ended)' : ''}`} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
                   <div style={{
                     position: 'absolute',
                     left: `${leftPct}%`,
                     width: `${widthPct}%`,
                     height: '100%',
                     borderRadius: 'var(--radius-sm)',
-                    background: bar.ended ? `${bar.color}08` : `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
-                    border: `1px solid ${bar.color}${bar.ended ? '30' : '60'}`,
+                    background: bar.ended ? `${bar.color}15` : `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
+                    border: `1px solid ${bar.color}${bar.ended ? '40' : '60'}`,
                     boxShadow: bar.ended ? 'none' : `0 0 8px ${bar.color}20`,
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 6px',
                     overflow: 'hidden',
                     minWidth: '0',
-                    opacity: bar.ended ? 0.5 : 1,
+                    opacity: bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
                     {bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>ended</span>}
