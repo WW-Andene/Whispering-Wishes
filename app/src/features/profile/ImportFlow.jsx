@@ -29,6 +29,8 @@ export default function ImportFlow({
   const [directRecordId, setDirectRecordId] = useState('');
   const [directSvrId, setDirectSvrId] = useState('');
   const [directResourcesId, setDirectResourcesId] = useState('');
+  const [directGachaId, setDirectGachaId] = useState('');
+  const [directGachaType, setDirectGachaType] = useState('');
   const [directLang, setDirectLang] = useState('en');
   const [directStatus, setDirectStatus] = useState('idle'); // idle|fetching|done|error
   const [directError, setDirectError] = useState('');
@@ -49,6 +51,8 @@ export default function ImportFlow({
       if (p.recordId) setDirectRecordId(p.recordId);
       if (p.svrId) setDirectSvrId(p.svrId);
       if (p.resourcesId) setDirectResourcesId(p.resourcesId);
+      if (p.gachaId) setDirectGachaId(p.gachaId);
+      if (p.gachaType) setDirectGachaType(p.gachaType);
       if (p.lang) setDirectLang(p.lang);
     }
   }, []);
@@ -60,6 +64,8 @@ export default function ImportFlow({
     try {
       const params = buildFetchParams(directUrl, pid, rid, directSvrId);
       if (directResourcesId) params.cardPoolId = directResourcesId;
+      if (directGachaId) params.gachaId = directGachaId;
+      if (directGachaType) params.gachaType = directGachaType;
       if (directLang) params.lang = directLang;
       directAbortRef.current = new AbortController();
       setDirectStatus('fetching');
@@ -87,7 +93,7 @@ export default function ImportFlow({
       setDirectStatus('error');
       setDirectError(err.message || 'Import failed');
     }
-  }, [directUrl, directPlayerId, directRecordId, directSvrId, directResourcesId, directLang, processImportData]);
+  }, [directUrl, directPlayerId, directRecordId, directSvrId, directResourcesId, directGachaId, directGachaType, directLang, processImportData]);
 
   const handleScreenshotOcr = useCallback(async (file) => {
     if (!file) return;
@@ -99,6 +105,8 @@ export default function ImportFlow({
       if (ids.record_id) setDirectRecordId(ids.record_id);
       if (ids.svr_id) setDirectSvrId(ids.svr_id);
       if (ids.resources_id) setDirectResourcesId(ids.resources_id);
+      if (ids.gacha_id) setDirectGachaId(ids.gacha_id);
+      if (ids.gacha_type) setDirectGachaType(ids.gacha_type);
       if (ids.lang) setDirectLang(ids.lang);
       setDirectScanStatus('done');
       toast?.addToast?.('IDs extracted from screenshot!', 'success');

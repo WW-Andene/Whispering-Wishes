@@ -156,6 +156,9 @@ export async function fetchAllPools(params, signal, onProgress) {
           languageCode: params.lang || 'en',
           recordId: params.recordId || '',
         };
+        // Pass gacha_id/gacha_type if available — needed for featured banner pools
+        if (params.gachaId) body.gachaId = String(params.gachaId);
+        if (params.gachaType) body.gachaType = String(params.gachaType);
         if (endTime) body.endTime = endTime;
 
         const controller = new AbortController();
@@ -198,6 +201,8 @@ export async function fetchAllPools(params, signal, onProgress) {
               recordId: params.recordId || '',
               endTime: jumpDate.toISOString(),
             };
+            if (params.gachaId) jumpBody.gachaId = String(params.gachaId);
+            if (params.gachaType) jumpBody.gachaType = String(params.gachaType);
             const c2 = new AbortController();
             const t2 = setTimeout(() => c2.abort(), 15000);
             const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
@@ -310,7 +315,7 @@ export async function extractIdsFromImage(base64Image) {
 
   const raw = await res.json();
   // Validate response — only accept expected string fields
-  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
+  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'gacha_type', 'lang', 'svr_area'];
   const ids = {};
   for (const key of ALLOWED) {
     const val = raw[key];
