@@ -1942,15 +1942,15 @@ const KuroStyles = memo(({ oledMode }) => (
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Breathing zoom on character images ── */
+    /* ── Breathing zoom — only active on FULL animation mode ── */
     @keyframes breathZoom {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.03); }
     }
-    .breath-zoom {
+    .animations-full .breath-zoom {
       animation: breathZoom 5s ease-in-out infinite !important;
     }
-    .collection-card .collection-img-wrap {
+    .animations-full .collection-card .collection-img-wrap {
       animation: breathZoom 6s ease-in-out infinite !important;
     }
 
