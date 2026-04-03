@@ -28,14 +28,6 @@ const EVENT_COLORS = {
   pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
   illusiveRealm:     '#c4b5fd',  // lavender
 };
-const EVENT_SHORT = {
-  endstateMatrix:    'Matrix',
-  towerOfAdversity:  'ToA',
-  whimperingWastes:  'W. Wastes',
-  tacticalHologram:  'Tactical H.',
-  pioneerPodcast:    'Pioneer P.',
-  illusiveRealm:     'Illusive R.',
-};
 const BANNER_COLOR = '#94a3b8';
 
 const getActiveEvents = (date) => {
@@ -136,7 +128,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       }
     }
 
-    // Event bars
+    // Event bars — show all events, even ended ones
     for (const [key, ev] of Object.entries(EVENTS)) {
       if (ev.dailyReset) continue;
       const color = EVENT_COLORS[key];
@@ -144,16 +136,20 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const astrite = parseInt(ev.rewards, 10) || 0;
 
       if (ev.weeklyReset) {
-        // Weekly: continuous bar across month
-        bars.push({ key, label: EVENT_SHORT[key] || ev.name, color, start: 0, end: cal.daysInMonth - 1, astrite, weekly: true });
+        bars.push({ key, label: ev.name, color, start: 0, end: cal.daysInMonth - 1, astrite, weekly: true });
       } else if (ev.currentEnd) {
         const evEnd = new Date(ev.currentEnd);
-        if (evEnd < monthStart) continue;
-        const eStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
-        const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
-        if (eEnd >= eStart) {
-          const daysLeft = Math.max(0, Math.ceil((evEnd - today) / 86400000));
-          bars.push({ key, label: EVENT_SHORT[key] || ev.name, color, start: eStart, end: eEnd, astrite, daysLeft });
+        const ended = evEnd < today;
+        if (ended) {
+          // Show ended events as a short bar at position 0
+          bars.push({ key, label: ev.name, color, start: 0, end: Math.min(2, cal.daysInMonth - 1), astrite, ended: true });
+        } else {
+          const eStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
+          const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
+          if (eEnd >= eStart) {
+            const daysLeft = Math.max(0, Math.ceil((evEnd - today) / 86400000));
+            bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, daysLeft });
+          }
         }
       }
     }
@@ -216,7 +212,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* Calendar legend — only calendar-specific items */}
         <div className="flex items-center gap-3 justify-center" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-sm)', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
-          <span className="flex items-center gap-1"><span style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-sm)', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
+          <span className="flex items-center gap-1"><span style={{ width: '10px', height: '10px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
           <span className="flex items-center gap-1"><span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
         </div>
 
@@ -297,17 +293,19 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     width: `${widthPct}%`,
                     height: '100%',
                     borderRadius: 'var(--radius-sm)',
-                    background: `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
-                    border: `1px solid ${bar.color}60`,
-                    boxShadow: `0 0 8px ${bar.color}20`,
+                    background: bar.ended ? `${bar.color}08` : `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
+                    border: `1px solid ${bar.color}${bar.ended ? '30' : '60'}`,
+                    boxShadow: bar.ended ? 'none' : `0 0 8px ${bar.color}20`,
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 6px',
                     overflow: 'hidden',
                     minWidth: '0',
+                    opacity: bar.ended ? 0.5 : 1,
                   }}>
                     <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
-                    {bar.astrite > 0 && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
+                    {bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>ended</span>}
+                    {bar.astrite > 0 && !bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
                     {bar.daysLeft != null && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
                     {bar.weekly && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>wk</span>}
                   </div>
@@ -323,7 +321,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: '10px', color: 'var(--text-disabled)', marginTop: 'var(--space-sm)' }}>
             <span className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
             {Object.entries(EVENT_COLORS).map(([key, color]) => (
-              <span key={key} className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: color, display: 'inline-block' }} />{EVENT_SHORT[key] || key}</span>
+              <span key={key} className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: color, display: 'inline-block' }} />{EVENTS[key]?.name || key}</span>
             ))}
           </div>
         </div>
