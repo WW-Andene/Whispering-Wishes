@@ -46,12 +46,13 @@ const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 const currentYear = new Date().getFullYear();
 import { silentCatch } from '../../utils/silentCatch.js';
+// C1-03: XOR lengths instead of early return to avoid leaking password length via timing
 const constantTimeCompare = (a, b) => {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  const len = Math.max(a.length, b.length);
+  let result = a.length ^ b.length;
+  for (let i = 0; i < len; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
   }
   return result === 0;
 };
