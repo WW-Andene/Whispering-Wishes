@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
 import { EVENTS } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
@@ -30,7 +30,8 @@ const LINE_COLORS = {
   pink:   '#ec4899',
   orange: '#f97316',
 };
-const BANNER_LINE_COLOR = '#22d3ee';
+// Banner uses white/silver — distinct from ALL event accent colors
+const BANNER_LINE_COLOR = '#94a3b8';
 
 // Collect active timed events for a date (with color + total reward)
 const getActiveEvents = (date) => {
@@ -242,22 +243,25 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           })}
         </div>
 
-        {/* ── Legend ── */}
-        <div className="flex items-center gap-3 justify-center text-[10px] text-gray-500 flex-wrap">
+        {/* ── Legend — one color = one meaning ── */}
+        <div className="flex items-center gap-2 justify-center text-[10px] text-gray-500 flex-wrap">
           <span className="flex items-center gap-1">
             <span style={{ width: '12px', height: '12px', borderRadius: '4px', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />
-            Daily done
+            Daily
           </span>
           <span className="flex items-center gap-1">
-            <span style={{ width: '16px', height: '2px', borderRadius: '2px', background: BANNER_LINE_COLOR, display: 'inline-block' }} />
+            <span style={{ width: '14px', height: '2px', borderRadius: '2px', background: BANNER_LINE_COLOR, display: 'inline-block' }} />
             Banner
           </span>
-          {Object.entries(LINE_COLORS).filter(([k]) => k !== 'yellow').slice(0, 2).map(([k, c]) => (
-            <span key={k} className="flex items-center gap-1">
-              <span style={{ width: '16px', height: '2px', borderRadius: '2px', background: c, display: 'inline-block' }} />
-            </span>
-          ))}
-          <span>Events</span>
+          <span className="flex items-center gap-1">
+            <span style={{ width: '14px', height: '2px', borderRadius: '2px', background: LINE_COLORS.purple, display: 'inline-block' }} />
+            Weekly
+          </span>
+          <span className="flex items-center gap-1">
+            <span style={{ width: '14px', height: '2px', borderRadius: '2px', background: LINE_COLORS.orange, display: 'inline-block' }} />
+            <span style={{ width: '14px', height: '2px', borderRadius: '2px', background: LINE_COLORS.pink, display: 'inline-block' }} />
+            Events
+          </span>
           <span className="flex items-center gap-1">
             <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />
             Note
@@ -312,10 +316,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
             {/* Saved note display */}
             {sel.note && (
-              <div className="flex items-center justify-between" style={{ marginTop: '8px', padding: '6px 8px', borderRadius: '8px', background: 'var(--bg-stat)' }}>
-                <span className="text-gray-300" style={{ fontSize: '10px', flex: 1 }}>{sel.note}</span>
-                <button onClick={deleteNote} className="kuro-btn text-red-400 hover:text-red-300" style={{ fontSize: '10px', padding: '6px 12px', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  Delete
+              <div className="flex items-center gap-2" style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'var(--bg-stat)' }}>
+                <span className="text-gray-200 flex-1" style={{ fontSize: '12px', lineHeight: '1.4' }}>{sel.note}</span>
+                <button onClick={deleteNote} className="flex-shrink-0 w-[28px] h-[28px] rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity" aria-label="Delete note">
+                  <X size={12} />
                 </button>
               </div>
             )}
