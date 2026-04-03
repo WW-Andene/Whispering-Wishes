@@ -23,7 +23,7 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 const EVENT_COLORS = {
   weeklyBoss:        '#60a5fa',  // marine (rarity-3star blue)
   endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
-  towerOfAdversity:  '#dc2626',  // carmin (red)
+  towerOfAdversity:  '#ef4444',  // red-500 (better contrast at small sizes)
   whimperingWastes:  '#06b6d4',  // cyan
   tacticalHologram:  '#a3e635',  // lime
   pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
@@ -171,10 +171,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         if (mondays.length > 0 && mondays[0] > 0) {
           segments.push({ start: 0, end: mondays[0] - 1 });
         }
+        const todayIdx = Math.floor((today - monthStart) / 86400000);
         for (let i = 0; i < mondays.length; i++) {
           const segStart = mondays[i];
           const segEnd = i + 1 < mondays.length ? mondays[i + 1] - 1 : cal.daysInMonth - 1;
-          segments.push({ start: segStart, end: segEnd });
+          const isCurrent = todayIdx >= segStart && todayIdx <= segEnd;
+          segments.push({ start: segStart, end: segEnd, isCurrent });
         }
         if (mondays.length === 0) {
           segments.push({ start: 0, end: cal.daysInMonth - 1 });
@@ -184,8 +186,13 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const evEnd = new Date(ev.currentEnd);
         const ended = evEnd < today;
         if (ended) {
-          // Show ended events as a short bar at position 0
-          bars.push({ key, label: ev.name, color, start: 0, end: Math.min(2, cal.daysInMonth - 1), astrite, ended: true });
+          // Show ended events at their real position
+          const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
+          const eStart = Math.max(0, eEnd - Math.min(13, eEnd)); // show up to 14 days of the event's tail
+          if (eEnd >= 0) {
+            const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended: true, endLabel });
+          }
         } else {
           const eStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
           const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
@@ -229,13 +236,13 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* U6-06: Day grid with arrow key navigation */}
         <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label="Calendar days">
           {rows.map((row, ri) => (
-            <div key={ri} className="grid grid-cols-7 gap-1">
+            <div key={ri} className="grid grid-cols-7 gap-1" role="row">
               {row.map((d, ci) => {
-                if (!d) return <div key={`e${ci}`} style={{ aspectRatio: '1', borderRadius: 'var(--radius-sm)', background: 'var(--bg-stat)', opacity: 0.3 }} />;
+                if (!d) return <div key={`e${ci}`} role="gridcell" style={{ aspectRatio: '1', borderRadius: 'var(--radius-sm)', background: 'var(--bg-stat)', opacity: 0.3 }} />;
                 const isSel = selectedDay === d.dateKey;
                 const isGreen = d.isDailyDone;
                 return (
-                  <button key={d.day} type="button" data-day={d.day} onClick={() => handleTap(d)}
+                  <button key={d.day} type="button" role="gridcell" data-day={d.day} onClick={() => handleTap(d)}
                     className="active:scale-95 transition-transform"
                     aria-label={`${d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? ' (today)' : ''}${d.note ? ' (has note)' : ''}`}
                     style={{
@@ -250,7 +257,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                         fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-data)',
                         color: d.isToday ? '#edaf18' : d.isPast ? 'var(--text-disabled)' : isGreen ? '#22c55e' : isSel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                       }}>{d.day}</span>
-                      {d.note && !d.isPast && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', marginTop: '2px' }} />}
+                      {d.note && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', marginTop: '2px', opacity: d.isPast ? 0.5 : 1 }} />}
                     </div>
                   </button>
                 );
@@ -297,6 +304,11 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               </div>
             )}
 
+            {/* U6-10: Empty state when past day has no events and no note */}
+            {sel.isPast && selEvents.length === 0 && !sel.note && (
+              <div style={{ fontSize: '10px', color: 'var(--text-disabled)', textAlign: 'center', padding: 'var(--space-sm) 0' }}>No events on this day</div>
+            )}
+
             {/* U6-02: Hide note input for past days (read-only view) */}
             {!sel.isPast && (
               <div className="flex gap-2">
@@ -308,7 +320,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             {sel.note && (
               <div className="flex items-center gap-2" style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-sm) var(--space-md)', borderRadius: 'var(--radius-md)', background: 'var(--bg-stat)' }}>
                 <span className="flex-1" style={{ fontSize: '12px', lineHeight: '1.4', color: 'var(--text-body)' }}>{sel.note}</span>
-                <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: '24px', height: '24px', borderRadius: 'var(--radius-sm)' }} aria-label="Delete note"><X size={12} /></button>
+                {/* U6-08: Full read-only on past days — no delete button */}
+                {!sel.isPast && <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: '24px', height: '24px', borderRadius: 'var(--radius-sm)' }} aria-label="Delete note"><X size={12} /></button>}
               </div>
             )}
           </div>
@@ -363,13 +376,15 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                         <div key={si} style={{
                           position: 'absolute', left: `${segLeft}%`, width: `calc(${segWidth}% - 2px)`,
                           height: '100%', borderRadius: 'var(--radius-sm)',
-                          background: `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
-                          border: `1px solid ${bar.color}60`,
+                          background: seg.isCurrent ? `linear-gradient(to right, ${bar.color}45, ${bar.color}28)` : `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
+                          border: `1px solid ${bar.color}${seg.isCurrent ? '90' : '60'}`,
+                          boxShadow: seg.isCurrent ? `0 0 6px ${bar.color}30` : 'none',
                           display: 'flex', alignItems: 'center', padding: '0 4px',
                           overflow: 'hidden', minWidth: '0',
                         }}>
-                          {si === 0 && <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>}
-                          {si === 0 && bar.astrite > 0 && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}/wk</span>}
+                          <span style={{ fontSize: '10px', color: bar.color, fontWeight: si === 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                            {si === 0 ? bar.label : (bar.astrite > 0 ? `+${bar.astrite}` : '')}
+                          </span>
                         </div>
                       );
                     })}
