@@ -194,8 +194,8 @@ const EVENTS = {
     description: 'Endgame combat challenge',
     resetType: '28 days',
     color: 'orange',
-    // Mon, 02 Feb 2026 04:00 - Mon, 02 Mar 2026 03:59 (Europe)
-    currentEnd: '2026-03-02T02:59:00Z',
+    // Mon, 30 Mar 2026 04:00 - Mon, 27 Apr 2026 03:59 (Europe)
+    currentEnd: '2026-04-27T02:59:00Z',
     rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
@@ -207,8 +207,8 @@ const EVENTS = {
     description: 'Combat challenge with token system',
     resetType: '28 days',
     color: 'cyan',
-    // Mon, 16 Feb 2026 04:00 - Mon, 16 Mar 2026 03:59 (Europe)
-    currentEnd: '2026-03-16T02:59:00Z',
+    // Mon, 16 Mar 2026 04:00 - Mon, 13 Apr 2026 03:59 (Europe)
+    currentEnd: '2026-04-13T02:59:00Z',
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
