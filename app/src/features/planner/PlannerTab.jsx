@@ -330,8 +330,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             {chronoBars.map((bar) => {
               const leftPct = (bar.start / cal.daysInMonth) * 100;
               const widthPct = ((bar.end - bar.start + 1) / cal.daysInMonth) * 100;
+              // U6-05: Tooltip with full details on hover/long-press
               return (
-                {/* U6-05: Tooltip with full details on hover/long-press */}
                 <div key={bar.key} title={`${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.daysLeft != null ? ` — ${bar.daysLeft} day${bar.daysLeft !== 1 ? 's' : ''} left` : ''}${bar.weekly ? ' (weekly)' : ''}${bar.ended ? ' (ended)' : ''}`} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
                   <div style={{
                     position: 'absolute',
