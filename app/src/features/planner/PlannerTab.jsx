@@ -14,36 +14,33 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
+
 // ══════════════════════════════════════════════════════════════════════════════
-// ASTRITE CALENDAR — Clean, minimal, neon-bar style from analytics histogram
-// One accent color per cell based on earned progress. No clutter.
+// ASTRITE CALENDAR — Google Calendar-inspired clean layout
+// Day cells: number + dots only. Periods shown as colored horizontal bars.
+// Today: filled circle. Detail panel below grid on tap.
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Neon color by earned convenes (matches analytics pity distribution bars)
-const getDayColor = (earned, target) => {
-  if (earned <= 0) return null;
-  const pct = target > 0 ? (earned / target) * 100 : earned;
-  if (pct >= 80) return '#ef4444';  // red — nearly there
-  if (pct >= 60) return '#f97316';  // orange
-  if (pct >= 40) return '#edaf18';  // gold
-  if (pct >= 20) return '#4ade80';  // lime
-  return '#22c55e';                  // green — just started
-};
-
-// Collect event astrite rewards for a date
-const getEventAstrite = (date) => {
+const getEventRewards = (date) => {
   let total = 0;
+  const labels = [];
   const dow = date.getDay();
-  // Weekly rewards (Monday)
   if (dow === 1) {
-    for (const ev of Object.values(EVENTS)) {
+    for (const [, ev] of Object.entries(EVENTS)) {
       if (ev.weeklyReset && ev.rewards) {
         const a = parseInt(ev.rewards, 10);
-        if (a > 0) total += a;
+        if (a > 0) { total += a; labels.push(ev.name); }
       }
     }
   }
-  return total;
+  for (const [, ev] of Object.entries(EVENTS)) {
+    if (ev.dailyReset || ev.weeklyReset || !ev.currentEnd) continue;
+    if (date <= new Date(ev.currentEnd)) {
+      const a = parseInt(ev.rewards, 10);
+      if (a > 0) { total += a; labels.push(ev.name); }
+    }
+  }
+  return { total, labels };
 };
 
 function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote }) {
@@ -51,12 +48,11 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   const [selectedDay, setSelectedDay] = useState(null);
   const [noteInput, setNoteInput] = useState('');
 
-  const calendarData = useMemo(() => {
+  const cal = useMemo(() => {
     const now = new Date();
-    const viewDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
+    const view = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+    const year = view.getFullYear(), month = view.getMonth();
+    const firstDay = (new Date(year, month, 1).getDay() + 6) % 7; // Monday=0
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const bannerEnd = new Date(bannerEndDate); bannerEnd.setHours(23, 59, 59, 999);
@@ -66,170 +62,157 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const date = new Date(year, month, d); date.setHours(0, 0, 0, 0);
       const isPast = date < today;
       const isToday = date.getTime() === today.getTime();
-      const isBannerDay = date <= bannerEnd && date >= today;
-      const daysSinceToday = Math.max(0, Math.floor((date - today) / 86400000));
-      const earned = isPast ? 0 : dailyIncome * (daysSinceToday + (isToday ? 0 : 1));
-      const eventBonus = isPast ? 0 : getEventAstrite(date);
-      const totalEarned = earned + eventBonus;
-      const convenes = Math.floor(totalEarned / ASTRITE_PER_PULL);
+      const isBanner = date <= bannerEnd && date >= today;
+      const daysFwd = Math.max(0, Math.floor((date - today) / 86400000));
+      const earned = isPast ? 0 : dailyIncome * (daysFwd + (isToday ? 0 : 1));
+      const ev = isPast ? { total: 0, labels: [] } : getEventRewards(date);
       const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-
-      days.push({ day: d, date, dateKey, isPast, isToday, isBannerDay, earned: totalEarned, convenes, eventBonus, note: calendarNotes?.[dateKey] || '' });
+      days.push({ day: d, date, dateKey, isPast, isToday, isBanner, earned, eventAstrite: ev.total, eventLabels: ev.labels, note: calendarNotes?.[dateKey] || '' });
     }
-
-    return { year, month, firstDay, daysInMonth, days, monthName: viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
+    return { year, month, firstDay, daysInMonth, days, monthName: view.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
   }, [monthOffset, dailyIncome, bannerEndDate, calendarNotes]);
 
-  const handleDayTap = useCallback((d) => {
-    if (d.isPast) return;
-    if (selectedDay === d.dateKey) { setSelectedDay(null); return; }
-    setSelectedDay(d.dateKey);
-    setNoteInput(d.note);
-  }, [selectedDay]);
+  const sel = selectedDay ? cal.days.find(d => d.dateKey === selectedDay) : null;
+  const handleTap = useCallback((d) => { if (d.isPast) return; setSelectedDay(prev => prev === d.dateKey ? null : d.dateKey); setNoteInput(d.note); }, []);
+  const saveNote = useCallback(() => { if (selectedDay && onSetNote) onSetNote(selectedDay, noteInput.trim()); setSelectedDay(null); }, [selectedDay, noteInput, onSetNote]);
 
-  const saveNote = useCallback(() => {
-    if (selectedDay && onSetNote) onSetNote(selectedDay, noteInput.trim());
-    setSelectedDay(null);
-    setNoteInput('');
-  }, [selectedDay, noteInput, onSetNote]);
-
-  const selectedData = selectedDay ? calendarData.days.find(d => d.dateKey === selectedDay) : null;
+  // Build rows for horizontal bars
+  const rows = useMemo(() => {
+    const cells = [...Array(cal.firstDay).fill(null), ...cal.days];
+    const r = [];
+    for (let i = 0; i < Math.ceil(cells.length / 7); i++) r.push(cells.slice(i * 7, i * 7 + 7));
+    return r;
+  }, [cal]);
 
   return (
     <Card>
-      <CardHeader>
-        <Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar
-      </CardHeader>
-      <CardBody className="space-y-3">
-        {/* ── Month nav ── */}
+      <CardHeader><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
+      <CardBody className="space-y-2">
+        {/* Month nav */}
         <div className="flex items-center justify-between">
-          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white" aria-label="Previous month"><ChevronLeft size={16} /></button>
-          <button onClick={() => setMonthOffset(0)} className="text-gray-200 text-sm font-medium hover:text-yellow-400 transition-colors" aria-label="Current month">{calendarData.monthName}</button>
-          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white" aria-label="Next month"><ChevronRight size={16} /></button>
+          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white" aria-label="Previous month"><ChevronLeft size={16} /></button>
+          <button onClick={() => setMonthOffset(0)} className="text-gray-100 text-sm font-bold tracking-wide hover:text-yellow-400 transition-colors" style={{ fontFamily: 'var(--font-display)' }}>{cal.monthName}</button>
+          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white" aria-label="Next month"><ChevronRight size={16} /></button>
         </div>
 
-        {/* ── Weekday headers ── */}
-        <div className="grid grid-cols-7 gap-1">
-          {['S','M','T','W','T','F','S'].map((d, i) => (
-            <div key={i} className="text-center text-gray-600 text-[9px] font-bold py-0.5">{d}</div>
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7">
+          {['MON','TUE','WED','THU','FRI','SAT','SUN'].map(d => (
+            <div key={d} className="text-center text-gray-600 text-[8px] font-bold tracking-wider py-1">{d}</div>
           ))}
         </div>
 
-        {/* ── Calendar grid — neon bar fill per day ── */}
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: calendarData.firstDay }, (_, i) => <div key={`e${i}`} />)}
-          {calendarData.days.map(d => {
-            const color = getDayColor(d.earned, planData.targetAstrite);
-            const fillPct = planData.targetAstrite > 0 ? Math.min(100, (d.earned / planData.targetAstrite) * 100) : 0;
-            const isSelected = selectedDay === d.dateKey;
-            const hasNote = !!d.note;
+        {/* Calendar rows */}
+        <div className="space-y-px">
+          {rows.map((row, ri) => {
+            // Find banner period span in this row
+            let bannerStart = -1, bannerSpan = 0;
+            for (let i = 0; i < row.length; i++) {
+              if (row[i]?.isBanner) { if (bannerStart < 0) bannerStart = i; bannerSpan = i - bannerStart + 1; }
+            }
+            // Find event span in this row
+            let evStart = -1, evSpan = 0;
+            for (let i = 0; i < row.length; i++) {
+              if (row[i] && !row[i].isPast && row[i].eventLabels.length > 0) { if (evStart < 0) evStart = i; evSpan = i - evStart + 1; }
+            }
 
             return (
-              <button
-                key={d.day} type="button" disabled={d.isPast}
-                onClick={() => handleDayTap(d)}
-                className={`relative rounded overflow-hidden transition-all ${
-                  isSelected ? 'ring-1 ring-yellow-400'
-                  : d.isToday ? 'ring-1 ring-yellow-500/60'
-                  : ''
-                }`}
-                style={{ aspectRatio: '1', background: 'var(--bg-stat)' }}
-                title={d.isPast ? '' : `+${d.earned.toLocaleString('en-US')} Astrite${d.eventBonus ? ` (${d.eventBonus} from events)` : ''} — ${d.convenes} Convenes${d.note ? `\n${d.note}` : ''}`}
-              >
-                {/* Neon fill bar from bottom — same style as histogram */}
-                {!d.isPast && color && fillPct > 0 && (
-                  <div className="absolute bottom-0 left-0 right-0 transition-all" style={{
-                    height: `${Math.max(fillPct, 8)}%`,
-                    background: `linear-gradient(to top, ${color}35, ${color}10)`,
-                    borderTop: `1px solid ${color}60`,
-                    boxShadow: `inset 0 0 8px ${color}20`,
-                  }} />
-                )}
-
-                {/* Day number */}
-                <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                  <span className={`text-[11px] leading-none font-semibold ${
-                    d.isToday ? 'text-yellow-400' : d.isPast ? 'text-gray-700' : color ? '' : 'text-gray-400'
-                  }`} style={!d.isPast && color ? { color } : undefined}>
-                    {d.day}
-                  </span>
-
-                  {/* Banner period dot */}
-                  {d.isBannerDay && !d.isPast && (
-                    <span className="w-1 h-1 rounded-full bg-cyan-400 mt-0.5" />
-                  )}
+              <div key={ri}>
+                {/* Day numbers */}
+                <div className="grid grid-cols-7">
+                  {row.map((d, ci) => {
+                    if (!d) return <div key={`e${ci}`} className="h-10" />;
+                    const isSel = selectedDay === d.dateKey;
+                    return (
+                      <button key={d.day} type="button" disabled={d.isPast} onClick={() => handleTap(d)}
+                        className={`h-10 flex flex-col items-center justify-center relative ${d.isPast ? '' : 'active:scale-95'} transition-transform`}>
+                        {/* Today: filled gold circle */}
+                        {d.isToday && <div className="absolute w-7 h-7 rounded-full bg-yellow-500" />}
+                        {/* Selected: outlined circle */}
+                        {isSel && !d.isToday && <div className="absolute w-7 h-7 rounded-full border-2 border-yellow-400" />}
+                        {/* Day number */}
+                        <span className={`relative z-10 text-[13px] font-semibold ${d.isToday ? 'text-black' : d.isPast ? 'text-gray-700' : isSel ? 'text-yellow-400' : 'text-gray-300'}`}>{d.day}</span>
+                        {/* Dot: note or event */}
+                        {(d.note || d.eventLabels.length > 0) && !d.isPast && (
+                          <div className="relative z-10 flex gap-0.5 mt-px">
+                            {d.eventLabels.length > 0 && <span className="w-1 h-1 rounded-full bg-purple-400" />}
+                            {d.note && <span className="w-1 h-1 rounded-full bg-yellow-400" />}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-
-                {/* Note indicator */}
-                {hasNote && <span className="absolute top-0 right-0.5 text-[6px] z-10">📝</span>}
-              </button>
+                {/* Horizontal period bars below the row */}
+                {(bannerStart >= 0 || evStart >= 0) && (
+                  <div className="grid grid-cols-7 px-2 pb-1" style={{ gap: 0 }}>
+                    {bannerStart >= 0 && (
+                      <div className="h-[3px] rounded-full" style={{
+                        gridColumn: `${bannerStart + 1} / span ${bannerSpan}`,
+                        background: 'linear-gradient(90deg, #22d3ee, #06b6d4)',
+                        boxShadow: '0 0 6px rgba(34,211,238,0.3)',
+                      }} />
+                    )}
+                    {evStart >= 0 && (
+                      <div className="h-[3px] rounded-full mt-px" style={{
+                        gridColumn: `${evStart + 1} / span ${evSpan}`,
+                        background: 'linear-gradient(90deg, #a855f7, #7c3aed)',
+                        boxShadow: '0 0 6px rgba(168,85,247,0.3)',
+                      }} />
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
 
-        {/* ── Legend — minimal ── */}
-        <div className="flex items-center gap-4 justify-center text-[9px] text-gray-500">
-          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />Today</span>
-          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />Banner</span>
-          <span className="flex items-center gap-1">
-            <span className="flex gap-px">{['#22c55e','#edaf18','#ef4444'].map(c => <span key={c} className="w-1.5 h-3 rounded-sm" style={{ background: `${c}40`, borderTop: `1px solid ${c}` }} />)}</span>
-            Progress
-          </span>
+        {/* Legend */}
+        <div className="flex items-center gap-4 justify-center text-[9px] text-gray-500 pt-1">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block" style={{ transform: 'scale(0.6)' }} />Today</span>
+          <span className="flex items-center gap-1"><span className="w-4 h-[3px] rounded-full inline-block" style={{ background: '#22d3ee' }} />Banner</span>
+          <span className="flex items-center gap-1"><span className="w-4 h-[3px] rounded-full inline-block" style={{ background: '#a855f7' }} />Events</span>
+          <span className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-yellow-400 inline-block" />Note</span>
         </div>
 
-        {/* ── Selected day panel ── */}
-        {selectedData && (
+        {/* Selected day detail */}
+        {sel && (
           <div className="p-3 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-elevated)' }}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-200 text-xs font-medium">
-                {selectedData.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-              </span>
-              <div className="flex items-center gap-3">
-                {selectedData.earned > 0 && (
-                  <span className="text-[10px]">
-                    <span className="text-yellow-400 kuro-number font-bold">{selectedData.earned.toLocaleString('en-US')}</span>
-                    <span className="text-gray-500"> Astrite</span>
-                    {selectedData.eventBonus > 0 && <span className="text-purple-400 ml-1">(+{selectedData.eventBonus} events)</span>}
-                  </span>
-                )}
-                <button onClick={() => setSelectedDay(null)} className="text-gray-500 p-1 hover:text-white">✕</button>
-              </div>
+              <span className="text-gray-100 text-xs font-bold">{sel.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+              <button onClick={() => setSelectedDay(null)} className="text-gray-500 p-1 hover:text-white text-xs">\u2715</button>
             </div>
-
-            {/* Note editor */}
-            <div className="flex gap-1.5">
-              <input
-                type="text" value={noteInput}
-                onChange={e => setNoteInput(e.target.value.slice(0, 100))}
-                onKeyDown={e => { if (e.key === 'Enter') saveNote(); }}
-                placeholder="Add a note or goal..."
-                className="kuro-input flex-1 text-[10px] py-1.5 px-2"
-                aria-label="Calendar note"
-              />
-              <button onClick={saveNote} className="kuro-btn text-[10px] px-3 py-1 active-gold">
-                {selectedData.note ? 'Update' : 'Save'}
-              </button>
+            <div className="flex gap-3 text-[10px] mb-2">
+              {sel.earned > 0 && <span><span className="text-yellow-400 kuro-number font-bold">{sel.earned.toLocaleString('en-US')}</span> <span className="text-gray-500">Astrite</span></span>}
+              {sel.eventAstrite > 0 && <span><span className="text-purple-400 kuro-number font-bold">+{sel.eventAstrite}</span> <span className="text-gray-500">events</span></span>}
+              {(sel.earned + sel.eventAstrite) > 0 && <span><span className="text-cyan-400 kuro-number font-bold">{Math.floor((sel.earned + sel.eventAstrite) / ASTRITE_PER_PULL)}</span> <span className="text-gray-500">Convenes</span></span>}
             </div>
-            {selectedData.note && (
-              <div className="mt-1.5 flex justify-between items-center">
-                <span className="text-gray-300 text-[10px]">📝 {selectedData.note}</span>
-                <button onClick={() => { onSetNote(selectedDay, ''); setNoteInput(''); }} className="text-red-400 text-[10px] hover:text-red-300">Remove</button>
+            {sel.eventLabels.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {sel.eventLabels.map((l, i) => <span key={i} className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/25">{l}</span>)}
               </div>
             )}
+            <div className="flex gap-1.5">
+              <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Goal or note..." className="kuro-input flex-1 text-[10px] py-1.5 px-2" />
+              <button onClick={saveNote} className="kuro-btn text-[10px] px-3 py-1 active-gold">{sel.note ? 'Update' : 'Save'}</button>
+            </div>
+            {sel.note && <div className="mt-1.5 flex justify-between items-center"><span className="text-gray-300 text-[10px]">{sel.note}</span><button onClick={() => { onSetNote(selectedDay, ''); setNoteInput(''); }} className="text-red-400 text-[10px]">\u2715</button></div>}
           </div>
         )}
 
-        {/* ── Month total ── */}
+        {/* Month total */}
         {dailyIncome > 0 && (
-          <div className="flex justify-center gap-4 text-[10px]">
-            <span className="text-gray-400">This month: <span className="text-yellow-400 kuro-number font-bold">{(dailyIncome * calendarData.daysInMonth).toLocaleString('en-US')}</span> Astrite</span>
-            <span className="text-gray-400">≈ <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome * calendarData.daysInMonth / ASTRITE_PER_PULL)}</span> Convenes</span>
+          <div className="text-center text-[10px] text-gray-500">
+            <span className="text-yellow-400 kuro-number font-bold">{(dailyIncome * cal.daysInMonth).toLocaleString('en-US')}</span> Astrite
+            <span className="mx-1.5">\u00b7</span>
+            <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome * cal.daysInMonth / ASTRITE_PER_PULL)}</span> Convenes this month
           </div>
         )}
       </CardBody>
     </Card>
   );
 }
+
 
 export default function PlannerTab({
   state,
