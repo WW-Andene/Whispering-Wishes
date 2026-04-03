@@ -46,14 +46,15 @@ import { AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton } from './shared
 import { BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour } from './shared/backgrounds/Backgrounds.jsx';
 import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // --- Feature tabs ---
+// D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting
 import EventsTab from './features/events/EventsTab.jsx';
 import TrackerTab from './features/tracker/TrackerTab.jsx';
-import PlannerTab from './features/planner/PlannerTab.jsx';
-import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
-import CalculatorTab from './features/calculator/CalculatorTab.jsx';
-import CollectionTab from './features/collection/CollectionTab.jsx';
-import TeamsTab from './features/teams/TeamsTab.jsx';
-import ProfileTab from './features/profile/ProfileTab.jsx';
+const PlannerTab = React.lazy(() => import('./features/planner/PlannerTab.jsx'));
+const AnalyticsTab = React.lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
+const CalculatorTab = React.lazy(() => import('./features/calculator/CalculatorTab.jsx'));
+const CollectionTab = React.lazy(() => import('./features/collection/CollectionTab.jsx'));
+const TeamsTab = React.lazy(() => import('./features/teams/TeamsTab.jsx'));
+const ProfileTab = React.lazy(() => import('./features/profile/ProfileTab.jsx'));
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 // 8.1 fix: Fetch wrapper with AbortController timeout - fails fast on network loss
