@@ -206,24 +206,16 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
       } else if (ev.currentEnd) {
         const evEnd = new Date(ev.currentEnd);
+        // Skip if event ended before this month starts
+        if (evEnd < monthStart) continue;
         const ended = evEnd < today;
-        if (ended) {
-          // Show ended events at their real end position; events lack startDate so
-          // show up to 14 days before end as a reasonable approximation of their duration
-          const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
-          const eStart = Math.max(0, eEnd - Math.min(13, eEnd));
-          if (eEnd >= 0) {
-            const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended: true, endLabel });
-          }
-        } else {
-          const eStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
-          const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
-          if (eEnd >= eStart) {
-            const daysLeft = Math.max(0, Math.ceil((evEnd - today) / 86400000));
-            const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, daysLeft, endLabel });
-          }
+        // Bar spans from month start (no startDate in data) to event end or month end
+        const eStart = 0;
+        const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
+        if (eEnd >= eStart) {
+          const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const daysLeft = ended ? undefined : Math.max(0, Math.ceil((evEnd - today) / 86400000));
+          bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended, endLabel, daysLeft });
         }
       }
     }
@@ -409,7 +401,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                           overflow: 'hidden', minWidth: '0',
                         }}>
                           <span style={{ fontSize: '10px', color: bar.color, fontWeight: si === 0 ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
-                            {si === 0 ? bar.label : (bar.astrite > 0 ? `+${bar.astrite}` : '')}
+                            {si === 0 ? bar.label : (bar.astrite > 0 ? `+${bar.astrite}` : bar.label.split(' ')[0])}
                           </span>
                         </div>
                       );
