@@ -933,6 +933,8 @@ export default function AdminPanel({
 
       {/* Admin Mini Window — portaled to body */}
       {showAdminPanel && adminMiniMode && adminUnlocked && createPortal(
+        <>
+        <div className="fixed inset-0 z-[9998]" aria-hidden="true" />
         <div
           className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md shadow-2xl ${getMiniPanelPositionClasses()}`}
           style={{ 
@@ -1093,7 +1095,8 @@ export default function AdminPanel({
               </CardBody>
             </Card>
           </div>
-        </div>,
+        </div>
+        </>,
       document.body)}
     </>
   );
