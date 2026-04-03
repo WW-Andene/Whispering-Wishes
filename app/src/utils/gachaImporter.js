@@ -144,8 +144,10 @@ export async function fetchAllPools(params, signal, onProgress) {
     try {
       const poolItems = [];
       let endTime = '';
+      let prevOldestKey = '';
 
-      for (let page = 0; page < 50; page++) {
+      // No arbitrary page limit — paginate until API returns empty
+      for (let page = 0; ; page++) {
         if (signal?.aborted) break;
 
         const body = {
@@ -156,7 +158,6 @@ export async function fetchAllPools(params, signal, onProgress) {
           languageCode: params.lang || 'en',
           recordId: params.recordId || '',
         };
-        // Pass gacha_id/gacha_type if available — needed for featured banner pools
         if (params.gachaId) body.gachaId = String(params.gachaId);
         if (params.gachaType) body.gachaType = String(params.gachaType);
         if (endTime) body.endTime = endTime;
@@ -183,57 +184,15 @@ export async function fetchAllPools(params, signal, onProgress) {
         poolItems.push(...list);
         onProgress?.(poolType, 'fetching', poolItems.length);
 
+        // Find oldest record — use resourceId+time as key to avoid false stuck on same-timestamp batches
         const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) {
-          // Stuck - try fetching older records by jumping endTime back
-          // in monthly chunks until no more data
-          const stuckTime = new Date(oldest.time);
-          for (let jump = 1; jump <= 24; jump++) {
-            if (signal?.aborted) break;
-            const jumpDate = new Date(stuckTime);
-            jumpDate.setMonth(jumpDate.getMonth() - jump);
-            const jumpBody = {
-              playerId: String(params.playerId),
-              serverId: params.serverId || '',
-              cardPoolType: Number(poolType),
-              cardPoolId: params.cardPoolId || '',
-              languageCode: params.lang || 'en',
-              recordId: params.recordId || '',
-              endTime: jumpDate.toISOString(),
-            };
-            if (params.gachaId) jumpBody.gachaId = String(params.gachaId);
-            if (params.gachaType) jumpBody.gachaType = String(params.gachaType);
-            const c2 = new AbortController();
-            const t2 = setTimeout(() => c2.abort(), 15000);
-            const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
-            try {
-              const r2 = await fetch('/api/gacha/record/query', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(jumpBody),
-                signal: s2,
-              });
-              clearTimeout(t2);
-              if (!r2.ok) break;
-              const j2 = await r2.json();
-              if (j2?.code !== 0) break;
-              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
-              if (!l2.length) continue; // This month empty, try older
-              poolItems.push(...l2);
-              onProgress?.(poolType, 'fetching', poolItems.length);
-              // Continue backward from this new batch
-              const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
-              if (o2?.time) {
-                endTime = o2.time;
-                break; // Resume normal pagination from here
-              }
-            } catch { clearTimeout(t2); break; }
-            await sleep(150);
-          }
-          if (endTime === oldest.time) break; // Still stuck, give up
-          continue;
-        }
+        const oldestKey = `${oldest?.resourceId || ''}|${oldest?.time || ''}`;
+        if (!oldest?.time || oldestKey === prevOldestKey) break; // Truly stuck — same exact record
+        prevOldestKey = oldestKey;
         endTime = oldest.time;
+
+        // Safety cap at 500 pages (~5000 pulls) to prevent infinite loops
+        if (page >= 500) break;
 
         await sleep(150);
       }
