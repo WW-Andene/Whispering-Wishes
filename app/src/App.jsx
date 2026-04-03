@@ -1204,7 +1204,13 @@ function WhisperingWishesInner() {
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
           const poolType = p.cardPoolType ?? p.gachaType;
-          // Kuro API cardPoolType: 1=Std Resonator, 2=Std Weapon, 3=Featured Resonator, 4=Featured Weapon, 5/6=Beginner, 7=Collab
+          // Two numbering systems exist:
+          // - WuWaTracker export: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5=BegChar, 6=BegWeap, 7=Collab
+          // - Kuro API direct:   1=Novice, 2=FeatWeap, 3=StdChar, 4=StdWeap, 5=FeatChar, 6=BegChar, 7=BegWeap
+          // Detect source: WuWaTracker files have 'siteVersion' or 'isSorted' fields
+          // For raw API imports, convertToImportFormat already remaps to WuWaTracker numbering
+          // So by the time we reach here, all data uses WuWaTracker numbering:
+          //   1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5/6/7=Beginner
           if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 3;
           if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 4;
           if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 1;
@@ -1303,7 +1309,7 @@ function WhisperingWishesInner() {
         }
       });
       
-      // Kuro API: 1=Std Resonator, 2=Std Weapon, 3=Featured Resonator, 4=Featured Weapon, 5/6=Beginner, 7=Collab
+      // App/WuWaTracker numbering: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5/6=Beginner, 7=Collab
       const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
       const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
       const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;

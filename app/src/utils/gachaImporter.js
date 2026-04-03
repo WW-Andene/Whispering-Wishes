@@ -4,13 +4,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const POOL_LABELS = {
-  1: 'Standard Resonator',
-  2: 'Standard Weapon',
-  3: 'Featured Resonator',
-  4: 'Featured Weapon',
-  5: 'Beginner Resonator',
-  6: 'Beginner Weapon',
-  7: 'Collab',
+  1: 'Novice',
+  2: 'Featured Weapon',
+  3: 'Standard Resonator',
+  4: 'Standard Weapon',
+  5: 'Featured Resonator',
+  6: 'Beginner Resonator',
+  7: 'Beginner Weapon',
 };
 export const POOLS = [1, 2, 3, 4, 5, 6, 7];
 export const FALLBACK_API_BASE = 'https://gmserver-api.aki-game2.net/gacha/record/query';
@@ -324,21 +324,26 @@ export async function extractIdsFromImage(base64Image) {
 
 /**
  * Convert raw API pull data to the format processImportData expects.
- * Maps WuWa API pool types to the app's banner categories.
- * @param {{ pulls: Object, total: number, playerId: string }} fetchResult
- * @returns {string} JSON string compatible with processImportData
+ * Remaps Kuro API pool numbering → WuWaTracker/app numbering.
+ *
+ * Kuro API:      1=Novice, 2=FeatWeap, 3=StdChar, 4=StdWeap, 5=FeatChar, 6=BegChar, 7=BegWeap
+ * App/WuWaTracker: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5=BegChar, 6=BegWeap, 7=Collab
  */
+const API_TO_APP_POOL = { 1: 5, 2: 4, 3: 1, 4: 2, 5: 3, 6: 5, 7: 6 };
+
 export function convertToImportFormat(fetchResult) {
   const allPulls = [];
 
-  // Map pool labels back to cardPoolType numbers
-  const labelToType = {};
+  // Map pool labels back to API cardPoolType numbers
+  const labelToApiType = {};
   for (const [type, label] of Object.entries(POOL_LABELS)) {
-    labelToType[label] = parseInt(type, 10);
+    labelToApiType[label] = parseInt(type, 10);
   }
 
   for (const [label, pulls] of Object.entries(fetchResult.pulls)) {
-    const cardPoolType = labelToType[label] ?? 0;
+    const apiType = labelToApiType[label] ?? 0;
+    // Remap API numbering → app/WuWaTracker numbering
+    const cardPoolType = API_TO_APP_POOL[apiType] ?? apiType;
     for (const pull of pulls) {
       // Whitelist fields — don't spread untrusted API data
       allPulls.push({
