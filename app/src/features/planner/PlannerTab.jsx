@@ -21,7 +21,7 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 // 9 colors — one per meaning.
 const EVENT_COLORS = {
-  weeklyBoss:        '#3b82f6',  // marine (blue-500)
+  weeklyBoss:        '#60a5fa',  // marine (rarity-3star blue)
   endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
   towerOfAdversity:  '#dc2626',  // carmin (red)
   whimperingWastes:  '#06b6d4',  // cyan
