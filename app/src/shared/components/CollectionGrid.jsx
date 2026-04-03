@@ -10,15 +10,15 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { eraseEchoBg } from '../utils/echoBackground.js';
 
 // Internal: CollectionGridCard
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho }) => {
-  // Pixel-level background removal for echo images
-  const [processedUrl, setProcessedUrl] = useState(isEcho ? null : imgUrl);
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess }) => {
+  // Pixel-level background removal for echo images (skip if pre-processed)
+  const [processedUrl, setProcessedUrl] = useState((isEcho && !noBgProcess) ? null : imgUrl);
   useEffect(() => {
-    if (!isEcho || !imgUrl) { setProcessedUrl(imgUrl); return; }
+    if (!isEcho || !imgUrl || noBgProcess) { setProcessedUrl(imgUrl); return; }
     let cancelled = false;
     eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); });
     return () => { cancelled = true; };
-  }, [imgUrl, isEcho]);
+  }, [imgUrl, isEcho, noBgProcess]);
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -45,11 +45,11 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
       <div className="absolute inset-0 collection-img-wrap" style={{
-        maskImage: isEcho
-          ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
+        maskImage: (isEcho && noBgProcess) ? undefined
+          : isEcho ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
-        WebkitMaskImage: isEcho
-          ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
+        WebkitMaskImage: (isEcho && noBgProcess) ? undefined
+          : isEcho ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
       }}>
         <img
@@ -153,6 +153,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               isCharOwned={ownedChars ? ownedChars.includes(name) : undefined}
               onToggleOwned={toggleOwned}
               isEcho={dataType === 'echo'}
+              noBgProcess={dataType === 'echo' && dataLookup[name]?.noBgProcess}
             />
           );
         })}
