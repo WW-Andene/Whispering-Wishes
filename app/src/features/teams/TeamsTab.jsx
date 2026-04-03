@@ -242,7 +242,9 @@ export default function TeamsTab({
                             const slots = (state.teams[state.activeTeamIndex] || state.teams[0]).slots;
                             if (!slots.some(s => s)) return;
                             if (teamCompareEntries.length >= 5) return;
-                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: structuredClone(slots), teamIdx: state.activeTeamIndex }]);
+                            // H1-01: fallback for browsers without structuredClone (Safari <15.4)
+                            const clonedSlots = typeof structuredClone === 'function' ? structuredClone(slots) : JSON.parse(JSON.stringify(slots));
+                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: clonedSlots, teamIdx: state.activeTeamIndex }]);
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
