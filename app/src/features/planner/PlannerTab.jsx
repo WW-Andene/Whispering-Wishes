@@ -126,6 +126,22 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   const saveNote = useCallback(() => { if (!selectedDay || !onSetNote || !noteInput.trim()) return; onSetNote(selectedDay, noteInput.trim()); setNoteInput(''); }, [selectedDay, noteInput, onSetNote]);
   const deleteNote = useCallback(() => { if (!selectedDay || !onSetNote) return; onSetNote(selectedDay, ''); setNoteInput(''); }, [selectedDay, onSetNote]);
 
+  // Swipe gesture for month navigation
+  const touchRef = useRef(null);
+  const handleTouchStart = useCallback((e) => {
+    touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+  const handleTouchEnd = useCallback((e) => {
+    if (!touchRef.current) return;
+    const dx = e.changedTouches[0].clientX - touchRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchRef.current.y;
+    touchRef.current = null;
+    // Only trigger if horizontal swipe > 60px and more horizontal than vertical
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      setMonthOffset(p => dx > 0 ? p - 1 : p + 1);
+    }
+  }, []);
+
   const rows = useMemo(() => {
     const cells = [...Array(cal.firstDay).fill(null), ...cal.days];
     const r = [];
@@ -143,23 +159,26 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   // ── Chronology bars ──────────────────────────────────────────────────────
   const chronoBars = useMemo(() => {
     const monthStart = new Date(cal.year, cal.month, 1);
+    const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const bars = [];
 
-    // Banner bar
+    // Banner bar — use actual start date from BANNER_HISTORY
     const bannerEnd = new Date(bannerEndDate);
-    if (bannerEnd >= monthStart) {
-      const bStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
+    const currentBannerHistory = BANNER_HISTORY.find(b => b.version === activeBanners?.version && b.phase === activeBanners?.phase);
+    const bannerStart = currentBannerHistory ? new Date(currentBannerHistory.startDate) : monthStart;
+    if (bannerEnd >= monthStart && bannerStart <= monthEnd) {
+      const bStart = Math.max(0, Math.floor((bannerStart - monthStart) / 86400000));
       const bEnd = Math.min(cal.daysInMonth - 1, Math.floor((bannerEnd - monthStart) / 86400000));
       if (bEnd >= bStart) {
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
         const endLabel = bannerEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel });
+        const startLabel = bannerStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel });
       }
     }
 
     // Past banner phases from BANNER_HISTORY (limit to 3 most recent per month to avoid flooding)
-    const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
     let pastBannerCount = 0;
     for (const bh of BANNER_HISTORY) {
       if (pastBannerCount >= 3) break;
@@ -229,6 +248,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [cal, bannerEndDate, activeBanners]);
 
   return (
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
     <Card>
       <CardHeader><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
       <CardBody className="space-y-3">
@@ -462,6 +482,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
       </CardBody>
     </Card>
+    </div>
   );
 }
 
