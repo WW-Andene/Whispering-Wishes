@@ -16,43 +16,50 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ASTRITE CALENDAR v7 — §E + §F audit from app-audit-SKILL. 19 fixes.
+// ASTRITE CALENDAR v9 — Two views: Page Calendar + Chronology
 // ══════════════════════════════════════════════════════════════════════════════
 
-// Line colors — one color = one meaning. Gold reserved for brand (today/selection/notes).
-const LINE_COLORS = {
-  yellow: '#a3e635',   // lime-400 — Pioneer Podcast, Weekly Boss (distinct from gold #edaf18)
-  purple: '#a855f7',   // Fantasies of the Thousand Gateways
-  cyan:   '#06b6d4',   // Tactical Hologram, Whimpering Wastes
-  pink:   '#ec4899',   // Endstate Matrix
-  orange: '#f97316',   // Tower of Adversity
+// 8 colors — one per meaning. Gold reserved for today/notes.
+const EVENT_COLORS = {
+  endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
+  towerOfAdversity:  '#dc2626',  // carmin (red)
+  whimperingWastes:  '#06b6d4',  // cyan
+  tacticalHologram:  '#a3e635',  // lime
+  pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
+  illusiveRealm:     '#c4b5fd',  // lavender
 };
-// Banner: bright enough to see on dark bg, but neutral so it doesn't steal from event lines
+const EVENT_SHORT = {
+  endstateMatrix:    'Matrix',
+  towerOfAdversity:  'ToA',
+  whimperingWastes:  'W. Wastes',
+  tacticalHologram:  'Tactical H.',
+  pioneerPodcast:    'Pioneer P.',
+  illusiveRealm:     'Illusive R.',
+};
 const BANNER_COLOR = '#94a3b8';
 
 const getActiveEvents = (date) => {
   const result = [];
-  // Weekly events — span the whole week (show line Mon-Sun)
   const dow = date.getDay();
-  const isWeekday = dow >= 1 && dow <= 5; // proxy: weekly rewards available all week
-  if (isWeekday || dow === 0 || dow === 6) {
-    // Check if this week has a Monday (weekly reset day)
-    const monday = new Date(date);
-    monday.setDate(date.getDate() - ((dow + 6) % 7));
-    monday.setHours(0, 0, 0, 0);
-    if (monday <= date) {
-      for (const [key, ev] of Object.entries(EVENTS)) {
-        if (!ev.weeklyReset || !ev.rewards) continue;
-        const a = parseInt(ev.rewards, 10) || 0;
-        result.push({ key, name: ev.name, astrite: a, color: LINE_COLORS[ev.accentColor] || LINE_COLORS.yellow });
-      }
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - ((dow + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+  if (monday <= date) {
+    for (const [key, ev] of Object.entries(EVENTS)) {
+      if (!ev.weeklyReset || !ev.rewards) continue;
+      const color = EVENT_COLORS[key];
+      if (!color) continue;
+      const a = parseInt(ev.rewards, 10) || 0;
+      result.push({ key, name: ev.name, astrite: a, color });
     }
   }
   for (const [key, ev] of Object.entries(EVENTS)) {
     if (ev.dailyReset || ev.weeklyReset || !ev.currentEnd) continue;
     if (date <= new Date(ev.currentEnd)) {
+      const color = EVENT_COLORS[key];
+      if (!color) continue;
       const a = parseInt(ev.rewards, 10) || 0;
-      result.push({ key, name: ev.name, astrite: a, color: LINE_COLORS[ev.accentColor] || LINE_COLORS.yellow });
+      result.push({ key, name: ev.name, astrite: a, color });
     }
   }
   return result;
@@ -84,7 +91,6 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const events = isPast ? [] : getActiveEvents(date);
       const eventAstrite = events.reduce((s, e) => s + e.astrite, 0);
       const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      // Green state: only today when dailies marked done — we don't know past days
       const isDailyDone = isToday && dailyDone;
       days.push({
         day: d, date, dateKey, isPast, isToday, isBanner, earned, events, eventAstrite,
@@ -106,23 +112,6 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
     return r;
   }, [cal]);
 
-  const getRowLines = useCallback((row) => {
-    const lines = [];
-    let bs = -1, be = -1;
-    for (let i = 0; i < row.length; i++) { if (row[i]?.isBanner) { if (bs < 0) bs = i; be = i; } }
-    if (bs >= 0) lines.push({ start: bs, span: be - bs + 1, color: BANNER_COLOR, label: 'Banner' });
-    const seen = {};
-    for (let i = 0; i < row.length; i++) {
-      if (!row[i] || row[i].isPast) continue;
-      for (const ev of row[i].events) {
-        if (!seen[ev.key]) seen[ev.key] = { start: i, end: i, color: ev.color, name: ev.name, astrite: ev.astrite };
-        else seen[ev.key].end = i;
-      }
-    }
-    for (const v of Object.values(seen)) lines.push({ start: v.start, span: v.end - v.start + 1, color: v.color, label: v.name });
-    return lines;
-  }, []);
-
   const selEvents = useMemo(() => {
     if (!sel) return [];
     const unique = {};
@@ -130,10 +119,53 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
     return Object.values(unique);
   }, [sel]);
 
+  // ── Chronology bars ──────────────────────────────────────────────────────
+  const chronoBars = useMemo(() => {
+    const monthStart = new Date(cal.year, cal.month, 1);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const bars = [];
+
+    // Banner bar
+    const bannerEnd = new Date(bannerEndDate);
+    if (bannerEnd >= monthStart) {
+      const bStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
+      const bEnd = Math.min(cal.daysInMonth - 1, Math.floor((bannerEnd - monthStart) / 86400000));
+      if (bEnd >= bStart) {
+        const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft });
+      }
+    }
+
+    // Event bars
+    for (const [key, ev] of Object.entries(EVENTS)) {
+      if (ev.dailyReset) continue;
+      const color = EVENT_COLORS[key];
+      if (!color) continue;
+      const astrite = parseInt(ev.rewards, 10) || 0;
+
+      if (ev.weeklyReset) {
+        // Weekly: continuous bar across month
+        bars.push({ key, label: EVENT_SHORT[key] || ev.name, color, start: 0, end: cal.daysInMonth - 1, astrite, weekly: true });
+      } else if (ev.currentEnd) {
+        const evEnd = new Date(ev.currentEnd);
+        if (evEnd < monthStart) continue;
+        const eStart = Math.max(0, Math.floor((Math.max(today, monthStart) - monthStart) / 86400000));
+        const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
+        if (eEnd >= eStart) {
+          const daysLeft = Math.max(0, Math.ceil((evEnd - today) / 86400000));
+          bars.push({ key, label: EVENT_SHORT[key] || ev.name, color, start: eStart, end: eEnd, astrite, daysLeft });
+        }
+      }
+    }
+    return bars;
+  }, [cal, bannerEndDate, activeBanners]);
+
   return (
     <Card>
       <CardHeader><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
       <CardBody className="space-y-3">
+
+        {/* ── VIEW 1: Page Calendar ─────────────────────────────────────────── */}
 
         {/* Month nav */}
         <div className="flex items-center justify-between">
@@ -149,69 +181,46 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           ))}
         </div>
 
-        {/* Grid */}
+        {/* Day grid — no event lines */}
         <div className="space-y-1">
-          {rows.map((row, ri) => {
-            const lines = getRowLines(row);
-            return (
-              <div key={ri}>
-                <div className="grid grid-cols-7 gap-1">
-                  {row.map((d, ci) => {
-                    if (!d) return <div key={`e${ci}`} style={{ aspectRatio: '1', borderRadius: 'var(--radius-sm)', background: 'var(--bg-stat)', opacity: 0.3 }} />;
-                    const isSel = selectedDay === d.dateKey;
-                    const isGreen = d.isDailyDone;
-                    return (
-                      <button key={d.day} type="button" disabled={d.isPast} onClick={() => handleTap(d)}
-                        className="active:scale-95 transition-transform"
-                        style={{
-                          aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
-                          background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))'
-                            : 'var(--bg-stat)',
-                          border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
-                          boxShadow: isSel ? '0 0 8px rgba(255,255,255,0.15)' : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
-                          transition: 'all var(--transition-fast)',
-                        }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                          <span style={{
-                            fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-data)',
-                            color: d.isToday ? '#edaf18' : d.isPast ? 'var(--text-disabled)' : isGreen ? '#22c55e' : isSel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
-                          }}>{d.day}</span>
-                          {d.note && !d.isPast && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', marginTop: '2px' }} />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {lines.length > 0 && (
-                  <div style={{ position: 'relative', height: `${lines.length * 4 + 4}px`, margin: '4px 4px 0' }}>
-                    {lines.map((line, li) => (
-                      <div key={li} style={{
-                        position: 'absolute',
-                        left: `calc(${(line.start / 7) * 100}% + 2px)`,
-                        width: `calc(${(line.span / 7) * 100}% - 4px)`,
-                        top: `${li * 4}px`, height: '2px', borderRadius: '2px',
-                        background: line.color, boxShadow: `0 0 6px ${line.color}50`,
-                      }} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {rows.map((row, ri) => (
+            <div key={ri} className="grid grid-cols-7 gap-1">
+              {row.map((d, ci) => {
+                if (!d) return <div key={`e${ci}`} style={{ aspectRatio: '1', borderRadius: 'var(--radius-sm)', background: 'var(--bg-stat)', opacity: 0.3 }} />;
+                const isSel = selectedDay === d.dateKey;
+                const isGreen = d.isDailyDone;
+                return (
+                  <button key={d.day} type="button" disabled={d.isPast} onClick={() => handleTap(d)}
+                    className="active:scale-95 transition-transform"
+                    style={{
+                      aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
+                      background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : 'var(--bg-stat)',
+                      border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
+                      boxShadow: isSel ? '0 0 8px rgba(255,255,255,0.15)' : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
+                      transition: 'all var(--transition-fast)',
+                    }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                      <span style={{
+                        fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-data)',
+                        color: d.isToday ? '#edaf18' : d.isPast ? 'var(--text-disabled)' : isGreen ? '#22c55e' : isSel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
+                      }}>{d.day}</span>
+                      {d.note && !d.isPast && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', marginTop: '2px' }} />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-        {/* Legend — one color = one meaning */}
-        <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
+        {/* Calendar legend — only calendar-specific items */}
+        <div className="flex items-center gap-3 justify-center" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-sm)', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
-          <span className="flex items-center gap-1"><span style={{ width: '12px', height: '12px', borderRadius: 'var(--radius-sm)', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
-          <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
-          <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.purple, display: 'inline-block' }} /><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.yellow, display: 'inline-block' }} />Weekly</span>
-          <span className="flex items-center gap-1"><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.cyan, display: 'inline-block' }} /><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.orange, display: 'inline-block' }} /><span style={{ width: '16px', height: '2px', borderRadius: '2px', background: LINE_COLORS.pink, display: 'inline-block' }} />Events</span>
+          <span className="flex items-center gap-1"><span style={{ width: '10px', height: '10px', borderRadius: 'var(--radius-sm)', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
           <span className="flex items-center gap-1"><span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
         </div>
 
-        {/* Detail panel — animated entrance */}
+        {/* Detail panel */}
         {sel && (
           <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-md)', animation: 'slideUp 0.2s ease-out' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-sm)' }}>
@@ -262,6 +271,63 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome / ASTRITE_PER_PULL * cal.daysInMonth)}</span> Convenes/month
           </div>
         )}
+
+        {/* ── VIEW 2: Chronology ────────────────────────────────────────────── */}
+
+        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-md)' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}>Chronology</div>
+
+          {/* Day scale header */}
+          <div className="flex" style={{ marginBottom: '4px' }}>
+            {[1, Math.ceil(cal.daysInMonth / 4), Math.ceil(cal.daysInMonth / 2), Math.ceil(cal.daysInMonth * 3 / 4), cal.daysInMonth].map((d, i) => (
+              <span key={i} style={{ flex: 1, fontSize: '10px', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: i === 0 ? 'left' : i === 4 ? 'right' : 'center' }}>{d}</span>
+            ))}
+          </div>
+
+          {/* Chronology bars */}
+          <div style={{ position: 'relative' }}>
+            {chronoBars.map((bar) => {
+              const leftPct = (bar.start / cal.daysInMonth) * 100;
+              const widthPct = ((bar.end - bar.start + 1) / cal.daysInMonth) * 100;
+              return (
+                <div key={bar.key} style={{ position: 'relative', height: '22px', marginBottom: '4px' }}>
+                  <div style={{
+                    position: 'absolute',
+                    left: `${leftPct}%`,
+                    width: `${widthPct}%`,
+                    height: '100%',
+                    borderRadius: 'var(--radius-sm)',
+                    background: `linear-gradient(to right, ${bar.color}30, ${bar.color}18)`,
+                    border: `1px solid ${bar.color}60`,
+                    boxShadow: `0 0 8px ${bar.color}20`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 6px',
+                    overflow: 'hidden',
+                    minWidth: '0',
+                  }}>
+                    <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
+                    {bar.astrite > 0 && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
+                    {bar.daysLeft != null && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
+                    {bar.weekly && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>wk</span>}
+                  </div>
+                </div>
+              );
+            })}
+            {chronoBars.length === 0 && (
+              <div className="text-center py-2" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>No active events this month</div>
+            )}
+          </div>
+
+          {/* Chronology legend */}
+          <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: '10px', color: 'var(--text-disabled)', marginTop: 'var(--space-sm)' }}>
+            <span className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
+            {Object.entries(EVENT_COLORS).map(([key, color]) => (
+              <span key={key} className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: '2px', background: color, display: 'inline-block' }} />{EVENT_SHORT[key] || key}</span>
+            ))}
+          </div>
+        </div>
+
       </CardBody>
     </Card>
   );
