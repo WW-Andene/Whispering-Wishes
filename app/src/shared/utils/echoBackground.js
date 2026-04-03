@@ -6,6 +6,7 @@
 
 const cache = new Map();
 const pending = new Map();
+const MAX_CACHE_ENTRIES = 80; // J3-01: LRU eviction — ~80 entries × ~100KB ≈ 8MB cap
 
 /**
  * Fetch image as a blob and create an ImageBitmap — avoids CORS canvas tainting.
@@ -163,6 +164,11 @@ export function eraseEchoBg(src, opts = {}) {
 
       ctx.putImageData(imageData, 0, 0);
       const result = canvas.toDataURL('image/png');
+      // J3-01: LRU eviction — delete oldest entries when cache exceeds limit
+      if (cache.size >= MAX_CACHE_ENTRIES) {
+        const oldest = cache.keys().next().value;
+        cache.delete(oldest);
+      }
       cache.set(src, result);
       pending.delete(src);
       return result;
