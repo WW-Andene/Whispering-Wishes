@@ -167,11 +167,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         }
         // Build week segments: each runs from Monday to next Monday-1 (or month end)
         const segments = [];
+        const todayIdx = Math.floor((today - monthStart) / 86400000);
         // First segment: month start → first Monday-1 (partial week)
         if (mondays.length > 0 && mondays[0] > 0) {
-          segments.push({ start: 0, end: mondays[0] - 1 });
+          const partialEnd = mondays[0] - 1;
+          segments.push({ start: 0, end: partialEnd, isCurrent: todayIdx >= 0 && todayIdx <= partialEnd });
         }
-        const todayIdx = Math.floor((today - monthStart) / 86400000);
         for (let i = 0; i < mondays.length; i++) {
           const segStart = mondays[i];
           const segEnd = i + 1 < mondays.length ? mondays[i + 1] - 1 : cal.daysInMonth - 1;
@@ -249,7 +250,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                       aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
                       background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : 'var(--bg-stat)',
                       border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
-                      boxShadow: isSel ? '0 0 8px rgba(255,255,255,0.15)' : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
+                      boxShadow: isSel ? (d.isToday ? '0 0 10px rgba(237,175,24,0.3)' : '0 0 8px rgba(255,255,255,0.15)') : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
                       transition: 'all var(--transition-fast)',
                     }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
@@ -311,9 +312,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
             {/* U6-02: Hide note input for past days (read-only view) */}
             {!sel.isPast && (
-              <div className="flex gap-2">
-                <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} />
-                <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
+              <div>
+                <div className="flex gap-2">
+                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
+                  <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
+                </div>
+                {noteInput.length > 70 && <div style={{ fontSize: '9px', color: noteInput.length >= 100 ? '#ef4444' : 'var(--text-disabled)', textAlign: 'right', marginTop: '2px' }}>{noteInput.length}/100</div>}
               </div>
             )}
 
@@ -408,7 +412,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     opacity: bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: '10px', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
-                    {bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>ended</span>}
+                    {bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
                     {bar.astrite > 0 && !bar.ended && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
                     {bar.endLabel && !bar.ended && <span style={{ fontSize: '9px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>→{bar.endLabel}</span>}
                     {bar.daysLeft != null && <span style={{ fontSize: '10px', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
