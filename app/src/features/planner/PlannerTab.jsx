@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus, Star, Clock, Swords, Sparkles } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
 import { EVENTS } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
@@ -14,42 +14,38 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
-// ── Pity-style color for earned Convenes (matches analytics pull log) ────────
-const getConveneColor = (convenes) => {
-  if (convenes <= 5) return '#6b7280';   // gray — barely started
-  if (convenes <= 20) return '#22c55e';  // green — building up
-  if (convenes <= 40) return '#4ade80';  // light green — decent
-  if (convenes <= 60) return '#edaf18';  // gold — solid
-  if (convenes <= 80) return '#f97316';  // orange — close to pity
-  return '#ef4444';                       // red — guaranteed territory
+// ══════════════════════════════════════════════════════════════════════════════
+// ASTRITE CALENDAR — Clean, minimal, neon-bar style from analytics histogram
+// One accent color per cell based on earned progress. No clutter.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Neon color by earned convenes (matches analytics pity distribution bars)
+const getDayColor = (earned, target) => {
+  if (earned <= 0) return null;
+  const pct = target > 0 ? (earned / target) * 100 : earned;
+  if (pct >= 80) return '#ef4444';  // red — nearly there
+  if (pct >= 60) return '#f97316';  // orange
+  if (pct >= 40) return '#edaf18';  // gold
+  if (pct >= 20) return '#4ade80';  // lime
+  return '#22c55e';                  // green — just started
 };
 
-// ── Event markers for calendar days ──────────────────────────────────────────
-const getDayEvents = (date, eventStatus) => {
-  const markers = [];
-  const dow = date.getDay(); // 0=Sun
-  // Daily reset — every day
-  if (eventStatus?.dailyReset === 'done') markers.push({ type: 'daily', color: '#edaf18', label: 'Daily' });
-  // Weekly resets — Monday (1)
+// Collect event astrite rewards for a date
+const getEventAstrite = (date) => {
+  let total = 0;
+  const dow = date.getDay();
+  // Weekly rewards (Monday)
   if (dow === 1) {
-    if (EVENTS.weeklyBoss) markers.push({ type: 'weekly', color: '#a855f7', label: 'Boss' });
-    if (EVENTS.illusiveRealm) markers.push({ type: 'weekly', color: '#a855f7', label: 'Realm' });
-  }
-  // Timed events — check if date falls within event period
-  for (const [key, ev] of Object.entries(EVENTS)) {
-    if (ev.dailyReset || ev.weeklyReset) continue;
-    if (!ev.currentEnd) continue;
-    const evEnd = new Date(ev.currentEnd);
-    // Event is active if date is before end (we don't know exact start for all)
-    if (date <= evEnd) {
-      const astrite = parseInt(ev.rewards, 10);
-      if (astrite > 0) markers.push({ type: 'event', color: ev.accentColor === 'purple' ? '#a855f7' : ev.accentColor === 'cyan' ? '#22d3ee' : '#edaf18', label: ev.name.slice(0, 8), astrite });
+    for (const ev of Object.values(EVENTS)) {
+      if (ev.weeklyReset && ev.rewards) {
+        const a = parseInt(ev.rewards, 10);
+        if (a > 0) total += a;
+      }
     }
   }
-  return markers;
+  return total;
 };
 
-// ── Astrite Income Calendar ──────────────────────────────────────────────────
 function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -62,34 +58,29 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
     const month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const bannerEnd = new Date(bannerEndDate);
-    bannerEnd.setHours(23, 59, 59, 999);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const bannerEnd = new Date(bannerEndDate); bannerEnd.setHours(23, 59, 59, 999);
 
     const days = [];
     for (let d = 1; d <= daysInMonth; d++) {
-      const date = new Date(year, month, d);
-      date.setHours(0, 0, 0, 0);
+      const date = new Date(year, month, d); date.setHours(0, 0, 0, 0);
       const isPast = date < today;
       const isToday = date.getTime() === today.getTime();
-      const isBannerPeriod = date <= bannerEnd && date >= today;
+      const isBannerDay = date <= bannerEnd && date >= today;
       const daysSinceToday = Math.max(0, Math.floor((date - today) / 86400000));
-      // Earned convenes only — don't include current Astrite
-      const earnedAstrite = isPast ? 0 : dailyIncome * (daysSinceToday + (isToday ? 0 : 1));
-      const earnedConvenes = Math.floor(earnedAstrite / ASTRITE_PER_PULL);
-      const events = !isPast ? getDayEvents(date, eventStatus) : [];
+      const earned = isPast ? 0 : dailyIncome * (daysSinceToday + (isToday ? 0 : 1));
+      const eventBonus = isPast ? 0 : getEventAstrite(date);
+      const totalEarned = earned + eventBonus;
+      const convenes = Math.floor(totalEarned / ASTRITE_PER_PULL);
       const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const note = calendarNotes?.[dateKey] || '';
 
-      days.push({ day: d, date, dateKey, isPast, isToday, isBannerPeriod, earnedAstrite, earnedConvenes, events, note });
+      days.push({ day: d, date, dateKey, isPast, isToday, isBannerDay, earned: totalEarned, convenes, eventBonus, note: calendarNotes?.[dateKey] || '' });
     }
 
-    const monthName = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    return { year, month, firstDay, daysInMonth, days, monthName };
-  }, [monthOffset, dailyIncome, bannerEndDate, eventStatus, calendarNotes]);
+    return { year, month, firstDay, daysInMonth, days, monthName: viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
+  }, [monthOffset, dailyIncome, bannerEndDate, calendarNotes]);
 
-  const handleDayClick = useCallback((d) => {
+  const handleDayTap = useCallback((d) => {
     if (d.isPast) return;
     if (selectedDay === d.dateKey) { setSelectedDay(null); return; }
     setSelectedDay(d.dateKey);
@@ -97,162 +88,142 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [selectedDay]);
 
   const saveNote = useCallback(() => {
-    if (selectedDay && onSetNote) {
-      onSetNote(selectedDay, noteInput.trim());
-    }
+    if (selectedDay && onSetNote) onSetNote(selectedDay, noteInput.trim());
     setSelectedDay(null);
     setNoteInput('');
   }, [selectedDay, noteInput, onSetNote]);
 
-  const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const selectedData = selectedDay ? calendarData.days.find(d => d.dateKey === selectedDay) : null;
 
   return (
     <Card>
       <CardHeader>
-        <Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />
-        Astrite Calendar
+        <Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar
       </CardHeader>
-      <CardBody className="space-y-2">
-        {/* Month navigation */}
+      <CardBody className="space-y-3">
+        {/* ── Month nav ── */}
         <div className="flex items-center justify-between">
-          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Previous month">
-            <ChevronLeft size={16} />
-          </button>
-          <button onClick={() => setMonthOffset(0)} className="text-gray-200 text-sm font-medium hover:text-yellow-400 transition-colors" aria-label="Go to current month">
-            {calendarData.monthName}
-          </button>
-          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors" aria-label="Next month">
-            <ChevronRight size={16} />
-          </button>
+          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white" aria-label="Previous month"><ChevronLeft size={16} /></button>
+          <button onClick={() => setMonthOffset(0)} className="text-gray-200 text-sm font-medium hover:text-yellow-400 transition-colors" aria-label="Current month">{calendarData.monthName}</button>
+          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white" aria-label="Next month"><ChevronRight size={16} /></button>
         </div>
 
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 gap-0.5 text-center">
-          {WEEKDAYS.map(d => (
-            <div key={d} className="text-gray-500 text-[9px] font-medium py-1">{d}</div>
+        {/* ── Weekday headers ── */}
+        <div className="grid grid-cols-7 gap-1">
+          {['S','M','T','W','T','F','S'].map((d, i) => (
+            <div key={i} className="text-center text-gray-600 text-[9px] font-bold py-0.5">{d}</div>
           ))}
         </div>
 
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 gap-0.5">
-          {Array.from({ length: calendarData.firstDay }, (_, i) => (
-            <div key={`empty-${i}`} className="aspect-square" />
-          ))}
+        {/* ── Calendar grid — neon bar fill per day ── */}
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: calendarData.firstDay }, (_, i) => <div key={`e${i}`} />)}
           {calendarData.days.map(d => {
-            const conveneColor = d.earnedConvenes > 0 ? getConveneColor(d.earnedConvenes) : null;
+            const color = getDayColor(d.earned, planData.targetAstrite);
+            const fillPct = planData.targetAstrite > 0 ? Math.min(100, (d.earned / planData.targetAstrite) * 100) : 0;
             const isSelected = selectedDay === d.dateKey;
             const hasNote = !!d.note;
-            const hasEvents = d.events.length > 0;
+
             return (
               <button
-                key={d.day}
-                type="button"
-                onClick={() => handleDayClick(d)}
-                disabled={d.isPast}
-                className={`aspect-square rounded border p-0.5 flex flex-col items-center justify-center relative transition-all ${
-                  isSelected ? 'border-yellow-400 ring-1 ring-yellow-400/50'
-                  : d.isToday ? 'border-yellow-500/60'
-                  : d.isBannerPeriod ? 'border-cyan-500/30'
-                  : d.isPast ? 'border-transparent'
-                  : 'border-[var(--border-subtle)]'
+                key={d.day} type="button" disabled={d.isPast}
+                onClick={() => handleDayTap(d)}
+                className={`relative rounded overflow-hidden transition-all ${
+                  isSelected ? 'ring-1 ring-yellow-400'
+                  : d.isToday ? 'ring-1 ring-yellow-500/60'
+                  : ''
                 }`}
-                style={{
-                  background: d.isToday ? 'rgba(237,175,24,0.15)'
-                    : d.isBannerPeriod && conveneColor ? `${conveneColor}12`
-                    : d.isPast ? 'rgba(255,255,255,0.02)'
-                    : 'rgba(255,255,255,0.03)',
-                }}
-                title={d.isPast ? `Day ${d.day}` : `Day ${d.day}: +${d.earnedAstrite.toLocaleString('en-US')} Astrite (${d.earnedConvenes} Convenes earned)${d.note ? `\n📝 ${d.note}` : ''}`}
+                style={{ aspectRatio: '1', background: 'var(--bg-stat)' }}
+                title={d.isPast ? '' : `+${d.earned.toLocaleString('en-US')} Astrite${d.eventBonus ? ` (${d.eventBonus} from events)` : ''} — ${d.convenes} Convenes${d.note ? `\n${d.note}` : ''}`}
               >
+                {/* Neon fill bar from bottom — same style as histogram */}
+                {!d.isPast && color && fillPct > 0 && (
+                  <div className="absolute bottom-0 left-0 right-0 transition-all" style={{
+                    height: `${Math.max(fillPct, 8)}%`,
+                    background: `linear-gradient(to top, ${color}35, ${color}10)`,
+                    borderTop: `1px solid ${color}60`,
+                    boxShadow: `inset 0 0 8px ${color}20`,
+                  }} />
+                )}
+
                 {/* Day number */}
-                <span className={`text-[10px] leading-none font-medium ${d.isToday ? 'text-yellow-400' : d.isPast ? 'text-gray-600' : 'text-gray-300'}`}>
-                  {d.day}
-                </span>
-                {/* Earned convenes with pity-style color */}
-                {!d.isPast && dailyIncome > 0 && d.earnedConvenes > 0 && (
-                  <span className="text-[7px] leading-none mt-0.5 kuro-number font-bold" style={{ color: conveneColor }}>
-                    {d.earnedConvenes}
+                <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                  <span className={`text-[11px] leading-none font-semibold ${
+                    d.isToday ? 'text-yellow-400' : d.isPast ? 'text-gray-700' : color ? '' : 'text-gray-400'
+                  }`} style={!d.isPast && color ? { color } : undefined}>
+                    {d.day}
                   </span>
-                )}
-                {/* Event dot indicators */}
-                {hasEvents && (
-                  <div className="flex gap-px mt-px">
-                    {d.events.slice(0, 3).map((ev, i) => (
-                      <span key={i} className="w-1 h-1 rounded-full" style={{ background: ev.color }} />
-                    ))}
-                  </div>
-                )}
+
+                  {/* Banner period dot */}
+                  {d.isBannerDay && !d.isPast && (
+                    <span className="w-1 h-1 rounded-full bg-cyan-400 mt-0.5" />
+                  )}
+                </div>
+
                 {/* Note indicator */}
-                {hasNote && <span className="absolute top-0 right-0.5 text-[6px] leading-none">📝</span>}
+                {hasNote && <span className="absolute top-0 right-0.5 text-[6px] z-10">📝</span>}
               </button>
             );
           })}
         </div>
 
-        {/* Selected day detail + note editor */}
-        {selectedDay && (() => {
-          const d = calendarData.days.find(dd => dd.dateKey === selectedDay);
-          if (!d) return null;
-          return (
-            <div className="p-3 rounded-lg border border-yellow-500/30" style={{ background: 'var(--bg-elevated)' }}>
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <div className="text-gray-200 text-xs font-medium">{d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</div>
-                  {d.earnedConvenes > 0 && (
-                    <div className="text-[10px] mt-0.5">
-                      <span style={{ color: getConveneColor(d.earnedConvenes) }} className="kuro-number font-bold">{d.earnedConvenes}</span>
-                      <span className="text-gray-400"> Convenes earned by this day</span>
-                    </div>
-                  )}
-                </div>
-                <button onClick={() => setSelectedDay(null)} className="text-gray-500 text-xs p-1">✕</button>
-              </div>
-              {/* Events for this day */}
-              {d.events.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {d.events.map((ev, i) => (
-                    <span key={i} className="text-[9px] px-1.5 py-0.5 rounded-full border" style={{ color: ev.color, borderColor: `${ev.color}40`, background: `${ev.color}10` }}>
-                      {ev.label}{ev.astrite ? ` +${ev.astrite}` : ''}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {/* Note input */}
-              <div className="flex gap-1.5">
-                <input
-                  type="text"
-                  value={noteInput}
-                  onChange={e => setNoteInput(e.target.value.slice(0, 50))}
-                  onKeyDown={e => { if (e.key === 'Enter') saveNote(); }}
-                  placeholder="Add a note..."
-                  className="kuro-input flex-1 text-[10px] py-1.5 px-2"
-                  aria-label="Calendar day note"
-                />
-                <button onClick={saveNote} className="kuro-btn text-[10px] px-2 py-1 active-gold">Save</button>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Legend */}
-        <div className="flex items-center gap-3 justify-center text-[9px] text-gray-500 pt-1 flex-wrap">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm" style={{ background: 'rgba(237,175,24,0.2)', border: '1px solid rgba(237,175,24,0.5)' }} /> Today</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-cyan-500/10 border border-cyan-500/30" /> Banner</span>
-          <span className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-yellow-400" /><span className="w-1 h-1 rounded-full bg-purple-400" /> Events</span>
-          <span className="flex items-center gap-1"><span className="text-[8px]">📝</span> Note</span>
+        {/* ── Legend — minimal ── */}
+        <div className="flex items-center gap-4 justify-center text-[9px] text-gray-500">
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />Today</span>
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />Banner</span>
+          <span className="flex items-center gap-1">
+            <span className="flex gap-px">{['#22c55e','#edaf18','#ef4444'].map(c => <span key={c} className="w-1.5 h-3 rounded-sm" style={{ background: `${c}40`, borderTop: `1px solid ${c}` }} />)}</span>
+            Progress
+          </span>
         </div>
 
-        {/* Month summary */}
+        {/* ── Selected day panel ── */}
+        {selectedData && (
+          <div className="p-3 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-elevated)' }}>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-200 text-xs font-medium">
+                {selectedData.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </span>
+              <div className="flex items-center gap-3">
+                {selectedData.earned > 0 && (
+                  <span className="text-[10px]">
+                    <span className="text-yellow-400 kuro-number font-bold">{selectedData.earned.toLocaleString('en-US')}</span>
+                    <span className="text-gray-500"> Astrite</span>
+                    {selectedData.eventBonus > 0 && <span className="text-purple-400 ml-1">(+{selectedData.eventBonus} events)</span>}
+                  </span>
+                )}
+                <button onClick={() => setSelectedDay(null)} className="text-gray-500 p-1 hover:text-white">✕</button>
+              </div>
+            </div>
+
+            {/* Note editor */}
+            <div className="flex gap-1.5">
+              <input
+                type="text" value={noteInput}
+                onChange={e => setNoteInput(e.target.value.slice(0, 100))}
+                onKeyDown={e => { if (e.key === 'Enter') saveNote(); }}
+                placeholder="Add a note or goal..."
+                className="kuro-input flex-1 text-[10px] py-1.5 px-2"
+                aria-label="Calendar note"
+              />
+              <button onClick={saveNote} className="kuro-btn text-[10px] px-3 py-1 active-gold">
+                {selectedData.note ? 'Update' : 'Save'}
+              </button>
+            </div>
+            {selectedData.note && (
+              <div className="mt-1.5 flex justify-between items-center">
+                <span className="text-gray-300 text-[10px]">📝 {selectedData.note}</span>
+                <button onClick={() => { onSetNote(selectedDay, ''); setNoteInput(''); }} className="text-red-400 text-[10px] hover:text-red-300">Remove</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Month total ── */}
         {dailyIncome > 0 && (
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <div className="kuro-stat p-2 text-center">
-              <div className="text-yellow-400 kuro-number text-lg">{(dailyIncome * calendarData.daysInMonth).toLocaleString('en-US')}</div>
-              <div className="text-gray-400 text-[9px]">Astrite this month</div>
-            </div>
-            <div className="kuro-stat p-2 text-center">
-              <div className="text-yellow-400 kuro-number text-lg">{Math.floor(dailyIncome * calendarData.daysInMonth / ASTRITE_PER_PULL)}</div>
-              <div className="text-gray-400 text-[9px]">Convenes this month</div>
-            </div>
+          <div className="flex justify-center gap-4 text-[10px]">
+            <span className="text-gray-400">This month: <span className="text-yellow-400 kuro-number font-bold">{(dailyIncome * calendarData.daysInMonth).toLocaleString('en-US')}</span> Astrite</span>
+            <span className="text-gray-400">≈ <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome * calendarData.daysInMonth / ASTRITE_PER_PULL)}</span> Convenes</span>
           </div>
         )}
       </CardBody>
