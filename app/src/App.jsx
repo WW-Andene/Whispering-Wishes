@@ -225,6 +225,9 @@ function WhisperingWishesInner() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showServerDropdown, setShowServerDropdown] = useState(false);
+  // Admin panel state lifted to App so mini panel survives tab switches
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [adminMiniMode, setAdminMiniMode] = useState(false);
 
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
@@ -1596,8 +1599,9 @@ function WhisperingWishesInner() {
         )}
 
 
-        {/* [SECTION:TAB-PROFILE] */}
-        {activeTab === 'profile' && (
+        {/* [SECTION:TAB-PROFILE] — keep mounted when admin mini panel is open so portal survives tab switches */}
+        {(activeTab === 'profile' || (showAdminPanel && adminMiniMode)) && (
+          <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Profile">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ProfileTab
@@ -1639,9 +1643,14 @@ function WhisperingWishesInner() {
             firebaseUrl={firebaseUrl}
             setActiveTab={setActiveTab}
             withCacheBuster={withCacheBuster}
+            showAdminPanel={showAdminPanel}
+            setShowAdminPanel={setShowAdminPanel}
+            adminMiniMode={adminMiniMode}
+            setAdminMiniMode={setAdminMiniMode}
           />
             </React.Suspense>
           </TabErrorBoundary>
+          </div>
         )}
 
       </main>

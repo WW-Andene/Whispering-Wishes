@@ -121,20 +121,21 @@ export default function ProfileTab({
   setActiveTab,
   // Cache busting (for admin collection images)
   withCacheBuster,
+  // Admin panel state (lifted to App.jsx so mini panel survives tab switches)
+  showAdminPanel, setShowAdminPanel,
+  adminMiniMode, setAdminMiniMode,
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
-  // ── Admin state ──────────────────────────────────────────────────────────
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  // ── Admin state (showAdminPanel + adminMiniMode from props — survives tab switches) ──
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminTapCount, setAdminTapCount] = useState(0);
   const adminTapTimerRef = useRef(null);
   const adminTapCountRef = useRef(0);
   const [adminTab, setAdminTab] = useState('banners');
-  const [adminMiniMode, setAdminMiniMode] = useState(false);
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
       // Check permanent ban
