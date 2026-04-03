@@ -1122,12 +1122,30 @@ function WhisperingWishesInner() {
         if (!doRestore) return;
         dispatch({ type: 'LOAD_STATE', state: data.state });
         // Restore auxiliary data (visual settings, team equipment, etc.)
-        if (data.aux) {
-          try { if (data.aux.visualSettings) localStorage.setItem('whispering-wishes-visual', JSON.stringify(data.aux.visualSettings)); } catch {}
-          try { if (data.aux.imageFraming) localStorage.setItem('whispering-wishes-framing', JSON.stringify(data.aux.imageFraming)); } catch {}
-          try { if (data.aux.collectionImages) localStorage.setItem('whispering-wishes-images', JSON.stringify(data.aux.collectionImages)); } catch {}
-          try { if (data.aux.trophyOverrides) localStorage.setItem('whispering-wishes-trophy-overrides', JSON.stringify(data.aux.trophyOverrides)); } catch {}
-          try { if (data.aux.teamEquipment) localStorage.setItem('ww-team-equipment', JSON.stringify(data.aux.teamEquipment)); } catch {}
+        // B4-01: Use correct constant keys (was writing to wrong hardcoded keys)
+        // B4-02: Sanitize aux data to match restore flow (App.jsx:1826-1842)
+        if (data.aux && typeof data.aux === 'object') {
+          try {
+            if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+              localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+              setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+            }
+            if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+              localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+              setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+            }
+            if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+              localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+              setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+            }
+            if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+              localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+              setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+            }
+            if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
+              localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+            }
+          } catch {}
         }
         toast?.addToast?.(`Backup restored! (v${data.version || '?'}, ${data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'unknown date'})`, 'success');
         return;
