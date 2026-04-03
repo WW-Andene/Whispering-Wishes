@@ -50,16 +50,29 @@ const getActiveEvents = (date) => {
     const a = parseInt(ev.rewards, 10) || 0;
     result.push({ key, name: ev.name, astrite: a, color });
   }
-  // Non-weekly events: check if date falls within derived start→end range
+  // Non-weekly events: check if date falls within any cycle
   for (const [key, ev] of Object.entries(EVENTS)) {
     if (ev.dailyReset || ev.weeklyReset || !ev.currentEnd) continue;
+    const color = EVENT_COLORS[key];
+    if (!color) continue;
+    const a = parseInt(ev.rewards, 10) || 0;
     const evEnd = new Date(ev.currentEnd);
-    const evStart = getEventStart(ev);
-    if (date <= evEnd && (!evStart || date >= evStart)) {
-      const color = EVENT_COLORS[key];
-      if (!color) continue;
-      const a = parseInt(ev.rewards, 10) || 0;
-      result.push({ key, name: ev.name, astrite: a, color });
+    const cycleDays = ev.resetType === '28 days' ? 28 : 0;
+    if (cycleDays > 0) {
+      // Check if date falls in any 28-day cycle
+      const cycleMs = cycleDays * 86400000;
+      const diff = evEnd.getTime() - date.getTime();
+      const cyclesAway = Math.floor(diff / cycleMs);
+      const cEnd = new Date(evEnd.getTime() - cyclesAway * cycleMs);
+      const cStart = new Date(cEnd.getTime() - cycleMs);
+      if (date >= cStart && date <= cEnd) {
+        result.push({ key, name: ev.name, astrite: a, color });
+      }
+    } else {
+      const evStart = getEventStart(ev);
+      if (date <= evEnd && (!evStart || date >= evStart)) {
+        result.push({ key, name: ev.name, astrite: a, color });
+      }
     }
   }
   return result;
@@ -229,18 +242,41 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         }
         bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
       } else if (ev.currentEnd) {
-        const evEnd = new Date(ev.currentEnd);
-        const evStart = getEventStart(ev) || monthStart;
-        // Skip if event doesn't overlap this month
-        if (evEnd < monthStart || evStart > monthEnd) continue;
-        const ended = evEnd < today;
-        const eStart = Math.max(0, Math.floor((evStart - monthStart) / 86400000));
-        const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((evEnd - monthStart) / 86400000));
-        if (eEnd >= eStart) {
-          const endLabel = evEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          const startLabel = evStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          const daysLeft = ended ? undefined : Math.max(0, Math.ceil((evEnd - today) / 86400000));
-          bars.push({ key, label: ev.name, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft });
+        const evEndBase = new Date(ev.currentEnd);
+        const cycleDays = ev.resetType === '28 days' ? 28 : 0;
+
+        // For 28-day recurring events, compute all cycles that overlap this month
+        // For version events, just show the current cycle
+        const cycles = [];
+        if (cycleDays > 0) {
+          const cycleMs = cycleDays * 86400000;
+          // Go back up to 24 cycles (~2 years) to find ones overlapping this month
+          for (let c = -24; c <= 0; c++) {
+            const cEnd = new Date(evEndBase.getTime() + c * cycleMs);
+            const cStart = new Date(cEnd.getTime() - cycleMs);
+            if (cEnd >= monthStart && cStart <= monthEnd) {
+              cycles.push({ start: cStart, end: cEnd });
+            }
+          }
+        } else {
+          // Version-specific event: single cycle
+          const evStart = getEventStart(ev) || monthStart;
+          if (evEndBase >= monthStart && evStart <= monthEnd) {
+            cycles.push({ start: evStart, end: evEndBase });
+          }
+        }
+
+        for (let ci = 0; ci < cycles.length; ci++) {
+          const { start: cStart, end: cEnd } = cycles[ci];
+          const ended = cEnd < today;
+          const eStart = Math.max(0, Math.floor((cStart - monthStart) / 86400000));
+          const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((cEnd - monthStart) / 86400000));
+          if (eEnd >= eStart) {
+            const endLabel = cEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const startLabel = cStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
+            bars.push({ key: ci === 0 ? key : `${key}-c${ci}`, label: ev.name, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft });
+          }
         }
       }
     }
