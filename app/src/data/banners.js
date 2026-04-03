@@ -387,7 +387,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Dauntless Evernight': 'https://i.ibb.co/PvhJ1Cw2/Dauntless-Evernight.webp',
   'Autumntrace': 'https://wuwa.gg/images/Items/T_IconWeapon21010074_UI.png', // 4.1 fix: temp source — migrate to ibb.co when available
   // 1-Cost Echo images
-  'Whiff Whaff': 'https://i.ibb.co/pvPDj2t6/Whiff-Whaff.png',
+  'Whiff Whaff': 'https://i.ibb.co/4nmqLgQf/1775170547988.png',
   'Snip Snap': 'https://i.ibb.co/b5w0y6Fm/Snip-Snap.png',
   'Zig Zag': 'https://i.ibb.co/NgB1CXPx/Zig-Zag.png',
   'Tick Tack': 'https://i.ibb.co/5xv8bZQw/Tick-Tack.png',
