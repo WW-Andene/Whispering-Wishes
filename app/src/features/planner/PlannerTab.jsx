@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Minus, Plus, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
-import { EVENTS, BANNER_HISTORY } from '../../data/banners.js';
+import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, VERSION_DATES } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
@@ -31,48 +31,68 @@ const EVENT_COLORS = {
 };
 const BANNER_COLOR = '#edaf18';  // gold
 
-// Derive event start date from resetType for accurate date ranges
-const getEventStart = (ev) => {
-  if (!ev.currentEnd) return null;
-  const end = new Date(ev.currentEnd);
-  if (ev.resetType === '28 days') return new Date(end.getTime() - 28 * 86400000);
-  // 'Version update' events: started when current game version launched
-  return BANNER_HISTORY.length > 0 ? new Date(BANNER_HISTORY[0].startDate) : new Date();
+// Get the earliest date an event type existed (from introducedVersion)
+const getIntroducedDate = (ev) => {
+  if (!ev.introducedVersion) return null;
+  const vd = VERSION_DATES.find(v => v.version === ev.introducedVersion);
+  return vd ? new Date(vd.start) : null;
+};
+
+// For 28-day events: find the cycle that contains a given date
+const get28DayCycle = (ev, date) => {
+  if (ev.resetType !== '28 days' || !ev.currentEnd) return null;
+  const introduced = getIntroducedDate(ev);
+  if (introduced && date < introduced) return null;
+  const baseEnd = new Date(ev.currentEnd);
+  const cycleMs = 28 * 86400000;
+  const diff = baseEnd.getTime() - date.getTime();
+  const cyclesAway = Math.floor(diff / cycleMs);
+  const cEnd = new Date(baseEnd.getTime() - cyclesAway * cycleMs);
+  const cStart = new Date(cEnd.getTime() - cycleMs);
+  if (date >= cStart && date <= cEnd) return { start: cStart, end: cEnd };
+  return null;
 };
 
 const getActiveEvents = (date) => {
   const result = [];
-  // Weekly events are always active
+  // Weekly events — only show after their introduction version
   for (const [key, ev] of Object.entries(EVENTS)) {
     if (!ev.weeklyReset || !ev.rewards) continue;
     const color = EVENT_COLORS[key];
     if (!color) continue;
+    const introduced = getIntroducedDate(ev);
+    if (introduced && date < introduced) continue;
     const a = parseInt(ev.rewards, 10) || 0;
     result.push({ key, name: ev.name, astrite: a, color });
   }
-  // Non-weekly events: check if date falls within any cycle
+  // 28-day cycling events
   for (const [key, ev] of Object.entries(EVENTS)) {
     if (ev.dailyReset || ev.weeklyReset || !ev.currentEnd) continue;
+    if (ev.permanent) continue; // Skip permanent content
     const color = EVENT_COLORS[key];
     if (!color) continue;
     const a = parseInt(ev.rewards, 10) || 0;
-    const evEnd = new Date(ev.currentEnd);
-    const cycleDays = ev.resetType === '28 days' ? 28 : 0;
-    if (cycleDays > 0) {
-      // Check if date falls in any 28-day cycle
-      const cycleMs = cycleDays * 86400000;
-      const diff = evEnd.getTime() - date.getTime();
-      const cyclesAway = Math.floor(diff / cycleMs);
-      const cEnd = new Date(evEnd.getTime() - cyclesAway * cycleMs);
-      const cStart = new Date(cEnd.getTime() - cycleMs);
-      if (date >= cStart && date <= cEnd) {
+    if (ev.resetType === '28 days') {
+      if (get28DayCycle(ev, date)) {
         result.push({ key, name: ev.name, astrite: a, color });
       }
-    } else {
-      const evStart = getEventStart(ev);
-      if (date <= evEnd && (!evStart || date >= evStart)) {
+    } else if (ev.currentStart) {
+      // Events with explicit start/end (Endstate Matrix, etc.)
+      if (date >= new Date(ev.currentStart) && date <= new Date(ev.currentEnd)) {
         result.push({ key, name: ev.name, astrite: a, color });
       }
+    } else if (ev.resetType === 'Version update') {
+      // Version-scoped events: use VERSION_DATES to find the right version
+      const vd = VERSION_DATES.find(v => date >= new Date(v.start) && date <= new Date(v.end));
+      if (vd) result.push({ key, name: ev.name, astrite: a, color });
+    }
+  }
+  // Pioneer Podcast — check full history
+  for (const pp of PIONEER_PODCAST_HISTORY) {
+    if (date >= new Date(pp.startDate) && date <= new Date(pp.endDate)) {
+      const color = EVENT_COLORS.pioneerPodcast;
+      if (color) result.push({ key: `pp-${pp.version}`, name: `Pioneer Podcast v${pp.version}`, astrite: pp.rewards, color });
+      break;
     }
   }
   return result;
@@ -211,74 +231,93 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       }
     }
 
-    // Event bars — derive start dates from resetType for accuracy
+    // Helper: add a bar if it overlaps this month
+    const addBar = (key, label, color, cStart, cEnd, astrite, extra = {}) => {
+      if (cEnd < monthStart || cStart > monthEnd) return;
+      const ended = cEnd < today;
+      const eStart = Math.max(0, Math.floor((cStart - monthStart) / 86400000));
+      const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((cEnd - monthStart) / 86400000));
+      if (eEnd >= eStart) {
+        const endLabel = cEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const startLabel = cStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
+        bars.push({ key, label, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft, ...extra });
+      }
+    };
+
+    // Weekly events — segmented bars (only after their introduction)
+    const todayIdx = Math.floor((today - monthStart) / 86400000);
     for (const [key, ev] of Object.entries(EVENTS)) {
-      if (ev.dailyReset) continue;
+      if (!ev.weeklyReset) continue;
+      const color = EVENT_COLORS[key];
+      if (!color) continue;
+      const introduced = getIntroducedDate(ev);
+      if (introduced && monthEnd < introduced) continue;
+      const astrite = parseInt(ev.rewards, 10) || 0;
+      const mondays = [];
+      for (let d = 1; d <= cal.daysInMonth; d++) {
+        const date = new Date(cal.year, cal.month, d);
+        if (date.getDay() === 1) mondays.push(d - 1);
+      }
+      const segments = [];
+      if (mondays.length > 0 && mondays[0] > 0) {
+        const partialEnd = mondays[0] - 1;
+        segments.push({ start: 0, end: partialEnd, isCurrent: todayIdx >= 0 && todayIdx <= partialEnd });
+      }
+      for (let i = 0; i < mondays.length; i++) {
+        const segStart = mondays[i];
+        const segEnd = i + 1 < mondays.length ? mondays[i + 1] - 1 : cal.daysInMonth - 1;
+        segments.push({ start: segStart, end: segEnd, isCurrent: todayIdx >= segStart && todayIdx <= segEnd });
+      }
+      if (mondays.length === 0) segments.push({ start: 0, end: cal.daysInMonth - 1 });
+      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
+    }
+
+    // 28-day cycling events (ToA, Whimpering Wastes) — compute all cycles
+    for (const [key, ev] of Object.entries(EVENTS)) {
+      if (ev.resetType !== '28 days' || !ev.currentEnd) continue;
       const color = EVENT_COLORS[key];
       if (!color) continue;
       const astrite = parseInt(ev.rewards, 10) || 0;
-
-      if (ev.weeklyReset) {
-        // Split weekly events into Monday-Sunday segments to show reset boundaries
-        const mondays = [];
-        for (let d = 1; d <= cal.daysInMonth; d++) {
-          const date = new Date(cal.year, cal.month, d);
-          if (date.getDay() === 1) mondays.push(d - 1); // 0-indexed day position
-        }
-        const segments = [];
-        const todayIdx = Math.floor((today - monthStart) / 86400000);
-        if (mondays.length > 0 && mondays[0] > 0) {
-          const partialEnd = mondays[0] - 1;
-          segments.push({ start: 0, end: partialEnd, isCurrent: todayIdx >= 0 && todayIdx <= partialEnd });
-        }
-        for (let i = 0; i < mondays.length; i++) {
-          const segStart = mondays[i];
-          const segEnd = i + 1 < mondays.length ? mondays[i + 1] - 1 : cal.daysInMonth - 1;
-          const isCurrent = todayIdx >= segStart && todayIdx <= segEnd;
-          segments.push({ start: segStart, end: segEnd, isCurrent });
-        }
-        if (mondays.length === 0) {
-          segments.push({ start: 0, end: cal.daysInMonth - 1 });
-        }
-        bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
-      } else if (ev.currentEnd) {
-        const evEndBase = new Date(ev.currentEnd);
-        const cycleDays = ev.resetType === '28 days' ? 28 : 0;
-
-        // For 28-day recurring events, compute all cycles that overlap this month
-        // For version events, just show the current cycle
-        const cycles = [];
-        if (cycleDays > 0) {
-          const cycleMs = cycleDays * 86400000;
-          // Go back up to 24 cycles (~2 years) to find ones overlapping this month
-          for (let c = -24; c <= 0; c++) {
-            const cEnd = new Date(evEndBase.getTime() + c * cycleMs);
-            const cStart = new Date(cEnd.getTime() - cycleMs);
-            if (cEnd >= monthStart && cStart <= monthEnd) {
-              cycles.push({ start: cStart, end: cEnd });
-            }
-          }
-        } else {
-          // Version-specific event: single cycle
-          const evStart = getEventStart(ev) || monthStart;
-          if (evEndBase >= monthStart && evStart <= monthEnd) {
-            cycles.push({ start: evStart, end: evEndBase });
-          }
-        }
-
-        for (let ci = 0; ci < cycles.length; ci++) {
-          const { start: cStart, end: cEnd } = cycles[ci];
-          const ended = cEnd < today;
-          const eStart = Math.max(0, Math.floor((cStart - monthStart) / 86400000));
-          const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((cEnd - monthStart) / 86400000));
-          if (eEnd >= eStart) {
-            const endLabel = cEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const startLabel = cStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
-            bars.push({ key: ci === 0 ? key : `${key}-c${ci}`, label: ev.name, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft });
-          }
-        }
+      const introduced = getIntroducedDate(ev);
+      const baseEnd = new Date(ev.currentEnd);
+      const cycleMs = 28 * 86400000;
+      for (let c = -24; c <= 1; c++) {
+        const cEnd = new Date(baseEnd.getTime() + c * cycleMs);
+        const cStart = new Date(cEnd.getTime() - cycleMs);
+        if (introduced && cStart < introduced) continue;
+        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite);
       }
+    }
+
+    // Endstate Matrix and other events with explicit currentStart/currentEnd
+    for (const [key, ev] of Object.entries(EVENTS)) {
+      if (ev.dailyReset || ev.weeklyReset || ev.permanent || ev.resetType === '28 days') continue;
+      if (!ev.currentEnd || !ev.currentStart) continue;
+      const color = EVENT_COLORS[key];
+      if (!color) continue;
+      const astrite = parseInt(ev.rewards, 10) || 0;
+      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite);
+    }
+
+    // Pioneer Podcast — full history, one bar per version
+    for (const pp of PIONEER_PODCAST_HISTORY) {
+      const color = EVENT_COLORS.pioneerPodcast;
+      if (!color) continue;
+      addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards);
+    }
+
+    // Version-scoped events without explicit start (Pioneer Podcast already handled above)
+    for (const [key, ev] of Object.entries(EVENTS)) {
+      if (ev.dailyReset || ev.weeklyReset || ev.permanent || ev.resetType === '28 days') continue;
+      if (!ev.currentEnd || ev.currentStart) continue; // skip if has explicit start (already handled)
+      if (key === 'pioneerPodcast') continue; // handled via PIONEER_PODCAST_HISTORY
+      const color = EVENT_COLORS[key];
+      if (!color) continue;
+      const astrite = parseInt(ev.rewards, 10) || 0;
+      // Show for current version only
+      const versionStart = BANNER_HISTORY.length > 0 ? new Date(BANNER_HISTORY[0].startDate) : monthStart;
+      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite);
     }
     return bars;
   }, [cal, bannerEndDate, activeBanners]);

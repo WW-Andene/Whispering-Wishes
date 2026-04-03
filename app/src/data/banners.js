@@ -144,6 +144,7 @@ const EVENTS = {
     resetType: 'Weekly (Monday)',
     color: 'purple',
     weeklyReset: true,
+    introducedVersion: '2.1', // Replaced Depths of Illusive Realm in v2.1
     rewards: '160 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
@@ -165,11 +166,13 @@ const EVENTS = {
   tacticalHologram: {
     name: 'Tactical Hologram: Synchronization',
     subtitle: 'Combat Challenge',
-    description: 'Weekly boss challenge',
-    resetType: 'Version update',
+    description: 'Permanent combat challenge (Lahai-Roi)',
+    resetType: 'Permanent',
     color: 'cyan',
-    // Ends: Wed, 29 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
+    // Permanent content introduced in v3.0 — not a time-limited event
+    // Showing with currentEnd for current version cycle display only
     currentEnd: '2026-04-29T03:59:00Z',
+    permanent: true,
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
@@ -178,11 +181,13 @@ const EVENTS = {
   endstateMatrix: {
     name: 'Endstate Matrix',
     subtitle: 'Boss Rush',
-    description: 'High difficulty boss rush',
-    resetType: 'Version update',
+    description: 'High difficulty boss rush — new in v3.2',
+    resetType: 'Multi-version',
     color: 'pink',
-    // Ends: Thu, 30 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
+    // New in v3.2: First cycle (Doomsday) runs Mar 26 → Apr 30, spans v3.2–v3.4
+    currentStart: '2026-03-26',
     currentEnd: '2026-04-30T03:59:00Z',
+    introducedVersion: '3.2',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
@@ -195,7 +200,9 @@ const EVENTS = {
     resetType: '28 days',
     color: 'orange',
     // Mon, 30 Mar 2026 04:00 - Mon, 27 Apr 2026 03:59 (Europe)
+    currentStart: '2026-03-30',
     currentEnd: '2026-04-27T02:59:00Z',
+    introducedVersion: '1.0', // Since launch
     rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
@@ -208,7 +215,9 @@ const EVENTS = {
     resetType: '28 days',
     color: 'cyan',
     // Mon, 16 Mar 2026 04:00 - Mon, 13 Apr 2026 03:59 (Europe)
+    currentStart: '2026-03-16',
     currentEnd: '2026-04-13T02:59:00Z',
+    introducedVersion: '2.1', // Added in v2.1 (Feb 13, 2025)
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
@@ -478,10 +487,61 @@ const CHARACTER_THEMES = [
 ];
 
 
+// ══════════════════════════════════════════════════════════════════════════════
+// EVENT HISTORY — Recurring event periods with verified dates
+// Sources: Fandom wiki (Pioneer Podcast/YYYY-MM-DD pages), game8.co, web research
+// Dates derived from BANNER_HISTORY version boundaries + web cross-check
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Pioneer Podcast runs every version. Dates = version P1 start → last phase end (from BANNER_HISTORY)
+// Cross-checked against Fandom wiki page URLs: Pioneer_Podcast/2024-05-23, /2024-06-28, etc.
+const PIONEER_PODCAST_HISTORY = [
+  { version: '3.2', startDate: '2026-03-19', endDate: '2026-04-29', rewards: 400 },
+  { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
+  { version: '3.0', startDate: '2025-12-24', endDate: '2026-02-04', rewards: 400 },
+  { version: '2.8', startDate: '2025-11-20', endDate: '2025-12-24', rewards: 400 },
+  { version: '2.7', startDate: '2025-10-09', endDate: '2025-11-19', rewards: 400 },
+  { version: '2.6', startDate: '2025-08-28', endDate: '2025-10-08', rewards: 400 },
+  { version: '2.5', startDate: '2025-07-24', endDate: '2025-08-27', rewards: 400 },
+  { version: '2.4', startDate: '2025-06-12', endDate: '2025-07-23', rewards: 400 },
+  { version: '2.3', startDate: '2025-04-29', endDate: '2025-06-11', rewards: 400 },
+  { version: '2.2', startDate: '2025-03-27', endDate: '2025-04-28', rewards: 400 },
+  { version: '2.1', startDate: '2025-02-13', endDate: '2025-03-26', rewards: 400 },
+  { version: '2.0', startDate: '2025-01-02', endDate: '2025-02-12', rewards: 400 },
+  { version: '1.4', startDate: '2024-11-14', endDate: '2025-01-01', rewards: 400 },
+  { version: '1.3', startDate: '2024-09-29', endDate: '2024-11-13', rewards: 400 },
+  { version: '1.2', startDate: '2024-08-15', endDate: '2024-09-28', rewards: 400 },
+  { version: '1.1', startDate: '2024-06-28', endDate: '2024-08-14', rewards: 400 },
+  { version: '1.0', startDate: '2024-05-23', endDate: '2024-06-27', rewards: 400 },
+];
+
+// Version start dates (P1 start from BANNER_HISTORY) — used to derive event boundaries
+const VERSION_DATES = [
+  { version: '3.2', start: '2026-03-19', end: '2026-04-29' },
+  { version: '3.1', start: '2026-02-05', end: '2026-03-18' },
+  { version: '3.0', start: '2025-12-24', end: '2026-02-04' },
+  { version: '2.8', start: '2025-11-20', end: '2025-12-24' },
+  { version: '2.7', start: '2025-10-09', end: '2025-11-19' },
+  { version: '2.6', start: '2025-08-28', end: '2025-10-08' },
+  { version: '2.5', start: '2025-07-24', end: '2025-08-27' },
+  { version: '2.4', start: '2025-06-12', end: '2025-07-23' },
+  { version: '2.3', start: '2025-04-29', end: '2025-06-11' },
+  { version: '2.2', start: '2025-03-27', end: '2025-04-28' },
+  { version: '2.1', start: '2025-02-13', end: '2025-03-26' },
+  { version: '2.0', start: '2025-01-02', end: '2025-02-12' },
+  { version: '1.4', start: '2024-11-14', end: '2025-01-01' },
+  { version: '1.3', start: '2024-09-29', end: '2024-11-13' },
+  { version: '1.2', start: '2024-08-15', end: '2024-09-28' },
+  { version: '1.1', start: '2024-06-28', end: '2024-08-14' },
+  { version: '1.0', start: '2024-05-23', end: '2024-06-27' },
+];
+
 export {
   CURRENT_BANNERS,
   BANNER_HISTORY,
   EVENTS,
+  PIONEER_PODCAST_HISTORY,
+  VERSION_DATES,
   DEFAULT_COLLECTION_IMAGES,
   CHARACTER_THEMES,
 };
