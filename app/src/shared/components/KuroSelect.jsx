@@ -3,12 +3,14 @@
 // Custom styled select dropdown — replaces native <select> with kuro-card backdrop
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
   const [open, setOpen] = useState(false);
+  const [focusIdx, setFocusIdx] = useState(-1);
   const ref = useRef(null);
+  const optionRefs = useRef([]);
   const selected = options.find(o => o.value === value);
 
   // Close on outside click
@@ -22,13 +24,68 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
   // Close on Escape
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const handler = (e) => { if (e.key === 'Escape') { setOpen(false); ref.current?.querySelector('button')?.focus(); } };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
 
+  // Focus the highlighted option when focusIdx changes
+  useEffect(() => {
+    if (open && focusIdx >= 0 && optionRefs.current[focusIdx]) {
+      optionRefs.current[focusIdx].focus();
+    }
+  }, [open, focusIdx]);
+
+  // Reset focus index when opening, starting at current value
+  useEffect(() => {
+    if (open) {
+      const idx = options.findIndex(o => o.value === value);
+      setFocusIdx(idx >= 0 ? idx : 0);
+    }
+  }, [open, options, value]);
+
+  // G3-01: Arrow key navigation for ARIA listbox compliance
+  const handleKeyDown = useCallback((e) => {
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setOpen(true);
+      }
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusIdx(i => (i + 1) % options.length);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusIdx(i => (i - 1 + options.length) % options.length);
+        break;
+      case 'Home':
+        e.preventDefault();
+        setFocusIdx(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        setFocusIdx(options.length - 1);
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (focusIdx >= 0 && options[focusIdx]) {
+          onChange(options[focusIdx].value);
+          setOpen(false);
+          ref.current?.querySelector('button')?.focus();
+        }
+        break;
+      default:
+        break;
+    }
+  }, [open, options, focusIdx, onChange]);
+
   return (
-    <div ref={ref} className={`relative ${className}`}>
+    <div ref={ref} className={`relative ${className}`} onKeyDown={handleKeyDown}>
       <button
         type="button"
         onClick={() => setOpen(p => !p)}
@@ -46,16 +103,20 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
           className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5"
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
+          aria-activedescendant={focusIdx >= 0 && options[focusIdx] ? `kuroselect-opt-${options[focusIdx].value}` : undefined}
         >
-          {options.map(opt => {
+          {options.map((opt, i) => {
             const active = opt.value === value;
             return (
               <button
                 key={opt.value}
+                id={`kuroselect-opt-${opt.value}`}
+                ref={el => { optionRefs.current[i] = el; }}
                 type="button"
                 role="option"
                 aria-selected={active}
-                onClick={() => { onChange(opt.value); setOpen(false); }}
+                tabIndex={i === focusIdx ? 0 : -1}
+                onClick={() => { onChange(opt.value); setOpen(false); ref.current?.querySelector('button')?.focus(); }}
                 className={`kuro-btn w-full text-left px-3 py-2.5 text-sm ${active ? 'active-gold' : 'text-gray-300'}`}
                 style={{
                   backdropFilter: 'blur(2px) brightness(0.6)',

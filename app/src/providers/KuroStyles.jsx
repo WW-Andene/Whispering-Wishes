@@ -151,7 +151,7 @@ const KuroStyles = memo(({ oledMode }) => (
       --element-spectro: #edaf18;
       /* Rarity colors */
       --rarity-5star: rgba(var(--color-gold), 1);
-      --rarity-4star: rgba(var(--color-purple), 1);
+      --rarity-4star: var(--accent-purple); /* G1-01: use lighter purple (#c084fc ~5.1:1) for AA text contrast */
       /* State colors — CL-F2 + MED-11 */
       --state-error: #f87171;   /* oklch(68% 0.18 15°) */
       --state-success: #2dd4bf; /* oklch(72% 0.16 170°) */
