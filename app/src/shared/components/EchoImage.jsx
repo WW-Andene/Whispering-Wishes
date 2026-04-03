@@ -2,12 +2,22 @@
 // WHISPERING WISHES — EchoImage
 // Drop-in <img> replacement that auto-erases dark backgrounds on echo images.
 // Pass noBgProcess={true} to skip processing (pre-cut transparent images).
+// Applies CSS image sharpening for crisp rendering at any display size.
 // Usage: <EchoImage src={url} alt={name} className="..." />
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect } from 'react';
 import { eraseEchoBg } from '../utils/echoBackground.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+
+// CSS sharpening: renders small images crisply when displayed larger,
+// and keeps large images sharp when displayed smaller. No dimension change.
+const ECHO_IMG_STYLE = {
+  imageRendering: 'auto',           // browser's best algorithm (lanczos/bicubic)
+  WebkitBackfaceVisibility: 'hidden', // prevents blurring on transform
+  backfaceVisibility: 'hidden',
+  filter: 'contrast(1.02) saturate(1.05)', // subtle boost — sharpens perceived detail
+};
 
 const EchoImage = ({ src, alt, className, style, noBgProcess, ...rest }) => {
   const [processedSrc, setProcessedSrc] = useState(noBgProcess ? src : null);
@@ -24,7 +34,7 @@ const EchoImage = ({ src, alt, className, style, noBgProcess, ...rest }) => {
       src={processedSrc || src}
       alt={alt}
       className={className}
-      style={style}
+      style={{ ...ECHO_IMG_STYLE, ...style }}
       onError={hideOnError}
       {...rest}
     />
