@@ -1531,8 +1531,9 @@ export default function ProfileTab({
                       <div className="space-y-1">
                         <p className="font-medium text-gray-300">How to delete your data</p>
                         <ul className="space-y-1 ml-1">
-                          <li><strong className="text-gray-300">Local data</strong> — Clear your browser's site data for this domain.</li>
-                          <li><strong className="text-gray-300">Cloud backup / leaderboard</strong> — Contact <a href="mailto:whisperingwishes.app@gmail.com" className="text-cyan-400 hover:underline">whisperingwishes.app@gmail.com</a>.</li>
+                          <li><strong className="text-gray-300">All data (local + cloud)</strong> — Use the "Reset All Data" button below. If you are signed in with Google, this also deletes your cloud backup and signs you out.</li>
+                          <li><strong className="text-gray-300">Local data only</strong> — Clear your browser's site data for this domain.</li>
+                          <li><strong className="text-gray-300">Leaderboard removal</strong> — Contact <a href="mailto:whisperingwishes.app@gmail.com" className="text-cyan-400 hover:underline">whisperingwishes.app@gmail.com</a> with your leaderboard ID.</li>
                         </ul>
                       </div>
                     </div>
