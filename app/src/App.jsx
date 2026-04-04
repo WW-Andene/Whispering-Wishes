@@ -18,7 +18,7 @@
 // [SECTION:EXPORT]           Main export with providers
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef, startTransition } from 'react';
+import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
 import { Archive, BarChart3, Calculator, Calendar, Check, ChevronDown, Crown, Diamond, Download, Heart, Info, Menu, Settings, Sparkles, Star, Sword, TrendingUp, Trophy, User, Users, X, Zap } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
@@ -818,9 +818,7 @@ function WhisperingWishesInner() {
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
   const setActiveTab = useCallback((tab) => {
-    // Wrap in startTransition so React keeps old tab visible while new lazy tab loads
-    // This prevents the brief empty/skeleton flash on tab switch
-    startTransition(() => setActiveTabRaw(tab));
+    setActiveTabRaw(tab);
   }, []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [activeTab]);
