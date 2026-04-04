@@ -137,11 +137,13 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * Fetch one page from the API. Returns { list, rawJson }.
  */
 async function fetchOnePage(params, poolType, endTime, signal) {
-  // Only send the minimum required params — gachaId/gachaType RESTRICT results to one banner
+  // cardPoolId (from URL resources_id) is required for API auth/scope
+  // Do NOT send gachaId/gachaType — those restrict results to one banner
   const body = {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
     cardPoolType: Number(poolType),
+    cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
