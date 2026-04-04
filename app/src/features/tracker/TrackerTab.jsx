@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Archive, ArrowRight, Calculator, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
+import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import { BANNER_HISTORY } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
@@ -93,13 +93,6 @@ function TrackerTab({
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
               </button>
             )}
-            {/* P7-F001: Cross-link to Calculator for quick odds check */}
-            {state.profile.importedAt && setActiveTab && (
-              <button onClick={() => setActiveTab('calculator')} className="w-full flex items-center justify-center gap-1.5 text-[10px] text-gray-500 hover:text-yellow-400/80 transition-colors -mb-2 py-0.5">
-                <Calculator size={11} /> Calculate your pull odds →
-              </button>
-            )}
-
             {/* Category Tabs */}
             <Card>
               <CardBody>
