@@ -133,7 +133,7 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 /**
  * Fetch one page from the API. Returns { list, rawJson }.
  */
-async function fetchOnePage(params, poolType, endTime, signal, pageSize) {
+async function fetchOnePage(params, poolType, signal) {
   const body = {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
@@ -142,8 +142,6 @@ async function fetchOnePage(params, poolType, endTime, signal, pageSize) {
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
-  if (endTime) body.endTime = endTime;
-  if (pageSize) body.size = pageSize;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
@@ -175,44 +173,20 @@ const MAX_PER_POOL = 5000;
 
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
-  const allItems = [];
 
-  // Strategy: send endTime from the start to force the API into pagination mode
-  // Without endTime, API ignores size param and dumps ~400 items
-  // With endTime + size, API respects pagination and may go deeper
-  const PAGE_SIZE = 20;
-  // Start from "now" — API returns records older than endTime
-  let endTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const { list, error, rawJson } = await fetchOnePage(params, poolType, signal);
 
-  for (let page = 0; page < 2000; page++) {
-    if (signal?.aborted) break;
-    if (page > 0) await sleep(100);
-
-    const { list, error, rawJson } = await fetchOnePage(params, poolType, endTime, signal, PAGE_SIZE);
-
-    if (error) { pageLog.push(`p${page}: error: ${error}`); break; }
-    if (!list.length) break;
-
-    allItems.push(...list);
-    const pageOldest = list[list.length - 1]?.time || '';
-
-    if (page === 0) {
-      const newest = list[0]?.time || '?';
-      pageLog.push(`p0: ${list.length} items (${newest} → ${pageOldest})`);
-    }
-
-    onProgress?.(poolType, 'fetching', allItems.length);
-
-    // If page returned fewer than PAGE_SIZE, we've exhausted this pool
-    if (list.length < PAGE_SIZE) break;
-
-    // If endTime didn't advance, we're stuck
-    if (pageOldest === endTime) break;
-    endTime = pageOldest;
+  if (error || !list.length) {
+    pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
+    return { items: [], pageLog };
   }
 
-  pageLog.push(`TOTAL: ${allItems.length} (${Math.ceil(allItems.length / PAGE_SIZE)} pages)`);
-  return { items: allItems, pageLog };
+  const newest = list[0]?.time || '?';
+  const oldest = list[list.length - 1]?.time || '?';
+  pageLog.push(`${list.length} items (${newest} → ${oldest})`);
+  onProgress?.(poolType, 'fetching', list.length);
+
+  return { items: list, pageLog };
 }
 
 /**
