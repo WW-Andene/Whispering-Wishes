@@ -175,115 +175,27 @@ async function fetchOnePage(params, poolType, endTime, signal) {
 /**
  * Paginate a single pool type until exhausted.
  */
-const MAX_PER_POOL = 2000;
+const MAX_PER_POOL = 5000;
 
 async function fetchPoolFull(params, poolType, signal, onProgress) {
-  const allItems = [];
-  const seen = new Set();
   const pageLog = [];
 
-  const addItems = (list) => {
-    for (const item of list) {
-      // Track by position-aware key to avoid losing multi-copy pulls
-      const key = `${item.time}|${item.name}|${item.qualityLevel}|${allItems.length}`;
-      allItems.push(item);
-    }
-  };
+  // Fetch first page — the API returns ALL available data in one response
+  // endTime parameter is ignored by the Kuro API
+  const { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal);
 
-  // Phase 1: Fetch with no endTime (current window)
-  const { list: firstList, error: firstErr, rawJson } = await fetchOnePage(params, poolType, '', signal);
-  if (firstErr || !firstList.length) {
-    pageLog.push(`p0: ${firstErr || 'empty'} (code=${rawJson?.code})`);
+  if (error || !list.length) {
+    pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
     return { items: [], pageLog };
   }
 
-  addItems(firstList);
-  const newest = firstList[0]?.time || '?';
-  const oldest = firstList[firstList.length - 1]?.time || '?';
-  pageLog.push(`p0: ${firstList.length} items (${newest} → ${oldest})`);
-  onProgress?.(poolType, 'fetching', allItems.length);
+  const newest = list[0]?.time || '?';
+  const oldest = list[list.length - 1]?.time || '?';
+  pageLog.push(`${list.length} items (${newest} → ${oldest})`);
+  onProgress?.(poolType, 'fetching', list.length);
 
-  // Phase 2: Paginate backward from the oldest record using endTime
-  let endTime = oldest;
-  for (let page = 1; page < 100; page++) {
-    if (signal?.aborted || allItems.length >= MAX_PER_POOL) break;
-    await sleep(150);
-
-    const { list, error } = await fetchOnePage(params, poolType, endTime, signal);
-    if (error || !list.length) {
-      pageLog.push(`p${page}: ${error || 'empty'} at endTime=${endTime}`);
-      break;
-    }
-
-    // Check if we got new data (different oldest time)
-    const pageOldest = list[list.length - 1]?.time || '';
-    const prevCount = allItems.length;
-    addItems(list);
-    pageLog.push(`p${page}: +${list.length} (total: ${allItems.length}, oldest: ${pageOldest})`);
-    onProgress?.(poolType, 'fetching', allItems.length);
-
-    if (pageOldest === endTime) break; // Stuck
-    endTime = pageOldest;
-  }
-
-  // Phase 3: Force backward — jump month by month from oldest into the past
-  // This tries to reach data beyond the default API window
-  if (allItems.length < MAX_PER_POOL) {
-    const baseDate = new Date(oldest.replace(' ', 'T') + '+00:00');
-    if (!isNaN(baseDate.getTime())) {
-      for (let monthsBack = 1; monthsBack <= 30; monthsBack++) {
-        if (signal?.aborted || allItems.length >= MAX_PER_POOL) break;
-        const jumpDate = new Date(baseDate);
-        jumpDate.setMonth(jumpDate.getMonth() - monthsBack);
-        const jumpTime = jumpDate.toISOString().replace('T', ' ').slice(0, 19);
-        await sleep(150);
-
-        const { list, error } = await fetchOnePage(params, poolType, jumpTime, signal);
-        if (error) continue; // Skip errors, try older
-        if (!list.length) continue; // Empty month, try older
-
-        addItems(list);
-        const mo = jumpDate.toISOString().slice(0, 7);
-        pageLog.push(`jump ${mo}: +${list.length} (total: ${allItems.length})`);
-        onProgress?.(poolType, 'fetching', allItems.length);
-
-        // If we got data, also paginate within this time window
-        let subEnd = list[list.length - 1]?.time || '';
-        for (let sub = 0; sub < 20; sub++) {
-          if (signal?.aborted || allItems.length >= MAX_PER_POOL) break;
-          if (!subEnd) break;
-          await sleep(150);
-          const { list: subList } = await fetchOnePage(params, poolType, subEnd, signal);
-          if (!subList.length) break;
-          const subOldest = subList[subList.length - 1]?.time || '';
-          if (subOldest === subEnd) break;
-          addItems(subList);
-          pageLog.push(`  sub: +${subList.length} (total: ${allItems.length}, oldest: ${subOldest})`);
-          onProgress?.(poolType, 'fetching', allItems.length);
-          subEnd = subOldest;
-        }
-      }
-    }
-  }
-
-  // Final dedup: remove exact duplicates but keep multi-copy pulls
-  // Use a counting map: same name+time can appear up to 10 times (10-pull batch)
-  const dedupMap = new Map();
-  const uniqueItems = [];
-  for (const item of allItems) {
-    const key = `${item.resourceId || item.name}|${item.time}|${item.qualityLevel}`;
-    const count = dedupMap.get(key) || 0;
-    // In a 10-pull, max 10 items can share the same timestamp
-    // But same resourceId+time+quality is a true page overlap duplicate
-    // Allow up to 10 copies of the same key (generous to avoid losing real pulls)
-    if (count < 10) {
-      dedupMap.set(key, count + 1);
-      uniqueItems.push(item);
-    }
-  }
-
-  pageLog.push(`TOTAL: ${allItems.length} raw → ${uniqueItems.length} deduped`);
-  return { items: uniqueItems, pageLog };
+  pageLog.push(`TOTAL: ${list.length}`);
+  return { items: list, pageLog };
 }
 
 /**
