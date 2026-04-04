@@ -237,7 +237,7 @@ export async function fetchAllPools(params, signal, onProgress) {
   console.log(`Total: ${total}`);
   console.groupEnd();
 
-  return { pulls: allPulls, total, debug };
+  return { pulls: allPulls, total, debug, params };
 }
 
 /**
@@ -363,10 +363,13 @@ export function convertToImportFormat(fetchResult) {
     .map(d => `\n── Pool ${d.poolType} (${d.label}) ──\n${(d.pageLog || []).join('\n')}`)
     .join('\n');
 
+  // Log the exact params we sent so user can verify OCR accuracy
+  const paramDump = fetchResult.params ? `\n=== PARAMS SENT ===\nplayerId: ${fetchResult.params.playerId || '(empty)'}\nrecordId: ${fetchResult.params.recordId || '(empty)'}\nserverId: ${fetchResult.params.serverId || '(empty)'}\ncardPoolId: ${fetchResult.params.cardPoolId || '(empty)'}\nlang: ${fetchResult.params.lang || '(empty)'}` : '';
+
   return JSON.stringify({
     pulls: allPulls,
     uid: fetchResult.playerId || '',
-    _diagnostic: `Total: ${allPulls.length} pulls\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}`,
+    _diagnostic: `Total: ${allPulls.length} pulls\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}${paramDump}`,
     _source: 'api',
   });
 }
