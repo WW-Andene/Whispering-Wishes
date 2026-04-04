@@ -177,10 +177,12 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
   const allItems = [];
 
-  // Strategy: fetch with explicit size to enable proper endTime pagination
-  // The in-game page uses size=5, but we use larger pages for efficiency
+  // Strategy: send endTime from the start to force the API into pagination mode
+  // Without endTime, API ignores size param and dumps ~400 items
+  // With endTime + size, API respects pagination and may go deeper
   const PAGE_SIZE = 20;
-  let endTime = '';
+  // Start from "now" — API returns records older than endTime
+  let endTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
   for (let page = 0; page < 2000; page++) {
     if (signal?.aborted) break;
