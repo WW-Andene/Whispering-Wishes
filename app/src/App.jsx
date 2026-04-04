@@ -1122,8 +1122,18 @@ function WhisperingWishesInner() {
     if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
     setCloudBackupStatus('saving');
     try {
+      // P4-F002: Include full state + auxiliary data in cloud backup (matches file export)
+      const aux = {};
+      try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
       const backupData = {
-        profile: stateRef.current.profile,
+        state: stateRef.current,
+        profile: stateRef.current.profile, // keep for backward compat with older restores
+        ...(Object.keys(aux).length > 0 ? { aux } : {}),
         timestamp: Date.now(),
         version: APP_VERSION,
         pullCount: (stateRef.current.profile.featured?.history?.length || 0)
@@ -1170,7 +1180,39 @@ function WhisperingWishesInner() {
       });
       if (!doRestore) { setCloudBackupStatus('idle'); return; }
       // F-007: Sanitize cloud-restored data to prevent state injection from compromised Firebase
-      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
+      // P4-F002: Support full state + aux restore (backward compat: old backups have profile only)
+      if (data.state && typeof data.state === 'object') {
+        dispatch({ type: 'LOAD_STATE', state: sanitizeStateObj(data.state) });
+      } else {
+        dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
+      }
+      // Restore auxiliary data if present
+      if (data.aux && typeof data.aux === 'object') {
+        try {
+          if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+            localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+            setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+          }
+          if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+            localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+            setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+          }
+          if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+            localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+            setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+          }
+          if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+            localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+            setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+          }
+          if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
+            localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+          }
+          if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+            localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
+          }
+        } catch {}
+      }
       setCloudBackupStatus('done');
       toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);

@@ -1447,7 +1447,14 @@ export default function ProfileTab({
                   <Download size={14} /> Export Backup
                 </button>
                 <div className="border-t border-red-900/30 mt-4 pt-3">
-                  <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
+                  <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) {
+                    haptic.warning();
+                    dispatch({ type: 'RESET' });
+                    // P4-F001: Clear ALL auxiliary localStorage keys on reset
+                    const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-calendar-notes', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id'];
+                    auxKeys.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+                    toast?.addToast?.('All data reset!', 'info');
+                  } }} className="kuro-btn w-full py-2 active-red">
                     Reset All Data
                   </button>
                 </div>
