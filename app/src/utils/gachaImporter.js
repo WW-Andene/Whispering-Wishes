@@ -177,20 +177,18 @@ async function fetchOnePage(params, poolType, endTime, signal) {
  */
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const items = [];
-  const seenIds = new Set();
   let endTime = '';
-  const pageLog = []; // Diagnostic log per page
+  let prevFirstItem = '';
+  const pageLog = [];
 
   for (let page = 0; page < 500; page++) {
     if (signal?.aborted) break;
 
     const { list, error, rawJson } = await fetchOnePage(params, poolType, endTime, signal);
 
-    // Log first page and last page raw response for debugging
     if (page === 0) {
-      pageLog.push(`p0: sent endTime=${endTime || '(none)'}, got ${list.length} items, code=${rawJson?.code}, keys=${rawJson ? Object.keys(rawJson).join(',') : 'N/A'}${error ? ', ERR=' + error : ''}`);
+      pageLog.push(`p0: got ${list.length} items, code=${rawJson?.code}${error ? ', ERR=' + error : ''}`);
       if (list.length > 0) pageLog.push(`  first: ${JSON.stringify(list[0]).slice(0, 200)}`);
-      if (rawJson?.data && !Array.isArray(rawJson.data)) pageLog.push(`  data keys: ${Object.keys(rawJson.data).join(',')}`);
     }
 
     if (error || !list.length) {
@@ -198,39 +196,32 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
       break;
     }
 
-    // Deduplicate as we go
-    let newCount = 0;
-    for (const item of list) {
-      const id = item.resourceId ? `${item.resourceId}|${item.time}` : `${item.name}|${item.time}|${item.qualityLevel}`;
-      if (!seenIds.has(id)) {
-        seenIds.add(id);
-        items.push(item);
-        newCount++;
-      }
+    // Detect duplicate page: if the first item matches the previous page's first item, stop
+    const firstItem = list[0] ? `${list[0].resourceId}|${list[0].time}|${list[0].name}` : '';
+    if (page > 0 && firstItem === prevFirstItem) {
+      pageLog.push(`p${page}: STOP — duplicate page (same first item)`);
+      break;
     }
+    prevFirstItem = firstItem;
+
+    // Keep ALL items from the page — no within-page dedup
+    // Multi-copy pulls share resourceId+time and are legitimate
+    items.push(...list);
     onProgress?.(poolType, 'fetching', items.length);
+    pageLog.push(`p${page}: +${list.length} items (total: ${items.length})`);
 
-    if (newCount === 0) {
-      pageLog.push(`p${page}: STOP — 0 new unique (${list.length} dupes)`);
-      break;
-    }
-
+    // Paginate: use the oldest record's time as endTime for next page
     const oldest = list.reduce((min, item) => (item.time || '') < (min.time || '') ? item : min, list[0]);
-    if (!oldest?.time) {
-      pageLog.push(`p${page}: STOP — no oldest time`);
+    if (!oldest?.time || oldest.time === endTime) {
+      pageLog.push(`p${page}: STOP — no progress in endTime`);
       break;
     }
-
-    if (oldest.time === endTime) {
-      pageLog.push(`p${page}: STOP — stuck at endTime=${endTime}`);
-      break;
-    }
-
     endTime = oldest.time;
+
     await sleep(150);
   }
 
-  pageLog.push(`TOTAL: ${items.length} unique from ${seenIds.size} seen`);
+  pageLog.push(`TOTAL: ${items.length} items`);
   return { items, pageLog };
 }
 
@@ -385,20 +376,12 @@ export function convertToImportFormat(fetchResult) {
   // Sort by time ascending
   allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  // Dedup overlapping pages by resourceId (unique per pull) — not by time which causes mass collisions
-  const deduped = [];
-  const seen = new Set();
-  for (const pull of allPulls) {
-    const key = pull.resourceId ? `${pull.cardPoolType}|${pull.resourceId}|${pull.time}` : `${pull.cardPoolType}|${pull.name}|${pull.time}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      deduped.push(pull);
-    }
-  }
+  // No dedup here — multi-copy pulls share resourceId+time and are legitimate
+  // The reducer's deduplicateMerge handles dedup when merging with existing history
 
   // Build diagnostic log for admin panel — include page-level detail
   const diagByPool = {};
-  for (const p of deduped) {
+  for (const p of allPulls) {
     const pt = p.cardPoolType;
     if (!diagByPool[pt]) diagByPool[pt] = { count: 0, fiveStars: [] };
     diagByPool[pt].count++;
@@ -409,15 +392,14 @@ export function convertToImportFormat(fetchResult) {
     .map(([pt, d]) => `Pool ${pt} (${POOL_LABELS[pt] || '?'}): ${d.count} pulls${d.fiveStars.length ? ' — 5★: ' + d.fiveStars.join(', ') : ''}`)
     .join('\n');
 
-  // Include per-pool page logs from debug array
   const pageLogs = (fetchResult.debug || [])
     .map(d => `\n── Pool ${d.poolType} (${d.label}) ──\n${(d.pageLog || []).join('\n')}`)
     .join('\n');
 
   return JSON.stringify({
-    pulls: deduped,
+    pulls: allPulls,
     uid: fetchResult.playerId || '',
-    _diagnostic: `Fetched ${allPulls.length} → deduped ${deduped.length}\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}`,
+    _diagnostic: `Total: ${allPulls.length} pulls\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}`,
     _source: 'api',
   });
 }
