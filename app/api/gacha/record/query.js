@@ -34,8 +34,8 @@ export default async function handler(req, res) {
     if (!body || typeof body !== 'object') {
       return res.status(400).json({ error: 'No body' });
     }
-    if (!body.playerId) {
-      return res.status(400).json({ error: 'Missing playerId' });
+    if (!body.playerId && !body.player_id) {
+      return res.status(400).json({ error: 'Missing playerId/player_id' });
     }
 
     // Client can specify preferred host, or we try all
