@@ -817,10 +817,7 @@ function WhisperingWishesInner() {
   }, []); // P14-FIX: LOW-3 - Removed dead eslint-disable comment (no ESLint configured)
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
-  // Track visited tabs — lazy tabs mount on first visit, stay mounted after (display:none when inactive)
-  const [visitedTabs, setVisitedTabs] = useState({ tracker: true, events: true });
   const setActiveTab = useCallback((tab) => {
-    setVisitedTabs(prev => prev[tab] ? prev : { ...prev, [tab]: true });
     setActiveTabRaw(tab);
   }, []);
 
@@ -1886,16 +1883,16 @@ function WhisperingWishesInner() {
         </div>
 
         {/* [SECTION:TAB-CALC] */}
-        {visitedTabs.calculator && <div style={activeTab !== 'calculator' ? { display: 'none' } : undefined}>
+        <div style={activeTab !== 'calculator' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Calculator">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <CalculatorTab state={state} dispatch={dispatch} />
             </React.Suspense>
           </TabErrorBoundary>
-        </div>}
+        </div>
 
         {/* [SECTION:TAB-PLANNER] */}
-        {visitedTabs.planner && <div style={activeTab !== 'planner' ? { display: 'none' } : undefined}>
+        <div style={activeTab !== 'planner' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Planner">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <PlannerTab
@@ -1908,10 +1905,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        </div>}
+        </div>
 
         {/* [SECTION:TAB-STATS] */}
-        {visitedTabs.analytics && <div style={activeTab !== 'analytics' ? { display: 'none' } : undefined}>
+        <div style={activeTab !== 'analytics' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Analytics">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <AnalyticsTab
@@ -1933,10 +1930,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        </div>}
+        </div>
 
         {/* [SECTION:TAB-COLLECT] */}
-        {visitedTabs.gathering && <div style={activeTab !== 'gathering' ? { display: 'none' } : undefined}>
+        <div style={activeTab !== 'gathering' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Collection">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <CollectionTab
@@ -1957,10 +1954,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        </div>}
+        </div>
 
         {/* [SECTION:TAB-TEAMS] */}
-        {visitedTabs.teams && <div style={activeTab !== 'teams' ? { display: 'none' } : undefined}>
+        <div style={activeTab !== 'teams' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Teams">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <TeamsTab
@@ -1977,10 +1974,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        </div>}
+        </div>
 
         {/* [SECTION:TAB-PROFILE] */}
-        {visitedTabs.profile && <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
+        <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Profile">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ProfileTab
@@ -2037,7 +2034,7 @@ function WhisperingWishesInner() {
           />
             </React.Suspense>
           </TabErrorBoundary>
-          </div>}
+          </div>
 
       </main>
 
