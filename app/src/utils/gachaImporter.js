@@ -188,40 +188,38 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
 
     if (page === 0) {
       pageLog.push(`p0: got ${list.length} items, code=${rawJson?.code}${error ? ', ERR=' + error : ''}`);
-      if (list.length > 0) pageLog.push(`  first: ${JSON.stringify(list[0]).slice(0, 200)}`);
+      if (list.length > 0) {
+        pageLog.push(`  newest: ${list[0].time} | oldest: ${list[list.length - 1].time}`);
+        pageLog.push(`  first: ${JSON.stringify(list[0]).slice(0, 200)}`);
+      }
     }
 
     if (error || !list.length) {
-      pageLog.push(`p${page}: STOP — ${error || 'empty list'}`);
+      if (page > 0) pageLog.push(`p${page}: STOP — ${error || 'empty list'}`);
       break;
     }
 
-    // Detect duplicate page: if the first item matches the previous page's first item, stop
+    // Detect duplicate page by first item
     const firstItem = list[0] ? `${list[0].resourceId}|${list[0].time}|${list[0].name}` : '';
     if (page > 0 && firstItem === prevFirstItem) {
-      pageLog.push(`p${page}: STOP — duplicate page (same first item)`);
+      pageLog.push(`p${page}: STOP — duplicate page`);
       break;
     }
     prevFirstItem = firstItem;
 
-    // Keep ALL items from the page — no within-page dedup
-    // Multi-copy pulls share resourceId+time and are legitimate
     items.push(...list);
     onProgress?.(poolType, 'fetching', items.length);
-    pageLog.push(`p${page}: +${list.length} items (total: ${items.length})`);
+    if (page > 0) pageLog.push(`p${page}: +${list.length} (total: ${items.length})`);
 
-    // Paginate: use the oldest record's time as endTime for next page
-    const oldest = list.reduce((min, item) => (item.time || '') < (min.time || '') ? item : min, list[0]);
-    if (!oldest?.time || oldest.time === endTime) {
-      pageLog.push(`p${page}: STOP — no progress in endTime`);
-      break;
-    }
+    // Use oldest record time to fetch next (older) page
+    const oldest = list[list.length - 1]; // Last item should be oldest (API returns newest first)
+    if (!oldest?.time || oldest.time === endTime) break;
     endTime = oldest.time;
 
     await sleep(150);
   }
 
-  pageLog.push(`TOTAL: ${items.length} items`);
+  pageLog.push(`TOTAL: ${items.length}`);
   return { items, pageLog };
 }
 
