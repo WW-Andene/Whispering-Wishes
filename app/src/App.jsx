@@ -1211,6 +1211,15 @@ function WhisperingWishesInner() {
         localStorage.setItem('whispering-wishes-pre-import-backup', preImportBackup);
       } catch {} // best-effort - don't block import if backup fails
 
+      // Detect numbering: Kuro API (from our direct fetch) swaps 1↔3 and 2↔4 vs WuWaTracker export
+      // API:         1=FeatRes, 2=FeatWeap, 3=PermRes,  4=PermWeap,  5/6/7=Beginner
+      // WuWaTracker: 1=PermRes, 2=PermWeap, 3=FeatRes,  4=FeatWeap,  5/6/7=Beginner
+      const isApiNumbering = isApiSource;
+      const FEAT_RES  = isApiNumbering ? 1 : 3;
+      const FEAT_WEAP = isApiNumbering ? 2 : 4;
+      const PERM_RES  = isApiNumbering ? 3 : 1;
+      const PERM_WEAP = isApiNumbering ? 4 : 2;
+
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
           if (p.bannerType) {
@@ -1221,15 +1230,12 @@ function WhisperingWishesInner() {
             if (type === 'beginner') return p.bannerType === 'beginner';
             return false;
           }
-          // Kuro API / WuWaTracker pool numbering:
-          // 1=Featured Resonator, 2=Featured Weapon, 3=Permanent Resonator,
-          // 4=Permanent Weapon, 5=Novice, 6=Beginner's Choice, 7=Giveback
           const pt = p.cardPoolType ?? p.gachaType;
-          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || pt === 1;
-          if (type === 'weapon') return p.bannerType === 'weapon' || pt === 2;
-          if (type === 'standardChar') return p.bannerType === 'standard-char' || pt === 3;
-          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || pt === 4;
-          if (type === 'beginner') return p.bannerType === 'beginner' || pt === 5 || pt === 6 || pt === 7;
+          if (type === 'featured') return pt === FEAT_RES;
+          if (type === 'weapon') return pt === FEAT_WEAP;
+          if (type === 'standardChar') return pt === PERM_RES;
+          if (type === 'standardWeap') return pt === PERM_WEAP;
+          if (type === 'beginner') return pt === 5 || pt === 6 || pt === 7;
           return false;
         });
         
@@ -1323,11 +1329,10 @@ function WhisperingWishesInner() {
         }
       });
       
-      // Kuro API: 1=Featured Res, 2=Featured Weap, 3=Permanent Res, 4=Permanent Weap, 5/6/7=Beginner
-      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
-      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
-      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
-      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
+      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === FEAT_RES).length;
+      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === FEAT_WEAP).length;
+      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_RES).length;
+      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_WEAP).length;
       const bc = pulls.filter(p => [5, 6, 7].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
       if (fc) parts.push(`${fc} char`);
