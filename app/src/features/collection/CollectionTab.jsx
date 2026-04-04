@@ -322,11 +322,11 @@ function CollectionTab({
                     <button
                       onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
-                      title="Characters"
-                      aria-label="View characters"
+                      title="Resonators"
+                      aria-label="View Resonators"
                       aria-pressed={collectionView === 'items'}
                     >
-                      <Crown size={12} className="inline mr-1" />Characters
+                      <Crown size={12} className="inline mr-1" />Resonators
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -366,7 +366,7 @@ function CollectionTab({
               )}
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
 
-                {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
+                {/* ── Resonators view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
                 {collectionView === 'items' && (<>
                   <KuroSelect
                     value={collectionWeaponFilter}
