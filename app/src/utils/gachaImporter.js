@@ -4,19 +4,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const POOL_LABELS = {
-  1: 'Standard Resonator',
-  2: 'Standard Weapon',
-  3: 'Featured Resonator',
-  4: 'Featured Weapon',
-  5: 'Beginner Resonator',
-  6: 'Beginner Weapon',
-  7: 'Beginner Collab',
-  8: 'Pool 8',
-  9: 'Pool 9',
-  10: 'Pool 10',
+  1: 'Featured Resonator',
+  2: 'Featured Weapon',
+  3: 'Permanent Resonator',
+  4: 'Permanent Weapon',
+  5: 'Novice Convene',
+  6: 'Beginners Choice',
+  7: 'Giveback Convene',
 };
-// Scan wider range — some pool types may have been added or renumbered
-export const POOLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// Scan all known pool types
+export const POOLS = [1, 2, 3, 4, 5, 6, 7];
 export const FALLBACK_API_BASE = 'https://gmserver-api.aki-game2.net/gacha/record/query';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -136,17 +133,16 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 /**
  * Fetch one page from the API. Returns { list, rawJson }.
  */
-async function fetchOnePage(params, poolType, endTime, signal) {
-  // cardPoolId (from URL resources_id) is required for API auth/scope
-  // Do NOT send gachaId/gachaType — those restrict results to one banner
+async function fetchOnePage(params, poolType, endTime, signal, withCardPoolId = true) {
   const body = {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
     cardPoolType: Number(poolType),
-    cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
+  // cardPoolId may restrict which pools respond — try with and without
+  if (withCardPoolId && params.cardPoolId) body.cardPoolId = String(params.cardPoolId);
   if (endTime) body.endTime = endTime;
 
   const controller = new AbortController();
@@ -180,9 +176,19 @@ const MAX_PER_POOL = 5000;
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
 
-  // Fetch first page — the API returns ALL available data in one response
-  // endTime parameter is ignored by the Kuro API
-  const { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal);
+  // Try with cardPoolId first
+  let { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal, true);
+
+  // If empty, retry WITHOUT cardPoolId — it may be restricting this pool
+  if (!error && !list.length && params.cardPoolId) {
+    const retry = await fetchOnePage(params, poolType, '', signal, false);
+    if (retry.list.length > 0) {
+      list = retry.list;
+      error = retry.error;
+      rawJson = retry.rawJson;
+      pageLog.push(`(retried without cardPoolId)`);
+    }
+  }
 
   if (error || !list.length) {
     pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);

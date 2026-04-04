@@ -1221,14 +1221,15 @@ function WhisperingWishesInner() {
             if (type === 'beginner') return p.bannerType === 'beginner';
             return false;
           }
-          // Pool numbering: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5+=Beginner
-          // Same for both Kuro API (with gachaId) and WuWaTracker exports
+          // Kuro API / WuWaTracker pool numbering:
+          // 1=Featured Resonator, 2=Featured Weapon, 3=Permanent Resonator,
+          // 4=Permanent Weapon, 5=Novice, 6=Beginner's Choice, 7=Giveback
           const pt = p.cardPoolType ?? p.gachaType;
-          if (type === 'standardChar') return pt === 1;
-          if (type === 'standardWeap') return pt === 2;
-          if (type === 'featured') return pt === 3;
-          if (type === 'weapon') return pt === 4;
-          if (type === 'beginner') return pt === 5 || pt === 6 || pt === 7;
+          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || pt === 1;
+          if (type === 'weapon') return p.bannerType === 'weapon' || pt === 2;
+          if (type === 'standardChar') return p.bannerType === 'standard-char' || pt === 3;
+          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || pt === 4;
+          if (type === 'beginner') return p.bannerType === 'beginner' || pt === 5 || pt === 6 || pt === 7;
           return false;
         });
         
@@ -1322,11 +1323,11 @@ function WhisperingWishesInner() {
         }
       });
       
-      // App/WuWaTracker numbering: 1=StdChar, 2=StdWeap, 3=FeatChar, 4=FeatWeap, 5/6=Beginner, 7=Collab
-      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
-      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
-      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
-      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
+      // Kuro API: 1=Featured Res, 2=Featured Weap, 3=Permanent Res, 4=Permanent Weap, 5/6/7=Beginner
+      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
+      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
+      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
+      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
       const bc = pulls.filter(p => [5, 6, 7].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
       if (fc) parts.push(`${fc} char`);
