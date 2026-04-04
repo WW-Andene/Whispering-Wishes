@@ -143,6 +143,7 @@ async function fetchOnePage(params, poolType, endTime, signal) {
     recordId: params.recordId || '',
   };
   if (endTime) body.endTime = endTime;
+  // Don't set size — let API return its default batch (gives ~400 items)
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
@@ -174,7 +175,24 @@ const MAX_PER_POOL = 5000;
 
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
+  const allItems = [];
+  const seenKeys = new Set();
 
+  const addUnique = (items) => {
+    let added = 0;
+    for (const item of items) {
+      // Use resourceId + time + name as unique key (handles multi-copy pulls with different resourceIds)
+      const key = `${item.resourceId}|${item.time}`;
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        allItems.push(item);
+        added++;
+      }
+    }
+    return added;
+  };
+
+  // Phase 1: Get initial batch (API returns ~400 items without size param)
   let { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal);
 
   if (error || !list.length) {
@@ -182,14 +200,42 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
     return { items: [], pageLog };
   }
 
+  addUnique(list);
   const newest = list[0]?.time || '?';
-  const oldest = list[list.length - 1]?.time || '?';
-  const usedHost = rawJson?._usedHost || '?';
-  pageLog.push(`${list.length} items (${newest} → ${oldest}) [host: ${usedHost}]`);
-  onProgress?.(poolType, 'fetching', list.length);
+  let oldestTime = list[list.length - 1]?.time || '';
+  pageLog.push(`batch: ${list.length} items (${newest} → ${oldestTime})`);
+  onProgress?.(poolType, 'fetching', allItems.length);
 
-  pageLog.push(`TOTAL: ${list.length}`);
-  return { items: list, pageLog };
+  // Phase 2: Paginate deeper from the oldest record
+  // The API may have more data beyond what the initial batch returned
+  let stuckCount = 0;
+  for (let page = 0; page < 1000; page++) {
+    if (signal?.aborted) break;
+    await sleep(100);
+
+    const { list: pageList, error: pageErr } = await fetchOnePage(params, poolType, oldestTime, signal);
+    if (pageErr || !pageList.length) break;
+
+    const added = addUnique(pageList);
+    if (added === 0) {
+      stuckCount++;
+      if (stuckCount >= 2) break; // Truly no more new data
+      continue;
+    }
+    stuckCount = 0;
+
+    const pageOldest = pageList[pageList.length - 1]?.time || '';
+    if (page % 20 === 0 || added > 0) {
+      pageLog.push(`p${page}: +${added} new (total: ${allItems.length}, oldest: ${pageOldest})`);
+    }
+    onProgress?.(poolType, 'fetching', allItems.length);
+
+    if (pageOldest === oldestTime) break;
+    oldestTime = pageOldest;
+  }
+
+  pageLog.push(`TOTAL: ${allItems.length}`);
+  return { items: allItems, pageLog };
 }
 
 /**
