@@ -49,12 +49,12 @@ import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting
 import EventsTab from './features/events/EventsTab.jsx';
 import TrackerTab from './features/tracker/TrackerTab.jsx';
-const PlannerTab = React.lazy(() => import('./features/planner/PlannerTab.jsx'));
-const AnalyticsTab = React.lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
-const CalculatorTab = React.lazy(() => import('./features/calculator/CalculatorTab.jsx'));
-const CollectionTab = React.lazy(() => import('./features/collection/CollectionTab.jsx'));
-const TeamsTab = React.lazy(() => import('./features/teams/TeamsTab.jsx'));
-const ProfileTab = React.lazy(() => import('./features/profile/ProfileTab.jsx'));
+import PlannerTab from './features/planner/PlannerTab.jsx';
+import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
+import CalculatorTab from './features/calculator/CalculatorTab.jsx';
+import CollectionTab from './features/collection/CollectionTab.jsx';
+import TeamsTab from './features/teams/TeamsTab.jsx';
+import ProfileTab from './features/profile/ProfileTab.jsx';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 // 8.1 fix: Fetch wrapper with AbortController timeout - fails fast on network loss
@@ -1849,7 +1849,7 @@ function WhisperingWishesInner() {
              full remount/rebuild on every switch. Lazy tabs only mount on first visit. */}
         <div style={activeTab !== 'tracker' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Tracker">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <TrackerTab
                 state={state}
                 dispatch={dispatch}
@@ -1862,14 +1862,14 @@ function WhisperingWishesInner() {
                 confirm={confirm}
                 setActiveTab={setActiveTab}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-EVENTS] */}
         <div style={activeTab !== 'events' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Events">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <EventsTab
                 state={state}
                 dispatch={dispatch}
@@ -1878,23 +1878,23 @@ function WhisperingWishesInner() {
                 visualSettings={visualSettings}
                 toast={toast}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-CALC] */}
         <div style={activeTab !== 'calculator' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Calculator">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <CalculatorTab state={state} dispatch={dispatch} />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-PLANNER] */}
         <div style={activeTab !== 'planner' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Planner">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <PlannerTab
                 state={state}
                 dispatch={dispatch}
@@ -1903,14 +1903,14 @@ function WhisperingWishesInner() {
                 toast={toast}
                 confirm={confirm}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-STATS] */}
         <div style={activeTab !== 'analytics' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Analytics">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <AnalyticsTab
                 state={state}
                 dispatch={dispatch}
@@ -1928,14 +1928,14 @@ function WhisperingWishesInner() {
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
                 FIREBASE_AVAILABLE={FIREBASE_AVAILABLE}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-COLLECT] */}
         <div style={activeTab !== 'gathering' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Collection">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <CollectionTab
                 state={state}
                 collectionData={collectionData}
@@ -1952,14 +1952,14 @@ function WhisperingWishesInner() {
                 refreshImages={refreshImages}
                 handleSetProfilePic={handleSetProfilePic}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-TEAMS] */}
         <div style={activeTab !== 'teams' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Teams">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <TeamsTab
                 state={state}
                 dispatch={dispatch}
@@ -1972,14 +1972,14 @@ function WhisperingWishesInner() {
                 toast={toast}
                 confirm={confirm}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         </div>
 
         {/* [SECTION:TAB-PROFILE] */}
         <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Profile">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
+
               <ProfileTab
             state={state}
             dispatch={dispatch}
@@ -2032,7 +2032,7 @@ function WhisperingWishesInner() {
             handleCloudDelete={handleCloudDelete}
             cloudBackupStatus={cloudBackupStatus}
           />
-            </React.Suspense>
+
           </TabErrorBoundary>
           </div>
 
