@@ -1272,8 +1272,14 @@ function WhisperingWishesInner() {
             pityCounter = 0;
           }
           
-          // Ensure timestamp is always a valid ISO string
-          const rawTs = p.timestamp || p.time;
+          // Ensure timestamp is always a valid ISO string in UTC
+          // API returns "2026-02-07 04:40:02" (no timezone) — treat as UTC
+          // WuWaTracker returns "2026-02-07T03:40:02+00:00" (explicit UTC)
+          let rawTs = p.timestamp || p.time || '';
+          // Normalize API format: "YYYY-MM-DD HH:mm:ss" → append Z for UTC
+          if (rawTs && !rawTs.includes('T') && !rawTs.includes('+') && !rawTs.includes('Z')) {
+            rawTs = rawTs.replace(' ', 'T') + 'Z';
+          }
           const tsMs = rawTs ? new Date(rawTs).getTime() : NaN;
           const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
 
