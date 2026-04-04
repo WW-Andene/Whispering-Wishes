@@ -57,11 +57,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} echo details`} centered>
       <div
-        className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border"
+        className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border"
         style={borderColor ? { borderColor: `${borderColor}80` } : {}}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-full">
+       <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
