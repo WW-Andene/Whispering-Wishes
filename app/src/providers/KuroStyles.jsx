@@ -779,6 +779,19 @@ const KuroStyles = memo(({ oledMode }) => (
       }
     }
 
+    /* ═══ BADGES — Standardized inline tag/badge ═══ */
+    .kuro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
     /* MED-6: Compact button variants for inline actions */
     .kuro-btn-sm {
       font-size: 12px;

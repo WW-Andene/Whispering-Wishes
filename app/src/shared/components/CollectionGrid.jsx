@@ -161,8 +161,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
       {canCollapse && (
         <button
           onClick={() => setExpanded(prev => !prev)}
-          className="w-full mt-2 py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-[10px] font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1"
-          style={{ background: 'var(--bg-btn)' }}
+          className="kuro-btn kuro-btn-sm w-full mt-2 flex items-center justify-center gap-1"
         >
           {expanded ? 'Show Less' : `Show All (${items.length})`}
         </button>

@@ -168,7 +168,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Quick action — view in teams */}
           {onViewInTeams && (
-            <button onClick={onViewInTeams} className="w-full py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" style={{ background: 'var(--bg-btn)' }}>
+            <button onClick={onViewInTeams} className="kuro-btn w-full flex items-center justify-center gap-1.5">
               <Users size={12} /> View in Team Builder
             </button>
           )}

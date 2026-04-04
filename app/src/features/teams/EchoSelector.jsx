@@ -104,7 +104,7 @@ export default function EchoSelector({
                       className="flex-1 text-[10px]"
                     />
                     {hasFilters && (
-                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="px-2 rounded border border-[var(--border-medium)] text-[10px] text-gray-400 hover:text-white transition-all">Clear</button>
+                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="kuro-btn kuro-btn-sm">Clear</button>
                     )}
                   </div>
                   {/* Recommendation indicator */}

@@ -774,17 +774,17 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           {onStatusChange && !isExpired && (
             <div className="flex gap-1">
               {!isDone && (
-                <button onClick={() => onStatusChange('done')} className="action-btn px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
+                <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[52px] backdrop-blur-sm" aria-label={`Mark ${event.name} as done`}>
                   <Check size={10} className="inline -mt-0.5" /> Done
                 </button>
               )}
               {!isSkipped && (
-                <button onClick={() => onStatusChange('skipped')} className="action-btn px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
+                <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm min-w-[52px] backdrop-blur-sm" aria-label={`Skip ${event.name}`}>
                   <SkipForward size={10} className="inline -mt-0.5" /> Skip
                 </button>
               )}
               {status && (
-                <button onClick={() => onStatusChange(null)} className="action-btn px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm min-h-[36px]" aria-label={`Undo ${event.name} status`}>
+                <button onClick={() => onStatusChange(null)} className="kuro-btn kuro-btn-sm backdrop-blur-sm" aria-label={`Undo ${event.name} status`}>
                   {isDone ? 'Undo Done' : 'Undo Skip'}
                 </button>
               )}

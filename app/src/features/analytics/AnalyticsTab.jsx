@@ -419,8 +419,8 @@ function AnalyticsTab({
                         <p className="text-gray-500">This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).</p>
                       </div>
                       <div className="flex gap-3 pt-1">
-                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-white/5 hover:bg-white/10 text-gray-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
-                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
+                        <button className="kuro-btn flex-1" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
+                        <button className="kuro-btn flex-1 active-gold" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
                       </div>
                     </div>
                   </div>
