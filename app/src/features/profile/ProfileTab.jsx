@@ -123,6 +123,7 @@ export default function ProfileTab({
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
+  const [aboutExpanded, setAboutExpanded] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
   // ── Admin state (showAdminPanel + adminMiniMode from props — survives tab switches) ──
@@ -1461,19 +1462,32 @@ export default function ProfileTab({
                   <h4 className="text-gray-100 font-bold text-sm">Whispering Wishes</h4>
                   <p className="text-gray-500 text-[10px]">Version {APP_VERSION}</p>
                 </div>
-                
+
                 <div className="text-center">
                   <p className="text-gray-400 text-[10px] mb-1">Questions, issues, or feedback?</p>
-                  <a 
-                    href="mailto:whisperingwishes.app@gmail.com" 
+                  <a
+                    href="mailto:whisperingwishes.app@gmail.com"
                     className="text-yellow-400 text-xs hover:text-yellow-300 transition-colors underline"
                   >
                     whisperingwishes.app@gmail.com
                   </a>
                 </div>
-                
+
+                <p className="text-center text-[10px] text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+
+                <button
+                  onClick={() => setAboutExpanded(prev => !prev)}
+                  className="w-full flex items-center justify-center gap-1.5 text-[10px] text-gray-500 hover:text-gray-400 transition-colors py-1"
+                  aria-expanded={aboutExpanded}
+                  aria-controls="about-legal-content"
+                >
+                  <span>{aboutExpanded ? 'Hide' : 'Show'} Legal & Privacy</span>
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${aboutExpanded ? 'rotate-180' : ''}`} />
+                </button>
+
+                {aboutExpanded && (<div id="about-legal-content" className="space-y-3 animate-in fade-in">
                 <div className="kuro-divider" />
-                
+
                 <div className="space-y-2 text-[10px] text-gray-400">
                   <p className="font-medium text-gray-400">Disclaimer</p>
                   <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
@@ -1529,8 +1543,7 @@ export default function ProfileTab({
                   </ul>
                   <p className="mt-1">We reserve the right to restrict access to users who violate these terms. Continued use of the app constitutes acceptance.</p>
                 </div>
-                
-                <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+                </div>)}
               </CardBody>
             </Card>
           </div>
