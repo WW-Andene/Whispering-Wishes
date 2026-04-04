@@ -350,6 +350,10 @@ Example: {"pulls":[...]}'
               <label className="text-gray-500 text-[10px] block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
               <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-[10px] font-mono" />
             </div>
+            <div>
+              <label className="text-gray-500 text-[10px] block mb-0.5">resources_id <span className="text-gray-600">(optional)</span></label>
+              <input type="text" value={directResourcesId} onChange={(e) => setDirectResourcesId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-[10px] font-mono" />
+            </div>
 
             {/* Camera / Screenshot OCR */}
             <ConveneScanner

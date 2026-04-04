@@ -176,62 +176,40 @@ const MAX_PER_POOL = 5000;
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
   const allItems = [];
-  const seenKeys = new Set();
 
-  const addUnique = (items) => {
-    let added = 0;
-    for (const item of items) {
-      // Use resourceId + time + name as unique key (handles multi-copy pulls with different resourceIds)
-      const key = `${item.resourceId}|${item.time}`;
-      if (!seenKeys.has(key)) {
-        seenKeys.add(key);
-        allItems.push(item);
-        added++;
-      }
-    }
-    return added;
-  };
-
-  // Phase 1: Get initial batch (API returns ~400 items without size param)
-  let { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal);
+  // Phase 1: Get initial batch
+  const { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal);
 
   if (error || !list.length) {
     pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
     return { items: [], pageLog };
   }
 
-  addUnique(list);
+  allItems.push(...list);
   const newest = list[0]?.time || '?';
   let oldestTime = list[list.length - 1]?.time || '';
   pageLog.push(`batch: ${list.length} items (${newest} → ${oldestTime})`);
   onProgress?.(poolType, 'fetching', allItems.length);
 
-  // Phase 2: Paginate deeper from the oldest record
-  // The API may have more data beyond what the initial batch returned
-  let stuckCount = 0;
-  for (let page = 0; page < 1000; page++) {
-    if (signal?.aborted) break;
+  // Phase 2: Paginate deeper — the API may have more data beyond initial batch
+  for (let page = 0; page < 2000; page++) {
+    if (signal?.aborted || !oldestTime) break;
     await sleep(100);
 
     const { list: pageList, error: pageErr } = await fetchOnePage(params, poolType, oldestTime, signal);
     if (pageErr || !pageList.length) break;
 
-    const added = addUnique(pageList);
-    if (added === 0) {
-      stuckCount++;
-      if (stuckCount >= 2) break; // Truly no more new data
-      continue;
-    }
-    stuckCount = 0;
-
+    // Check if we got genuinely older data
     const pageOldest = pageList[pageList.length - 1]?.time || '';
-    if (page % 20 === 0 || added > 0) {
-      pageLog.push(`p${page}: +${added} new (total: ${allItems.length}, oldest: ${pageOldest})`);
-    }
+    if (pageOldest === oldestTime) break; // Stuck, no deeper data
+
+    allItems.push(...pageList);
+    oldestTime = pageOldest;
     onProgress?.(poolType, 'fetching', allItems.length);
 
-    if (pageOldest === oldestTime) break;
-    oldestTime = pageOldest;
+    if (page % 50 === 0) {
+      pageLog.push(`p${page}: total ${allItems.length}, oldest: ${pageOldest}`);
+    }
   }
 
   pageLog.push(`TOTAL: ${allItems.length}`);
