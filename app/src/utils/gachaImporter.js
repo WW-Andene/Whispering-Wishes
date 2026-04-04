@@ -141,6 +141,8 @@ async function fetchOnePage(params, poolType, endTime, signal) {
     cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
+    // Request maximum records — API may default to ~400 without this
+    size: 9999,
   };
   if (endTime) body.endTime = endTime;
 
