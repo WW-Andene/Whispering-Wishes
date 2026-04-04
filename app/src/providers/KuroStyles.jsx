@@ -350,6 +350,11 @@ const KuroStyles = memo(({ oledMode }) => (
       margin-left: -0.75rem;
       margin-right: -0.75rem;
       padding: 0.75rem;
+      animation: tabFadeIn 0.15s ease-out;
+    }
+    @keyframes tabFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     
     /* D-HIERARCHY-2: Enhanced glow for 5★ — radial bg + stronger box-shadow for visual hierarchy */
