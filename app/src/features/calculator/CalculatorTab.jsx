@@ -17,7 +17,7 @@ import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Spark
 const CALC_DEFER_MS = 150;
 const MAX_BOOKMARK_NAME_LENGTH = 30;
 
-export default function CalculatorTab({ state, dispatch }) {
+function CalculatorTab({ state, dispatch }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [bookmarkName, setBookmarkName] = useState('');
@@ -477,3 +477,8 @@ export default function CalculatorTab({ state, dispatch }) {
     </>
   );
 }
+
+// React.memo: only re-render when calc or bookmarks state changes (not profile, events, etc.)
+export default React.memo(CalculatorTab, (prev, next) =>
+  prev.state.calc === next.state.calc && prev.state.bookmarks === next.state.bookmarks && prev.dispatch === next.dispatch
+);

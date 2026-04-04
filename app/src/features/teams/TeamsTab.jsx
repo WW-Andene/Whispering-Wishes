@@ -11,7 +11,7 @@ import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
 
-export default function TeamsTab({
+function TeamsTab({
   state,
   dispatch,
   collectionImages,
@@ -605,3 +605,9 @@ export default function TeamsTab({
           </div>
   );
 }
+
+export default React.memo(TeamsTab, (prev, next) =>
+  prev.state.teams === next.state.teams && prev.state.activeTeamIndex === next.state.activeTeamIndex &&
+  prev.collectionImages === next.collectionImages && prev.collectionData === next.collectionData &&
+  prev.dispatch === next.dispatch
+);

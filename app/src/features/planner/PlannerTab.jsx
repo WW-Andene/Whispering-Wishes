@@ -564,7 +564,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   );
 }
 
-export default function PlannerTab({
+function PlannerTab({
   state,
   dispatch,
   activeBanners,
@@ -937,3 +937,9 @@ export default function PlannerTab({
     </div>
   );
 }
+
+export default React.memo(PlannerTab, (prev, next) =>
+  prev.state.calc === next.state.calc && prev.state.planner === next.state.planner &&
+  prev.state.eventStatus === next.state.eventStatus && prev.state.bookmarks === next.state.bookmarks &&
+  prev.activeBanners === next.activeBanners && prev.bannerEndDate === next.bannerEndDate
+);

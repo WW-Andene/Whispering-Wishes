@@ -16,7 +16,7 @@ import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
 
-export default function AnalyticsTab({
+function AnalyticsTab({
   state,
   dispatch,
   setActiveTab,
@@ -1184,3 +1184,9 @@ export default function AnalyticsTab({
     </div>
   );
 }
+
+export default React.memo(AnalyticsTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.overallStats === next.overallStats &&
+  prev.luckRating === next.luckRating && prev.trophies === next.trophies &&
+  prev.collectionImages === next.collectionImages && prev.FIREBASE_AVAILABLE === next.FIREBASE_AVAILABLE
+);

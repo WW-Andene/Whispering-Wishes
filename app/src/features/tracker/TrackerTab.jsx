@@ -20,7 +20,7 @@ const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'standard', label: 'Standard', color: 'cyan' }),
 ]);
 
-export default function TrackerTab({
+function TrackerTab({
   state,
   dispatch,
   activeBanners,
@@ -468,3 +468,9 @@ export default function TrackerTab({
           </div>
   );
 }
+
+export default React.memo(TrackerTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.state.server === next.state.server &&
+  prev.activeBanners === next.activeBanners && prev.collectionImages === next.collectionImages &&
+  prev.visualSettings === next.visualSettings && prev.themeAccent === next.themeAccent
+);

@@ -13,7 +13,7 @@ import { EventCard, getActiveBanners } from '../../shared/components/BannerCard.
 import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 
-export default function EventsTab({
+function EventsTab({
   state,
   dispatch,
   activeBanners,
@@ -173,3 +173,8 @@ export default function EventsTab({
     </div>
   );
 }
+
+export default React.memo(EventsTab, (prev, next) =>
+  prev.state.eventStatus === next.state.eventStatus && prev.state.server === next.state.server &&
+  prev.activeBanners === next.activeBanners && prev.visualSettings === next.visualSettings
+);

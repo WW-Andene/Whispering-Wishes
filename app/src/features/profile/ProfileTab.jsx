@@ -61,7 +61,7 @@ const isAllowedImageUrl = (url) => {
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
-export default function ProfileTab({
+function ProfileTab({
   // Core state
   state,
   dispatch,
@@ -1645,3 +1645,11 @@ export default function ProfileTab({
     </>
   );
 }
+
+export default React.memo(ProfileTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.state.server === next.state.server &&
+  prev.state.settings === next.state.settings && prev.visualSettings === next.visualSettings &&
+  prev.googleUser === next.googleUser && prev.cloudBackupStatus === next.cloudBackupStatus &&
+  prev.overallStats === next.overallStats && prev.trophies === next.trophies &&
+  prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners
+);

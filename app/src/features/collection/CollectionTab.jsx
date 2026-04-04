@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 
-export default function CollectionTab({
+function CollectionTab({
   state,
   collectionData,
   collectionImages,
@@ -809,3 +809,10 @@ export default function CollectionTab({
     </div>
   );
 }
+
+export default React.memo(CollectionTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.collectionData === next.collectionData &&
+  prev.collectionImages === next.collectionImages && prev.visualSettings === next.visualSettings &&
+  prev.activeBanners === next.activeBanners && prev.framingMode === next.framingMode &&
+  prev.editingImage === next.editingImage
+);
