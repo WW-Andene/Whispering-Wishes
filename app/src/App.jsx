@@ -1119,7 +1119,11 @@ function WhisperingWishesInner() {
   // Cloud Backup: save full convene history to Firebase RTDB
   const handleCloudBackup = useCallback(async () => {
     const token = await getGoogleAuth();
-    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    if (!token || !googleUser) {
+      toast?.addToast?.('Session expired — please sign in again', 'error');
+      handleGoogleSignOut();
+      return;
+    }
     setCloudBackupStatus('saving');
     try {
       // P4-F002: Include full state + auxiliary data in cloud backup (matches file export)
@@ -1147,6 +1151,12 @@ function WhisperingWishesInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backupData),
       });
+      if (res.status === 401) {
+        toast?.addToast?.('Session expired — please sign in again', 'error');
+        handleGoogleSignOut();
+        setCloudBackupStatus('idle');
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setCloudBackupStatus('done');
       toast?.addToast?.(`Backed up ${backupData.pullCount} pulls to cloud`, 'success');
@@ -1156,15 +1166,27 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, handleGoogleSignOut]);
 
   // Cloud Restore: load convene history from Firebase RTDB
   const handleCloudRestore = useCallback(async () => {
-    const token = await getGoogleAuth();
-    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    let token = await getGoogleAuth();
+    if (!token || !googleUser) {
+      // Session expired (tokens lost after reload) — prompt re-sign-in
+      toast?.addToast?.('Session expired — please sign in again', 'error');
+      handleGoogleSignOut();
+      return;
+    }
     setCloudBackupStatus('loading');
     try {
       const res = await firebaseFetch(`user-history/${googleUser.uid}`, token);
+      if (res.status === 401) {
+        // Token invalid — clear stale session and prompt re-sign-in
+        toast?.addToast?.('Session expired — please sign in again', 'error');
+        handleGoogleSignOut();
+        setCloudBackupStatus('idle');
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data || !data.profile) {
@@ -1221,7 +1243,7 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch, handleGoogleSignOut]);
 
   // Cloud Delete: remove user's cloud backup from Firebase RTDB
   const handleCloudDelete = useCallback(async () => {
