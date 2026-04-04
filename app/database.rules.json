@@ -39,6 +39,14 @@
                       && newData.child('t').val() <= now + 60000"
       }
     },
+    "user-history": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid",
+        ".validate": "newData.hasChildren(['timestamp'])
+                      && newData.child('timestamp').isNumber()"
+      }
+    },
     "$other": {
       ".read": false,
       ".write": false

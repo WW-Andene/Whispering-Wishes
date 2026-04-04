@@ -224,6 +224,12 @@ function WhisperingWishesInner() {
 
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
+  // Google Auth state for cloud backup
+  const [googleUser, setGoogleUser] = useState(() => {
+    try { const v = localStorage.getItem('ww-google-user'); return v ? JSON.parse(v) : null; } catch { return null; }
+  });
+  const [cloudBackupStatus, setCloudBackupStatus] = useState('idle'); // idle|saving|loading|done|error
+  const googleAuthRef = useRef({ idToken: null, refreshToken: null, expiresAt: 0 });
   const stateRef = useRef(state);
   
 
@@ -986,6 +992,209 @@ function WhisperingWishesInner() {
     return authToken ? `${base}?auth=${authToken}` : base;
   }, []);
   
+  // ══════════════════════════════════════════════════════════════════════════
+  // Google Sign-In for Cloud Backup (Firebase Auth REST API — no SDK)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Refresh Google auth token using stored refresh token
+  const refreshGoogleToken = useCallback(async () => {
+    const rt = googleAuthRef.current.refreshToken;
+    if (!rt || !FIREBASE_API_KEY) return null;
+    try {
+      const res = await fetchWithTimeout('https://securetoken.googleapis.com/v1/token?key=' + FIREBASE_API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(rt)}`,
+      });
+      if (!res.ok) throw new Error('Token refresh failed');
+      const data = await res.json();
+      googleAuthRef.current = {
+        idToken: data.id_token,
+        refreshToken: data.refresh_token || rt,
+        expiresAt: Date.now() + (parseInt(data.expires_in, 10) || 3600) * 1000,
+      };
+      return data.id_token;
+    } catch { return null; }
+  }, []);
+
+  // Get a valid Google auth token (refresh if needed)
+  const getGoogleAuth = useCallback(async () => {
+    if (!googleUser) return null;
+    const now = Date.now();
+    if (googleAuthRef.current.idToken && googleAuthRef.current.expiresAt > now + 60000) {
+      return googleAuthRef.current.idToken;
+    }
+    return refreshGoogleToken();
+  }, [googleUser, refreshGoogleToken]);
+
+  // Google Sign-In using popup redirect flow via Firebase Auth REST API
+  const handleGoogleSignIn = useCallback(async () => {
+    if (!FIREBASE_API_KEY) { toast?.addToast?.('Firebase not configured', 'error'); return; }
+    try {
+      // Use Google Identity Services (GIS) for the OAuth flow
+      // Load the GIS script dynamically if not already loaded
+      if (!window.google?.accounts?.oauth2) {
+        await new Promise((resolve, reject) => {
+          if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+            // Script already loading, wait for it
+            const check = setInterval(() => { if (window.google?.accounts?.oauth2) { clearInterval(check); resolve(); } }, 100);
+            setTimeout(() => { clearInterval(check); reject(new Error('GIS load timeout')); }, 10000);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://accounts.google.com/gsi/client';
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
+          document.head.appendChild(script);
+        });
+      }
+
+      // Request an authorization code via popup
+      const tokenResponse = await new Promise((resolve, reject) => {
+        const client = window.google.accounts.oauth2.initCodeClient({
+          client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
+          scope: 'email profile',
+          ux_mode: 'popup',
+          callback: (response) => {
+            if (response.error) reject(new Error(response.error));
+            else resolve(response);
+          },
+        });
+        client.requestCode();
+      });
+
+      // Exchange the auth code for Firebase credentials via signInWithIdp
+      // First get an access token, then exchange for Firebase token
+      // Actually, use the simpler approach: signInWithOAuth using the Google ID token
+      // For mobile PWA, use redirect-based flow instead
+      toast?.addToast?.('Signing in...', 'info');
+
+      // Alternative: use signInWithPopup equivalent via REST
+      // The GIS tokenClient approach gives us an access_token directly
+      const tokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
+        scope: 'email profile',
+        callback: () => {},
+      });
+
+      const accessToken = await new Promise((resolve, reject) => {
+        tokenClient.callback = (tokenResponse) => {
+          if (tokenResponse.error) reject(new Error(tokenResponse.error));
+          else resolve(tokenResponse.access_token);
+        };
+        tokenClient.requestAccessToken();
+      });
+
+      // Exchange Google access token for Firebase ID token
+      const fbRes = await fetchWithTimeout(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postBody: `access_token=${accessToken}&providerId=google.com`,
+            requestUri: window.location.origin,
+            returnIdToken: true,
+            returnSecureToken: true,
+          }),
+        }
+      );
+      if (!fbRes.ok) throw new Error('Firebase sign-in failed');
+      const fbData = await fbRes.json();
+
+      const user = {
+        uid: fbData.localId,
+        email: fbData.email,
+        displayName: fbData.displayName || fbData.email?.split('@')[0] || 'User',
+        photoUrl: fbData.photoUrl || null,
+      };
+
+      googleAuthRef.current = {
+        idToken: fbData.idToken,
+        refreshToken: fbData.refreshToken,
+        expiresAt: Date.now() + (parseInt(fbData.expiresIn, 10) || 3600) * 1000,
+      };
+
+      setGoogleUser(user);
+      try { localStorage.setItem('ww-google-user', JSON.stringify(user)); } catch {}
+      toast?.addToast?.(`Signed in as ${user.displayName}`, 'success');
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      toast?.addToast?.('Sign-in failed: ' + (err.message || 'Unknown error'), 'error');
+    }
+  }, [toast]);
+
+  const handleGoogleSignOut = useCallback(() => {
+    setGoogleUser(null);
+    googleAuthRef.current = { idToken: null, refreshToken: null, expiresAt: 0 };
+    try { localStorage.removeItem('ww-google-user'); } catch {}
+    toast?.addToast?.('Signed out', 'info');
+  }, [toast]);
+
+  // Cloud Backup: save full convene history to Firebase RTDB
+  const handleCloudBackup = useCallback(async () => {
+    const token = await getGoogleAuth();
+    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    setCloudBackupStatus('saving');
+    try {
+      const backupData = {
+        profile: stateRef.current.profile,
+        timestamp: Date.now(),
+        version: APP_VERSION,
+        pullCount: (stateRef.current.profile.featured?.history?.length || 0)
+          + (stateRef.current.profile.weapon?.history?.length || 0)
+          + (stateRef.current.profile.standardChar?.history?.length || 0)
+          + (stateRef.current.profile.standardWeap?.history?.length || 0)
+          + (stateRef.current.profile.beginner?.history?.length || 0),
+      };
+      const res = await fetchWithTimeout(firebaseUrl(`user-history/${googleUser.uid}`, token), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backupData),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setCloudBackupStatus('done');
+      toast?.addToast?.(`Backed up ${backupData.pullCount} pulls to cloud`, 'success');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    } catch (err) {
+      setCloudBackupStatus('error');
+      toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    }
+  }, [getGoogleAuth, googleUser, firebaseUrl, toast]);
+
+  // Cloud Restore: load convene history from Firebase RTDB
+  const handleCloudRestore = useCallback(async () => {
+    const token = await getGoogleAuth();
+    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    setCloudBackupStatus('loading');
+    try {
+      const res = await fetchWithTimeout(firebaseUrl(`user-history/${googleUser.uid}`, token));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || !data.profile) {
+        toast?.addToast?.('No cloud backup found', 'error');
+        setCloudBackupStatus('idle');
+        return;
+      }
+      const doRestore = await confirm?.({
+        title: 'Restore from cloud',
+        message: `Restore backup from ${new Date(data.timestamp).toLocaleString()}?\n${data.pullCount || 0} pulls (v${data.version || '?'}).\nThis will REPLACE your current data.`,
+        confirmLabel: 'Restore',
+        destructive: true,
+      });
+      if (!doRestore) { setCloudBackupStatus('idle'); return; }
+      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: data.profile } });
+      setCloudBackupStatus('done');
+      toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    } catch (err) {
+      setCloudBackupStatus('error');
+      toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    }
+  }, [getGoogleAuth, googleUser, firebaseUrl, toast, confirm, dispatch]);
+
   // Anonymous presence system - writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
   const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
@@ -1701,6 +1910,12 @@ function WhisperingWishesInner() {
             setShowAdminPanel={setShowAdminPanel}
             adminMiniMode={adminMiniMode}
             setAdminMiniMode={setAdminMiniMode}
+            googleUser={googleUser}
+            handleGoogleSignIn={handleGoogleSignIn}
+            handleGoogleSignOut={handleGoogleSignOut}
+            handleCloudBackup={handleCloudBackup}
+            handleCloudRestore={handleCloudRestore}
+            cloudBackupStatus={cloudBackupStatus}
           />
             </React.Suspense>
           </TabErrorBoundary>
