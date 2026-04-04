@@ -137,17 +137,14 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * Fetch one page from the API. Returns { list, rawJson }.
  */
 async function fetchOnePage(params, poolType, endTime, signal) {
+  // Only send the minimum required params — gachaId/gachaType RESTRICT results to one banner
   const body = {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
     cardPoolType: Number(poolType),
-    cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
-  if (params.gachaId) body.gachaId = String(params.gachaId);
-  if (params.gachaType) body.gachaType = String(params.gachaType);
-  if (params.svrArea) body.svrArea = String(params.svrArea);
   if (endTime) body.endTime = endTime;
 
   const controller = new AbortController();
@@ -178,8 +175,9 @@ async function fetchOnePage(params, poolType, endTime, signal) {
  */
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const items = [];
+  const seenIds = new Set(); // Dedup during pagination — API pages overlap
   let endTime = '';
-  const seenTimes = new Set();
+  let prevEndTime = '';
 
   for (let page = 0; page < 500; page++) {
     if (signal?.aborted) break;
@@ -187,16 +185,25 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
     const { list, error } = await fetchOnePage(params, poolType, endTime, signal);
     if (error || !list.length) break;
 
-    items.push(...list);
+    // Deduplicate as we go — API returns overlapping pages
+    let newCount = 0;
+    for (const item of list) {
+      const id = item.resourceId ? `${item.resourceId}|${item.time}` : `${item.name}|${item.time}|${item.qualityLevel}`;
+      if (!seenIds.has(id)) {
+        seenIds.add(id);
+        items.push(item);
+        newCount++;
+      }
+    }
     onProgress?.(poolType, 'fetching', items.length);
+
+    // If no new unique items in this page, we've exhausted the data
+    if (newCount === 0) break;
 
     // Find the oldest record's time for pagination
     const oldest = list.reduce((min, item) => (item.time || '') < (min.time || '') ? item : min, list[0]);
-    if (!oldest?.time) break;
-
-    // Stuck detection: if we've seen this exact endTime before, we're looping
-    if (seenTimes.has(oldest.time)) break;
-    seenTimes.add(oldest.time);
+    if (!oldest?.time || oldest.time === prevEndTime) break;
+    prevEndTime = endTime;
     endTime = oldest.time;
 
     await sleep(150);
