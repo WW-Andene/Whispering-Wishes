@@ -284,7 +284,7 @@ export default function AdminPanel({
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           
                           if (uniqueNames.length === 0) {
-                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-500 text-xs">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>;
+                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-xs">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>;
                           }
                           
                           return (
@@ -473,7 +473,7 @@ export default function AdminPanel({
                             ))}
                           </div>
                         ) : adminPlayerList.length === 0 ? (
-                          <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting operative registration</p>
+                          <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Awaiting operative registration</p>
                         ) : (
                           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
                             {adminPlayerList.map((p, i) => (
@@ -549,7 +549,7 @@ export default function AdminPanel({
                               </div>
                             ))}
                             {(!trophies?.list || trophies.list.length === 0) && (
-                              <div className="kuro-empty-state text-center py-4"><p className="text-gray-500 text-xs">Import Convene data to unlock achievements</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>
+                              <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-xs">Import Convene data to unlock achievements</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>
                             )}
                           </div>
                         </div>
@@ -941,7 +941,7 @@ export default function AdminPanel({
                         {diag?.log ? (
                           <pre className="text-[10px] font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
                         ) : (
-                          <div className="text-gray-500 text-xs text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
+                          <div className="text-gray-400 text-xs text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
                         )}
                         {diag && (
                           <button onClick={() => {

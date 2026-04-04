@@ -468,7 +468,7 @@ export default function AnalyticsTab({
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
+                                <div className="text-gray-400 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
                                 <div className="text-gray-500 text-[10px]">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
                               </div>
                             ) : (
@@ -649,7 +649,7 @@ export default function AnalyticsTab({
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
                           {fiveStars.map((p, i) => {
@@ -684,7 +684,7 @@ export default function AnalyticsTab({
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="text-gray-500 text-xs text-center py-4">Import more history to earn trophies</p>
+                      <p className="text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
                     </CardBody>
                   </Card>
                 )}
@@ -723,7 +723,7 @@ export default function AnalyticsTab({
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
                               <div className="text-[10px] font-bold text-white truncate">{trophy.name}</div>
-                              {trophy.desc && <div className="text-[9px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
+                              {trophy.desc && <div className="text-[10px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
                             </div>
                           );
                         })}
@@ -790,7 +790,7 @@ export default function AnalyticsTab({
                         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
                       </CardHeader>
                       <CardBody>
-                        <p className="text-gray-500 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
+                        <p className="text-gray-400 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
                       </CardBody>
                     </Card>
                   );
@@ -959,7 +959,7 @@ export default function AnalyticsTab({
                         : chartBanner === 'weapon' ? statsTabData.weaponHist
                         : chartBanner === 'stdChar' ? statsTabData.stdCharHist
                         : statsTabData.stdWeapHist;
-                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>;
+                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>;
 
                       const groupData = (range) => {
                         const grouped = {};
@@ -1013,7 +1013,7 @@ export default function AnalyticsTab({
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>;
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>;
 
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);

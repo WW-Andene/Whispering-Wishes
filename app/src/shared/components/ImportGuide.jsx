@@ -12,7 +12,7 @@ const IMPORT_GUIDE_DATA = {
     steps: [
       <>Open Wuthering Waves, go to <span className="text-gray-100 font-medium">Convene</span> → <span className="text-gray-100 font-medium">History</span> → <span className="text-gray-100 font-medium">View Details</span></>,
       <>Open <span className="text-gray-100 font-medium">PowerShell</span> and paste this command:</>,
-      <><code className="block bg-black/40 rounded px-2 py-1.5 text-[9px] font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
+      <><code className="block bg-black/40 rounded px-2 py-1.5 text-[10px] font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
       <>The URL is <span className="text-gray-100 font-medium">automatically copied</span> to your clipboard</>,
       <>Paste it in the <span className="text-gray-100 font-medium">URL field</span> below and click <span className="text-gray-100 font-medium">Import</span></>,
     ],

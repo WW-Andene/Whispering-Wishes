@@ -111,7 +111,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-[9px] text-gray-400">DMG</span>
+                <span className="text-[10px] text-gray-400">DMG</span>
                 <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
               </div>
             )}

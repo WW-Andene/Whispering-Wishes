@@ -320,7 +320,7 @@ export default function TeamsTab({
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
-                            <div className="text-gray-500 text-sm mb-1">No characters assigned</div>
+                            <div className="text-gray-400 text-sm mb-1">No characters assigned</div>
                             <p className="text-gray-600 text-[10px]">Select a slot below to add a Resonator to this team</p>
                           </div>
                         )}

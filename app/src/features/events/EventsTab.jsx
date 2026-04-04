@@ -110,7 +110,7 @@ export default function EventsTab({
           };
           const entries = Object.entries(EVENTS);
           if (entries.length === 0) return (
-            <div className="text-center py-8 text-gray-500 text-sm">
+            <div className="text-center py-8 text-gray-400 text-sm">
               <Calendar size={24} className="mx-auto mb-2 opacity-50" />
               No events currently tracked
             </div>

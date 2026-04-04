@@ -750,7 +750,7 @@ export default function PlannerTab({
             {dailyIncome === 0 ? (
               <div className="p-4 text-center rounded-lg" style={{ background: 'var(--bg-stat)' }}>
                 <div className="text-gray-400 text-sm mb-1">No daily income set</div>
-                <div className="text-gray-500 text-xs">Set your Daily Astrite income above.</div>
+                <div className="text-gray-400 text-xs">Set your Daily Astrite income above.</div>
               </div>
             ) : (
             <div className="grid grid-cols-3 gap-2">

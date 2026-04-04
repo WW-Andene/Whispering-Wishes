@@ -107,9 +107,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
                 'bg-gray-500/20 text-gray-300 border border-gray-500/40'
               }`}>
-                <span className="text-[9px] text-gray-400">ToA</span> {data.tier.toa}
+                <span className="text-[10px] text-gray-400">ToA</span> {data.tier.toa}
                 <span className="text-gray-600 mx-0.5">|</span>
-                <span className="text-[9px] text-gray-400">WW</span> {data.tier.ww}
+                <span className="text-[10px] text-gray-400">WW</span> {data.tier.ww}
               </div>
             )}
             {data.region && (

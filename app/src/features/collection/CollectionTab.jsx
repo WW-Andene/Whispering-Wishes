@@ -249,7 +249,7 @@ export default function CollectionTab({
           <CardBody className="text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />
             <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
-            <p className="text-gray-500 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
+            <p className="text-gray-400 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
             <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
           </CardBody>
         </Card>
@@ -542,7 +542,7 @@ export default function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('copies')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-xs font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                   title="Sort by copies"
                   aria-label="Sort by copies"
                   aria-pressed={collectionSort === 'copies'}
@@ -561,7 +561,7 @@ export default function CollectionTab({
                 {collectionView === 'items' && (
                   <button
                     onClick={() => setCollectionSort('name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[9px] font-bold transition-all ${collectionSort === 'name' ? 'active-gold' : 'text-gray-400'}`}
+                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[10px] font-bold transition-all ${collectionSort === 'name' ? 'active-gold' : 'text-gray-400'}`}
                     title="Sort A-Z"
                     aria-label="Sort alphabetically"
                     aria-pressed={collectionSort === 'name'}

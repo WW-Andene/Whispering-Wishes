@@ -1225,7 +1225,7 @@ export default function ProfileTab({
                     aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()} — click to switch to ${visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF'}`}
                     title={`Currently: ${visualSettings.animationsEnabled.toUpperCase()}. Click to cycle.`}
                   >
-                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold tracking-wide text-white/80 pointer-events-none select-none">
+                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold tracking-wide text-white/80 pointer-events-none select-none">
                       {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
                     </span>
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[28px]' : 'left-[52px]'}`} />
@@ -1339,7 +1339,7 @@ export default function ProfileTab({
                       >
                         <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <span className="absolute bottom-0.5 left-1 text-white text-[9px] font-medium drop-shadow-lg">{t.name}</span>
+                        <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
                         {visualSettings.theme === t.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
                       </button>
                     ))}
@@ -1565,7 +1565,7 @@ export default function ProfileTab({
                   <div key={key} style={{ background: 'var(--bg-stat)', borderRadius: 8 }}>
                     <button
                       onClick={() => setAboutSections(prev => ({ ...prev, [key]: !prev[key] }))}
-                      className="w-full flex items-center justify-between text-[11px] font-semibold text-gray-300 hover:text-gray-200 transition-colors"
+                      className="w-full flex items-center justify-between text-xs font-semibold text-gray-300 hover:text-gray-200 transition-colors"
                       style={{ padding: '8px 12px' }}
                       aria-expanded={!!aboutSections[key]}
                     >

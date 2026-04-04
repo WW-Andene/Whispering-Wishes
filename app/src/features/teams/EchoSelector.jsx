@@ -190,7 +190,7 @@ export default function EchoSelector({
                         );
                       })}
                     {filtered.length === 0 && (
-                      <div className="text-center py-6 text-gray-500 text-xs">No echoes match filters</div>
+                      <div className="text-center py-6 text-gray-400 text-xs">No echoes match filters</div>
                     )}
                   </div>
                 </div>

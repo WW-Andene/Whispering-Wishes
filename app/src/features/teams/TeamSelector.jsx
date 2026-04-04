@@ -244,7 +244,7 @@ export default function TeamSelector({
                           {filteredChars.length === 0 && (
                             <div className="text-center py-8">
                               <Search size={24} className="mx-auto mb-2 text-gray-600" />
-                              <p className="text-gray-500 text-xs">No resonators match</p>
+                              <p className="text-gray-400 text-xs">No resonators match</p>
                             </div>
                           )}
                         </div>

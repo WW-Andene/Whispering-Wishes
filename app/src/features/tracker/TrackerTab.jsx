@@ -140,9 +140,10 @@ export default function TrackerTab({
                     timerColor="yellow"
                   />
                 )) : (
-                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
-                    <Sparkles size={24} className="mx-auto mb-2 opacity-50" />
-                    No active Resonator banners
+                  <div className="kuro-empty-state text-center py-8">
+                    <Sparkles size={32} className="mx-auto mb-2 text-yellow-500/40" />
+                    <p className="text-gray-300 text-sm font-medium">No active Resonator banners</p>
+                    <p className="text-gray-500 text-[10px] mt-1">Banner data will appear when a new phase starts</p>
                   </div>
                 )}
               </div>
@@ -167,9 +168,10 @@ export default function TrackerTab({
                     timerColor="pink"
                   />
                 )) : (
-                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
-                    <Sword size={24} className="mx-auto mb-2 opacity-50" />
-                    No active weapon banners
+                  <div className="kuro-empty-state text-center py-8">
+                    <Sword size={32} className="mx-auto mb-2 text-pink-500/40" />
+                    <p className="text-gray-300 text-sm font-medium">No active weapon banners</p>
+                    <p className="text-gray-500 text-[10px] mt-1">Weapon banners rotate each phase</p>
                   </div>
                 )}
               </div>
@@ -314,7 +316,7 @@ export default function TrackerTab({
                         )
                       : BANNER_HISTORY;
                     return filtered.length === 0
-                      ? <div className="text-center text-gray-500 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
+                      ? <div className="text-center text-gray-400 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
                       : filtered.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
@@ -420,7 +422,7 @@ export default function TrackerTab({
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
-                    <div className="text-center text-gray-500 text-xs py-6">
+                    <div className="text-center text-gray-400 text-xs py-6">
                       {allPulls.length === 0 ? 'No Convene history. Import your data in the Profile tab.' : 'No Convenes match your filters.'}
                     </div>
                   ) : (
