@@ -95,7 +95,7 @@ function TrackerTab({
             )}
             {/* P7-F001: Cross-link to Calculator for quick odds check */}
             {state.profile.importedAt && setActiveTab && (
-              <button onClick={() => setActiveTab('calculator')} className="w-full flex items-center justify-center gap-1.5 text-[10px] text-gray-500 hover:text-yellow-400/80 transition-colors py-0.5">
+              <button onClick={() => setActiveTab('calculator')} className="w-full flex items-center justify-center gap-1.5 text-[10px] text-gray-500 hover:text-yellow-400/80 transition-colors -mb-2 py-0.5">
                 <Calculator size={11} /> Calculate your pull odds →
               </button>
             )}
