@@ -1481,15 +1481,28 @@ export default function ProfileTab({
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">Data & Privacy</p>
-                  <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
-                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
-                  <p>This app does not require any special device permissions. Data import relies on files you manually provide or URLs from the game.</p>
-                </div>
-                
-                <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">Third-Party Services</p>
-                  <p>This app may reference third-party tools such as WuWa Tracker. We are not affiliated with these services and are not responsible for their data handling or availability.</p>
+                  <p className="font-medium text-gray-400">Privacy Policy</p>
+                  <p className="font-medium text-gray-400 mt-2">Local Data</p>
+                  <p>Your Convene history, calculator settings, team builds, planner notes, and visual preferences are stored <strong className="text-gray-400">locally on your device</strong> using browser storage (localStorage). This data never leaves your device unless you explicitly use the features below.</p>
+
+                  <p className="font-medium text-gray-400 mt-2">Google Sign-In & Cloud Backup</p>
+                  <p>If you sign in with Google, we receive your <strong className="text-gray-400">display name, profile picture URL, and a unique user ID</strong> from Google. We do <strong className="text-gray-400">not</strong> store your email address. Your Google identity is used solely to authenticate cloud backup requests.</p>
+                  <p>When you use Cloud Backup, your Convene history is stored in Firebase Realtime Database under your Google user ID. Only you can read or write your own backup. You can delete your cloud data at any time by signing in and overwriting with an empty backup, or by contacting us.</p>
+
+                  <p className="font-medium text-gray-400 mt-2">Leaderboard</p>
+                  <p>If you choose to submit your score, your <strong className="text-gray-400">hashed user ID</strong> (not your real game UID), average pity, Convene count, 50/50 stats, and owned 5★ items are sent to a shared Firebase database and displayed publicly. This data is pseudonymous. You can opt out by not submitting.</p>
+
+                  <p className="font-medium text-gray-400 mt-2">Anonymous Presence</p>
+                  <p>The app sends a periodic anonymous heartbeat (timestamp only, no personal data) to show how many users are currently active. This data expires automatically after 2 minutes.</p>
+
+                  <p className="font-medium text-gray-400 mt-2">Third-Party Services</p>
+                  <p><strong className="text-gray-400">Google Identity Services</strong> — used for Sign-In (Google's privacy policy applies). <strong className="text-gray-400">Firebase</strong> (Google) — cloud storage for backups and leaderboard. <strong className="text-gray-400">Groq API</strong> — used server-side only for screenshot OCR (image is processed and discarded, not stored). <strong className="text-gray-400">WuWa game API</strong> — proxied through our server to fetch your Convene history (we do not log or store the requests).</p>
+
+                  <p className="font-medium text-gray-400 mt-2">Data Deletion</p>
+                  <p>To delete all local data: clear your browser's site data for this domain. To delete cloud data: contact <a href="mailto:whisperingwishes.app@gmail.com" className="text-cyan-400 hover:underline">whisperingwishes.app@gmail.com</a> with your request. To remove your leaderboard entry: contact us with your leaderboard ID.</p>
+
+                  <p className="font-medium text-gray-400 mt-2">No Tracking</p>
+                  <p>This app does not use analytics cookies, advertising trackers, or fingerprinting. No personal data is sold or shared with third parties. The app does not require any special device permissions.</p>
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
