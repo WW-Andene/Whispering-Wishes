@@ -197,7 +197,8 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
 
   const newest = list[0]?.time || '?';
   const oldest = list[list.length - 1]?.time || '?';
-  pageLog.push(`${list.length} items (${newest} → ${oldest})`);
+  const usedHost = rawJson?._usedHost || '?';
+  pageLog.push(`${list.length} items (${newest} → ${oldest}) [host: ${usedHost}]`);
   onProgress?.(poolType, 'fetching', list.length);
 
   pageLog.push(`TOTAL: ${list.length}`);

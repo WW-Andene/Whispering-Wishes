@@ -1,5 +1,11 @@
 // Vercel/DV serverless function — proxies POST requests to WuWa gacha API to avoid CORS
-const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
+// Try both oversea and CN API servers
+const API_HOSTS = [
+  'gmserver-api.aki-game2.net',   // CN / original
+  'gmserver-api.aki-game.net',    // Global / oversea
+  'gmserver-api.aki-game2.com',   // Alternate TLD
+  'gmserver-api.aki-game.com',    // Alternate TLD
+];
 
 export default async function handler(req, res) {
   // CORS preflight
@@ -20,7 +26,6 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
 
   try {
-    // Handle body — DV may pass string/buffer, Vercel passes parsed object
     let body = req.body;
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer(body)) body = body.toString('utf-8');
     if (typeof body === 'string') {
@@ -33,29 +38,47 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing playerId' });
     }
 
-    // Only one endpoint — hardcoded to avoid catch-all routing differences
-    const targetUrl = `https://${ALLOWED_HOST}/gacha/record/query`;
+    // Client can specify preferred host, or we try all
+    const preferredHost = body._apiHost;
+    delete body._apiHost; // Don't forward internal field to Kuro API
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    const hostsToTry = preferredHost ? [preferredHost, ...API_HOSTS.filter(h => h !== preferredHost)] : API_HOSTS;
+    const bodyStr = JSON.stringify(body);
 
-    const response = await fetch(targetUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Accept': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify(body),
-    });
-    clearTimeout(timeout);
+    for (const host of hostsToTry) {
+      const targetUrl = `https://${host}/gacha/record/query`;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
-    const data = await response.json();
-    return res.status(response.status).json(data);
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      return res.status(504).json({ error: 'Upstream timeout' });
+      try {
+        const response = await fetch(targetUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Accept': 'application/json',
+          },
+          signal: controller.signal,
+          body: bodyStr,
+        });
+        clearTimeout(timeout);
+
+        const data = await response.json();
+        // If we got a valid response (code=0 or has data), return it
+        if (data?.code === 0 || (response.ok && data?.data)) {
+          data._usedHost = host; // Tell client which host worked
+          return res.status(response.status).json(data);
+        }
+        // Non-zero code but valid response — might be auth error, try next host
+      } catch (err) {
+        clearTimeout(timeout);
+        // Network/timeout error — try next host
+        continue;
+      }
     }
+
+    // All hosts failed
+    return res.status(502).json({ error: 'All API hosts returned errors', triedHosts: hostsToTry });
+  } catch (err) {
     return res.status(502).json({ error: 'Proxy error: ' + err.message });
   }
 }
