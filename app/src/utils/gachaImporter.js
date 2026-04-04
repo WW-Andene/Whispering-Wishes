@@ -133,7 +133,7 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 /**
  * Fetch one page from the API. Returns { list, rawJson }.
  */
-async function fetchOnePage(params, poolType, endTime, signal) {
+async function fetchOnePage(params, poolType, endTime, signal, pageSize) {
   const body = {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
@@ -143,7 +143,7 @@ async function fetchOnePage(params, poolType, endTime, signal) {
     recordId: params.recordId || '',
   };
   if (endTime) body.endTime = endTime;
-  // Don't set size — let API return its default batch (gives ~400 items)
+  if (pageSize) body.size = pageSize;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
@@ -177,42 +177,39 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
   const allItems = [];
 
-  // Phase 1: Get initial batch
-  const { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal);
+  // Strategy: fetch with explicit size to enable proper endTime pagination
+  // The in-game page uses size=5, but we use larger pages for efficiency
+  const PAGE_SIZE = 20;
+  let endTime = '';
 
-  if (error || !list.length) {
-    pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
-    return { items: [], pageLog };
-  }
-
-  allItems.push(...list);
-  const newest = list[0]?.time || '?';
-  let oldestTime = list[list.length - 1]?.time || '';
-  pageLog.push(`batch: ${list.length} items (${newest} → ${oldestTime})`);
-  onProgress?.(poolType, 'fetching', allItems.length);
-
-  // Phase 2: Paginate deeper — the API may have more data beyond initial batch
   for (let page = 0; page < 2000; page++) {
-    if (signal?.aborted || !oldestTime) break;
-    await sleep(100);
+    if (signal?.aborted) break;
+    if (page > 0) await sleep(100);
 
-    const { list: pageList, error: pageErr } = await fetchOnePage(params, poolType, oldestTime, signal);
-    if (pageErr || !pageList.length) break;
+    const { list, error, rawJson } = await fetchOnePage(params, poolType, endTime, signal, PAGE_SIZE);
 
-    // Check if we got genuinely older data
-    const pageOldest = pageList[pageList.length - 1]?.time || '';
-    if (pageOldest === oldestTime) break; // Stuck, no deeper data
+    if (error) { pageLog.push(`p${page}: error: ${error}`); break; }
+    if (!list.length) break;
 
-    allItems.push(...pageList);
-    oldestTime = pageOldest;
+    allItems.push(...list);
+    const pageOldest = list[list.length - 1]?.time || '';
+
+    if (page === 0) {
+      const newest = list[0]?.time || '?';
+      pageLog.push(`p0: ${list.length} items (${newest} → ${pageOldest})`);
+    }
+
     onProgress?.(poolType, 'fetching', allItems.length);
 
-    if (page % 50 === 0) {
-      pageLog.push(`p${page}: total ${allItems.length}, oldest: ${pageOldest}`);
-    }
+    // If page returned fewer than PAGE_SIZE, we've exhausted this pool
+    if (list.length < PAGE_SIZE) break;
+
+    // If endTime didn't advance, we're stuck
+    if (pageOldest === endTime) break;
+    endTime = pageOldest;
   }
 
-  pageLog.push(`TOTAL: ${allItems.length}`);
+  pageLog.push(`TOTAL: ${allItems.length} (${Math.ceil(allItems.length / PAGE_SIZE)} pages)`);
   return { items: allItems, pageLog };
 }
 
