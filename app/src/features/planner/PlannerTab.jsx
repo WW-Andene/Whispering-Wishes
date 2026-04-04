@@ -323,10 +323,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [cal, bannerEndDate, activeBanners]);
 
   return (
-    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-    <Card>
-      <CardHeader><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
-      <CardBody className="space-y-3">
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="space-y-3">
 
         {/* ── VIEW 1: Page Calendar ─────────────────────────────────────────── */}
 
@@ -558,8 +555,6 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           </div>
         </div>
 
-      </CardBody>
-    </Card>
     </div>
   );
 }
@@ -638,7 +633,16 @@ function PlannerTab({
       <TabBackground id="planner" />
 
       {/* ── 1. Calendar ────────────────────────────────────────────────────── */}
-      <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} />
+      <Card>
+        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('calendar')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('calendar'); } }} aria-expanded={!collapsed.calendar}>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.calendar ? '' : 'rotate-180'}`} />}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
+        </div>
+        {!collapsed.calendar && (
+          <CardBody className="space-y-3">
+            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} />
+          </CardBody>
+        )}
+      </Card>
 
       {/* ── 2. Daily Income ────────────────────────────────────────────────── */}
       <Card>
