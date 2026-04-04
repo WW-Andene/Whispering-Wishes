@@ -1474,7 +1474,7 @@ export default function ProfileTab({
                   <p className="text-gray-400 text-[10px] mb-1">Questions, issues, or feedback?</p>
                   <a
                     href="mailto:whisperingwishes.app@gmail.com"
-                    className="text-yellow-400 text-xs hover:text-yellow-300 transition-colors underline"
+                    className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors underline"
                   >
                     whisperingwishes.app@gmail.com
                   </a>

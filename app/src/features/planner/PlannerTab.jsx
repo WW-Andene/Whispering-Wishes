@@ -365,8 +365,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     aria-label={`${d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? ' (today)' : ''}${d.note ? ' (has note)' : ''}`}
                     style={{
                       aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
-                      background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : 'var(--bg-stat)',
-                      border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
+                      background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : d.isBanner ? 'linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03))' : 'var(--bg-stat)',
+                      border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isBanner ? '1px solid rgba(237,175,24,0.15)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
                       boxShadow: isSel ? (d.isToday ? '0 0 10px rgba(237,175,24,0.3)' : '0 0 8px rgba(255,255,255,0.15)') : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
                       transition: 'all var(--transition-fast)',
                     }}>
