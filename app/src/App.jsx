@@ -1845,11 +1845,8 @@ function WhisperingWishesInner() {
         </div>
         
         {/* [SECTION:TAB-TRACKER] */}
-        {/* Tabs stay mounted after first visit (display:none when inactive) to prevent
-             full remount/rebuild on every switch. Lazy tabs only mount on first visit. */}
-        <div style={activeTab !== 'tracker' ? { display: 'none' } : undefined}>
+        {activeTab === 'tracker' && (
           <TabErrorBoundary tabName="Tracker">
-
               <TrackerTab
                 state={state}
                 dispatch={dispatch}
@@ -1864,12 +1861,11 @@ function WhisperingWishesInner() {
               />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-EVENTS] */}
-        <div style={activeTab !== 'events' ? { display: 'none' } : undefined}>
+        {activeTab === 'events' && (
           <TabErrorBoundary tabName="Events">
-
               <EventsTab
                 state={state}
                 dispatch={dispatch}
@@ -1880,21 +1876,19 @@ function WhisperingWishesInner() {
               />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-CALC] */}
-        <div style={activeTab !== 'calculator' ? { display: 'none' } : undefined}>
+        {activeTab === 'calculator' && (
           <TabErrorBoundary tabName="Calculator">
-
               <CalculatorTab state={state} dispatch={dispatch} />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-PLANNER] */}
-        <div style={activeTab !== 'planner' ? { display: 'none' } : undefined}>
+        {activeTab === 'planner' && (
           <TabErrorBoundary tabName="Planner">
-
               <PlannerTab
                 state={state}
                 dispatch={dispatch}
@@ -1905,12 +1899,11 @@ function WhisperingWishesInner() {
               />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-STATS] */}
-        <div style={activeTab !== 'analytics' ? { display: 'none' } : undefined}>
+        {activeTab === 'analytics' && (
           <TabErrorBoundary tabName="Analytics">
-
               <AnalyticsTab
                 state={state}
                 dispatch={dispatch}
@@ -1930,12 +1923,11 @@ function WhisperingWishesInner() {
               />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-COLLECT] */}
-        <div style={activeTab !== 'gathering' ? { display: 'none' } : undefined}>
+        {activeTab === 'gathering' && (
           <TabErrorBoundary tabName="Collection">
-
               <CollectionTab
                 state={state}
                 collectionData={collectionData}
@@ -1954,12 +1946,11 @@ function WhisperingWishesInner() {
               />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-TEAMS] */}
-        <div style={activeTab !== 'teams' ? { display: 'none' } : undefined}>
+        {activeTab === 'teams' && (
           <TabErrorBoundary tabName="Teams">
-
               <TeamsTab
                 state={state}
                 dispatch={dispatch}
@@ -1974,12 +1965,11 @@ function WhisperingWishesInner() {
               />
 
           </TabErrorBoundary>
-        </div>
+        )}
 
         {/* [SECTION:TAB-PROFILE] */}
-        <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
+        {activeTab === 'profile' && (
           <TabErrorBoundary tabName="Profile">
-
               <ProfileTab
             state={state}
             dispatch={dispatch}
@@ -2034,7 +2024,7 @@ function WhisperingWishesInner() {
           />
 
           </TabErrorBoundary>
-          </div>
+        )}
 
       </main>
 

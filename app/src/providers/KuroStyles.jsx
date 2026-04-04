@@ -343,50 +343,13 @@ const KuroStyles = memo(({ oledMode }) => (
       50% { transform: scale(1.02); }
     }
     
-    /* ═══ TAB CONTENT TRANSITIONS ═══ */
+    /* ═══ TAB CONTENT LAYOUT ═══ */
     /* NOTE: Negative margins must match parent's horizontal padding (0.75rem / 12px).
        If parent padding changes, update these values together. */
     .tab-content {
-      animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       margin-left: -0.75rem;
       margin-right: -0.75rem;
       padding: 0.75rem;
-    }
-    
-    @keyframes tabFadeIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(8px);
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0);
-      }
-    }
-    
-    /* Stagger animation for child cards */
-    .tab-content > .kuro-card,
-    .tab-content > div > .kuro-card {
-      animation: cardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-    }
-    .tab-content > .kuro-card:nth-child(1),
-    .tab-content > div > .kuro-card:nth-child(1) { animation-delay: 0.05s; }
-    .tab-content > .kuro-card:nth-child(2),
-    .tab-content > div > .kuro-card:nth-child(2) { animation-delay: 0.1s; }
-    .tab-content > .kuro-card:nth-child(3),
-    .tab-content > div > .kuro-card:nth-child(3) { animation-delay: 0.15s; }
-    .tab-content > .kuro-card:nth-child(4),
-    .tab-content > div > .kuro-card:nth-child(4) { animation-delay: 0.2s; }
-    
-    @keyframes cardSlideIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(12px) scale(0.98);
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0) scale(1);
-      }
     }
     
     /* D-HIERARCHY-2: Enhanced glow for 5★ — radial bg + stronger box-shadow for visual hierarchy */
