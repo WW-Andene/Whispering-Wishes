@@ -1823,7 +1823,9 @@ function WhisperingWishesInner() {
         </div>
         
         {/* [SECTION:TAB-TRACKER] */}
-        {activeTab === 'tracker' && (
+        {/* Tabs stay mounted after first visit (display:none when inactive) to prevent
+             full remount/rebuild on every switch. Lazy tabs only mount on first visit. */}
+        <div style={activeTab !== 'tracker' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Tracker">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <TrackerTab
@@ -1840,10 +1842,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
+        </div>
 
         {/* [SECTION:TAB-EVENTS] */}
-        {activeTab === 'events' && (
+        <div style={activeTab !== 'events' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Events">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <EventsTab
@@ -1856,19 +1858,19 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
+        </div>
 
         {/* [SECTION:TAB-CALC] */}
-        {activeTab === 'calculator' && (
+        <div style={activeTab !== 'calculator' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Calculator">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <CalculatorTab state={state} dispatch={dispatch} />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
+        </div>
 
         {/* [SECTION:TAB-PLANNER] */}
-        {activeTab === 'planner' && (
+        <div style={activeTab !== 'planner' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Planner">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <PlannerTab
@@ -1881,11 +1883,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
-
+        </div>
 
         {/* [SECTION:TAB-STATS] */}
-        {activeTab === 'analytics' && (
+        <div style={activeTab !== 'analytics' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Analytics">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <AnalyticsTab
@@ -1907,9 +1908,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
+        </div>
+
         {/* [SECTION:TAB-COLLECT] */}
-        {activeTab === 'gathering' && (
+        <div style={activeTab !== 'gathering' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Collection">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <CollectionTab
@@ -1930,10 +1932,10 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
+        </div>
 
         {/* [SECTION:TAB-TEAMS] */}
-        {activeTab === 'teams' && (
+        <div style={activeTab !== 'teams' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Teams">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
               <TeamsTab
@@ -1950,11 +1952,9 @@ function WhisperingWishesInner() {
               />
             </React.Suspense>
           </TabErrorBoundary>
-        )}
+        </div>
 
-
-        {/* [SECTION:TAB-PROFILE] — keep mounted when admin mini panel is open so portal survives tab switches */}
-        {(activeTab === 'profile' || (showAdminPanel && adminMiniMode)) && (
+        {/* [SECTION:TAB-PROFILE] */}
           <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
           <TabErrorBoundary tabName="Profile">
             <React.Suspense fallback={<TabLoadingSkeleton />}>
@@ -2013,7 +2013,6 @@ function WhisperingWishesInner() {
             </React.Suspense>
           </TabErrorBoundary>
           </div>
-        )}
 
       </main>
 
