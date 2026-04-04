@@ -1516,8 +1516,18 @@ export default function ProfileTab({
                 </div>
                 
                 <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">License</p>
-                  <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
+                  <p className="font-medium text-gray-400">Terms of Use</p>
+                  <p>By using Whispering Wishes, you agree to the following terms:</p>
+                  <ul className="list-disc list-inside ml-2 space-y-1">
+                    <li><strong className="text-gray-400">Personal use only.</strong> This tool is for personal, non-commercial use to manage your Wuthering Waves game data.</li>
+                    <li><strong className="text-gray-400">No abuse.</strong> Do not use the app's API proxy, OCR service, or cloud features for automated scraping, mass requests, or any purpose unrelated to your personal game data.</li>
+                    <li><strong className="text-gray-400">Your account, your responsibility.</strong> You are responsible for keeping your Google account and game credentials secure. We are not liable for data loss or unauthorized access to your accounts.</li>
+                    <li><strong className="text-gray-400">Leaderboard content.</strong> By submitting to the leaderboard, you consent to your pseudonymous stats being displayed publicly. Offensive usernames may be removed.</li>
+                    <li><strong className="text-gray-400">No guarantees.</strong> This tool is provided "as is" without warranty. We do not guarantee uptime, accuracy, or availability. Features may change or be discontinued.</li>
+                    <li><strong className="text-gray-400">Not official.</strong> This is an unofficial fan tool. We are not responsible for any consequences related to your game account from using third-party tools.</li>
+                    <li><strong className="text-gray-400">Age requirement.</strong> You must be at least 13 years old (or the minimum age in your country) to use features that involve Google Sign-In or data submission.</li>
+                  </ul>
+                  <p className="mt-1">We reserve the right to restrict access to users who violate these terms. Continued use of the app constitutes acceptance.</p>
                 </div>
                 
                 <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
