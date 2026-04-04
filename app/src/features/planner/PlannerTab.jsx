@@ -406,7 +406,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                 </span>
                 {sel.isDailyDone && <span style={{ fontSize: '10px', color: '#22c55e', marginLeft: '8px' }}>&#x2713; Dailies</span>}
               </div>
-              <button onClick={() => setSelectedDay(null)} className="flex items-center justify-center text-gray-400 hover:text-white transition-colors" style={{ width: '44px', height: '44px' }} aria-label="Close"><X size={14} /></button>
+              <button onClick={() => setSelectedDay(null)} className="modal-close-btn flex items-center justify-center text-gray-400 hover:text-white" style={{ width: '44px', height: '44px' }} aria-label="Close"><X size={14} /></button>
             </div>
 
             {(dailyIncome > 0 || sel.eventAstrite > 0) && !sel.isPast && (

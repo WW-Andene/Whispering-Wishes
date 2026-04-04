@@ -381,7 +381,7 @@ function TeamsTab({
                               {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
+                                className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />

@@ -1544,7 +1544,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
               <p className="text-gray-400 text-[10px]">All echoes — select an enemy to fight against</p>
             </div>
-            <button onClick={() => setEnemyEchoModalOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close"><X size={16} className="text-gray-400" /></button>
+            <button onClick={() => setEnemyEchoModalOpen(false)} className="modal-close-btn min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20" aria-label="Close"><X size={16} className="text-gray-400" /></button>
           </div>
           {/* Search + Filters */}
           <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
