@@ -1300,6 +1300,21 @@ function WhisperingWishesInner() {
   // P5-F001: Depend on actual history arrays, not state.profile (which is a new object on every dispatch)
   const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history, state.profile.profilePic, overallStats, trophyOverrides]);
 
+  // P7-F005: Detect newly unlocked trophies and celebrate
+  const prevTrophyIdsRef = useRef(null);
+  useEffect(() => {
+    if (!trophies?.list) { prevTrophyIdsRef.current = null; return; }
+    const currentIds = new Set(trophies.list.map(t => t.id));
+    if (prevTrophyIdsRef.current !== null) {
+      const newTrophies = trophies.list.filter(t => !prevTrophyIdsRef.current.has(t.id));
+      if (newTrophies.length > 0) {
+        const names = newTrophies.map(t => t.name).join(', ');
+        toast?.addToast?.(`🏆 Trophy unlocked: ${names}`, 'success');
+      }
+    }
+    prevTrophyIdsRef.current = currentIds;
+  }, [trophies, toast]);
+
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity, overallStats?.fiveStars), [overallStats]);
 

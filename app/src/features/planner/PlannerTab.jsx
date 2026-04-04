@@ -349,6 +349,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           ))}
         </div>
 
+        {/* P7-F002: Hint that days are tappable (shown only when no day selected) */}
+        {!selectedDay && <p className="text-center text-[10px] text-gray-600 -mb-0.5">Tap a day to view events & add notes</p>}
         {/* U6-06: Day grid with arrow key navigation */}
         <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label="Calendar days">
           {rows.map((row, ri) => (
