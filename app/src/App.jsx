@@ -1027,16 +1027,14 @@ function WhisperingWishesInner() {
     return refreshGoogleToken();
   }, [googleUser, refreshGoogleToken]);
 
-  // Google Sign-In using popup redirect flow via Firebase Auth REST API
+  // Google Sign-In using Google Identity Services + Firebase REST API
   const handleGoogleSignIn = useCallback(async () => {
     if (!FIREBASE_API_KEY) { toast?.addToast?.('Firebase not configured', 'error'); return; }
     try {
-      // Use Google Identity Services (GIS) for the OAuth flow
-      // Load the GIS script dynamically if not already loaded
+      // Load GIS script if needed
       if (!window.google?.accounts?.oauth2) {
         await new Promise((resolve, reject) => {
           if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
-            // Script already loading, wait for it
             const check = setInterval(() => { if (window.google?.accounts?.oauth2) { clearInterval(check); resolve(); } }, 100);
             setTimeout(() => { clearInterval(check); reject(new Error('GIS load timeout')); }, 10000);
             return;
@@ -1049,41 +1047,20 @@ function WhisperingWishesInner() {
         });
       }
 
-      // Request an authorization code via popup
-      const tokenResponse = await new Promise((resolve, reject) => {
-        const client = window.google.accounts.oauth2.initCodeClient({
+      // Single flow: get access token via popup
+      const accessToken = await new Promise((resolve, reject) => {
+        const client = window.google.accounts.oauth2.initTokenClient({
           client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
           scope: 'email profile',
-          ux_mode: 'popup',
           callback: (response) => {
             if (response.error) reject(new Error(response.error));
-            else resolve(response);
+            else resolve(response.access_token);
           },
         });
-        client.requestCode();
+        client.requestAccessToken();
       });
 
-      // Exchange the auth code for Firebase credentials via signInWithIdp
-      // First get an access token, then exchange for Firebase token
-      // Actually, use the simpler approach: signInWithOAuth using the Google ID token
-      // For mobile PWA, use redirect-based flow instead
       toast?.addToast?.('Signing in...', 'info');
-
-      // Alternative: use signInWithPopup equivalent via REST
-      // The GIS tokenClient approach gives us an access_token directly
-      const tokenClient = window.google.accounts.oauth2.initTokenClient({
-        client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
-        scope: 'email profile',
-        callback: () => {},
-      });
-
-      const accessToken = await new Promise((resolve, reject) => {
-        tokenClient.callback = (tokenResponse) => {
-          if (tokenResponse.error) reject(new Error(tokenResponse.error));
-          else resolve(tokenResponse.access_token);
-        };
-        tokenClient.requestAccessToken();
-      });
 
       // Exchange Google access token for Firebase ID token
       const fbRes = await fetchWithTimeout(
@@ -1099,7 +1076,10 @@ function WhisperingWishesInner() {
           }),
         }
       );
-      if (!fbRes.ok) throw new Error('Firebase sign-in failed');
+      if (!fbRes.ok) {
+        const errData = await fbRes.json().catch(() => ({}));
+        throw new Error(errData?.error?.message || 'Firebase sign-in failed');
+      }
       const fbData = await fbRes.json();
 
       const user = {
