@@ -134,11 +134,11 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * Fetch one page from the API. Returns { list, rawJson }.
  */
 async function fetchOnePage(params, poolType, endTime, signal) {
+  // WuWaTracker only uses player_id + record_id — no cardPoolId/serverId
+  // cardPoolId (resources_id) may restrict which pools respond
   const body = {
     playerId: String(params.playerId),
-    serverId: params.serverId || '',
     cardPoolType: Number(poolType),
-    cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
