@@ -177,17 +177,28 @@ async function fetchOnePage(params, poolType, endTime, signal) {
  */
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const items = [];
-  const seenIds = new Set(); // Dedup during pagination — API pages overlap
+  const seenIds = new Set();
   let endTime = '';
-  let prevEndTime = '';
+  const pageLog = []; // Diagnostic log per page
 
   for (let page = 0; page < 500; page++) {
     if (signal?.aborted) break;
 
-    const { list, error } = await fetchOnePage(params, poolType, endTime, signal);
-    if (error || !list.length) break;
+    const { list, error, rawJson } = await fetchOnePage(params, poolType, endTime, signal);
 
-    // Deduplicate as we go — API returns overlapping pages
+    // Log first page and last page raw response for debugging
+    if (page === 0) {
+      pageLog.push(`p0: sent endTime=${endTime || '(none)'}, got ${list.length} items, code=${rawJson?.code}, keys=${rawJson ? Object.keys(rawJson).join(',') : 'N/A'}${error ? ', ERR=' + error : ''}`);
+      if (list.length > 0) pageLog.push(`  first: ${JSON.stringify(list[0]).slice(0, 200)}`);
+      if (rawJson?.data && !Array.isArray(rawJson.data)) pageLog.push(`  data keys: ${Object.keys(rawJson.data).join(',')}`);
+    }
+
+    if (error || !list.length) {
+      pageLog.push(`p${page}: STOP — ${error || 'empty list'}`);
+      break;
+    }
+
+    // Deduplicate as we go
     let newCount = 0;
     for (const item of list) {
       const id = item.resourceId ? `${item.resourceId}|${item.time}` : `${item.name}|${item.time}|${item.qualityLevel}`;
@@ -199,18 +210,28 @@ async function fetchPoolFull(params, poolType, signal, onProgress) {
     }
     onProgress?.(poolType, 'fetching', items.length);
 
-    // If no new unique items in this page, we've exhausted the data
-    if (newCount === 0) break;
+    if (newCount === 0) {
+      pageLog.push(`p${page}: STOP — 0 new unique (${list.length} dupes)`);
+      break;
+    }
 
-    // Find the oldest record's time for pagination
     const oldest = list.reduce((min, item) => (item.time || '') < (min.time || '') ? item : min, list[0]);
-    if (!oldest?.time || oldest.time === prevEndTime) break;
-    prevEndTime = endTime;
-    endTime = oldest.time;
+    if (!oldest?.time) {
+      pageLog.push(`p${page}: STOP — no oldest time`);
+      break;
+    }
 
+    if (oldest.time === endTime) {
+      pageLog.push(`p${page}: STOP — stuck at endTime=${endTime}`);
+      break;
+    }
+
+    endTime = oldest.time;
     await sleep(150);
   }
-  return items;
+
+  pageLog.push(`TOTAL: ${items.length} unique from ${seenIds.size} seen`);
+  return { items, pageLog };
 }
 
 /**
@@ -230,7 +251,7 @@ export async function fetchAllPools(params, signal, onProgress) {
     onProgress?.(poolType, 'fetching', 0);
 
     try {
-      const items = await fetchPoolFull(params, poolType, signal, onProgress);
+      const { items, pageLog } = await fetchPoolFull(params, poolType, signal, onProgress);
 
       const label = POOL_LABELS[poolType] || `Pool ${poolType}`;
       if (items.length > 0) {
@@ -238,9 +259,8 @@ export async function fetchAllPools(params, signal, onProgress) {
         total += items.length;
       }
 
-      // Debug info for diagnostics
       const fiveStars = items.filter(i => parseInt(i.qualityLevel, 10) === 5).map(i => i.name);
-      debug.push({ poolType, label, count: items.length, fiveStars });
+      debug.push({ poolType, label, count: items.length, fiveStars, pageLog });
       onProgress?.(poolType, 'done', items.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
@@ -376,7 +396,7 @@ export function convertToImportFormat(fetchResult) {
     }
   }
 
-  // Build diagnostic log for admin panel
+  // Build diagnostic log for admin panel — include page-level detail
   const diagByPool = {};
   for (const p of deduped) {
     const pt = p.cardPoolType;
@@ -384,15 +404,20 @@ export function convertToImportFormat(fetchResult) {
     diagByPool[pt].count++;
     if (p.qualityLevel === 5) diagByPool[pt].fiveStars.push(p.name);
   }
-  const diagnosticLog = Object.entries(diagByPool)
+  const poolSummary = Object.entries(diagByPool)
     .sort(([a], [b]) => a - b)
     .map(([pt, d]) => `Pool ${pt} (${POOL_LABELS[pt] || '?'}): ${d.count} pulls${d.fiveStars.length ? ' — 5★: ' + d.fiveStars.join(', ') : ''}`)
+    .join('\n');
+
+  // Include per-pool page logs from debug array
+  const pageLogs = (fetchResult.debug || [])
+    .map(d => `\n── Pool ${d.poolType} (${d.label}) ──\n${(d.pageLog || []).join('\n')}`)
     .join('\n');
 
   return JSON.stringify({
     pulls: deduped,
     uid: fetchResult.playerId || '',
-    _diagnostic: `Fetched ${allPulls.length} → deduped ${deduped.length}\n${diagnosticLog}`,
+    _diagnostic: `Fetched ${allPulls.length} → deduped ${deduped.length}\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}`,
     _source: 'api',
   });
 }
