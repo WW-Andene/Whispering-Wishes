@@ -502,10 +502,10 @@ const KuroStyles = memo(({ oledMode }) => (
     /* SH-F1: Asymmetric radius on tab indicator for non-rectangular visual interest */
     .tab-indicator {
       position: absolute;
-      bottom: 0;
+      top: 0;
       left: 0;
       height: 2px;
-      border-radius: 4px 4px 0 0;
+      border-radius: 0 0 4px 4px;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform, width;
     }
