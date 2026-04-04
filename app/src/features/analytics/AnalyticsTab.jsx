@@ -27,6 +27,7 @@ export default function AnalyticsTab({
   toast,
   getFirebaseAuth,
   firebaseUrl,
+  firebaseFetch,
   fetchWithTimeout,
   hashUidForStorage,
   checkFirebaseRateLimit,
@@ -171,17 +172,17 @@ export default function AnalyticsTab({
       const authToken = await getFirebaseAuth();
       let res;
       try {
-        res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+        res = await firebaseFetch('leaderboard', authToken);
       } catch (networkErr) {
         // Network failure — wait 2s and retry once
         await new Promise(r => setTimeout(r, 2000));
-        res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+        res = await firebaseFetch('leaderboard', authToken);
       }
       if (!res.ok) {
         if (res.status >= 500) {
           // Server error — wait 2s and retry once
           await new Promise(r => setTimeout(r, 2000));
-          res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+          res = await firebaseFetch('leaderboard', authToken);
         }
         if (!res.ok) throw new Error(`Firebase read failed (${res.status})`);
       }
@@ -218,23 +219,23 @@ export default function AnalyticsTab({
     }
     setLeaderboardLoading(false);
     leaderboardLoadingRef.current = false;
-  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   const loadCommunityPulls = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
       let res;
       try {
-        res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+        res = await firebaseFetch('community-pulls', authToken);
       } catch (networkErr) {
         // Network failure — wait 2s and retry once
         await new Promise(r => setTimeout(r, 2000));
-        res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+        res = await firebaseFetch('community-pulls', authToken);
       }
       if (!res.ok && res.status >= 500) {
         // Server error — wait 2s and retry once
         await new Promise(r => setTimeout(r, 2000));
-        res = await fetchWithTimeout(firebaseUrl('community-pulls', authToken));
+        res = await firebaseFetch('community-pulls', authToken);
       }
       if (res.ok) {
         const data = await res.json();
@@ -252,7 +253,7 @@ export default function AnalyticsTab({
         }
       }
     } catch (e) { console.error('Community pulls load error:', e); }
-  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   const submitToLeaderboard = useCallback(async () => {
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
@@ -310,7 +311,7 @@ export default function AnalyticsTab({
         timestamp: Date.now()
       };
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl(`leaderboard/${effectiveLeaderboardId}`, authToken), {
+      const res = await firebaseFetch(`leaderboard/${effectiveLeaderboardId}`, authToken, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(entry)
@@ -322,7 +323,7 @@ export default function AnalyticsTab({
       const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
         try {
-          await fetchWithTimeout(firebaseUrl(`community-pulls/${effectiveLeaderboardId}`, authToken), {
+          await firebaseFetch(`community-pulls/${effectiveLeaderboardId}`, authToken, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
@@ -331,8 +332,8 @@ export default function AnalyticsTab({
       }
       if (state.profile.uid && userLeaderboardId && userLeaderboardId !== effectiveLeaderboardId) {
         try {
-          await fetchWithTimeout(firebaseUrl(`leaderboard/${userLeaderboardId}`, authToken), { method: 'DELETE' });
-          await fetchWithTimeout(firebaseUrl(`community-pulls/${userLeaderboardId}`, authToken), { method: 'DELETE' });
+          await firebaseFetch(`leaderboard/${userLeaderboardId}`, authToken, { method: 'DELETE' });
+          await firebaseFetch(`community-pulls/${userLeaderboardId}`, authToken, { method: 'DELETE' });
         } catch { /* best-effort cleanup */ }
       }
       toast?.addToast?.('Score submitted to leaderboard!', 'success');
@@ -345,7 +346,7 @@ export default function AnalyticsTab({
       submittingRef.current = false;
       setLeaderboardSubmitting(false);
     }
-  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseUrl, fetchWithTimeout, hashUidForStorage, checkFirebaseRateLimit]);
+  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseFetch, hashUidForStorage, checkFirebaseRateLimit]);
 
   // Load leaderboard data when modal opens
   useEffect(() => {

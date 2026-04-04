@@ -4,15 +4,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const POOL_LABELS = {
-  1: 'Standard',
-  2: 'Novice',
-  3: 'Featured Resonator',
-  4: 'Featured Weapon',
-  5: 'Resonator (Alt)',
-  6: 'Weapon (Alt)',
-  7: 'Collab',
+  1: 'Featured Resonator',     // Temps limité personnages
+  2: 'Featured Weapon',        // Temps limité armes
+  3: 'Permanent Resonator',    // Permanent personnages
+  4: 'Permanent Weapon',       // Permanent armes
+  5: 'Novice',                 // Débutant
+  6: 'Beginners Choice',       // Au choix des débutants
+  7: 'New Start Weapon 1',     // Arme du nouveau départ 1
+  8: 'New Start Weapon 2',     // Armes du nouveau départ 2
 };
-export const POOLS = [1, 2, 3, 4, 5, 6, 7];
+export const POOLS = [1, 2, 3, 4, 5, 6, 7, 8];
 export const FALLBACK_API_BASE = 'https://gmserver-api.aki-game2.net/gacha/record/query';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -119,12 +120,73 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
         serverId: parsed.svrId || svrId || '',
         recordId: parsed.recordId || recordId || '',
         cardPoolId: parsed.resourcesId || '',
+        gachaId: parsed.gachaId || '',
         gachaType: parsed.gachaType || '',
+        svrArea: parsed.svrArea || '',
         lang: parsed.lang || 'en',
       };
     }
   }
-  return { playerId, serverId: svrId || '', recordId: recordId || '', cardPoolId: '', gachaType: '', lang: 'en' };
+  return { playerId, serverId: svrId || '', recordId: recordId || '', cardPoolId: '', gachaId: '', gachaType: '', svrArea: '', lang: 'en' };
+}
+
+/**
+ * Fetch one page from the API. Returns { list, rawJson }.
+ */
+async function fetchOnePage(params, poolType, signal) {
+  const body = {
+    playerId: String(params.playerId),
+    serverId: params.serverId || '',
+    cardPoolType: Number(poolType),
+    cardPoolId: params.cardPoolId || '',
+    languageCode: params.lang || 'en',
+    recordId: params.recordId || '',
+  };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
+
+  try {
+    const res = await fetch('/api/gacha/record/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: mergedSignal,
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return { list: [], error: `HTTP ${res.status}` };
+    const json = await res.json();
+    if (json?.code !== 0) return { list: [], error: json?.message || `code ${json?.code}` };
+    const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
+    return { list, rawJson: json };
+  } catch (err) {
+    clearTimeout(timeout);
+    return { list: [], error: err.message };
+  }
+}
+
+/**
+ * Paginate a single pool type until exhausted.
+ */
+const MAX_PER_POOL = 5000;
+
+async function fetchPoolFull(params, poolType, signal, onProgress) {
+  const pageLog = [];
+
+  const { list, error, rawJson } = await fetchOnePage(params, poolType, signal);
+
+  if (error || !list.length) {
+    pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
+    return { items: [], pageLog };
+  }
+
+  const newest = list[0]?.time || '?';
+  const oldest = list[list.length - 1]?.time || '?';
+  pageLog.push(`${list.length} items (${newest} → ${oldest})`);
+  onProgress?.(poolType, 'fetching', list.length);
+
+  return { items: list, pageLog };
 }
 
 /**
@@ -132,121 +194,47 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
  * @param {{ playerId: string, serverId: string, lang: string }} params
  * @param {AbortSignal} [signal]
  * @param {function} [onProgress] - Called with (poolType, status, count) for progress updates
- * @returns {Promise<{ pulls: Object, total: number }>}
+ * @returns {Promise<{ pulls: Object, total: number, debug: Array }>}
  */
 export async function fetchAllPools(params, signal, onProgress) {
   const allPulls = {};
+  const debug = [];
   let total = 0;
+
   for (const poolType of POOLS) {
     if (signal?.aborted) break;
     onProgress?.(poolType, 'fetching', 0);
 
     try {
-      const poolItems = [];
-      let endTime = '';
+      const { items, pageLog } = await fetchPoolFull(params, poolType, signal, onProgress);
 
-      for (let page = 0; page < 50; page++) {
-        if (signal?.aborted) break;
-
-        const body = {
-          playerId: String(params.playerId),
-          serverId: params.serverId || '',
-          cardPoolType: Number(poolType),
-          cardPoolId: params.cardPoolId || '',
-          languageCode: params.lang || 'en',
-          recordId: params.recordId || '',
-        };
-        if (endTime) body.endTime = endTime;
-
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
-        const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-
-        const res = await fetch('/api/gacha/record/query', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-          signal: mergedSignal,
-        });
-        clearTimeout(timeout);
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        if (json?.code !== 0) throw new Error(json?.message || `API error ${json?.code}`);
-
-        const list = Array.isArray(json?.data) ? json.data : json?.data?.list || [];
-        if (!list.length) break;
-
-        poolItems.push(...list);
-        onProgress?.(poolType, 'fetching', poolItems.length);
-
-        const oldest = list.reduce((min, item) => item.time < min.time ? item : min, list[0]);
-        if (!oldest?.time || oldest.time === endTime) {
-          // Stuck - try fetching older records by jumping endTime back
-          // in monthly chunks until no more data
-          const stuckTime = new Date(oldest.time);
-          for (let jump = 1; jump <= 24; jump++) {
-            if (signal?.aborted) break;
-            const jumpDate = new Date(stuckTime);
-            jumpDate.setMonth(jumpDate.getMonth() - jump);
-            const jumpBody = {
-              playerId: String(params.playerId),
-              serverId: params.serverId || '',
-              cardPoolType: Number(poolType),
-              cardPoolId: params.cardPoolId || '',
-              languageCode: params.lang || 'en',
-              recordId: params.recordId || '',
-              endTime: jumpDate.toISOString(),
-            };
-            const c2 = new AbortController();
-            const t2 = setTimeout(() => c2.abort(), 15000);
-            const s2 = signal ? AbortSignal.any?.([signal, c2.signal]) ?? c2.signal : c2.signal;
-            try {
-              const r2 = await fetch('/api/gacha/record/query', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(jumpBody),
-                signal: s2,
-              });
-              clearTimeout(t2);
-              if (!r2.ok) break;
-              const j2 = await r2.json();
-              if (j2?.code !== 0) break;
-              const l2 = Array.isArray(j2?.data) ? j2.data : j2?.data?.list || [];
-              if (!l2.length) continue; // This month empty, try older
-              poolItems.push(...l2);
-              onProgress?.(poolType, 'fetching', poolItems.length);
-              // Continue backward from this new batch
-              const o2 = l2.reduce((min, item) => item.time < min.time ? item : min, l2[0]);
-              if (o2?.time) {
-                endTime = o2.time;
-                break; // Resume normal pagination from here
-              }
-            } catch { clearTimeout(t2); break; }
-            await sleep(150);
-          }
-          if (endTime === oldest.time) break; // Still stuck, give up
-          continue;
-        }
-        endTime = oldest.time;
-
-        await sleep(150);
+      const label = POOL_LABELS[poolType] || `Pool ${poolType}`;
+      if (items.length > 0) {
+        allPulls[label] = items;
+        total += items.length;
       }
 
-      if (poolItems.length > 0) {
-        allPulls[POOL_LABELS[poolType]] = poolItems;
-        total += poolItems.length;
-      }
-      onProgress?.(poolType, 'done', poolItems.length);
+      const fiveStars = items.filter(i => parseInt(i.qualityLevel, 10) === 5).map(i => i.name);
+      debug.push({ poolType, label, count: items.length, fiveStars, pageLog });
+      onProgress?.(poolType, 'done', items.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
+      debug.push({ poolType, label: POOL_LABELS[poolType] || `Pool ${poolType}`, count: 0, error: err.message });
       onProgress?.(poolType, 'error', 0);
     }
 
     await sleep(150);
   }
 
-  return { pulls: allPulls, total };
+  // Log diagnostic summary to console
+  console.group('[Convene Import] Pool scan results');
+  for (const d of debug) {
+    console.log(`Pool ${d.poolType} (${d.label}): ${d.count} pulls${d.error ? ` — ERROR: ${d.error}` : ''}${d.fiveStars?.length ? ` — 5★: ${d.fiveStars.join(', ')}` : ''}`);
+  }
+  console.log(`Total: ${total}`);
+  console.groupEnd();
+
+  return { pulls: allPulls, total, debug, params };
 }
 
 /**
@@ -310,7 +298,7 @@ export async function extractIdsFromImage(base64Image) {
 
   const raw = await res.json();
   // Validate response — only accept expected string fields
-  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
+  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'gacha_type', 'lang', 'svr_area'];
   const ids = {};
   for (const key of ALLOWED) {
     const val = raw[key];
@@ -324,23 +312,20 @@ export async function extractIdsFromImage(base64Image) {
 
 /**
  * Convert raw API pull data to the format processImportData expects.
- * Maps WuWa API pool types to the app's banner categories.
- * @param {{ pulls: Object, total: number, playerId: string }} fetchResult
- * @returns {string} JSON string compatible with processImportData
+ * Preserves the original API cardPoolType — processImportData handles the mapping.
  */
 export function convertToImportFormat(fetchResult) {
   const allPulls = [];
 
-  // Map pool labels back to cardPoolType numbers
-  const labelToType = {};
+  // Map pool labels back to API cardPoolType numbers
+  const labelToApiType = {};
   for (const [type, label] of Object.entries(POOL_LABELS)) {
-    labelToType[label] = parseInt(type, 10);
+    labelToApiType[label] = parseInt(type, 10);
   }
 
   for (const [label, pulls] of Object.entries(fetchResult.pulls)) {
-    const cardPoolType = labelToType[label] ?? 0;
+    const cardPoolType = labelToApiType[label] ?? 0;
     for (const pull of pulls) {
-      // Whitelist fields — don't spread untrusted API data
       allPulls.push({
         cardPoolType,
         qualityLevel: parseInt(pull.qualityLevel ?? pull.rarity ?? 3, 10),
@@ -355,17 +340,33 @@ export function convertToImportFormat(fetchResult) {
   // Sort by time ascending
   allPulls.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  // Dedup overlapping pages: max 10 items per cardPoolType+time combo
-  const deduped = [];
-  const timeCounts = {};
-  for (const pull of allPulls) {
-    const key = `${pull.cardPoolType}|${pull.time}`;
-    const count = timeCounts[key] || 0;
-    if (count < 10) {
-      timeCounts[key] = count + 1;
-      deduped.push(pull);
-    }
-  }
+  // No dedup here — multi-copy pulls share resourceId+time and are legitimate
+  // The reducer's deduplicateMerge handles dedup when merging with existing history
 
-  return JSON.stringify({ pulls: deduped, uid: fetchResult.playerId || '' });
+  // Build diagnostic log for admin panel — include page-level detail
+  const diagByPool = {};
+  for (const p of allPulls) {
+    const pt = p.cardPoolType;
+    if (!diagByPool[pt]) diagByPool[pt] = { count: 0, fiveStars: [] };
+    diagByPool[pt].count++;
+    if (p.qualityLevel === 5) diagByPool[pt].fiveStars.push(p.name);
+  }
+  const poolSummary = Object.entries(diagByPool)
+    .sort(([a], [b]) => a - b)
+    .map(([pt, d]) => `Pool ${pt} (${POOL_LABELS[pt] || '?'}): ${d.count} pulls${d.fiveStars.length ? ' — 5★: ' + d.fiveStars.join(', ') : ''}`)
+    .join('\n');
+
+  const pageLogs = (fetchResult.debug || [])
+    .map(d => `\n── Pool ${d.poolType} (${d.label}) ──\n${(d.pageLog || []).join('\n')}`)
+    .join('\n');
+
+  // Log the exact params we sent so user can verify OCR accuracy
+  const paramDump = fetchResult.params ? `\n=== PARAMS SENT ===\nplayerId: ${fetchResult.params.playerId || '(empty)'}\nrecordId: ${fetchResult.params.recordId || '(empty)'}\nserverId: ${fetchResult.params.serverId || '(empty)'}\ncardPoolId: ${fetchResult.params.cardPoolId || '(empty)'}\nlang: ${fetchResult.params.lang || '(empty)'}` : '';
+
+  return JSON.stringify({
+    pulls: allPulls,
+    uid: fetchResult.playerId || '',
+    _diagnostic: `Total: ${allPulls.length} pulls\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}${paramDump}`,
+    _source: 'api',
+  });
 }

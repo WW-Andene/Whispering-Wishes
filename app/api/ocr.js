@@ -4,10 +4,22 @@
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB base64 limit (Groq allows up to 20MB)
 const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
 
+// F-013: Origin allowlist (prevents unauthorized API usage / quota drain)
+const ALLOWED_ORIGINS = [
+  'https://whispering-wishes.vercel.app',
+  'http://localhost:5000',
+  'http://localhost:5173',
+];
+const isAllowedOrigin = (origin) => ALLOWED_ORIGINS.includes(origin) || /^https:\/\/whispering-wishes[a-z0-9-]*\.vercel\.app$/.test(origin);
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // F-013: Origin check
+  const origin = req.headers.origin || '';
+  if (!isAllowedOrigin(origin)) return res.status(403).json({ error: 'Origin not allowed' });
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -24,7 +36,7 @@ export default async function handler(req, res) {
 
     // Input size validation
     if (image.length > MAX_IMAGE_SIZE) {
-      return res.status(413).json({ error: 'Image too large (max 2MB)' });
+      return res.status(413).json({ error: 'Image too large (max 4MB)' });
     }
 
     const controller = new AbortController();

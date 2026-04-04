@@ -224,6 +224,12 @@ function WhisperingWishesInner() {
 
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
+  // Google Auth state for cloud backup
+  const [googleUser, setGoogleUser] = useState(() => {
+    try { const v = localStorage.getItem('ww-google-user'); return v ? JSON.parse(v) : null; } catch { return null; }
+  });
+  const [cloudBackupStatus, setCloudBackupStatus] = useState('idle'); // idle|saving|loading|done|error
+  const googleAuthRef = useRef({ idToken: null, refreshToken: null, expiresAt: 0 });
   const stateRef = useRef(state);
   
 
@@ -980,12 +986,202 @@ function WhisperingWishesInner() {
     }
   }, []);
 
-  // Helper: build Firebase URL with optional auth param
-  const firebaseUrl = useCallback((path, authToken) => {
-    const base = `${FIREBASE_DB}/${path}.json`;
-    return authToken ? `${base}?auth=${authToken}` : base;
+  // Helper: build Firebase URL (F-017: auth moved to Authorization header — no longer in URL)
+  const firebaseUrl = useCallback((path) => `${FIREBASE_DB}/${path}.json`, []);
+
+  // Helper: Firebase fetch with auth in Authorization header instead of URL query param
+  // This prevents token leakage in browser history, referrer headers, and server logs.
+  const firebaseFetch = useCallback((path, authToken, options = {}) => {
+    const url = `${FIREBASE_DB}/${path}.json`;
+    const headers = { ...(options.headers || {}) };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    return fetchWithTimeout(url, { ...options, headers });
   }, []);
   
+  // ══════════════════════════════════════════════════════════════════════════
+  // Google Sign-In for Cloud Backup (Firebase Auth REST API — no SDK)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Refresh Google auth token using stored refresh token
+  const refreshGoogleToken = useCallback(async () => {
+    const rt = googleAuthRef.current.refreshToken;
+    if (!rt || !FIREBASE_API_KEY) return null;
+    try {
+      const res = await fetchWithTimeout('https://securetoken.googleapis.com/v1/token?key=' + FIREBASE_API_KEY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(rt)}`,
+      });
+      if (!res.ok) throw new Error('Token refresh failed');
+      const data = await res.json();
+      googleAuthRef.current = {
+        idToken: data.id_token,
+        refreshToken: data.refresh_token || rt,
+        expiresAt: Date.now() + (parseInt(data.expires_in, 10) || 3600) * 1000,
+      };
+      return data.id_token;
+    } catch { return null; }
+  }, []);
+
+  // Get a valid Google auth token (refresh if needed)
+  const getGoogleAuth = useCallback(async () => {
+    if (!googleUser) return null;
+    const now = Date.now();
+    if (googleAuthRef.current.idToken && googleAuthRef.current.expiresAt > now + 60000) {
+      return googleAuthRef.current.idToken;
+    }
+    return refreshGoogleToken();
+  }, [googleUser, refreshGoogleToken]);
+
+  // Google Sign-In using Google Identity Services + Firebase REST API
+  const handleGoogleSignIn = useCallback(async () => {
+    if (!FIREBASE_API_KEY) { toast?.addToast?.('Firebase not configured', 'error'); return; }
+    try {
+      // Load GIS script if needed
+      if (!window.google?.accounts?.oauth2) {
+        await new Promise((resolve, reject) => {
+          if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+            const check = setInterval(() => { if (window.google?.accounts?.oauth2) { clearInterval(check); resolve(); } }, 100);
+            setTimeout(() => { clearInterval(check); reject(new Error('GIS load timeout')); }, 10000);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://accounts.google.com/gsi/client';
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
+          document.head.appendChild(script);
+        });
+      }
+
+      // Single flow: get access token via popup
+      const accessToken = await new Promise((resolve, reject) => {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
+          scope: 'email profile',
+          callback: (response) => {
+            if (response.error) reject(new Error(response.error));
+            else resolve(response.access_token);
+          },
+        });
+        client.requestAccessToken();
+      });
+
+      toast?.addToast?.('Signing in...', 'info');
+
+      // Exchange Google access token for Firebase ID token
+      const fbRes = await fetchWithTimeout(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postBody: `access_token=${accessToken}&providerId=google.com`,
+            requestUri: window.location.origin,
+            returnIdToken: true,
+            returnSecureToken: true,
+          }),
+        }
+      );
+      if (!fbRes.ok) {
+        const errData = await fbRes.json().catch(() => ({}));
+        throw new Error(errData?.error?.message || 'Firebase sign-in failed');
+      }
+      const fbData = await fbRes.json();
+
+      // F-009: Minimize PII stored in localStorage — exclude email (only store what's needed for display)
+      const user = {
+        uid: fbData.localId,
+        displayName: fbData.displayName || fbData.email?.split('@')[0] || 'User',
+        photoUrl: fbData.photoUrl || null,
+      };
+
+      googleAuthRef.current = {
+        idToken: fbData.idToken,
+        refreshToken: fbData.refreshToken,
+        expiresAt: Date.now() + (parseInt(fbData.expiresIn, 10) || 3600) * 1000,
+      };
+
+      setGoogleUser(user);
+      try { localStorage.setItem('ww-google-user', JSON.stringify(user)); } catch {}
+      toast?.addToast?.(`Signed in as ${user.displayName}`, 'success');
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      toast?.addToast?.('Sign-in failed: ' + (err.message || 'Unknown error'), 'error');
+    }
+  }, [toast]);
+
+  const handleGoogleSignOut = useCallback(() => {
+    setGoogleUser(null);
+    googleAuthRef.current = { idToken: null, refreshToken: null, expiresAt: 0 };
+    try { localStorage.removeItem('ww-google-user'); } catch {}
+    toast?.addToast?.('Signed out', 'info');
+  }, [toast]);
+
+  // Cloud Backup: save full convene history to Firebase RTDB
+  const handleCloudBackup = useCallback(async () => {
+    const token = await getGoogleAuth();
+    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    setCloudBackupStatus('saving');
+    try {
+      const backupData = {
+        profile: stateRef.current.profile,
+        timestamp: Date.now(),
+        version: APP_VERSION,
+        pullCount: (stateRef.current.profile.featured?.history?.length || 0)
+          + (stateRef.current.profile.weapon?.history?.length || 0)
+          + (stateRef.current.profile.standardChar?.history?.length || 0)
+          + (stateRef.current.profile.standardWeap?.history?.length || 0)
+          + (stateRef.current.profile.beginner?.history?.length || 0),
+      };
+      const res = await firebaseFetch(`user-history/${googleUser.uid}`, token, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backupData),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setCloudBackupStatus('done');
+      toast?.addToast?.(`Backed up ${backupData.pullCount} pulls to cloud`, 'success');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    } catch (err) {
+      setCloudBackupStatus('error');
+      toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    }
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast]);
+
+  // Cloud Restore: load convene history from Firebase RTDB
+  const handleCloudRestore = useCallback(async () => {
+    const token = await getGoogleAuth();
+    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    setCloudBackupStatus('loading');
+    try {
+      const res = await firebaseFetch(`user-history/${googleUser.uid}`, token);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data || !data.profile) {
+        toast?.addToast?.('No cloud backup found', 'error');
+        setCloudBackupStatus('idle');
+        return;
+      }
+      const doRestore = await confirm?.({
+        title: 'Restore from cloud',
+        message: `Restore backup from ${new Date(data.timestamp).toLocaleString()}?\n${data.pullCount || 0} pulls (v${data.version || '?'}).\nThis will REPLACE your current data.`,
+        confirmLabel: 'Restore',
+        destructive: true,
+      });
+      if (!doRestore) { setCloudBackupStatus('idle'); return; }
+      // F-007: Sanitize cloud-restored data to prevent state injection from compromised Firebase
+      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
+      setCloudBackupStatus('done');
+      toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    } catch (err) {
+      setCloudBackupStatus('error');
+      toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
+      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+    }
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch]);
+
   // Anonymous presence system - writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
   const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
@@ -995,7 +1191,7 @@ function WhisperingWishesInner() {
     if (!checkFirebaseRateLimit('presence-heartbeat')) return;
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), {
+      const res = await firebaseFetch(`presence/${presenceSessionId.current}`, authToken, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ t: Date.now() }) // only a timestamp - zero personal data
@@ -1005,14 +1201,14 @@ function WhisperingWishesInner() {
         console.warn(`[WW] Heartbeat write failed (${res.status})${errText ? ' -' + errText.slice(0, 80) : ''}`);
       }
     } catch (e) { /* heartbeat errors are non-critical - admin panel shows presence errors separately */ }
-  }, [getFirebaseAuth, firebaseUrl]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   const removePresence = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), { method: 'DELETE' });
+      await firebaseFetch(`presence/${presenceSessionId.current}`, authToken, { method: 'DELETE' });
     } catch { /* best-effort */ }
-  }, [getFirebaseAuth, firebaseUrl]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   // Start heartbeat  // Start heartbeat on mount, clean up on unmount
   useEffect(() => {
@@ -1026,7 +1222,38 @@ function WhisperingWishesInner() {
     };
   }, [sendPresenceHeartbeat, removePresence]);
 
-
+  // F-015/F-016: Clean up stale localStorage backups and diagnostics on mount (24h TTL)
+  useEffect(() => {
+    const BACKUP_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const now = Date.now();
+    try {
+      const preImport = localStorage.getItem('whispering-wishes-pre-import-backup');
+      if (preImport) {
+        const parsed = JSON.parse(preImport);
+        if (parsed.timestamp && (now - new Date(parsed.timestamp).getTime()) > BACKUP_TTL_MS) {
+          localStorage.removeItem('whispering-wishes-pre-import-backup');
+        }
+      }
+    } catch { localStorage.removeItem('whispering-wishes-pre-import-backup'); }
+    try {
+      const preRestore = localStorage.getItem('whispering-wishes-pre-restore-backup');
+      if (preRestore) {
+        const parsed = JSON.parse(preRestore);
+        if (parsed.timestamp && (now - new Date(parsed.timestamp).getTime()) > BACKUP_TTL_MS) {
+          localStorage.removeItem('whispering-wishes-pre-restore-backup');
+        }
+      }
+    } catch { localStorage.removeItem('whispering-wishes-pre-restore-backup'); }
+    try {
+      const diag = localStorage.getItem('ww-import-diagnostic');
+      if (diag) {
+        const parsed = JSON.parse(diag);
+        if (parsed.timestamp && (now - new Date(parsed.timestamp).getTime()) > BACKUP_TTL_MS) {
+          localStorage.removeItem('ww-import-diagnostic');
+        }
+      }
+    } catch { localStorage.removeItem('ww-import-diagnostic'); }
+  }, []);
 
   // Trophies/Badges computation (logic in core/computeTrophies.js)
   const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile, overallStats, trophyOverrides]);
@@ -1156,6 +1383,16 @@ function WhisperingWishesInner() {
         throw new Error('No Convene data found in import. If this is a backup file, it should contain a "state" key.');
       }
 
+      // Show diagnostic log if available (from direct API fetch)
+      if (data._diagnostic) {
+        console.log('[Import Diagnostic]', data._diagnostic);
+        // Store for admin panel
+        try { localStorage.setItem('ww-import-diagnostic', JSON.stringify({ timestamp: new Date().toISOString(), log: data._diagnostic, pullCount: pulls.length })); } catch {}
+      }
+
+      // Detect import source — API direct fetch vs WuWaTracker/file import
+      const isApiSource = data._source === 'api';
+
       // FIX #2: Warn if importing from a different account
       const importUid = data.uid || data.playerId || '';
       const existingUid = stateRef.current.profile.uid || '';
@@ -1201,14 +1438,31 @@ function WhisperingWishesInner() {
         localStorage.setItem('whispering-wishes-pre-import-backup', preImportBackup);
       } catch {} // best-effort - don't block import if backup fails
 
+      // Detect numbering: Kuro API (from our direct fetch) swaps 1↔3 and 2↔4 vs WuWaTracker export
+      // API:         1=FeatRes, 2=FeatWeap, 3=PermRes,  4=PermWeap,  5/6/7=Beginner
+      // WuWaTracker: 1=PermRes, 2=PermWeap, 3=FeatRes,  4=FeatWeap,  5/6/7=Beginner
+      const isApiNumbering = isApiSource;
+      const FEAT_RES  = isApiNumbering ? 1 : 3;
+      const FEAT_WEAP = isApiNumbering ? 2 : 4;
+      const PERM_RES  = isApiNumbering ? 3 : 1;
+      const PERM_WEAP = isApiNumbering ? 4 : 2;
+
       const convert = (arr, type) => {
         const filtered = arr.filter(p => {
-          const poolType = p.cardPoolType ?? p.gachaType;
-          if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character' || poolType === 1;
-          if (type === 'weapon') return p.bannerType === 'weapon' || poolType === 2;
-          if (type === 'standardChar') return p.bannerType === 'standard-char' || poolType === 3;
-          if (type === 'standardWeap') return p.bannerType === 'standard-weapon' || poolType === 4;
-          if (type === 'beginner') return p.bannerType === 'beginner' || poolType === 5 || poolType === 6 || poolType === 7;
+          if (p.bannerType) {
+            if (type === 'featured') return p.bannerType === 'featured' || p.bannerType === 'character';
+            if (type === 'weapon') return p.bannerType === 'weapon';
+            if (type === 'standardChar') return p.bannerType === 'standard-char';
+            if (type === 'standardWeap') return p.bannerType === 'standard-weapon';
+            if (type === 'beginner') return p.bannerType === 'beginner';
+            return false;
+          }
+          const pt = p.cardPoolType ?? p.gachaType;
+          if (type === 'featured') return pt === FEAT_RES;
+          if (type === 'weapon') return pt === FEAT_WEAP;
+          if (type === 'standardChar') return pt === PERM_RES;
+          if (type === 'standardWeap') return pt === PERM_WEAP;
+          if (type === 'beginner') return pt === 5 || pt === 6 || pt === 7 || pt === 8;
           return false;
         });
         
@@ -1245,8 +1499,14 @@ function WhisperingWishesInner() {
             pityCounter = 0;
           }
           
-          // Ensure timestamp is always a valid ISO string
-          const rawTs = p.timestamp || p.time;
+          // Ensure timestamp is always a valid ISO string in UTC
+          // API returns "2026-02-07 04:40:02" (no timezone) — treat as UTC
+          // WuWaTracker returns "2026-02-07T03:40:02+00:00" (explicit UTC)
+          let rawTs = p.timestamp || p.time || '';
+          // Normalize API format: "YYYY-MM-DD HH:mm:ss" → append Z for UTC
+          if (rawTs && !rawTs.includes('T') && !rawTs.includes('+') && !rawTs.includes('Z')) {
+            rawTs = rawTs.replace(' ', 'T') + 'Z';
+          }
           const tsMs = rawTs ? new Date(rawTs).getTime() : NaN;
           const safeTimestamp = isNaN(tsMs) ? new Date().toISOString() : new Date(tsMs).toISOString();
 
@@ -1302,11 +1562,11 @@ function WhisperingWishesInner() {
         }
       });
       
-      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 1).length;
-      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 2).length;
-      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 3).length;
-      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === 4).length;
-      const bc = pulls.filter(p => [5, 6, 7].includes(p.cardPoolType ?? p.gachaType)).length;
+      const fc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === FEAT_RES).length;
+      const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === FEAT_WEAP).length;
+      const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_RES).length;
+      const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_WEAP).length;
+      const bc = pulls.filter(p => [5, 6, 7, 8].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
       if (fc) parts.push(`${fc} char`);
       if (wc) parts.push(`${wc} weap`);
@@ -1567,6 +1827,7 @@ function WhisperingWishesInner() {
                 toast={toast}
                 getFirebaseAuth={getFirebaseAuth}
                 firebaseUrl={firebaseUrl}
+                firebaseFetch={firebaseFetch}
                 fetchWithTimeout={fetchWithTimeout}
                 hashUidForStorage={hashUidForStorage}
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
@@ -1662,12 +1923,19 @@ function WhisperingWishesInner() {
             DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
             getFirebaseAuth={getFirebaseAuth}
             firebaseUrl={firebaseUrl}
+            firebaseFetch={firebaseFetch}
             setActiveTab={setActiveTab}
             withCacheBuster={withCacheBuster}
             showAdminPanel={showAdminPanel}
             setShowAdminPanel={setShowAdminPanel}
             adminMiniMode={adminMiniMode}
             setAdminMiniMode={setAdminMiniMode}
+            googleUser={googleUser}
+            handleGoogleSignIn={handleGoogleSignIn}
+            handleGoogleSignOut={handleGoogleSignOut}
+            handleCloudBackup={handleCloudBackup}
+            handleCloudRestore={handleCloudRestore}
+            cloudBackupStatus={cloudBackupStatus}
           />
             </React.Suspense>
           </TabErrorBoundary>

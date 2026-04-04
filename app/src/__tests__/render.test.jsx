@@ -92,7 +92,7 @@ describe('Tab SSR rendering', () => {
       state: initialState, dispatch: noop, setActiveTab: noop,
       overallStats: null, luckRating: null, trophies: null,
       collectionImages: {}, toast: mockToast,
-      getFirebaseAuth: noopAsync, firebaseUrl: () => '', fetchWithTimeout: noopAsync,
+      getFirebaseAuth: noopAsync, firebaseUrl: () => '', firebaseFetch: noopAsync, fetchWithTimeout: noopAsync,
       hashUidForStorage: noopAsync, checkFirebaseRateLimit: () => true, FIREBASE_AVAILABLE: false,
     });
   });
@@ -131,7 +131,7 @@ describe('Tab SSR rendering', () => {
       activeBanners: CURRENT_BANNERS, setActiveBanners: noop,
       overallStats: null, luckRating: null, ownedCharNames: new Set(),
       trophies: null, trophyOverrides: {}, setTrophyOverrides: noop,
-      DEFAULT_VISUAL_SETTINGS: mockVS, getFirebaseAuth: noopAsync, firebaseUrl: () => '',
+      DEFAULT_VISUAL_SETTINGS: mockVS, getFirebaseAuth: noopAsync, firebaseUrl: () => '', firebaseFetch: noopAsync,
       setActiveTab: noop, withCacheBuster: (u) => u,
     });
   });

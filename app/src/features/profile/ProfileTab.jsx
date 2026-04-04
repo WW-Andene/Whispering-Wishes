@@ -109,6 +109,7 @@ export default function ProfileTab({
   // Firebase (for admin fetch)
   getFirebaseAuth,
   firebaseUrl,
+  firebaseFetch,
   // Tab navigation (for admin collection/trophy "Go to Import" buttons)
   setActiveTab,
   // Cache busting (for admin collection images)
@@ -116,6 +117,9 @@ export default function ProfileTab({
   // Admin panel state (lifted to App.jsx so mini panel survives tab switches)
   showAdminPanel, setShowAdminPanel,
   adminMiniMode, setAdminMiniMode,
+  // Google Auth + Cloud Backup
+  googleUser, handleGoogleSignIn, handleGoogleSignOut,
+  handleCloudBackup, handleCloudRestore, cloudBackupStatus,
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
@@ -208,7 +212,7 @@ export default function ProfileTab({
   const fetchActivePlayersCount = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('presence', authToken));
+      const res = await firebaseFetch('presence', authToken);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -216,7 +220,7 @@ export default function ProfileTab({
           const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
           for (const [key] of staleSessions.slice(0, 50)) {
-            try { await fetchWithTimeout(firebaseUrl(`presence/${key}`, authToken), { method: 'DELETE' }); } catch {}
+            try { await firebaseFetch(`presence/${key}`, authToken, { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;
           setActivePlayersCount(count);
@@ -234,12 +238,12 @@ export default function ProfileTab({
         setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
       }
     } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
-  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   const fetchAdminPlayerList = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      const res = await firebaseFetch('leaderboard', authToken);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -266,7 +270,7 @@ export default function ProfileTab({
       console.error('Admin player list fetch error:', e);
       setAdminPlayerList([]);
     }
-  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   // ── Admin handlers ─────────────────────────────────────────────────────
   const handleAdminTap = useCallback(async () => {
@@ -367,14 +371,13 @@ export default function ProfileTab({
         return;
       }
     } catch {}
+    // F-003: Only use PBKDF2 — removed weaker SHA-256 fallback paths that are trivially brute-forceable
     const pbkdf2Hash = await hashPasswordPBKDF2(adminPassword, ADMIN_SALT);
-    const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
-    const legacyHash = await hashPasswordSHA256(adminPassword);
-    if (!saltedHash && !legacyHash && !pbkdf2Hash) {
+    if (!pbkdf2Hash) {
       toast?.addToast?.('Hashing unavailable. HTTPS required', 'error');
       return;
     }
-    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH) || constantTimeCompare(saltedHash, ADMIN_HASH) || constantTimeCompare(legacyHash, ADMIN_HASH)) {
+    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH)) {
       setAdminUnlocked(true);
       setAdminPassword('');
       adminSessionFailsRef.current = 0;
@@ -1391,6 +1394,51 @@ export default function ProfileTab({
                 </CardBody>
               </Card>
             )}
+
+            {/* ── Cloud Backup ──────────────────────────────────── */}
+            <Card>
+              <CardHeader>Cloud Backup</CardHeader>
+              <CardBody className="space-y-3">
+                {googleUser ? (
+                  <>
+                    <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--bg-stat)' }}>
+                      {googleUser.photoUrl && <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />}
+                      <div className="flex-1 min-w-0">
+                        <div style={{ color: 'var(--text-heading)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
+                      </div>
+                      <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-[10px] px-2 py-1 flex-shrink-0">Sign out</button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={handleCloudBackup}
+                        disabled={cloudBackupStatus === 'saving'}
+                        className="kuro-btn py-2 text-xs flex items-center justify-center gap-1 active-emerald"
+                      >
+                        {cloudBackupStatus === 'saving' ? 'Saving...' : '↑ Backup'}
+                      </button>
+                      <button
+                        onClick={handleCloudRestore}
+                        disabled={cloudBackupStatus === 'loading'}
+                        className="kuro-btn py-2 text-xs flex items-center justify-center gap-1 active-gold"
+                      >
+                        {cloudBackupStatus === 'loading' ? 'Loading...' : '↓ Restore'}
+                      </button>
+                    </div>
+                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: '10px' }}>Done!</div>}
+                  </>
+                ) : (
+                  <button
+                    onClick={handleGoogleSignIn}
+                    className="kuro-btn w-full py-2.5 flex items-center justify-center gap-2 text-xs"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Sign in with Google
+                  </button>
+                )}
+                <p style={{ color: 'var(--text-disabled)', fontSize: '10px', textAlign: 'center' }}>Sync your Convene history across devices</p>
+              </CardBody>
+            </Card>
 
             <Card>
               <CardBody className="space-y-2">

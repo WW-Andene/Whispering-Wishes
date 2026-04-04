@@ -8,6 +8,15 @@ const HF_MODEL = 'briaai/RMBG-2.0';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 const MAX_RETRIES = 3;
 
+// F-012: Constant-time string comparison to prevent timing side-channel
+const safeCompare = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const len = Math.max(a.length, b.length);
+  let result = a.length ^ b.length;
+  for (let i = 0; i < len; i++) result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return result === 0;
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -18,9 +27,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'HuggingFace API key not configured' });
   }
 
-  // Auth — must match the admin hash stored in Vercel env vars
+  // Auth — must match the admin hash stored in Vercel env vars (F-012: constant-time comparison)
   const adminKey = req.headers['x-admin-key'];
-  if (!adminKey || adminKey !== process.env.ADMIN_HASH) {
+  if (!adminKey || !safeCompare(adminKey, process.env.ADMIN_HASH || '')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

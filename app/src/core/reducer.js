@@ -195,12 +195,25 @@ const reducer = (state, action) => {
       const deduplicateMerge = (existing, incoming) => {
         if (!Array.isArray(incoming) || incoming.length === 0) return existing || [];
         if (!Array.isArray(existing) || existing.length === 0) return incoming;
-        // B4-03: Use ms-precision timestamp in dedup key to reduce collision risk
-        const makeKey = (p) => JSON.stringify([p.id || '', new Date(p.timestamp || 0).getTime(), p.name || '', p.rarity || '']);
+        // Cross-source dedup (API French + WuWaTracker English):
+        // Same pull has different names (language), timestamps (off by ~1h timezone),
+        // but same resourceId. Use resourceId + hour-rounded timestamp to match
+        // across sources while distinguishing truly different pulls.
+        const TWO_HOURS = 7200000;
+        const makeKey = (p) => {
+          const tsMs = new Date(p.timestamp || 0).getTime();
+          const timeSlot = Math.round(tsMs / TWO_HOURS);
+          if (p.id && !p.id.startsWith('imp_')) {
+            // Extract resourceId from "1210_1738903202000"
+            const resId = p.id.split('_')[0];
+            if (resId && resId !== p.id) return `${resId}|${timeSlot}`;
+          }
+          // Fallback: name + hour-rounded timestamp + rarity
+          return `${p.name || ''}|${timeSlot}|${p.rarity || ''}`;
+        };
         const existingKeys = new Set(existing.map(makeKey));
         const newEntries = incoming.filter(p => !existingKeys.has(makeKey(p)));
         if (newEntries.length === 0) return existing; // All duplicates
-        // Re-sort merged history by timestamp
         return [...existing, ...newEntries].sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
       };
       
