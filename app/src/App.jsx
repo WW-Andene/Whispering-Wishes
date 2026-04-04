@@ -1757,7 +1757,7 @@ function WhisperingWishesInner() {
           </>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
-          <div className="header-top flex items-center justify-between py-1.5">
+          <div className="header-top flex items-center justify-between py-2">
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
@@ -1770,7 +1770,7 @@ function WhisperingWishesInner() {
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute inset-0 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
+                <div className="relative w-8 h-8 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
                 {pwa?.canInstall && (
@@ -1793,7 +1793,7 @@ function WhisperingWishesInner() {
               </button>
             </div>
           </div>
-          <nav ref={tabNavRef} className="relative flex justify-between - mb-px overflow-x-auto scrollbar-hide pb-1" style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)', WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+          <nav ref={tabNavRef} className="relative flex justify-between -mt-0.5 -mb-px overflow-x-auto scrollbar-hide pb-0.5" style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)', WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
               const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
               const idx = tabs.indexOf(activeTab);
               let newTab;
@@ -1802,14 +1802,14 @@ function WhisperingWishesInner() {
               if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
             }}>
             <div className="tab-indicator" />
-            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={16} /> Tracker</TabButton>
-            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={16} /> Events</TabButton>
-            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={16} /> Plan</TabButton>
-            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={16} /> Calc</TabButton>
-            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={16} /> Stats</TabButton>
-            <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={16} /> Teams</TabButton>
-            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={16} /> Collection</TabButton>
-            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={16} /> Profile</TabButton>
+            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
+            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
+            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
+            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
+            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
+            <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
+            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
+            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
           </nav>
           {/* P15-FIX: LOW-9 - Visual swipe indicator when swipe navigation is enabled */}
           {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[10px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
