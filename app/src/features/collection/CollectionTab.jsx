@@ -353,7 +353,7 @@ export default function CollectionTab({
               {hasActiveFilters && (
                 <div className="flex items-center justify-between mb-2 px-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/30 text-yellow-400 border border-yellow-500/40 font-medium">
                       Filters active
                     </span>
                   </div>
@@ -566,7 +566,7 @@ export default function CollectionTab({
                     aria-label="Sort alphabetically"
                     aria-pressed={collectionSort === 'name'}
                   >
-                    Az
+                    A↓
                   </button>
                 )}
               </div>

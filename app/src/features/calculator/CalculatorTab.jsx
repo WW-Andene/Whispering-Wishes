@@ -336,7 +336,7 @@ export default function CalculatorTab({ state, dispatch }) {
                         </div>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="10" value={currentPriority}
+                        type="range" min="0" max="100" step="5" value={currentPriority}
                         onChange={e => setCalc(priorityKey, +e.target.value)}
                         className="kuro-slider priority-slider w-full"
                         aria-label={`Astrite allocation: ${currentPriority}% Resonator, ${100 - currentPriority}% Weapon`}

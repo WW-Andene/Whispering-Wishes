@@ -3,7 +3,7 @@
 // Time-gated content tracking with server-adjusted countdowns
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { RefreshCcw, Calendar } from 'lucide-react';
 import { EVENTS } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
@@ -22,6 +22,7 @@ export default function EventsTab({
   toast,
 }) {
   const refreshCooldownRef = useRef(0);
+  const [refreshCooling, setRefreshCooling] = useState(false);
   return (
     <div role="tabpanel" id="tabpanel-events" aria-labelledby="tab-events" tabIndex="0">
     <TabErrorBoundary tabName="Events">
@@ -35,12 +36,15 @@ export default function EventsTab({
               onClick={() => {
                 if (Date.now() - refreshCooldownRef.current < 3000) return;
                 refreshCooldownRef.current = Date.now();
+                setRefreshCooling(true);
+                setTimeout(() => setRefreshCooling(false), 3000);
                 setActiveBanners(getActiveBanners());
                 toast?.addToast?.('Banner data refreshed!', 'success');
               }}
-              className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg hover:bg-white/5"
+              disabled={refreshCooling}
+              className={`text-[10px] flex items-center gap-1 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
             >
-              <RefreshCcw size={12} /> Refresh Timers
+              <RefreshCcw size={12} className={refreshCooling ? 'animate-spin' : ''} /> Refresh Timers
             </button>
             <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
           </div>

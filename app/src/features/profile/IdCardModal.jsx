@@ -212,7 +212,7 @@ export default function IdCardModal({
                                   </div>
                                 )}
                                 <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))' }}>
-                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
+                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '8px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
                                 </div>
                               </div>
                             </div>
@@ -248,7 +248,7 @@ export default function IdCardModal({
                                 <div className="rounded-full flex items-center justify-center mb-1" style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
                                   <IconComponent size={14} style={{ color: trophy.color }} />
                                 </div>
-                                <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '7px', wordBreak: 'break-word' }}>{trophy.name}</div>
+                                <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '8px', wordBreak: 'break-word' }}>{trophy.name}</div>
                               </div>
                             );
                           })}
