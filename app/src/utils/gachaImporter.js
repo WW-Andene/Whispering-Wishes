@@ -133,16 +133,21 @@ export function buildFetchParams(rawUrl, playerId, recordId, svrId) {
 /**
  * Fetch one page from the API. Returns { list, rawJson }.
  */
-async function fetchOnePage(params, poolType, endTime, signal, withCardPoolId = true) {
-  const body = {
+async function fetchOnePage(params, poolType, endTime, signal, useSnakeCase = false) {
+  // The Kuro API may expect snake_case (matching URL params) not camelCase
+  const body = useSnakeCase ? {
+    player_id: String(params.playerId),
+    record_id: params.recordId || '',
+    card_pool_type: Number(poolType),
+    language_code: params.lang || 'en',
+  } : {
     playerId: String(params.playerId),
     serverId: params.serverId || '',
     cardPoolType: Number(poolType),
+    cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
   };
-  // cardPoolId may restrict which pools respond — try with and without
-  if (withCardPoolId && params.cardPoolId) body.cardPoolId = String(params.cardPoolId);
   if (endTime) body.endTime = endTime;
 
   const controller = new AbortController();
@@ -176,17 +181,17 @@ const MAX_PER_POOL = 5000;
 async function fetchPoolFull(params, poolType, signal, onProgress) {
   const pageLog = [];
 
-  // Try with cardPoolId first
+  // Try snake_case first (WuWaTracker uses just player_id + record_id with snake_case)
   let { list, error, rawJson } = await fetchOnePage(params, poolType, '', signal, true);
 
-  // If empty, retry WITHOUT cardPoolId — it may be restricting this pool
-  if (!error && !list.length && params.cardPoolId) {
+  // If snake_case returns empty, fall back to camelCase with all params
+  if (!error && !list.length) {
     const retry = await fetchOnePage(params, poolType, '', signal, false);
-    if (retry.list.length > 0) {
+    if (retry.list.length > 0 || retry.error) {
       list = retry.list;
       error = retry.error;
       rawJson = retry.rawJson;
-      pageLog.push(`(retried without cardPoolId)`);
+      pageLog.push(`(fallback to camelCase)`);
     }
   }
 
