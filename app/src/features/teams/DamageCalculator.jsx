@@ -1548,7 +1548,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           </div>
           {/* Search + Filters */}
           <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-            <input value={enemyEchoSearch} onChange={e => setEnemyEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+            <input value={enemyEchoSearch} onChange={e => setEnemyEchoSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-xs" />
             <div className="flex gap-1">
               {[['all', 'All'], ['4', '4-Cost'], ['3', '3-Cost'], ['1', '1-Cost']].map(([val, label]) => (
                 <button key={val} onClick={() => setEnemyEchoCostFilter(val)}

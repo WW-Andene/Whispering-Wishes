@@ -301,7 +301,7 @@ function CollectionTab({
                 type="text"
                 value={collectionSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search by name, DPS, Electro, Broadblade..."
+                placeholder="Search by name, DPS, Electro, Broadblade…"
                 className="kuro-input w-full pl-8 text-xs"
                 aria-label="Search collection by keyword"
               />

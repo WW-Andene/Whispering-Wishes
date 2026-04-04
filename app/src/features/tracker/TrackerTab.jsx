@@ -394,7 +394,7 @@ function TrackerTab({
                       type="text"
                       value={pullHistorySearch}
                       onChange={e => setPullHistorySearch(e.target.value)}
-                      placeholder="Search by name..."
+                      placeholder="Search by name…"
                       className="kuro-input w-full pl-8 text-xs"
                       aria-label="Filter Convene history by name"
                     />

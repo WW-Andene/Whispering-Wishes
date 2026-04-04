@@ -395,6 +395,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .pity-ring-text {
       font-family: var(--font-data);
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
       fill: currentColor;
       text-anchor: middle;
       dominant-baseline: central;
@@ -497,9 +498,11 @@ const KuroStyles = memo(({ oledMode }) => (
     .tab-indicator {
       position: absolute;
       bottom: 0;
+      left: 0;
       height: 2px;
       border-radius: 4px 4px 0 0;
-      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, width;
     }
     
     /* ═══ CARD SYSTEM - Glassy gradient with ambient glow ═══ */

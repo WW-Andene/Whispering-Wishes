@@ -58,7 +58,7 @@ export default function TeamSelector({
                               type="text"
                               value={teamSearch}
                               onChange={(e) => setTeamSearch(e.target.value)}
-                              placeholder="Search resonators..."
+                              placeholder="Search resonators…"
                               className="kuro-input w-full pl-8 text-xs"
                               aria-label="Search resonators"
                               autoFocus

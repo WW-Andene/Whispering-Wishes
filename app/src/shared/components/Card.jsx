@@ -31,7 +31,7 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor 
           if (!btn || !nav) return;
           const indicator = nav.querySelector('.tab-indicator');
           if (indicator) {
-            indicator.style.left = `${btn.offsetLeft + btn.offsetWidth * 0.2}px`;
+            indicator.style.transform = `translateX(${btn.offsetLeft + btn.offsetWidth * 0.2}px)`;
             indicator.style.width = `${btn.offsetWidth * 0.6}px`;
             if (accent) {
               indicator.style.background = `linear-gradient(90deg, ${accent}99, ${accent}, ${accent}99)`;

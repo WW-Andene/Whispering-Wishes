@@ -1040,7 +1040,7 @@ function ProfileTab({
                     type="text"
                     value={state.profile.username}
                     onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
-                    placeholder="Enter your name..."
+                    placeholder="Enter your name…"
                     maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />

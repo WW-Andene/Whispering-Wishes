@@ -83,7 +83,7 @@ export default function EchoSelector({
                 </div>
                 {/* Search + Filters */}
                 <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-xs" />
                   <div className="flex gap-1.5">
                     <KuroSelect
                       value={echoSetFilter}

@@ -294,9 +294,9 @@ export default function ImportFlow({
             <textarea
               value={pasteJsonText}
               onChange={(e) => setPasteJsonText(e.target.value)}
-              placeholder='Paste your JSON data here...
+              placeholder='Paste your JSON data here…
 
-Example: {"pulls":[...]}'
+Example: {"pulls":[…]}'
               className="kuro-input w-full h-32 text-[10px] font-mono resize-none"
               spellCheck={false}
               aria-label="Paste import JSON data"
@@ -332,7 +332,7 @@ Example: {"pulls":[...]}'
               type="text"
               value={directUrl}
               onChange={(e) => handleDirectUrlChange(e.target.value)}
-              placeholder="Paste Convene History URL here..."
+              placeholder="Paste Convene History URL here…"
               className="kuro-input w-full text-[10px] font-mono"
               spellCheck={false}
             />

@@ -2088,7 +2088,7 @@ function WhisperingWishesInner() {
               <textarea
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
-                placeholder="Paste backup JSON here..."
+                placeholder="Paste backup JSON here…"
                 className="kuro-input w-full h-20 text-[10px] font-mono"
                 aria-label="Paste backup data to restore"
               />

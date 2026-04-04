@@ -29,7 +29,7 @@ export default function WeaponSelector({
                           <input
                             value={weaponSearch}
                             onChange={e => setWeaponSearch(e.target.value)}
-                            placeholder="Search weapons..."
+                            placeholder="Search weapons…"
                             className="kuro-input w-full text-xs"
                           />
                         </div>

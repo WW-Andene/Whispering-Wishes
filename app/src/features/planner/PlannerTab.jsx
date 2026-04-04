@@ -435,7 +435,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             {!sel.isPast && (
               <div>
                 <div className="flex gap-2">
-                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
+                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note…" className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
                   <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
                 </div>
                 {noteInput.length > 70 && <div style={{ fontSize: '9px', color: noteInput.length >= 100 ? '#ef4444' : 'var(--text-disabled)', textAlign: 'right', marginTop: '2px' }}>{noteInput.length}/100</div>}
