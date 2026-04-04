@@ -1223,6 +1223,15 @@ function WhisperingWishesInner() {
     }
   }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch]);
 
+  // Cloud Delete: remove user's cloud backup from Firebase RTDB
+  const handleCloudDelete = useCallback(async () => {
+    const token = await getGoogleAuth();
+    if (!token || !googleUser) return; // silently skip if not signed in
+    try {
+      await firebaseFetch(`user-history/${googleUser.uid}`, token, { method: 'DELETE' });
+    } catch { /* best-effort — local reset already happened */ }
+  }, [getGoogleAuth, googleUser, firebaseFetch]);
+
   // Anonymous presence system - writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
   const PRESENCE_TTL_MS = 120000; // consider offline after 2 minutes of no heartbeat
@@ -1998,6 +2007,7 @@ function WhisperingWishesInner() {
             handleGoogleSignOut={handleGoogleSignOut}
             handleCloudBackup={handleCloudBackup}
             handleCloudRestore={handleCloudRestore}
+            handleCloudDelete={handleCloudDelete}
             cloudBackupStatus={cloudBackupStatus}
           />
             </React.Suspense>
