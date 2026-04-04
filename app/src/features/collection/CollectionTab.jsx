@@ -225,6 +225,8 @@ export default function CollectionTab({
       });
     } else if (collectionSort === 'name') {
       return [...items].sort((a, b) => a[0].localeCompare(b[0]));
+    } else if (collectionSort === 'nameDesc') {
+      return [...items].sort((a, b) => b[0].localeCompare(a[0]));
     } else if (collectionSort === 'tier') {
       const tierOrder = { 'T0': 0, 'T0.5': 1, 'T1': 2, 'T1.5': 3, 'T2': 4, 'T3': 5, 'T4': 6 };
       return [...items].sort((a, b) => (tierOrder[CHARACTER_DATA[a[0]]?.tier?.toa] ?? 99) - (tierOrder[CHARACTER_DATA[b[0]]?.tier?.toa] ?? 99));
@@ -560,13 +562,13 @@ export default function CollectionTab({
                 </button>
                 {collectionView === 'items' && (
                   <button
-                    onClick={() => setCollectionSort('name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[10px] font-bold transition-all ${collectionSort === 'name' ? 'active-gold' : 'text-gray-400'}`}
-                    title="Sort A-Z"
-                    aria-label="Sort alphabetically"
-                    aria-pressed={collectionSort === 'name'}
+                    onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
+                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[10px] font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
+                    title={collectionSort === 'nameDesc' ? 'Sort Z-A' : 'Sort A-Z'}
+                    aria-label={collectionSort === 'nameDesc' ? 'Sorted Z to A, click for A to Z' : 'Sort alphabetically'}
+                    aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}
                   >
-                    A↓
+                    {collectionSort === 'nameDesc' ? 'A↑' : 'A↓'}
                   </button>
                 )}
               </div>
