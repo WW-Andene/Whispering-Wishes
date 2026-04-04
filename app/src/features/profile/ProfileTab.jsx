@@ -1407,7 +1407,7 @@ export default function ProfileTab({
                         <div className="text-gray-100 text-xs font-medium truncate">{googleUser.displayName}</div>
                         <div className="text-gray-500 text-[10px] truncate">{googleUser.email}</div>
                       </div>
-                      <button onClick={handleGoogleSignOut} className="text-gray-500 text-[10px] hover:text-red-400 transition-colors">Sign out</button>
+                      <button onClick={handleGoogleSignOut} className="text-red-400 text-xs px-2 py-1 rounded border border-red-500/30 hover:bg-red-500/10 transition-colors flex-shrink-0">Sign out</button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
