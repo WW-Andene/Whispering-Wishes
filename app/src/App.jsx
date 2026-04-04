@@ -1793,7 +1793,7 @@ function WhisperingWishesInner() {
               </button>
             </div>
           </div>
-          <nav ref={tabNavRef} className="relative flex justify-between -mt-0.5 -mb-px overflow-x-auto scrollbar-hide pb-0.5" style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)', WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+          <nav ref={tabNavRef} className="relative flex justify-between -mb-px overflow-x-auto scrollbar-hide pb-0.5" style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)', WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
               const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
               const idx = tabs.indexOf(activeTab);
               let newTab;
