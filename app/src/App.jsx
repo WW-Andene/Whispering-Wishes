@@ -1235,7 +1235,7 @@ function WhisperingWishesInner() {
           if (type === 'weapon') return pt === FEAT_WEAP;
           if (type === 'standardChar') return pt === PERM_RES;
           if (type === 'standardWeap') return pt === PERM_WEAP;
-          if (type === 'beginner') return pt === 5 || pt === 6 || pt === 7;
+          if (type === 'beginner') return pt === 5 || pt === 6 || pt === 7 || pt === 8;
           return false;
         });
         
@@ -1333,7 +1333,7 @@ function WhisperingWishesInner() {
       const wc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === FEAT_WEAP).length;
       const sc = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_RES).length;
       const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_WEAP).length;
-      const bc = pulls.filter(p => [5, 6, 7].includes(p.cardPoolType ?? p.gachaType)).length;
+      const bc = pulls.filter(p => [5, 6, 7, 8].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
       if (fc) parts.push(`${fc} char`);
       if (wc) parts.push(`${wc} weap`);

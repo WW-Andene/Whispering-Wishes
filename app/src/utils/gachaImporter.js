@@ -4,16 +4,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const POOL_LABELS = {
-  1: 'Featured Resonator',
-  2: 'Featured Weapon',
-  3: 'Permanent Resonator',
-  4: 'Permanent Weapon',
-  5: 'Novice Convene',
-  6: 'Beginners Choice',
-  7: 'Giveback Convene',
+  1: 'Featured Resonator',     // Temps limité personnages
+  2: 'Featured Weapon',        // Temps limité armes
+  3: 'Permanent Resonator',    // Permanent personnages
+  4: 'Permanent Weapon',       // Permanent armes
+  5: 'Novice',                 // Débutant
+  6: 'Beginners Choice',       // Au choix des débutants
+  7: 'New Start Weapon 1',     // Arme du nouveau départ 1
+  8: 'New Start Weapon 2',     // Armes du nouveau départ 2
 };
-// Scan all known pool types
-export const POOLS = [1, 2, 3, 4, 5, 6, 7];
+export const POOLS = [1, 2, 3, 4, 5, 6, 7, 8];
 export const FALLBACK_API_BASE = 'https://gmserver-api.aki-game2.net/gacha/record/query';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -141,8 +141,6 @@ async function fetchOnePage(params, poolType, endTime, signal) {
     cardPoolId: params.cardPoolId || '',
     languageCode: params.lang || 'en',
     recordId: params.recordId || '',
-    // Request maximum records — API may default to ~400 without this
-    size: 9999,
   };
   if (endTime) body.endTime = endTime;
 
