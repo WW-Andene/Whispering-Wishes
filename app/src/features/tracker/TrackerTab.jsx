@@ -3,7 +3,7 @@
 // Banner tracking with pity counters, category tabs, and banner history archive
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import { BANNER_HISTORY } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -46,6 +46,14 @@ export default function TrackerTab({
   const [bannerHistorySearch, setBannerHistorySearch] = useState('');
   const [showPullHistory, setShowPullHistory] = useState(false);
   const [pullHistorySearch, setPullHistorySearch] = useState('');
+  // P5-F003: Debounce search to avoid filtering 2000+ pulls per keystroke
+  const [deferredSearch, setDeferredSearch] = useState('');
+  const searchTimerRef = useRef(null);
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDeferredSearch(pullHistorySearch), 200);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [pullHistorySearch]);
   const [pullHistoryBannerFilter, setPullHistoryBannerFilter] = useState('all');
   const [pullHistoryRarityFilter, setPullHistoryRarityFilter] = useState('all');
 
@@ -64,12 +72,12 @@ export default function TrackerTab({
     let pulls = allPulls;
     if (pullHistoryBannerFilter !== 'all') pulls = pulls.filter(p => p.banner === pullHistoryBannerFilter);
     if (pullHistoryRarityFilter !== 'all') pulls = pulls.filter(p => p.rarity === Number(pullHistoryRarityFilter));
-    if (pullHistorySearch.trim()) {
-      const q = pullHistorySearch.trim().toLowerCase();
+    if (deferredSearch.trim()) {
+      const q = deferredSearch.trim().toLowerCase();
       pulls = pulls.filter(p => p.name?.toLowerCase().includes(q));
     }
     return pulls;
-  }, [allPulls, pullHistoryBannerFilter, pullHistoryRarityFilter, pullHistorySearch]);
+  }, [allPulls, pullHistoryBannerFilter, pullHistoryRarityFilter, deferredSearch]);
 
   return (
           <div role="tabpanel" id="tabpanel-tracker" aria-labelledby="tab-tracker" tabIndex="0">

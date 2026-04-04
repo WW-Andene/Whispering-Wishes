@@ -1297,7 +1297,8 @@ function WhisperingWishesInner() {
   }, []);
 
   // Trophies/Badges computation (logic in core/computeTrophies.js)
-  const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile, overallStats, trophyOverrides]);
+  // P5-F001: Depend on actual history arrays, not state.profile (which is a new object on every dispatch)
+  const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history, state.profile.profilePic, overallStats, trophyOverrides]);
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity, overallStats?.fiveStars), [overallStats]);
