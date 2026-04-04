@@ -1822,7 +1822,7 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
       </nav>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 py-3 pb-20 space-y-3 w-full" role="main">
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 pb-20 space-y-3 w-full" role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
