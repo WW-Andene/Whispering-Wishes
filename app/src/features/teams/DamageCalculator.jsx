@@ -63,34 +63,34 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (!passive) { _passiveCache.set(cacheKey, r); return r; }
       const p = passive.toLowerCase();
       const atkMatch = p.match(/atk\s*\+(\d+)%/);
-      if (atkMatch) r.atkPct += parseInt(atkMatch[1]);
+      if (atkMatch) r.atkPct += parseInt(atkMatch[1], 10);
       if (element) {
         const elLow = element.toLowerCase();
         const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
-        if (elMatch) r.elemDmg += parseInt(elMatch[1]);
+        if (elMatch) r.elemDmg += parseInt(elMatch[1], 10);
         const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
-        if (attrMatch) r.elemDmg += parseInt(attrMatch[1]);
+        if (attrMatch) r.elemDmg += parseInt(attrMatch[1], 10);
       }
       const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);
-      if (skillMatch) r.skillDmg += parseInt(skillMatch[1]);
+      if (skillMatch) r.skillDmg += parseInt(skillMatch[1], 10);
       const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/);
-      if (libMatch) r.libDmg += parseInt(libMatch[1]);
+      if (libMatch) r.libDmg += parseInt(libMatch[1], 10);
       const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
-      if (basicMatch) r.basicDmg += parseInt(basicMatch[1]);
+      if (basicMatch) r.basicDmg += parseInt(basicMatch[1], 10);
       const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
-      if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1]);
+      if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1], 10);
       const coordMatch = p.match(/coord(?:inated)?\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
-      if (coordMatch) r.coordDmg += parseInt(coordMatch[1]);
+      if (coordMatch) r.coordDmg += parseInt(coordMatch[1], 10);
       const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
-      if (echoMatch) r.echoDmg += parseInt(echoMatch[1]);
+      if (echoMatch) r.echoDmg += parseInt(echoMatch[1], 10);
       const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
-      if (crMatch) r.critRate += parseInt(crMatch[1]);
+      if (crMatch) r.critRate += parseInt(crMatch[1], 10);
       const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);
-      if (cdMatch) r.critDmg += parseInt(cdMatch[1]);
+      if (cdMatch) r.critDmg += parseInt(cdMatch[1], 10);
       const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
-      if (defMatch) r.defIgnore += parseInt(defMatch[1]);
+      if (defMatch) r.defIgnore += parseInt(defMatch[1], 10);
       const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);
-      if (resMatch) r.resShred += parseInt(resMatch[1]);
+      if (resMatch) r.resShred += parseInt(resMatch[1], 10);
       _passiveCache.set(cacheKey, r);
       return r;
     };
@@ -895,7 +895,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 const trimmed = part.trim();
                                 const pcMatch = trimmed.match(/^(.+?)\s+(\d+)pc$/i);
                                 if (pcMatch && ECHO_SETS[pcMatch[1].trim()]) {
-                                  recSets.set(pcMatch[1].trim(), parseInt(pcMatch[2]));
+                                  recSets.set(pcMatch[1].trim(), parseInt(pcMatch[2], 10));
                                 } else {
                                   const plain = trimmed.replace(/\s+\d+pc$/i, '').trim();
                                   if (ECHO_SETS[plain]) recSets.set(plain, 5);
@@ -1409,7 +1409,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <input type="text" inputMode="numeric" value={enemyLevel}
                   onFocus={e => e.target.select()}
                   onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
-                  onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value))) setEnemyLevel(90); }}
+                  onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
                   className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
               </div>
               <span className="text-gray-600 text-[9px]">DEF {792 + 8 * enemyLevel}</span>

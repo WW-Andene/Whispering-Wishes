@@ -9,10 +9,10 @@
 const CURRENT_BANNERS = {
   version: '3.2', phase: 1, // Game version (not app version)
   // Times from wuwatracker.com (Europe CET/CEST reference, converted to UTC)
-  // Mar is CET (UTC+1) — these conversions are correct for winter
-  // Banner: Wed, 19 Mar 2026 10:00 - Thu, 09 Apr 2026 11:59 (Europe CEST)
-  startDate: '2026-03-19T08:00:00Z', // Mar 19, 10:00 Europe CEST = 08:00 UTC
-  endDate: '2026-04-09T09:59:00Z',   // Apr 09, 11:59 Europe CEST = 09:59 UTC
+  // Mar 19 is CET (UTC+1) — DST transition is Mar 29. Apr dates are CEST (UTC+2).
+  // Banner: Wed, 19 Mar 2026 10:00 CET - Thu, 09 Apr 2026 11:59 CEST
+  startDate: '2026-03-19T09:00:00Z', // Mar 19, 10:00 CET (UTC+1) = 09:00 UTC
+  endDate: '2026-04-09T09:59:00Z',   // Apr 09, 11:59 CEST (UTC+2) = 09:59 UTC
   characterBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   weaponBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   eventBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
@@ -185,8 +185,8 @@ const EVENTS = {
     resetType: 'Multi-version',
     color: 'pink',
     // New in v3.2: First cycle (Doomsday) runs Mar 26 → Apr 30, spans v3.2–v3.4
-    currentStart: '2026-03-26',
-    currentEnd: '2026-04-30T03:59:00Z',
+    currentStart: '2026-03-26T03:00:00Z', // Mar 26, 04:00 CET (UTC+1, pre-DST)
+    currentEnd: '2026-04-30T01:59:00Z',   // Apr 30, 03:59 CEST (UTC+2, post-DST)
     introducedVersion: '3.2',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
@@ -199,9 +199,9 @@ const EVENTS = {
     description: 'Endgame combat challenge',
     resetType: '28 days',
     color: 'orange',
-    // Mon, 30 Mar 2026 04:00 - Mon, 27 Apr 2026 03:59 (Europe)
-    currentStart: '2026-03-30',
-    currentEnd: '2026-04-27T02:59:00Z',
+    // Mon, 30 Mar 2026 04:00 CEST - Mon, 27 Apr 2026 03:59 CEST (post-DST, UTC+2)
+    currentStart: '2026-03-30T02:00:00Z',
+    currentEnd: '2026-04-27T01:59:00Z',
     introducedVersion: '1.0', // Since launch
     rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
@@ -214,9 +214,9 @@ const EVENTS = {
     description: 'Combat challenge with token system',
     resetType: '28 days',
     color: 'cyan',
-    // Mon, 16 Mar 2026 04:00 - Mon, 13 Apr 2026 03:59 (Europe)
-    currentStart: '2026-03-16',
-    currentEnd: '2026-04-13T02:59:00Z',
+    // Mon, 16 Mar 2026 04:00 CET - Mon, 13 Apr 2026 03:59 CEST (post-DST, UTC+2)
+    currentStart: '2026-03-16T03:00:00Z',
+    currentEnd: '2026-04-13T01:59:00Z',
     introducedVersion: '2.1', // Added in v2.1 (Feb 13, 2025)
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',

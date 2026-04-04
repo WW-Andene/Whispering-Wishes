@@ -797,7 +797,7 @@ export default function ProfileTab({
       histLabels.forEach((lab,i)=>{
         const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
-        const bucket=parseInt(lab)||0;
+        const bucket=parseInt(lab, 10)||0;
         const bc=bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
         // Semi-transparent gradient fill with outer glow (single fill, no stacking)
         ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;

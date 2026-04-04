@@ -1324,7 +1324,11 @@ function WhisperingWishesInner() {
     'Rover-Spectro': 'Rover', 'Rover-Havoc': 'Rover', 'Rover-Aero': 'Rover',
   }), []);
 
+  const importInFlightRef = useRef(false);
   const processImportData = useCallback(async (jsonString) => {
+    // P2-F006: Prevent duplicate concurrent imports (race condition guard)
+    if (importInFlightRef.current) { toast?.addToast?.('Import already in progress', 'warning'); return false; }
+    importInFlightRef.current = true;
     try {
       // P10-FIX: Check raw string size before parsing to prevent expansion attacks (Step 6 audit)
       if (jsonString.length > MAX_IMPORT_SIZE_MB * 1024 * 1024) {
@@ -1593,6 +1597,8 @@ function WhisperingWishesInner() {
       const msg = isUserError ? err.message : 'Could not process this file. Please check the format and try again.';
       toast?.addToast?.('Import failed: ' + msg, 'error');
       return false;
+    } finally {
+      importInFlightRef.current = false;
     }
   }, [toast, dispatch, IMPORT_NAME_ALIASES]);
 

@@ -150,7 +150,7 @@ export default function IdCardModal({
                           {labs.map((lab, i) => {
                             const cnt = bk[lab]||0;
                             const height = mx > 0 ? (cnt / mx) * 100 : 0;
-                            const bucket = parseInt(lab)||81;
+                            const bucket = parseInt(lab, 10) || 81;
                             const color = bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
                             return (
                               <div key={i} className="flex-1 flex flex-col items-center">

@@ -239,7 +239,8 @@ const reducer = (state, action) => {
         const lastFive = fiveStars[fiveStars.length - 1];
         newProfile.featured = {
           history: merged, pity5, pity4,
-          guaranteed: hadNewEntries ? (lastFive?.won5050 === false) : (state.profile.featured?.guaranteed ?? false),
+          // P2-F004: Guard against empty 5-star history — preserve existing guarantee state if no 5-stars found
+          guaranteed: hadNewEntries ? (fiveStars.length > 0 ? (lastFive?.won5050 === false) : (state.profile.featured?.guaranteed ?? false)) : (state.profile.featured?.guaranteed ?? false),
           guaranteed4Star: hadNewEntries ? (action.guaranteed4Star ?? false) : (state.profile.featured?.guaranteed4Star ?? false),
         };
       } else if (action.bannerType === 'weapon') {
@@ -335,7 +336,14 @@ const reducer = (state, action) => {
       return { ...state, teams, activeTeamIndex: Math.max(0, Math.min(4, action.activeTeamIndex ?? state.activeTeamIndex)) };
     }
     // P9-FIX: Merge with initialState to ensure no missing fields from older schemas (Step 4 audit)
-    case ACTION.LOAD_STATE: return { ...initialState, ...sanitizeImportedState(action.state) }; // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
+    case ACTION.LOAD_STATE: {
+      // P10-FIX: Sanitize to prevent prototype pollution (Step 6 audit)
+      const loaded = { ...initialState, ...sanitizeImportedState(action.state) };
+      // P2-F005: Validate team array length (matches loadFromStorage validation)
+      if (!Array.isArray(loaded.teams) || loaded.teams.length !== 5) loaded.teams = initialState.teams;
+      loaded.activeTeamIndex = typeof loaded.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, loaded.activeTeamIndex)) : 0;
+      return loaded;
+    }
     case ACTION.RESET: return initialState;
     default: {
       if (typeof action.type === 'string' && !Object.values(ACTION).includes(action.type)) {

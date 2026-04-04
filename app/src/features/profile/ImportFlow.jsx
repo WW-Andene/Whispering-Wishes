@@ -129,7 +129,7 @@ export default function ImportFlow({
       cameraTimerRef.current = setTimeout(() => {
         if (directVideoRef.current) {
           directVideoRef.current.srcObject = stream;
-          directVideoRef.current.play().catch(() => {});
+          directVideoRef.current.play().catch(e => console.warn('[Camera] Video play failed:', e.message));
         }
       }, 100);
     } catch (err) {
