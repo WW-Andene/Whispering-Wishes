@@ -1797,7 +1797,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex justify-between overflow-x-auto scrollbar-hide" style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex justify-between overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
           const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
