@@ -42,7 +42,7 @@ import { CharacterDetailModal } from './shared/modals/CharacterDetailModal.jsx';
 import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
 import { EchoDetailModal } from './shared/modals/EchoDetailModal.jsx';
 import { TabButton } from './shared/components/Card.jsx';
-import { AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton } from './shared/errors/ErrorBoundaries.jsx';
+import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
 import { BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour } from './shared/backgrounds/Backgrounds.jsx';
 import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // --- Feature tabs ---
