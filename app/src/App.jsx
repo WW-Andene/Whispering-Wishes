@@ -1797,7 +1797,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex justify-between overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', ...(activeTheme ? { borderColor: `${themeAccent}30`, background: `linear-gradient(135deg, ${themeAccent}08, var(--bg-card))`, boxShadow: `var(--shadow-lg), 0 0 0 1px ${themeAccent}10 inset, 0 0 24px ${themeAccent}08` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex justify-between overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
           const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
@@ -1805,6 +1805,12 @@ function WhisperingWishesInner() {
           else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
           if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
         }}>
+        {activeTheme && (
+          <>
+            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.5, pointerEvents: 'none' }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(8,12,20,0.85), ${themeAccent}15, rgba(8,12,20,0.85))`, pointerEvents: 'none' }} aria-hidden="true" />
+          </>
+        )}
         <div className="tab-indicator" />
         <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
         <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
