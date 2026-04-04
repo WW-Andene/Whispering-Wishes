@@ -83,7 +83,7 @@ export default function EchoSelector({
                 </div>
                 {/* Search + Filters */}
                 <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes..." className="kuro-input w-full text-xs" />
+                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-xs" />
                   <div className="flex gap-1.5">
                     <KuroSelect
                       value={echoSetFilter}
@@ -104,7 +104,7 @@ export default function EchoSelector({
                       className="flex-1 text-[10px]"
                     />
                     {hasFilters && (
-                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="px-2 rounded border border-[var(--border-medium)] text-[10px] text-gray-400 hover:text-white transition-all">Clear</button>
+                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="kuro-btn kuro-btn-sm">Clear</button>
                     )}
                   </div>
                   {/* Recommendation indicator */}
@@ -190,7 +190,7 @@ export default function EchoSelector({
                         );
                       })}
                     {filtered.length === 0 && (
-                      <div className="text-center py-6 text-gray-500 text-xs">No echoes match filters</div>
+                      <div className="text-center py-6 text-gray-400 text-xs">No echoes match filters</div>
                     )}
                   </div>
                 </div>

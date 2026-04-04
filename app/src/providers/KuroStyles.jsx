@@ -343,50 +343,19 @@ const KuroStyles = memo(({ oledMode }) => (
       50% { transform: scale(1.02); }
     }
     
-    /* ═══ TAB CONTENT TRANSITIONS ═══ */
+    /* ═══ TAB CONTENT LAYOUT ═══ */
     /* NOTE: Negative margins must match parent's horizontal padding (0.75rem / 12px).
        If parent padding changes, update these values together. */
     .tab-content {
-      animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       margin-left: -0.75rem;
       margin-right: -0.75rem;
       padding: 0.75rem;
+      padding-top: 0;
+      animation: tabFadeIn 0.15s ease-out;
     }
-    
     @keyframes tabFadeIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(8px);
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0);
-      }
-    }
-    
-    /* Stagger animation for child cards */
-    .tab-content > .kuro-card,
-    .tab-content > div > .kuro-card {
-      animation: cardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-    }
-    .tab-content > .kuro-card:nth-child(1),
-    .tab-content > div > .kuro-card:nth-child(1) { animation-delay: 0.05s; }
-    .tab-content > .kuro-card:nth-child(2),
-    .tab-content > div > .kuro-card:nth-child(2) { animation-delay: 0.1s; }
-    .tab-content > .kuro-card:nth-child(3),
-    .tab-content > div > .kuro-card:nth-child(3) { animation-delay: 0.15s; }
-    .tab-content > .kuro-card:nth-child(4),
-    .tab-content > div > .kuro-card:nth-child(4) { animation-delay: 0.2s; }
-    
-    @keyframes cardSlideIn {
-      from { 
-        opacity: 0; 
-        transform: translateY(12px) scale(0.98);
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0) scale(1);
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     
     /* D-HIERARCHY-2: Enhanced glow for 5★ — radial bg + stronger box-shadow for visual hierarchy */
@@ -432,6 +401,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .pity-ring-text {
       font-family: var(--font-data);
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
       fill: currentColor;
       text-anchor: middle;
       dominant-baseline: central;
@@ -534,9 +504,11 @@ const KuroStyles = memo(({ oledMode }) => (
     .tab-indicator {
       position: absolute;
       bottom: 0;
+      left: 0;
       height: 2px;
-      border-radius: 4px 4px 0 0;
-      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 6px 6px 0 0;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, width;
     }
     
     /* ═══ CARD SYSTEM - Glassy gradient with ambient glow ═══ */
@@ -806,6 +778,19 @@ const KuroStyles = memo(({ oledMode }) => (
         box-shadow: 0 0 30px rgba(237, 175, 24, 0.35), 0 6px 20px rgba(0,0,0,0.4);
         border-color: rgba(237, 175, 24, 0.9);
       }
+    }
+
+    /* ═══ BADGES — Standardized inline tag/badge ═══ */
+    .kuro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid;
+      line-height: 1.4;
+      white-space: nowrap;
     }
 
     /* MED-6: Compact button variants for inline actions */
@@ -1702,7 +1687,47 @@ const KuroStyles = memo(({ oledMode }) => (
       transform: translateY(-2px) scale(1.01);
       transition: transform var(--transition-fast);
     }
-    
+
+    /* ═══ STANDARDIZED INTERACTIVE FEEDBACK ═══ */
+    /* Consistent scale(0.97) press feedback on all interactive elements */
+
+    /* Toggle switches */
+    [role="switch"] {
+      cursor: pointer;
+      transition: background 0.15s, transform var(--transition-fast);
+    }
+    @media (hover: hover) {
+      [role="switch"]:hover { opacity: 0.85; }
+    }
+    [role="switch"]:active { transform: scale(0.97); }
+
+    /* Collapsible section triggers */
+    [aria-expanded] {
+      transition: background var(--transition-fast);
+    }
+    @media (hover: hover) {
+      div[aria-expanded]:hover,
+      button[aria-expanded]:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+    }
+    div[aria-expanded]:active,
+    button[aria-expanded]:active {
+      transform: scale(0.99);
+    }
+
+    /* Modal close buttons */
+    .modal-close-btn {
+      transition: background var(--transition-fast), transform var(--transition-fast);
+    }
+    .modal-close-btn:active { transform: scale(0.93); }
+
+    /* Small action buttons (event status, icon buttons) */
+    .action-btn {
+      transition: background var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
+    }
+    .action-btn:active { transform: scale(0.95); }
+
     /* ═══ FULL ANIMATIONS — 2× intensity mode ═══ */
 
     /* Glow effects: stronger box-shadows & drop-shadows */
@@ -2095,6 +2120,9 @@ const KuroStyles = memo(({ oledMode }) => (
       .desktop-layout > header nav .kuro-tab:hover {
         background: rgba(255,255,255,0.06) !important;
         border-color: rgba(255,255,255,0.08) !important;
+      }
+      .desktop-layout > header nav .kuro-tab:active {
+        transform: scale(0.97) !important;
       }
       .desktop-layout > header nav .kuro-tab[aria-selected="true"] {
         background: rgba(237, 175, 24, 0.1) !important;

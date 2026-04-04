@@ -8,11 +8,12 @@ import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, Layout
 import {
   CHARACTER_DATA, WEAPON_DATA, DEFAULT_COLLECTION_IMAGES,
   RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS,
-  MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
+  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
 } from '../../appcore-data.js';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { MaterialItem } from '../components/MaterialItem.jsx';
 
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
@@ -22,20 +23,6 @@ const DETAIL_ELEMENT_COLORS = {
   Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
   Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
   Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
-};
-
-// Material item display helper
-const MaterialItem = ({ name, qty }) => {
-  const img = MATERIAL_IMAGES[name];
-  return (
-    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-[var(--border-medium)] min-w-0">
-      {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
-      <div className="min-w-0 flex-1">
-        <div className="text-[10px] text-gray-300 truncate leading-tight">{name}</div>
-        {qty != null && qty > 0 && <div className="text-[10px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
-      </div>
-    </div>
-  );
 };
 
 // Hoisted team parsing helper
@@ -56,10 +43,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} Resonator details`} centered>
       <div
-        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-full">
+       <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header with image */}
         <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
@@ -79,7 +66,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close Resonator details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close Resonator details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -107,9 +94,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
                 'bg-gray-500/20 text-gray-300 border border-gray-500/40'
               }`}>
-                <span className="text-[9px] text-gray-400">ToA</span> {data.tier.toa}
+                <span className="text-[10px] text-gray-400">ToA</span> {data.tier.toa}
                 <span className="text-gray-600 mx-0.5">|</span>
-                <span className="text-[9px] text-gray-400">WW</span> {data.tier.ww}
+                <span className="text-[10px] text-gray-400">WW</span> {data.tier.ww}
               </div>
             )}
             {data.region && (
@@ -181,7 +168,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Quick action — view in teams */}
           {onViewInTeams && (
-            <button onClick={onViewInTeams} className="w-full py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" style={{ background: 'var(--bg-btn)' }}>
+            <button onClick={onViewInTeams} className="kuro-btn w-full flex items-center justify-center gap-1.5">
               <Users size={12} /> View in Team Builder
             </button>
           )}

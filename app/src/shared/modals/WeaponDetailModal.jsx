@@ -6,27 +6,14 @@
 import React from 'react';
 import { Swords, Star, TrendingUp, X } from 'lucide-react';
 import {
-  WEAPON_DATA, MATERIAL_IMAGES,
+  WEAPON_DATA,
   COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
   WEAPON_REFINE_SCALE,
 } from '../../appcore-data.js';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
-
-// Material item display helper
-const MaterialItem = ({ name, qty }) => {
-  const img = MATERIAL_IMAGES[name];
-  return (
-    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-[var(--border-medium)] min-w-0">
-      {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
-      <div className="min-w-0 flex-1">
-        <div className="text-[10px] text-gray-300 truncate leading-tight">{name}</div>
-        {qty != null && qty > 0 && <div className="text-[10px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
-      </div>
-    </div>
-  );
-};
+import { MaterialItem } from '../components/MaterialItem.jsx';
 
 const WEAPON_RARITY_COLORS = {
   5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
@@ -44,10 +31,10 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
       <div
-        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border ${colors.border}`}
+        className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-full">
+       <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
         <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''}`} style={{ contain: 'paint' }} data-sheet-header>
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
@@ -55,7 +42,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close weapon details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close weapon details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -75,12 +62,12 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.baseAtk && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-[9px] text-gray-400">ATK</span>
+                <span className="text-[10px] text-gray-400">ATK</span>
                 <span className="text-xs font-bold text-red-400">{data.baseAtk}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
-              <span className="text-[9px] text-gray-400">{data.stat}</span>
+              <span className="text-[10px] text-gray-400">{data.stat}</span>
               <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
             </div>
             {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => (
@@ -117,9 +104,9 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               <div className="grid grid-cols-5 gap-1">
                 {WEAPON_REFINE_SCALE.map((scale, i) => (
                   <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
-                    <div className={`text-[9px] mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
+                    <div className={`text-[10px] mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
                     {Object.entries(data.pv).map(([stat, val]) => (
-                      <div key={stat} className="text-[9px] text-gray-300">
+                      <div key={stat} className="text-[10px] text-gray-300">
                         <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
                         <div className="text-gray-500 text-[8px]">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
                       </div>

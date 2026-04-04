@@ -11,7 +11,7 @@ import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
 
-export default function TeamsTab({
+function TeamsTab({
   state,
   dispatch,
   collectionImages,
@@ -320,8 +320,8 @@ export default function TeamsTab({
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
-                            <div className="text-gray-500 text-sm mb-1">No characters assigned</div>
-                            <p className="text-gray-600 text-[10px]">Select a slot below to add a Resonator to this team</p>
+                            <div className="text-gray-400 text-sm mb-1">No characters assigned</div>
+                            <p className="text-gray-600 text-[10px]">Tap an empty slot to add a Resonator</p>
                           </div>
                         )}
                         {teamSlots.map((charName, slotIdx) => {
@@ -340,7 +340,7 @@ export default function TeamsTab({
                                 aria-label={`Add resonator to slot ${slotIdx + 1}`}
                               >
                                 <Plus size={24} className="text-yellow-500/50 group-hover:text-yellow-400 transition-colors" />
-                                <span className="text-[10px] text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">Add</span>
+                                <span className="text-[10px] text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">Add Resonator</span>
                               </button>
                             );
                           }
@@ -381,7 +381,7 @@ export default function TeamsTab({
                               {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
+                                className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
                                 aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
                               >
                                 <X size={12} />
@@ -605,3 +605,9 @@ export default function TeamsTab({
           </div>
   );
 }
+
+export default React.memo(TeamsTab, (prev, next) =>
+  prev.state.teams === next.state.teams && prev.state.activeTeamIndex === next.state.activeTeamIndex &&
+  prev.collectionImages === next.collectionImages && prev.collectionData === next.collectionData &&
+  prev.dispatch === next.dispatch
+);

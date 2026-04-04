@@ -7,7 +7,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Star, Check, CheckCircle, SkipForward } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CURRENT_BANNERS, haptic,
-  ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
+  ELEMENT_COLORS, getElementColor,
 } from '../../appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
@@ -41,6 +41,11 @@ const EVENT_ACCENT_COLORS = {
 
 const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
+// L-FIX: Extracted inline style constants to avoid re-creating objects every render
+const CANVAS_OVERLAY_STYLE = Object.freeze({ zIndex: 2, width: '100%', height: '100%' });
+const MOON_GLOW_STYLE = Object.freeze({ left: '65.5%', top: '10.5%', width: '140px', height: '140px', zIndex: 3 });
+const IMG_LAYER_STYLE = Object.freeze({ zIndex: 1 });
+const BANNER_SUBTLE_SHADOW = '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)';
 
 // Unified mask gradient generator (horizontal)
 const _maskCache = new Map();
@@ -571,13 +576,13 @@ const BannerParticleOverlay = memo(({ characterName, element }) => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 2, width: '100%', height: '100%' }}
+        style={CANVAS_OVERLAY_STYLE}
         aria-hidden="true"
       />
       {isQiuyuan && (
         <div
           className="absolute pointer-events-none moon-glow-pulse"
-          style={{ left: '65.5%', top: '10.5%', width: '140px', height: '140px', zIndex: 3 }}
+          style={MOON_GLOW_STYLE}
           aria-hidden="true"
         />
       )}
@@ -600,9 +605,9 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
-    <div className="relative overflow-hidden rounded-xl border" style={{ minHeight: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border" style={{ minHeight: '190px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : BANNER_SUBTLE_SHADOW }}>
       {imgUrl && (
-        <div className="absolute inset-0" style={{ zIndex: 1 }}>
+        <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
           <img
             src={imgUrl}
             alt={item.name}
@@ -743,7 +748,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500' : colors.text}`}>
+            <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
               {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
               {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}
@@ -769,17 +774,17 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           {onStatusChange && !isExpired && (
             <div className="flex gap-1">
               {!isDone && (
-                <button onClick={() => onStatusChange('done')} className="px-3 py-1.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Mark ${event.name} as done`}>
+                <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[52px] backdrop-blur-sm" aria-label={`Mark ${event.name} as done`}>
                   <Check size={10} className="inline -mt-0.5" /> Done
                 </button>
               )}
               {!isSkipped && (
-                <button onClick={() => onStatusChange('skipped')} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-400 hover:bg-white/20 backdrop-blur-sm transition-colors min-w-[52px] min-h-[36px] text-center" aria-label={`Skip ${event.name}`}>
+                <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm min-w-[52px] backdrop-blur-sm" aria-label={`Skip ${event.name}`}>
                   <SkipForward size={10} className="inline -mt-0.5" /> Skip
                 </button>
               )}
               {status && (
-                <button onClick={() => onStatusChange(null)} className="px-3 py-1.5 rounded text-[10px] bg-white/10 text-gray-300 hover:bg-white/20 backdrop-blur-sm transition-colors min-h-[36px]" aria-label={`Undo ${event.name} status`}>
+                <button onClick={() => onStatusChange(null)} className="kuro-btn kuro-btn-sm backdrop-blur-sm" aria-label={`Undo ${event.name} status`}>
                   {isDone ? 'Undo Done' : 'Undo Skip'}
                 </button>
               )}
@@ -1198,7 +1203,7 @@ const IMPORT_GUIDE_DATA = {
     steps: [
       <>Open Wuthering Waves, go to <span className="text-gray-100 font-medium">Convene</span> → <span className="text-gray-100 font-medium">History</span> → <span className="text-gray-100 font-medium">View Details</span></>,
       <>Open <span className="text-gray-100 font-medium">PowerShell</span> and paste this command:</>,
-      <><code className="block bg-black/40 rounded px-2 py-1.5 text-[9px] font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
+      <><code className="block bg-black/40 rounded px-2 py-1.5 text-[10px] font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
       <>The URL is <span className="text-gray-100 font-medium">automatically copied</span> to your clipboard</>,
       <>Paste it in the <span className="text-gray-100 font-medium">URL field</span> below and click <span className="text-gray-100 font-medium">Import</span></>,
     ],

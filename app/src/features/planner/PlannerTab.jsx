@@ -2,6 +2,13 @@
 // WHISPERING WISHES — PlannerTab (extracted from App.jsx)
 // Resource income planning and goal tracking
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+// [SECTION INDEX] - Use: grep -n "SECTION:" PlannerTab.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:HELPERS]      Event helpers (getIntroducedDate, get28DayCycle, getActiveEvents)
+// [SECTION:CALENDAR]     AstriteCalendar sub-component
+// [SECTION:PLANNER]      PlannerTab main component (income, goals, saved states)
+// ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Minus, Plus, X } from 'lucide-react';
@@ -15,9 +22,7 @@ import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ASTRITE CALENDAR v9 — Two views: Page Calendar + Chronology
-// ══════════════════════════════════════════════════════════════════════════════
+// [SECTION:HELPERS] ── Event helpers ──────────────────────────────────────────
 
 // 9 colors — one per meaning.
 const EVENT_COLORS = {
@@ -98,6 +103,7 @@ const getActiveEvents = (date) => {
   return result;
 };
 
+// [SECTION:CALENDAR] ── AstriteCalendar sub-component ────────────────────────
 function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -323,10 +329,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [cal, bannerEndDate, activeBanners]);
 
   return (
-    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-    <Card>
-      <CardHeader><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
-      <CardBody className="space-y-3">
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="space-y-3">
 
         {/* ── VIEW 1: Page Calendar ─────────────────────────────────────────── */}
 
@@ -349,6 +352,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           ))}
         </div>
 
+        {/* P7-F002: Hint that days are tappable (shown only when no day selected) */}
+        {!selectedDay && <p className="text-center text-[10px] text-gray-600 -mb-0.5">Tap a day to view events & add notes</p>}
         {/* U6-06: Day grid with arrow key navigation */}
         <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label="Calendar days">
           {rows.map((row, ri) => (
@@ -363,8 +368,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     aria-label={`${d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? ' (today)' : ''}${d.note ? ' (has note)' : ''}`}
                     style={{
                       aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
-                      background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : 'var(--bg-stat)',
-                      border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
+                      background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : d.isBanner ? 'linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03))' : 'var(--bg-stat)',
+                      border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isBanner ? '1px solid rgba(237,175,24,0.15)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
                       boxShadow: isSel ? (d.isToday ? '0 0 10px rgba(237,175,24,0.3)' : '0 0 8px rgba(255,255,255,0.15)') : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
                       transition: 'all var(--transition-fast)',
                     }}>
@@ -386,6 +391,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* V5-05: Standardized 8px indicators */}
         <div className="flex items-center gap-3 justify-center" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03))', border: '1px solid rgba(237,175,24,0.15)', display: 'inline-block' }} />Banner</span>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
         </div>
@@ -400,7 +406,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                 </span>
                 {sel.isDailyDone && <span style={{ fontSize: '10px', color: '#22c55e', marginLeft: '8px' }}>&#x2713; Dailies</span>}
               </div>
-              <button onClick={() => setSelectedDay(null)} className="flex items-center justify-center text-gray-400 hover:text-white transition-colors" style={{ width: '44px', height: '44px' }} aria-label="Close"><X size={14} /></button>
+              <button onClick={() => setSelectedDay(null)} className="modal-close-btn flex items-center justify-center text-gray-400 hover:text-white" style={{ width: '44px', height: '44px' }} aria-label="Close"><X size={14} /></button>
             </div>
 
             {(dailyIncome > 0 || sel.eventAstrite > 0) && !sel.isPast && (
@@ -429,7 +435,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             {!sel.isPast && (
               <div>
                 <div className="flex gap-2">
-                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note..." className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
+                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note…" className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
                   <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: '10px', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
                 </div>
                 {noteInput.length > 70 && <div style={{ fontSize: '9px', color: noteInput.length >= 100 ? '#ef4444' : 'var(--text-disabled)', textAlign: 'right', marginTop: '2px' }}>{noteInput.length}/100</div>}
@@ -555,13 +561,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           </div>
         </div>
 
-      </CardBody>
-    </Card>
     </div>
   );
 }
 
-export default function PlannerTab({
+// [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
+function PlannerTab({
   state,
   dispatch,
   activeBanners,
@@ -635,7 +640,16 @@ export default function PlannerTab({
       <TabBackground id="planner" />
 
       {/* ── 1. Calendar ────────────────────────────────────────────────────── */}
-      <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} />
+      <Card>
+        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('calendar')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('calendar'); } }} aria-expanded={!collapsed.calendar}>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.calendar ? '' : 'rotate-180'}`} />}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
+        </div>
+        {!collapsed.calendar && (
+          <CardBody className="space-y-3">
+            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} />
+          </CardBody>
+        )}
+      </Card>
 
       {/* ── 2. Daily Income ────────────────────────────────────────────────── */}
       <Card>
@@ -750,7 +764,7 @@ export default function PlannerTab({
             {dailyIncome === 0 ? (
               <div className="p-4 text-center rounded-lg" style={{ background: 'var(--bg-stat)' }}>
                 <div className="text-gray-400 text-sm mb-1">No daily income set</div>
-                <div className="text-gray-500 text-xs">Set your Daily Astrite income above.</div>
+                <div className="text-gray-400 text-xs">Set your Daily Astrite income above.</div>
               </div>
             ) : (
             <div className="grid grid-cols-3 gap-2">
@@ -934,3 +948,9 @@ export default function PlannerTab({
     </div>
   );
 }
+
+export default React.memo(PlannerTab, (prev, next) =>
+  prev.state.calc === next.state.calc && prev.state.planner === next.state.planner &&
+  prev.state.eventStatus === next.state.eventStatus && prev.state.bookmarks === next.state.bookmarks &&
+  prev.activeBanners === next.activeBanners && prev.bannerEndDate === next.bannerEndDate
+);

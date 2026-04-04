@@ -6,6 +6,9 @@
 
 import React, { useEffect, useRef, memo } from 'react';
 
+// P5-F005: RAF-throttled resize handler — prevents 100+ canvas reallocations per second during drag
+const throttledResize = (fn) => { let pending = false; const handler = () => { if (pending) return; pending = true; requestAnimationFrame(() => { fn(); pending = false; }); }; handler._original = fn; return handler; };
+
 // Deterministic pseudo-random number generator (used by background animations)
 function seededRandom(seed) { let s = seed; return function() { s = (s * 9301 + 49297) % 233280; return s / 233280; }; }
 
@@ -87,7 +90,8 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       }
     };
     init();
-    window.addEventListener('resize', init);
+    const onResize = throttledResize(init);
+    window.addEventListener('resize', onResize);
 
     let lastFrame = 0;
 
@@ -138,7 +142,7 @@ const BackgroundGlow = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', init);
+      window.removeEventListener('resize', onResize);
       // P11-FIX: Explicitly release buffer canvas backing store memory (Step 7 audit — LOW-3h)
       buf.width = 0;
       buf.height = 0;
@@ -203,7 +207,8 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolut
       }
     };
     init();
-    window.addEventListener('resize', init);
+    const onResize = throttledResize(init);
+    window.addEventListener('resize', onResize);
     const twSpecMul = isFull ? 0.65 : 0.45;
     const twPeakMul = isFull ? 0.18 : 0.12;
     const twAlphaScale = isFull ? 0.6 : 0.45;
@@ -268,7 +273,7 @@ const TriangleMirrorWave = memo(({ oledMode, animationsEnabled = 'on', bgResolut
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', init);
+      window.removeEventListener('resize', onResize);
     };
   }, [oledMode, animationsEnabled, bgResolution, bgFps]);
 
@@ -311,7 +316,8 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
       canvas.style.height = h + 'px';
     };
     init();
-    window.addEventListener('resize', init);
+    const onResize = throttledResize(init);
+    window.addEventListener('resize', onResize);
 
     // Camera: side view with slight top-down, no yaw — diagonal comes from canvas rotation
     const tilt = -28 * Math.PI / 180;
@@ -1095,7 +1101,7 @@ const ResonanceField = memo(({ oledMode, animationsEnabled = 'on', bgResolution,
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', init);
+      window.removeEventListener('resize', onResize);
     };
   }, [oledMode, animationsEnabled, bgResolution, bgFps]);
 
@@ -1153,7 +1159,8 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
       skyCache = null;
     };
     init();
-    window.addEventListener('resize', init);
+    const onResize = throttledResize(init);
+    window.addEventListener('resize', onResize);
 
     // Pseudo-random hash function for deterministic randomness
     const hash = (n) => { const s = Math.sin(n) * 43758.5453; return s - Math.floor(s); };
@@ -3365,7 +3372,7 @@ const Honour = memo(({ oledMode, animationsEnabled = 'on', bgResolution, bgFps }
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', init);
+      window.removeEventListener('resize', onResize);
     };
   }, [oledMode, animationsEnabled, bgResolution, bgFps]);
 

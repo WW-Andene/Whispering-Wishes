@@ -2,6 +2,13 @@
 // WHISPERING WISHES — AnalyticsTab (extracted from App.jsx)
 // Stats, luck rating, trophies, leaderboard, pull history charts
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+// [SECTION INDEX] - Use: grep -n "SECTION:" AnalyticsTab.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:STATS]       Community stats & histogram computation
+// [SECTION:FIREBASE]    Leaderboard & community data (Firebase)
+// [SECTION:RENDER]      JSX output
+// ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
@@ -15,8 +22,9 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 
-export default function AnalyticsTab({
+function AnalyticsTab({
   state,
   dispatch,
   setActiveTab,
@@ -89,6 +97,7 @@ export default function AnalyticsTab({
   const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
   const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
+  // [SECTION:STATS] ── Community stats & histogram computation ────────────────
   const communityStats = useMemo(() => {
     if (!allLeaderboardEntries.length) return null;
     const entries = allLeaderboardEntries;
@@ -128,19 +137,7 @@ export default function AnalyticsTab({
       wep4: wepHist.filter(p => p.rarity === 4).length,
       wep3: wepHist.filter(p => p.rarity === 3).length,
     };
-    const histogramBuckets = {};
-    fiveStars.forEach(p => {
-      if (p.pity > HARD_PITY) {
-        histogramBuckets[`${HARD_PITY+1}+`] = (histogramBuckets[`${HARD_PITY+1}+`] ?? 0) + 1;
-      } else {
-        const bucket = Math.floor((p.pity - 1) / 10) * 10 + 1;
-        const label = `${bucket}-${bucket + 9}`;
-        histogramBuckets[label] = (histogramBuckets[label] ?? 0) + 1;
-      }
-    });
-    const allBucketLabels = Array.from({length: HARD_PITY / 10}, (_, i) => `${i*10+1}-${(i+1)*10}`);
-    if (histogramBuckets['81+']) allBucketLabels.push('81+');
-    allBucketLabels.forEach(b => { if (!histogramBuckets[b]) histogramBuckets[b] = 0; });
+    const { buckets: histogramBuckets, labels: allBucketLabels } = buildPityHistogram(fiveStars, HARD_PITY);
     const histogramStats = fiveStars.length >= 2 ? {
       maxCount: Math.max(...Object.values(histogramBuckets), 1),
       avgPity: fiveStars.length > 0 ? (fiveStars.reduce((sum, p) => sum + p.pity, 0) / fiveStars.length).toFixed(1) : '0',
@@ -157,13 +154,13 @@ export default function AnalyticsTab({
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (state.profile.uid) {
-      hashUidForStorage(state.profile.uid).then(setHashedProfileUid);
+      hashUidForStorage(state.profile.uid).then(setHashedProfileUid).catch(() => setHashedProfileUid(null));
     } else {
       setHashedProfileUid(null);
     }
   }, [state.profile.uid, hashUidForStorage]);
 
-  // ── Callbacks ──────────────────────────────────────────────────────────────
+  // [SECTION:FIREBASE] ── Leaderboard & community data (Firebase) ────────────
   const loadLeaderboard = useCallback(async () => {
     if (leaderboardLoadingRef.current) return;
     leaderboardLoadingRef.current = true;
@@ -355,6 +352,7 @@ export default function AnalyticsTab({
       loadCommunityPulls();
     }
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
+  // [SECTION:RENDER] ── JSX output ───────────────────────────────────────────
   return (
     <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" tabIndex="0">
     <TabErrorBoundary tabName="Stats">
@@ -421,8 +419,8 @@ export default function AnalyticsTab({
                         <p className="text-gray-500">This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).</p>
                       </div>
                       <div className="flex gap-3 pt-1">
-                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-white/5 hover:bg-white/10 text-gray-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
-                        <button className="flex-1 px-3 py-2 rounded text-xs font-medium bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 transition-colors" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
+                        <button className="kuro-btn flex-1" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
+                        <button className="kuro-btn flex-1 active-gold" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
                       </div>
                     </div>
                   </div>
@@ -468,7 +466,7 @@ export default function AnalyticsTab({
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="text-center py-8">
-                                <div className="text-gray-500 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
+                                <div className="text-gray-400 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
                                 <div className="text-gray-500 text-[10px]">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
                               </div>
                             ) : (
@@ -649,7 +647,7 @@ export default function AnalyticsTab({
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
                           {fiveStars.map((p, i) => {
@@ -684,7 +682,7 @@ export default function AnalyticsTab({
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="text-gray-500 text-xs text-center py-4">Import more history to earn trophies</p>
+                      <p className="text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
                     </CardBody>
                   </Card>
                 )}
@@ -723,7 +721,7 @@ export default function AnalyticsTab({
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
                               <div className="text-[10px] font-bold text-white truncate">{trophy.name}</div>
-                              {trophy.desc && <div className="text-[9px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
+                              {trophy.desc && <div className="text-[10px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
                             </div>
                           );
                         })}
@@ -790,7 +788,7 @@ export default function AnalyticsTab({
                         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
                       </CardHeader>
                       <CardBody>
-                        <p className="text-gray-500 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
+                        <p className="text-gray-400 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
                       </CardBody>
                     </Card>
                   );
@@ -959,7 +957,7 @@ export default function AnalyticsTab({
                         : chartBanner === 'weapon' ? statsTabData.weaponHist
                         : chartBanner === 'stdChar' ? statsTabData.stdCharHist
                         : statsTabData.stdWeapHist;
-                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>;
+                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>;
 
                       const groupData = (range) => {
                         const grouped = {};
@@ -1013,7 +1011,7 @@ export default function AnalyticsTab({
                           pulls: data.pulls
                         }));
                       
-                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-500 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>;
+                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>;
 
                       const maxVisible = visibleCount[chartRange];
                       const maxOffset = Math.max(0, allData.length - maxVisible);
@@ -1184,3 +1182,9 @@ export default function AnalyticsTab({
     </div>
   );
 }
+
+export default React.memo(AnalyticsTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.overallStats === next.overallStats &&
+  prev.luckRating === next.luckRating && prev.trophies === next.trophies &&
+  prev.collectionImages === next.collectionImages && prev.FIREBASE_AVAILABLE === next.FIREBASE_AVAILABLE
+);

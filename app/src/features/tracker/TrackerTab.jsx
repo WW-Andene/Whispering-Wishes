@@ -3,7 +3,7 @@
 // Banner tracking with pity counters, category tabs, and banner history archive
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import { BANNER_HISTORY } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -20,7 +20,7 @@ const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'standard', label: 'Standard', color: 'cyan' }),
 ]);
 
-export default function TrackerTab({
+function TrackerTab({
   state,
   dispatch,
   activeBanners,
@@ -46,6 +46,14 @@ export default function TrackerTab({
   const [bannerHistorySearch, setBannerHistorySearch] = useState('');
   const [showPullHistory, setShowPullHistory] = useState(false);
   const [pullHistorySearch, setPullHistorySearch] = useState('');
+  // P5-F003: Debounce search to avoid filtering 2000+ pulls per keystroke
+  const [deferredSearch, setDeferredSearch] = useState('');
+  const searchTimerRef = useRef(null);
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDeferredSearch(pullHistorySearch), 200);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [pullHistorySearch]);
   const [pullHistoryBannerFilter, setPullHistoryBannerFilter] = useState('all');
   const [pullHistoryRarityFilter, setPullHistoryRarityFilter] = useState('all');
 
@@ -64,12 +72,12 @@ export default function TrackerTab({
     let pulls = allPulls;
     if (pullHistoryBannerFilter !== 'all') pulls = pulls.filter(p => p.banner === pullHistoryBannerFilter);
     if (pullHistoryRarityFilter !== 'all') pulls = pulls.filter(p => p.rarity === Number(pullHistoryRarityFilter));
-    if (pullHistorySearch.trim()) {
-      const q = pullHistorySearch.trim().toLowerCase();
+    if (deferredSearch.trim()) {
+      const q = deferredSearch.trim().toLowerCase();
       pulls = pulls.filter(p => p.name?.toLowerCase().includes(q));
     }
     return pulls;
-  }, [allPulls, pullHistoryBannerFilter, pullHistoryRarityFilter, pullHistorySearch]);
+  }, [allPulls, pullHistoryBannerFilter, pullHistoryRarityFilter, deferredSearch]);
 
   return (
           <div role="tabpanel" id="tabpanel-tracker" aria-labelledby="tab-tracker" tabIndex="0">
@@ -85,7 +93,6 @@ export default function TrackerTab({
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
               </button>
             )}
-
             {/* Category Tabs */}
             <Card>
               <CardBody>
@@ -132,9 +139,10 @@ export default function TrackerTab({
                     timerColor="yellow"
                   />
                 )) : (
-                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
-                    <Sparkles size={24} className="mx-auto mb-2 opacity-50" />
-                    No active Resonator banners
+                  <div className="kuro-empty-state text-center py-8">
+                    <Sparkles size={32} className="mx-auto mb-2 text-yellow-500/40" />
+                    <p className="text-gray-300 text-sm font-medium">No active Resonator banners</p>
+                    <p className="text-gray-500 text-[10px] mt-1">Banner data will appear when a new phase starts</p>
                   </div>
                 )}
               </div>
@@ -159,9 +167,10 @@ export default function TrackerTab({
                     timerColor="pink"
                   />
                 )) : (
-                  <div className="kuro-empty-state text-center py-8 text-gray-400 text-sm">
-                    <Sword size={24} className="mx-auto mb-2 opacity-50" />
-                    No active weapon banners
+                  <div className="kuro-empty-state text-center py-8">
+                    <Sword size={32} className="mx-auto mb-2 text-pink-500/40" />
+                    <p className="text-gray-300 text-sm font-medium">No active weapon banners</p>
+                    <p className="text-gray-500 text-[10px] mt-1">Weapon banners rotate each phase</p>
                   </div>
                 )}
               </div>
@@ -306,7 +315,7 @@ export default function TrackerTab({
                         )
                       : BANNER_HISTORY;
                     return filtered.length === 0
-                      ? <div className="text-center text-gray-500 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
+                      ? <div className="text-center text-gray-400 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
                       : filtered.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
@@ -378,7 +387,7 @@ export default function TrackerTab({
                       type="text"
                       value={pullHistorySearch}
                       onChange={e => setPullHistorySearch(e.target.value)}
-                      placeholder="Search by name..."
+                      placeholder="Search by name…"
                       className="kuro-input w-full pl-8 text-xs"
                       aria-label="Filter Convene history by name"
                     />
@@ -412,7 +421,7 @@ export default function TrackerTab({
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
-                    <div className="text-center text-gray-500 text-xs py-6">
+                    <div className="text-center text-gray-400 text-xs py-6">
                       {allPulls.length === 0 ? 'No Convene history. Import your data in the Profile tab.' : 'No Convenes match your filters.'}
                     </div>
                   ) : (
@@ -452,3 +461,9 @@ export default function TrackerTab({
           </div>
   );
 }
+
+export default React.memo(TrackerTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.state.server === next.state.server &&
+  prev.activeBanners === next.activeBanners && prev.collectionImages === next.collectionImages &&
+  prev.visualSettings === next.visualSettings && prev.themeAccent === next.themeAccent
+);

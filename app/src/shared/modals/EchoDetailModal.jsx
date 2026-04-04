@@ -57,11 +57,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} echo details`} centered>
       <div
-        className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden border"
+        className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border"
         style={borderColor ? { borderColor: `${borderColor}80` } : {}}
         onClick={e => e.stopPropagation()}
       >
-       <div className="overflow-y-auto max-h-full">
+       <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
         <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
           <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
@@ -70,7 +70,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             <EchoImage src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" noBgProcess={data?.noBgProcess} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-all" aria-label="Close echo details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close echo details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -111,7 +111,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-[9px] text-gray-400">DMG</span>
+                <span className="text-[10px] text-gray-400">DMG</span>
                 <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
               </div>
             )}

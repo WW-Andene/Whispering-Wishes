@@ -42,19 +42,19 @@ import { CharacterDetailModal } from './shared/modals/CharacterDetailModal.jsx';
 import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
 import { EchoDetailModal } from './shared/modals/EchoDetailModal.jsx';
 import { TabButton } from './shared/components/Card.jsx';
-import { AppErrorBoundary, TabErrorBoundary, TabLoadingSkeleton } from './shared/errors/ErrorBoundaries.jsx';
+import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
 import { BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour } from './shared/backgrounds/Backgrounds.jsx';
 import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // --- Feature tabs ---
 // D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting
 import EventsTab from './features/events/EventsTab.jsx';
 import TrackerTab from './features/tracker/TrackerTab.jsx';
-const PlannerTab = React.lazy(() => import('./features/planner/PlannerTab.jsx'));
-const AnalyticsTab = React.lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
-const CalculatorTab = React.lazy(() => import('./features/calculator/CalculatorTab.jsx'));
-const CollectionTab = React.lazy(() => import('./features/collection/CollectionTab.jsx'));
-const TeamsTab = React.lazy(() => import('./features/teams/TeamsTab.jsx'));
-const ProfileTab = React.lazy(() => import('./features/profile/ProfileTab.jsx'));
+import PlannerTab from './features/planner/PlannerTab.jsx';
+import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
+import CalculatorTab from './features/calculator/CalculatorTab.jsx';
+import CollectionTab from './features/collection/CollectionTab.jsx';
+import TeamsTab from './features/teams/TeamsTab.jsx';
+import ProfileTab from './features/profile/ProfileTab.jsx';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 // 8.1 fix: Fetch wrapper with AbortController timeout - fails fast on network loss
@@ -72,15 +72,14 @@ const fetchWithTimeout = (url, options = {}) => {
     .finally(() => clearTimeout(timeoutId));
 };
 const DEBOUNCE_MS = 300;
-const FOCUS_DELAY_MS = 0;
 const CALC_DEFER_MS = 150;
-// Admin lockout constants moved to ProfileTab.jsx (escalating lockout system)
-const ADMIN_TAP_TIMEOUT_MS = 1500;
 const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
-const MAX_USERNAME_LENGTH = 24;
-const MAX_BOOKMARK_NAME_LENGTH = 30;
-const ADMIN_SALT = 'whispering-wishes-v3-admin';
 import { constantTimeCompare } from './utils/constantTimeCompare.js'; // I4-01: deduplicated
+import {
+  VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY,
+  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, MAX_BOOKMARK_NAME_LENGTH,
+  ALLOWED_IMAGE_HOSTS, isAllowedImageUrl, sanitizeImageUrl,
+} from './shared/constants/appConstants.js';
 const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
@@ -89,11 +88,7 @@ const MAX_ZOOM = 300;
 const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || null;
 const FIREBASE_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || null;
 const FIREBASE_AVAILABLE = !!(FIREBASE_DB && FIREBASE_API_KEY);
-// localStorage keys - bump the suffix when the schema changes
-// v3 = visual settings were restructured in app v3.0; others haven't changed since v1
-const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
-const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
-const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
+// localStorage keys, admin salt, and image allowlist imported from shared/constants/appConstants.js
 const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   fadePosition: 50,
   fadeIntensity: 100,
@@ -123,21 +118,6 @@ const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'weapon', label: 'Weapons', color: 'pink' }),
   Object.freeze({ key: 'standard', label: 'Standard', color: 'cyan' }),
 ]);
-// P15-FIX: MEDIUM-3 - Domain allowlist for custom image URLs (single source of truth)
-const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
-const isAllowedImageUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'https:') return false;
-    return ALLOWED_IMAGE_HOSTS.some(host =>
-      parsed.hostname === host || parsed.hostname.endsWith('.' + host)
-    );
-  } catch {
-    return false;
-  }
-};
-const sanitizeImageUrl = (url, fallback = '') => isAllowedImageUrl(url) ? url : fallback;
 
 import { silentCatch } from './utils/silentCatch.js';
 
@@ -345,8 +325,7 @@ function WhisperingWishesInner() {
       document.title = 'Whispering Wishes';
       
       // Web manifest (Android home screen) - dark background icon
-      // HIGH-4: TODO - Generate icon-192x192.png, icon-512x512.png, and icon-maskable-512x512.png
-      // from favicon.svg (gold "W" on #080c14). Currently using dynamic canvas-generated PNG.
+      // Icons: icon-192x192.png, icon-512x512.png, icon-maskable-512x512.png in /public
       const manifest = {
         name: 'Whispering Wishes',
         short_name: 'Whispering Wishes',
@@ -1120,11 +1099,25 @@ function WhisperingWishesInner() {
   // Cloud Backup: save full convene history to Firebase RTDB
   const handleCloudBackup = useCallback(async () => {
     const token = await getGoogleAuth();
-    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    if (!token || !googleUser) {
+      toast?.addToast?.('Session expired — please sign in again', 'error');
+      handleGoogleSignOut();
+      return;
+    }
     setCloudBackupStatus('saving');
     try {
+      // P4-F002: Include full state + auxiliary data in cloud backup (matches file export)
+      const aux = {};
+      try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
+      try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
       const backupData = {
-        profile: stateRef.current.profile,
+        state: stateRef.current,
+        profile: stateRef.current.profile, // keep for backward compat with older restores
+        ...(Object.keys(aux).length > 0 ? { aux } : {}),
         timestamp: Date.now(),
         version: APP_VERSION,
         pullCount: (stateRef.current.profile.featured?.history?.length || 0)
@@ -1138,6 +1131,12 @@ function WhisperingWishesInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backupData),
       });
+      if (res.status === 401) {
+        toast?.addToast?.('Session expired — please sign in again', 'error');
+        handleGoogleSignOut();
+        setCloudBackupStatus('idle');
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setCloudBackupStatus('done');
       toast?.addToast?.(`Backed up ${backupData.pullCount} pulls to cloud`, 'success');
@@ -1147,15 +1146,27 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, handleGoogleSignOut]);
 
   // Cloud Restore: load convene history from Firebase RTDB
   const handleCloudRestore = useCallback(async () => {
-    const token = await getGoogleAuth();
-    if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
+    let token = await getGoogleAuth();
+    if (!token || !googleUser) {
+      // Session expired (tokens lost after reload) — prompt re-sign-in
+      toast?.addToast?.('Session expired — please sign in again', 'error');
+      handleGoogleSignOut();
+      return;
+    }
     setCloudBackupStatus('loading');
     try {
       const res = await firebaseFetch(`user-history/${googleUser.uid}`, token);
+      if (res.status === 401) {
+        // Token invalid — clear stale session and prompt re-sign-in
+        toast?.addToast?.('Session expired — please sign in again', 'error');
+        handleGoogleSignOut();
+        setCloudBackupStatus('idle');
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data || !data.profile) {
@@ -1171,7 +1182,39 @@ function WhisperingWishesInner() {
       });
       if (!doRestore) { setCloudBackupStatus('idle'); return; }
       // F-007: Sanitize cloud-restored data to prevent state injection from compromised Firebase
-      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
+      // P4-F002: Support full state + aux restore (backward compat: old backups have profile only)
+      if (data.state && typeof data.state === 'object') {
+        dispatch({ type: 'LOAD_STATE', state: sanitizeStateObj(data.state) });
+      } else {
+        dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
+      }
+      // Restore auxiliary data if present
+      if (data.aux && typeof data.aux === 'object') {
+        try {
+          if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+            localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+            setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+          }
+          if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+            localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+            setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+          }
+          if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+            localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+            setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+          }
+          if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+            localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+            setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+          }
+          if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
+            localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+          }
+          if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+            localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
+          }
+        } catch {}
+      }
       setCloudBackupStatus('done');
       toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
@@ -1180,7 +1223,16 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch, handleGoogleSignOut]);
+
+  // Cloud Delete: remove user's cloud backup from Firebase RTDB
+  const handleCloudDelete = useCallback(async () => {
+    const token = await getGoogleAuth();
+    if (!token || !googleUser) return; // silently skip if not signed in
+    try {
+      await firebaseFetch(`user-history/${googleUser.uid}`, token, { method: 'DELETE' });
+    } catch { /* best-effort — local reset already happened */ }
+  }, [getGoogleAuth, googleUser, firebaseFetch]);
 
   // Anonymous presence system - writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
@@ -1256,7 +1308,23 @@ function WhisperingWishesInner() {
   }, []);
 
   // Trophies/Badges computation (logic in core/computeTrophies.js)
-  const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile, overallStats, trophyOverrides]);
+  // P5-F001: Depend on actual history arrays, not state.profile (which is a new object on every dispatch)
+  const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history, state.profile.profilePic, overallStats, trophyOverrides]);
+
+  // P7-F005: Detect newly unlocked trophies and celebrate
+  const prevTrophyIdsRef = useRef(null);
+  useEffect(() => {
+    if (!trophies?.list) { prevTrophyIdsRef.current = null; return; }
+    const currentIds = new Set(trophies.list.map(t => t.id));
+    if (prevTrophyIdsRef.current !== null) {
+      const newTrophies = trophies.list.filter(t => !prevTrophyIdsRef.current.has(t.id));
+      if (newTrophies.length > 0) {
+        const names = newTrophies.map(t => t.name).join(', ');
+        toast?.addToast?.(`🏆 Trophy unlocked: ${names}`, 'success');
+      }
+    }
+    prevTrophyIdsRef.current = currentIds;
+  }, [trophies, toast]);
 
   // Luck rating
   const luckRating = useMemo(() => calculateLuckRating(overallStats?.avgPity, overallStats?.fiveStars), [overallStats]);
@@ -1325,7 +1393,11 @@ function WhisperingWishesInner() {
     'Rover-Spectro': 'Rover', 'Rover-Havoc': 'Rover', 'Rover-Aero': 'Rover',
   }), []);
 
+  const importInFlightRef = useRef(false);
   const processImportData = useCallback(async (jsonString) => {
+    // P2-F006: Prevent duplicate concurrent imports (race condition guard)
+    if (importInFlightRef.current) { toast?.addToast?.('Import already in progress', 'warning'); return false; }
+    importInFlightRef.current = true;
     try {
       // P10-FIX: Check raw string size before parsing to prevent expansion attacks (Step 6 audit)
       if (jsonString.length > MAX_IMPORT_SIZE_MB * 1024 * 1024) {
@@ -1383,10 +1455,8 @@ function WhisperingWishesInner() {
         throw new Error('No Convene data found in import. If this is a backup file, it should contain a "state" key.');
       }
 
-      // Show diagnostic log if available (from direct API fetch)
+      // Store diagnostic log if available (from direct API fetch) for admin panel
       if (data._diagnostic) {
-        console.log('[Import Diagnostic]', data._diagnostic);
-        // Store for admin panel
         try { localStorage.setItem('ww-import-diagnostic', JSON.stringify({ timestamp: new Date().toISOString(), log: data._diagnostic, pullCount: pulls.length })); } catch {}
       }
 
@@ -1594,6 +1664,8 @@ function WhisperingWishesInner() {
       const msg = isUserError ? err.message : 'Could not process this file. Please check the format and try again.';
       toast?.addToast?.('Import failed: ' + msg, 'error');
       return false;
+    } finally {
+      importInFlightRef.current = false;
     }
   }, [toast, dispatch, IMPORT_NAME_ALIASES]);
 
@@ -1685,7 +1757,7 @@ function WhisperingWishesInner() {
           </>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
-          <div className="header-top flex items-center justify-between py-2.5">
+          <div className="header-top flex items-center justify-between py-1.5">
             <div className="flex items-center gap-2.5">
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
@@ -1698,7 +1770,7 @@ function WhisperingWishesInner() {
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute inset-0 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
+                <div className="relative w-8 h-8 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
                 {pwa?.canInstall && (
@@ -1707,9 +1779,9 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px', padding: '6px 12px' } : undefined}>
-                <h1 className="text-white font-semibold text-sm tracking-wide">Whispering Wishes</h1>
-                <p className="text-[10px] tracking-wider uppercase" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
+              <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px', padding: '4px 12px' } : undefined}>
+                <h1 className="text-white font-semibold text-sm tracking-wide leading-tight">Whispering Wishes</h1>
+                <p className="text-[10px] tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-1.5">
@@ -1721,30 +1793,36 @@ function WhisperingWishesInner() {
               </button>
             </div>
           </div>
-          <nav ref={tabNavRef} className="relative flex justify-between - mb-px overflow-x-auto scrollbar-hide pb-1" style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)', WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
-              const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
-              const idx = tabs.indexOf(activeTab);
-              let newTab;
-              if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
-              else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
-              if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), FOCUS_DELAY_MS); }
-            }}>
-            <div className="tab-indicator" />
-            <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
-            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
-            <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
-            <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
-            <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
-            <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
-            <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
-            <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
-          </nav>
-          {/* P15-FIX: LOW-9 - Visual swipe indicator when swipe navigation is enabled */}
-          {visualSettings.swipeNavigation && <div className="swipe-hint text-center text-[10px] text-gray-500 py-0.5" aria-hidden="true">← swipe to navigate →</div>}
         </div>
       </header>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 py-3 space-y-3 w-full" role="main">
+      {/* Floating bottom navigation bar */}
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex justify-between overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+          const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
+          const idx = tabs.indexOf(activeTab);
+          let newTab;
+          if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
+          else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
+          if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
+        }}>
+        {activeTheme && (
+          <>
+            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.5, pointerEvents: 'none' }} />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(8,12,20,0.85), ${themeAccent}15, rgba(8,12,20,0.85))`, pointerEvents: 'none' }} aria-hidden="true" />
+          </>
+        )}
+        <div className="tab-indicator" />
+        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
+        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
+        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
+        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
+        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
+        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
+        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
+        <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
+      </nav>
+
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 pb-20 space-y-3 w-full" role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
@@ -1753,7 +1831,6 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && (
           <TabErrorBoundary tabName="Tracker">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <TrackerTab
                 state={state}
                 dispatch={dispatch}
@@ -1766,14 +1843,13 @@ function WhisperingWishesInner() {
                 confirm={confirm}
                 setActiveTab={setActiveTab}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && (
           <TabErrorBoundary tabName="Events">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <EventsTab
                 state={state}
                 dispatch={dispatch}
@@ -1782,23 +1858,21 @@ function WhisperingWishesInner() {
                 visualSettings={visualSettings}
                 toast={toast}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && (
           <TabErrorBoundary tabName="Calculator">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <CalculatorTab state={state} dispatch={dispatch} />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && (
           <TabErrorBoundary tabName="Planner">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <PlannerTab
                 state={state}
                 dispatch={dispatch}
@@ -1807,15 +1881,13 @@ function WhisperingWishesInner() {
                 toast={toast}
                 confirm={confirm}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
-
 
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && (
           <TabErrorBoundary tabName="Analytics">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <AnalyticsTab
                 state={state}
                 dispatch={dispatch}
@@ -1833,13 +1905,13 @@ function WhisperingWishesInner() {
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
                 FIREBASE_AVAILABLE={FIREBASE_AVAILABLE}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
+
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && (
           <TabErrorBoundary tabName="Collection">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <CollectionTab
                 state={state}
                 collectionData={collectionData}
@@ -1856,14 +1928,13 @@ function WhisperingWishesInner() {
                 refreshImages={refreshImages}
                 handleSetProfilePic={handleSetProfilePic}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-TEAMS] */}
         {activeTab === 'teams' && (
           <TabErrorBoundary tabName="Teams">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <TeamsTab
                 state={state}
                 dispatch={dispatch}
@@ -1876,16 +1947,13 @@ function WhisperingWishesInner() {
                 toast={toast}
                 confirm={confirm}
               />
-            </React.Suspense>
+
           </TabErrorBoundary>
         )}
 
-
-        {/* [SECTION:TAB-PROFILE] — keep mounted when admin mini panel is open so portal survives tab switches */}
-        {(activeTab === 'profile' || (showAdminPanel && adminMiniMode)) && (
-          <div style={activeTab !== 'profile' ? { display: 'none' } : undefined}>
+        {/* [SECTION:TAB-PROFILE] */}
+        {activeTab === 'profile' && (
           <TabErrorBoundary tabName="Profile">
-            <React.Suspense fallback={<TabLoadingSkeleton />}>
               <ProfileTab
             state={state}
             dispatch={dispatch}
@@ -1935,11 +2003,11 @@ function WhisperingWishesInner() {
             handleGoogleSignOut={handleGoogleSignOut}
             handleCloudBackup={handleCloudBackup}
             handleCloudRestore={handleCloudRestore}
+            handleCloudDelete={handleCloudDelete}
             cloudBackupStatus={cloudBackupStatus}
           />
-            </React.Suspense>
+
           </TabErrorBoundary>
-          </div>
         )}
 
       </main>
@@ -2026,7 +2094,7 @@ function WhisperingWishesInner() {
               <textarea
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
-                placeholder="Paste backup JSON here..."
+                placeholder="Paste backup JSON here…"
                 className="kuro-input w-full h-20 text-[10px] font-mono"
                 aria-label="Paste backup data to restore"
               />

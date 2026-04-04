@@ -1,6 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — CalculatorTab (extracted from App.jsx)
+// Gacha probability calculator with banner selection, pity input, resource split
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+// [SECTION INDEX] - Use: grep -n "SECTION:" CalculatorTab.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:CALC]         Deferred calculation & astrite allocation
+// [SECTION:RENDER]       JSX output
+// ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/constants.js';
@@ -14,10 +21,10 @@ import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
+import { MAX_BOOKMARK_NAME_LENGTH } from '../../shared/constants/appConstants.js';
 const CALC_DEFER_MS = 150;
-const MAX_BOOKMARK_NAME_LENGTH = 30;
 
-export default function CalculatorTab({ state, dispatch }) {
+function CalculatorTab({ state, dispatch }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [bookmarkName, setBookmarkName] = useState('');
@@ -36,6 +43,7 @@ export default function CalculatorTab({ state, dispatch }) {
   // ── Deferred calc (debounced DP computation) ─────────────────────────────
   // P15-FIX: MEDIUM-16 — Initial deferredCalc is null to defer first DP computation
   // until after first paint, preventing jank on calculator tab open.
+  // [SECTION:CALC] ── Deferred calculation & astrite allocation ───────────────
   const [deferredCalc, setDeferredCalc] = useState(null);
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
@@ -140,6 +148,7 @@ export default function CalculatorTab({ state, dispatch }) {
     };
   }, [effectiveCalc.selectedBanner, effectiveCalc.bannerCategory, charStats, weapStats, stdCharStats, stdWeapStats]);
 
+  // [SECTION:RENDER] ── JSX output ───────────────────────────────────────────
   return (
     <>
           <div role="tabpanel" id="tabpanel-calculator" aria-labelledby="tab-calculator" tabIndex="0">
@@ -253,9 +262,9 @@ export default function CalculatorTab({ state, dispatch }) {
                     <span className="text-gray-600 text-[10px]">Max {MAX_ASTRITE.toLocaleString('en-US')}</span>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-gold" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('astrite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Astrite">Clear</button>
+                      <button onClick={() => setCalc('astrite', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Astrite">Clear</button>
                     </div>
                   </div>
                   <div>
@@ -263,9 +272,9 @@ export default function CalculatorTab({ state, dispatch }) {
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('lunite', clamped); }} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('lunite', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Lunite">Clear</button>
+                      <button onClick={() => setCalc('lunite', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Lunite">Clear</button>
                     </div>
                   </div>
                   {(() => {
@@ -336,7 +345,7 @@ export default function CalculatorTab({ state, dispatch }) {
                         </div>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="10" value={currentPriority}
+                        type="range" min="0" max="100" step="5" value={currentPriority}
                         onChange={e => setCalc(priorityKey, +e.target.value)}
                         className="kuro-slider priority-slider w-full"
                         aria-label={`Astrite allocation: ${currentPriority}% Resonator, ${100 - currentPriority}% Weapon`}
@@ -462,7 +471,7 @@ export default function CalculatorTab({ state, dispatch }) {
           <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name..." maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name…" maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
               <div className="text-gray-300 text-[10px]">
                 <p>Banner: {state.calc.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {state.calc.selectedBanner === 'char' ? 'Resonator' : state.calc.selectedBanner === 'weap' ? 'Weapon' : 'Both'}</p>
                 <p>Astrite: {(+state.calc.astrite || 0).toLocaleString('en-US')} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
@@ -477,3 +486,8 @@ export default function CalculatorTab({ state, dispatch }) {
     </>
   );
 }
+
+// React.memo: only re-render when calc or bookmarks state changes (not profile, events, etc.)
+export default React.memo(CalculatorTab, (prev, next) =>
+  prev.state.calc === next.state.calc && prev.state.bookmarks === next.state.bookmarks && prev.dispatch === next.dispatch
+);

@@ -15,15 +15,22 @@ A Wuthering Waves Convene (gacha) companion app.
 - React 18
 - Vite
 - Tailwind CSS
-- Recharts (charts)
 - Lucide React (icons)
+- Native SVG charts
 
 ## Project Structure
 ```
 src/
-  App.jsx      - Main application (all components)
-  main.jsx     - Entry point
-  index.css    - Tailwind imports
+  App.jsx              - Main application (~2300 lines)
+  main.jsx             - Entry point
+  index.css            - Tailwind imports
+  core/                - Reducer, storage, calc engine, trophies
+  data/                - Characters, weapons, echoes, banners, constants
+  features/            - Tab components (tracker, events, calculator, planner, analytics, collection, teams, profile)
+  shared/              - Reusable components, modals, backgrounds, utils
+  providers/           - Toast, Confirm, FocusTrap, PWA, KuroStyles, Onboarding
+  hooks/               - Custom hooks (useImageFraming)
+  utils/               - Helpers, importers, i18n
 ```
 
 ## Game Constants
@@ -35,7 +42,7 @@ src/
 - Weapon Banner: 100% featured
 
 ## Notes for AI Editors
-- The main code is in `src/App.jsx` (3700 lines)
+- The main code is in `src/App.jsx` (~2300 lines)
 - Use "Convenes" not "pulls" in UI text
 - Use "Resonators" not "characters" (capitalized)
 - Don't change gacha rate calculations

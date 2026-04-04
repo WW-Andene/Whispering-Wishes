@@ -20,11 +20,14 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 
-// Module-level constants (copied from App.jsx — profile/admin specific)
-const MAX_USERNAME_LENGTH = 24;
+import {
+  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
+  TROPHY_OVERRIDES_KEY, ALLOWED_IMAGE_HOSTS, isAllowedImageUrl,
+} from '../../shared/constants/appConstants.js';
 const MAX_ADMIN_ATTEMPTS = 3;
 // Escalating lockout: 24h → 1 week → 1 month → permanent ban (after 3 lockouts)
 const LOCKOUT_ESCALATION = [
@@ -33,7 +36,6 @@ const LOCKOUT_ESCALATION = [
   30 * 24 * 60 * 60 * 1000, // 3rd lockout: 1 month
 ];
 const MAX_LOCKOUTS_BEFORE_BAN = 3;
-const ADMIN_TAP_TIMEOUT_MS = 1500;
 const formatLockoutRemaining = (ms) => {
   const d = Math.floor(ms / 86400000);
   const h = Math.floor((ms % 86400000) / 3600000);
@@ -41,27 +43,14 @@ const formatLockoutRemaining = (ms) => {
   if (d > 0) return `${d}d ${h}h`;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 };
-const ADMIN_SALT = 'whispering-wishes-v3-admin';
-const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
-const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 const currentYear = new Date().getFullYear();
 import { silentCatch } from '../../utils/silentCatch.js';
 import { constantTimeCompare } from '../../utils/constantTimeCompare.js'; // I4-01: deduplicated
-const isAllowedImageUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'https:') return false;
-    return ALLOWED_IMAGE_HOSTS.some(host =>
-      parsed.hostname === host || parsed.hostname.endsWith('.' + host)
-    );
-  } catch { return false; }
-};
 // DEFAULT_VISUAL_SETTINGS received as prop from App.jsx (canonical source)
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
-export default function ProfileTab({
+function ProfileTab({
   // Core state
   state,
   dispatch,
@@ -119,10 +108,11 @@ export default function ProfileTab({
   adminMiniMode, setAdminMiniMode,
   // Google Auth + Cloud Backup
   googleUser, handleGoogleSignIn, handleGoogleSignOut,
-  handleCloudBackup, handleCloudRestore, cloudBackupStatus,
+  handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
 }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
+  const [aboutSections, setAboutSections] = useState({});
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
   // ── Admin state (showAdminPanel + adminMiniMode from props — survives tab switches) ──
@@ -513,19 +503,7 @@ export default function ProfileTab({
 
     const fiveStarPulls = [...charHist, ...weapHist].filter(p => p.rarity === 5 && p.pity > 0);
 
-    const histBuckets = {};
-    fiveStarPulls.forEach(p => {
-      if (p.pity > 80) {
-        histBuckets['81+'] = (histBuckets['81+'] ?? 0) + 1;
-      } else {
-        const b = Math.floor((p.pity - 1) / 10) * 10 + 1;
-        histBuckets[`${b}-${b + 9}`] = (histBuckets[`${b}-${b + 9}`] ?? 0) + 1;
-      }
-    });
-
-    const histLabels = Array.from({ length: 8 }, (_, i) => `${i * 10 + 1}-${(i + 1) * 10}`);
-    if (histBuckets['81+']) histLabels.push('81+');
-    histLabels.forEach(b => { if (!histBuckets[b]) histBuckets[b] = 0; });
+    const { buckets: histBuckets, labels: histLabels } = buildPityHistogram(fiveStarPulls);
 
     const histSummary = fiveStarPulls.length >= 2 ? {
       max: Math.max(...Object.values(histBuckets), 1),
@@ -796,7 +774,7 @@ export default function ProfileTab({
       histLabels.forEach((lab,i)=>{
         const cnt=histBuckets[lab]||0,bh=histSummary.max>0?Math.max(5,(cnt/histSummary.max)*area):5;
         const bx2=hx+i*(bw2+bg2),by2=hy+area-bh;
-        const bucket=parseInt(lab)||0;
+        const bucket=parseInt(lab, 10)||0;
         const bc=bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
         // Semi-transparent gradient fill with outer glow (single fill, no stacking)
         ctx.save();ctx.shadowColor=bc+'50';ctx.shadowBlur=12;
@@ -1062,7 +1040,7 @@ export default function ProfileTab({
                     type="text"
                     value={state.profile.username}
                     onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
-                    placeholder="Enter your name..."
+                    placeholder="Enter your name…"
                     maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />
@@ -1224,7 +1202,7 @@ export default function ProfileTab({
                     aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()} — click to switch to ${visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF'}`}
                     title={`Currently: ${visualSettings.animationsEnabled.toUpperCase()}. Click to cycle.`}
                   >
-                    <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold tracking-wide text-white/80 pointer-events-none select-none">
+                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold tracking-wide text-white/80 pointer-events-none select-none">
                       {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
                     </span>
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[28px]' : 'left-[52px]'}`} />
@@ -1338,7 +1316,7 @@ export default function ProfileTab({
                       >
                         <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <span className="absolute bottom-0.5 left-1 text-white text-[9px] font-medium drop-shadow-lg">{t.name}</span>
+                        <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
                         {visualSettings.theme === t.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
                       </button>
                     ))}
@@ -1402,7 +1380,7 @@ export default function ProfileTab({
                 {googleUser ? (
                   <>
                     <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--bg-stat)' }}>
-                      {googleUser.photoUrl && <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />}
+                      {googleUser.photoUrl ? <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" onError={e => { e.target.style.display = 'none'; }} /> : <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-xs font-bold">{(googleUser.displayName || 'U')[0]}</div>}
                       <div className="flex-1 min-w-0">
                         <div style={{ color: 'var(--text-heading)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
                         <div style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
@@ -1446,7 +1424,17 @@ export default function ProfileTab({
                   <Download size={14} /> Export Backup
                 </button>
                 <div className="border-t border-red-900/30 mt-4 pt-3">
-                  <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: 'Are you sure you want to reset ALL data?\nThis cannot be undone.', confirmLabel: 'Reset', destructive: true })) { haptic.warning(); dispatch({ type: 'RESET' }); toast?.addToast?.('All data reset!', 'info'); } }} className="kuro-btn w-full py-2 active-red">
+                  <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: `Are you sure you want to reset ALL data?${googleUser ? '\nThis includes your cloud backup.' : ''}\nThis cannot be undone.`, confirmLabel: 'Reset', destructive: true })) {
+                    haptic.warning();
+                    dispatch({ type: 'RESET' });
+                    // P4-F001: Clear ALL auxiliary localStorage keys on reset
+                    const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-calendar-notes', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id'];
+                    auxKeys.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+                    // Delete cloud backup if signed in
+                    if (handleCloudDelete) handleCloudDelete();
+                    if (handleGoogleSignOut) handleGoogleSignOut();
+                    toast?.addToast?.('All data reset!', 'info');
+                  } }} className="kuro-btn w-full py-2 active-red">
                     Reset All Data
                   </button>
                 </div>
@@ -1461,53 +1449,117 @@ export default function ProfileTab({
                   <h4 className="text-gray-100 font-bold text-sm">Whispering Wishes</h4>
                   <p className="text-gray-500 text-[10px]">Version {APP_VERSION}</p>
                 </div>
-                
+
                 <div className="text-center">
                   <p className="text-gray-400 text-[10px] mb-1">Questions, issues, or feedback?</p>
-                  <a 
-                    href="mailto:whisperingwishes.app@gmail.com" 
-                    className="text-yellow-400 text-xs hover:text-yellow-300 transition-colors underline"
+                  <a
+                    href="mailto:whisperingwishes.app@gmail.com"
+                    className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors underline"
                   >
                     whisperingwishes.app@gmail.com
                   </a>
                 </div>
-                
+
+                <p className="text-center text-[10px] text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+
                 <div className="kuro-divider" />
-                
-                <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">Disclaimer</p>
-                  <p>Whispering Wishes is an unofficial fan-made tool and is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
-                  <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024-{currentYear}. All rights reserved.</p>
-                </div>
-                
-                <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">Data & Privacy</p>
-                  <p>Most data is stored locally on your device using browser storage. Your Convene history, calculator settings, and app preferences remain private and under your control.</p>
-                  <p><strong className="text-gray-400">Leaderboard:</strong> If you choose to submit your score, your generated user ID, average pity, Convene count, 50/50 win/loss stats, and owned 5★ items are sent to a shared database and displayed publicly in the leaderboard rankings. This data is pseudonymous (linked to a randomly generated ID). You can opt out by simply not submitting your score.</p>
-                  <p>This app does not require any special device permissions. Data import relies on files you manually provide or URLs from the game.</p>
-                </div>
-                
-                <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">Third-Party Services</p>
-                  <p>This app may reference third-party tools such as WuWa Tracker. We are not affiliated with these services and are not responsible for their data handling or availability.</p>
-                </div>
-                
-                <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">Data Sources & Attribution</p>
-                  <p>Banner schedules, event timings, and countdown data are sourced from:</p>
-                  <ul className="list-disc list-inside ml-2 space-y-0.5">
-                    <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> - event timeline and pity tracking</li>
-                    <li><a href="https://wuthering-countdown.gengamer.in" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">GenGamer Countdown</a> - banner countdowns</li>
-                  </ul>
-                  <p className="mt-1">We thank these community resources for providing accurate timing data.</p>
-                </div>
-                
-                <div className="space-y-2 text-[10px] text-gray-400">
-                  <p className="font-medium text-gray-400">License</p>
-                  <p>This tool is provided "as is" without warranty of any kind. Use at your own discretion. The developers are not responsible for any issues arising from the use of this application.</p>
-                </div>
-                
-                <p className="text-center text-[10px] text-gray-500 pt-2">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+
+                {/* ── COLLAPSIBLE LEGAL SECTIONS ──────────────── */}
+                {[
+                  { key: 'disclaimer', label: 'Disclaimer', content: (
+                    <div className="space-y-1.5">
+                      <p>Whispering Wishes is an <strong className="text-gray-300">unofficial fan-made tool</strong>. It is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
+                      <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024–{currentYear}.</p>
+                    </div>
+                  )},
+                  { key: 'privacy', label: 'Privacy Policy', content: (
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-300">Data stored on your device</p>
+                        <p>Convene history, calculator settings, team builds, planner notes, and visual preferences are stored <strong className="text-gray-300">locally</strong> in your browser (localStorage). This data never leaves your device unless you explicitly use Cloud Backup or the Leaderboard.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-300">Data sent online</p>
+                        <ul className="space-y-1.5 ml-1">
+                          <li><strong className="text-gray-300">Google Sign-In</strong> — If you sign in, we receive your display name, profile picture, and a unique ID. We do <em>not</em> store your email.</li>
+                          <li><strong className="text-gray-300">Cloud Backup</strong> — Your Convene history is stored in Firebase under your Google user ID. Only you can read or write your own backup.</li>
+                          <li><strong className="text-gray-300">Leaderboard</strong> — Opt-in. Your hashed user ID (not your real game UID), average pity, pull count, 50/50 stats, and owned 5★ items are displayed publicly.</li>
+                          <li><strong className="text-gray-300">Active users</strong> — An anonymous heartbeat (timestamp only) is sent every 60 seconds. It expires automatically after 2 minutes.</li>
+                        </ul>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-300">Permissions</p>
+                        <p><strong className="text-gray-300">Camera</strong> — requested only when you use the Convene URL scanner to photograph your screen. The image is processed for OCR and is not stored.</p>
+                        <p>No other device permissions (microphone, location, etc.) are used.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-300">Third-party services</p>
+                        <ul className="space-y-1 ml-1">
+                          <li><strong className="text-gray-300">Google Identity Services</strong> — Sign-In authentication. Google's privacy policy applies.</li>
+                          <li><strong className="text-gray-300">Firebase (Google)</strong> — Cloud storage for backups, leaderboard, and presence.</li>
+                          <li><strong className="text-gray-300">Groq API</strong> — Server-side screenshot OCR. Images are processed and discarded, never stored.</li>
+                          <li><strong className="text-gray-300">Wuthering Waves API</strong> — Proxied to fetch your Convene history. We do not log requests.</li>
+                        </ul>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-300">Tracking & cookies</p>
+                        <p>This app does not use analytics, advertising trackers, cookies, or fingerprinting. No personal data is sold or shared with third parties.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-300">How to delete your data</p>
+                        <ul className="space-y-1 ml-1">
+                          <li><strong className="text-gray-300">All data (local + cloud)</strong> — Use the "Reset All Data" button below. If you are signed in with Google, this also deletes your cloud backup and signs you out.</li>
+                          <li><strong className="text-gray-300">Local data only</strong> — Clear your browser's site data for this domain.</li>
+                          <li><strong className="text-gray-300">Leaderboard removal</strong> — Contact <a href="mailto:whisperingwishes.app@gmail.com" className="text-cyan-400 hover:underline">whisperingwishes.app@gmail.com</a> with your leaderboard ID.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )},
+                  { key: 'terms', label: 'Terms of Use', content: (
+                    <div className="space-y-2">
+                      <p>By using Whispering Wishes you agree to the following:</p>
+                      <ul className="space-y-1.5 ml-1">
+                        <li><strong className="text-gray-300">Personal use only</strong> — This tool is for personal, non-commercial use to manage your own game data.</li>
+                        <li><strong className="text-gray-300">No abuse</strong> — Do not use the API proxy, OCR, or cloud features for automated scraping, mass requests, or anything unrelated to your personal game data.</li>
+                        <li><strong className="text-gray-300">Your responsibility</strong> — You are responsible for your Google account and game credentials. We are not liable for data loss or unauthorized access.</li>
+                        <li><strong className="text-gray-300">Leaderboard</strong> — By submitting, you consent to your pseudonymous stats being displayed publicly. Offensive usernames may be removed.</li>
+                        <li><strong className="text-gray-300">No warranty</strong> — Provided "as is". We do not guarantee uptime, accuracy, or availability. Features may change or be removed.</li>
+                        <li><strong className="text-gray-300">Unofficial</strong> — We are not responsible for any consequences to your game account from using third-party tools.</li>
+                        <li><strong className="text-gray-300">Age</strong> — You must be at least 13 years old to use Google Sign-In or the leaderboard.</li>
+                      </ul>
+                      <p>We may restrict access to users who violate these terms.</p>
+                    </div>
+                  )},
+                  { key: 'sources', label: 'Data Sources & Attribution', content: (
+                    <div className="space-y-1.5">
+                      <p>Game data, banner schedules, event timings, and character/weapon information sourced from:</p>
+                      <ul className="space-y-0.5 ml-1">
+                        <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> — event timeline and pity tracking</li>
+                        <li><a href="https://game8.co/games/Wuthering-Waves" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Game8</a> — game guides and data</li>
+                        <li><a href="https://wutheringwaves.wiki" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Wuthering Waves Wiki</a> — character, weapon, and echo data</li>
+                        <li><a href="https://www.prydwen.gg/wuthering-waves/" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Prydwen.gg</a> — character builds and analytics</li>
+                      </ul>
+                      <p className="mt-1">We thank these community resources for their work.</p>
+                    </div>
+                  )},
+                ].map(({ key, label, content }) => (
+                  <div key={key} style={{ background: 'var(--bg-stat)', borderRadius: 8 }}>
+                    <button
+                      onClick={() => setAboutSections(prev => ({ ...prev, [key]: !prev[key] }))}
+                      className="w-full flex items-center justify-between text-xs font-semibold text-gray-300 hover:text-gray-200 transition-colors"
+                      style={{ padding: '8px 12px' }}
+                      aria-expanded={!!aboutSections[key]}
+                    >
+                      <span>{label}</span>
+                      <ChevronDown size={14} className={`transition-transform duration-200 text-gray-500 ${aboutSections[key] ? 'rotate-180' : ''}`} />
+                    </button>
+                    {aboutSections[key] && (
+                      <div className="text-[10px] text-gray-400" style={{ padding: '0 12px 10px' }}>
+                        {content}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </CardBody>
             </Card>
           </div>
@@ -1570,3 +1622,11 @@ export default function ProfileTab({
     </>
   );
 }
+
+export default React.memo(ProfileTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.state.server === next.state.server &&
+  prev.state.settings === next.state.settings && prev.visualSettings === next.visualSettings &&
+  prev.googleUser === next.googleUser && prev.cloudBackupStatus === next.cloudBackupStatus &&
+  prev.overallStats === next.overallStats && prev.trophies === next.trophies &&
+  prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners
+);

@@ -16,7 +16,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   useEffect(() => {
     if (!isEcho || !imgUrl || noBgProcess) { setProcessedUrl(imgUrl); return; }
     let cancelled = false;
-    eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); });
+    eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); }).catch(() => { if (!cancelled) setProcessedUrl(imgUrl); });
     return () => { cancelled = true; };
   }, [imgUrl, isEcho, noBgProcess]);
   const cardStateClass = isSelected
@@ -114,7 +114,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
-      <div className="text-gray-500 text-sm mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
+      <div className="text-gray-400 text-sm mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
       <p className="text-gray-600 text-[10px] mb-3">Try adjusting your filters or clearing them</p>
       {hasActiveFilters && onClearFilters && (
         <button onClick={onClearFilters} className="kuro-btn text-[10px] px-3 py-1.5 active-gold">Clear Filters</button>
@@ -161,8 +161,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
       {canCollapse && (
         <button
           onClick={() => setExpanded(prev => !prev)}
-          className="w-full mt-2 py-2 rounded-lg border border-[var(--border-medium)] text-gray-400 text-[10px] font-medium hover:text-white hover:border-white/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1"
-          style={{ background: 'var(--bg-btn)' }}
+          className="kuro-btn kuro-btn-sm w-full mt-2 flex items-center justify-center gap-1"
         >
           {expanded ? 'Show Less' : `Show All (${items.length})`}
         </button>

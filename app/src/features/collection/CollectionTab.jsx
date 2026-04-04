@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 
-export default function CollectionTab({
+function CollectionTab({
   state,
   collectionData,
   collectionImages,
@@ -225,6 +225,8 @@ export default function CollectionTab({
       });
     } else if (collectionSort === 'name') {
       return [...items].sort((a, b) => a[0].localeCompare(b[0]));
+    } else if (collectionSort === 'nameDesc') {
+      return [...items].sort((a, b) => b[0].localeCompare(a[0]));
     } else if (collectionSort === 'tier') {
       const tierOrder = { 'T0': 0, 'T0.5': 1, 'T1': 2, 'T1.5': 3, 'T2': 4, 'T3': 5, 'T4': 6 };
       return [...items].sort((a, b) => (tierOrder[CHARACTER_DATA[a[0]]?.tier?.toa] ?? 99) - (tierOrder[CHARACTER_DATA[b[0]]?.tier?.toa] ?? 99));
@@ -249,7 +251,7 @@ export default function CollectionTab({
           <CardBody className="text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />
             <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
-            <p className="text-gray-500 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
+            <p className="text-gray-400 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
             <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
           </CardBody>
         </Card>
@@ -299,7 +301,7 @@ export default function CollectionTab({
                 type="text"
                 value={collectionSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search by name, DPS, Electro, Broadblade..."
+                placeholder="Search by name, DPS, Electro, Broadblade…"
                 className="kuro-input w-full pl-8 text-xs"
                 aria-label="Search collection by keyword"
               />
@@ -320,11 +322,11 @@ export default function CollectionTab({
                     <button
                       onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
-                      title="Characters"
-                      aria-label="View characters"
+                      title="Resonators"
+                      aria-label="View Resonators"
                       aria-pressed={collectionView === 'items'}
                     >
-                      <Crown size={12} className="inline mr-1" />Characters
+                      <Crown size={12} className="inline mr-1" />Resonators
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -353,7 +355,7 @@ export default function CollectionTab({
               {hasActiveFilters && (
                 <div className="flex items-center justify-between mb-2 px-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-medium">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/30 text-yellow-400 border border-yellow-500/40 font-medium">
                       Filters active
                     </span>
                   </div>
@@ -364,7 +366,7 @@ export default function CollectionTab({
               )}
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
 
-                {/* ── Characters view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
+                {/* ── Resonators view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
                 {collectionView === 'items' && (<>
                   <KuroSelect
                     value={collectionWeaponFilter}
@@ -542,7 +544,7 @@ export default function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('copies')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[11px] font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-xs font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                   title="Sort by copies"
                   aria-label="Sort by copies"
                   aria-pressed={collectionSort === 'copies'}
@@ -560,13 +562,13 @@ export default function CollectionTab({
                 </button>
                 {collectionView === 'items' && (
                   <button
-                    onClick={() => setCollectionSort('name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[9px] font-bold transition-all ${collectionSort === 'name' ? 'active-gold' : 'text-gray-400'}`}
-                    title="Sort A-Z"
-                    aria-label="Sort alphabetically"
-                    aria-pressed={collectionSort === 'name'}
+                    onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
+                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[10px] font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
+                    title={collectionSort === 'nameDesc' ? 'Sort Z-A' : 'Sort A-Z'}
+                    aria-label={collectionSort === 'nameDesc' ? 'Sorted Z to A, click for A to Z' : 'Sort alphabetically'}
+                    aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}
                   >
-                    Az
+                    {collectionSort === 'nameDesc' ? 'A↑' : 'A↓'}
                   </button>
                 )}
               </div>
@@ -807,3 +809,10 @@ export default function CollectionTab({
     </div>
   );
 }
+
+export default React.memo(CollectionTab, (prev, next) =>
+  prev.state.profile === next.state.profile && prev.collectionData === next.collectionData &&
+  prev.collectionImages === next.collectionImages && prev.visualSettings === next.visualSettings &&
+  prev.activeBanners === next.activeBanners && prev.framingMode === next.framingMode &&
+  prev.editingImage === next.editingImage
+);

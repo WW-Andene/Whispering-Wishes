@@ -38,7 +38,7 @@ export default function ConveneScanner({
         const caps = track?.getCapabilities?.();
         if (caps?.zoom) {
           const zoom = Math.min(Math.max(pinchRef.current.currentZoom, caps.zoom.min), caps.zoom.max);
-          track.applyConstraints({ advanced: [{ zoom }] }).catch(() => {});
+          track.applyConstraints({ advanced: [{ zoom }] }).catch(e => console.warn('[Camera] Zoom constraint failed:', e.message));
         }
         pinchRef.current.start = null;
       }
@@ -53,7 +53,7 @@ export default function ConveneScanner({
         if (caps?.zoom) {
           const newZoom = Math.min(Math.max(pinchRef.current.zoomStart * scale, caps.zoom.min), caps.zoom.max);
           pinchRef.current.currentZoom = newZoom;
-          track.applyConstraints({ advanced: [{ zoom: newZoom }] }).catch(() => {});
+          track.applyConstraints({ advanced: [{ zoom: newZoom }] }).catch(e => console.warn('[Camera] Zoom constraint failed:', e.message));
         }
       }
     }}>

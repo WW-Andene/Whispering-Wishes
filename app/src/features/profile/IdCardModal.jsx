@@ -10,6 +10,7 @@ import { HEADER_ICON } from '../../data/constants.js';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -124,11 +125,7 @@ export default function IdCardModal({
                     const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...bgnHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
                     const fsp = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
                     if(fsp.length < 2) return null;
-                    const bk = {};
-                    fsp.forEach(p => { if(p.pity>80){bk['81+']=(bk['81+']||0)+1;} else {const b=Math.floor((p.pity-1)/10)*10+1;bk[`${b}-${b+9}`]=(bk[`${b}-${b+9}`]||0)+1;} });
-                    const labs = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`);
-                    if(bk['81+'])labs.push('81+');
-                    labs.forEach(b=>{if(!bk[b])bk[b]=0;});
+                    const { buckets: bk, labels: labs } = buildPityHistogram(fsp);
                     const mx = Math.max(...Object.values(bk),1);
                     const avg = (fsp.reduce((s,p)=>s+p.pity,0)/fsp.length).toFixed(1);
                     const lo = Math.min(...fsp.map(p=>p.pity));
@@ -150,7 +147,7 @@ export default function IdCardModal({
                           {labs.map((lab, i) => {
                             const cnt = bk[lab]||0;
                             const height = mx > 0 ? (cnt / mx) * 100 : 0;
-                            const bucket = parseInt(lab)||81;
+                            const bucket = parseInt(lab, 10) || 81;
                             const color = bucket<=20?'#22c55e':bucket<=40?'#4ade80':bucket<=50?'#edaf18':bucket<=60?'#f97316':'#ef4444';
                             return (
                               <div key={i} className="flex-1 flex flex-col items-center">
@@ -212,7 +209,7 @@ export default function IdCardModal({
                                   </div>
                                 )}
                                 <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))' }}>
-                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '6px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
+                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '8px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
                                 </div>
                               </div>
                             </div>
@@ -248,7 +245,7 @@ export default function IdCardModal({
                                 <div className="rounded-full flex items-center justify-center mb-1" style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
                                   <IconComponent size={14} style={{ color: trophy.color }} />
                                 </div>
-                                <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '7px', wordBreak: 'break-word' }}>{trophy.name}</div>
+                                <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '8px', wordBreak: 'break-word' }}>{trophy.name}</div>
                               </div>
                             );
                           })}

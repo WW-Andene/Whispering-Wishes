@@ -226,14 +226,6 @@ export async function fetchAllPools(params, signal, onProgress) {
     await sleep(150);
   }
 
-  // Log diagnostic summary to console
-  console.group('[Convene Import] Pool scan results');
-  for (const d of debug) {
-    console.log(`Pool ${d.poolType} (${d.label}): ${d.count} pulls${d.error ? ` — ERROR: ${d.error}` : ''}${d.fiveStars?.length ? ` — 5★: ${d.fiveStars.join(', ')}` : ''}`);
-  }
-  console.log(`Total: ${total}`);
-  console.groupEnd();
-
   return { pulls: allPulls, total, debug, params };
 }
 
