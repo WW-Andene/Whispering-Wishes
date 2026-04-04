@@ -505,7 +505,7 @@ const KuroStyles = memo(({ oledMode }) => (
       top: 0;
       left: 0;
       height: 2px;
-      border-radius: 0 0 4px 4px;
+      border-radius: 0 0 6px 6px;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform, width;
     }

@@ -1796,8 +1796,8 @@ function WhisperingWishesInner() {
         </div>
       </header>
 
-      {/* Bottom navigation bar */}
-      <nav ref={tabNavRef} className="fixed bottom-0 left-0 right-0 z-50 border-t flex justify-between overflow-x-auto scrollbar-hide" style={{ borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.95)', backdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+      {/* Floating bottom navigation bar */}
+      <nav ref={tabNavRef} className="fixed bottom-3 left-3 right-3 z-50 border flex justify-between overflow-x-auto scrollbar-hide rounded-2xl" style={{ borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.92)' : 'rgba(8, 12, 18, 0.88)', backdropFilter: 'blur(24px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset', marginBottom: 'env(safe-area-inset-bottom, 0px)' }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
           const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
