@@ -109,6 +109,7 @@ export default function ProfileTab({
   // Firebase (for admin fetch)
   getFirebaseAuth,
   firebaseUrl,
+  firebaseFetch,
   // Tab navigation (for admin collection/trophy "Go to Import" buttons)
   setActiveTab,
   // Cache busting (for admin collection images)
@@ -211,7 +212,7 @@ export default function ProfileTab({
   const fetchActivePlayersCount = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('presence', authToken));
+      const res = await firebaseFetch('presence', authToken);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -219,7 +220,7 @@ export default function ProfileTab({
           const activeSessions = Object.entries(data).filter(([, v]) => v?.t && (now - v.t) < PRESENCE_TTL_MS);
           const staleSessions = Object.entries(data).filter(([, v]) => !v?.t || (now - v.t) >= PRESENCE_TTL_MS);
           for (const [key] of staleSessions.slice(0, 50)) {
-            try { await fetchWithTimeout(firebaseUrl(`presence/${key}`, authToken), { method: 'DELETE' }); } catch {}
+            try { await firebaseFetch(`presence/${key}`, authToken, { method: 'DELETE' }); } catch {}
           }
           const count = activeSessions.length;
           setActivePlayersCount(count);
@@ -237,12 +238,12 @@ export default function ProfileTab({
         setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
       }
     } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
-  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   const fetchAdminPlayerList = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl('leaderboard', authToken));
+      const res = await firebaseFetch('leaderboard', authToken);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -269,7 +270,7 @@ export default function ProfileTab({
       console.error('Admin player list fetch error:', e);
       setAdminPlayerList([]);
     }
-  }, [getFirebaseAuth, firebaseUrl, fetchWithTimeout]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   // ── Admin handlers ─────────────────────────────────────────────────────
   const handleAdminTap = useCallback(async () => {
@@ -370,14 +371,13 @@ export default function ProfileTab({
         return;
       }
     } catch {}
+    // F-003: Only use PBKDF2 — removed weaker SHA-256 fallback paths that are trivially brute-forceable
     const pbkdf2Hash = await hashPasswordPBKDF2(adminPassword, ADMIN_SALT);
-    const saltedHash = await hashPasswordSHA256(adminPassword, ADMIN_SALT);
-    const legacyHash = await hashPasswordSHA256(adminPassword);
-    if (!saltedHash && !legacyHash && !pbkdf2Hash) {
+    if (!pbkdf2Hash) {
       toast?.addToast?.('Hashing unavailable. HTTPS required', 'error');
       return;
     }
-    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH) || constantTimeCompare(saltedHash, ADMIN_HASH) || constantTimeCompare(legacyHash, ADMIN_HASH)) {
+    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH)) {
       setAdminUnlocked(true);
       setAdminPassword('');
       adminSessionFailsRef.current = 0;
@@ -1405,7 +1405,7 @@ export default function ProfileTab({
                       {googleUser.photoUrl && <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" />}
                       <div className="flex-1 min-w-0">
                         <div style={{ color: 'var(--text-heading)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="truncate">{googleUser.email}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
                       </div>
                       <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-[10px] px-2 py-1 flex-shrink-0">Sign out</button>
                     </div>

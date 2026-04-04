@@ -986,10 +986,16 @@ function WhisperingWishesInner() {
     }
   }, []);
 
-  // Helper: build Firebase URL with optional auth param
-  const firebaseUrl = useCallback((path, authToken) => {
-    const base = `${FIREBASE_DB}/${path}.json`;
-    return authToken ? `${base}?auth=${authToken}` : base;
+  // Helper: build Firebase URL (F-017: auth moved to Authorization header — no longer in URL)
+  const firebaseUrl = useCallback((path) => `${FIREBASE_DB}/${path}.json`, []);
+
+  // Helper: Firebase fetch with auth in Authorization header instead of URL query param
+  // This prevents token leakage in browser history, referrer headers, and server logs.
+  const firebaseFetch = useCallback((path, authToken, options = {}) => {
+    const url = `${FIREBASE_DB}/${path}.json`;
+    const headers = { ...(options.headers || {}) };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+    return fetchWithTimeout(url, { ...options, headers });
   }, []);
   
   // ══════════════════════════════════════════════════════════════════════════
@@ -1082,9 +1088,9 @@ function WhisperingWishesInner() {
       }
       const fbData = await fbRes.json();
 
+      // F-009: Minimize PII stored in localStorage — exclude email (only store what's needed for display)
       const user = {
         uid: fbData.localId,
-        email: fbData.email,
         displayName: fbData.displayName || fbData.email?.split('@')[0] || 'User',
         photoUrl: fbData.photoUrl || null,
       };
@@ -1127,7 +1133,7 @@ function WhisperingWishesInner() {
           + (stateRef.current.profile.standardWeap?.history?.length || 0)
           + (stateRef.current.profile.beginner?.history?.length || 0),
       };
-      const res = await fetchWithTimeout(firebaseUrl(`user-history/${googleUser.uid}`, token), {
+      const res = await firebaseFetch(`user-history/${googleUser.uid}`, token, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backupData),
@@ -1141,7 +1147,7 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseUrl, toast]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast]);
 
   // Cloud Restore: load convene history from Firebase RTDB
   const handleCloudRestore = useCallback(async () => {
@@ -1149,7 +1155,7 @@ function WhisperingWishesInner() {
     if (!token || !googleUser) { toast?.addToast?.('Please sign in first', 'error'); return; }
     setCloudBackupStatus('loading');
     try {
-      const res = await fetchWithTimeout(firebaseUrl(`user-history/${googleUser.uid}`, token));
+      const res = await firebaseFetch(`user-history/${googleUser.uid}`, token);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data || !data.profile) {
@@ -1164,7 +1170,8 @@ function WhisperingWishesInner() {
         destructive: true,
       });
       if (!doRestore) { setCloudBackupStatus('idle'); return; }
-      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: data.profile } });
+      // F-007: Sanitize cloud-restored data to prevent state injection from compromised Firebase
+      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
       setCloudBackupStatus('done');
       toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
@@ -1173,7 +1180,7 @@ function WhisperingWishesInner() {
       toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseUrl, toast, confirm, dispatch]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch]);
 
   // Anonymous presence system - writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
@@ -1184,7 +1191,7 @@ function WhisperingWishesInner() {
     if (!checkFirebaseRateLimit('presence-heartbeat')) return;
     try {
       const authToken = await getFirebaseAuth();
-      const res = await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), {
+      const res = await firebaseFetch(`presence/${presenceSessionId.current}`, authToken, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ t: Date.now() }) // only a timestamp - zero personal data
@@ -1194,14 +1201,14 @@ function WhisperingWishesInner() {
         console.warn(`[WW] Heartbeat write failed (${res.status})${errText ? ' -' + errText.slice(0, 80) : ''}`);
       }
     } catch (e) { /* heartbeat errors are non-critical - admin panel shows presence errors separately */ }
-  }, [getFirebaseAuth, firebaseUrl]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   const removePresence = useCallback(async () => {
     try {
       const authToken = await getFirebaseAuth();
-      await fetchWithTimeout(firebaseUrl(`presence/${presenceSessionId.current}`, authToken), { method: 'DELETE' });
+      await firebaseFetch(`presence/${presenceSessionId.current}`, authToken, { method: 'DELETE' });
     } catch { /* best-effort */ }
-  }, [getFirebaseAuth, firebaseUrl]);
+  }, [getFirebaseAuth, firebaseFetch]);
 
   // Start heartbeat  // Start heartbeat on mount, clean up on unmount
   useEffect(() => {
@@ -1215,7 +1222,38 @@ function WhisperingWishesInner() {
     };
   }, [sendPresenceHeartbeat, removePresence]);
 
-
+  // F-015/F-016: Clean up stale localStorage backups and diagnostics on mount (24h TTL)
+  useEffect(() => {
+    const BACKUP_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const now = Date.now();
+    try {
+      const preImport = localStorage.getItem('whispering-wishes-pre-import-backup');
+      if (preImport) {
+        const parsed = JSON.parse(preImport);
+        if (parsed.timestamp && (now - new Date(parsed.timestamp).getTime()) > BACKUP_TTL_MS) {
+          localStorage.removeItem('whispering-wishes-pre-import-backup');
+        }
+      }
+    } catch { localStorage.removeItem('whispering-wishes-pre-import-backup'); }
+    try {
+      const preRestore = localStorage.getItem('whispering-wishes-pre-restore-backup');
+      if (preRestore) {
+        const parsed = JSON.parse(preRestore);
+        if (parsed.timestamp && (now - new Date(parsed.timestamp).getTime()) > BACKUP_TTL_MS) {
+          localStorage.removeItem('whispering-wishes-pre-restore-backup');
+        }
+      }
+    } catch { localStorage.removeItem('whispering-wishes-pre-restore-backup'); }
+    try {
+      const diag = localStorage.getItem('ww-import-diagnostic');
+      if (diag) {
+        const parsed = JSON.parse(diag);
+        if (parsed.timestamp && (now - new Date(parsed.timestamp).getTime()) > BACKUP_TTL_MS) {
+          localStorage.removeItem('ww-import-diagnostic');
+        }
+      }
+    } catch { localStorage.removeItem('ww-import-diagnostic'); }
+  }, []);
 
   // Trophies/Badges computation (logic in core/computeTrophies.js)
   const trophies = useMemo(() => computeTrophies(state.profile, overallStats, trophyOverrides), [state.profile, overallStats, trophyOverrides]);
@@ -1789,6 +1827,7 @@ function WhisperingWishesInner() {
                 toast={toast}
                 getFirebaseAuth={getFirebaseAuth}
                 firebaseUrl={firebaseUrl}
+                firebaseFetch={firebaseFetch}
                 fetchWithTimeout={fetchWithTimeout}
                 hashUidForStorage={hashUidForStorage}
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
@@ -1884,6 +1923,7 @@ function WhisperingWishesInner() {
             DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
             getFirebaseAuth={getFirebaseAuth}
             firebaseUrl={firebaseUrl}
+            firebaseFetch={firebaseFetch}
             setActiveTab={setActiveTab}
             withCacheBuster={withCacheBuster}
             showAdminPanel={showAdminPanel}

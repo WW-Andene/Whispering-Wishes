@@ -1,17 +1,27 @@
 // Vercel/DV serverless function — proxies POST requests to WuWa gacha API to avoid CORS
 const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
+// F-004: Restrict CORS to app origins only (prevents open relay abuse)
+const ALLOWED_ORIGINS = [
+  'https://whispering-wishes.vercel.app',
+  'http://localhost:5000',
+  'http://localhost:5173',
+];
+const isAllowedOrigin = (origin) => ALLOWED_ORIGINS.includes(origin) || /^https:\/\/whispering-wishes[a-z0-9-]*\.vercel\.app$/.test(origin);
 
 export default async function handler(req, res) {
+  const origin = req.headers.origin || '';
+
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    if (!isAllowedOrigin(origin)) return res.status(403).end();
+    res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     return res.status(204).end();
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const origin = req.headers.origin || req.headers.referer || '';
-  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  if (!isAllowedOrigin(origin)) return res.status(403).json({ error: 'Origin not allowed' });
+  res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Cache-Control', 'no-store');
 
   try {
