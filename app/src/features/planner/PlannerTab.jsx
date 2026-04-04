@@ -2,6 +2,13 @@
 // WHISPERING WISHES — PlannerTab (extracted from App.jsx)
 // Resource income planning and goal tracking
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+// [SECTION INDEX] - Use: grep -n "SECTION:" PlannerTab.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:HELPERS]      Event helpers (getIntroducedDate, get28DayCycle, getActiveEvents)
+// [SECTION:CALENDAR]     AstriteCalendar sub-component
+// [SECTION:PLANNER]      PlannerTab main component (income, goals, saved states)
+// ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Minus, Plus, X } from 'lucide-react';
@@ -15,9 +22,7 @@ import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ASTRITE CALENDAR v9 — Two views: Page Calendar + Chronology
-// ══════════════════════════════════════════════════════════════════════════════
+// [SECTION:HELPERS] ── Event helpers ──────────────────────────────────────────
 
 // 9 colors — one per meaning.
 const EVENT_COLORS = {
@@ -98,6 +103,7 @@ const getActiveEvents = (date) => {
   return result;
 };
 
+// [SECTION:CALENDAR] ── AstriteCalendar sub-component ────────────────────────
 function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -559,6 +565,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   );
 }
 
+// [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
 function PlannerTab({
   state,
   dispatch,

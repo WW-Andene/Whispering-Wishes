@@ -20,11 +20,14 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 
-// Module-level constants (copied from App.jsx — profile/admin specific)
-const MAX_USERNAME_LENGTH = 24;
+import {
+  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
+  TROPHY_OVERRIDES_KEY, ALLOWED_IMAGE_HOSTS, isAllowedImageUrl,
+} from '../../shared/constants/appConstants.js';
 const MAX_ADMIN_ATTEMPTS = 3;
 // Escalating lockout: 24h → 1 week → 1 month → permanent ban (after 3 lockouts)
 const LOCKOUT_ESCALATION = [
@@ -33,7 +36,6 @@ const LOCKOUT_ESCALATION = [
   30 * 24 * 60 * 60 * 1000, // 3rd lockout: 1 month
 ];
 const MAX_LOCKOUTS_BEFORE_BAN = 3;
-const ADMIN_TAP_TIMEOUT_MS = 1500;
 const formatLockoutRemaining = (ms) => {
   const d = Math.floor(ms / 86400000);
   const h = Math.floor((ms % 86400000) / 3600000);
@@ -41,22 +43,9 @@ const formatLockoutRemaining = (ms) => {
   if (d > 0) return `${d}d ${h}h`;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 };
-const ADMIN_SALT = 'whispering-wishes-v3-admin';
-const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
-const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 const currentYear = new Date().getFullYear();
 import { silentCatch } from '../../utils/silentCatch.js';
 import { constantTimeCompare } from '../../utils/constantTimeCompare.js'; // I4-01: deduplicated
-const isAllowedImageUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'https:') return false;
-    return ALLOWED_IMAGE_HOSTS.some(host =>
-      parsed.hostname === host || parsed.hostname.endsWith('.' + host)
-    );
-  } catch { return false; }
-};
 // DEFAULT_VISUAL_SETTINGS received as prop from App.jsx (canonical source)
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
@@ -514,19 +503,7 @@ function ProfileTab({
 
     const fiveStarPulls = [...charHist, ...weapHist].filter(p => p.rarity === 5 && p.pity > 0);
 
-    const histBuckets = {};
-    fiveStarPulls.forEach(p => {
-      if (p.pity > 80) {
-        histBuckets['81+'] = (histBuckets['81+'] ?? 0) + 1;
-      } else {
-        const b = Math.floor((p.pity - 1) / 10) * 10 + 1;
-        histBuckets[`${b}-${b + 9}`] = (histBuckets[`${b}-${b + 9}`] ?? 0) + 1;
-      }
-    });
-
-    const histLabels = Array.from({ length: 8 }, (_, i) => `${i * 10 + 1}-${(i + 1) * 10}`);
-    if (histBuckets['81+']) histLabels.push('81+');
-    histLabels.forEach(b => { if (!histBuckets[b]) histBuckets[b] = 0; });
+    const { buckets: histBuckets, labels: histLabels } = buildPityHistogram(fiveStarPulls);
 
     const histSummary = fiveStarPulls.length >= 2 ? {
       max: Math.max(...Object.values(histBuckets), 1),

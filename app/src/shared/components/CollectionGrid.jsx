@@ -16,7 +16,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   useEffect(() => {
     if (!isEcho || !imgUrl || noBgProcess) { setProcessedUrl(imgUrl); return; }
     let cancelled = false;
-    eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); });
+    eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); }).catch(() => { if (!cancelled) setProcessedUrl(imgUrl); });
     return () => { cancelled = true; };
   }, [imgUrl, isEcho, noBgProcess]);
   const cardStateClass = isSelected

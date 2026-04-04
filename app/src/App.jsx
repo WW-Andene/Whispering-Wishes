@@ -72,15 +72,14 @@ const fetchWithTimeout = (url, options = {}) => {
     .finally(() => clearTimeout(timeoutId));
 };
 const DEBOUNCE_MS = 300;
-const FOCUS_DELAY_MS = 0;
 const CALC_DEFER_MS = 150;
-// Admin lockout constants moved to ProfileTab.jsx (escalating lockout system)
-const ADMIN_TAP_TIMEOUT_MS = 1500;
 const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
-const MAX_USERNAME_LENGTH = 24;
-const MAX_BOOKMARK_NAME_LENGTH = 30;
-const ADMIN_SALT = 'whispering-wishes-v3-admin';
 import { constantTimeCompare } from './utils/constantTimeCompare.js'; // I4-01: deduplicated
+import {
+  VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY,
+  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, MAX_BOOKMARK_NAME_LENGTH,
+  ALLOWED_IMAGE_HOSTS, isAllowedImageUrl, sanitizeImageUrl,
+} from './shared/constants/appConstants.js';
 const currentYear = new Date().getFullYear();
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
@@ -89,11 +88,7 @@ const MAX_ZOOM = 300;
 const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || null;
 const FIREBASE_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || null;
 const FIREBASE_AVAILABLE = !!(FIREBASE_DB && FIREBASE_API_KEY);
-// localStorage keys - bump the suffix when the schema changes
-// v3 = visual settings were restructured in app v3.0; others haven't changed since v1
-const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
-const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
-const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
+// localStorage keys, admin salt, and image allowlist imported from shared/constants/appConstants.js
 const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   fadePosition: 50,
   fadeIntensity: 100,
@@ -123,21 +118,6 @@ const TRACKER_CATEGORIES = Object.freeze([
   Object.freeze({ key: 'weapon', label: 'Weapons', color: 'pink' }),
   Object.freeze({ key: 'standard', label: 'Standard', color: 'cyan' }),
 ]);
-// P15-FIX: MEDIUM-3 - Domain allowlist for custom image URLs (single source of truth)
-const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
-const isAllowedImageUrl = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== 'https:') return false;
-    return ALLOWED_IMAGE_HOSTS.some(host =>
-      parsed.hostname === host || parsed.hostname.endsWith('.' + host)
-    );
-  } catch {
-    return false;
-  }
-};
-const sanitizeImageUrl = (url, fallback = '') => isAllowedImageUrl(url) ? url : fallback;
 
 import { silentCatch } from './utils/silentCatch.js';
 
@@ -1475,10 +1455,8 @@ function WhisperingWishesInner() {
         throw new Error('No Convene data found in import. If this is a backup file, it should contain a "state" key.');
       }
 
-      // Show diagnostic log if available (from direct API fetch)
+      // Store diagnostic log if available (from direct API fetch) for admin panel
       if (data._diagnostic) {
-        console.log('[Import Diagnostic]', data._diagnostic);
-        // Store for admin panel
         try { localStorage.setItem('ww-import-diagnostic', JSON.stringify({ timestamp: new Date().toISOString(), log: data._diagnostic, pullCount: pulls.length })); } catch {}
       }
 
@@ -1821,7 +1799,7 @@ function WhisperingWishesInner() {
               let newTab;
               if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
               else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
-              if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), FOCUS_DELAY_MS); }
+              if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
             }}>
             <div className="tab-indicator" />
             <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>

@@ -7,8 +7,8 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { sanitizeStateObj } from '../core/storage.js';
+import { IMAGE_FRAMING_KEY } from '../shared/constants/appConstants.js';
 
-const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
 const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
 

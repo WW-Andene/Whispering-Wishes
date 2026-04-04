@@ -8,11 +8,12 @@ import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, Layout
 import {
   CHARACTER_DATA, WEAPON_DATA, DEFAULT_COLLECTION_IMAGES,
   RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS,
-  MATERIAL_IMAGES, COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
+  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
   RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
 } from '../../appcore-data.js';
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { MaterialItem } from '../components/MaterialItem.jsx';
 
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
@@ -22,20 +23,6 @@ const DETAIL_ELEMENT_COLORS = {
   Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
   Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
   Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
-};
-
-// Material item display helper
-const MaterialItem = ({ name, qty }) => {
-  const img = MATERIAL_IMAGES[name];
-  return (
-    <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-[var(--border-medium)] min-w-0">
-      {img ? <img src={img} alt={name} className="w-7 h-7 rounded object-contain flex-shrink-0" onError={hideOnError} /> : <div className="w-7 h-7 rounded bg-white/10 flex-shrink-0" />}
-      <div className="min-w-0 flex-1">
-        <div className="text-[10px] text-gray-300 truncate leading-tight">{name}</div>
-        {qty != null && qty > 0 && <div className="text-[10px] text-yellow-400 font-bold leading-tight">&times;{qty}</div>}
-      </div>
-    </div>
-  );
 };
 
 // Hoisted team parsing helper

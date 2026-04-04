@@ -7,7 +7,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Star, Check, CheckCircle, SkipForward } from 'lucide-react';
 import {
   HARD_PITY, SOFT_PITY_START, CURRENT_BANNERS, haptic,
-  ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
+  ELEMENT_COLORS, getElementColor,
 } from '../../appcore-data.js';
 import {
   getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,

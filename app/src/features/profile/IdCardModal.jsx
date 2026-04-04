@@ -10,6 +10,7 @@ import { HEADER_ICON } from '../../data/constants.js';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -124,11 +125,7 @@ export default function IdCardModal({
                     const weapHist = [...(state.profile.weapon?.history||[]),...(state.profile.standardWeap?.history||[]),...bgnHist.filter(p=>p.name&&!ALL_CHARACTERS.has(p.name))];
                     const fsp = [...charHist,...weapHist].filter(p=>p.rarity===5&&p.pity>0);
                     if(fsp.length < 2) return null;
-                    const bk = {};
-                    fsp.forEach(p => { if(p.pity>80){bk['81+']=(bk['81+']||0)+1;} else {const b=Math.floor((p.pity-1)/10)*10+1;bk[`${b}-${b+9}`]=(bk[`${b}-${b+9}`]||0)+1;} });
-                    const labs = Array.from({length:8},(_,i)=>`${i*10+1}-${(i+1)*10}`);
-                    if(bk['81+'])labs.push('81+');
-                    labs.forEach(b=>{if(!bk[b])bk[b]=0;});
+                    const { buckets: bk, labels: labs } = buildPityHistogram(fsp);
                     const mx = Math.max(...Object.values(bk),1);
                     const avg = (fsp.reduce((s,p)=>s+p.pity,0)/fsp.length).toFixed(1);
                     const lo = Math.min(...fsp.map(p=>p.pity));

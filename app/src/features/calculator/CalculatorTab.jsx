@@ -1,6 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — CalculatorTab (extracted from App.jsx)
+// Gacha probability calculator with banner selection, pity input, resource split
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+// [SECTION INDEX] - Use: grep -n "SECTION:" CalculatorTab.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:CALC]         Deferred calculation & astrite allocation
+// [SECTION:RENDER]       JSX output
+// ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/constants.js';
@@ -14,8 +21,8 @@ import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
+import { MAX_BOOKMARK_NAME_LENGTH } from '../../shared/constants/appConstants.js';
 const CALC_DEFER_MS = 150;
-const MAX_BOOKMARK_NAME_LENGTH = 30;
 
 function CalculatorTab({ state, dispatch }) {
   // ── Tab-local state ──────────────────────────────────────────────────────
@@ -36,6 +43,7 @@ function CalculatorTab({ state, dispatch }) {
   // ── Deferred calc (debounced DP computation) ─────────────────────────────
   // P15-FIX: MEDIUM-16 — Initial deferredCalc is null to defer first DP computation
   // until after first paint, preventing jank on calculator tab open.
+  // [SECTION:CALC] ── Deferred calculation & astrite allocation ───────────────
   const [deferredCalc, setDeferredCalc] = useState(null);
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
@@ -140,6 +148,7 @@ function CalculatorTab({ state, dispatch }) {
     };
   }, [effectiveCalc.selectedBanner, effectiveCalc.bannerCategory, charStats, weapStats, stdCharStats, stdWeapStats]);
 
+  // [SECTION:RENDER] ── JSX output ───────────────────────────────────────────
   return (
     <>
           <div role="tabpanel" id="tabpanel-calculator" aria-labelledby="tab-calculator" tabIndex="0">

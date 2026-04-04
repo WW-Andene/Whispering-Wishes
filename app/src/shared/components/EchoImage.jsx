@@ -25,7 +25,7 @@ const EchoImage = ({ src, alt, className, style, noBgProcess, ...rest }) => {
   useEffect(() => {
     if (!src || noBgProcess) { setProcessedSrc(src); return; }
     let cancelled = false;
-    eraseEchoBg(src).then(url => { if (!cancelled) setProcessedSrc(url); });
+    eraseEchoBg(src).then(url => { if (!cancelled) setProcessedSrc(url); }).catch(() => { if (!cancelled) setProcessedSrc(src); });
     return () => { cancelled = true; };
   }, [src, noBgProcess]);
 

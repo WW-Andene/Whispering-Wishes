@@ -20,8 +20,7 @@ import { storageAvailable } from '../../core/storage.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 // Recharts removed — using native SVG for charts
 
-const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
-const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
+import { TROPHY_OVERRIDES_KEY, ALLOWED_IMAGE_HOSTS } from '../../shared/constants/appConstants.js';
 
 // ═══ Echo Background Removal Tool ═══════════════════════════════════════════
 // Batch-processes all echo images through HuggingFace BRIA-RMBG-1.4 via /api/batch-remove-bg

@@ -65,9 +65,6 @@ const createUndoReducer = (baseReducer) => {
   };
 };
 
-// Check if undo is available (for UI)
-const canUndo = () => false; // placeholder — actual check is via undoReducer closure
-
 // [SECTION:STATE]
 const initialState = {
   server: 'Asia',

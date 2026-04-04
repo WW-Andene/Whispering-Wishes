@@ -2,6 +2,13 @@
 // WHISPERING WISHES — AnalyticsTab (extracted from App.jsx)
 // Stats, luck rating, trophies, leaderboard, pull history charts
 // ═══════════════════════════════════════════════════════════════════════════════
+//
+// [SECTION INDEX] - Use: grep -n "SECTION:" AnalyticsTab.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// [SECTION:STATS]       Community stats & histogram computation
+// [SECTION:FIREBASE]    Leaderboard & community data (Firebase)
+// [SECTION:RENDER]      JSX output
+// ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
@@ -15,6 +22,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 
 function AnalyticsTab({
   state,
@@ -89,6 +97,7 @@ function AnalyticsTab({
   const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
   const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
+  // [SECTION:STATS] ── Community stats & histogram computation ────────────────
   const communityStats = useMemo(() => {
     if (!allLeaderboardEntries.length) return null;
     const entries = allLeaderboardEntries;
@@ -128,19 +137,7 @@ function AnalyticsTab({
       wep4: wepHist.filter(p => p.rarity === 4).length,
       wep3: wepHist.filter(p => p.rarity === 3).length,
     };
-    const histogramBuckets = {};
-    fiveStars.forEach(p => {
-      if (p.pity > HARD_PITY) {
-        histogramBuckets[`${HARD_PITY+1}+`] = (histogramBuckets[`${HARD_PITY+1}+`] ?? 0) + 1;
-      } else {
-        const bucket = Math.floor((p.pity - 1) / 10) * 10 + 1;
-        const label = `${bucket}-${bucket + 9}`;
-        histogramBuckets[label] = (histogramBuckets[label] ?? 0) + 1;
-      }
-    });
-    const allBucketLabels = Array.from({length: HARD_PITY / 10}, (_, i) => `${i*10+1}-${(i+1)*10}`);
-    if (histogramBuckets['81+']) allBucketLabels.push('81+');
-    allBucketLabels.forEach(b => { if (!histogramBuckets[b]) histogramBuckets[b] = 0; });
+    const { buckets: histogramBuckets, labels: allBucketLabels } = buildPityHistogram(fiveStars, HARD_PITY);
     const histogramStats = fiveStars.length >= 2 ? {
       maxCount: Math.max(...Object.values(histogramBuckets), 1),
       avgPity: fiveStars.length > 0 ? (fiveStars.reduce((sum, p) => sum + p.pity, 0) / fiveStars.length).toFixed(1) : '0',
@@ -157,13 +154,13 @@ function AnalyticsTab({
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (state.profile.uid) {
-      hashUidForStorage(state.profile.uid).then(setHashedProfileUid);
+      hashUidForStorage(state.profile.uid).then(setHashedProfileUid).catch(() => setHashedProfileUid(null));
     } else {
       setHashedProfileUid(null);
     }
   }, [state.profile.uid, hashUidForStorage]);
 
-  // ── Callbacks ──────────────────────────────────────────────────────────────
+  // [SECTION:FIREBASE] ── Leaderboard & community data (Firebase) ────────────
   const loadLeaderboard = useCallback(async () => {
     if (leaderboardLoadingRef.current) return;
     leaderboardLoadingRef.current = true;
@@ -355,6 +352,7 @@ function AnalyticsTab({
       loadCommunityPulls();
     }
   }, [showLeaderboard, loadLeaderboard, loadCommunityPulls]);
+  // [SECTION:RENDER] ── JSX output ───────────────────────────────────────────
   return (
     <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" tabIndex="0">
     <TabErrorBoundary tabName="Stats">
