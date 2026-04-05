@@ -126,8 +126,8 @@ export default function ConveneScanner({
         {/* Center target + cross */}
         <div className="absolute flex items-center justify-center" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
           <Scan size={36} strokeWidth={1.5} style={{ color: 'rgba(255,255,255,0.3)' }} />
-          <div style={{ position: 'absolute', width: 44, height: '1.5px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
-          <div style={{ position: 'absolute', width: '1.5px', height: 44, background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.3), transparent)' }} />
+          <div style={{ position: 'absolute', width: 44, height: '1.5px', background: 'rgba(255,255,255,0.3)' }} />
+          <div style={{ position: 'absolute', width: '1.5px', height: 44, background: 'rgba(255,255,255,0.3)' }} />
         </div>
 
       </div>
