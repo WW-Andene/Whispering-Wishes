@@ -784,20 +784,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
     const rotationTimeline = (() => {
-      const timeline = [];
       const buffs = [];
-      let t = 0;
       const ordered = [...mems].sort((a, b) => {
         if (a.name === mainDps.name) return -1;
         if (b.name === mainDps.name) return 1;
         const roleOrder = { 'Main DPS': 0, 'Sub DPS': 1, 'Support': 2, 'Healer': 3 };
         return (roleOrder[a.d.role] || 2) - (roleOrder[b.d.role] || 2);
       });
-      ordered.forEach(m => {
-        const rawOnField = m.d.onField ?? (m.name === mainDps.name ? 15 : 5);
-        // Ensure every team member appears in timeline — at minimum 1s for swap/outro
-        const onField = Math.max(1, Math.min(rawOnField, Math.max(0, rotTime - t)));
-        if (t >= rotTime) return;
+      // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
+      const raw = ordered.map(m => ({
+        m, onField: m.d.onField ?? (m.name === mainDps.name ? 15 : 5),
+      }));
+      const totalRaw = raw.reduce((s, r) => s + r.onField, 0);
+      const scale = totalRaw > rotTime ? rotTime / totalRaw : 1;
+
+      const timeline = [];
+      let t = 0;
+      raw.forEach(({ m, onField: rawField }) => {
+        const onField = Math.round(rawField * scale * 10) / 10; // scale + round to 0.1s
         timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
         const bt = CHAR_BUFF_TABLE[m.name];
         if (bt) {
