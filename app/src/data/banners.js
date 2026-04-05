@@ -482,8 +482,8 @@ const CHARACTER_THEMES = [
   { id: 'chisa',         name: 'Chisa',         element: 'Havoc',   bannerArt: 'https://i.ibb.co/p6gwfsWC/Chisa-Banner-Art.jpg',         pos: { header: '50% 22%', nav: '50% 24%', bg: '68% 50%' } },
   { id: 'galbrena',      name: 'Galbrena',      element: 'Fusion',  bannerArt: 'https://i.ibb.co/0jJLjwws/Galbrena-Banner-Art.jpg',      pos: { header: '50% 31%', nav: '50% 35%', bg: '60% 50%' } },
   { id: 'iuno',          name: 'Iuno',          element: 'Aero',    bannerArt: 'https://i.ibb.co/xtdnyxRH/Iuno-Banner-Art.png',          pos: { header: '50% 27%', nav: '50% 29%', bg: '66% 50%' } },
-  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/Hfx3kqG0/Augusta-Banner-Art.jpg',       pos: { header: '50% 35%', nav: '50% 35%', bg: '62% 50%' } },
-  { id: 'lupa',          name: 'Lupa',          element: 'Fusion',  bannerArt: 'https://i.ibb.co/bjTy2MYT/Lupa-Banner-Art.jpg',          pos: { header: '50% 56%', nav: '50% 56%', bg: '62% 50%' } },
+  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/Hfx3kqG0/Augusta-Banner-Art.jpg',       pos: { header: '50% 36%', nav: '50% 35%', bg: '62% 50%' } },
+  { id: 'lupa',          name: 'Lupa',          element: 'Fusion',  bannerArt: 'https://i.ibb.co/bjTy2MYT/Lupa-Banner-Art.jpg',          pos: { header: '52% 56%', nav: '50% 56%', bg: '62% 50%' } },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -495,7 +495,7 @@ const VERSION_SPLASH_SCREENS = [
   { id: 'v3.0', version: '3.0', name: 'We Who See The Stars',                  art: 'https://i.ibb.co/wZ1YLZL3/3-0-We-Who-See-The-Stars.webp',                                         pos: { header: '50% 25%', nav: '50% 21%', bg: '24% 50%' } },
   { id: 'v2.8', version: '2.8', name: 'To the City Set in Amber',              art: 'https://i.ibb.co/vtrgdN5/2-8-To-the-City-Set-in-Amber.webp',                                      pos: { header: '50% 20%', nav: '50% 22%', bg: '52% 50%' } },
   { id: 'v2.7', version: '2.7', name: 'Dawn Breaks on Dark Tides',             art: 'https://i.ibb.co/ccSMLBWQ/2-7-Dawn-Breaks-on-Dark-Tides.webp',                                    pos: { header: '50% 35%', nav: '50% 33%', bg: '50% 50%' } },
-  { id: 'v2.6', version: '2.6', name: "By Sun's Scourge, By Moon's Revelation", art: 'https://i.ibb.co/tPmjm4Gj/2-6-By-Sun-039-s-Scourge-By-Moon-039-s-Revelation.webp',              pos: { header: '50% 20%', nav: '50% 18%', bg: '52% 50%' } },
+  { id: 'v2.6', version: '2.6', name: "By Sun's Scourge, By Moon's Revelation", art: 'https://i.ibb.co/tPmjm4Gj/2-6-By-Sun-039-s-Scourge-By-Moon-039-s-Revelation.webp',              pos: { header: '50% 18%', nav: '50% 18%', bg: '50% 50%' } },
   { id: 'v2.5', version: '2.5', name: 'Unfading Melody of Life',               art: 'https://i.ibb.co/9mPqRNB5/2-5-Unfading-Melody-of-Life.webp',                                      pos: { header: '50% 30%', nav: '50% 32%', bg: '38% 50%' } },
   { id: 'v2.4', version: '2.4', name: 'Lightly We Toss the Crown',             art: 'https://i.ibb.co/1Y9nQ0fh/2-4-Lightly-We-Toss-the-Crown.webp',                                    pos: { header: '50% 26%', nav: '50% 25%', bg: '52% 50%' } },
   { id: 'v2.3', version: '2.3', name: 'Fiery Arpeggio of Summer Reunion',      art: 'https://i.ibb.co/xqGcwWtp/2-3-Fiery-Arpeggio-of-Summer-Reunion.webp',                             pos: { header: '50% 34%', nav: '50% 32%', bg: '26% 50%' } },
