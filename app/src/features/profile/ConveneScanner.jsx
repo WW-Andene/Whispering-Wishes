@@ -5,7 +5,7 @@
 
 import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, Scan, X } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import { HEADER_ICON } from '../../data/constants.js';
 
 export default function ConveneScanner({
@@ -19,9 +19,11 @@ export default function ConveneScanner({
 
   if (!directCameraOpen) return null;
 
-  // Scan zone: 4:3 landscape ratio, centered vertically
+  // Scan zone: 4:3 landscape ratio
   const zone = { top: 38, left: 8, right: 8, height: 24 };
-  const zoneRadius = 12;
+  const r = 12; // corner radius
+  const bracketSize = 32; // bracket arm length
+  const bracketOffset = 6; // gap between zone border and bracket
 
   return createPortal(
     <div className="fixed inset-0 z-[9999]" style={{ touchAction: 'none' }} onTouchMove={(e) => {
@@ -62,14 +64,24 @@ export default function ConveneScanner({
 
       {/* ═══ CAMERA HUD ═══ */}
 
-      {/* Dark mask with rounded cutout matching zone corners */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        background: 'rgba(6,10,18,0.82)',
-        maskImage: `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'><rect width='100%25' height='100%25' fill='white'/><rect x='${zone.left}%25' y='${zone.top}%25' width='${100 - zone.left - zone.right}%25' height='${zone.height}%25' rx='${zoneRadius}' fill='black'/></svg>`)}")`,
-        WebkitMaskImage: `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'><rect width='100%25' height='100%25' fill='white'/><rect x='${zone.left}%25' y='${zone.top}%25' width='${100 - zone.left - zone.right}%25' height='${zone.height}%25' rx='${zoneRadius}' fill='black'/></svg>`)}")`,
-        maskSize: '100% 100%',
-        WebkitMaskSize: '100% 100%',
-      }} />
+      {/* Dark mask — 4 panels around the zone with rounded inner edges via clip-path */}
+      {/* Top */}
+      <div className="absolute pointer-events-none" style={{ top: 0, left: 0, right: 0, height: `${zone.top}%`, background: 'rgba(6,10,18,0.82)' }} />
+      {/* Bottom */}
+      <div className="absolute pointer-events-none" style={{ bottom: 0, left: 0, right: 0, height: `${100 - zone.top - zone.height}%`, background: 'rgba(6,10,18,0.82)' }} />
+      {/* Left */}
+      <div className="absolute pointer-events-none" style={{ top: `${zone.top}%`, left: 0, width: `${zone.left}%`, height: `${zone.height}%`, background: 'rgba(6,10,18,0.82)' }} />
+      {/* Right */}
+      <div className="absolute pointer-events-none" style={{ top: `${zone.top}%`, right: 0, width: `${zone.right}%`, height: `${zone.height}%`, background: 'rgba(6,10,18,0.82)' }} />
+      {/* Rounded corner fills — 4 small squares at zone corners filled with mask color + inverse border-radius */}
+      {[
+        { top: `${zone.top}%`, left: `${zone.left}%`, borderBottomRightRadius: r },
+        { top: `${zone.top}%`, right: `${zone.right}%`, borderBottomLeftRadius: r },
+        { bottom: `${100 - zone.top - zone.height}%`, left: `${zone.left}%`, borderTopRightRadius: r },
+        { bottom: `${100 - zone.top - zone.height}%`, right: `${zone.right}%`, borderTopLeftRadius: r },
+      ].map((style, i) => (
+        <div key={i} className="absolute pointer-events-none" style={{ ...style, width: r, height: r, background: 'rgba(6,10,18,0.82)' }} />
+      ))}
 
       {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
@@ -91,19 +103,54 @@ export default function ConveneScanner({
       {/* ── Scan zone ── */}
       <div className="absolute pointer-events-none" style={{ top: `${zone.top}%`, left: `${zone.left}%`, right: `${zone.right}%`, height: `${zone.height}%` }}>
 
-        {/* Zone border */}
-        <div className="absolute inset-0" style={{ border: '1.5px solid rgba(255,255,255,0.2)', borderRadius: zoneRadius }} />
+        {/* Zone border — visible */}
+        <div className="absolute inset-0" style={{ border: '2px solid rgba(255,255,255,0.35)', borderRadius: r }} />
 
-        {/* Scan icon center */}
-        <div className="absolute flex items-center justify-center" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-          <Scan size={28} style={{ color: 'rgba(255,255,255,0.06)' }} />
+        {/* Bracket corners OUTSIDE the zone — rounded, matching zone radius */}
+        {[
+          { top: -bracketOffset, left: -bracketOffset, btr: r + 2, sides: ['Top', 'Left'] },
+          { top: -bracketOffset, right: -bracketOffset, btr: r + 2, sides: ['Top', 'Right'] },
+          { bottom: -bracketOffset, left: -bracketOffset, btr: r + 2, sides: ['Bottom', 'Left'] },
+          { bottom: -bracketOffset, right: -bracketOffset, btr: r + 2, sides: ['Bottom', 'Right'] },
+        ].map(({ sides, btr, ...pos }, i) => (
+          <div key={i} className="absolute" style={{ ...pos, width: bracketSize, height: bracketSize, overflow: 'hidden' }}>
+            <div style={{
+              position: 'absolute',
+              [sides[0].toLowerCase()]: 0,
+              [sides[1].toLowerCase()]: 0,
+              width: bracketSize,
+              height: bracketSize,
+              border: '2.5px solid rgba(255,255,255,0.7)',
+              [`border${sides[0]}${sides[1]}Radius`]: btr,
+              [`border${sides[0] === 'Top' ? 'Bottom' : 'Top'}${sides[1]}Radius`]: 0,
+              [`border${sides[0]}${sides[1] === 'Left' ? 'Right' : 'Left'}Radius`]: 0,
+              [`border${sides[0] === 'Top' ? 'Bottom' : 'Top'}${sides[1] === 'Left' ? 'Right' : 'Left'}Radius`]: 0,
+              [`border${sides[0] === 'Top' ? 'Bottom' : 'Top'}`]: 'none',
+              [`border${sides[1] === 'Left' ? 'Right' : 'Left'}`]: 'none',
+            }} />
+          </div>
+        ))}
+
+        {/* Center crosshair / target */}
+        <div className="absolute" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          {/* Horizontal line */}
+          <div style={{ position: 'absolute', width: 40, height: '1.5px', top: 0, left: -20, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)' }} />
+          {/* Vertical line */}
+          <div style={{ position: 'absolute', width: '1.5px', height: 40, top: -20, left: 0, background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.4), transparent)' }} />
+          {/* Center dot */}
+          <div style={{ position: 'absolute', width: 6, height: 6, top: -3, left: -3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
+        </div>
+
+        {/* Scan sweep beam */}
+        <div className="absolute overflow-hidden" style={{ inset: 2, borderRadius: r - 2 }}>
+          <div className="absolute left-0 right-0" style={{ height: '2px', animation: 'camScan 3s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.2) 70%, transparent 95%)', boxShadow: '0 0 16px 3px rgba(255,255,255,0.06)' }} />
         </div>
       </div>
 
       {/* Instruction text */}
       <div className="absolute left-0 right-0 text-center pointer-events-none" style={{ top: `${zone.top + zone.height + 2}%` }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', fontFamily: "'Rajdhani', sans-serif" }}>Align URL text box within frame</p>
-        <p style={{ fontSize: 7, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.1)', marginTop: 4 }}>Pinch to zoom</p>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', fontFamily: "'Rajdhani', sans-serif" }}>Align URL text box within frame</p>
+        <p style={{ fontSize: 7, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.12)', marginTop: 4 }}>Pinch to zoom</p>
       </div>
 
       {/* Bottom bar */}
@@ -111,17 +158,18 @@ export default function ConveneScanner({
         <div className="flex justify-center pointer-events-auto" style={{ paddingTop: 16 }}>
           <button onClick={captureDirectCamera} className="relative active:scale-90 transition-transform" style={{ width: 68, height: 68 }}>
             <div className="absolute inset-[-4px] rounded-full" style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 20%, rgba(255,255,255,0.3) 45%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.3) 55%, transparent 80%, transparent 100%)', animation: 'captureShimmer 3s linear infinite' }} />
-            <div className="absolute inset-0 rounded-full" style={{ border: '1.5px solid rgba(255,255,255,0.12)', background: 'rgba(6,10,18,0.85)', backdropFilter: 'blur(12px)' }} />
-            <div className="absolute rounded-full" style={{ inset: 5, background: 'rgba(6,10,18,1)', border: '1px solid rgba(255,255,255,0.08)' }} />
+            <div className="absolute inset-0 rounded-full" style={{ border: '1.5px solid rgba(255,255,255,0.15)', background: 'rgba(6,10,18,0.85)', backdropFilter: 'blur(12px)' }} />
+            <div className="absolute rounded-full" style={{ inset: 5, background: 'rgba(6,10,18,1)', border: '1px solid rgba(255,255,255,0.1)' }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Camera size={20} style={{ color: 'rgba(255,255,255,0.35)' }} />
+              <Camera size={20} style={{ color: 'rgba(255,255,255,0.4)' }} />
             </div>
           </button>
         </div>
-        <p className="text-center" style={{ fontSize: 8, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.12)', marginTop: 8, textTransform: 'uppercase', fontWeight: 600 }}>Capture</p>
+        <p className="text-center" style={{ fontSize: 8, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.15)', marginTop: 8, textTransform: 'uppercase', fontWeight: 600 }}>Capture</p>
       </div>
 
       <style>{`
+        @keyframes camScan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
         @keyframes captureShimmer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>,
