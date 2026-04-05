@@ -50,7 +50,7 @@ import { BackgroundGlow } from './shared/backgrounds/BackgroundGlow.jsx';
 import { TriangleMirrorWave } from './shared/backgrounds/TriangleMirrorWave.jsx';
 import { ResonanceField } from './shared/backgrounds/ResonanceField.jsx';
 import { Honour } from './shared/backgrounds/Honour.jsx';
-import { getActiveBanners } from './shared/components/BannerCard.jsx';
+import { getActiveBanners } from './shared/components/bannerUtils.js';
 // --- Feature tabs ---
 // D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting
 import EventsTab from './features/events/EventsTab.jsx';

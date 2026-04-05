@@ -9,7 +9,8 @@ import { BANNER_HISTORY } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { BannerCard, StandardBannerSection } from '../../shared/components/BannerCard.jsx';
+import { BannerCard } from '../../shared/components/BannerCard.jsx';
+import { StandardBannerSection } from '../../shared/components/StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 
