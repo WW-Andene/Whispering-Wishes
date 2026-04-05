@@ -585,7 +585,7 @@
     .kuro-card-inner {
       position: relative;
       overflow: hidden;
-      border-radius: 15px;
+      border-radius: 16px;
     }
     
     /* Corner decorations */
