@@ -29,11 +29,30 @@ function EventsTab({
 
   // L1-FIX: Memoize event progress stats (was 60+ array iterations per render)
   const progressStats = useMemo(() => {
-    const totalAstrite = EVENT_ENTRIES.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
+    // Weekly rewards: daily recurring (×7) + weekly recurring sources
+    const totalAstrite = EVENT_ENTRIES.reduce((sum, [, ev]) => {
+      const val = parseInt(ev.rewards, 10) || 0;
+      if (!val) return sum;
+      if (ev.dailyReset) return sum + val * 7;
+      if (ev.weeklyReset) return sum + val;
+      return sum;
+    }, 0);
     const doneKeys = EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'done');
     const skippedKeys = EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'skipped');
-    const earnedAstrite = doneKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
-    const skippedAstrite = skippedKeys.reduce((sum, [, ev]) => sum + (parseInt(ev.rewards, 10) || 0), 0);
+    const earnedAstrite = doneKeys.reduce((sum, [, ev]) => {
+      const val = parseInt(ev.rewards, 10) || 0;
+      if (!val) return sum;
+      if (ev.dailyReset) return sum + val * 7;
+      if (ev.weeklyReset) return sum + val;
+      return sum;
+    }, 0);
+    const skippedAstrite = skippedKeys.reduce((sum, [, ev]) => {
+      const val = parseInt(ev.rewards, 10) || 0;
+      if (!val) return sum;
+      if (ev.dailyReset) return sum + val * 7;
+      if (ev.weeklyReset) return sum + val;
+      return sum;
+    }, 0);
     const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
     const pendingCount = EVENT_ENTRIES.length - doneKeys.length - skippedKeys.length;
     return { totalAstrite, earnedAstrite, skippedAstrite, hasProgress, doneCount: doneKeys.length, skippedCount: skippedKeys.length, pendingCount, totalCount: EVENT_ENTRIES.length };
@@ -112,7 +131,7 @@ function EventsTab({
         <CardBody className="space-y-2">
               <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="text-yellow-400 text-xs font-medium">{progressStats.hasProgress ? 'Astrite Progress' : 'Total Available Astrite'}</span>
+                  <span className="text-yellow-400 text-xs font-medium">{progressStats.hasProgress ? 'Weekly Progress' : 'Weekly Rewards'}</span>
                   <span className="text-yellow-400 font-bold text-sm">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">

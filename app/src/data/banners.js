@@ -121,7 +121,7 @@ const EVENTS = {
     resetType: 'Daily 4:00 AM',
     color: 'yellow',
     dailyReset: true,
-    rewards: 'Waveplates',
+    rewards: '60 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow'
   },
