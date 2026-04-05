@@ -5,12 +5,11 @@
 
 import React from 'react';
 import { User, Star, X } from 'lucide-react';
-import {
-  CHARACTER_DATA, DEFAULT_COLLECTION_IMAGES,
-  ECHO_DATA, ECHO_SETS,
-  ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
-} from '../../appcore-data.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { ECHO_DATA, ECHO_SETS } from '../../data/echoes.js';
+import { ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
 

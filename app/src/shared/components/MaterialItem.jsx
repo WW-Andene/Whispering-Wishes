@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { MATERIAL_IMAGES } from '../../appcore-data.js';
+import { MATERIAL_IMAGES } from '../../data/constants.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 
 const MaterialItem = ({ name, qty }) => {

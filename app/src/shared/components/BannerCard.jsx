@@ -5,14 +5,11 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 import { Star, Check, CheckCircle, SkipForward } from 'lucide-react';
-import {
-  HARD_PITY, SOFT_PITY_START, CURRENT_BANNERS, haptic,
-  ELEMENT_COLORS, getElementColor,
-} from '../../appcore-data.js';
-import {
-  getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd,
-  getNextDailyReset, getNextWeeklyReset, storageAvailable, sanitizeStateObj,
-} from '../../appcore-engine.js';
+import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
+import { CURRENT_BANNERS } from '../../data/banners.js';
+import { haptic, ELEMENT_COLORS, getElementColor } from '../../utils/helpers.js';
+import { getTimeRemaining, getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
+import { storageAvailable, sanitizeStateObj } from '../../core/storage.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 

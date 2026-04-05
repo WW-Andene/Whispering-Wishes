@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { User, Crown } from 'lucide-react';
-import { CHARACTER_DATA, haptic } from '../../appcore-data.js';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { eraseEchoBg } from '../utils/echoBackground.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';

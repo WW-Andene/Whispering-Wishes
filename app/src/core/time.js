@@ -3,7 +3,7 @@
 // Time utilities: countdowns, server-adjusted dates, daily/weekly resets.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { SERVERS, getServerOffset } from '../appcore-data.js';
+import { SERVERS, getServerOffset } from '../data/constants.js';
 
 // [SECTION:TIME]
 const getTimeRemaining = (endDate) => {

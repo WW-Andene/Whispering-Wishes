@@ -5,13 +5,11 @@
 
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid } from 'lucide-react';
-import {
-  CHARACTER_DATA, WEAPON_DATA, DEFAULT_COLLECTION_IMAGES,
-  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS,
-  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
-  RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
-} from '../../appcore-data.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';

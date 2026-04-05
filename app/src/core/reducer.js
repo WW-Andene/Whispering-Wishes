@@ -6,8 +6,8 @@
 import {
   HARD_PITY, HARD_PITY_4STAR, FEATURED_4STAR_RATE,
   LUNITE_DAILY_ASTRITE, MAX_ASTRITE,
-  generateUniqueId,
-} from '../appcore-data.js';
+} from '../data/constants.js';
+import { generateUniqueId } from '../utils/helpers.js';
 // NOTE: circular import with storage.js — safe because sanitizeImportedState
 // and sanitizeStateObj are only referenced inside function bodies (reducer case
 // handlers), never at module-evaluation time.

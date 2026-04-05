@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
-import { HEADER_ICON } from '../appcore-data.js';
+import { HEADER_ICON } from '../data/constants.js';
 
 // P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
 // Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.

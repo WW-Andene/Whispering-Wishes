@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { memo } from 'react';
-import { HARD_PITY, SOFT_PITY_START } from '../../appcore-data.js';
+import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 
 const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color = '#edaf18', glowColor = 'rgba(237,175,24,0.4)', label, sublabel, softPityStart }) => {
   const safeValue = Number(value) || 0;

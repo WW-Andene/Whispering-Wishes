@@ -5,13 +5,9 @@
 
 import React from 'react';
 import { Swords, Star, TrendingUp, X } from 'lucide-react';
-import {
-  WEAPON_DATA,
-  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
-  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
-  WEAPON_REFINE_SCALE,
-} from '../../appcore-data.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 

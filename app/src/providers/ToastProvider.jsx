@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react';
 import { Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
-import { haptic, generateUniqueId } from '../appcore-data.js';
+import { haptic, generateUniqueId } from '../utils/helpers.js';
 
 // [SECTION:TOAST]
 
