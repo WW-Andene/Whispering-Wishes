@@ -21,6 +21,7 @@ import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 // Recharts removed — using native SVG for charts
 
 import { TROPHY_OVERRIDES_KEY, ALLOWED_IMAGE_HOSTS } from '../../shared/constants/appConstants.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 // ═══ Echo Background Removal Tool ═══════════════════════════════════════════
 // Batch-processes all echo images through HuggingFace BRIA-RMBG-1.4 via /api/batch-remove-bg
@@ -169,21 +170,21 @@ export default function AdminPanel({
   visualSettings, saveVisualSettings,
   customCollectionImages, saveCollectionImages, collectionImages,
   activeBanners, setActiveBanners,
-  imageFraming, framingMode, setFramingMode,
-  editingImage, setEditingImage,
-  getImageFraming, updateEditingFraming, resetEditingFraming,
-  miniPanelPosition, saveMiniPanelPosition, getMiniPanelPositionClasses,
   state, dispatch, toast, confirm,
   adminTrapRef,
   setActiveTab,
   withCacheBuster,
   detailModal,
-  saveImageFraming,
   DEFAULT_VISUAL_SETTINGS,
   bgFramingMode, setBgFramingMode,
   editingBgTarget, setEditingBgTarget,
   updateBgPosition, getBgPositionLabel, exportBgPositions,
 }) {
+  const {
+    imageFraming, framingMode, setFramingMode, editingImage, setEditingImage,
+    getImageFraming, updateEditingFraming, resetEditingFraming,
+    miniPanelPosition, saveMiniPanelPosition, getMiniPanelPositionClasses, saveImageFraming,
+  } = useImageFramingContext();
   if (!showAdminPanel) return null;
   return (
     <>

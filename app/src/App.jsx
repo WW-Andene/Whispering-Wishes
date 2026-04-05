@@ -37,6 +37,8 @@ import { ConfirmProvider, useConfirm } from './providers/ConfirmProvider.jsx';
 import { FocusTrapModal, useFocusTrap } from './providers/FocusTrapModal.jsx';
 import { KuroStyles } from './providers/KuroStyles.jsx';
 import { OnboardingModal } from './providers/OnboardingModal.jsx';
+import { ImageFramingProvider, useImageFramingContext } from './providers/ImageFramingProvider.jsx';
+import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---
 import { CharacterDetailModal } from './shared/modals/CharacterDetailModal.jsx';
 import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
@@ -207,12 +209,9 @@ function WhisperingWishesInner() {
 
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
-  // Google Auth state for cloud backup
-  const [googleUser, setGoogleUser] = useState(() => {
-    try { const v = localStorage.getItem('ww-google-user'); return v ? JSON.parse(v) : null; } catch { return null; }
-  });
-  const [cloudBackupStatus, setCloudBackupStatus] = useState('idle'); // idle|saving|loading|done|error
-  const googleAuthRef = useRef({ idToken: null, refreshToken: null, expiresAt: 0 });
+  // Google Auth + Cloud Storage — provided by CloudStorageProvider context
+  // (googleUser, cloudBackupStatus, auth tokens managed inside provider)
+
   const stateRef = useRef(state);
   
 
@@ -411,204 +410,17 @@ function WhisperingWishesInner() {
     }
   }, [visualSettings.dyslexicFont]);
 
-  // Image framing state - stores position/zoom for each image by key
-  const [imageFraming, setImageFraming] = useState({});
-  const [editingImage, setEditingImage] = useState(null); // currently selected image key
-  const [framingMode, setFramingMode] = useState(false);
+  // Image framing — provided by ImageFramingProvider context
+  const {
+    imageFraming, setImageFraming, editingImage, setEditingImage,
+    framingMode, setFramingMode, miniPanelPosition, saveMiniPanelPosition,
+    getMiniPanelPositionClasses, saveImageFraming, getImageFraming,
+    updateEditingFraming, resetEditingFraming,
+  } = useImageFramingContext();
+
   const [bgFramingMode, setBgFramingMode] = useState(false); // background image positioning mode
   const [editingBgTarget, setEditingBgTarget] = useState(null); // 'header' | 'nav' | 'bg'
-  const [miniPanelPosition, setMiniPanelPosition] = useState('bottom-right'); // top-left, top-right, bottom-left, bottom-right
-  
-  // Load image framing from localStorage
-  useEffect(() => {
-    if (!storageAvailable) return;
-    try {
-      const saved = localStorage.getItem(IMAGE_FRAMING_KEY);
-      if (saved) setImageFraming(sanitizeStateObj(JSON.parse(saved)));
-      const pos = localStorage.getItem('ww-mini-panel-pos');
-      if (pos) setMiniPanelPosition(pos);
-    } catch {}
-  }, []);
-  
-  // Save image framing
-  const saveImageFraming = (key, settings) => {
-    const newFraming = { ...imageFraming, [key]: settings };
-    setImageFraming(newFraming);
-    if (storageAvailable) {
-      try { localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(newFraming)); } catch {}
-    }
-  };
-  
-  // Get framing for an image (returns user override → hardcoded default → base default)
-  const defaultFraming = useMemo(() => ({ x: 0, y: 0, zoom: 100 }), []);
-  const DEFAULT_IMAGE_FRAMING = useMemo(() => ({
-    // Collection framing
-    'collection-Jiyan': { x: 8, y: -24, zoom: 250 },
-    'collection-Calcharo': { x: -2, y: -26, zoom: 220 },
-    'collection-Encore': { x: -2, y: -20, zoom: 150 },
-    'collection-Jianxin': { x: 2, y: -24, zoom: 210 },
-    'collection-Lingyang': { x: -2, y: -18, zoom: 150 },
-    'collection-Verina': { x: 0, y: -14, zoom: 250 },
-    'collection-Yinlin': { x: 2, y: -26, zoom: 210 },
-    'collection-Changli': { x: 6, y: -26, zoom: 210 },
-    'collection-Jinhsi': { x: 2, y: -28, zoom: 190 },
-    'collection-Shorekeeper': { x: 12, y: -22, zoom: 210 },
-    'collection-Camellya': { x: 0, y: -28, zoom: 190 },
-    'collection-Xiangli Yao': { x: -4, y: -16, zoom: 300 },
-    'collection-Zhezhi': { x: -2, y: -14, zoom: 230 },
-    'collection-Carlotta': { x: 2, y: -28, zoom: 210 },
-    'collection-Roccia': { x: 8, y: -4, zoom: 210 },
-    'collection-Phoebe': { x: 10, y: -26, zoom: 190 },
-    'collection-Brant': { x: -2, y: -26, zoom: 250 },
-    'collection-Cantarella': { x: -2, y: -20, zoom: 230 },
-    'collection-Zani': { x: 4, y: -26, zoom: 210 },
-    'collection-Ciaccona': { x: 10, y: -24, zoom: 230 },
-    'collection-Cartethyia': { x: -4, y: -26, zoom: 210 },
-    'collection-Lupa': { x: 0, y: -12, zoom: 210 },
-    'collection-Augusta': { x: 4, y: -30, zoom: 240 },
-    'collection-Galbrena': { x: 14, y: -24, zoom: 230 },
-    'collection-Iuno': { x: -2, y: -24, zoom: 190 },
-    'collection-Luuk Herssen': { x: 2, y: 0, zoom: 120 },
-    'collection-Aemeath': { x: -14, y: -20, zoom: 190 },
-    'collection-Mornye': { x: 4, y: -20, zoom: 170 },
-    'collection-Rover': { x: 24, y: -24, zoom: 230 },
-    'collection-Chisa': { x: -6, y: -20, zoom: 230 },
-    'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
-    'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
-    'collection-Lynae': { x: -12, y: -28, zoom: 190 },
-    'collection-Sigrika': { x: 2, y: -26, zoom: 180 },
-    'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
-    'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
-    // 4★ Resonators
-    'collection-Aalto': { x: 4, y: -24, zoom: 210 },
-    'collection-Baizhi': { x: -2, y: -12, zoom: 250 },
-    'collection-Chixia': { x: -4, y: -26, zoom: 190 },
-    'collection-Danjin': { x: -4, y: -24, zoom: 190 },
-    'collection-Yangyang': { x: -4, y: -16, zoom: 250 },
-    'collection-Sanhua': { x: 12, y: -26, zoom: 190 },
-    'collection-Taoqi': { x: 4, y: -26, zoom: 190 },
-    'collection-Yuanwu': { x: 2, y: -24, zoom: 210 },
-    'collection-Mortefi': { x: -2, y: -28, zoom: 210 },
-    'collection-Youhu': { x: 0, y: -24, zoom: 160 },
-    'collection-Lumi': { x: 0, y: -24, zoom: 170 },
-    'collection-Buling': { x: 0, y: -22, zoom: 170 },
-    // Team card framing
-    'team-Jiyan': { x: 6, y: -18, zoom: 260 },
-    'team-Calcharo': { x: 0, y: -20, zoom: 230 },
-    'team-Rover': { x: 24, y: -16, zoom: 240 },
-    'team-Encore': { x: 0, y: -14, zoom: 150 },
-    'team-Jianxin': { x: 2, y: -18, zoom: 180 },
-    'team-Lingyang': { x: -4, y: -12, zoom: 160 },
-    'team-Sanhua': { x: 12, y: -22, zoom: 170 },
-    'team-Verina': { x: 0, y: -8, zoom: 250 },
-    'team-Jinhsi': { x: 0, y: -22, zoom: 160 },
-    'team-Yinlin': { x: 2, y: -22, zoom: 170 },
-    'team-Changli': { x: 8, y: -20, zoom: 160 },
-    'team-Mortefi': { x: -2, y: -24, zoom: 180 },
-    'team-Shorekeeper': { x: 12, y: -18, zoom: 180 },
-    'team-Zhezhi': { x: -2, y: -10, zoom: 200 },
-    'team-Xiangli Yao': { x: -4, y: -10, zoom: 300 },
-    'team-Camellya': { x: 0, y: -22, zoom: 170 },
-    'team-Carlotta': { x: 0, y: -20, zoom: 170 },
-    'team-Roccia': { x: 8, y: 0, zoom: 180 },
-    'team-Phoebe': { x: 12, y: -20, zoom: 170 },
-    'team-Brant': { x: -2, y: -18, zoom: 190 },
-    'team-Cantarella': { x: 0, y: -16, zoom: 220 },
-    'team-Zani': { x: 6, y: -26, zoom: 200 },
-    'team-Ciaccona': { x: 10, y: -20, zoom: 190 },
-    'team-Cartethyia': { x: 0, y: -22, zoom: 170 },
-    'team-Lupa': { x: 4, y: -8, zoom: 210 },
-    'team-Phrolova': { x: 2, y: -24, zoom: 170 },
-    'team-Augusta': { x: 4, y: -22, zoom: 180 },
-    'team-Iuno': { x: 0, y: -16, zoom: 200 },
-    'team-Galbrena': { x: 16, y: -20, zoom: 200 },
-    'team-Qiuyuan': { x: -8, y: -26, zoom: 200 },
-    'team-Chisa': { x: -4, y: -20, zoom: 230 },
-    'team-Lynae': { x: -10, y: -22, zoom: 160 },
-    'team-Luuk Herssen': { x: 2, y: 4, zoom: 130 },
-    'team-Aemeath': { x: -12, y: -16, zoom: 170 },
-    'team-Sigrika': { x: 4, y: -20, zoom: 160 },
-    'team-Aalto': { x: 6, y: -20, zoom: 190 },
-    'team-Baizhi': { x: -2, y: -6, zoom: 220 },
-    'team-Chixia': { x: -6, y: -24, zoom: 180 },
-    'team-Danjin': { x: 0, y: -22, zoom: 180 },
-    'team-Yangyang': { x: -4, y: -12, zoom: 270 },
-    'team-Taoqi': { x: 6, y: -20, zoom: 180 },
-    'team-Yuanwu': { x: 2, y: -22, zoom: 190 },
-    'team-Youhu': { x: 2, y: -14, zoom: 130 },
-    'team-Lumi': { x: 0, y: -22, zoom: 170 },
-    'team-Buling': { x: 0, y: -18, zoom: 150 },
-    'team-Mornye': { x: 4, y: -20, zoom: 170 },
-    'team-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
-    'team-Blazing Justice': { x: 0, y: 0, zoom: 100 },
-    // Info panel framing
-    'info-Encore': { x: -8, y: -50, zoom: 170 },
-    'info-Lingyang': { x: -14, y: -50, zoom: 170 },
-    'info-Calcharo': { x: -24, y: -68, zoom: 250 },
-    'info-Aemeath': { x: -26, y: -60, zoom: 230 },
-    'info-Lynae': { x: -14, y: -62, zoom: 210 },
-    'info-Sigrika': { x: -8, y: -60, zoom: 210 },
-    'info-Chisa': { x: -30, y: -66, zoom: 230 },
-    'info-Iuno': { x: -18, y: -56, zoom: 190 },
-    'info-Augusta': { x: -12, y: -64, zoom: 250 },
-    'info-Ciaccona': { x: 0, y: -60, zoom: 250 },
-    'info-Zani': { x: -8, y: -64, zoom: 250 },
-    'info-Cantarella': { x: -22, y: -58, zoom: 270 },
-    'info-Phoebe': { x: 8, y: -56, zoom: 210 },
-    'info-Verina': { x: -24, y: -50, zoom: 230 },
-    'info-Xiangli Yao': { x: -36, y: -58, zoom: 300 },
-    'info-Jiyan': { x: -18, y: -68, zoom: 270 },
-    'info-Yinlin': { x: 0, y: -60, zoom: 230 },
-    'info-Jinhsi': { x: -6, y: -62, zoom: 210 },
-    'info-Shorekeeper': { x: 8, y: -58, zoom: 250 },
-    'info-Camellya': { x: -4, y: -64, zoom: 230 },
-    'info-Changli': { x: -4, y: -62, zoom: 230 },
-    'info-Zhezhi': { x: -22, y: -52, zoom: 270 },
-    'info-Carlotta': { x: -10, y: -60, zoom: 210 },
-    'info-Roccia': { x: -4, y: -42, zoom: 250 },
-    'info-Brant': { x: -20, y: -64, zoom: 290 },
-    'info-Cartethyia': { x: -10, y: -64, zoom: 230 },
-    'info-Lupa': { x: -20, y: -52, zoom: 250 },
-    'info-Phrolova': { x: -8, y: -66, zoom: 230 },
-    'info-Galbrena': { x: 4, y: -62, zoom: 270 },
-    'info-Qiuyuan': { x: -20, y: -64, zoom: 250 },
-    'info-Mornye': { x: 0, y: -52, zoom: 190 },
-    'info-Luuk Herssen': { x: 0, y: -24, zoom: 120 },
-    'info-Jianxin': { x: -2, y: -58, zoom: 230 },
-    'info-Taoqi': { x: -8, y: -60, zoom: 210 },
-    'info-Baizhi': { x: -20, y: -48, zoom: 270 },
-    'info-Aalto': { x: 2, y: -62, zoom: 250 },
-    'info-Lumi': { x: 8, y: -60, zoom: 200 },
-    'info-Mortefi': { x: -16, y: -66, zoom: 250 },
-    'info-Yangyang': { x: -32, y: -56, zoom: 250 },
-    'info-Chixia': { x: -8, y: -64, zoom: 230 },
-    'info-Youhu': { x: 2, y: -58, zoom: 190 },
-    'info-Yuanwu': { x: -12, y: -66, zoom: 270 },
-    'info-Danjin': { x: -14, y: -64, zoom: 250 },
-    'info-Sanhua': { x: 6, y: -68, zoom: 250 },
-    'info-Buling': { x: 0, y: -64, zoom: 230 },
-  }), []);
-  const getImageFraming = useCallback((key) => {
-    return imageFraming[key] || DEFAULT_IMAGE_FRAMING[key] || defaultFraming;
-  }, [imageFraming, DEFAULT_IMAGE_FRAMING, defaultFraming]);
-  
-  // Update framing for currently editing image
-  const updateEditingFraming = (changes) => {
-    if (!editingImage) return;
-    const current = getImageFraming(editingImage);
-    const newFraming = { ...current, ...changes };
-    // Clamp values - larger range for better control
-    newFraming.x = Math.max(-100, Math.min(100, newFraming.x));
-    newFraming.y = Math.max(-100, Math.min(100, newFraming.y));
-    newFraming.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newFraming.zoom));
-    saveImageFraming(editingImage, newFraming);
-  };
-  
-  const resetEditingFraming = () => {
-    if (!editingImage) return;
-    saveImageFraming(editingImage, { x: 0, y: 0, zoom: 100 });
-  };
-  
+
   // Custom bg positions — persisted separately so they survive image re-selection
   const [customBgPositions, setCustomBgPositions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('ww-bg-positions') || '{}'); } catch { return {}; }
@@ -653,22 +465,6 @@ function WhisperingWishesInner() {
     return JSON.stringify(customBgPositions, null, 2);
   }, [customBgPositions]);
 
-  const saveMiniPanelPosition = (pos) => {
-    setMiniPanelPosition(pos);
-    if (storageAvailable) {
-      try { localStorage.setItem('ww-mini-panel-pos', pos); } catch {}
-    }
-  };
-  
-  // Get position classes for mini panel
-  const getMiniPanelPositionClasses = () => {
-    switch (miniPanelPosition) {
-      case 'top-left': return 'top-16 left-2';
-      case 'top-right': return 'top-16 right-2';
-      case 'bottom-left': return 'bottom-20 left-2';
-      default: return 'bottom-20 right-2';
-    }
-  };
   
   // Default character/weapon images (built-in)
   
@@ -993,305 +789,41 @@ function WhisperingWishesInner() {
   
   // Leaderboard functions - Firebase Realtime Database (constants at module level)
 
-  // Firebase Anonymous Auth - tries to get a token, returns '' if auth unavailable.
-  // All Firebase requests work with or without auth (unauthenticated if token is empty).
+  // Firebase anonymous auth + helpers — now in CloudStorageProvider
+  // Presence system consumes them via useCloudStorage() below.
+
+  
+  // ══════════════════════════════════════════════════════════════════════════
+  // Google Sign-In, cloud backup/restore/delete — now in CloudStorageProvider
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Firebase Anonymous Auth — kept here for presence system (runs before JSX return).
+  // CloudStorageProvider has its own copy for cloud operations + exposes via context.
   const firebaseAuthRef = useRef({ idToken: null, expiresAt: 0 });
   const getFirebaseAuth = useCallback(async () => {
-    if (!FIREBASE_AVAILABLE) {
-      console.warn('[WW] Firebase config missing - online features disabled.');
-      return null;
-    }
+    if (!FIREBASE_AVAILABLE) return null;
     const now = Date.now();
     if (firebaseAuthRef.current.idToken && firebaseAuthRef.current.expiresAt > now + 60000) {
       return firebaseAuthRef.current.idToken;
     }
     try {
       const res = await fetchWithTimeout(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ returnSecureToken: true })
       });
       if (!res.ok) throw new Error('Firebase auth failed');
       const data = await res.json();
-      firebaseAuthRef.current = {
-        idToken: data.idToken,
-        expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000
-      };
+      firebaseAuthRef.current = { idToken: data.idToken, expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000 };
       return data.idToken;
-    } catch (e) {
-      console.warn('Firebase anonymous auth failed:', e);
-      return null;
-    }
+    } catch (e) { console.warn('Firebase anonymous auth failed:', e); return null; }
   }, []);
-
-  // Helper: build Firebase URL (F-017: auth moved to Authorization header — no longer in URL)
   const firebaseUrl = useCallback((path) => `${FIREBASE_DB}/${path}.json`, []);
-
-  // Helper: Firebase fetch with auth in Authorization header instead of URL query param
-  // This prevents token leakage in browser history, referrer headers, and server logs.
   const firebaseFetch = useCallback((path, authToken, options = {}) => {
     const url = `${FIREBASE_DB}/${path}.json`;
     const headers = { ...(options.headers || {}) };
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
     return fetchWithTimeout(url, { ...options, headers });
   }, []);
-  
-  // ══════════════════════════════════════════════════════════════════════════
-  // Google Sign-In for Cloud Backup (Firebase Auth REST API — no SDK)
-  // ══════════════════════════════════════════════════════════════════════════
-
-  // Refresh Google auth token using stored refresh token
-  const refreshGoogleToken = useCallback(async () => {
-    const rt = googleAuthRef.current.refreshToken;
-    if (!rt || !FIREBASE_API_KEY) return null;
-    try {
-      const res = await fetchWithTimeout('https://securetoken.googleapis.com/v1/token?key=' + FIREBASE_API_KEY, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(rt)}`,
-      });
-      if (!res.ok) throw new Error('Token refresh failed');
-      const data = await res.json();
-      googleAuthRef.current = {
-        idToken: data.id_token,
-        refreshToken: data.refresh_token || rt,
-        expiresAt: Date.now() + (parseInt(data.expires_in, 10) || 3600) * 1000,
-      };
-      return data.id_token;
-    } catch { return null; }
-  }, []);
-
-  // Get a valid Google auth token (refresh if needed)
-  const getGoogleAuth = useCallback(async () => {
-    if (!googleUser) return null;
-    const now = Date.now();
-    if (googleAuthRef.current.idToken && googleAuthRef.current.expiresAt > now + 60000) {
-      return googleAuthRef.current.idToken;
-    }
-    return refreshGoogleToken();
-  }, [googleUser, refreshGoogleToken]);
-
-  // Google Sign-In using Google Identity Services + Firebase REST API
-  const handleGoogleSignIn = useCallback(async () => {
-    if (!FIREBASE_API_KEY) { toast?.addToast?.('Firebase not configured', 'error'); return; }
-    try {
-      // Load GIS script if needed
-      if (!window.google?.accounts?.oauth2) {
-        await new Promise((resolve, reject) => {
-          if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
-            const check = setInterval(() => { if (window.google?.accounts?.oauth2) { clearInterval(check); resolve(); } }, 100);
-            setTimeout(() => { clearInterval(check); reject(new Error('GIS load timeout')); }, 10000);
-            return;
-          }
-          const script = document.createElement('script');
-          script.src = 'https://accounts.google.com/gsi/client';
-          script.onload = resolve;
-          script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
-          document.head.appendChild(script);
-        });
-      }
-
-      // Single flow: get access token via popup
-      const accessToken = await new Promise((resolve, reject) => {
-        const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
-          scope: 'email profile',
-          callback: (response) => {
-            if (response.error) reject(new Error(response.error));
-            else resolve(response.access_token);
-          },
-        });
-        client.requestAccessToken();
-      });
-
-      toast?.addToast?.('Signing in...', 'info');
-
-      // Exchange Google access token for Firebase ID token
-      const fbRes = await fetchWithTimeout(
-        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            postBody: `access_token=${accessToken}&providerId=google.com`,
-            requestUri: window.location.origin,
-            returnIdToken: true,
-            returnSecureToken: true,
-          }),
-        }
-      );
-      if (!fbRes.ok) {
-        const errData = await fbRes.json().catch(() => ({}));
-        throw new Error(errData?.error?.message || 'Firebase sign-in failed');
-      }
-      const fbData = await fbRes.json();
-
-      // F-009: Minimize PII stored in localStorage — exclude email (only store what's needed for display)
-      const user = {
-        uid: fbData.localId,
-        displayName: fbData.displayName || fbData.email?.split('@')[0] || 'User',
-        photoUrl: fbData.photoUrl || null,
-      };
-
-      googleAuthRef.current = {
-        idToken: fbData.idToken,
-        refreshToken: fbData.refreshToken,
-        expiresAt: Date.now() + (parseInt(fbData.expiresIn, 10) || 3600) * 1000,
-      };
-
-      setGoogleUser(user);
-      try { localStorage.setItem('ww-google-user', JSON.stringify(user)); } catch {}
-      toast?.addToast?.(`Signed in as ${user.displayName}`, 'success');
-    } catch (err) {
-      console.error('Google sign-in error:', err);
-      toast?.addToast?.('Sign-in failed: ' + (err.message || 'Unknown error'), 'error');
-    }
-  }, [toast]);
-
-  const handleGoogleSignOut = useCallback(() => {
-    setGoogleUser(null);
-    googleAuthRef.current = { idToken: null, refreshToken: null, expiresAt: 0 };
-    try { localStorage.removeItem('ww-google-user'); } catch {}
-    toast?.addToast?.('Signed out', 'info');
-  }, [toast]);
-
-  // Cloud Backup: save full convene history to Firebase RTDB
-  const handleCloudBackup = useCallback(async () => {
-    const token = await getGoogleAuth();
-    if (!token || !googleUser) {
-      toast?.addToast?.('Session expired — please sign in again', 'error');
-      handleGoogleSignOut();
-      return;
-    }
-    setCloudBackupStatus('saving');
-    try {
-      // P4-F002: Include full state + auxiliary data in cloud backup (matches file export)
-      const aux = {};
-      try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
-      try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
-      try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
-      try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
-      try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
-      try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
-      const backupData = {
-        state: stateRef.current,
-        profile: stateRef.current.profile, // keep for backward compat with older restores
-        ...(Object.keys(aux).length > 0 ? { aux } : {}),
-        timestamp: Date.now(),
-        version: APP_VERSION,
-        pullCount: (stateRef.current.profile.featured?.history?.length || 0)
-          + (stateRef.current.profile.weapon?.history?.length || 0)
-          + (stateRef.current.profile.standardChar?.history?.length || 0)
-          + (stateRef.current.profile.standardWeap?.history?.length || 0)
-          + (stateRef.current.profile.beginner?.history?.length || 0),
-      };
-      const res = await firebaseFetch(`user-history/${googleUser.uid}`, token, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(backupData),
-      });
-      if (res.status === 401) {
-        toast?.addToast?.('Session expired — please sign in again', 'error');
-        handleGoogleSignOut();
-        setCloudBackupStatus('idle');
-        return;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setCloudBackupStatus('done');
-      toast?.addToast?.(`Backed up ${backupData.pullCount} pulls to cloud`, 'success');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
-    } catch (err) {
-      setCloudBackupStatus('error');
-      toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
-    }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast, handleGoogleSignOut]);
-
-  // Cloud Restore: load convene history from Firebase RTDB
-  const handleCloudRestore = useCallback(async () => {
-    let token = await getGoogleAuth();
-    if (!token || !googleUser) {
-      // Session expired (tokens lost after reload) — prompt re-sign-in
-      toast?.addToast?.('Session expired — please sign in again', 'error');
-      handleGoogleSignOut();
-      return;
-    }
-    setCloudBackupStatus('loading');
-    try {
-      const res = await firebaseFetch(`user-history/${googleUser.uid}`, token);
-      if (res.status === 401) {
-        // Token invalid — clear stale session and prompt re-sign-in
-        toast?.addToast?.('Session expired — please sign in again', 'error');
-        handleGoogleSignOut();
-        setCloudBackupStatus('idle');
-        return;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (!data || !data.profile) {
-        toast?.addToast?.('No cloud backup found', 'error');
-        setCloudBackupStatus('idle');
-        return;
-      }
-      const doRestore = await confirm?.({
-        title: 'Restore from cloud',
-        message: `Restore backup from ${new Date(data.timestamp).toLocaleString()}?\n${data.pullCount || 0} pulls (v${data.version || '?'}).\nThis will REPLACE your current data.`,
-        confirmLabel: 'Restore',
-        destructive: true,
-      });
-      if (!doRestore) { setCloudBackupStatus('idle'); return; }
-      // F-007: Sanitize cloud-restored data to prevent state injection from compromised Firebase
-      // P4-F002: Support full state + aux restore (backward compat: old backups have profile only)
-      if (data.state && typeof data.state === 'object') {
-        dispatch({ type: 'LOAD_STATE', state: sanitizeStateObj(data.state) });
-      } else {
-        dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
-      }
-      // Restore auxiliary data if present
-      if (data.aux && typeof data.aux === 'object') {
-        try {
-          if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
-            localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
-            setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
-          }
-          if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
-            localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
-            setImageFraming(sanitizeStateObj(data.aux.imageFraming));
-          }
-          if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
-            localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
-            setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
-          }
-          if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
-            localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
-            setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
-          }
-          if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
-            localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
-          }
-          if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
-            localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
-          }
-        } catch {}
-      }
-      setCloudBackupStatus('done');
-      toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
-    } catch (err) {
-      setCloudBackupStatus('error');
-      toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
-    }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, dispatch, handleGoogleSignOut]);
-
-  // Cloud Delete: remove user's cloud backup from Firebase RTDB
-  const handleCloudDelete = useCallback(async () => {
-    const token = await getGoogleAuth();
-    if (!token || !googleUser) return; // silently skip if not signed in
-    try {
-      await firebaseFetch(`user-history/${googleUser.uid}`, token, { method: 'DELETE' });
-    } catch { /* best-effort — local reset already happened */ }
-  }, [getGoogleAuth, googleUser, firebaseFetch]);
 
   // Anonymous presence system - writes only a timestamp (no personal data) to track active users
   const PRESENCE_INTERVAL_MS = 60000; // heartbeat every 60s
@@ -1794,7 +1326,68 @@ function WhisperingWishesInner() {
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
+  // ── CloudStorageProvider callbacks ──────────────────────────────────────
+  const getBackupPayload = useCallback(() => {
+    const s = stateRef.current;
+    const aux = {};
+    try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
+    try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
+    return {
+      state: s,
+      profile: s.profile,
+      ...(Object.keys(aux).length > 0 ? { aux } : {}),
+      timestamp: Date.now(),
+      version: APP_VERSION,
+      pullCount: (s.profile.featured?.history?.length || 0)
+        + (s.profile.weapon?.history?.length || 0)
+        + (s.profile.standardChar?.history?.length || 0)
+        + (s.profile.standardWeap?.history?.length || 0)
+        + (s.profile.beginner?.history?.length || 0),
+    };
+  }, []);
+
+  const handleRestoreData = useCallback((data) => {
+    // F-007: Sanitize cloud-restored data to prevent state injection
+    if (data.state && typeof data.state === 'object') {
+      dispatch({ type: 'LOAD_STATE', state: sanitizeStateObj(data.state) });
+    } else {
+      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
+    }
+    // Restore auxiliary data if present
+    if (data.aux && typeof data.aux === 'object') {
+      try {
+        if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
+          localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
+          setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+        }
+        if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
+          localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
+          setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+        }
+        if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
+          localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
+          setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+        }
+        if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
+          localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
+          setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
+        }
+        if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
+          localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
+        }
+        if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
+          localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
+        }
+      } catch {}
+    }
+  }, [dispatch, setImageFraming]);
+
   return (
+    <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
     <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {visualSettings.bgStyle === 'resonance' ? (
         <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
@@ -1988,13 +1581,9 @@ function WhisperingWishesInner() {
                 trophies={trophies}
                 collectionImages={collectionImages}
                 toast={toast}
-                getFirebaseAuth={getFirebaseAuth}
-                firebaseUrl={firebaseUrl}
-                firebaseFetch={firebaseFetch}
                 fetchWithTimeout={fetchWithTimeout}
                 hashUidForStorage={hashUidForStorage}
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
-                FIREBASE_AVAILABLE={FIREBASE_AVAILABLE}
               />
 
           </TabErrorBoundary>
@@ -2010,12 +1599,8 @@ function WhisperingWishesInner() {
                 visualSettings={visualSettings}
                 setActiveTab={setActiveTab}
                 setDetailModal={setDetailModal}
-                framingMode={framingMode}
-                editingImage={editingImage}
-                setEditingImage={setEditingImage}
                 activeBanners={activeBanners}
                 withCacheBuster={withCacheBuster}
-                getImageFraming={getImageFraming}
                 refreshImages={refreshImages}
                 handleSetProfilePic={handleSetProfilePic}
               />
@@ -2031,10 +1616,6 @@ function WhisperingWishesInner() {
                 dispatch={dispatch}
                 collectionImages={collectionImages}
                 collectionData={collectionData}
-                getImageFraming={getImageFraming}
-                framingMode={framingMode}
-                editingImage={editingImage}
-                setEditingImage={setEditingImage}
                 toast={toast}
                 confirm={confirm}
               />
@@ -2053,18 +1634,6 @@ function WhisperingWishesInner() {
             toast={toast}
             confirm={confirm}
             pwa={pwa}
-            imageFraming={imageFraming}
-            getImageFraming={getImageFraming}
-            saveImageFraming={saveImageFraming}
-            editingImage={editingImage}
-            setEditingImage={setEditingImage}
-            framingMode={framingMode}
-            setFramingMode={setFramingMode}
-            miniPanelPosition={miniPanelPosition}
-            saveMiniPanelPosition={saveMiniPanelPosition}
-            getMiniPanelPositionClasses={getMiniPanelPositionClasses}
-            updateEditingFraming={updateEditingFraming}
-            resetEditingFraming={resetEditingFraming}
             collectionImages={collectionImages}
             customCollectionImages={customCollectionImages}
             saveCollectionImages={saveCollectionImages}
@@ -2080,9 +1649,6 @@ function WhisperingWishesInner() {
             trophyOverrides={trophyOverrides}
             setTrophyOverrides={setTrophyOverrides}
             DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
-            getFirebaseAuth={getFirebaseAuth}
-            firebaseUrl={firebaseUrl}
-            firebaseFetch={firebaseFetch}
             setActiveTab={setActiveTab}
             withCacheBuster={withCacheBuster}
             showAdminPanel={showAdminPanel}
@@ -2097,13 +1663,6 @@ function WhisperingWishesInner() {
             getBgPositionLabel={getBgPositionLabel}
             exportBgPositions={exportBgPositions}
             getCustomBgPosition={getCustomBgPosition}
-            googleUser={googleUser}
-            handleGoogleSignIn={handleGoogleSignIn}
-            handleGoogleSignOut={handleGoogleSignOut}
-            handleCloudBackup={handleCloudBackup}
-            handleCloudRestore={handleCloudRestore}
-            handleCloudDelete={handleCloudDelete}
-            cloudBackupStatus={cloudBackupStatus}
           />
 
           </TabErrorBoundary>
@@ -2349,10 +1908,6 @@ function WhisperingWishesInner() {
           imageUrl={detailModal.imageUrl}
           framing={detailModal.framing}
           infoFraming={getImageFraming(`info-${detailModal.name}`)}
-          getImageFraming={getImageFraming}
-          framingMode={framingMode}
-          editingImage={editingImage}
-          setEditingImage={setEditingImage}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
           onViewInTeams={() => { setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null }); setActiveTab('teams'); }}
           collectionData={collectionData}
@@ -2389,6 +1944,7 @@ function WhisperingWishesInner() {
       </div>
 
     </div>
+    </CloudStorageProvider>
   );
 }
 
@@ -2399,7 +1955,9 @@ export default function WhisperingWishes() {
       <PWAProvider>
         <ToastProvider>
           <ConfirmProvider>
-            <WhisperingWishesInner />
+            <ImageFramingProvider>
+              <WhisperingWishesInner />
+            </ImageFramingProvider>
           </ConfirmProvider>
         </ToastProvider>
       </PWAProvider>

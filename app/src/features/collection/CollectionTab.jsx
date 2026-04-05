@@ -16,6 +16,7 @@ import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 function CollectionTab({
   state,
@@ -24,15 +25,13 @@ function CollectionTab({
   visualSettings,
   setActiveTab,
   setDetailModal,
-  framingMode,
-  editingImage,
-  setEditingImage,
   activeBanners,
   withCacheBuster,
-  getImageFraming,
   refreshImages,
   handleSetProfilePic,
 }) {
+  const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
+
   // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
   const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'copies');
   const [collectionSearch, setCollectionSearch] = useState('');
@@ -609,8 +608,7 @@ function CollectionTab({
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="" totalCount={ALL_4COST_ECHOES.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
                 dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -631,8 +629,7 @@ function CollectionTab({
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="" totalCount={ALL_3COST_ECHOES.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
                 dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -653,8 +650,7 @@ function CollectionTab({
                 glowClass="" ownedBg="bg-cyan-500/10" ownedBorder="border-cyan-500/30"
                 countColor="text-cyan-400" countPrefix="" totalCount={ALL_1COST_ECHOES.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
                 dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -677,8 +673,7 @@ function CollectionTab({
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="S" totalCount={ALL_5STAR_RESONATORS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -701,8 +696,7 @@ function CollectionTab({
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="S" totalCount={ALL_4STAR_RESONATORS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -727,8 +721,7 @@ function CollectionTab({
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="R" totalCount={ALL_5STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -750,8 +743,7 @@ function CollectionTab({
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="R" totalCount={ALL_4STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -773,8 +765,7 @@ function CollectionTab({
                 glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30"
                 countColor="text-blue-400" countPrefix="R" totalCount={ALL_3STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -796,8 +787,7 @@ function CollectionTab({
                 glowClass="" ownedBg="bg-green-500/10" ownedBorder="border-green-500/30"
                 countColor="text-green-400" countPrefix="R" totalCount={ALL_2STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -819,8 +809,7 @@ function CollectionTab({
                 glowClass="" ownedBg="bg-gray-500/10" ownedBorder="border-gray-500/30"
                 countColor="text-gray-400" countPrefix="R" totalCount={ALL_1STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}

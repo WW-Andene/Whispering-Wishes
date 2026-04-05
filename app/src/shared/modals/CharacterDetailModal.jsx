@@ -14,6 +14,7 @@ import {
 import { FocusTrapModal } from '../../appcore-providers.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
@@ -28,7 +29,8 @@ const DETAIL_ELEMENT_COLORS = {
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage, onViewInTeams, collectionData }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData }) => {
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 

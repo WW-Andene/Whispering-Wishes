@@ -5,6 +5,7 @@ import { haptic, getElementColor, getElementBg, getElementBorder } from '../../u
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 export default function TeamSelector({
   teamSelectorOpen,
@@ -30,9 +31,9 @@ export default function TeamSelector({
   selectCharacter,
   collectionImages,
   collectionData,
-  getImageFraming,
   state,
 }) {
+  const { getImageFraming } = useImageFramingContext();
   return (
                   <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="" onClick={() => setTeamSelectorOpen(false)} centered>
                       <div

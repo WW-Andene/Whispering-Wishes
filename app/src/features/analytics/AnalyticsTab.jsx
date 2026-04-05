@@ -23,6 +23,7 @@ import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
 function AnalyticsTab({
   state,
@@ -33,14 +34,11 @@ function AnalyticsTab({
   trophies,
   collectionImages,
   toast,
-  getFirebaseAuth,
-  firebaseUrl,
-  firebaseFetch,
   fetchWithTimeout,
   hashUidForStorage,
   checkFirebaseRateLimit,
-  FIREBASE_AVAILABLE,
 }) {
+  const { getFirebaseAuth, firebaseUrl, firebaseFetch, FIREBASE_AVAILABLE } = useCloudStorage();
   // ── Analytics-only state ──────────────────────────────────────────────────
   const [chartRange, setChartRange] = useState('monthly');
   const [chartOffset, setChartOffset] = useState(9999);

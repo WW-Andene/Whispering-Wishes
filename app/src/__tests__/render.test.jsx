@@ -5,6 +5,10 @@ import { describe, it, expect } from 'vitest';
 
 import { CURRENT_BANNERS } from '../data/banners.js';
 import { initialState } from '../core/reducer.js';
+import { ImageFramingProvider } from '../providers/ImageFramingProvider.jsx';
+import { CloudStorageProvider } from '../providers/CloudStorageProvider.jsx';
+import { ToastProvider } from '../providers/ToastProvider.jsx';
+import { ConfirmProvider } from '../providers/ConfirmProvider.jsx';
 
 // Shared mock props
 const noop = () => {};
@@ -21,8 +25,29 @@ const mockCD = {
   sortItems: (i) => i,
 };
 
+// Helper: wrap component with required providers for context consumers
+function withProviders(element) {
+  return React.createElement(ToastProvider, null,
+    React.createElement(ConfirmProvider, null,
+      React.createElement(ImageFramingProvider, null,
+        React.createElement(CloudStorageProvider, { getBackupPayload: () => ({}), onRestoreData: noop },
+          element
+        )
+      )
+    )
+  );
+}
+
 function renderComponent(Component, props) {
   const html = renderToString(React.createElement(Component, props));
+  expect(html).toBeTruthy();
+  expect(html.length).toBeGreaterThan(50);
+  return html;
+}
+
+function renderWithProviders(Component, props) {
+  const el = React.createElement(Component, props);
+  const html = renderToString(withProviders(el));
   expect(html).toBeTruthy();
   expect(html.length).toBeGreaterThan(50);
   return html;
@@ -88,50 +113,44 @@ describe('Tab SSR rendering', () => {
 
   it('renders AnalyticsTab', async () => {
     const { default: C } = await import('../features/analytics/AnalyticsTab.jsx');
-    renderComponent(C, {
+    renderWithProviders(C, {
       state: initialState, dispatch: noop, setActiveTab: noop,
       overallStats: null, luckRating: null, trophies: null,
       collectionImages: {}, toast: mockToast,
-      getFirebaseAuth: noopAsync, firebaseUrl: () => '', firebaseFetch: noopAsync, fetchWithTimeout: noopAsync,
-      hashUidForStorage: noopAsync, checkFirebaseRateLimit: () => true, FIREBASE_AVAILABLE: false,
+      fetchWithTimeout: noopAsync,
+      hashUidForStorage: noopAsync, checkFirebaseRateLimit: () => true,
     });
   });
 
   it('renders CollectionTab', async () => {
     const { default: C } = await import('../features/collection/CollectionTab.jsx');
-    renderComponent(C, {
+    renderWithProviders(C, {
       state: initialState, collectionData: mockCD, collectionImages: {},
       visualSettings: mockVS, setActiveTab: noop, setDetailModal: noop,
-      framingMode: false, editingImage: null, setEditingImage: noop,
       activeBanners: CURRENT_BANNERS, withCacheBuster: (u) => u,
-      getImageFraming: () => ({}), refreshImages: noop, handleSetProfilePic: noop,
+      refreshImages: noop, handleSetProfilePic: noop,
     });
   });
 
   it('renders TeamsTab', async () => {
     const { default: C } = await import('../features/teams/TeamsTab.jsx');
-    renderComponent(C, {
+    renderWithProviders(C, {
       state: initialState, dispatch: noop, collectionImages: {},
-      collectionData: mockCD, getImageFraming: () => ({}),
-      framingMode: false, editingImage: null, setEditingImage: noop, toast: mockToast,
+      collectionData: mockCD, toast: mockToast,
     });
   });
 
   it('renders ProfileTab', async () => {
     const { default: C } = await import('../features/profile/ProfileTab.jsx');
-    renderComponent(C, {
+    renderWithProviders(C, {
       state: initialState, dispatch: noop, visualSettings: mockVS, saveVisualSettings: noop,
       toast: mockToast, confirm: noopAsync, pwa: {},
-      imageFraming: {}, getImageFraming: () => ({}), saveImageFraming: noop,
-      editingImage: null, setEditingImage: noop, framingMode: false, setFramingMode: noop,
-      miniPanelPosition: 'bottom-right', saveMiniPanelPosition: noop,
-      getMiniPanelPositionClasses: () => '', updateEditingFraming: noop, resetEditingFraming: noop,
       collectionImages: {}, customCollectionImages: {}, saveCollectionImages: noop,
       detailModal: { show: false }, handleExport: noop, processImportData: noop,
       activeBanners: CURRENT_BANNERS, setActiveBanners: noop,
       overallStats: null, luckRating: null, ownedCharNames: new Set(),
       trophies: null, trophyOverrides: {}, setTrophyOverrides: noop,
-      DEFAULT_VISUAL_SETTINGS: mockVS, getFirebaseAuth: noopAsync, firebaseUrl: () => '', firebaseFetch: noopAsync,
+      DEFAULT_VISUAL_SETTINGS: mockVS,
       setActiveTab: noop, withCacheBuster: (u) => u,
     });
   });

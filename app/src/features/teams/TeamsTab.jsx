@@ -10,19 +10,17 @@ import TeamSelector from './TeamSelector.jsx';
 import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 function TeamsTab({
   state,
   dispatch,
   collectionImages,
   collectionData,
-  getImageFraming,
-  framingMode,
-  editingImage,
-  setEditingImage,
   toast,
   confirm,
 }) {
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -563,7 +561,6 @@ function TeamsTab({
                     selectCharacter={selectCharacter}
                     collectionImages={collectionImages}
                     collectionData={collectionData}
-                    getImageFraming={getImageFraming}
                     state={state}
                   />
 

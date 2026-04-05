@@ -23,6 +23,8 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
 import {
   ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
@@ -62,19 +64,6 @@ function ProfileTab({
   confirm,
   // PWA
   pwa,
-  // Image framing
-  imageFraming,
-  getImageFraming,
-  saveImageFraming,
-  editingImage,
-  setEditingImage,
-  framingMode,
-  setFramingMode,
-  miniPanelPosition,
-  saveMiniPanelPosition,
-  getMiniPanelPositionClasses,
-  updateEditingFraming,
-  resetEditingFraming,
   // Collection images
   collectionImages,
   customCollectionImages,
@@ -95,10 +84,6 @@ function ProfileTab({
   trophies,
   trophyOverrides, setTrophyOverrides,
   DEFAULT_VISUAL_SETTINGS,
-  // Firebase (for admin fetch)
-  getFirebaseAuth,
-  firebaseUrl,
-  firebaseFetch,
   // Tab navigation (for admin collection/trophy "Go to Import" buttons)
   setActiveTab,
   // Cache busting (for admin collection images)
@@ -108,10 +93,21 @@ function ProfileTab({
   adminMiniMode, setAdminMiniMode,
   bgFramingMode, setBgFramingMode, editingBgTarget, setEditingBgTarget,
   updateBgPosition, getBgPositionLabel, exportBgPositions, getCustomBgPosition,
-  // Google Auth + Cloud Backup
-  googleUser, handleGoogleSignIn, handleGoogleSignOut,
-  handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
 }) {
+  // Image framing from context (was 11 props)
+  const {
+    imageFraming, getImageFraming, saveImageFraming, editingImage, setEditingImage,
+    framingMode, setFramingMode, miniPanelPosition, saveMiniPanelPosition,
+    getMiniPanelPositionClasses, updateEditingFraming, resetEditingFraming,
+  } = useImageFramingContext();
+
+  // Cloud storage from context (was 10 props)
+  const {
+    googleUser, handleGoogleSignIn, handleGoogleSignOut,
+    handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
+    getFirebaseAuth, firebaseUrl, firebaseFetch,
+  } = useCloudStorage();
+
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
   const [aboutSections, setAboutSections] = useState({});
@@ -1670,7 +1666,6 @@ function ProfileTab({
         ownedCharNames={ownedCharNames}
         idCardTrapRef={idCardTrapRef}
         trophies={trophies}
-        getImageFraming={getImageFraming}
       />
 
       {/* Admin Panel Modal + Mini Window */}
@@ -1694,18 +1689,11 @@ function ProfileTab({
         customCollectionImages={customCollectionImages} saveCollectionImages={saveCollectionImages}
         collectionImages={collectionImages}
         activeBanners={activeBanners} setActiveBanners={setActiveBanners}
-        imageFraming={imageFraming} framingMode={framingMode} setFramingMode={setFramingMode}
-        editingImage={editingImage} setEditingImage={setEditingImage}
-        getImageFraming={getImageFraming} updateEditingFraming={updateEditingFraming}
-        resetEditingFraming={resetEditingFraming}
-        miniPanelPosition={miniPanelPosition} saveMiniPanelPosition={saveMiniPanelPosition}
-        getMiniPanelPositionClasses={getMiniPanelPositionClasses}
         state={state} dispatch={dispatch} toast={toast} confirm={confirm}
         adminTrapRef={adminTrapRef}
         setActiveTab={setActiveTab}
         withCacheBuster={withCacheBuster}
         detailModal={detailModal}
-        saveImageFraming={saveImageFraming}
         DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
         bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
         editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}

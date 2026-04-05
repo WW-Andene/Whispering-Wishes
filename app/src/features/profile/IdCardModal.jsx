@@ -11,6 +11,7 @@ import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -25,8 +26,8 @@ export default function IdCardModal({
   ownedCharNames,
   idCardTrapRef,
   trophies,
-  getImageFraming,
 }) {
+  const { getImageFraming } = useImageFramingContext();
   if (!showIdCard) return null;
   return (
       <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>

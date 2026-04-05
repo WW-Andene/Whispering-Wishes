@@ -8,6 +8,7 @@ import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA, haptic } from '../../appcore-data.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { eraseEchoBg } from '../utils/echoBackground.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 // Long-press detection hook (500ms hold)
 function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
@@ -135,7 +136,8 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
 CollectionGridCard.displayName = 'CollectionGridCard';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false }) => {
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
