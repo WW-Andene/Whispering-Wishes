@@ -2,7 +2,7 @@
 // EnemyEchoSelectorModal — Echo picker modal for enemy target selection
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Diamond, X } from 'lucide-react';
 import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
 import { haptic } from '../../utils/helpers.js';
@@ -14,11 +14,11 @@ export default function EnemyEchoSelectorModal({
   isOpen, onClose,
   enemyEcho, setEnemyEcho,
   collectionImages,
+  search, setSearch,
+  costFilter, setCostFilter,
+  setFilter, setSetFilter,
+  buffFilter, setBuffFilter,
 }) {
-  const [search, setSearch] = useState('');
-  const [costFilter, setCostFilter] = useState('all');
-  const [setFilter, setSetFilter] = useState('all');
-  const [buffFilter, setBuffFilter] = useState('all');
 
   const costList = costFilter === '4' ? ALL_4COST_ECHOES : costFilter === '3' ? ALL_3COST_ECHOES : costFilter === '1' ? ALL_1COST_ECHOES : [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
   const filtered = costList.filter(n => {

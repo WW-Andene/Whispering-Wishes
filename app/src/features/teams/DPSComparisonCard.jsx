@@ -30,7 +30,7 @@ export default function DPSComparisonCard({
   teamCompareEntries, setTeamCompareEntries,
   calcTeamStats,
   enemyEcho, enemyLevel, setEnemyLevel,
-  setEnemyEchoModalOpen,
+  setEnemyEchoSearch, setEnemyEchoModalOpen,
   confirm,
 }) {
   if (teamCompareEntries.length === 0) return null;
@@ -60,7 +60,7 @@ export default function DPSComparisonCard({
         <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
           <Sword size={12} className="text-red-400" />
           <span className="text-gray-400 text-[10px] font-medium">Target:</span>
-          <button onClick={() => { setEnemyEchoModalOpen(true); haptic.light(); }}
+          <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
             className="kuro-btn text-[10px] px-2 py-1 flex-1 min-w-[120px] max-w-[240px] text-left truncate">
             {enemyEcho ? (() => {
               const ed = ECHO_DATA[enemyEcho];

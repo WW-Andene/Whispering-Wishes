@@ -27,6 +27,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   const [enemyLevel, setEnemyLevel] = useState(90);
   const [enemyEcho, setEnemyEcho] = useState('');
   const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
+  const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
+  const [enemyEchoCostFilter, setEnemyEchoCostFilter] = useState('all');
+  const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
+  const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
 
   // ── Reusable calculator with proper WuWa damage formula ──
   // Memoized so it only recalculates when teamEquipment changes.
@@ -1324,7 +1328,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         teamCompareEntries={teamCompareEntries} setTeamCompareEntries={setTeamCompareEntries}
         calcTeamStats={calcTeamStats}
         enemyEcho={enemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
-        setEnemyEchoModalOpen={setEnemyEchoModalOpen}
+        setEnemyEchoSearch={setEnemyEchoSearch} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
         confirm={confirm}
       />
 
@@ -1332,6 +1336,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
         enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
         collectionImages={collectionImages}
+        search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
+        costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}
+        setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
+        buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
       />
     </>
   );
