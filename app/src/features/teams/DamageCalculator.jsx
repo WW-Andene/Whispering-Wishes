@@ -795,8 +795,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       });
       ordered.forEach(m => {
         const rawOnField = m.d.onField ?? (m.name === mainDps.name ? 15 : 5);
-        const onField = Math.min(rawOnField, Math.max(0, rotTime - t));
-        if (onField <= 0) return;
+        // Ensure every team member appears in timeline — at minimum 1s for swap/outro
+        const onField = Math.max(1, Math.min(rawOnField, Math.max(0, rotTime - t)));
+        if (t >= rotTime) return;
         timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
         const bt = CHAR_BUFF_TABLE[m.name];
         if (bt) {

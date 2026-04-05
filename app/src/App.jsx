@@ -656,11 +656,19 @@ function WhisperingWishesInner() {
     ro.observe(nav);
     return () => ro.disconnect();
   }, []);
+  // Tab scroll position memory — save position before switch, restore on return
+  const tabScrollPositions = useRef({});
   const setActiveTab = useCallback((tab) => {
+    // Save current scroll position for the tab we're leaving
+    tabScrollPositions.current[activeTabRef.current] = window.scrollY;
     setActiveTabRaw(tab);
   }, []);
 
-  useEffect(() => { window.scrollTo(0, 0); }, [activeTab]);
+  useEffect(() => {
+    // Restore saved scroll position or scroll to top for new tabs
+    const saved = tabScrollPositions.current[activeTab];
+    window.scrollTo(0, saved || 0);
+  }, [activeTab]);
 
   // Swipe navigation between tabs
   const swipeRef = useRef({ startX: 0, startY: 0, startTime: 0 });
