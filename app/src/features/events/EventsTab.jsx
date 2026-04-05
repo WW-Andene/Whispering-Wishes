@@ -78,8 +78,8 @@ function EventsTab({
       if (isRecurring) return false;
       if (!ev.currentEnd) return false;
       const end = getServerAdjustedEnd(ev.currentEnd, state.server);
-      const endMs = new Date(end).getTime() + serverOffset * 3600000;
-      return !isNaN(endMs) && endMs <= now;
+      const endMs = new Date(end).getTime();
+      return !isNaN(endMs) && endMs <= Date.now();
     };
     return {
       active: EVENT_ENTRIES.filter(([, ev]) => !isEventExpired(ev)),
@@ -141,7 +141,7 @@ function EventsTab({
                       <div
                         className="h-full transition-[width] duration-300"
                         style={{
-                          width: `${(progressStats.skippedAstrite / progressStats.totalAstrite) * 100}%`,
+                          width: `${progressStats.totalAstrite > 0 ? (progressStats.skippedAstrite / progressStats.totalAstrite) * 100 : 0}%`,
                           background: 'repeating-linear-gradient(45deg, rgba(156,163,175,0.4), rgba(156,163,175,0.4) 2px, rgba(156,163,175,0.15) 2px, rgba(156,163,175,0.15) 4px)',
                         }}
                       />

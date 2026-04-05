@@ -128,7 +128,7 @@ function TrackerTab({
                     item={c}
                     type="character"
                     bannerImage={activeBanners.characterBannerImage}
-                    stats={state.profile.featured.history.length ? {
+                    stats={state.profile.featured?.history?.length ? {
                       pity5: state.profile.featured.pity5,
                       pity4: state.profile.featured.pity4,
                       totalPulls: state.profile.featured.history.length,
@@ -157,7 +157,7 @@ function TrackerTab({
                     item={w}
                     type="weapon"
                     bannerImage={activeBanners.weaponBannerImage}
-                    stats={state.profile.weapon.history.length ? {
+                    stats={state.profile.weapon?.history?.length ? {
                       pity5: state.profile.weapon.pity5,
                       pity4: state.profile.weapon.pity4,
                       totalPulls: state.profile.weapon.history.length,

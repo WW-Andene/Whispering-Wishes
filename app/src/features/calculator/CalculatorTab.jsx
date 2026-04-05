@@ -110,6 +110,8 @@ function CalculatorTab({ state, dispatch }) {
       stdWeapTotal: stdWeapAstrite + stdWeapLustrous,
       charPercent,
       weapPercent,
+      stdCharAstrite,
+      stdWeapAstrite,
       stdCharLustrous,
       stdWeapLustrous,
     };
@@ -384,14 +386,14 @@ function CalculatorTab({ state, dispatch }) {
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.stdCharAstrite.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.stdWeapAstrite.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -430,7 +432,7 @@ function CalculatorTab({ state, dispatch }) {
                 <CardHeader>Combined Analysis</CardHeader>
                 <CardBody>
                     <p className="text-gray-400 text-[10px] mb-2 text-center">
-                      Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.charCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
+                      Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.charCopies : state.calc.stdCharCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
                     </p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">

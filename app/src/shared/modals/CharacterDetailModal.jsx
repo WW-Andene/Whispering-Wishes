@@ -312,6 +312,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <div className="text-gray-400 text-[10px]">Main Echo</div>
                 </div>
               </div>
+              {data.bestEchoes[1] && (
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
                   <LayoutGrid size={14} className="text-purple-400" />
@@ -321,6 +322,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <div className="text-gray-400 text-[10px]">Echo Set</div>
                 </div>
               </div>
+              )}
             </div>
           </div>
           )}
@@ -437,7 +439,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][0]} qty={SKILL_UPGRADE_COSTS.forgeryT3} />
                   <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][1]} qty={SKILL_UPGRADE_COSTS.forgeryT4} />
                 </>}
-                {COMMON_MAT_TIERS[data.ascension.common] && <>
+                {data.ascension?.common && COMMON_MAT_TIERS[data.ascension.common] && <>
                   <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={SKILL_UPGRADE_COSTS.commonT3} />
                   <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={SKILL_UPGRADE_COSTS.commonT4} />
                 </>}
