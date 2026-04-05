@@ -130,7 +130,7 @@ const reducer = (state, action) => {
         ...state,
         planner: {
           ...state.planner,
-          addedIncome: [...state.planner.addedIncome, action.income],
+          addedIncome: [...state.planner.addedIncome, { ...action.income, astrite: incAst, lunite: incLun, radiant: incRad, lustrous: incLus }],
         },
         calc: {
           ...state.calc,

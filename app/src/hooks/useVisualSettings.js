@@ -74,18 +74,14 @@ export function useVisualSettings() {
     } catch (err) { silentCatch(err, 'visual settings load'); }
   }, []);
 
-  // Respect prefers-reduced-motion for first-time users
+  // Respect prefers-reduced-motion for first-time users (mount-only check)
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mql.matches && (!storageAvailable || !localStorage.getItem(VISUAL_SETTINGS_KEY))) {
       setVisualSettings(prev => ({ ...prev, animationsEnabled: 'off' }));
     }
-    const handler = (e) => {
-      setVisualSettings(prev => ({ ...prev, animationsEnabled: e.matches ? 'off' : (prev.animationsEnabled === 'off' ? 'on' : prev.animationsEnabled) }));
-    };
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
+    // Runtime changes handled by the separate listener effect below
   }, []);
 
   // Custom app icon for home screen
