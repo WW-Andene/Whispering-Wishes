@@ -87,7 +87,7 @@ function TrackerTab({
 
             {/* Onboarding hint for new users with no imported data */}
             {!state.profile.importedAt && setActiveTab && (
-              <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all text-left">
+              <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
                 <span className="text-cyan-300/90 text-xs">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
