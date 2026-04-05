@@ -43,9 +43,9 @@ class TabErrorBoundary extends React.Component {
                   ↻ Reload
                 </button>
                 {this.state.error && (
-                  <details className="mt-3 text-left">
+                  <details className="mt-3 text-left" open>
                     <summary className="text-gray-400 text-[10px] cursor-pointer">Error details</summary>
-                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
                   </details>
                 )}
               </div>
