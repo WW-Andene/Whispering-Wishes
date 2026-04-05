@@ -393,8 +393,8 @@ function WhisperingWishesInner() {
   // Presence system consumes them via useCloudStorage() below.
 
   
-  // Presence tracking + Firebase auth (extracted hook)
-  const { getFirebaseAuth, firebaseFetch } = usePresenceTracking();
+  // Presence tracking (extracted hook — heartbeat runs internally)
+  usePresenceTracking();
 
   // F-015/F-016: Clean up stale localStorage backups and diagnostics on mount (24h TTL)
   useEffect(() => {

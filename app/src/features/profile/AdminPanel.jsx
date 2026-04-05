@@ -165,13 +165,13 @@ export default function AdminPanel({
   if (!showAdminPanel) return null;
 
   const ADMIN_TABS = [
-    { key: 'banners', label: 'Banners', color: 'yellow' },
-    { key: 'collection', label: 'Collection', color: 'purple' },
-    { key: 'visuals', label: 'Visual Settings', color: 'cyan' },
-    { key: 'trophies', label: 'Trophies', color: 'amber' },
-    { key: 'players', label: <><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players</>, color: 'emerald' },
-    { key: 'echobg', label: 'Echo BG', color: 'pink' },
-    { key: 'diag', label: 'Import Log', color: 'emerald' },
+    { key: 'banners', label: 'Banners', active: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' },
+    { key: 'collection', label: 'Collection', active: 'bg-purple-500/10 text-purple-400 border border-purple-500/30' },
+    { key: 'visuals', label: 'Visual Settings', active: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' },
+    { key: 'trophies', label: 'Trophies', active: 'bg-amber-500/10 text-amber-400 border border-amber-500/30' },
+    { key: 'players', label: <><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players</>, active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
+    { key: 'echobg', label: 'Echo BG', active: 'bg-pink-500/10 text-pink-400 border border-pink-500/30' },
+    { key: 'diag', label: 'Import Log', active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
   ];
 
   return (
@@ -213,11 +213,11 @@ export default function AdminPanel({
 
                   {/* Tab Switcher */}
                   <div className="flex gap-2 border-b border-[var(--border-medium)] pb-2 flex-wrap">
-                    {ADMIN_TABS.map(({ key, label, color }) => (
+                    {ADMIN_TABS.map(({ key, label, active }) => (
                       <button
                         key={key}
                         onClick={() => setAdminTab(key)}
-                        className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === key ? `bg-${color}-500/10 text-${color}-400 border border-${color}-500/30` : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                        className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === key ? active : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                       >
                         {label}
                       </button>
