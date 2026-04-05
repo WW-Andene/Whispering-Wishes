@@ -1449,11 +1449,11 @@ function WhisperingWishesInner() {
 
       {/* Header — floating kuro-card, matching navbar style */}
       <header className="kuro-card fixed top-3 left-3 right-3 z-50" style={{overflow: 'hidden', paddingTop: 'env(safe-area-inset-top, 0px)', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {})}}>
-        {/* Theme banner art background */}
+        {/* Theme banner art background — mask extends above card to screen edge */}
         {headerBgUrl && (
           <>
-            <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
-            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
+            <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute w-full h-full object-cover" style={{ top: '-12px', left: 0, right: 0, bottom: 0, opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
+            {!bgFramingMode && <div className="absolute" style={{ top: '-12px', left: 0, right: 0, bottom: 0, background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
           </>
         )}
         {bgFramingMode && headerBgUrl && (
