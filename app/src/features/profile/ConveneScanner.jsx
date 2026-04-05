@@ -131,14 +131,13 @@ export default function ConveneScanner({
           </div>
         ))}
 
-        {/* Center crosshair / target */}
-        <div className="absolute" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-          {/* Horizontal line */}
-          <div style={{ position: 'absolute', width: 40, height: '1.5px', top: 0, left: -20, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)' }} />
-          {/* Vertical line */}
-          <div style={{ position: 'absolute', width: '1.5px', height: 40, top: -20, left: 0, background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.4), transparent)' }} />
-          {/* Center dot */}
-          <div style={{ position: 'absolute', width: 6, height: 6, top: -3, left: -3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
+        {/* Center target + cross */}
+        <div className="absolute flex items-center justify-center" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          {/* Square target icon */}
+          <Scan size={36} style={{ color: 'rgba(255,255,255,0.15)' }} />
+          {/* Cross overlay */}
+          <div style={{ position: 'absolute', width: 44, height: '1.5px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
+          <div style={{ position: 'absolute', width: '1.5px', height: 44, background: 'linear-gradient(180deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
         </div>
 
       </div>
