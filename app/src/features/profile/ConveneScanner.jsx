@@ -126,9 +126,11 @@ export default function ConveneScanner({
         {/* Center target + cross */}
         <div className="absolute flex items-center justify-center" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
           <Scan size={36} strokeWidth={2} style={{ color: 'rgba(255,255,255,0.4)' }} />
-          <svg className="absolute" width="28" height="28" viewBox="0 0 28 28" style={{ overflow: 'visible' }}>
-            <line x1="0" y1="14" x2="28" y2="14" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
-            <line x1="14" y1="0" x2="14" y2="28" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+          <svg className="absolute" width="28" height="28" viewBox="0 0 28 28">
+            <line x1="0" y1="14" x2="12" y2="14" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+            <line x1="16" y1="14" x2="28" y2="14" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+            <line x1="14" y1="0" x2="14" y2="12" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+            <line x1="14" y1="16" x2="14" y2="28" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
           </svg>
         </div>
 
