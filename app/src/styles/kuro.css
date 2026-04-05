@@ -1,15 +1,9 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — KuroStyles
-// Global CSS variable injection and design system styles.
-// ═══════════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════
+   WHISPERING WISHES — LAHAI-ROI DESIGN LANGUAGE
+   Extracted from KuroStyles.jsx — global CSS variables and design system.
+   OLED mode overrides via .oled-mode class (no JavaScript needed).
+   ═══════════════════════════════════════════════════════════════════════ */
 
-import { memo } from 'react';
-
-// [SECTION:STYLES]
-// P11-FIX: Wrapped in memo — this component injects ~960 lines of CSS; re-rendering it on every
-// parent render is wasteful. Only needs to re-render when oledMode changes. (Step 7 audit — MEDIUM-3a)
-const KuroStyles = memo(({ oledMode }) => (
-  <style>{`
     /* ══════════════════════════════════════════════════════════════════════
        LAHAI-ROI DESIGN LANGUAGE - Black, White, Gold
        ══════════════════════════════════════════════════════════════════════
@@ -23,7 +17,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: ${oledMode ? '#000000' : '#080c14'};
+      background: #080c14;
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
@@ -34,6 +28,19 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+
+    /* ── OLED Mode Overrides ─────────────────────────────────────────────── */
+    /* Applied via .oled-mode class on root div (toggled by visualSettings.oledMode) */
+    .oled-mode, .oled-mode html, .oled-mode body { background: #000000; }
+    .oled-mode {
+      --bg-card: rgba(8, 8, 8, 0.95);
+      --bg-card-inner: rgba(10, 10, 10, 1);
+      --bg-elevated: rgba(16, 16, 16, 0.95);
+      --bg-btn: rgba(12, 12, 12, 0.95);
+      --bg-input: rgba(14, 14, 14, 0.95);
+      --bg-stat: rgba(6, 6, 6, 0.9);
+    }
+
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
        is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
     @supports (padding-top: env(safe-area-inset-top)) {
@@ -98,12 +105,12 @@ const KuroStyles = memo(({ oledMode }) => (
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
       /* MED-8: Widened surface elevation spread (+2% lightness per step) */
-      --bg-card: ${oledMode ? 'rgba(8, 8, 8, 0.95)' : 'rgba(14, 19, 30, 0.55)'};
-      --bg-card-inner: ${oledMode ? 'rgba(10, 10, 10, 1)' : 'rgba(6, 10, 18, 1)'};
-      --bg-elevated: ${oledMode ? 'rgba(16, 16, 16, 0.95)' : 'rgba(20, 26, 38, 0.7)'};
-      --bg-btn: ${oledMode ? 'rgba(12, 12, 12, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
-      --bg-input: ${oledMode ? 'rgba(14, 14, 14, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
-      --bg-stat: ${oledMode ? 'rgba(6, 6, 6, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
+      --bg-card: rgba(14, 19, 30, 0.55);
+      --bg-card-inner: rgba(6, 10, 18, 1);
+      --bg-elevated: rgba(20, 26, 38, 0.7);
+      --bg-btn: rgba(15, 20, 28, 0.85);
+      --bg-input: rgba(15, 20, 28, 0.9);
+      --bg-stat: rgba(10, 14, 22, 0.8);
       /* D-TOKEN-1: Border opacity tokens — replaces 30+ raw rgba(255,255,255,0.xx) border values */
       --border-subtle: rgba(255,255,255,0.06);
       --border-default: rgba(255,255,255,0.08);
@@ -2307,8 +2314,4 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (max-width: 1023px) {
       .desktop-ad-margin { display: none !important; }
     }
-    `}</style>
-));
-KuroStyles.displayName = 'KuroStyles';
-
-export { KuroStyles };
+    
