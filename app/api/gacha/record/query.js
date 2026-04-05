@@ -3,6 +3,7 @@ const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
 // F-004: Restrict CORS to app origins only (prevents open relay abuse)
 const ALLOWED_ORIGINS = [
   'https://whispering-wishes.vercel.app',
+  'http://localhost:3000',
   'http://localhost:5000',
   'http://localhost:5173',
 ];
