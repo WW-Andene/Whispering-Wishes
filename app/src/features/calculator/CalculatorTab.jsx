@@ -77,6 +77,8 @@ function CalculatorTab({ state, dispatch }) {
         stdWeapTotal: totalPulls + lustrous,
         charPercent: 100,
         weapPercent: 100,
+        stdCharAstrite: totalPulls,
+        stdWeapAstrite: totalPulls,
         stdCharLustrous: lustrous,
         stdWeapLustrous: lustrous,
       };
