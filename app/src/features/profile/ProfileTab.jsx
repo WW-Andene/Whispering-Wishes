@@ -1239,7 +1239,8 @@ function ProfileTab({
                       const posKey = bgTarget === 'header' ? 'header' : bgTarget === 'navigation' ? 'nav' : 'bg';
                       // Use custom position if user adjusted it before, otherwise fall back to hardcoded default
                       const customPos = getCustomBgPosition(posKey, id);
-                      const objectPosition = customPos || pos?.[posKey] || 'center center';
+                      const rawPos = customPos || pos?.[posKey] || 'center center';
+                      const objectPosition = typeof rawPos === 'string' ? rawPos : 'center center';
                       const extra = bgTarget === 'background' ? { bgStyle: 'none' } : {};
                       saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition }, ...extra });
                     }

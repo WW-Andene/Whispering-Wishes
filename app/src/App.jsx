@@ -447,7 +447,8 @@ function WhisperingWishesInner() {
     const key = editingBgTarget === 'header' ? 'headerBg' : editingBgTarget === 'nav' ? 'navBg' : 'appBg';
     const current = visualSettings[key];
     if (!current) return;
-    const pos = current.objectPosition || 'center center';
+    const rawPos = current.objectPosition;
+    const pos = typeof rawPos === 'string' ? rawPos : 'center center';
     const parts = pos.split(' ');
     let x = parseFloat(parts[0]) || 50;
     let y = parseFloat(parts[1]) || 50;
@@ -462,7 +463,9 @@ function WhisperingWishesInner() {
   const getBgPositionLabel = useCallback(() => {
     if (!editingBgTarget) return '';
     const key = editingBgTarget === 'header' ? 'headerBg' : editingBgTarget === 'nav' ? 'navBg' : 'appBg';
-    return visualSettings[key]?.objectPosition || 'center center';
+    const pos = visualSettings[key]?.objectPosition;
+    // Guard: objectPosition must be a string (could be corrupted to {x,y,zoom} object from old data)
+    return typeof pos === 'string' ? pos : 'center center';
   }, [editingBgTarget, visualSettings]);
 
   const exportBgPositions = useCallback(() => {
@@ -1305,12 +1308,14 @@ function WhisperingWishesInner() {
   const themeAccent = activeTheme ? getElementColor(activeTheme.element) : null;
 
   // Independent background images (no fallback to accent theme)
+  // Guard: objectPosition must be a string (can be corrupted to {x,y,zoom} from stale data)
+  const _bgPos = (v) => { const p = v?.objectPosition; return typeof p === 'string' ? p : 'center center'; };
   const headerBgUrl = visualSettings.headerBg?.url || null;
-  const headerBgPos = visualSettings.headerBg?.objectPosition || 'center center';
+  const headerBgPos = _bgPos(visualSettings.headerBg);
   const navBgUrl = visualSettings.navBg?.url || null;
-  const navBgPos = visualSettings.navBg?.objectPosition || 'center center';
+  const navBgPos = _bgPos(visualSettings.navBg);
   const appBgUrl = visualSettings.appBg?.url || null;
-  const appBgPos = visualSettings.appBg?.objectPosition || 'center center';
+  const appBgPos = _bgPos(visualSettings.appBg);
 
   // Apply theme accent as CSS custom properties for kuro-card system
   useEffect(() => {
