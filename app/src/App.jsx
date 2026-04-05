@@ -1447,9 +1447,9 @@ function WhisperingWishesInner() {
       
       {/* Offline banner handled by PWAProvider */}
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b" style={{borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)', position: 'sticky', overflow: 'hidden'}}>
-        {/* Theme banner art background */}
+      {/* Header — kuro-card style */}
+      <header className="kuro-card sticky top-0 z-50" style={{borderRadius: '0 0 16px 16px', paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {})}}>
+        <div className="kuro-card-inner" style={{ borderRadius: '0 0 15px 15px' }}>        {/* Theme banner art background */}
         {headerBgUrl && (
           <>
             <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
@@ -1498,6 +1498,7 @@ function WhisperingWishesInner() {
               </button>
             </div>
           </div>
+        </div>
         </div>
       </header>
 
