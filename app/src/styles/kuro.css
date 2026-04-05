@@ -199,7 +199,7 @@
     }
     .overflow-y-auto::-webkit-scrollbar-thumb {
       background: rgba(140,160,200,0.18);
-      border-radius: 3px;
+      border-radius: 2px;
     }
     .overflow-y-auto::-webkit-scrollbar-thumb:hover {
       background: rgba(140,160,200,0.28);
@@ -1133,7 +1133,7 @@
       appearance: none;
       width: 100%;
       height: 6px;
-      border-radius: 3px;
+      border-radius: 2px;
       background: rgba(255, 255, 255, 0.15);
       outline: none;
       margin: 8px 0;
@@ -1173,7 +1173,7 @@
     }
     .kuro-slider::-moz-range-track {
       background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
+      border-radius: 2px;
       height: 6px;
       border: none;
     }
@@ -2160,7 +2160,7 @@
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
       }
       .desktop-layout > main::-webkit-scrollbar { width: 6px; }
-      .desktop-layout > main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+      .desktop-layout > main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
       .desktop-layout > main::-webkit-scrollbar-track { background: transparent; }
       .desktop-layout > main > [role="tabpanel"] { max-width: none; width: 100%; }
       .desktop-layout > main .tab-content { max-width: none !important; }
