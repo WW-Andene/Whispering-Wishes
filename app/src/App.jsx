@@ -1447,9 +1447,9 @@ function WhisperingWishesInner() {
       
       {/* Offline banner handled by PWAProvider */}
 
-      {/* Header — kuro-card style */}
-      <header className="kuro-card sticky top-0 z-50" style={{borderRadius: '0 0 16px 16px', paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {})}}>
-        <div className="kuro-card-inner" style={{ borderRadius: '0 0 15px 15px' }}>        {/* Theme banner art background */}
+      {/* Header — floating kuro-card, matching navbar style */}
+      <header className="kuro-card fixed top-3 left-3 right-3 z-50" style={{overflow: 'hidden', paddingTop: 'env(safe-area-inset-top, 0px)', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {})}}>
+        {/* Theme banner art background */}
         {headerBgUrl && (
           <>
             <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
@@ -1499,7 +1499,6 @@ function WhisperingWishesInner() {
             </div>
           </div>
         </div>
-        </div>
       </header>
 
       {/* Floating bottom navigation bar */}
@@ -1533,7 +1532,7 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
       </nav>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{ paddingBottom: navPadding }} role="main">
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 68px)', paddingBottom: navPadding }} role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
