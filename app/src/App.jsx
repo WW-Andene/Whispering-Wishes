@@ -1453,7 +1453,7 @@ function WhisperingWishesInner() {
         {headerBgUrl && (
           <>
             <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
-            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
+            {!bgFramingMode && <div className="fixed inset-0 w-screen h-screen" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
           </>
         )}
         {bgFramingMode && headerBgUrl && (
