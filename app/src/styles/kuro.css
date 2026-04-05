@@ -805,6 +805,7 @@
       font-size: 12px;
       padding: 4px 10px;
       min-height: 28px;
+      border-radius: 4px;
     }
     .kuro-btn-icon {
       padding: 6px;
