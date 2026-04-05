@@ -141,10 +141,6 @@ export default function ConveneScanner({
           <div style={{ position: 'absolute', width: 6, height: 6, top: -3, left: -3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
         </div>
 
-        {/* Scan sweep beam */}
-        <div className="absolute overflow-hidden" style={{ inset: 2, borderRadius: r - 2 }}>
-          <div className="absolute left-0 right-0" style={{ height: '2px', animation: 'camScan 3s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.2) 70%, transparent 95%)', boxShadow: '0 0 16px 3px rgba(255,255,255,0.06)' }} />
-        </div>
       </div>
 
       {/* Instruction text */}
@@ -169,7 +165,6 @@ export default function ConveneScanner({
       </div>
 
       <style>{`
-        @keyframes camScan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
         @keyframes captureShimmer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>,
