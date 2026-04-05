@@ -94,28 +94,6 @@ export default function ConveneScanner({
         {/* Zone border */}
         <div className="absolute inset-0" style={{ border: '1.5px solid rgba(255,255,255,0.2)', borderRadius: zoneRadius }} />
 
-        {/* Corner brackets — straight */}
-        {[
-          { top: -1, left: -1 },
-          { top: -1, right: -1 },
-          { bottom: -1, left: -1 },
-          { bottom: -1, right: -1 }
-        ].map((pos, i) => {
-          const isTop = 'top' in pos;
-          const isLeft = 'left' in pos;
-          return (
-            <div key={i} className="absolute" style={{ ...pos, width: 24, height: 24 }}>
-              <div style={{ position: 'absolute', [isTop ? 'top' : 'bottom']: 0, [isLeft ? 'left' : 'right']: 0, width: 24, height: '2px', background: 'rgba(255,255,255,0.5)' }} />
-              <div style={{ position: 'absolute', [isTop ? 'top' : 'bottom']: 0, [isLeft ? 'left' : 'right']: 0, width: '2px', height: 24, background: 'rgba(255,255,255,0.5)' }} />
-            </div>
-          );
-        })}
-
-        {/* Scan sweep beam */}
-        <div className="absolute overflow-hidden" style={{ inset: 4, borderRadius: zoneRadius - 4 }}>
-          <div className="absolute left-0 right-0" style={{ height: '2px', animation: 'camScan 3s ease-in-out infinite', background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.15) 70%, transparent 95%)', boxShadow: '0 0 16px 2px rgba(255,255,255,0.05)' }} />
-        </div>
-
         {/* Scan icon center */}
         <div className="absolute flex items-center justify-center" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
           <Scan size={28} style={{ color: 'rgba(255,255,255,0.06)' }} />
@@ -144,7 +122,6 @@ export default function ConveneScanner({
       </div>
 
       <style>{`
-        @keyframes camScan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
         @keyframes captureShimmer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>,
