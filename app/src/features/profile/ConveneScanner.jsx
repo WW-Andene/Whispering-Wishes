@@ -5,7 +5,7 @@
 
 import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, X } from 'lucide-react';
+import { Camera, Scan, X } from 'lucide-react';
 import { HEADER_ICON } from '../../data/constants.js';
 
 export default function ConveneScanner({
