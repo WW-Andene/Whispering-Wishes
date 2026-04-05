@@ -10,7 +10,7 @@ import { getServerOffset } from '../../data/constants.js';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { EventCard, getActiveBanners } from '../../shared/components/BannerCard.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 
 const EVENT_ENTRIES = Object.entries(EVENTS);

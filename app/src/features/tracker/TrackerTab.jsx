@@ -7,7 +7,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import { BANNER_HISTORY } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { BannerCard, StandardBannerSection } from '../../shared/components/BannerCard.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';

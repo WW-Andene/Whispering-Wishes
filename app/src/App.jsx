@@ -45,7 +45,10 @@ import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
 import { EchoDetailModal } from './shared/modals/EchoDetailModal.jsx';
 import { TabButton } from './shared/components/Card.jsx';
 import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
-import { BackgroundGlow, TriangleMirrorWave, ResonanceField, Honour } from './shared/backgrounds/Backgrounds.jsx';
+import { BackgroundGlow } from './shared/backgrounds/BackgroundGlow.jsx';
+import { TriangleMirrorWave } from './shared/backgrounds/TriangleMirrorWave.jsx';
+import { ResonanceField } from './shared/backgrounds/ResonanceField.jsx';
+import { Honour } from './shared/backgrounds/Honour.jsx';
 import { getActiveBanners } from './shared/components/BannerCard.jsx';
 // --- Feature tabs ---
 // D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting

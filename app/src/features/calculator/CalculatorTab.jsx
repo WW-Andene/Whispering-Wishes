@@ -14,7 +14,7 @@ import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/consta
 import { haptic } from '../../utils/helpers.js';
 import { calcStats } from '../../core/calcStats.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { PityCounterInput } from '../../shared/components/PityCounterInput.jsx';
 import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
