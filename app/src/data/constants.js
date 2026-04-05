@@ -4,7 +4,7 @@
 // and all game constants.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const APP_VERSION = '3.2.3';
+const APP_VERSION = '3.5.0';
 const MAX_IMPORT_SIZE_MB = 5; // P7-FIX: Import file size limit constant (7E)
 
 // Header icon (uploaded app icon)

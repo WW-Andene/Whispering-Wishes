@@ -815,7 +815,7 @@ ProbabilityBar.displayName = 'ProbabilityBar';
 
 // Admin banner storage key
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
-const ADMIN_HASH = 'd0a9f110419bf9487d97f9f99822f6f15c8cd98fed3097a0a0714674aa27feda';
+const ADMIN_HASH = '3cfcc468339c419168af41cd27265872e0f5d654a415edd90e59f2785886c494';
 
 // [SECTION:COLLECTION-GRID]
 // Shared component for all collection grids (5★/4★/3★ chars & weapons)
