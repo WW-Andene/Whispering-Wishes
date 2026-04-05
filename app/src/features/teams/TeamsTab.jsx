@@ -160,7 +160,7 @@ function TeamsTab({
                               toast?.addToast?.('Teams exported!', 'success');
                             } catch { toast?.addToast?.('Export failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
                           <Download size={12} />
@@ -200,7 +200,7 @@ function TeamsTab({
                             };
                             input.click();
                           }}
-                          className="kuro-btn kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
                           <Upload size={12} />
@@ -230,7 +230,7 @@ function TeamsTab({
                               haptic.light();
                             } catch { toast?.addToast?.('Share failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Copy team build to clipboard"
                         >
                           <Share2 size={12} />
@@ -247,14 +247,14 @@ function TeamsTab({
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
                           title={teamCompareEntries.length >= 5 ? 'Max 5 comparisons' : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? 'Add characters first' : 'Add to comparison'}
-                          className="kuro-btn kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
                         >
                           + Compare
                         </button>
                         <button
                           onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
                           <Trash2 size={12} />
