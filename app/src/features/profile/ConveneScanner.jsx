@@ -112,7 +112,7 @@ export default function ConveneScanner({
               [sides[1].toLowerCase()]: 0,
               width: bracketSize,
               height: bracketSize,
-              border: '2.5px solid rgba(255,255,255,0.7)',
+              border: '2px solid rgba(255,255,255,0.7)',
               [`border${sides[0]}${sides[1]}Radius`]: btr,
               [`border${sides[0] === 'Top' ? 'Bottom' : 'Top'}${sides[1]}Radius`]: 0,
               [`border${sides[0]}${sides[1] === 'Left' ? 'Right' : 'Left'}Radius`]: 0,
