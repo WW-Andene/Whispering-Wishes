@@ -427,7 +427,16 @@ function WhisperingWishesInner() {
 
   // Custom bg positions — persisted separately so they survive image re-selection
   const [customBgPositions, setCustomBgPositions] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ww-bg-positions') || '{}'); } catch { return {}; }
+    try {
+      const raw = JSON.parse(localStorage.getItem('ww-bg-positions') || '{}');
+      // Migrate: remove any corrupted entries where value is an object instead of a string
+      let cleaned = false;
+      for (const k in raw) {
+        if (typeof raw[k] !== 'string') { delete raw[k]; cleaned = true; }
+      }
+      if (cleaned) try { localStorage.setItem('ww-bg-positions', JSON.stringify(raw)); } catch {}
+      return raw;
+    } catch { return {}; }
   });
   const saveBgPosition = useCallback((target, imageId, pos) => {
     const posKey = `${target}-${imageId}`;
