@@ -326,7 +326,7 @@ function TeamsTab({
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
                           const teamKey = `team-${charName}`;
-                          const framing = charName ? getImageFraming(teamKey) : null;
+                          const framing = charName ? (getImageFraming(teamKey) || { x: 0, y: 0, zoom: 100 }) : { x: 0, y: 0, zoom: 100 };
 
                           if (!charName) {
                             return (
@@ -501,7 +501,7 @@ function TeamsTab({
                               <div className="flex gap-1 flex-shrink-0">
                                 {s.members.slice(0, 3).map((m, j) => {
                                   const cd = CHARACTER_DATA[m];
-                                  const sf = getImageFraming(`collection-${m}`);
+                                  const sf = getImageFraming(`collection-${m}`) || { x: 0, y: 0, zoom: 100 };
                                   return (
                                     <div key={j} className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>

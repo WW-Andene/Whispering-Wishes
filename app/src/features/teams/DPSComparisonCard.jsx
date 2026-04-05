@@ -177,8 +177,9 @@ export default function DPSComparisonCard({
                     <td className="text-gray-500 py-0.5 pr-2">{label}</td>
                     {computed.map((e, i) => {
                       const val = fn(e);
-                      const nums = computed.map(c => parseFloat(fn(c)) || 0);
-                      const isMax = parseFloat(val) === Math.max(...nums) && nums.filter(n => n === Math.max(...nums)).length === 1;
+                      const parseNum = (s) => parseFloat(String(s).replace(/,/g, '')) || 0;
+                      const nums = computed.map(c => parseNum(fn(c)));
+                      const isMax = parseNum(val) === Math.max(...nums) && nums.filter(n => n === Math.max(...nums)).length === 1;
                       return <td key={i} className={`text-center py-0.5 px-1 ${isMax ? 'text-yellow-400 font-bold' : 'text-gray-300'}`}>{val}</td>;
                     })}
                   </tr>
