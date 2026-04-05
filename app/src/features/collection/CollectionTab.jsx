@@ -830,6 +830,5 @@ function CollectionTab({
 export default React.memo(CollectionTab, (prev, next) =>
   prev.state.profile === next.state.profile && prev.collectionData === next.collectionData &&
   prev.collectionImages === next.collectionImages && prev.visualSettings === next.visualSettings &&
-  prev.activeBanners === next.activeBanners && prev.framingMode === next.framingMode &&
-  prev.editingImage === next.editingImage
+  prev.activeBanners === next.activeBanners
 );

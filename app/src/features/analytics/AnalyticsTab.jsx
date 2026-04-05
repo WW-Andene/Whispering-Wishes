@@ -1184,5 +1184,5 @@ function AnalyticsTab({
 export default React.memo(AnalyticsTab, (prev, next) =>
   prev.state.profile === next.state.profile && prev.overallStats === next.overallStats &&
   prev.luckRating === next.luckRating && prev.trophies === next.trophies &&
-  prev.collectionImages === next.collectionImages && prev.FIREBASE_AVAILABLE === next.FIREBASE_AVAILABLE
+  prev.collectionImages === next.collectionImages
 );

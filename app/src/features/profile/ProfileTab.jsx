@@ -1708,14 +1708,12 @@ function ProfileTab({
 export default React.memo(ProfileTab, (prev, next) =>
   prev.state.profile === next.state.profile && prev.state.server === next.state.server &&
   prev.state.settings === next.state.settings && prev.visualSettings === next.visualSettings &&
-  prev.googleUser === next.googleUser && prev.cloudBackupStatus === next.cloudBackupStatus &&
   prev.overallStats === next.overallStats && prev.trophies === next.trophies &&
   prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners &&
   prev.showAdminPanel === next.showAdminPanel && prev.adminMiniMode === next.adminMiniMode &&
-  prev.framingMode === next.framingMode && prev.editingImage === next.editingImage &&
   prev.bgFramingMode === next.bgFramingMode && prev.editingBgTarget === next.editingBgTarget &&
-  prev.imageFraming === next.imageFraming && prev.detailModal === next.detailModal &&
+  prev.detailModal === next.detailModal &&
   prev.luckRating === next.luckRating && prev.ownedCharNames === next.ownedCharNames &&
   prev.trophyOverrides === next.trophyOverrides && prev.pwa === next.pwa &&
-  prev.miniPanelPosition === next.miniPanelPosition && prev.customCollectionImages === next.customCollectionImages
+  prev.customCollectionImages === next.customCollectionImages
 );
