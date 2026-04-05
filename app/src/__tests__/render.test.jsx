@@ -121,7 +121,6 @@ describe('Tab SSR rendering', () => {
       state: initialState, dispatch: noop, setActiveTab: noop,
       overallStats: null, luckRating: null, trophies: null,
       collectionImages: {}, toast: mockToast,
-      fetchWithTimeout: noopAsync,
       hashUidForStorage: noopAsync, checkFirebaseRateLimit: () => true,
     });
   });

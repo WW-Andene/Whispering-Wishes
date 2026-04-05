@@ -36,7 +36,6 @@ function AnalyticsTab({
   trophies,
   collectionImages,
   toast,
-  fetchWithTimeout,
   hashUidForStorage,
   checkFirebaseRateLimit,
 }) {

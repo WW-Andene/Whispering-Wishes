@@ -30,7 +30,7 @@ import { useVisualSettings, DEFAULT_VISUAL_SETTINGS } from './hooks/useVisualSet
 import { useBackgroundFraming } from './hooks/useBackgroundFraming.js';
 import { useCollectionImages, COLLECTION_IMAGES_KEY } from './hooks/useCollectionImages.js';
 import { useTabNavigation } from './hooks/useTabNavigation.js';
-import { usePresenceTracking, FIREBASE_AVAILABLE, fetchWithTimeout, checkFirebaseRateLimit } from './hooks/usePresenceTracking.js';
+import { usePresenceTracking, FIREBASE_AVAILABLE, checkFirebaseRateLimit } from './hooks/usePresenceTracking.js';
 import { useThemeAccent } from './hooks/useThemeAccent.js';
 // --- core ---
 import { ACTION, UNDOABLE_ACTIONS, createUndoReducer, initialState, reducer } from './core/reducer.js';
@@ -59,15 +59,15 @@ import { ResonanceField } from './shared/backgrounds/ResonanceField.jsx';
 import { Honour } from './shared/backgrounds/Honour.jsx';
 import { getActiveBanners } from './shared/components/bannerUtils.js';
 // --- Feature tabs ---
-// D2-01: Eager-load default/lightweight tabs, lazy-load heavy tabs for code splitting
-import EventsTab from './features/events/EventsTab.jsx';
+// D2-01: Eager-load default tab (Tracker), lazy-load heavy tabs for code splitting
 import TrackerTab from './features/tracker/TrackerTab.jsx';
-import PlannerTab from './features/planner/PlannerTab.jsx';
-import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
-import CalculatorTab from './features/calculator/CalculatorTab.jsx';
-import CollectionTab from './features/collection/CollectionTab.jsx';
-import TeamsTab from './features/teams/TeamsTab.jsx';
-import ProfileTab from './features/profile/ProfileTab.jsx';
+import EventsTab from './features/events/EventsTab.jsx';
+const PlannerTab = React.lazy(() => import('./features/planner/PlannerTab.jsx'));
+const AnalyticsTab = React.lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
+const CalculatorTab = React.lazy(() => import('./features/calculator/CalculatorTab.jsx'));
+const CollectionTab = React.lazy(() => import('./features/collection/CollectionTab.jsx'));
+const TeamsTab = React.lazy(() => import('./features/teams/TeamsTab.jsx'));
+const ProfileTab = React.lazy(() => import('./features/profile/ProfileTab.jsx'));
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -794,18 +794,18 @@ function WhisperingWishesInner() {
   // Export data - includes main state + auxiliary localStorage settings for full round-trip
   const handleExport = useCallback(() => {
     const aux = {};
-    try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
+    // Use live state for visualSettings (avoids 300ms debounce stale read from localStorage)
+    if (visualSettings) aux.visualSettings = visualSettings;
     try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
+    if (Object.keys(customCollectionImages).length > 0) aux.collectionImages = customCollectionImages;
+    if (Object.keys(trophyOverrides).length > 0) aux.trophyOverrides = trophyOverrides;
     try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
-    // U6-01: Include calendar notes in backup
     try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
     const data = { timestamp: new Date().toISOString(), version: APP_VERSION, state, ...(Object.keys(aux).length > 0 ? { aux } : {}) };
     const jsonStr = JSON.stringify(data, null, 2);
     setExportData(jsonStr);
     setShowExportModal(true);
-  }, [state]);
+  }, [state, visualSettings, customCollectionImages, trophyOverrides]);
 
   // Handle onboarding complete
   const handleOnboardingComplete = useCallback(() => {
@@ -1005,6 +1005,7 @@ function WhisperingWishesInner() {
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
         </div>
+        <React.Suspense fallback={<div className="text-center text-gray-500 py-8 text-xs">Loading...</div>}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && !bgFramingMode && (
@@ -1075,7 +1076,6 @@ function WhisperingWishesInner() {
                 trophies={trophies}
                 collectionImages={collectionImages}
                 toast={toast}
-                fetchWithTimeout={fetchWithTimeout}
                 hashUidForStorage={hashUidForStorage}
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
               />
@@ -1162,6 +1162,7 @@ function WhisperingWishesInner() {
           </TabErrorBoundary>
         )}
 
+        </React.Suspense>
       </main>
 
       {/* Server Selector Modal */}

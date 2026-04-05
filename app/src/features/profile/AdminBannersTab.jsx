@@ -17,6 +17,7 @@ export default function AdminBannersTab({
 }) {
   const saveBanners = () => {
     try {
+      if (bannerForm.charsJson.length > 100000 || bannerForm.weapsJson.length > 100000) throw new Error('JSON input too large (max 100KB)');
       const chars = JSON.parse(bannerForm.charsJson);
       const weaps = JSON.parse(bannerForm.weapsJson);
       if (!Array.isArray(chars) || !Array.isArray(weaps)) throw new Error('Characters and weapons must be arrays');
