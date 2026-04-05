@@ -1447,14 +1447,15 @@ function WhisperingWishesInner() {
       
       {/* Offline banner handled by PWAProvider */}
 
+      {/* Header bg gradient mask — outside header to avoid backdrop-filter containing block */}
+      {headerBgUrl && !bgFramingMode && (
+        <div className="fixed inset-0 z-40" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />
+      )}
       {/* Header — floating kuro-card, matching navbar style */}
       <header className="kuro-card fixed top-3 left-3 right-3 z-50" style={{overflow: 'hidden', paddingTop: 'env(safe-area-inset-top, 0px)', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {})}}>
         {/* Theme banner art background */}
         {headerBgUrl && (
-          <>
-            <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
-            {!bgFramingMode && <div className="fixed inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
-          </>
+          <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
         )}
         {bgFramingMode && headerBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'header' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('header')}>
