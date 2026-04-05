@@ -22,9 +22,14 @@ const WEAPON_RARITY_COLORS = {
   2: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50' },
   1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
 };
-const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
+const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
   const data = WEAPON_DATA[name];
   if (!data) return null;
+
+  const ownsChar = (n) => {
+    if (!collectionData) return true;
+    return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
+  };
 
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
 
@@ -70,9 +75,10 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               <span className="text-[10px] text-gray-400">{data.stat}</span>
               <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
             </div>
-            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => (
-              <span key={i} className="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
-            ))}
+            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => {
+              const owned = ownsChar(char);
+              return <span key={i} className={`text-[10px] px-2 py-1 rounded-lg border ${owned ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : 'bg-gray-500/5 text-gray-600 border-gray-700/30'}`}>{char}{!owned && ' ✗'}</span>;
+            })}
           </div>
 
           {/* 2. Description */}

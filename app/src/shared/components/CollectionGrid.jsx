@@ -3,14 +3,35 @@
 // CollectionGridSection component
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA, haptic } from '../../appcore-data.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { eraseEchoBg } from '../utils/echoBackground.js';
 
+// Long-press detection hook (500ms hold)
+function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
+  const timerRef = useRef(null);
+  const firedRef = useRef(false);
+  const onPointerDown = useCallback(() => {
+    firedRef.current = false;
+    timerRef.current = setTimeout(() => {
+      firedRef.current = true;
+      haptic.success();
+      onLongPress?.();
+    }, delay);
+  }, [onLongPress, delay]);
+  const onPointerUp = useCallback(() => {
+    clearTimeout(timerRef.current);
+    if (!firedRef.current) onClick?.();
+  }, [onClick]);
+  const onPointerLeave = useCallback(() => { clearTimeout(timerRef.current); }, []);
+  const onContextMenu = useCallback((e) => { if (onLongPress) e.preventDefault(); }, [onLongPress]);
+  return { onPointerDown, onPointerUp, onPointerLeave, onContextMenu };
+}
+
 // Internal: CollectionGridCard
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess }) => {
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter }) => {
   // Pixel-level background removal for echo images (skip if pre-processed)
   const [processedUrl, setProcessedUrl] = useState((isEcho && !noBgProcess) ? null : imgUrl);
   useEffect(() => {
@@ -19,6 +40,17 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); }).catch(() => { if (!cancelled) setProcessedUrl(imgUrl); });
     return () => { cancelled = true; };
   }, [imgUrl, isEcho, noBgProcess]);
+  const longPressHandlers = useLongPress(
+    onLongPress ? () => onLongPress(name, isCharacter) : null,
+    () => {
+      if (framingMode) {
+        setEditingImage(imageKey);
+      } else if (onClickCard) {
+        haptic.light();
+        onClickCard();
+      }
+    }
+  );
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -33,14 +65,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     className={cardClassName}
     style={{ height: '140px', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     aria-label={`${name}${owned ? `, owned${count > 1 ? ` ×${count}` : ''}` : ', not owned'}${isProfilePic ? ', current profile picture' : ''}${isNew ? ', new' : ''}`}
-    onClick={() => {
-      if (framingMode) {
-        setEditingImage(imageKey);
-      } else if (onClickCard) {
-        haptic.light();
-        onClickCard();
-      }
-    }}
+    {...longPressHandlers}
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
@@ -110,7 +135,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
 CollectionGridCard.displayName = 'CollectionGridCard';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false }) => {
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
@@ -154,6 +179,8 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               onToggleOwned={toggleOwned}
               isEcho={dataType === 'echo'}
               noBgProcess={dataType === 'echo' && dataLookup[name]?.noBgProcess}
+              onLongPress={onLongPress}
+              isCharacter={isCharacter}
             />
           );
         })}

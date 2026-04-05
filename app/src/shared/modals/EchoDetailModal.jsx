@@ -30,8 +30,12 @@ const ECHO_BUFF_COLORS = {
   'Shield':       { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
   'Physical DMG': { bg: 'bg-slate-400/10',     text: 'text-slate-300',   border: 'border-slate-400/25' },
 };
-const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
+const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
   const data = ECHO_DATA[name];
+  const ownsChar = (n) => {
+    if (!collectionData) return true;
+    return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
+  };
   if (!data) return null;
 
   const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
@@ -250,10 +254,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                 {usedBy.map(charName => {
                   const charImg = DEFAULT_COLLECTION_IMAGES[charName];
                   const is5Star = CHARACTER_DATA[charName]?.rarity === 5;
+                  const owned = ownsChar(charName);
                   return (
-                    <div key={charName} className="flex flex-col items-center gap-1">
+                    <div key={charName} className={`flex flex-col items-center gap-1 ${!owned ? 'opacity-35' : ''}`}>
                       {charImg ? (
-                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${owned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
                           <div className="absolute inset-0 breath-zoom">
                             <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
                           </div>
