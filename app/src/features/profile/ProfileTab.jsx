@@ -9,7 +9,7 @@ import { Award, Check, ChevronDown, Crown, Diamond, Download, Monitor, Settings,
 import ImportFlow from './ImportFlow.jsx';
 import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES } from '../../data/banners.js';
+import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS } from '../../data/banners.js';
 import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
@@ -106,6 +106,8 @@ function ProfileTab({
   // Admin panel state (lifted to App.jsx so mini panel survives tab switches)
   showAdminPanel, setShowAdminPanel,
   adminMiniMode, setAdminMiniMode,
+  bgFramingMode, setBgFramingMode, editingBgTarget, setEditingBgTarget,
+  updateBgPosition, getBgPositionLabel, exportBgPositions, getCustomBgPosition,
   // Google Auth + Cloud Backup
   googleUser, handleGoogleSignIn, handleGoogleSignOut,
   handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
@@ -124,6 +126,14 @@ function ProfileTab({
   const [adminTab, setAdminTab] = useState('banners');
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
+      // One-time ban reset (v3.5.0 fix for React.memo bug that caused false bans)
+      if (!localStorage.getItem('ww-admin-reset-v350')) {
+        localStorage.removeItem('ww-admin-banned');
+        localStorage.removeItem('ww-admin-lockout');
+        localStorage.removeItem('ww-admin-fails');
+        localStorage.removeItem('ww-admin-lockdowns');
+        localStorage.setItem('ww-admin-reset-v350', '1');
+      }
       // Check permanent ban
       if (localStorage.getItem('ww-admin-banned') === 'true') return Infinity;
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
@@ -139,6 +149,9 @@ function ProfileTab({
     return false;
   });
   const [trophyJsonInput, setTrophyJsonInput] = useState('');
+  // ── Background picker state ─────────────────────────────────────────────
+  const [bgTarget, setBgTarget] = useState('header');
+  const [bgCategory, setBgCategory] = useState('resonators');
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -1218,113 +1231,190 @@ function ProfileTab({
                   <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
                 )}
 
-                {/* Background Style Selector */}
-                {visualSettings.animationsEnabled !== 'off' && (
+                {/* Background Picker */}
+                {(() => {
+                  const targetKey = bgTarget === 'header' ? 'headerBg' : bgTarget === 'navigation' ? 'navBg' : 'appBg';
+                  const currentBg = visualSettings[targetKey];
+
+                  const selectImage = (type, id, url, pos) => {
+                    if (currentBg?.id === id && currentBg?.type === type) {
+                      saveVisualSettings({ ...visualSettings, [targetKey]: null });
+                    } else {
+                      const posKey = bgTarget === 'header' ? 'header' : bgTarget === 'navigation' ? 'nav' : 'bg';
+                      // Use custom position if user adjusted it before, otherwise fall back to hardcoded default
+                      const customPos = getCustomBgPosition(posKey, id);
+                      const objectPosition = customPos || pos?.[posKey] || 'center center';
+                      const extra = bgTarget === 'background' ? { bgStyle: 'none' } : {};
+                      saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition }, ...extra });
+                    }
+                  };
+
+                  const isSelected = (type, id) => currentBg?.type === type && currentBg?.id === id;
+
+                  return (
                   <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
-                        <Diamond size={16} />
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
+                        <Sparkles size={16} />
                       </div>
                       <div>
-                        <div className="text-white text-xs font-medium">Background Style</div>
-                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
+                        <div className="text-white text-xs font-medium">Backgrounds</div>
+                        <div className="text-gray-400 text-[10px]">Set images for header, navigation, and background independently</div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-1.5">
+
+                    {/* Target buttons with previews */}
+                    <div className="flex gap-1.5 mb-3">
                       {[
-                        { id: 'none', label: 'None', color: 'bg-gray-600' },
-                        { id: 'reflect', label: 'Reflect', color: 'bg-purple-500' },
-                        { id: 'resonance', label: 'Resonance', color: 'bg-blue-500' },
-                        { id: 'honour', label: 'Honour', color: 'bg-amber-600' },
-                      ].map(bg => (
-                        <button key={bg.id}
-                          onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id })}
-                          className={`min-h-[36px] py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
-                          style={visualSettings.bgStyle !== bg.id ? { background: 'var(--bg-btn)' } : undefined}
-                        >{bg.label}</button>
+                        { key: 'header', label: 'Header', settingKey: 'headerBg' },
+                        { key: 'navigation', label: 'Navigation', settingKey: 'navBg' },
+                        { key: 'background', label: 'Background', settingKey: 'appBg' },
+                      ].map(t => {
+                        const bg = visualSettings[t.settingKey];
+                        return (
+                          <button key={t.key} onClick={() => { setBgTarget(t.key); if (t.key !== 'background' && bgCategory === 'custom') setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-[10px] relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                            {bg?.url && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" style={{ objectPosition: bg.objectPosition || 'center' }} />}
+                            <span className="relative z-10">{t.label}</span>
+                            {bg && <span className="relative z-10 ml-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Category tabs */}
+                    <div className="flex gap-1.5 mb-3">
+                      {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['custom'] : [])].map(c => (
+                        <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-[10px] ${bgCategory === c ? 'active-cyan' : ''}`}>
+                          {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : 'Animated'}
+                        </button>
                       ))}
                     </div>
-                    {visualSettings.bgStyle !== 'none' && (
-                      <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">Resolution</div>
-                          <div className="flex gap-1 flex-1">
-                            {[25, 50, 100, 200].map(res => {
-                              const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
-                              const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
-                              return <button key={res}
-                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
-                                className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                              >{res}%</button>;
-                            })}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">FPS</div>
-                          <div className="flex gap-1 flex-1">
-                            {[15, 30, 45, 60].map(fps => {
-                              const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
-                              const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
-                              return <button key={fps}
-                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
-                                className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                              >{fps}</button>;
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
 
-                {/* Theme Selector */}
+                    {/* Clear current target */}
+                    {currentBg && (
+                      <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-[10px] mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
+                        Clear {bgTarget} image
+                      </button>
+                    )}
+
+                    {/* Image grid */}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                      {bgCategory === 'resonators' && CHARACTER_THEMES.map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => selectImage('resonator', t.id, t.bannerArt, t.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('resonator', t.id) ? 'ring-1' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9', borderColor: isSelected('resonator', t.id) ? getElementColor(t.element) : undefined, boxShadow: isSelected('resonator', t.id) ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
+                        >
+                          <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
+                          {isSelected('resonator', t.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'version' && VERSION_SPLASH_SCREENS.map(v => (
+                        <button
+                          key={v.id}
+                          onClick={() => selectImage('version', v.id, v.art, v.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('version', v.id) ? 'ring-1 border-yellow-500' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9', boxShadow: isSelected('version', v.id) ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}
+                        >
+                          <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">v{v.version}</span>
+                          {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'others' && OTHER_BACKGROUNDS.map(o => (
+                        <button
+                          key={o.id}
+                          onClick={() => selectImage('other', o.id, o.art, o.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('other', o.id) ? 'ring-1 border-yellow-500' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9', boxShadow: isSelected('other', o.id) ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}
+                        >
+                          <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{o.name}</span>
+                          {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'custom' && (
+                        <div className="col-span-full">
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {[
+                              { id: 'none', label: 'None', color: 'text-gray-400' },
+                              { id: 'resonance', label: 'Resonance', color: 'text-blue-400' },
+                              { id: 'reflect', label: 'Reflect', color: 'text-purple-400' },
+                              { id: 'honour', label: 'Honour', color: 'text-amber-400' },
+                            ].map(bg => {
+                              const isActive = visualSettings.bgStyle === bg.id;
+                              return (
+                                <button key={bg.id}
+                                  onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id, appBg: null })}
+                                  className={`min-h-[36px] py-1.5 rounded-md text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white ring-1 ring-white/20' : `${bg.color} hover:text-white`}`}
+                                  style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                                >{bg.label}</button>
+                              );
+                            })}
+                          </div>
+                          {visualSettings.bgStyle !== 'none' && (
+                            <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">Resolution</div>
+                                <div className="flex gap-1 flex-1">
+                                  {[25, 50, 100, 200].map(res => {
+                                    const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
+                                    const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
+                                    return <button key={res}
+                                      onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
+                                      className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                      style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                                    >{res}%</button>;
+                                  })}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">FPS</div>
+                                <div className="flex gap-1 flex-1">
+                                  {[15, 30, 45, 60].map(fps => {
+                                    const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
+                                    const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
+                                    return <button key={fps}
+                                      onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
+                                      className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                      style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                                    >{fps}</button>;
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  );
+                })()}
+
+                {/* Accent Theme — element-based */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : '#9ca3af' }}>
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(visualSettings.theme) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(visualSettings.theme) : '#9ca3af' }}>
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Header Theme</div>
-                      <div className="text-gray-400 text-[10px]">Character banner art & accent colors</div>
+                      <div className="text-white text-xs font-medium">Accent Theme</div>
+                      <div className="text-gray-400 text-[10px]">Changes accent colors across the app</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                    {/* Default theme */}
-                    <button
-                      onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })}
-                      className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === 'default' ? 'border-yellow-500 ring-1 ring-yellow-500/50' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                      style={{ aspectRatio: '16/9' }}
-                      aria-pressed={visualSettings.theme === 'default'}
-                      aria-label="Default theme"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#080c14] to-[#0f141c] flex items-center justify-center">
-                        <span className="text-gray-400 text-[10px] font-medium">Default</span>
-                      </div>
-                      {visualSettings.theme === 'default' && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
-                    </button>
-                    {/* Character themes */}
-                    {CHARACTER_THEMES.map(t => (
-                      <button
-                        key={t.id}
-                        onClick={() => saveVisualSettings({ ...visualSettings, theme: t.id })}
-                        className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === t.id ? `ring-1` : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                        style={{ aspectRatio: '16/9', borderColor: visualSettings.theme === t.id ? getElementColor(t.element) : undefined, boxShadow: visualSettings.theme === t.id ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
-                        aria-pressed={visualSettings.theme === t.id}
-                        aria-label={`${t.name} theme`}
-                      >
-                        <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
-                        {visualSettings.theme === t.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                  <div className="flex flex-wrap gap-1.5">
+                    <button onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })} className={`kuro-btn text-[10px] ${visualSettings.theme === 'default' ? 'active-gold' : ''}`}>Default</button>
+                    {['Spectro', 'Glacio', 'Fusion', 'Electro', 'Aero', 'Havoc'].map(el => (
+                      <button key={el} onClick={() => saveVisualSettings({ ...visualSettings, theme: el })} className={`kuro-btn text-[10px]`} style={visualSettings.theme === el ? { borderColor: getElementColor(el), background: getElementBg(el), color: getElementColor(el), boxShadow: `0 0 8px ${getElementColor(el)}40` } : undefined}>
+                        {el}
                       </button>
                     ))}
                   </div>
-                  {visualSettings.theme !== 'default' && (() => {
-                    const t = CHARACTER_THEMES.find(th => th.id === visualSettings.theme);
-                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} - {t.element} theme active</p> : null;
-                  })()}
                 </div>
 
                 {/* Install App on Device */}
@@ -1617,6 +1707,10 @@ function ProfileTab({
         detailModal={detailModal}
         saveImageFraming={saveImageFraming}
         DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
+        bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
+        editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}
+        updateBgPosition={updateBgPosition} getBgPositionLabel={getBgPositionLabel}
+        exportBgPositions={exportBgPositions}
       />
 
     </>
@@ -1628,5 +1722,12 @@ export default React.memo(ProfileTab, (prev, next) =>
   prev.state.settings === next.state.settings && prev.visualSettings === next.visualSettings &&
   prev.googleUser === next.googleUser && prev.cloudBackupStatus === next.cloudBackupStatus &&
   prev.overallStats === next.overallStats && prev.trophies === next.trophies &&
-  prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners
+  prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners &&
+  prev.showAdminPanel === next.showAdminPanel && prev.adminMiniMode === next.adminMiniMode &&
+  prev.framingMode === next.framingMode && prev.editingImage === next.editingImage &&
+  prev.bgFramingMode === next.bgFramingMode && prev.editingBgTarget === next.editingBgTarget &&
+  prev.imageFraming === next.imageFraming && prev.detailModal === next.detailModal &&
+  prev.luckRating === next.luckRating && prev.ownedCharNames === next.ownedCharNames &&
+  prev.trophyOverrides === next.trophyOverrides && prev.pwa === next.pwa &&
+  prev.miniPanelPosition === next.miniPanelPosition && prev.customCollectionImages === next.customCollectionImages
 );

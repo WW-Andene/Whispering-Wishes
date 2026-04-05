@@ -180,6 +180,9 @@ export default function AdminPanel({
   detailModal,
   saveImageFraming,
   DEFAULT_VISUAL_SETTINGS,
+  bgFramingMode, setBgFramingMode,
+  editingBgTarget, setEditingBgTarget,
+  updateBgPosition, getBgPositionLabel, exportBgPositions,
 }) {
   if (!showAdminPanel) return null;
   return (
@@ -1094,7 +1097,63 @@ export default function AdminPanel({
               </button>
             )}
             
-            {!framingMode && (
+            {/* Background Mode Toggle */}
+            <button
+              onClick={() => { setBgFramingMode(!bgFramingMode); if (bgFramingMode) setEditingBgTarget(null); }}
+              className={`w-full py-2 rounded text-[10px] font-medium border transition-all ${bgFramingMode ? 'bg-cyan-500/30 text-cyan-400 border-cyan-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
+            >
+              {bgFramingMode ? '✓ Background Mode ON' : '◐ Enable Background Mode'}
+            </button>
+
+            {/* Background Position Controls */}
+            {bgFramingMode && editingBgTarget && (
+              <div className="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+                <div className="text-cyan-400 text-[10px] font-medium mb-2">
+                  Editing: {editingBgTarget === 'header' ? 'Header' : editingBgTarget === 'nav' ? 'Navigation' : 'Background'}
+                </div>
+                <div className="text-gray-400 text-[9px] mb-2 font-mono text-center">{getBgPositionLabel()}</div>
+                {/* D-pad */}
+                <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-2">
+                  <div />
+                  <button onClick={() => updateBgPosition(0, -2)} className="bg-white/10 text-white rounded p-1 text-[10px] hover:bg-white/20 active:scale-95">▲</button>
+                  <div />
+                  <button onClick={() => updateBgPosition(-2, 0)} className="bg-white/10 text-white rounded p-1 text-[10px] hover:bg-white/20 active:scale-95">◀</button>
+                  <button onClick={() => {
+                    const key = editingBgTarget === 'header' ? 'headerBg' : editingBgTarget === 'nav' ? 'navBg' : 'appBg';
+                    const current = visualSettings[key];
+                    if (current) saveVisualSettings({ ...visualSettings, [key]: { ...current, objectPosition: '50% 50%' } });
+                  }} className="bg-red-500/20 text-red-400 rounded p-1 text-[9px] hover:bg-red-500/30 active:scale-95">RST</button>
+                  <button onClick={() => updateBgPosition(2, 0)} className="bg-white/10 text-white rounded p-1 text-[10px] hover:bg-white/20 active:scale-95">▶</button>
+                  <div />
+                  <button onClick={() => updateBgPosition(0, 2)} className="bg-white/10 text-white rounded p-1 text-[10px] hover:bg-white/20 active:scale-95">▼</button>
+                  <div />
+                </div>
+                <p className="text-gray-500 text-[9px] text-center">Tap header, nav, or background to switch</p>
+              </div>
+            )}
+
+            {/* Export BG Positions */}
+            {bgFramingMode && (
+              <button
+                onClick={() => {
+                  const json = exportBgPositions();
+                  if (navigator.clipboard?.writeText) {
+                    navigator.clipboard.writeText(json).then(
+                      () => toast?.addToast?.('Background positions copied!', 'success'),
+                      () => { window.prompt('Copy this data:', json); }
+                    );
+                  } else {
+                    window.prompt('Copy this data:', json);
+                  }
+                }}
+                className="w-full py-2 rounded text-[10px] font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
+              >
+                <ClipboardList size={10} className="inline mr-1" />
+                Export BG Positions
+              </button>
+            )}
+
+            {!framingMode && !bgFramingMode && (
               <>
             {/* Reset Button — P6-FIX: Added confirm dialog (MED) */}
             <button 

@@ -111,6 +111,9 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   bgResolution: null, // null = auto (50% on, 100% full) | 25 | 50 | 100 | 200
   bgFps: null, // null = auto (15 on, 30 full) | 15 | 30 | 45 | 60
   theme: 'default', // 'default' | CHARACTER_THEMES[].id - character theme changes header art & accent colors
+  headerBg: null, // { type: 'resonator'|'version'|'custom', id: string, url: string } — independent header image
+  navBg: null, // { type: 'resonator'|'version'|'custom', id: string, url: string } — independent nav image
+  appBg: null, // { type: 'resonator'|'version'|'custom', id: string, url: string } — independent background image
   dyslexicFont: false // OpenDyslexic font for dyslexia accessibility
 });
 const TRACKER_CATEGORIES = Object.freeze([
@@ -412,6 +415,8 @@ function WhisperingWishesInner() {
   const [imageFraming, setImageFraming] = useState({});
   const [editingImage, setEditingImage] = useState(null); // currently selected image key
   const [framingMode, setFramingMode] = useState(false);
+  const [bgFramingMode, setBgFramingMode] = useState(false); // background image positioning mode
+  const [editingBgTarget, setEditingBgTarget] = useState(null); // 'header' | 'nav' | 'bg'
   const [miniPanelPosition, setMiniPanelPosition] = useState('bottom-right'); // top-left, top-right, bottom-left, bottom-right
   
   // Load image framing from localStorage
@@ -604,6 +609,50 @@ function WhisperingWishesInner() {
     saveImageFraming(editingImage, { x: 0, y: 0, zoom: 100 });
   };
   
+  // Custom bg positions — persisted separately so they survive image re-selection
+  const [customBgPositions, setCustomBgPositions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ww-bg-positions') || '{}'); } catch { return {}; }
+  });
+  const saveBgPosition = useCallback((target, imageId, pos) => {
+    const posKey = `${target}-${imageId}`;
+    setCustomBgPositions(prev => {
+      const next = { ...prev, [posKey]: pos };
+      try { localStorage.setItem('ww-bg-positions', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+  const getCustomBgPosition = useCallback((target, imageId) => {
+    return customBgPositions[`${target}-${imageId}`] || null;
+  }, [customBgPositions]);
+
+  // Background image position adjustment
+  const updateBgPosition = useCallback((dx, dy) => {
+    if (!editingBgTarget) return;
+    const key = editingBgTarget === 'header' ? 'headerBg' : editingBgTarget === 'nav' ? 'navBg' : 'appBg';
+    const current = visualSettings[key];
+    if (!current) return;
+    const pos = current.objectPosition || 'center center';
+    const parts = pos.split(' ');
+    let x = parseFloat(parts[0]) || 50;
+    let y = parseFloat(parts[1]) || 50;
+    x = Math.max(0, Math.min(100, x + dx));
+    y = Math.max(0, Math.min(100, y + dy));
+    const newPos = `${Math.round(x)}% ${Math.round(y)}%`;
+    saveVisualSettings({ ...visualSettings, [key]: { ...current, objectPosition: newPos } });
+    // Also persist to custom positions map
+    saveBgPosition(editingBgTarget === 'header' ? 'header' : editingBgTarget === 'nav' ? 'nav' : 'bg', current.id, newPos);
+  }, [editingBgTarget, visualSettings, saveVisualSettings, saveBgPosition]);
+
+  const getBgPositionLabel = useCallback(() => {
+    if (!editingBgTarget) return '';
+    const key = editingBgTarget === 'header' ? 'headerBg' : editingBgTarget === 'nav' ? 'navBg' : 'appBg';
+    return visualSettings[key]?.objectPosition || 'center center';
+  }, [editingBgTarget, visualSettings]);
+
+  const exportBgPositions = useCallback(() => {
+    return JSON.stringify(customBgPositions, null, 2);
+  }, [customBgPositions]);
+
   const saveMiniPanelPosition = (pos) => {
     setMiniPanelPosition(pos);
     if (storageAvailable) {
@@ -797,6 +846,16 @@ function WhisperingWishesInner() {
   }, []); // P14-FIX: LOW-3 - Removed dead eslint-disable comment (no ESLint configured)
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
+  const [navPadding, setNavPadding] = useState(80);
+  useEffect(() => {
+    const nav = tabNavRef.current;
+    if (!nav) return;
+    const update = () => setNavPadding(nav.offsetHeight + 12 + 12); // nav height + bottom-3 offset + 12px gap
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, []);
   const setActiveTab = useCallback((tab) => {
     setActiveTabRaw(tab);
   }, []);
@@ -1693,9 +1752,21 @@ function WhisperingWishesInner() {
 
   const activeTheme = useMemo(() => {
     if (visualSettings.theme === 'default') return null;
+    // Support element-based themes (Spectro, Glacio, etc.)
+    const elements = ['Spectro', 'Glacio', 'Fusion', 'Electro', 'Aero', 'Havoc'];
+    if (elements.includes(visualSettings.theme)) return { id: visualSettings.theme, element: visualSettings.theme };
+    // Legacy: character-based themes
     return CHARACTER_THEMES.find(t => t.id === visualSettings.theme) || null;
   }, [visualSettings.theme]);
   const themeAccent = activeTheme ? getElementColor(activeTheme.element) : null;
+
+  // Independent background images (no fallback to accent theme)
+  const headerBgUrl = visualSettings.headerBg?.url || null;
+  const headerBgPos = visualSettings.headerBg?.objectPosition || 'center center';
+  const navBgUrl = visualSettings.navBg?.url || null;
+  const navBgPos = visualSettings.navBg?.objectPosition || 'center center';
+  const appBgUrl = visualSettings.appBg?.url || null;
+  const appBgPos = visualSettings.appBg?.objectPosition || 'center center';
 
   // Apply theme accent as CSS custom properties for kuro-card system
   useEffect(() => {
@@ -1735,6 +1806,16 @@ function WhisperingWishesInner() {
           <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
         </>
       ) : null}
+      {appBgUrl && (
+        <div className={`fixed inset-0 ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+          <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
+          {bgFramingMode && (
+            <div className={`absolute inset-0 ${editingBgTarget === 'bg' ? 'ring-4 ring-inset ring-cyan-400' : ''}`}>
+              <span className="absolute top-16 left-3 text-[9px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'bg' ? '● BACKGROUND' : 'Background'}</span>
+            </div>
+          )}
+        </div>
+      )}
       <KuroStyles oledMode={visualSettings.oledMode} />
 
       {/* Onboarding Modal */}
@@ -1750,15 +1831,20 @@ function WhisperingWishesInner() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b" style={{borderColor: activeTheme ? `${themeAccent}30` : 'var(--border-medium)', backgroundColor: visualSettings.oledMode ? 'rgba(0, 0, 0, 0.98)' : 'rgba(8, 12, 18, 0.92)', backdropFilter: 'blur(20px)', paddingTop: 'env(safe-area-inset-top, 0px)', position: 'sticky', overflow: 'hidden'}}>
         {/* Theme banner art background */}
-        {activeTheme && (
+        {headerBgUrl && (
           <>
-            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none' }} loading="eager" />
-            <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent}15 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />
+            <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
+            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
           </>
+        )}
+        {bgFramingMode && headerBgUrl && (
+          <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'header' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('header')}>
+            <span className="absolute top-1 left-1 text-[9px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
+          </div>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
           <div className="header-top flex items-center justify-between py-1.5">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
                   const accepted = await pwa.promptInstall();
@@ -1770,25 +1856,25 @@ function WhisperingWishesInner() {
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute inset-0 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
-                <div className="relative w-8 h-8 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
+                <div className="relative w-11 h-11 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
                 {pwa?.canInstall && (
-                  <div className="absolute - bottom-0.5 - right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-md" style={{ background: themeAccent || '#eab308' }} aria-hidden="true">
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-md" style={{ background: themeAccent || '#eab308' }} aria-hidden="true">
                     <Download size={9} className="text-black" />
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px', padding: '4px 12px' } : undefined}>
+              <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px', padding: '6px 12px' } : undefined}>
                 <h1 className="text-white font-semibold text-sm tracking-wide leading-tight">Whispering Wishes</h1>
                 <p className="text-[10px] tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
-            <div className="header-controls flex items-center gap-1.5">
-              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2.5 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: '8px' }}>
+            <div className="header-controls flex items-center gap-2">
+              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: '8px' }}>
                 {state.server} <ChevronDown size={10} />
               </button>
-              <button onClick={handleExport} aria-label="Export backup" title="Export backup" className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: '8px' }}>
+              <button onClick={handleExport} aria-label="Export backup" title="Export backup" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: '8px' }}>
                 <Download size={14} />
               </button>
             </div>
@@ -1797,7 +1883,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex justify-between overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
           const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
@@ -1805,11 +1891,16 @@ function WhisperingWishesInner() {
           else if (e.key === 'ArrowLeft') { e.preventDefault(); newTab = tabs[(idx - 1 + tabs.length) % tabs.length]; }
           if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
         }}>
-        {activeTheme && (
+        {navBgUrl && (
           <>
-            <img src={activeTheme.bannerArt} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.5, pointerEvents: 'none' }} />
-            <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(8,12,20,0.85), ${themeAccent}15, rgba(8,12,20,0.85))`, pointerEvents: 'none' }} aria-hidden="true" />
+            <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.5, pointerEvents: 'none', objectPosition: navBgPos }} />
+            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(8,12,20,0.85), ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''}, rgba(8,12,20,0.85))`, pointerEvents: 'none' }} aria-hidden="true" />}
           </>
+        )}
+        {bgFramingMode && navBgUrl && (
+          <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'nav' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('nav')}>
+            <span className="absolute top-1 left-1 text-[9px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'nav' ? '● NAV' : 'Nav'}</span>
+          </div>
         )}
         <div className="tab-indicator" />
         <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
@@ -1822,14 +1913,14 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
       </nav>
 
-      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 pb-20 space-y-3 w-full" role="main">
+      <main id="main-content" className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{ paddingBottom: navPadding }} role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
         </div>
         
         {/* [SECTION:TAB-TRACKER] */}
-        {activeTab === 'tracker' && (
+        {activeTab === 'tracker' && !bgFramingMode && (
           <TabErrorBoundary tabName="Tracker">
               <TrackerTab
                 state={state}
@@ -1848,7 +1939,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-EVENTS] */}
-        {activeTab === 'events' && (
+        {activeTab === 'events' && !bgFramingMode && (
           <TabErrorBoundary tabName="Events">
               <EventsTab
                 state={state}
@@ -1863,7 +1954,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-CALC] */}
-        {activeTab === 'calculator' && (
+        {activeTab === 'calculator' && !bgFramingMode && (
           <TabErrorBoundary tabName="Calculator">
               <CalculatorTab state={state} dispatch={dispatch} />
 
@@ -1871,7 +1962,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-PLANNER] */}
-        {activeTab === 'planner' && (
+        {activeTab === 'planner' && !bgFramingMode && (
           <TabErrorBoundary tabName="Planner">
               <PlannerTab
                 state={state}
@@ -1886,7 +1977,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-STATS] */}
-        {activeTab === 'analytics' && (
+        {activeTab === 'analytics' && !bgFramingMode && (
           <TabErrorBoundary tabName="Analytics">
               <AnalyticsTab
                 state={state}
@@ -1910,7 +2001,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-COLLECT] */}
-        {activeTab === 'gathering' && (
+        {activeTab === 'gathering' && !bgFramingMode && (
           <TabErrorBoundary tabName="Collection">
               <CollectionTab
                 state={state}
@@ -1933,7 +2024,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-TEAMS] */}
-        {activeTab === 'teams' && (
+        {activeTab === 'teams' && !bgFramingMode && (
           <TabErrorBoundary tabName="Teams">
               <TeamsTab
                 state={state}
@@ -1952,7 +2043,7 @@ function WhisperingWishesInner() {
         )}
 
         {/* [SECTION:TAB-PROFILE] */}
-        {activeTab === 'profile' && (
+        {(activeTab === 'profile' || bgFramingMode) && (
           <TabErrorBoundary tabName="Profile">
               <ProfileTab
             state={state}
@@ -1998,6 +2089,14 @@ function WhisperingWishesInner() {
             setShowAdminPanel={setShowAdminPanel}
             adminMiniMode={adminMiniMode}
             setAdminMiniMode={setAdminMiniMode}
+            bgFramingMode={bgFramingMode}
+            setBgFramingMode={setBgFramingMode}
+            editingBgTarget={editingBgTarget}
+            setEditingBgTarget={setEditingBgTarget}
+            updateBgPosition={updateBgPosition}
+            getBgPositionLabel={getBgPositionLabel}
+            exportBgPositions={exportBgPositions}
+            getCustomBgPosition={getCustomBgPosition}
             googleUser={googleUser}
             handleGoogleSignIn={handleGoogleSignIn}
             handleGoogleSignOut={handleGoogleSignOut}
@@ -2015,7 +2114,7 @@ function WhisperingWishesInner() {
       {/* Server Selector Modal */}
       <FocusTrapModal isOpen={showServerDropdown} onClose={() => setShowServerDropdown(false)} className="" onClick={() => setShowServerDropdown(false)} ariaLabel="Select server region" centered>
           <div className="kuro-card w-full max-w-[200px] rounded-2xl py-2" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-white font-semibold text-xs px-4 py-2 border-b border-[var(--border-medium)]">Server Region</h3>
+            <h3 className="text-white font-semibold text-xs px-4 py-2.5 border-b border-[var(--border-medium)]">Server Region</h3>
             {Object.keys(SERVERS).map(s => (
               <button key={s} onClick={() => { dispatch({ type: 'SET_SERVER', server: s }); setShowServerDropdown(false); }} className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${s === state.server ? 'text-yellow-400 bg-yellow-500/10' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
                 {s}
@@ -2032,7 +2131,7 @@ function WhisperingWishesInner() {
                 <Download size={14} className="text-yellow-400" />
                 <span className="text-white text-sm font-semibold">Backup</span>
               </div>
-              <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
+              <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-3">
               <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
@@ -2087,7 +2186,7 @@ function WhisperingWishesInner() {
 
               <div className="relative my-1">
                 <div className="kuro-divider" />
-                <span className="absolute left-1/2 - translate-x-1/2 - translate-y-1/2 bg-neutral-900 px-2 text-[10px] text-gray-400 uppercase tracking-wider">Restore</span>
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[10px] text-gray-400 uppercase tracking-wider">Restore</span>
               </div>
               
               <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
@@ -2256,6 +2355,7 @@ function WhisperingWishesInner() {
           setEditingImage={setEditingImage}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
           onViewInTeams={() => { setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null }); setActiveTab('teams'); }}
+          collectionData={collectionData}
         />
       )}
       {detailModal.show && detailModal.type === 'weapon' && (
@@ -2263,6 +2363,7 @@ function WhisperingWishesInner() {
           name={detailModal.name}
           imageUrl={detailModal.imageUrl}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
+          collectionData={collectionData}
         />
       )}
       {detailModal.show && detailModal.type === 'echo' && (
@@ -2271,6 +2372,7 @@ function WhisperingWishesInner() {
           imageUrl={detailModal.imageUrl}
           cost={detailModal.cost}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
+          collectionData={collectionData}
         />
       )}
 
