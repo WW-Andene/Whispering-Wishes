@@ -64,24 +64,16 @@ export default function ConveneScanner({
 
       {/* ═══ CAMERA HUD ═══ */}
 
-      {/* Dark mask — 4 panels around the zone with rounded inner edges via clip-path */}
-      {/* Top */}
-      <div className="absolute pointer-events-none" style={{ top: 0, left: 0, right: 0, height: `${zone.top}%`, background: 'rgba(6,10,18,0.82)' }} />
-      {/* Bottom */}
-      <div className="absolute pointer-events-none" style={{ bottom: 0, left: 0, right: 0, height: `${100 - zone.top - zone.height}%`, background: 'rgba(6,10,18,0.82)' }} />
-      {/* Left */}
-      <div className="absolute pointer-events-none" style={{ top: `${zone.top}%`, left: 0, width: `${zone.left}%`, height: `${zone.height}%`, background: 'rgba(6,10,18,0.82)' }} />
-      {/* Right */}
-      <div className="absolute pointer-events-none" style={{ top: `${zone.top}%`, right: 0, width: `${zone.right}%`, height: `${zone.height}%`, background: 'rgba(6,10,18,0.82)' }} />
-      {/* Rounded corner fills — 4 small squares at zone corners filled with mask color + inverse border-radius */}
-      {[
-        { top: `${zone.top}%`, left: `${zone.left}%`, borderBottomRightRadius: r },
-        { top: `${zone.top}%`, right: `${zone.right}%`, borderBottomLeftRadius: r },
-        { bottom: `${100 - zone.top - zone.height}%`, left: `${zone.left}%`, borderTopRightRadius: r },
-        { bottom: `${100 - zone.top - zone.height}%`, right: `${zone.right}%`, borderTopLeftRadius: r },
-      ].map((style, i) => (
-        <div key={i} className="absolute pointer-events-none" style={{ ...style, width: r, height: r, background: 'rgba(6,10,18,0.82)' }} />
-      ))}
+      {/* Dark mask with rounded cutout */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+        <defs>
+          <mask id="scanMask">
+            <rect width="100%" height="100%" fill="white" />
+            <rect x={`${zone.left}%`} y={`${zone.top}%`} width={`${100 - zone.left - zone.right}%`} height={`${zone.height}%`} rx={r} ry={r} fill="black" />
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="rgba(6,10,18,0.82)" mask="url(#scanMask)" />
+      </svg>
 
       {/* Top bar */}
       <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
