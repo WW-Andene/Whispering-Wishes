@@ -16,10 +16,16 @@ const APP_SRC = resolve(REPO_ROOT, 'app/src');
 export const PATHS = {
   repoRoot: REPO_ROOT,
   appSrc: APP_SRC,
-  dataFile: resolve(APP_SRC, 'appcore-data.js'),
-  engineFile: resolve(APP_SRC, 'appcore-engine.js'),
-  componentsFile: resolve(APP_SRC, 'appcore-components.jsx'),
-  providersFile: resolve(APP_SRC, 'appcore-providers.jsx'),
+  // Data source files (barrel re-exports deleted — point to actual modules)
+  dataFile: resolve(APP_SRC, 'data/characters.js'),     // was appcore-data.js (deleted)
+  engineFile: resolve(APP_SRC, 'core/reducer.js'),      // was appcore-engine.js (deleted)
+  providersFile: resolve(APP_SRC, 'providers/KuroStyles.jsx'), // was appcore-providers.jsx (deleted)
+  // Direct data module paths
+  charactersFile: resolve(APP_SRC, 'data/characters.js'),
+  bannersFile: resolve(APP_SRC, 'data/banners.js'),
+  constantsFile: resolve(APP_SRC, 'data/constants.js'),
+  weaponsFile: resolve(APP_SRC, 'data/weapons.js'),
+  echoesFile: resolve(APP_SRC, 'data/echoes.js'),
   appFile: resolve(APP_SRC, 'App.jsx'),
 };
 

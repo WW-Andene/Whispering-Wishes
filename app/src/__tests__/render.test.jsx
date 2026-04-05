@@ -54,29 +54,33 @@ function renderWithProviders(Component, props) {
 }
 
 describe('Module imports', () => {
-  it('loads appcore-data.js', async () => {
-    const mod = await import('../appcore-data.js');
-    expect(mod.CHARACTER_DATA).toBeDefined();
-    expect(mod.CURRENT_BANNERS).toBeDefined();
-    expect(mod.WEAPON_DATA).toBeDefined();
+  it('loads data modules', async () => {
+    const chars = await import('../data/characters.js');
+    expect(chars.CHARACTER_DATA).toBeDefined();
+    const banners = await import('../data/banners.js');
+    expect(banners.CURRENT_BANNERS).toBeDefined();
+    const weapons = await import('../data/weapons.js');
+    expect(weapons.WEAPON_DATA).toBeDefined();
   });
 
-  it('loads appcore-engine.js', async () => {
-    const mod = await import('../appcore-engine.js');
-    expect(mod.initialState).toBeDefined();
-    expect(mod.reducer).toBeDefined();
+  it('loads core modules', async () => {
+    const { initialState, reducer } = await import('../core/reducer.js');
+    expect(initialState).toBeDefined();
+    expect(reducer).toBeDefined();
   });
 
-  it('loads appcore-providers.jsx', async () => {
-    const mod = await import('../appcore-providers.jsx');
-    expect(mod.FocusTrapModal).toBeDefined();
-    expect(mod.ToastProvider).toBeDefined();
+  it('loads provider modules', async () => {
+    const { FocusTrapModal } = await import('../providers/FocusTrapModal.jsx');
+    expect(FocusTrapModal).toBeDefined();
+    const { ToastProvider } = await import('../providers/ToastProvider.jsx');
+    expect(ToastProvider).toBeDefined();
   });
 
-  it('loads appcore-components.jsx', async () => {
-    const mod = await import('../appcore-components.jsx');
-    expect(mod.Card).toBeDefined();
-    expect(mod.BannerCard).toBeDefined();
+  it('loads shared components', async () => {
+    const { Card } = await import('../shared/components/Card.jsx');
+    expect(Card).toBeDefined();
+    const { BannerCard } = await import('../shared/components/BannerCard.jsx');
+    expect(BannerCard).toBeDefined();
   });
 });
 
