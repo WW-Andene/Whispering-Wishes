@@ -1022,7 +1022,7 @@ function ProfileTab({
       canvas.toBlob(blob=>{
         if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
         a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
-        a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
+        a.click();setTimeout(() => URL.revokeObjectURL(url), 100);toast?.addToast?.('ID Card saved!','success');
       },'image/png');
     } catch (e) {
       console.error('ID card export failed (possible CORS tainted canvas):', e);

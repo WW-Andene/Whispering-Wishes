@@ -194,6 +194,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
 
   // ── Cloud Backup ────────────────────────────────────────────────────────
   const handleCloudBackup = useCallback(async () => {
+    if (cloudBackupStatus === 'saving' || cloudBackupStatus === 'loading') return; // prevent double-click
     const token = await getGoogleAuth();
     if (!token || !googleUser) {
       toast?.addToast?.('Session expired — please sign in again', 'error');
@@ -223,7 +224,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
       setTimeout(() => setCloudBackupStatus('idle'), 3000);
     }
-  }, [getGoogleAuth, googleUser, firebaseFetch, toast, handleGoogleSignOut, getBackupPayload]);
+  }, [getGoogleAuth, googleUser, firebaseFetch, toast, handleGoogleSignOut, getBackupPayload, cloudBackupStatus]);
 
   // ── Cloud Restore ───────────────────────────────────────────────────────
   const handleCloudRestore = useCallback(async () => {

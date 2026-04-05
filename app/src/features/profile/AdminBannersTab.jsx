@@ -52,8 +52,8 @@ export default function AdminBannersTab({
       if (isNaN(startDate.getTime())) throw new Error('Invalid start date');
       if (isNaN(endDate.getTime())) throw new Error('Invalid end date');
       if (endDate <= startDate) throw new Error('End date must be after start date');
-      [bannerForm.standardCharImg, bannerForm.standardWeapImg, bannerForm.wwImg, bannerForm.emImg, bannerForm.ppImg, bannerForm.toaImg, bannerForm.irImg, bannerForm.drImg].forEach((url, i) => {
-        const labels = ['Standard char banner', 'Standard weap banner', 'Whimpering Wastes', 'Endstate Matrix', 'Pioneer Podcast', 'Tower of Adversity', 'Illusive Realm', 'Daily reset'];
+      [bannerForm.standardCharImg, bannerForm.standardWeapImg, bannerForm.wwImg, bannerForm.emImg, bannerForm.ppImg, bannerForm.toaImg, bannerForm.irImg, bannerForm.drImg, bannerForm.thImg, bannerForm.wbImg].forEach((url, i) => {
+        const labels = ['Standard char banner', 'Standard weap banner', 'Whimpering Wastes', 'Endstate Matrix', 'Pioneer Podcast', 'Tower of Adversity', 'Illusive Realm', 'Daily reset', 'Tactical Hologram', 'Weekly Boss'];
         if (url?.trim()) validateImgUrl(url.trim(), labels[i] + ' image');
       });
       const newBanners = {
@@ -72,6 +72,8 @@ export default function AdminBannersTab({
         towerOfAdversityImage: bannerForm.toaImg.trim(),
         illusiveRealmImage: bannerForm.irImg.trim(),
         dailyResetImage: bannerForm.drImg.trim(),
+        tacticalHologramImage: bannerForm.thImg.trim(),
+        weeklyBossImage: bannerForm.wbImg.trim(),
       };
       saveCustomBanners(newBanners);
       setShowAdminPanel(false);
