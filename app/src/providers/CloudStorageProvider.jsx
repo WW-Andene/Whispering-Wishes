@@ -137,10 +137,12 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
         });
       }
       const accessToken = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Sign-in timed out — popup may have been blocked')), 60000);
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
           scope: 'email profile',
           callback: (response) => {
+            clearTimeout(timeout);
             if (response.error) reject(new Error(response.error));
             else resolve(response.access_token);
           },
