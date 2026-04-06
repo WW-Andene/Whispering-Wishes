@@ -1517,8 +1517,8 @@ function ProfileTab({
                     // P4-F001: Clear ALL auxiliary localStorage keys on reset
                     const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-calendar-notes', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id'];
                     auxKeys.forEach(k => { try { localStorage.removeItem(k); } catch {} });
-                    // Delete cloud backup if signed in
-                    if (handleCloudDelete) handleCloudDelete();
+                    // Delete cloud backup if signed in (await before sign-out to preserve auth token)
+                    if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();
                     toast?.addToast?.('All data reset!', 'info');
                   } }} className="kuro-btn w-full py-2 active-red">

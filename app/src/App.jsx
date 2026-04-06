@@ -566,7 +566,7 @@ function WhisperingWishesInner() {
           } catch {}
         }
         toast?.addToast?.(`Backup restored! (v${data.version || '?'}, ${data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'unknown date'})`, 'success');
-        return;
+        return true;
       }
 
       const pulls = data.pulls || data.conveneHistory || data.history || [];
