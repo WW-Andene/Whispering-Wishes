@@ -244,9 +244,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     return (labels[k] || k) + ' +' + v + '%';
                   }).join(', ');
                   return (
-                    <div key={s} className={`flex items-center gap-2 text-[10px] ${!unlocked ? 'opacity-35' : ''}`}>
-                      <span className={`w-7 text-center font-bold rounded py-0.5 ${!unlocked ? 'text-gray-500 bg-gray-500/10 border border-gray-500/25' : s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
-                      <span className={`flex-1 ${unlocked ? 'text-gray-300' : 'text-gray-600'}`}>{stats}</span>
+                    <div key={s} className={`flex items-center gap-2 text-[10px] ${!unlocked ? 'opacity-50' : ''}`}>
+                      <span className={`w-7 text-center font-bold rounded py-0.5 ${!unlocked ? 'text-gray-400 bg-gray-500/10 border border-gray-500/30' : s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
+                      <span className={`flex-1 ${unlocked ? 'text-gray-300' : 'text-gray-500'}`}>{stats}</span>
                     </div>
                   );
                 })}
@@ -273,7 +273,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {data.bestWeapon && (() => {
           const hasWeapon = ownsWeapon(data.bestWeapon);
           return (
-          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.45 } : undefined}>
+          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
             <div className="flex items-center justify-between mb-2">
               <div className="text-[10px] text-gray-500 uppercase tracking-wider">Recommended Weapon</div>
               {!hasWeapon && <span className="text-[9px] text-gray-600 uppercase tracking-wider">Not Owned</span>}
@@ -346,7 +346,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                           const is5Star = CHARACTER_DATA[member]?.rarity === 5;
                           const memberOwned = ownsChar(member) || member === name; // current char always "owned"
                           return (
-                            <div key={j} className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${!memberOwned ? 'opacity-35' : ''}`}>
+                            <div key={j} className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${!memberOwned ? 'opacity-50' : ''}`}>
                               {memberImg ? (
                                 <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${memberOwned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: memberOwned ? 'none' : 'grayscale(100%)' }}>
                                   <div className="absolute inset-0 breath-zoom">

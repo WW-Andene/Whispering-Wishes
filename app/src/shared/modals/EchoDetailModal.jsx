@@ -255,7 +255,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                   const is5Star = CHARACTER_DATA[charName]?.rarity === 5;
                   const owned = ownsChar(charName);
                   return (
-                    <div key={charName} className={`flex flex-col items-center gap-1 ${!owned ? 'opacity-35' : ''}`}>
+                    <div key={charName} className={`flex flex-col items-center gap-1 ${!owned ? 'opacity-50' : ''}`}>
                       {charImg ? (
                         <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${owned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
                           <div className="absolute inset-0 breath-zoom">

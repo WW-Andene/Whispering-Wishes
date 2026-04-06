@@ -73,7 +73,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
             </div>
             {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => {
               const owned = ownsChar(char);
-              return <span key={i} className={`text-[10px] px-2 py-1 rounded-lg border ${owned ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : 'bg-gray-500/5 text-gray-600 border-gray-700/30'}`}>{char}{!owned && ' ✗'}</span>;
+              return <span key={i} className={`text-[10px] px-2 py-1 rounded-lg border ${owned ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : 'bg-gray-500/5 text-gray-500 border-gray-600/30'}`}>{char}{!owned && ' ✗'}</span>;
             })}
           </div>
 
