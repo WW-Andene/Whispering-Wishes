@@ -117,7 +117,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   return createPortal(
     <div
       ref={focusTrapRef}
-      className={`fixed inset-0 z-[100] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} ${className}`}
+      className={`fixed inset-0 z-[10000] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} ${className}`}
       style={{ backdropFilter: 'blur(2px) brightness(0.4)', WebkitBackdropFilter: 'blur(2px) brightness(0.4)' }}
       role="dialog"
       aria-modal="true"
