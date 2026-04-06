@@ -12,7 +12,6 @@ import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/component
 import { ADMIN_HASH } from '../../shared/components/bannerUtils.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { ECHO_DATA } from '../../data/echoes.js';
-import { storageAvailable } from '../../core/storage.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { ALLOWED_IMAGE_HOSTS } from '../../shared/constants/appConstants.js';
 

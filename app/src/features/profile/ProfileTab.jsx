@@ -426,7 +426,7 @@ function ProfileTab({
         }
       }
     }
-  }, [adminPassword, toast, hashPasswordPBKDF2, hashPasswordSHA256, activeBanners, buildBannerForm]);
+  }, [adminPassword, toast, hashPasswordPBKDF2, activeBanners, buildBannerForm]);
 
   // Fetch admin data when Players tab is open
   useEffect(() => {
@@ -1020,7 +1020,7 @@ function ProfileTab({
 
     try {
       canvas.toBlob(blob=>{
-        if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        if(!blob){toast?.addToast?.('ID Card export failed — image may be blocked by CORS','error');return;}const url=URL.createObjectURL(blob);const a=document.createElement('a');
         a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
         a.click();setTimeout(() => URL.revokeObjectURL(url), 100);toast?.addToast?.('ID Card saved!','success');
       },'image/png');

@@ -161,9 +161,12 @@ export default function AdminBannersTab({
           {[
             ['Whimpering Wastes', 'wwImg'],
             ['Endstate Matrix', 'emImg'],
+            ['Pioneer Podcast', 'ppImg'],
             ['Tower of Adversity', 'toaImg'],
             ['Illusive Realm', 'irImg'],
             ['Daily Reset', 'drImg'],
+            ['Tactical Hologram', 'thImg'],
+            ['Weekly Boss', 'wbImg'],
           ].map(([label, key]) => (
             <div key={key} className="flex items-center gap-2">
               <span className="text-gray-300 text-[10px] w-28">{label}</span>
