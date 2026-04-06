@@ -347,7 +347,11 @@ function WhisperingWishesInner() {
   
 
   const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null, framing: null });
-  
+  // Close detail modal on tab switch to prevent it blocking the new tab
+  useEffect(() => {
+    if (detailModal.show) setDetailModal(prev => ({ ...prev, show: false }));
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // 6.1 fix: Focus trapping for inline modals - Tab wraps within modal, auto-focus first element, restore on close
   const exportTrapRef = useFocusTrap(showExportModal);
 
@@ -542,7 +546,11 @@ function WhisperingWishesInner() {
           try {
             if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
               localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
-              setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+              setVisualSettings(prev => {
+                const merged = { ...prev, ...sanitizeStateObj(data.aux.visualSettings) };
+                if (typeof merged.collectionZoom === 'number') merged.collectionZoom = Math.min(300, Math.max(100, merged.collectionZoom));
+                return merged;
+              });
             }
             if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
               localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
@@ -1331,7 +1339,11 @@ function WhisperingWishesInner() {
                       try {
                         if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
                           localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
-                          setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+                          setVisualSettings(prev => {
+                const merged = { ...prev, ...sanitizeStateObj(data.aux.visualSettings) };
+                if (typeof merged.collectionZoom === 'number') merged.collectionZoom = Math.min(300, Math.max(100, merged.collectionZoom));
+                return merged;
+              });
                         }
                         if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
                           localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
