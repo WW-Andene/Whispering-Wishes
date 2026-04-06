@@ -59,7 +59,7 @@ export function useVisualSettings() {
           for (const key of Object.keys(prev)) {
             if (parsed[key] !== undefined) merged[key] = parsed[key];
           }
-          merged.collectionZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, merged.collectionZoom || 120));
+          merged.collectionZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(merged.collectionZoom) || 120));
           for (const key of ['fadePosition', 'fadeIntensity', 'pictureOpacity',
             'standardFadePosition', 'standardFadeIntensity', 'standardOpacity',
             'shadowFadePosition', 'shadowFadeIntensity', 'shadowOpacity',

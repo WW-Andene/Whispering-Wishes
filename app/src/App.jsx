@@ -293,7 +293,7 @@ function WhisperingWishesInner() {
     const handleUnload = () => {
       if (stateRef.current) {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(stateRef.current));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...stateRef.current, version: APP_VERSION }));
         } catch {}
       }
     };

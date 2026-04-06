@@ -272,7 +272,7 @@ const reducer = (state, action) => {
     case ACTION.CLEAR_PROFILE: return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
     case ACTION.SAVE_BOOKMARK: return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
     case ACTION.LOAD_BOOKMARK: {
-      const b = state.bookmarks.find(bm => bm.id === action.id);
+      const b = state.bookmarks.find(bm => bm?.id === action.id);
       if (!b) return state;
       // P9-FIX: Restore ALL saved calc fields, not just a subset (Step 4 audit)
       // Bookmarks save ...state.calc, so we restore every calc field that was captured.
