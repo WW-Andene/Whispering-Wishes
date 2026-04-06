@@ -77,7 +77,7 @@ export default function DPSComparisonCard({
               onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
               className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
           </div>
-          <span className="text-gray-600 text-[10px]">DEF {792 + 8 * enemyLevel}</span>
+          <span className="text-gray-600 text-[10px]">DEF {792 + 8 * (Number(enemyLevel) || 90)}</span>
         </div>
 
         <div className="space-y-3">
