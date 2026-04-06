@@ -532,7 +532,7 @@ function WhisperingWishesInner() {
 
       // FIX #1: Detect own backup format (has 'state' key from handleExport)
       if (data.state && typeof data.state === 'object' && data.state.profile) {
-        const doRestore = await confirm?.('Restore full backup?', 'This will replace ALL current data (Convenes, teams, settings) with the backup. Continue?', { confirmText: 'Restore', dangerous: true });
+        const doRestore = await confirm?.({ title: 'Restore full backup?', message: 'This will replace ALL current data (Convenes, teams, settings) with the backup. Continue?', confirmLabel: 'Restore', destructive: true });
         if (!doRestore) return;
         dispatch({ type: 'LOAD_STATE', state: data.state });
         // Restore auxiliary data (visual settings, team equipment, etc.)
@@ -589,7 +589,7 @@ function WhisperingWishesInner() {
       const importUid = data.uid || data.playerId || '';
       const existingUid = stateRef.current.profile.uid || '';
       if (importUid && existingUid && importUid !== existingUid) {
-        const proceed = await confirm?.('Different account detected', `This data is from UID ${importUid.slice(0, 6)}... but your current account is ${existingUid.slice(0, 6)}... Import will merge both accounts\' history. Continue?`, { confirmText: 'Merge', dangerous: true });
+        const proceed = await confirm?.({ title: 'Different account detected', message: `This data is from UID ${importUid.slice(0, 6)}... but your current account is ${existingUid.slice(0, 6)}... Import will merge both accounts' history. Continue?`, confirmLabel: 'Merge', destructive: true });
         if (!proceed) return;
       }
       
@@ -789,7 +789,7 @@ function WhisperingWishesInner() {
     } finally {
       importInFlightRef.current = false;
     }
-  }, [toast, dispatch, IMPORT_NAME_ALIASES]);
+  }, [toast, dispatch, IMPORT_NAME_ALIASES, activeBanners, confirm]);
 
   // Export data - includes main state + auxiliary localStorage settings for full round-trip
   const handleExport = useCallback(() => {
