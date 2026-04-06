@@ -252,7 +252,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       }
       const doRestore = await confirm?.({
         title: 'Restore from cloud',
-        message: `Restore backup from ${new Date(data.timestamp).toLocaleString()}?\n${data.pullCount || 0} pulls (v${data.version || '?'}).\nThis will REPLACE your current data.`,
+        message: `Restore backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString() : 'unknown date'}?\n${data.pullCount || 0} pulls (v${data.version || '?'}).\nThis will REPLACE your current data.`,
         confirmLabel: 'Restore',
         destructive: true,
       });
