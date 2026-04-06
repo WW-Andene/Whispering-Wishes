@@ -59,15 +59,15 @@ import { ResonanceField } from './shared/backgrounds/ResonanceField.jsx';
 import { Honour } from './shared/backgrounds/Honour.jsx';
 import { getActiveBanners } from './shared/components/bannerUtils.js';
 // --- Feature tabs ---
-// D2-01: Eager-load default tab (Tracker), lazy-load heavy tabs for code splitting
+// --- Feature tabs (eager-loaded — code splitting reverted due to shared module race conditions) ---
 import TrackerTab from './features/tracker/TrackerTab.jsx';
 import EventsTab from './features/events/EventsTab.jsx';
-const PlannerTab = React.lazy(() => import('./features/planner/PlannerTab.jsx'));
-const AnalyticsTab = React.lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
-const CalculatorTab = React.lazy(() => import('./features/calculator/CalculatorTab.jsx'));
-const CollectionTab = React.lazy(() => import('./features/collection/CollectionTab.jsx'));
-const TeamsTab = React.lazy(() => import('./features/teams/TeamsTab.jsx'));
-const ProfileTab = React.lazy(() => import('./features/profile/ProfileTab.jsx'));
+import PlannerTab from './features/planner/PlannerTab.jsx';
+import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
+import CalculatorTab from './features/calculator/CalculatorTab.jsx';
+import CollectionTab from './features/collection/CollectionTab.jsx';
+import TeamsTab from './features/teams/TeamsTab.jsx';
+import ProfileTab from './features/profile/ProfileTab.jsx';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -1005,7 +1005,6 @@ function WhisperingWishesInner() {
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
         </div>
-        <React.Suspense fallback={<div className="text-center text-gray-500 py-8 text-xs">Loading...</div>}>
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && !bgFramingMode && (
@@ -1162,7 +1161,6 @@ function WhisperingWishesInner() {
           </TabErrorBoundary>
         )}
 
-        </React.Suspense>
       </main>
 
       {/* Server Selector Modal */}

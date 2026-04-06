@@ -18,18 +18,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
-            return 'vendor-react';
-          }
-          // Keep shared components/data/core/hooks in the index chunk to prevent
-          // race conditions during lazy-loaded tab initialization (e.g. KuroSelect
-          // split into its own chunk causes "KuroSelect is not defined" on rapid tab switch)
-          if (id.includes('/shared/') || id.includes('/providers/') ||
-              id.includes('/data/') || id.includes('/core/') || id.includes('/hooks/') ||
-              id.includes('/utils/')) {
-            return 'index';
-          }
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
         },
       },
     },
