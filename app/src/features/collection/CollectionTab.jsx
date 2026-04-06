@@ -162,8 +162,9 @@ function CollectionTab({
 
   const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
     return items.filter(name => {
-      if (collectionOwnedFilter === 'owned' && !ownedChars.includes(name)) return false;
-      if (collectionOwnedFilter === 'not-owned' && ownedChars.includes(name)) return false;
+      const isOwned = ownedChars.includes(name) || (countsObj && countsObj[name] > 0);
+      if (collectionOwnedFilter === 'owned' && !isOwned) return false;
+      if (collectionOwnedFilter === 'not-owned' && isOwned) return false;
       if (collectionCategoryFilter === 'character' && !isCharacter) return false;
       if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
       if (debouncedSearch) {
