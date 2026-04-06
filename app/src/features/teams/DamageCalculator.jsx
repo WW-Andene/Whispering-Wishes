@@ -98,7 +98,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     // ── Enemy scaling ──
     const attackerFactor = 800 + 8 * 90; // 1520 at attacker level 90
-    const enemyDef90 = 792 + 8 * enemyLevel;
+    const enemyDef90 = 792 + 8 * (Number(enemyLevel) || 90);
     const calcResMult = (baseRes, shred) => {
       const totalRes = (baseRes - shred) / 100;
       if (totalRes < 0) return 1 - totalRes / 2;
@@ -1229,8 +1229,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         {skillDmg > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
                         {atkPct > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
                         {deepen > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
-                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {defShred}%</span>}
-                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {resShred}%</span>}
+                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {Math.round(defShred)}%</span>}
+                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {Math.round(resShred)}%</span>}
                         {defIgnore > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
                       </div>
                     </div>
