@@ -30,7 +30,7 @@ import { useVisualSettings, DEFAULT_VISUAL_SETTINGS } from './hooks/useVisualSet
 import { useBackgroundFraming } from './hooks/useBackgroundFraming.js';
 import { useCollectionImages, COLLECTION_IMAGES_KEY } from './hooks/useCollectionImages.js';
 import { useTabNavigation } from './hooks/useTabNavigation.js';
-import { usePresenceTracking, FIREBASE_AVAILABLE, checkFirebaseRateLimit } from './hooks/usePresenceTracking.js';
+import { usePresenceTracking, checkFirebaseRateLimit } from './hooks/usePresenceTracking.js';
 import { useThemeAccent } from './hooks/useThemeAccent.js';
 // --- core ---
 import { ACTION, UNDOABLE_ACTIONS, createUndoReducer, initialState, reducer } from './core/reducer.js';
