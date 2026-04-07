@@ -172,8 +172,13 @@
       --radius-pill: 9999px;
       --card-radius: var(--radius-xl);
       --card-padding: 14px;
-      --btn-radius: var(--radius-md);
+      --btn-radius: var(--radius-lg);       /* FIX: was --radius-md (8px), actual button uses 12px */
+      --btn-padding: 10px 12px;             /* Button default padding (matches input) */
+      --input-padding: 10px 12px;           /* Input/select default padding */
+      --input-radius: var(--radius-md);     /* Input/select border-radius (8px) */
       --stat-radius: var(--radius-lg);
+      --label-margin: var(--space-base);    /* Label bottom margin (6px) */
+      --divider-margin: var(--space-md);    /* Divider vertical margin (12px) */
       /* HIGH-2: Domain-semantic color tokens — consolidated from 66 unique hex values */
       /* Element colors */
       --element-fusion: #ef4444;
@@ -297,10 +302,10 @@
     .kuro-calc select {
       background: var(--bg-input);
       border: 1px solid var(--border-bright);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: var(--input-radius);
+      padding: var(--input-padding);
       color: var(--text-heading);
-      font-size: 14px;
+      font-size: var(--font-md);
       width: 100%;
       transition: border-color var(--transition-fast);
       appearance: none;
@@ -645,7 +650,7 @@
     
     .kuro-header {
       position: relative;
-      padding: 14px;
+      padding: var(--card-padding);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
@@ -670,10 +675,10 @@
     .kuro-header h3 {
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: 14px;
+      font-size: var(--font-md);
       font-weight: 600;
       line-height: 1.25;
-      letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking at 14px */
+      letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking */
       display: flex;
       align-items: center;
       gap: 10px;
@@ -691,7 +696,7 @@
     }
     
     .kuro-body {
-      padding: 14px;
+      padding: var(--card-padding);
       color: var(--text-body);
     }
 
@@ -722,11 +727,11 @@
       position: relative;
       background: var(--bg-btn);
       border: 1px solid var(--border-medium);
-      border-radius: 12px;
-      padding: 10px 12px;
+      border-radius: var(--btn-radius);
+      padding: var(--btn-padding);
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: 12px;
+      font-size: var(--font-base);
       font-weight: 500;
       letter-spacing: 0.02em;
       cursor: pointer;
@@ -949,10 +954,10 @@
     .kuro-input {
       background: var(--bg-input);
       border: 1px solid var(--border-bright);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: var(--input-radius);
+      padding: var(--input-padding);
       color: var(--text-heading);
-      font-size: 14px;
+      font-size: var(--font-md);
       width: 100%;
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
       backdrop-filter: blur(var(--blur-md));
@@ -1006,8 +1011,8 @@
       position: relative;
       background: var(--bg-stat);
       border: 1px solid var(--border-hover);
-      border-radius: 12px; /* E7-AD1: Standardized to 12px (8/12/16 scale) */
-      padding: 14px;
+      border-radius: var(--stat-radius);
+      padding: var(--card-padding);
       text-align: center;
       overflow: hidden;
       font-family: var(--font-data);
@@ -1144,13 +1149,13 @@
     .kuro-label {
       color: var(--text-body);
       font-family: var(--font-display);
-      font-size: 10px;
+      font-size: var(--font-sm);
       line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-      margin-bottom: 6px;
+      margin-bottom: var(--label-margin);
       display: block;
     }
     
@@ -1681,7 +1686,7 @@
     .kuro-divider {
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
-      margin: 12px 0;
+      margin: var(--divider-margin) 0;
     }
     
     /* ═══ COLLECTION CARD HOVER ═══ */
