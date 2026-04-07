@@ -2315,4 +2315,286 @@
     @media (max-width: 1023px) {
       .desktop-ad-margin { display: none !important; }
     }
-    
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       UI STANDARDIZATION — Utility Classes
+       §E1 Design Token System + §DTA1-DTA2 Token Layer Architecture
+       Replaces 50+ inline style={{}} patterns with reusable CSS classes.
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* ═══ SHADOW UTILITIES (§E1-SHD) ═══ */
+    /* Replaces inline boxShadow strings across feature tabs */
+
+    /* Gold ambient glow — TeamsTab stat grid, IdCard elements */
+    .kuro-shadow-glow-gold {
+      box-shadow: 0 0 16px rgba(237,175,24,0.08);
+    }
+    /* Deep card shadow — profile pics, IdCard portrait frames */
+    .kuro-shadow-card-deep {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    /* Portrait frame shadow — IdCard large portrait */
+    .kuro-shadow-portrait {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    /* Subtle card shadow — smaller card elements */
+    .kuro-shadow-card-subtle {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    /* Admin panel shadow */
+    .kuro-shadow-admin {
+      box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3);
+    }
+    /* Recommendation highlight — TeamSelector/EchoSelector */
+    .kuro-shadow-rec {
+      box-shadow: 0 0 28px rgba(251,146,60,0.65), 0 0 56px rgba(251,146,60,0.3), inset 0 0 20px rgba(251,146,60,0.2);
+      background: rgba(251,146,60,0.15);
+    }
+    .kuro-shadow-rec-md {
+      box-shadow: 0 0 20px rgba(251,146,60,0.5), 0 0 40px rgba(251,146,60,0.2), inset 0 0 15px rgba(251,146,60,0.15);
+      background: rgba(251,146,60,0.12);
+    }
+    .kuro-shadow-rec-subtle {
+      box-shadow: 0 0 8px rgba(251,146,60,0.2);
+    }
+    /* Double-ring outline — ConveneScanner avatar */
+    .kuro-shadow-ring {
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    /* Luck bar glow */
+    .kuro-shadow-luck-bar {
+      box-shadow: 0 0 6px rgba(237,175,24,0.4);
+    }
+
+    /* ═══ TEXT SHADOW UTILITIES (§E1-TS) ═══ */
+    /* Replaces inline textShadow strings — color-matched glow variants */
+
+    .kuro-tshadow-glow-emerald {
+      text-shadow: 0 0 10px rgba(34,197,94,0.5);
+    }
+    .kuro-tshadow-glow-gold {
+      text-shadow: 0 0 10px rgba(237,175,24,0.5);
+    }
+    .kuro-tshadow-glow-gold-lg {
+      text-shadow: 0 0 20px rgba(52,211,153,0.4);
+    }
+    .kuro-tshadow-glow-red {
+      text-shadow: 0 0 10px rgba(239,68,68,0.5);
+    }
+    .kuro-tshadow-glow-cyan {
+      text-shadow: 0 0 10px rgba(6,182,212,0.5);
+    }
+    .kuro-tshadow-glow-yellow {
+      text-shadow: 0 0 10px rgba(234,179,8,0.5);
+    }
+    /* Deep overlay text shadow — banner/card overlays */
+    .kuro-tshadow-deep {
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8);
+    }
+    /* Medium overlay text shadow — headings on images */
+    .kuro-tshadow-overlay {
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    /* Subtle rec badge text shadow */
+    .kuro-tshadow-badge {
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    /* Tiny label shadow */
+    .kuro-tshadow-micro {
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    /* Gold brand text shadow — server display */
+    .kuro-tshadow-brand {
+      text-shadow: 0 0 8px rgba(237,175,24,0.3);
+    }
+
+    /* ═══ IDCARD SECTION CLASSES (§DCO3) ═══ */
+    /* Replaces 5× repeated inline styles in IdCardModal.jsx */
+
+    /* Glassmorphic section container */
+    .idcard-section {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px;
+    }
+    .idcard-section--lg {
+      padding: 12px;
+    }
+    /* Top shimmer line — default white, variants for accent colors */
+    .idcard-shimmer {
+      position: absolute;
+      top: 0;
+      left: 12px;
+      right: 12px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    }
+    .idcard-shimmer--gold {
+      background: linear-gradient(90deg, transparent, rgba(237,175,24,0.4), transparent);
+    }
+    .idcard-shimmer--gold-subtle {
+      background: linear-gradient(90deg, transparent, rgba(237,175,24,0.3), transparent);
+    }
+    .idcard-shimmer--cyan {
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,0.35), transparent);
+    }
+    .idcard-shimmer--purple {
+      background: linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent);
+    }
+    .idcard-shimmer--subtle {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    }
+    /* Corner decorations (top-right, bottom-left) */
+    .idcard-corner-tr {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 10px;
+      height: 10px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      border-right: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0 3px 0 0;
+    }
+    .idcard-corner-bl {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      width: 10px;
+      height: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 0 0 3px;
+    }
+    /* Gold accent bar — repeated 5× in IdCard sections */
+    .idcard-gold-bar {
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3));
+      box-shadow: 0 0 6px rgba(237,175,24,0.3);
+    }
+    /* Image overlay gradient — bottom fade for text legibility */
+    .idcard-img-fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    }
+    .idcard-img-fade--strong {
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    }
+    /* Image shimmer top-line */
+    .idcard-img-shimmer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      z-index: 10;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    }
+
+    /* ═══ GRADIENT OVERLAY UTILITIES (§E1-GR) ═══ */
+    /* Replaces inline background gradient strings */
+
+    /* Bottom-to-top fade for footer overlays */
+    .kuro-gradient-fade-up {
+      background: linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent);
+    }
+    /* Top-to-bottom fade for image overlays */
+    .kuro-gradient-fade-down {
+      background: linear-gradient(to bottom, rgba(8,12,20,0.85) 60%, transparent);
+    }
+    /* Luck rating bar gradient (red → gold → green) */
+    .kuro-gradient-luck {
+      background: linear-gradient(90deg, #f87171, #edaf18, #34d399);
+    }
+
+    /* ═══ PLANNER EVENT COLOR TOKENS (§DC2-AC) ═══ */
+    /* Domain-semantic color variables for resource planner events */
+    :root {
+      --event-weekly-boss: #60a5fa;
+      --event-endstate-matrix: #ec4899;
+      --event-tower: #ef4444;
+      --event-whimpering: #06b6d4;
+      --event-hologram: #a3e635;
+      --event-podcast: #fb923c;
+      --event-illusive: #c4b5fd;
+    }
+
+    /* ═══ INLINE CONTAINER STANDARDIZATION (§E7-PD) ═══ */
+    /* Standard border for stat-like containers */
+    .kuro-border-default {
+      border: 1px solid var(--border-default);
+    }
+    .kuro-border-subtle {
+      border: 1px solid var(--border-subtle);
+    }
+    .kuro-border-medium {
+      border: 1px solid var(--border-medium);
+    }
+    /* Profile pic / avatar container — consistent treatment */
+    .kuro-avatar-frame {
+      background: var(--bg-stat);
+      border: 1px solid rgba(255,255,255,0.08);
+      contain: paint;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ═══ PLANNER LEGEND SWATCH (§E5-CD) ═══ */
+    /* Tiny color swatch for planner calendar legends */
+    .kuro-legend-swatch {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .kuro-legend-swatch--banner {
+      background: linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03));
+      border: 1px solid rgba(237,175,24,0.15);
+    }
+    .kuro-legend-swatch--dailies {
+      background: linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08));
+      border: 1px solid rgba(34,197,94,0.4);
+    }
+
+    /* Selection glow — gold halo for selected items */
+    .kuro-shadow-selected-gold {
+      box-shadow: 0 0 8px rgba(237,175,24,0.4);
+    }
+
+    /* Standard banner section glow */
+    .kuro-shadow-standard-banner {
+      box-shadow: 0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    /* ═══ SCANNER UI (§E5-SC) ═══ */
+    /* ConveneScanner button style */
+    .kuro-scanner-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(6,10,18,0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    /* Scanner shutter ring */
+    .kuro-scanner-ring-outer {
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(6,10,18,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 50%;
+    }
+    .kuro-scanner-ring-inner {
+      background: rgba(6,10,18,1);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }

@@ -24,17 +24,18 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 // [SECTION:HELPERS] ── Event helpers ──────────────────────────────────────────
 
-// 9 colors — one per meaning.
+// 9 colors — one per meaning. Uses CSS variable tokens (--event-*) defined in kuro.css.
+// Fallback hex values kept for canvas/inline-svg contexts where CSS vars aren't available.
 const EVENT_COLORS = {
-  weeklyBoss:        '#60a5fa',  // marine (rarity-3star blue)
-  endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
-  towerOfAdversity:  '#ef4444',  // red-500 (better contrast at small sizes)
-  whimperingWastes:  '#06b6d4',  // cyan
-  tacticalHologram:  '#a3e635',  // lime
-  pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
-  illusiveRealm:     '#c4b5fd',  // lavender
+  weeklyBoss:        'var(--event-weekly-boss, #60a5fa)',   // marine (rarity-3star blue)
+  endstateMatrix:    'var(--event-endstate-matrix, #ec4899)', // fuchsia (featured weapon pink)
+  towerOfAdversity:  'var(--event-tower, #ef4444)',          // red-500 (better contrast at small sizes)
+  whimperingWastes:  'var(--event-whimpering, #06b6d4)',     // cyan
+  tacticalHologram:  'var(--event-hologram, #a3e635)',       // lime
+  pioneerPodcast:    'var(--event-podcast, #fb923c)',        // pumpkin (pity ring orange)
+  illusiveRealm:     'var(--event-illusive, #c4b5fd)',       // lavender
 };
-const BANNER_COLOR = '#edaf18';  // gold
+const BANNER_COLOR = 'var(--rarity-5star, #edaf18)';  // gold — uses rarity token
 
 // Get the earliest date an event type existed (from introducedVersion)
 const getIntroducedDate = (ev) => {
@@ -391,8 +392,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* V5-05: Standardized 8px indicators */}
         <div className="flex items-center gap-3 justify-center" style={{ fontSize: '10px', color: 'var(--text-disabled)' }}>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
-          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03))', border: '1px solid rgba(237,175,24,0.15)', display: 'inline-block' }} />Banner</span>
-          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))', border: '1px solid rgba(34,197,94,0.4)', display: 'inline-block' }} />Dailies</span>
+          <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--banner" />Banner</span>
+          <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--dailies" />Dailies</span>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
         </div>
 

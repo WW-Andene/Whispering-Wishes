@@ -1061,7 +1061,7 @@ function ProfileTab({
                 <div>
                   <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
                   <div className="flex items-center gap-3">
-                    <div className={`w-14 h-14 rounded-lg flex-shrink-0${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint', position: 'relative', overflow: 'hidden' }}>
+                    <div className={`w-14 h-14 rounded-lg flex-shrink-0 kuro-avatar-frame kuro-shadow-card-deep${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
                         return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
@@ -1313,8 +1313,8 @@ function ProfileTab({
                         <button
                           key={v.id}
                           onClick={() => selectImage('version', v.id, v.art, v.pos)}
-                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('version', v.id) ? 'ring-1 border-yellow-500' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                          style={{ aspectRatio: '16/9', boxShadow: isSelected('version', v.id) ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('version', v.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9' }}
                         >
                           <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -1326,8 +1326,8 @@ function ProfileTab({
                         <button
                           key={o.id}
                           onClick={() => selectImage('other', o.id, o.art, o.pos)}
-                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('other', o.id) ? 'ring-1 border-yellow-500' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                          style={{ aspectRatio: '16/9', boxShadow: isSelected('other', o.id) ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('other', o.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9' }}
                         >
                           <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />

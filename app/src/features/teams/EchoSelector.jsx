@@ -164,8 +164,7 @@ export default function EchoSelector({
                               setEchoStatPanel({ teamIdx: echoSelectorTarget.teamIdx, charName: echoSelectorTarget.charName, slotIdx, echoName: name });
                               haptic.success();
                             }}
-                            className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isRec ? 'border-2 border-orange-400' : `border-${costColor}-500/30 bg-${costColor}-500/5`} hover:bg-${costColor}-500/10`}
-                            style={isRec ? { boxShadow: '0 0 20px rgba(251,146,60,0.5), 0 0 40px rgba(251,146,60,0.2), inset 0 0 15px rgba(251,146,60,0.15)', background: 'rgba(251,146,60,0.12)' } : {}}
+                            className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isRec ? 'border-2 border-orange-400 kuro-shadow-rec-md' : `border-${costColor}-500/30 bg-${costColor}-500/5`} hover:bg-${costColor}-500/10`}
                           >
                             <div className="flex items-center gap-2">
                               {collectionImages[name] ? (
@@ -178,7 +177,7 @@ export default function EchoSelector({
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-white text-xs font-semibold truncate">{name}</span>
-                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>}
+                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                   {buffs.map(b => <span key={b} className="text-[10px] text-gray-400">{b}</span>)}
@@ -354,8 +353,7 @@ export default function EchoSelector({
                         const isRec = recMainStats.has(stat);
                         return (
                           <button key={stat}
-                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
-                            style={isRec && !isActive ? { boxShadow: '0 0 8px rgba(251,146,60,0.2)' } : {}}
+                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isRec && !isActive ? 'kuro-shadow-rec-subtle' : ''} ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
                             onClick={() => { updateEchoData({ mainStat: isActive ? null : stat }); haptic.light(); }}
                           >
                             {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}

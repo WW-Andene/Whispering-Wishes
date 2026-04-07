@@ -98,7 +98,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(237,175,24,0.5)', textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
     )}
     {/* Profile pic setter — top-right corner */}
     {owned && !framingMode && onSetProfilePic && (
@@ -117,7 +117,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         <span className="text-black text-[10px]">✓</span>
       </div>
     )}
-    <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+    <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
       {owned ? (
         <div className={`${countColor} font-bold text-xl`}>{countLabel}</div>
       ) : (

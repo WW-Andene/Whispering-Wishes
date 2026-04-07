@@ -1272,17 +1272,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             <div className="grid grid-cols-2 gap-2">
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Raw DPS</div>
-                <div className="text-lg font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{rawDps.toLocaleString('en-US')}/s</div>
+                <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{rawDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[10px]">equipment only</div>
               </div>
               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Full DPS</div>
-                <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString('en-US')}/s</div>
+                <div className="text-lg font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{realDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[10px]">+buffs &amp; debuffs</div>
               </div>
               <div className="kuro-stat kuro-stat-gold p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Perfect DPS</div>
-                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString('en-US')}/s</div>
+                <div className="text-lg font-bold text-yellow-400 kuro-number kuro-tshadow-glow-yellow">{perfectDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[10px]">+echo active skills</div>
               </div>
               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>

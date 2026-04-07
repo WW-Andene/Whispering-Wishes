@@ -79,14 +79,14 @@ export default function ConveneScanner({
       <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 0 0 1px rgba(255,255,255,0.03), inset 0 0 0 1px rgba(255,255,255,0.05)' }}>
+            <div className="w-9 h-9 rounded-xl overflow-hidden kuro-border-default kuro-shadow-ring">
               <img src={HEADER_ICON} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
               <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.85)', fontFamily: "'Rajdhani', sans-serif" }}>Whispering Wishes</p>
             </div>
           </div>
-          <button onClick={closeDirectCamera} className="pointer-events-auto flex items-center justify-center" style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(6,10,18,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <button onClick={closeDirectCamera} className="pointer-events-auto flex items-center justify-center kuro-scanner-btn">
             <X size={16} style={{ color: 'rgba(255,255,255,0.35)' }} />
           </button>
         </div>
@@ -147,8 +147,8 @@ export default function ConveneScanner({
         <div className="flex justify-center pointer-events-auto" style={{ paddingTop: 16 }}>
           <button onClick={captureDirectCamera} className="relative active:scale-90 transition-transform" style={{ width: 68, height: 68 }}>
             <div className="absolute inset-[-4px] rounded-full" style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 20%, rgba(255,255,255,0.3) 45%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.3) 55%, transparent 80%, transparent 100%)', animation: 'captureShimmer 3s linear infinite' }} />
-            <div className="absolute inset-0 rounded-full" style={{ border: '1.5px solid rgba(255,255,255,0.15)', background: 'rgba(6,10,18,0.85)', backdropFilter: 'blur(12px)' }} />
-            <div className="absolute rounded-full" style={{ inset: 5, background: 'rgba(6,10,18,1)', border: '1px solid rgba(255,255,255,0.1)' }} />
+            <div className="absolute inset-0 kuro-scanner-ring-outer" />
+            <div className="absolute kuro-scanner-ring-inner" style={{ inset: 5 }} />
             <div className="absolute inset-0 flex items-center justify-center">
               <Camera size={20} style={{ color: 'rgba(255,255,255,0.4)' }} />
             </div>

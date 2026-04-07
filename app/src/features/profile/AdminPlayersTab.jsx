@@ -17,7 +17,7 @@ export default function AdminPlayersTab({
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
           <span className="text-emerald-400 text-xs font-medium uppercase tracking-wider">Live</span>
         </div>
-        <div className="text-5xl font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 20px rgba(52,211,153,0.4)', transition: 'opacity 0.3s ease' }}>
+        <div className="text-5xl font-bold text-emerald-400 kuro-number kuro-tshadow-glow-gold-lg" style={{ transition: 'opacity 0.3s ease' }}>
           {activePlayersCount !== null ? activePlayersCount : '—'}
         </div>
         <div className="text-gray-400 text-xs mt-1">

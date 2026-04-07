@@ -132,7 +132,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const hasStats = profileData?.history?.length > 0;
   const isFull = visualSettings?.animationsEnabled === 'full';
   return (
-    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30" style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5, boxShadow: '0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3)' }}>
+    <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 kuro-shadow-standard-banner" style={{ minHeight: '190px', isolation: 'isolate', zIndex: 5 }}>
       {bannerImage && (
         <img
           src={bannerImage}

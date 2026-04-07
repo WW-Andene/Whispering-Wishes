@@ -315,7 +315,7 @@ function TeamsTab({
                       </div>
 
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
-                      <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
+                      <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
                             <div className="text-gray-400 text-sm mb-1">No characters assigned</div>
@@ -384,7 +384,7 @@ function TeamsTab({
                               >
                                 <X size={12} />
                               </button>}
-                              <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+                              <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-[10px] truncate text-gray-200">{charName}</div>
                               </div>

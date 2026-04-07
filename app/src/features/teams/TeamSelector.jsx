@@ -178,12 +178,11 @@ export default function TeamSelector({
                                 <button
                                   key={name}
                                   onClick={() => selectCharacter(name)}
-                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${cd?.rarity === 5 ? 'holo-5star' : ''} ${isRecommended ? 'border-2 border-orange-400' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
+                                  className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${cd?.rarity === 5 ? 'holo-5star' : ''} ${isRecommended ? 'border-2 border-orange-400 kuro-shadow-rec' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
                                   style={{
                                     height: '90px',
                                     contain: 'paint',
                                     opacity: owned ? 1 : 0.5,
-                                    ...(isRecommended ? { boxShadow: '0 0 28px rgba(251,146,60,0.65), 0 0 56px rgba(251,146,60,0.3), inset 0 0 20px rgba(251,146,60,0.2)', background: 'rgba(251,146,60,0.15)' } : {}),
                                   }}
                                 >
                                   {img && (() => {
@@ -204,9 +203,7 @@ export default function TeamSelector({
                                     </div>
                                     );
                                   })()}
-                                  <div className="absolute inset-x-0 bottom-0 h-1/2" style={{
-                                    background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)',
-                                  }} />
+                                  <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                                   {/* Element dot */}
                                   <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center"
                                     style={{ background: getElementColor(el) }}>
@@ -225,7 +222,7 @@ export default function TeamSelector({
                                   {/* Recommended badge */}
                                   {isRecommended && (
                                     <div className="absolute top-0.5 right-0.5 z-10">
-                                      <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>
+                                      <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>
                                     </div>
                                   )}
                                   {/* Role tag */}
