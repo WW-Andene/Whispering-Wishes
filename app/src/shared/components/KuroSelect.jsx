@@ -11,13 +11,18 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
   const [open, setOpen] = useState(false);
   const [focusIdx, setFocusIdx] = useState(-1);
   const ref = useRef(null);
+  const dropdownRef = useRef(null);
   const optionRefs = useRef([]);
   const selected = options.find(o => o.value === value);
 
-  // Close on outside click
+  // Close on outside click — must exclude both trigger and portal dropdown
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => {
+      if (ref.current?.contains(e.target)) return;
+      if (dropdownRef.current?.contains(e.target)) return;
+      setOpen(false);
+    };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
   }, [open]);
@@ -28,6 +33,14 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     const handler = (e) => { if (e.key === 'Escape') { setOpen(false); ref.current?.querySelector('button')?.focus(); } };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
+  // Close on scroll so stale position doesn't linger
+  useEffect(() => {
+    if (!open) return;
+    const handler = () => setOpen(false);
+    window.addEventListener('scroll', handler, true);
+    return () => window.removeEventListener('scroll', handler, true);
   }, [open]);
 
   // Focus the highlighted option when focusIdx changes
@@ -85,15 +98,15 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     }
   }, [open, options, focusIdx, onChange]);
 
-  // Position the portal dropdown relative to the trigger button
-  const [dropdownPos, setDropdownPos] = useState(null);
-  useEffect(() => {
-    if (!open || !ref.current) return;
-    const btn = ref.current.querySelector('button');
-    if (!btn) return;
+  // Compute dropdown position from trigger button
+  const getDropdownPos = useCallback(() => {
+    const btn = ref.current?.querySelector('button');
+    if (!btn) return null;
     const rect = btn.getBoundingClientRect();
-    setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
-  }, [open]);
+    return { top: rect.bottom + 4, left: rect.left, width: rect.width };
+  }, []);
+
+  const dropdownPos = open ? getDropdownPos() : null;
 
   return (
     <div ref={ref} className={`relative ${className}`} onKeyDown={handleKeyDown}>
@@ -111,6 +124,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       </button>
       {open && dropdownPos && createPortal(
         <div
+          ref={dropdownRef}
           className="fixed z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
