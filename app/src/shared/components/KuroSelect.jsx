@@ -4,19 +4,37 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 
 const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
   const [open, setOpen] = useState(false);
   const [focusIdx, setFocusIdx] = useState(-1);
+  const [pos, setPos] = useState(null);
   const ref = useRef(null);
+  const dropRef = useRef(null);
   const optionRefs = useRef([]);
   const selected = options.find(o => o.value === value);
 
-  // Close on outside click
+  // Compute position when opening
+  const toggle = useCallback(() => {
+    setOpen(prev => {
+      if (!prev && ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+      }
+      return !prev;
+    });
+  }, []);
+
+  // Close on outside click (check both trigger and dropdown)
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => {
+      if (ref.current?.contains(e.target)) return;
+      if (dropRef.current?.contains(e.target)) return;
+      setOpen(false);
+    };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
   }, [open]);
@@ -27,6 +45,14 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     const handler = (e) => { if (e.key === 'Escape') { setOpen(false); ref.current?.querySelector('button')?.focus(); } };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
+  // Close on scroll
+  useEffect(() => {
+    if (!open) return;
+    const handler = () => setOpen(false);
+    window.addEventListener('scroll', handler, true);
+    return () => window.removeEventListener('scroll', handler, true);
   }, [open]);
 
   // Focus the highlighted option when focusIdx changes
@@ -88,7 +114,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     <div ref={ref} className={`relative ${className}`} onKeyDown={handleKeyDown}>
       <button
         type="button"
-        onClick={() => setOpen(p => !p)}
+        onClick={toggle}
         className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-[10px]' : 'px-2.5 py-1.5 text-[10px] min-h-[44px]'}`}
         style={{ background: 'var(--bg-btn)' }}
         aria-label={ariaLabel}
@@ -98,12 +124,14 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
         <span className="truncate">{selected?.label ?? value}</span>
         <ChevronDown size={12} className={`flex-shrink-0 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
+      {open && pos && createPortal(
         <div
-          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
+          ref={dropRef}
+          className="fixed flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
           aria-activedescendant={focusIdx >= 0 && options[focusIdx] ? `kuroselect-opt-${options[focusIdx].value}` : undefined}
+          style={{ top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
         >
           {options.map((opt, i) => {
             const active = opt.value === value;
@@ -127,7 +155,8 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1098,7 +1098,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             <span>Sequence · Refinement · Sonata</span>
                           </summary>
                         <div className="kuro-detail-box mt-1 space-y-2">
-                          <div className="flex gap-0.5" role="group" aria-label={`${m.name} sequence and refinement`}>
+                          <div className="flex" role="group" aria-label={`${m.name} sequence and refinement`} style={{ gap: 'var(--card-padding)' }}>
                             <div className="flex-[7] min-w-0 space-y-0.5">
                               <div className="kuro-micro-label">Sequence</div>
                               <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
@@ -1108,7 +1108,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     <button key={s}
                                       role="radio"
                                       aria-checked={isActive}
-                                      className={`kuro-chip flex-1 ${isActive ? 'active-gold' : ''}`}
+                                      className={`kuro-chip flex-1 text-[9px] ${isActive ? 'active-gold' : ''}`}
                                       onClick={() => {
                                         setTeamEquipment(prev => {
                                           const n = { ...prev };
@@ -1131,7 +1131,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     <button key={r}
                                       role="radio"
                                       aria-checked={isActive}
-                                      className={`kuro-chip flex-1 ${isActive ? 'active-gold' : ''}`}
+                                      className={`kuro-chip flex-1 text-[9px] ${isActive ? 'active-gold' : ''}`}
                                       onClick={() => {
                                         setTeamEquipment(prev => {
                                           const n = { ...prev };
