@@ -34,7 +34,7 @@ const sanitizeStateObj = (obj) => {
   // P14-FIX: MEDIUM-2 — Also recurse into array elements to sanitize objects inside arrays
   // (e.g., [{__proto__: {isAdmin: true}}] would have passed through unsanitized)
   if (Array.isArray(obj)) {
-    return obj.filter(item => item != null).map(item => (typeof item === 'object' && item !== null) ? sanitizeStateObj(item) : item);
+    return obj.map(item => (typeof item === 'object' && item !== null) ? sanitizeStateObj(item) : item);
   }
   const clean = {};
   for (const key of Object.keys(obj)) {
