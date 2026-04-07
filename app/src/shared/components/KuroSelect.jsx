@@ -4,25 +4,19 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 
 const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
   const [open, setOpen] = useState(false);
   const [focusIdx, setFocusIdx] = useState(-1);
   const ref = useRef(null);
-  const dropdownRef = useRef(null);
   const optionRefs = useRef([]);
   const selected = options.find(o => o.value === value);
 
-  // Close on outside click — must exclude both trigger and portal dropdown
+  // Close on outside click
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => {
-      if (ref.current?.contains(e.target)) return;
-      if (dropdownRef.current?.contains(e.target)) return;
-      setOpen(false);
-    };
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
   }, [open]);
@@ -33,14 +27,6 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     const handler = (e) => { if (e.key === 'Escape') { setOpen(false); ref.current?.querySelector('button')?.focus(); } };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [open]);
-
-  // Close on scroll so stale position doesn't linger
-  useEffect(() => {
-    if (!open) return;
-    const handler = () => setOpen(false);
-    window.addEventListener('scroll', handler, true);
-    return () => window.removeEventListener('scroll', handler, true);
   }, [open]);
 
   // Focus the highlighted option when focusIdx changes
@@ -98,16 +84,6 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     }
   }, [open, options, focusIdx, onChange]);
 
-  // Compute dropdown position from trigger button
-  const getDropdownPos = useCallback(() => {
-    const btn = ref.current?.querySelector('button');
-    if (!btn) return null;
-    const rect = btn.getBoundingClientRect();
-    return { top: rect.bottom + 4, left: rect.left, width: rect.width };
-  }, []);
-
-  const dropdownPos = open ? getDropdownPos() : null;
-
   return (
     <div ref={ref} className={`relative ${className}`} onKeyDown={handleKeyDown}>
       <button
@@ -122,14 +98,12 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
         <span className="truncate">{selected?.label ?? value}</span>
         <ChevronDown size={12} className={`flex-shrink-0 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && dropdownPos && createPortal(
+      {open && (
         <div
-          ref={dropdownRef}
-          className="fixed z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
+          className="absolute left-0 right-0 bottom-full mb-1 z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
           aria-activedescendant={focusIdx >= 0 && options[focusIdx] ? `kuroselect-opt-${options[focusIdx].value}` : undefined}
-          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
         >
           {options.map((opt, i) => {
             const active = opt.value === value;
@@ -153,8 +127,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
               </button>
             );
           })}
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );
