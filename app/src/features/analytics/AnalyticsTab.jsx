@@ -805,19 +805,19 @@ function AnalyticsTab({
                       return (<>
                     <p className="text-gray-400 text-[10px] mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.res5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.res4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-[10px] mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.wep5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.wep4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm">{totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">3★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">3★</div></div>
                     </div>
 
                     <p className="text-gray-400 text-[10px] mb-1.5 mt-3">Total</p>
-                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">All Items</div></div>
+                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">All Items</div></div>
                       </>);
                     })()}
                   </CardBody>

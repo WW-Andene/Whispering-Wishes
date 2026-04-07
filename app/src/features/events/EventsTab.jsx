@@ -132,7 +132,7 @@ function EventsTab({
               <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-xs font-medium">{progressStats.hasProgress ? 'Weekly Progress' : 'Weekly Rewards'}</span>
-                  <span className="text-yellow-400 font-bold text-sm">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
+                  <span className="text-yellow-400 font-bold text-sm kuro-number">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex">

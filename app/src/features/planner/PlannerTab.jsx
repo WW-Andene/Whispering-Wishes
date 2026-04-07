@@ -24,18 +24,19 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 // [SECTION:HELPERS] ── Event helpers ──────────────────────────────────────────
 
-// 9 colors — one per meaning. Uses CSS variable tokens (--event-*) defined in kuro.css.
-// Fallback hex values kept for canvas/inline-svg contexts where CSS vars aren't available.
+// 9 colors — one per meaning. Raw hex required because values are used in JS string
+// interpolation (e.g. `${color}40` for alpha) where CSS var() would be invalid.
+// Canonical tokens are defined in kuro.css (--event-*) for pure-CSS contexts.
 const EVENT_COLORS = {
-  weeklyBoss:        'var(--event-weekly-boss, #60a5fa)',   // marine (rarity-3star blue)
-  endstateMatrix:    'var(--event-endstate-matrix, #ec4899)', // fuchsia (featured weapon pink)
-  towerOfAdversity:  'var(--event-tower, #ef4444)',          // red-500 (better contrast at small sizes)
-  whimperingWastes:  'var(--event-whimpering, #06b6d4)',     // cyan
-  tacticalHologram:  'var(--event-hologram, #a3e635)',       // lime
-  pioneerPodcast:    'var(--event-podcast, #fb923c)',        // pumpkin (pity ring orange)
-  illusiveRealm:     'var(--event-illusive, #c4b5fd)',       // lavender
+  weeklyBoss:        '#60a5fa',  // marine (rarity-3star blue)
+  endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
+  towerOfAdversity:  '#ef4444',  // red-500 (better contrast at small sizes)
+  whimperingWastes:  '#06b6d4',  // cyan
+  tacticalHologram:  '#a3e635',  // lime
+  pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
+  illusiveRealm:     '#c4b5fd',  // lavender
 };
-const BANNER_COLOR = 'var(--rarity-5star, #edaf18)';  // gold — uses rarity token
+const BANNER_COLOR = '#edaf18';  // gold
 
 // Get the earliest date an event type existed (from introducedVersion)
 const getIntroducedDate = (ev) => {

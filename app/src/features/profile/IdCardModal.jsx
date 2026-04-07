@@ -112,7 +112,7 @@ export default function IdCardModal({
                     ].map((s, i) => (
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
-                        <div className="font-bold text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30`, fontFamily: 'var(--font-data)' }}>{s.value}</div>
+                        <div className="font-bold text-sm kuro-number" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30` }}>{s.value}</div>
                         <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
