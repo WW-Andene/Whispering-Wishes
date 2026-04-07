@@ -155,7 +155,7 @@ export default function IdCardModal({
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {cnt > 0 && (
                                     <div className="absolute left-0 right-0 text-center font-bold"
-                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: 'var(--space-xs)', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
                                       {cnt}
                                     </div>
                                   )}
@@ -206,7 +206,7 @@ export default function IdCardModal({
                                   <div className="absolute inset-0 breath-zoom"><img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} /></div>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
+                                    <span className="text-gray-500" style={{ fontSize: 'var(--font-md)' }}>{name[0]}</span>
                                   </div>
                                 )}
                                 <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none idcard-img-fade--strong">
@@ -272,7 +272,7 @@ export default function IdCardModal({
                 <button
                   onClick={() => setIdCardFormat('landscape')}
                   className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
-                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid var(--border-medium)' } : { color: '#6b7280', borderRight: '1px solid var(--border-medium)' }}
                   title="Landscape 16:9"
                 >
                   <Monitor size={12} /> 16:9

@@ -119,7 +119,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     )}
     <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
       {owned ? (
-        <div className={`${countColor} font-bold text-xl`}>{countLabel}</div>
+        <div className={`${countColor} font-bold text-xl kuro-number`}>{countLabel}</div>
       ) : (
         <div className="text-gray-500 font-bold text-xl">—</div>
       )}

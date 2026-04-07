@@ -1469,8 +1469,8 @@ function ProfileTab({
                     <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--bg-stat)' }}>
                       {googleUser.photoUrl ? <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" onError={e => { e.target.style.display = 'none'; }} /> : <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-xs font-bold">{(googleUser.displayName || 'U')[0]}</div>}
                       <div className="flex-1 min-w-0">
-                        <div style={{ color: 'var(--text-heading)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
+                        <div style={{ color: 'var(--text-heading)', fontSize: 'var(--font-base)', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
                       </div>
                       <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-[10px] px-2 py-1 flex-shrink-0">Sign out</button>
                     </div>
@@ -1490,7 +1490,7 @@ function ProfileTab({
                         {cloudBackupStatus === 'loading' ? 'Loading...' : '↓ Restore'}
                       </button>
                     </div>
-                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: '10px' }}>Done!</div>}
+                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: 'var(--font-sm)' }}>Done!</div>}
                   </>
                 ) : (
                   <button
@@ -1501,7 +1501,7 @@ function ProfileTab({
                     Sign in with Google
                   </button>
                 )}
-                <p style={{ color: 'var(--text-disabled)', fontSize: '10px', textAlign: 'center' }}>Sync your Convene history across devices</p>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', textAlign: 'center' }}>Sync your Convene history across devices</p>
               </CardBody>
             </Card>
 

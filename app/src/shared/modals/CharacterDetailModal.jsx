@@ -195,19 +195,19 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">HP</div>
-                  <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString('en-US')}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{(data.baseHp || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">ATK</div>
-                  <div className="text-sm font-bold text-white">{data.baseAtk}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{data.baseAtk}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">DEF</div>
-                  <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString('en-US')}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{(data.baseDef || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">Energy</div>
-                  <div className="text-sm font-bold text-white">{data.maxEnergy || '?'}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{data.maxEnergy || '?'}</div>
                 </div>
               </div>
             </div>

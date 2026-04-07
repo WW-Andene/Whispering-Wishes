@@ -119,7 +119,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
             <button
               onClick={() => setAboutSections(prev => ({ ...prev, [key]: !prev[key] }))}
               className="w-full flex items-center justify-between text-xs font-semibold text-gray-300 hover:text-gray-200 transition-colors"
-              style={{ padding: '8px 12px' }}
+              style={{ padding: 'var(--space-sm) var(--space-md)' }}
               aria-expanded={!!aboutSections[key]}
             >
               <span>{label}</span>

@@ -295,7 +295,7 @@ function CollectionTab({
               <Card><CardBody>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white text-xs font-medium">Collection Progress</span>
-                  <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
+                  <span className="text-yellow-400 text-sm font-bold kuro-number">{pct}%</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
