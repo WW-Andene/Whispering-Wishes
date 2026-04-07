@@ -1097,76 +1097,77 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
                             <span>Sequence · Refinement · Sonata</span>
                           </summary>
-                        <div className="kuro-detail-box flex gap-2 mt-1">
-                          <div className="flex-1">
-                            <div className="kuro-micro-label">Sequence</div>
-                            <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
-                              {[0,1,2,3,4,5,6].map(s => {
-                                const isActive = (eq.sequence || 0) === s;
-                                return (
-                                  <button key={s}
-                                    role="radio"
-                                    aria-checked={isActive}
-                                    className={`kuro-chip flex-1 ${isActive ? 'active-gold' : ''}`}
-                                    onClick={() => {
-                                      setTeamEquipment(prev => {
-                                        const n = { ...prev };
-                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                  return n;
-                                      });
-                                      haptic.light();
-                                    }}
-                                  >S{s}</button>
-                                );
-                              })}
+                        <div className="kuro-detail-box mt-1 space-y-2">
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <div className="kuro-micro-label">Sequence</div>
+                              <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
+                                {[0,1,2,3,4,5,6].map(s => {
+                                  const isActive = (eq.sequence || 0) === s;
+                                  return (
+                                    <button key={s}
+                                      role="radio"
+                                      aria-checked={isActive}
+                                      className={`kuro-chip flex-1 ${isActive ? 'active-gold' : ''}`}
+                                      onClick={() => {
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                    return n;
+                                        });
+                                        haptic.light();
+                                      }}
+                                    >S{s}</button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <div className="kuro-micro-label">Refinement</div>
+                              <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
+                                {[1,2,3,4,5].map(r => {
+                                  const isActive = (eq.refinement || 1) === r;
+                                  return (
+                                    <button key={r}
+                                      role="radio"
+                                      aria-checked={isActive}
+                                      className={`kuro-chip min-w-[36px] ${isActive ? 'active-amber' : ''}`}
+                                      onClick={() => {
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
+                                                    return n;
+                                        });
+                                        haptic.light();
+                                      }}
+                                    >R{r}</button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex-shrink-0">
-                            <div className="kuro-micro-label">Refinement</div>
-                            <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
-                              {[1,2,3,4,5].map(r => {
-                                const isActive = (eq.refinement || 1) === r;
-                                return (
-                                  <button key={r}
-                                    role="radio"
-                                    aria-checked={isActive}
-                                    className={`kuro-chip min-w-[36px] ${isActive ? 'active-amber' : ''}`}
-                                    onClick={() => {
-                                      setTeamEquipment(prev => {
-                                        const n = { ...prev };
-                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
-                                                  return n;
-                                      });
-                                      haptic.light();
-                                    }}
-                                  >R{r}</button>
-                                );
-                              })}
-                            </div>
+                          {/* Sonata Set */}
+                          <div>
+                            <div className="kuro-micro-label">Sonata Set</div>
+                            <KuroSelect
+                              value={eq.echoSet || ''}
+                              onChange={v => {
+                                setTeamEquipment(prev => {
+                                  const n = { ...prev };
+                                  n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
+                                  return n;
+                                });
+                                haptic.light();
+                              }}
+                              options={[
+                                { value: '', label: 'Auto (from recommended)' },
+                                ...Object.keys(ECHO_SETS).map(setName => ({ value: setName, label: setName })),
+                              ]}
+                              className="w-full"
+                              ariaLabel={`${m.name} sonata echo set`}
+                              small
+                            />
                           </div>
-                        </div>
-
-                        {/* Sonata Set */}
-                        <div className="kuro-detail-box">
-                          <div className="kuro-micro-label">Sonata Set</div>
-                          <KuroSelect
-                            value={eq.echoSet || ''}
-                            onChange={v => {
-                              setTeamEquipment(prev => {
-                                const n = { ...prev };
-                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
-                                return n;
-                              });
-                              haptic.light();
-                            }}
-                            options={[
-                              { value: '', label: 'Auto (from recommended)' },
-                              ...Object.keys(ECHO_SETS).map(setName => ({ value: setName, label: setName })),
-                            ]}
-                            className="w-full"
-                            ariaLabel={`${m.name} sonata echo set`}
-                            small
-                          />
                         </div>
                         </details>
                       </div>

@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 
 const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
@@ -84,6 +85,16 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     }
   }, [open, options, focusIdx, onChange]);
 
+  // Position the portal dropdown relative to the trigger button
+  const [dropdownPos, setDropdownPos] = useState(null);
+  useEffect(() => {
+    if (!open || !ref.current) return;
+    const btn = ref.current.querySelector('button');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+  }, [open]);
+
   return (
     <div ref={ref} className={`relative ${className}`} onKeyDown={handleKeyDown}>
       <button
@@ -98,12 +109,13 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
         <span className="truncate">{selected?.label ?? value}</span>
         <ChevronDown size={12} className={`flex-shrink-0 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
+      {open && dropdownPos && createPortal(
         <div
-          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5"
+          className="fixed z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
           aria-activedescendant={focusIdx >= 0 && options[focusIdx] ? `kuroselect-opt-${options[focusIdx].value}` : undefined}
+          style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
         >
           {options.map((opt, i) => {
             const active = opt.value === value;
@@ -127,7 +139,8 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
