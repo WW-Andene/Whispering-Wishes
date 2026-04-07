@@ -139,11 +139,37 @@
       --space-lg: 16px;
       --space-xl: 24px;
       --space-2xl: 32px;
+      /* §E4-TS: Type scale — Major Second 1.125× from 14px base
+         Micro range (7–12px) is linear by design for data-dense instrument UIs.
+         7px: IdCard metadata only   8px: badge counters, star indicators
+         9px: timestamps, decorative  10px: labels, categories, button text
+         12px: compact body           14px: primary values, card content
+         16px: section headers        18px: large display    20px+: hero display */
+      --font-2xs: 7px;
+      --font-xs: 9px;
+      --font-sm: 10px;
+      --font-base: 12px;
+      --font-md: 14px;
+      --font-lg: 16px;
+      --font-xl: 18px;
+      --font-2xl: 20px;
+      /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
+      --height-banner: 190px;     /* Banner/Event cards minimum height */
+      --height-card-sm: 140px;    /* Collection grid cards */
+      --height-card-md: 160px;    /* Team selector cards */
+      --size-avatar-lg: 110px;    /* Profile picture (IdCard, profile tab) */
+      --size-avatar-md: 68px;     /* Camera button, medium icons */
+      --size-avatar-sm: 28px;     /* Trophy icons, small avatars */
+      --size-touch-min: 44px;     /* iOS HIG minimum touch target */
+      --size-icon-btn: 22px;      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
+      --radius-micro: 2px;
+      --radius-xs: 4px;
       --radius-sm: 6px;
       --radius-md: 8px;
       --radius-lg: 12px;
       --radius-xl: 16px;
+      --radius-pill: 9999px;
       --card-radius: var(--radius-xl);
       --card-padding: 14px;
       --btn-radius: var(--radius-md);

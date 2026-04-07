@@ -42,7 +42,7 @@ export default function IdCardModal({
                 </div>
 
                 {/* Main content */}
-                <div className="kuro-body" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="kuro-body" style={{ padding: 'var(--space-md)', display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
 
                   {/* ═══ PROFILE PANEL ═══ */}
                   <div className="idcard-section idcard-section--lg">
@@ -72,7 +72,7 @@ export default function IdCardModal({
                         )}
                       </div>
                       <div className="flex-shrink-0 flex flex-col items-center">
-                        <div className={`relative rounded-xl overflow-hidden kuro-avatar-frame kuro-shadow-portrait${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: '110px', height: '110px', border: '1px solid var(--border-medium)' }}>
+                        <div className={`relative rounded-xl overflow-hidden kuro-avatar-frame kuro-shadow-portrait${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: 'var(--size-avatar-lg)', height: 'var(--size-avatar-lg)', border: '1px solid var(--border-medium)' }}>
                           <div className="idcard-img-shimmer" />
                           {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                             const f = getImageFraming(`collection-${state.profile.profilePic}`);
@@ -86,7 +86,7 @@ export default function IdCardModal({
                           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />
                         </div>
                         {state.profile.profilePic && (
-                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '7px', width: '110px' }}>{state.profile.profilePic}</p>
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-2xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
                         )}
                       </div>
                     </div>
@@ -113,7 +113,7 @@ export default function IdCardModal({
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
                         <div className="font-bold text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30`, fontFamily: 'var(--font-data)' }}>{s.value}</div>
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '7px', letterSpacing: '0.04em' }}>{s.label}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
                     </div>
@@ -175,7 +175,7 @@ export default function IdCardModal({
                         </div>
                         <div className="flex gap-1.5">
                           {labs.map((lab, i) => (
-                            <div key={i} className="flex-1 text-center" style={{ fontSize: '7px', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: 'var(--font-2xs)', color: '#6b7280' }}>{lab.split('-')[0]}</div>
                           ))}
                         </div>
                         {/* Summary moved above histogram per §E10-CH-F2 */}
@@ -218,7 +218,7 @@ export default function IdCardModal({
                         })}
                         {ownedCharNames.length > 16 && (
                           <div className="flex items-center justify-center rounded-lg w-full kuro-border-subtle" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)' }}>
-                            <span className="text-gray-500 font-mono" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
+                            <span className="text-gray-500 font-mono" style={{ fontSize: 'var(--font-xs)' }}>+{ownedCharNames.length - 16}</span>
                           </div>
                         )}
                       </div>
@@ -243,7 +243,7 @@ export default function IdCardModal({
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
                               <div key={trophy.id} className="relative p-2 rounded-lg text-center overflow-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
-                                <div className="rounded-full flex items-center justify-center mb-1" style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                <div className="rounded-full flex items-center justify-center mb-1" style={{ width: 'var(--size-avatar-sm)', height: 'var(--size-avatar-sm)', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
                                   <IconComponent size={14} style={{ color: trophy.color }} />
                                 </div>
                                 <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '8px', wordBreak: 'break-word' }}>{trophy.name}</div>

@@ -960,16 +960,16 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px', padding: '6px 12px' } : undefined}>
+              <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-base) var(--space-md)' } : undefined}>
                 <h1 className="text-white font-semibold text-sm tracking-wide leading-tight">Whispering Wishes</h1>
                 <p className="text-[10px] tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: '8px' }}>
+              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
                 {state.server} <ChevronDown size={10} />
               </button>
-              <button onClick={handleExport} aria-label="Export backup" title="Export backup" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: '8px' }}>
+              <button onClick={handleExport} aria-label="Export backup" title="Export backup" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
                 <Download size={14} />
               </button>
             </div>

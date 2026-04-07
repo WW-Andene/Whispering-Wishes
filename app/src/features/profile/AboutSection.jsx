@@ -115,7 +115,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
         <div className="kuro-divider" />
 
         {sections.map(({ key, label, content }) => (
-          <div key={key} style={{ background: 'var(--bg-stat)', borderRadius: 8 }}>
+          <div key={key} style={{ background: 'var(--bg-stat)', borderRadius: 'var(--radius-md)' }}>
             <button
               onClick={() => setAboutSections(prev => ({ ...prev, [key]: !prev[key] }))}
               className="w-full flex items-center justify-between text-xs font-semibold text-gray-300 hover:text-gray-200 transition-colors"

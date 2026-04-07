@@ -65,7 +65,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   <button
     type="button"
     className={cardClassName}
-    style={{ height: '140px', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
+    style={{ height: 'var(--height-card-sm)', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     aria-label={`${name}${owned ? `, owned${count > 1 ? ` ×${count}` : ''}` : ', not owned'}${isProfilePic ? ', current profile picture' : ''}${isNew ? ', new' : ''}`}
     {...longPressHandlers}
   >
@@ -104,7 +104,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {owned && !framingMode && onSetProfilePic && (
       <button
         className={`profile-pic-btn absolute z-20 flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
-        style={{ top: '4px', right: '4px', width: '22px', height: '22px', minHeight: '22px', borderRadius: '6px', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        style={{ top: '4px', right: '4px', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', minHeight: 'var(--size-icon-btn)', borderRadius: 'var(--radius-sm)', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
         onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
         title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
         aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
