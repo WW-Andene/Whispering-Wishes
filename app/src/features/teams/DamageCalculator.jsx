@@ -1097,7 +1097,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
                             <span>Sequence · Refinement · Sonata</span>
                           </summary>
-                        <div className="flex gap-2 mt-1">
+                        <div className="kuro-detail-box flex gap-2 mt-1">
                           <div className="flex-1">
                             <div className="kuro-micro-label">Sequence</div>
                             <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
@@ -1147,7 +1147,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         </div>
 
                         {/* Sonata Set */}
-                        <div>
+                        <div className="kuro-detail-box">
                           <div className="kuro-micro-label">Sonata Set</div>
                           <KuroSelect
                             value={eq.echoSet || ''}
