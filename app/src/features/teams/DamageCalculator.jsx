@@ -1098,8 +1098,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             <span>Sequence · Refinement · Sonata</span>
                           </summary>
                         <div className="kuro-detail-box mt-1 space-y-2">
-                          <div className="flex gap-2">
-                            <div className="flex-1">
+                          <div className="flex gap-0.5" role="group" aria-label={`${m.name} sequence and refinement`}>
+                            <div className="flex-[7] min-w-0 space-y-0.5">
                               <div className="kuro-micro-label">Sequence</div>
                               <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
                                 {[0,1,2,3,4,5,6].map(s => {
@@ -1122,7 +1122,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 })}
                               </div>
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-[5] min-w-0 space-y-0.5">
                               <div className="kuro-micro-label">Refinement</div>
                               <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
                                 {[1,2,3,4,5].map(r => {

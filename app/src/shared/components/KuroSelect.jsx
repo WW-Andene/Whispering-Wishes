@@ -100,7 +100,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       </button>
       {open && (
         <div
-          className="absolute left-0 right-0 bottom-full mb-1 z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
+          className="absolute left-0 right-0 mt-1 z-[200] flex flex-col gap-1.5 max-h-[40vh] overflow-y-auto scrollbar-hide"
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
           aria-activedescendant={focusIdx >= 0 && options[focusIdx] ? `kuroselect-opt-${options[focusIdx].value}` : undefined}
