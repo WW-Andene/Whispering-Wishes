@@ -286,7 +286,7 @@ export default function EchoSelector({
                   {/* Sonata sets — highlight recommended */}
                   {echoData?.sets && (
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sonata Sets</div>
+                      <div className="kuro-section-label">Sonata Sets</div>
                       <div className="flex flex-wrap gap-1">
                         {echoData.sets.map(s => {
                           const isRec = charRecSets.has(s);
@@ -305,8 +305,8 @@ export default function EchoSelector({
                   {/* Echo Skill Details */}
                   {echoData && (
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill</div>
-                      <div className="p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+                      <div className="kuro-section-label">Echo Skill</div>
+                      <div className="kuro-detail-box">
                         {echoData.dmg > 0 && (
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-[10px] text-gray-400">Damage:</span>
@@ -327,8 +327,8 @@ export default function EchoSelector({
                   {/* Enemy Stats (4-cost bosses only) */}
                   {echoData?.enemyRes && (
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">As Enemy</div>
-                      <div className="p-2 rounded-lg border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+                      <div className="kuro-section-label">As Enemy</div>
+                      <div className="kuro-detail-box kuro-detail-box--danger">
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(echoData.enemyRes).map(([el, val]) => (
                             <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
@@ -346,7 +346,7 @@ export default function EchoSelector({
 
                   {/* Main Stat Selection */}
                   <div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="kuro-section-label mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                     <div className="grid grid-cols-2 gap-1">
                       {mainStatOptions.map(stat => {
                         const isActive = currentMainStat === stat;
@@ -365,7 +365,7 @@ export default function EchoSelector({
 
                   {/* Sub Stats Selection */}
                   <div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="kuro-section-label">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                     <div className="grid grid-cols-2 gap-1">
                       {substatOptions.map(stat => {
                         const isActive = currentSubstats.includes(stat);

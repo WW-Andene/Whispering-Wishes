@@ -20,7 +20,7 @@ export default function RotationTimeline({ rotationTimeline }) {
 
   return (
     <div className="mt-3 p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">
+      <div className="kuro-section-label mb-2">
         Rotation Timeline ({rotationTimeline.totalTime}s)
       </div>
 
