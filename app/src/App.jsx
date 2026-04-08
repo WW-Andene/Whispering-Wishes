@@ -951,9 +951,24 @@ function WhisperingWishesInner() {
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute -inset-1 rounded-full blur-lg opacity-50 group-hover:opacity-65 transition-opacity" style={{ background: activeTheme ? `radial-gradient(circle, ${themeAccent}, transparent 70%)` : 'radial-gradient(circle, #facc15, transparent 70%)' }} aria-hidden="true" />
-                <div className="relative w-11 h-11 rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform">
+                <div className="relative rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform" style={{ width: 60, height: 60 }}>
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
                 </div>
+                {visualSettings.animationsEnabled !== 'off' && (
+                  <div className="absolute inset-0 pointer-events-none" style={{ width: 60, height: 60 }} aria-hidden="true">
+                    {[0, 1, 2, 3].map(i => (
+                      <span key={i} className="header-star" style={{
+                        position: 'absolute',
+                        left: '50%', top: '50%',
+                        width: 4, height: 4,
+                        background: activeTheme ? themeAccent : '#facc15',
+                        clipPath: 'polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%)',
+                        animation: `header-star-emanate 2.5s ease-out ${i * 0.6}s infinite`,
+                        opacity: 0,
+                      }} />
+                    ))}
+                  </div>
+                )}
                 {pwa?.canInstall && (
                   <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-md" style={{ background: themeAccent || '#eab308' }} aria-hidden="true">
                     <Download size={9} className="text-black" />

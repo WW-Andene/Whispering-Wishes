@@ -2718,3 +2718,10 @@
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 50%;
     }
+
+    /* Header icon — 4-branch star emanation */
+    @keyframes header-star-emanate {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      20%  { opacity: 0.9; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotate(45deg); }
+    }
