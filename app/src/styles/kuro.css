@@ -145,17 +145,17 @@
          9px: timestamps, decorative  10px: labels, categories, button text
          12px: compact body           14px: primary values, card content
          16px: section headers        18px: large display    20px+: hero display */
-      --font-2xs: 9px;
+      --font-2xs: 10px;
       --font-sm: 11px;
-      --font-base: 13px;
-      --font-md: 15px;
-      --font-lg: 17px;
-      --font-xl: 19px;
-      --font-2xl: 21px;
-      --font-3xl: 23px;
-      --font-4xl: 25px;
-      --font-5xl: 27px;
-      --font-6xl: 29px;
+      --font-base: 12px;
+      --font-md: 13px;
+      --font-lg: 14px;
+      --font-xl: 15px;
+      --font-2xl: 16px;
+      --font-3xl: 17px;
+      --font-4xl: 18px;
+      --font-5xl: 19px;
+      --font-6xl: 20px;
       /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
       --height-banner: 190px;     /* Banner/Event cards minimum height */
       --height-card-sm: 140px;    /* Collection grid cards */
