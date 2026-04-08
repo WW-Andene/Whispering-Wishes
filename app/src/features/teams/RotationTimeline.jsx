@@ -27,8 +27,10 @@ export default function RotationTimeline({ rotationTimeline }) {
     rows.push({ label: seg.name, start: seg.start, duration: seg.duration, color: ELEMENT_COLORS[seg.element] || '#6b7280', type: 'field', detail: `${seg.duration}s` });
   });
   buffs.forEach(buff => {
-    const color = ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
-    if (buff.duration > 0) rows.push({ label: buff.source, start: buff.start, duration: buff.duration, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
+    // owner field links echo/weapon buffs back to their character
+    const ownerName = buff.owner || buff.source;
+    const color = ELEMENT_COLORS[segments.find(s => s.name === ownerName)?.element] || ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
+    if (buff.duration > 0) rows.push({ label: buff.source, owner: ownerName, start: buff.start, duration: buff.duration, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
 
   // timeScale = furthest end of any bar
@@ -42,7 +44,7 @@ export default function RotationTimeline({ rotationTimeline }) {
     if (fieldRow) ordered.push(fieldRow);
     const segEnd = seg.start + seg.duration;
     const myBuffs = rows.map((r, i) => ({ ...r, _idx: i }))
-      .filter(r => r.type === 'buff' && r.label === seg.name && !usedBuffIdx.has(r._idx)
+      .filter(r => r.type === 'buff' && (r.owner === seg.name || r.label === seg.name) && !usedBuffIdx.has(r._idx)
         && (Math.abs(r.start - seg.start) < 0.5 || Math.abs(r.start - segEnd) < 0.5))
       .sort((a, b) => a.start - b.start);
     myBuffs.forEach(b => { usedBuffIdx.add(b._idx); ordered.push(b); });

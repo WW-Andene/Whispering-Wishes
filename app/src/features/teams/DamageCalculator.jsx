@@ -849,6 +849,55 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
           });
         }
+
+        // ── Echo set p5 timed buffs ──
+        if (m.echoSet) {
+          const setName = m.echoSetName;
+          const p5 = m.echoSet.p5 || '';
+          const p5v = m.echoSet.p5val || {};
+          // Outro-triggered echo set buffs (fire when character swaps out)
+          if (p5.includes('Outro')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              if (stat === 'outroDmg') return; // raw damage, not a buff
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t + onField, duration: 14 });
+            });
+          }
+          // Intro-triggered echo set buffs (fire when character swaps in)
+          else if (p5.includes('Intro')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+          // Liberation-triggered echo set buffs
+          else if (p5.includes('Liberation') || p5.includes('Lib')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: 35 });
+            });
+          }
+          // Heal-triggered team buffs
+          else if (p5.includes('Heal') && p5v.teamAtk) {
+            buffs.push({ source: `${setName}`, owner: m.name, stat: 'atkPct', value: p5v.teamAtk, start: t, duration: 20 });
+          }
+          // On-field stacking buffs (active during field time only)
+          else if (p5.includes('max x') || p5.includes('stack')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+        }
+
+        // ── Weapon passive timed buffs ──
+        if (m.weapon?.pv) {
+          const wpn = m.weapon;
+          const passive = wpn.passive || '';
+          // Weapons with on-hit/on-skill stacking buffs — active during field time
+          if (passive.includes('stack') || passive.includes('grant') || passive.includes('use')) {
+            Object.entries(wpn.pv).forEach(([stat, val]) => {
+              buffs.push({ source: m.weapName, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+        }
+
         t += onField;
       });
       return { segments: timeline, buffs, totalTime: rotTime };
