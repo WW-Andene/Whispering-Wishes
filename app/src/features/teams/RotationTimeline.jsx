@@ -71,7 +71,7 @@ export default function RotationTimeline({ rotationTimeline }) {
       <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
 
       {/* Single scrollable container */}
-      <div className="overflow-x-auto scrollbar-hide">
+      <div>
         <table style={{ width: barWidth + 64, borderCollapse: 'collapse' }}>
           {/* Time axis row */}
           <thead>

@@ -619,7 +619,8 @@
       border-radius: 16px;
     }
     .rotation-card .kuro-card-inner {
-      overflow: visible;
+      overflow-x: auto;
+      overflow-y: visible;
     }
     
     /* Corner decorations */
