@@ -160,7 +160,7 @@ function TeamsTab({
                               toast?.addToast?.('Teams exported!', 'success');
                             } catch { toast?.addToast?.('Export failed', 'error'); }
                           }}
-                          className="kuro-btn kuro-btn-sm text-base px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-xs px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
                           <Download size={12} />
@@ -200,7 +200,7 @@ function TeamsTab({
                             };
                             input.click();
                           }}
-                          className="kuro-btn kuro-btn-sm kuro-btn-primary text-base px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm kuro-btn-primary text-xs px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
                           <Upload size={12} />
@@ -230,7 +230,7 @@ function TeamsTab({
                               haptic.light();
                             } catch { toast?.addToast?.('Share failed', 'error'); }
                           }}
-                          className="kuro-btn kuro-btn-sm text-base px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-xs px-2 py-1.5 whitespace-nowrap"
                           aria-label="Copy team build to clipboard"
                         >
                           <Share2 size={12} />
@@ -247,14 +247,14 @@ function TeamsTab({
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
                           title={teamCompareEntries.length >= 5 ? 'Max 5 comparisons' : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? 'Add characters first' : 'Add to comparison'}
-                          className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-base px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-xs px-2 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
                         >
                           + Compare
                         </button>
                         <button
                           onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
-                          className="kuro-btn kuro-btn-sm text-base px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-xs px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
                           <Trash2 size={12} />
@@ -285,7 +285,7 @@ function TeamsTab({
                                 onChange={e => setRenameValue(e.target.value.slice(0, 20))}
                                 onBlur={() => { dispatch({ type: 'RENAME_TEAM', teamIndex: idx, name: renameValue }); setRenamingTeamIdx(null); }}
                                 onKeyDown={e => { if (e.key === 'Enter') { e.target.blur(); } else if (e.key === 'Escape') { setRenamingTeamIdx(null); } }}
-                                className="kuro-input flex-1 min-w-0 text-center text-base py-1.5"
+                                className="kuro-input flex-1 min-w-0 text-center text-xs py-1.5"
                                 maxLength={20}
                                 autoFocus
                                 aria-label={`Rename team ${idx + 1}`}
@@ -318,8 +318,8 @@ function TeamsTab({
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
-                            <div className="text-gray-400 text-md mb-1">No characters assigned</div>
-                            <p className="text-gray-600 text-base">Tap an empty slot to add a Resonator</p>
+                            <div className="text-gray-400 text-sm mb-1">No characters assigned</div>
+                            <p className="text-gray-600 text-xs">Tap an empty slot to add a Resonator</p>
                           </div>
                         )}
                         {teamSlots.map((charName, slotIdx) => {
@@ -338,7 +338,7 @@ function TeamsTab({
                                 aria-label={`Add resonator to slot ${slotIdx + 1}`}
                               >
                                 <Plus size={24} className="text-yellow-500/50 group-hover:text-yellow-400 transition-colors" />
-                                <span className="text-base text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">Add Resonator</span>
+                                <span className="text-xs text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">Add Resonator</span>
                               </button>
                             );
                           }
@@ -359,7 +359,7 @@ function TeamsTab({
                             >
                               {framingMode && editingImage === teamKey && (
                                 <div className="absolute top-1 left-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                                  <span className="text-black text-base">✓</span>
+                                  <span className="text-black text-xs">✓</span>
                                 </div>
                               )}
                               {imgUrl && (
@@ -385,8 +385,8 @@ function TeamsTab({
                                 <X size={12} />
                               </button>}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
-                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-base`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                                <div className="text-base truncate text-gray-200">{charName}</div>
+                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-xs`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                <div className="text-xs truncate text-gray-200">{charName}</div>
                               </div>
                             </div>
                           );
@@ -484,7 +484,7 @@ function TeamsTab({
                             return b.score - a.score;
                           });
                           if (suggestions.length === 0) {
-                            return <p className="text-gray-500 text-base text-center py-2">No team suggestions available</p>;
+                            return <p className="text-gray-500 text-xs text-center py-2">No team suggestions available</p>;
                           }
                           return suggestions.slice(0, 15).map((s, i) => (
                             <button
@@ -508,26 +508,26 @@ function TeamsTab({
                                       {collectionImages[m] ? (
                                         <div className="absolute inset-0 breath-zoom"><img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} /></div>
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-base text-gray-400 font-medium">{m[0]}</div>
+                                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 font-medium">{m[0]}</div>
                                       )}
                                     </div>
                                   );
                                 })}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-base text-gray-300 truncate">{s.text}</div>
+                                <div className="text-xs text-gray-300 truncate">{s.text}</div>
                                 <div className="flex gap-1 mt-0.5">
                                   {s.members.slice(0, 3).map((m, j) => {
                                     const role = CHARACTER_DATA[m]?.role;
                                     const rc = role === 'Main DPS' ? 'text-red-400' : role === 'Sub DPS' ? 'text-orange-400' : role === 'Healer' ? 'text-emerald-400' : 'text-blue-400';
-                                    return <span key={j} className={`text-base ${rc}`}>{role || '?'}</span>;
+                                    return <span key={j} className={`text-xs ${rc}`}>{role || '?'}</span>;
                                   })}
                                 </div>
                               </div>
                               {s.allOwned ? (
                                 <span className="kuro-badge kuro-badge-emerald flex-shrink-0">All owned</span>
                               ) : (
-                                <span className="text-base text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
+                                <span className="text-xs text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}
                             </button>
                           ));

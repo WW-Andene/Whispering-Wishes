@@ -96,67 +96,67 @@ export default function AdminBannersTab({
   return (
     <>
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Quick Banner Update</h3>
+        <h3 className="text-white text-sm font-medium">Quick Banner Update</h3>
         <div className="grid grid-cols-2 gap-2">
-          <input type="text" placeholder="Version (e.g., 3.1)" value={bannerForm.version} onChange={(e) => updateBannerForm('version', e.target.value)} className="kuro-input text-base py-1" aria-label="Banner version" />
-          <input type="number" placeholder="e.g. 1" value={bannerForm.phase} onChange={(e) => updateBannerForm('phase', e.target.value)} className="kuro-input text-base py-1" aria-label="Banner phase" />
-          <input type="datetime-local" placeholder="Start Date" value={bannerForm.startDate} onChange={(e) => updateBannerForm('startDate', e.target.value)} className="kuro-input text-base py-1" aria-label="Banner start date" />
-          <input type="datetime-local" placeholder="End Date" value={bannerForm.endDate} onChange={(e) => updateBannerForm('endDate', e.target.value)} className="kuro-input text-base py-1" aria-label="Banner end date" />
+          <input type="text" placeholder="Version (e.g., 3.1)" value={bannerForm.version} onChange={(e) => updateBannerForm('version', e.target.value)} className="kuro-input text-xs py-1" aria-label="Banner version" />
+          <input type="number" placeholder="e.g. 1" value={bannerForm.phase} onChange={(e) => updateBannerForm('phase', e.target.value)} className="kuro-input text-xs py-1" aria-label="Banner phase" />
+          <input type="datetime-local" placeholder="Start Date" value={bannerForm.startDate} onChange={(e) => updateBannerForm('startDate', e.target.value)} className="kuro-input text-xs py-1" aria-label="Banner start date" />
+          <input type="datetime-local" placeholder="End Date" value={bannerForm.endDate} onChange={(e) => updateBannerForm('endDate', e.target.value)} className="kuro-input text-xs py-1" aria-label="Banner end date" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Featured Resonators (JSON)</h3>
-        <textarea className="kuro-input w-full h-32 text-base font-mono" value={bannerForm.charsJson} onChange={(e) => updateBannerForm('charsJson', e.target.value)} placeholder="Paste characters array JSON" aria-label="Featured resonators JSON" />
+        <h3 className="text-white text-sm font-medium">Featured Resonators (JSON)</h3>
+        <textarea className="kuro-input w-full h-32 text-xs font-mono" value={bannerForm.charsJson} onChange={(e) => updateBannerForm('charsJson', e.target.value)} placeholder="Paste characters array JSON" aria-label="Featured resonators JSON" />
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Featured Weapons (JSON)</h3>
-        <textarea className="kuro-input w-full h-32 text-base font-mono" value={bannerForm.weapsJson} onChange={(e) => updateBannerForm('weapsJson', e.target.value)} placeholder="Paste weapons array JSON" aria-label="Featured weapons JSON" />
+        <h3 className="text-white text-sm font-medium">Featured Weapons (JSON)</h3>
+        <textarea className="kuro-input w-full h-32 text-xs font-mono" value={bannerForm.weapsJson} onChange={(e) => updateBannerForm('weapsJson', e.target.value)} placeholder="Paste weapons array JSON" aria-label="Featured weapons JSON" />
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Resonator Images</h3>
+        <h3 className="text-white text-sm font-medium">Resonator Images</h3>
         <div className="space-y-1">
           {activeBanners.characters.map((c, i) => (
             <div key={c.id} className="flex items-center gap-2">
-              <span className="text-gray-300 text-base w-20 truncate">{c.name}</span>
-              <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.charImages[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))} className="kuro-input flex-1 text-base py-1" aria-label={`${c.name} image URL`} />
-              <input type="text" placeholder="center 20%" value={bannerForm.charImagePositions[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, charImagePositions: { ...prev.charImagePositions, [i]: e.target.value } }))} className="kuro-input w-24 text-base py-1" aria-label={`${c.name} image position`} title="CSS object-position (e.g. center 20%)" />
+              <span className="text-gray-300 text-xs w-20 truncate">{c.name}</span>
+              <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.charImages[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))} className="kuro-input flex-1 text-xs py-1" aria-label={`${c.name} image URL`} />
+              <input type="text" placeholder="center 20%" value={bannerForm.charImagePositions[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, charImagePositions: { ...prev.charImagePositions, [i]: e.target.value } }))} className="kuro-input w-24 text-xs py-1" aria-label={`${c.name} image position`} title="CSS object-position (e.g. center 20%)" />
             </div>
           ))}
         </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Weapon Images</h3>
+        <h3 className="text-white text-sm font-medium">Weapon Images</h3>
         <div className="space-y-1">
           {activeBanners.weapons.map((w, i) => (
             <div key={w.id} className="flex items-center gap-2">
-              <span className="text-gray-300 text-base w-20 truncate">{w.name}</span>
-              <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.weapImages[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))} className="kuro-input flex-1 text-base py-1" aria-label={`${w.name} image URL`} />
-              <input type="text" placeholder="center 30%" value={bannerForm.weapImagePositions[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, weapImagePositions: { ...prev.weapImagePositions, [i]: e.target.value } }))} className="kuro-input w-24 text-base py-1" aria-label={`${w.name} image position`} title="CSS object-position (e.g. center 30%)" />
+              <span className="text-gray-300 text-xs w-20 truncate">{w.name}</span>
+              <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.weapImages[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))} className="kuro-input flex-1 text-xs py-1" aria-label={`${w.name} image URL`} />
+              <input type="text" placeholder="center 30%" value={bannerForm.weapImagePositions[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, weapImagePositions: { ...prev.weapImagePositions, [i]: e.target.value } }))} className="kuro-input w-24 text-xs py-1" aria-label={`${w.name} image position`} title="CSS object-position (e.g. center 30%)" />
             </div>
           ))}
         </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Standard Banner Images</h3>
+        <h3 className="text-white text-sm font-medium">Standard Banner Images</h3>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-gray-300 text-base w-28">Tidal Chorus</span>
-            <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.standardCharImg} onChange={(e) => updateBannerForm('standardCharImg', e.target.value)} className="kuro-input flex-1 text-base py-1" aria-label="Tidal Chorus banner image URL" />
+            <span className="text-gray-300 text-xs w-28">Tidal Chorus</span>
+            <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.standardCharImg} onChange={(e) => updateBannerForm('standardCharImg', e.target.value)} className="kuro-input flex-1 text-xs py-1" aria-label="Tidal Chorus banner image URL" />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-300 text-base w-28">Winter Brume</span>
-            <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.standardWeapImg} onChange={(e) => updateBannerForm('standardWeapImg', e.target.value)} className="kuro-input flex-1 text-base py-1" aria-label="Winter Brume banner image URL" />
+            <span className="text-gray-300 text-xs w-28">Winter Brume</span>
+            <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.standardWeapImg} onChange={(e) => updateBannerForm('standardWeapImg', e.target.value)} className="kuro-input flex-1 text-xs py-1" aria-label="Winter Brume banner image URL" />
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-white text-md font-medium">Event Banner Images</h3>
+        <h3 className="text-white text-sm font-medium">Event Banner Images</h3>
         <div className="space-y-1">
           {[
             ['Whimpering Wastes', 'wwImg'],
@@ -169,17 +169,17 @@ export default function AdminBannersTab({
             ['Weekly Boss', 'wbImg'],
           ].map(([label, key]) => (
             <div key={key} className="flex items-center gap-2">
-              <span className="text-gray-300 text-base w-28">{label}</span>
-              <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm[key]} onChange={(e) => updateBannerForm(key, e.target.value)} className="kuro-input flex-1 text-base py-1" aria-label={`${label} image URL`} />
+              <span className="text-gray-300 text-xs w-28">{label}</span>
+              <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm[key]} onChange={(e) => updateBannerForm(key, e.target.value)} className="kuro-input flex-1 text-xs py-1" aria-label={`${label} image URL`} />
             </div>
           ))}
         </div>
-        <p className="text-gray-400 text-base">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
+        <p className="text-gray-400 text-xs">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
       </div>
 
       <div className="flex gap-2">
         <button onClick={saveBanners} className="kuro-btn flex-1">Save Banner Updates</button>
-        <button onClick={resetBanners} className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-base hover:bg-red-500/30">Reset</button>
+        <button onClick={resetBanners} className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30">Reset</button>
       </div>
     </>
   );

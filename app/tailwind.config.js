@@ -21,19 +21,17 @@ export default {
     },
     extend: {
       // D-TYPE-0: Unified font-size scale backed by CSS variables (kuro.css)
+      // Minimum size is text-xs (12px). No sub-12px sizes.
       fontSize: {
-        '2xs': 'var(--font-2xs)',   // 7px
-        'xs':  'var(--font-xs)',    // 9px
-        'sm':  'var(--font-sm)',    // 10px
-        'base':'var(--font-base)',  // 12px
-        'md':  'var(--font-md)',    // 14px
-        'lg':  'var(--font-lg)',    // 16px
-        'xl':  'var(--font-xl)',    // 18px
-        '2xl': 'var(--font-2xl)',   // 20px
-        '3xl': 'var(--font-3xl)',   // 24px
-        '4xl': 'var(--font-4xl)',   // 30px
-        '5xl': 'var(--font-5xl)',   // 36px
-        '6xl': 'var(--font-6xl)',   // 48px
+        'xs':  'var(--font-xs)',    // 12px — smallest allowed
+        'sm':  'var(--font-sm)',    // 14px
+        'base':'var(--font-base)',  // 16px
+        'md':  'var(--font-md)',    // 18px
+        'lg':  'var(--font-lg)',    // 20px
+        'xl':  'var(--font-xl)',    // 24px
+        '2xl': 'var(--font-2xl)',   // 30px
+        '3xl': 'var(--font-3xl)',   // 36px
+        '4xl': 'var(--font-4xl)',   // 48px
       },
       // D-TYPE-1: Display + data font families for cyberpunk-luxe character
       fontFamily: {

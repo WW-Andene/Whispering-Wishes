@@ -226,11 +226,11 @@ export default function ImportFlow({
     <Card>
       <CardHeader>Import Convene History</CardHeader>
       <CardBody className="space-y-3">
-        <p className="text-gray-300 text-base">Import your Convene history directly from the game.</p>
+        <p className="text-gray-300 text-xs">Import your Convene history directly from the game.</p>
         <div className="grid grid-cols-3 gap-2">
           {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
             <button key={k} onClick={() => { setImportPlatform(k); if (k === 'pc' || k === 'android') setImportMethod('direct'); if (k === 'ps5') setImportMethod('direct'); }} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
-              <Icon size={16} className="mx-auto mb-0.5" /><div className="text-base">{l}</div>
+              <Icon size={16} className="mx-auto mb-0.5" /><div className="text-xs">{l}</div>
             </button>
           ))}
         </div>
@@ -241,19 +241,19 @@ export default function ImportFlow({
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => setImportMethod('file')}
-            className={`kuro-btn py-2 text-base ${importMethod === 'file' ? 'active-gold' : ''}`}
+            className={`kuro-btn py-2 text-xs ${importMethod === 'file' ? 'active-gold' : ''}`}
           >
             <Upload size={14} className="inline mr-1.5" />File
           </button>
           <button
             onClick={() => setImportMethod('paste')}
-            className={`kuro-btn py-2 text-base ${importMethod === 'paste' ? 'active-gold' : ''}`}
+            className={`kuro-btn py-2 text-xs ${importMethod === 'paste' ? 'active-gold' : ''}`}
           >
             <ClipboardList size={14} className="inline mr-1.5" />Paste
           </button>
           <button
             onClick={() => setImportMethod('direct')}
-            className={`kuro-btn py-2 text-base ${importMethod === 'direct' ? 'active-emerald' : ''}`}
+            className={`kuro-btn py-2 text-xs ${importMethod === 'direct' ? 'active-emerald' : ''}`}
           >
             <Link size={14} className="inline mr-1.5" />Direct
           </button>
@@ -271,15 +271,15 @@ export default function ImportFlow({
               <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '60%', height: '12px' }} />
-                  <span className="text-yellow-400/80 text-base font-medium animate-pulse">Importing...</span>
+                  <span className="text-yellow-400/80 text-xs font-medium animate-pulse">Importing...</span>
                 </div>
-                <p className="text-yellow-400 text-base font-medium kuro-number">{importStatus.fileName}</p>
-                <p className="text-gray-500 text-base mt-0.5">{importStatus.fileSize} KB - parsing...</p>
+                <p className="text-yellow-400 text-xs font-medium kuro-number">{importStatus.fileName}</p>
+                <p className="text-gray-500 text-xs mt-0.5">{importStatus.fileSize} KB - parsing...</p>
               </div>
             ) : (
             <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
               <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
-              <p className={`text-base ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
+              <p className={`text-xs ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
                 {isDragOver ? 'Drop JSON file here' : 'Upload or drag and drop a JSON file'}
               </p>
             </div>
@@ -297,7 +297,7 @@ export default function ImportFlow({
               placeholder='Paste your JSON data here…
 
 Example: {"pulls":[…]}'
-              className="kuro-input w-full h-32 text-base font-mono resize-none"
+              className="kuro-input w-full h-32 text-xs font-mono resize-none"
               spellCheck={false}
               aria-label="Paste import JSON data"
             />
@@ -305,20 +305,20 @@ Example: {"pulls":[…]}'
               <button
                 onClick={handlePasteImport}
                 disabled={!pasteJsonText.trim()}
-                className={`kuro-btn flex-1 py-2 text-base ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
+                className={`kuro-btn flex-1 py-2 text-xs ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
               >
                 <Check size={14} className="inline mr-1.5" />Import
               </button>
               {pasteJsonText && (
                 <button
                   onClick={() => setPasteJsonText('')}
-                  className="kuro-btn px-3 py-2 text-base"
+                  className="kuro-btn px-3 py-2 text-xs"
                 >
                   <X size={14} />
                 </button>
               )}
             </div>
-            <p className="text-gray-400 text-base">
+            <p className="text-gray-400 text-xs">
               Tip: In WuWa Tracker, go to Profile → Settings → Data → Export Convene History → Copy the JSON content.
             </p>
           </div>
@@ -327,32 +327,32 @@ Example: {"pulls":[…]}'
         {/* Direct Import Method — fetch from WuWa API */}
         {importMethod === 'direct' && (
           <div className="space-y-2">
-            <p className="text-gray-400 text-base">Paste your Convene History URL below or enter IDs manually.</p>
+            <p className="text-gray-400 text-xs">Paste your Convene History URL below or enter IDs manually.</p>
             <input
               type="text"
               value={directUrl}
               onChange={(e) => handleDirectUrlChange(e.target.value)}
               placeholder="Paste Convene History URL here…"
-              className="kuro-input w-full text-base font-mono"
+              className="kuro-input w-full text-xs font-mono"
               spellCheck={false}
             />
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-gray-500 text-base block mb-0.5">player_id</label>
-                <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder="e.g. 500123456" className="kuro-input w-full text-base font-mono" />
+                <label className="text-gray-500 text-xs block mb-0.5">player_id</label>
+                <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder="e.g. 500123456" className="kuro-input w-full text-xs font-mono" />
               </div>
               <div>
-                <label className="text-gray-500 text-base block mb-0.5">record_id</label>
-                <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-base font-mono" />
+                <label className="text-gray-500 text-xs block mb-0.5">record_id</label>
+                <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-xs font-mono" />
               </div>
             </div>
             <div>
-              <label className="text-gray-500 text-base block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
-              <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-base font-mono" />
+              <label className="text-gray-500 text-xs block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
+              <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-xs font-mono" />
             </div>
             <div>
-              <label className="text-gray-500 text-base block mb-0.5">resources_id <span className="text-gray-600">(optional)</span></label>
-              <input type="text" value={directResourcesId} onChange={(e) => setDirectResourcesId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-base font-mono" />
+              <label className="text-gray-500 text-xs block mb-0.5">resources_id <span className="text-gray-600">(optional)</span></label>
+              <input type="text" value={directResourcesId} onChange={(e) => setDirectResourcesId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-xs font-mono" />
             </div>
 
             {/* Camera / Screenshot OCR */}
@@ -364,48 +364,48 @@ Example: {"pulls":[…]}'
               directStreamRef={directStreamRef}
             />
             <div className="flex gap-2">
-              <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-base text-center" disabled={directScanStatus === 'scanning'}>
+              <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-xs text-center" disabled={directScanStatus === 'scanning'}>
                 <Camera size={14} className="inline mr-1.5" />
                 {directScanStatus === 'scanning' ? 'Scanning...' : 'Open Camera'}
               </button>
-              <label className="kuro-btn flex-1 py-2 text-base text-center cursor-pointer">
+              <label className="kuro-btn flex-1 py-2 text-xs text-center cursor-pointer">
                 <Upload size={14} className="inline mr-1.5" />Upload Image
                 <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
               </label>
             </div>
-            {directScanStatus === 'done' && <p className="text-emerald-400 text-base text-center">IDs extracted successfully</p>}
-            {directScanStatus === 'error' && <p className="text-red-400 text-base text-center">{directError}</p>}
+            {directScanStatus === 'done' && <p className="text-emerald-400 text-xs text-center">IDs extracted successfully</p>}
+            {directScanStatus === 'error' && <p className="text-red-400 text-xs text-center">{directError}</p>}
 
             {/* Fetch button */}
             {directStatus === 'fetching' ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2 py-3">
                   <Loader size={14} className="text-emerald-400 animate-spin" />
-                  <span className="text-emerald-400 text-base">Importing...</span>
+                  <span className="text-emerald-400 text-xs">Importing...</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1">
                   {Object.entries(directProgress).map(([pool, info]) => (
-                    <div key={pool} className={`text-center p-1 rounded text-base ${info.status === 'done' ? 'text-emerald-400 bg-emerald-500/10' : info.status === 'error' ? 'text-red-400 bg-red-500/10' : 'text-gray-400 bg-white/5'}`}>
+                    <div key={pool} className={`text-center p-1 rounded text-xs ${info.status === 'done' ? 'text-emerald-400 bg-emerald-500/10' : info.status === 'error' ? 'text-red-400 bg-red-500/10' : 'text-gray-400 bg-white/5'}`}>
                       {POOL_LABELS[pool]?.split(' ')[0] || pool}: {info.count || '...'}
                     </div>
                   ))}
                 </div>
-                <button onClick={() => directAbortRef.current?.abort()} className="kuro-btn w-full py-1.5 text-base text-red-400">Cancel</button>
+                <button onClick={() => directAbortRef.current?.abort()} className="kuro-btn w-full py-1.5 text-xs text-red-400">Cancel</button>
               </div>
             ) : (
               <button
                 onClick={handleDirectFetch}
                 disabled={!directPlayerId.trim()}
-                className={`kuro-btn w-full py-2 text-base ${directPlayerId.trim() ? 'active-emerald' : 'opacity-50'}`}
+                className={`kuro-btn w-full py-2 text-xs ${directPlayerId.trim() ? 'active-emerald' : 'opacity-50'}`}
               >
                 <Download size={14} className="inline mr-1.5" />Import
               </button>
             )}
 
-            {directStatus === 'done' && <p className="text-emerald-400 text-base text-center">Import complete!</p>}
-            {directError && <p className="text-red-400 text-base text-center">{directError}</p>}
+            {directStatus === 'done' && <p className="text-emerald-400 text-xs text-center">Import complete!</p>}
+            {directError && <p className="text-red-400 text-xs text-center">{directError}</p>}
 
-            <p className="text-gray-500 text-base">Open Convene History in-game and copy the URL from the browser address bar. The URL expires after some time.</p>
+            <p className="text-gray-500 text-xs">Open Convene History in-game and copy the URL from the browser address bar. The URL expires after some time.</p>
           </div>
         )}
       </CardBody>

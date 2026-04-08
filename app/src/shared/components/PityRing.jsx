@@ -46,8 +46,8 @@ const PityRing = memo(({ value = 0, max = 80, size = 52, strokeWidth = 4, color 
         <text className="pity-ring-text" x={size/2} y={size/2} fontSize={size * 0.36} fill={color}>{safeValue}</text>
       </svg>
       </div>
-      {label && <div className="text-gray-300 text-base mt-0.5">{label}</div>}
-      {sublabel && <div className="text-gray-400 text-base">{sublabel}</div>}
+      {label && <div className="text-gray-300 text-xs mt-0.5">{label}</div>}
+      {sublabel && <div className="text-gray-400 text-xs">{sublabel}</div>}
     </div>
   );
 });

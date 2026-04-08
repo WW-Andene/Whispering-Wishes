@@ -149,12 +149,12 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <div className="flex items-center gap-2 mb-0.5">
             <span className="kuro-badge kuro-badge-cyan" style={{ backgroundColor: 'rgba(0,200,255,0.1)' }}>{subtitle}</span>
           </div>
-          <h4 className="font-bold text-lg text-white leading-tight">{title}</h4>
+          <h4 className="font-bold text-base text-white leading-tight">{title}</h4>
         </div>
         <div className={hasStats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-base mb-0.5 uppercase tracking-wider">Available 5★</div>
+          <div className="text-gray-300 text-xs mb-0.5 uppercase tracking-wider">Available 5★</div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-            {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-base text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
+            {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-xs text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
           </div>
         </div>
       </div>
@@ -163,16 +163,16 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
               <div className="text-center">
-                <div className={`font-bold text-md kuro-number ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : profileData.pity5 >= 75 ? 'text-red-400' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400' : 'text-cyan-400'}`}>{profileData.pity5}<span className="text-gray-400 text-base">/{HARD_PITY}</span></div>
-                <div className={`text-base mt-0.5 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? '★ GUARANTEED!' : profileData.pity5 >= 75 ? '⚠ High Pity!' : profileData.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
+                <div className={`font-bold text-sm kuro-number ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : profileData.pity5 >= 75 ? 'text-red-400' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400' : 'text-cyan-400'}`}>{profileData.pity5}<span className="text-gray-400 text-xs">/{HARD_PITY}</span></div>
+                <div className={`text-xs mt-0.5 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? '★ GUARANTEED!' : profileData.pity5 >= 75 ? '⚠ High Pity!' : profileData.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
               </div>
               <div className="text-center">
-                <div className="text-purple-400 font-bold text-md kuro-number">{profileData.pity4}<span className="text-gray-400 text-base">/10</span></div>
-                <div className="text-gray-400 text-base mt-0.5">4★ Pity</div>
+                <div className="text-purple-400 font-bold text-sm kuro-number">{profileData.pity4}<span className="text-gray-400 text-xs">/10</span></div>
+                <div className="text-gray-400 text-xs mt-0.5">4★ Pity</div>
               </div>
               <div className="text-center">
-                <div className="text-white font-bold text-md kuro-number">{profileData.history.length}</div>
-                <div className="text-gray-400 text-base mt-0.5">Convenes</div>
+                <div className="text-white font-bold text-sm kuro-number">{profileData.history.length}</div>
+                <div className="text-gray-400 text-xs mt-0.5">Convenes</div>
               </div>
             </div>
           </div>

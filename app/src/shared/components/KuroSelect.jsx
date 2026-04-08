@@ -107,7 +107,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       <button
         type="button"
         onClick={toggle}
-        className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-base' : 'px-2.5 py-1.5 text-base min-h-[44px]'}`}
+        className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-xs' : 'px-2.5 py-1.5 text-xs min-h-[44px]'}`}
         style={{ background: 'var(--bg-btn)' }}
         aria-label={ariaLabel}
         aria-expanded={open}
@@ -137,7 +137,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
                 aria-selected={active}
                 tabIndex={i === focusIdx ? 0 : -1}
                 onClick={() => { onChange(opt.value); setOpen(false); ref.current?.querySelector('button')?.focus(); }}
-                className={`kuro-btn w-full text-left px-3 py-2.5 text-md ${active ? 'active-gold' : 'text-gray-300'}`}
+                className={`kuro-btn w-full text-left px-3 py-2.5 text-sm ${active ? 'active-gold' : 'text-gray-300'}`}
                 style={{
                   backdropFilter: 'blur(2px) brightness(0.6)',
                   WebkitBackdropFilter: 'blur(2px) brightness(0.6)',

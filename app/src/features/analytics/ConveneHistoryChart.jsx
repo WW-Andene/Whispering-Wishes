@@ -107,9 +107,9 @@ function ConveneHistoryChart({ statsTabData }) {
         </div>
 
         {chartHist.length < 10 ? (
-          <p className="kuro-empty-state text-gray-400 text-base text-center py-4">No data for this filter. Try a different banner type or time range.</p>
+          <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>
         ) : allData.length < 2 ? (
-          <p className="kuro-empty-state text-gray-400 text-base text-center py-4">No data for this combination. Try a different filter or time range.</p>
+          <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>
         ) : (
           <>
             <div className="flex items-center justify-between mb-3">
@@ -138,7 +138,7 @@ function ConveneHistoryChart({ statsTabData }) {
               <ChartSvg chartData={chartData} />
             </div>
             {allData.length > maxVisible && (
-              <div className="text-center text-base text-gray-400 mt-1">
+              <div className="text-center text-xs text-gray-400 mt-1">
                 {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
               </div>
             )}

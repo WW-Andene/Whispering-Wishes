@@ -18,12 +18,12 @@ const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
         <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
-        <div className="text-black font-semibold text-md">Install Whispering Wishes</div>
-        <div className="text-black/70 text-base">{subtitle}</div>
+        <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
+        <div className="text-black/70 text-xs">{subtitle}</div>
       </div>
       <button
         onClick={onAction}
-        className="px-3 py-1.5 bg-black text-yellow-400 rounded-lg text-base font-medium hover:bg-black/80 transition-colors"
+        className="px-3 py-1.5 bg-black text-yellow-400 rounded-lg text-xs font-medium hover:bg-black/80 transition-colors"
       >
         {actionLabel}
       </button>
@@ -170,7 +170,7 @@ const PWAProvider = ({ children }) => {
       {children}
       {/* Offline indicator */}
       {!isOnline && (
-        <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-500 text-black text-center py-1 text-base font-medium">
+        <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-500 text-black text-center py-1 text-xs font-medium">
           You are offline - some features may be limited
         </div>
       )}
@@ -201,12 +201,12 @@ const PWAProvider = ({ children }) => {
                 <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
               </div>
               <div>
-                <div className="text-white font-semibold text-md">Install Whispering Wishes</div>
-                <div className="text-gray-500 text-base">Add to your home screen</div>
+                <div className="text-white font-semibold text-sm">Install Whispering Wishes</div>
+                <div className="text-gray-500 text-xs">Add to your home screen</div>
               </div>
             </div>
             <InstallSteps />
-            <button onClick={() => setShowInstallGuide(false)} className="mt-4 w-full py-2 rounded-lg text-base font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors">
+            <button onClick={() => setShowInstallGuide(false)} className="mt-4 w-full py-2 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors">
               Got it
             </button>
           </div>
@@ -229,40 +229,40 @@ function InstallSteps() {
   if (isIOS || isSafari) {
     platform = 'Safari / iOS';
     steps = [
-      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-base">{'\u2191'}</span> in the toolbar</>,
+      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-xs">{'\u2191'}</span> in the toolbar</>,
       <>Scroll down and tap <b className="text-white">Add to Home Screen</b></>,
       <>Tap <b className="text-white">Add</b> to confirm</>,
     ];
   } else if (isFirefox) {
     platform = 'Firefox';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-base">{'\u22EE'}</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-xs">{'\u22EE'}</span></>,
       <>Tap <b className="text-white">Install</b> or <b className="text-white">Add to Home Screen</b></>,
     ];
   } else if (isSamsung) {
     platform = 'Samsung Internet';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-base">{'\u2630'}</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-xs">{'\u2630'}</span></>,
       <>Tap <b className="text-white">Add page to</b> {'\u2192'} <b className="text-white">Home screen</b></>,
     ];
   } else if (isAndroid) {
     platform = 'Chrome / Android';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-base">{'\u22EE'}</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-xs">{'\u22EE'}</span></>,
       <>Tap <b className="text-white">Install app</b> or <b className="text-white">Add to Home screen</b></>,
       <>Tap <b className="text-white">Install</b> to confirm</>,
     ];
   } else {
     platform = 'Desktop';
     steps = [
-      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-base">{'\u2295'}</span> in the address bar</>,
+      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-xs">{'\u2295'}</span> in the address bar</>,
       <>Or click <b className="text-white">{'\u22EE'}</b> {'\u2192'} <b className="text-white">Install Whispering Wishes</b></>,
     ];
   }
 
   return (
-    <div className="space-y-2 text-base text-gray-300">
-      <p className="text-gray-400 text-base uppercase tracking-wider font-medium">{platform}</p>
+    <div className="space-y-2 text-xs text-gray-300">
+      <p className="text-gray-400 text-xs uppercase tracking-wider font-medium">{platform}</p>
       {steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
           <span className="text-yellow-400 font-bold shrink-0">{i + 1}.</span>

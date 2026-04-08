@@ -90,7 +90,7 @@ function TrackerTab({
             {!state.profile.importedAt && setActiveTab && (
               <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
-                <span className="text-cyan-300/90 text-base">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
+                <span className="text-cyan-300/90 text-xs">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
               </button>
             )}
@@ -115,7 +115,7 @@ function TrackerTab({
               </CardBody>
             </Card>
 
-            <div className="flex items-center text-base content-layer">
+            <div className="flex items-center text-xs content-layer">
               <span className="text-gray-400">v{activeBanners.version} Phase {activeBanners.phase} • {state.server}</span>
             </div>
 
@@ -142,8 +142,8 @@ function TrackerTab({
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
                     <Sparkles size={32} className="mx-auto mb-2 text-yellow-500/40" />
-                    <p className="text-gray-300 text-md font-medium">No active Resonator banners</p>
-                    <p className="text-gray-500 text-base mt-1">Banner data will appear when a new phase starts</p>
+                    <p className="text-gray-300 text-sm font-medium">No active Resonator banners</p>
+                    <p className="text-gray-500 text-xs mt-1">Banner data will appear when a new phase starts</p>
                   </div>
                 )}
               </div>
@@ -170,8 +170,8 @@ function TrackerTab({
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
                     <Sword size={32} className="mx-auto mb-2 text-pink-500/40" />
-                    <p className="text-gray-300 text-md font-medium">No active weapon banners</p>
-                    <p className="text-gray-500 text-base mt-1">Weapon banners rotate each phase</p>
+                    <p className="text-gray-300 text-sm font-medium">No active weapon banners</p>
+                    <p className="text-gray-500 text-xs mt-1">Weapon banners rotate each phase</p>
                   </div>
                 )}
               </div>
@@ -204,7 +204,7 @@ function TrackerTab({
                 <CardBody>
                   <button
                     onClick={() => setShowPullHistory(true)}
-                    className="w-full py-2.5 rounded-lg border border-cyan-500/30 text-cyan-300 text-base font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-lg border border-cyan-500/30 text-cyan-300 text-xs font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
                     <Clock size={12} /> View Convene History ({allPulls.length})
@@ -224,8 +224,8 @@ function TrackerTab({
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white text-md font-semibold">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-500 text-base">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
+                        <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-gray-500 text-xs">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="space-y-1.5">
                         {Array.from({ length: Math.max(b.characters.length, b.weapons.length) }).map((_, idx) => {
@@ -241,10 +241,10 @@ function TrackerTab({
                                     {cImg ? (
                                       <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-base text-yellow-400">{c[0]}</div>
+                                      <div className="w-full h-full flex items-center justify-center text-xs text-yellow-400">{c[0]}</div>
                                     )}
                                   </div>
-                                  <span className="text-base text-yellow-400 font-medium truncate">{c}</span>
+                                  <span className="text-xs text-yellow-400 font-medium truncate">{c}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                               {w ? (
@@ -256,7 +256,7 @@ function TrackerTab({
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
                                   </div>
-                                  <span className="text-base text-pink-400 font-medium truncate">{w}</span>
+                                  <span className="text-xs text-pink-400 font-medium truncate">{w}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                             </div>
@@ -269,7 +269,7 @@ function TrackerTab({
                   {/* View All button */}
                   <button
                     onClick={() => setShowBannerHistory(true)}
-                    className="w-full py-2.5 rounded-lg border border-white/20 text-gray-200 text-base font-semibold hover:text-white hover:border-white/30 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-lg border border-white/20 text-gray-200 text-xs font-semibold hover:text-white hover:border-white/30 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
                     <Archive size={12} /> View All Banners ({BANNER_HISTORY.length})
@@ -284,7 +284,7 @@ function TrackerTab({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
-                    <span className="text-white text-md font-semibold">Banner History</span>
+                    <span className="text-white text-sm font-semibold">Banner History</span>
                   </div>
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
@@ -297,7 +297,7 @@ function TrackerTab({
                       value={bannerHistorySearch}
                       onChange={e => setBannerHistorySearch(e.target.value)}
                       placeholder="Search by name, version, or phase\u2026"
-                      className="kuro-input w-full pl-8 text-base"
+                      className="kuro-input w-full pl-8 text-xs"
                       aria-label="Filter banner history"
                     />
                   </div>
@@ -316,14 +316,14 @@ function TrackerTab({
                         )
                       : BANNER_HISTORY;
                     return filtered.length === 0
-                      ? <div className="text-center text-gray-400 text-base py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
+                      ? <div className="text-center text-gray-400 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
                       : filtered.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white text-md font-semibold">v{b.version} P{b.phase}</span>
-                        <span className="text-gray-500 text-base">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
+                        <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-gray-500 text-xs">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="space-y-1.5">
                         {Array.from({ length: Math.max(b.characters.length, b.weapons.length) }).map((_, idx) => {
@@ -339,10 +339,10 @@ function TrackerTab({
                                     {cImg ? (
                                       <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-base text-yellow-400">{c[0]}</div>
+                                      <div className="w-full h-full flex items-center justify-center text-xs text-yellow-400">{c[0]}</div>
                                     )}
                                   </div>
-                                  <span className="text-base text-yellow-400 font-medium truncate">{c}</span>
+                                  <span className="text-xs text-yellow-400 font-medium truncate">{c}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                               {w ? (
@@ -354,7 +354,7 @@ function TrackerTab({
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
                                   </div>
-                                  <span className="text-base text-pink-400 font-medium truncate">{w}</span>
+                                  <span className="text-xs text-pink-400 font-medium truncate">{w}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                             </div>
@@ -375,8 +375,8 @@ function TrackerTab({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-cyan-400" />
-                    <span className="text-white text-md font-semibold">Convene History</span>
-                    <span className="text-gray-500 text-base">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
+                    <span className="text-white text-sm font-semibold">Convene History</span>
+                    <span className="text-gray-500 text-xs">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
@@ -389,7 +389,7 @@ function TrackerTab({
                       value={pullHistorySearch}
                       onChange={e => setPullHistorySearch(e.target.value)}
                       placeholder="Search by name…"
-                      className="kuro-input w-full pl-8 text-base"
+                      className="kuro-input w-full pl-8 text-xs"
                       aria-label="Filter Convene history by name"
                     />
                   </div>
@@ -397,7 +397,7 @@ function TrackerTab({
                     <select
                       value={pullHistoryBannerFilter}
                       onChange={e => setPullHistoryBannerFilter(e.target.value)}
-                      className="kuro-input flex-1 px-2 py-1.5 text-base"
+                      className="kuro-input flex-1 px-2 py-1.5 text-xs"
                       aria-label="Filter by banner type"
                     >
                       <option value="all">All Banners</option>
@@ -410,7 +410,7 @@ function TrackerTab({
                     <select
                       value={pullHistoryRarityFilter}
                       onChange={e => setPullHistoryRarityFilter(e.target.value)}
-                      className="kuro-input flex-1 px-2 py-1.5 text-base"
+                      className="kuro-input flex-1 px-2 py-1.5 text-xs"
                       aria-label="Filter by rarity"
                     >
                       <option value="all">All Rarities</option>
@@ -422,7 +422,7 @@ function TrackerTab({
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
-                    <div className="text-center text-gray-400 text-base py-6">
+                    <div className="text-center text-gray-400 text-xs py-6">
                       {allPulls.length === 0 ? 'No Convene history. Import your data in the Profile tab.' : 'No Convenes match your filters.'}
                     </div>
                   ) : (
@@ -434,20 +434,20 @@ function TrackerTab({
                         <div key={`pull-${idx}`} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${rarityBg} transition-colors`}>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className={`text-base font-semibold truncate ${rarityColor}`}>{pull.name || 'Unknown'}</span>
-                              <span className={`text-base ${rarityColor} opacity-70`}>{stars}</span>
+                              <span className={`text-xs font-semibold truncate ${rarityColor}`}>{pull.name || 'Unknown'}</span>
+                              <span className={`text-xs ${rarityColor} opacity-70`}>{stars}</span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-base text-gray-500">{pull.banner}</span>
-                              {pull.pity > 0 && <span className="text-base text-gray-400">Pity: <span className={pull.rarity === 5 && pull.pity >= 70 ? 'text-red-400' : ''}>{pull.pity}</span></span>}
-                              {pull.rarity === 5 && pull.won5050 === true && <span className="text-base text-emerald-400 font-medium">Won 50/50</span>}
-                              {pull.rarity === 5 && pull.won5050 === false && <span className="text-base text-red-400 font-medium">Lost 50/50</span>}
+                              <span className="text-xs text-gray-500">{pull.banner}</span>
+                              {pull.pity > 0 && <span className="text-xs text-gray-400">Pity: <span className={pull.rarity === 5 && pull.pity >= 70 ? 'text-red-400' : ''}>{pull.pity}</span></span>}
+                              {pull.rarity === 5 && pull.won5050 === true && <span className="text-xs text-emerald-400 font-medium">Won 50/50</span>}
+                              {pull.rarity === 5 && pull.won5050 === false && <span className="text-xs text-red-400 font-medium">Lost 50/50</span>}
                             </div>
                           </div>
                           {pull.timestamp && (
-                            <div className="text-base text-gray-500 text-right flex-shrink-0 whitespace-nowrap">
+                            <div className="text-xs text-gray-500 text-right flex-shrink-0 whitespace-nowrap">
                               {new Date(pull.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              <div className="text-base text-gray-600">{new Date(pull.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+                              <div className="text-xs text-gray-600">{new Date(pull.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
                             </div>
                           )}
                         </div>
