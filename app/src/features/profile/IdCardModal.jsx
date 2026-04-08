@@ -38,7 +38,7 @@ export default function IdCardModal({
                 {/* Header */}
                 <div className="kuro-header">
                   <span className="text-gray-100 font-bold text-base flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
-                  <span className="text-gray-500 text-sm">Whispering Wishes</span>
+                  <span className="text-gray-500 text-base">Whispering Wishes</span>
                 </div>
 
                 {/* Main content */}
@@ -54,11 +54,11 @@ export default function IdCardModal({
                         <h3 className="text-white font-semibold text-xl truncate leading-tight kuro-tshadow-overlay">{state.profile.username || 'Resonator'}</h3>
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
+                            <span className="text-gray-500 text-base uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
                             <span className="text-gray-200 text-base font-mono">{state.profile.uid || '—'}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
+                            <span className="text-gray-500 text-base uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
                             <span className="text-base font-mono kuro-tshadow-brand" style={{ color: '#edaf18' }}>{state.server}</span>
                           </div>
                         </div>
@@ -67,7 +67,7 @@ export default function IdCardModal({
                             <div className="flex-1 h-1.5 rounded-full overflow-hidden kuro-border-subtle" style={{ background: 'var(--bg-stat)' }}>
                               <div className="h-full rounded-full kuro-gradient-luck kuro-shadow-luck-bar" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%` }} />
                             </div>
-                            <span className="text-sm font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60` }}>{luckRating.tier} {luckRating.rating}</span>
+                            <span className="text-base font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60` }}>{luckRating.tier} {luckRating.rating}</span>
                           </div>
                         )}
                       </div>
@@ -86,7 +86,7 @@ export default function IdCardModal({
                           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />
                         </div>
                         {state.profile.profilePic && (
-                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-2xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
                         )}
                       </div>
                     </div>
@@ -99,7 +99,7 @@ export default function IdCardModal({
                     <div className="idcard-corner-bl" />
                     <div className="flex items-center gap-2 mb-2">
                       <div className="idcard-gold-bar" />
-                      <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
+                      <span className="text-base font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
@@ -113,7 +113,7 @@ export default function IdCardModal({
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
                         <div className="font-bold text-md kuro-number" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30` }}>{s.value}</div>
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.04em' }}>{s.label}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-xs)', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
                     </div>
@@ -138,7 +138,7 @@ export default function IdCardModal({
                         <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
                           <div className="idcard-gold-bar" />
-                          <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
+                          <span className="text-base font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
                         </div>
                         {/* §E10-CH-F2: Summary moved above histogram, escalated to text-base */}
                         <div className="text-right mb-1.5">
@@ -175,7 +175,7 @@ export default function IdCardModal({
                         </div>
                         <div className="flex gap-1.5">
                           {labs.map((lab, i) => (
-                            <div key={i} className="flex-1 text-center" style={{ fontSize: 'var(--font-2xs)', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: 'var(--font-xs)', color: '#6b7280' }}>{lab.split('-')[0]}</div>
                           ))}
                         </div>
                         {/* Summary moved above histogram per §E10-CH-F2 */}
@@ -191,7 +191,7 @@ export default function IdCardModal({
                       <div className="idcard-corner-bl" />
                       <div className="flex items-center gap-2 mb-2">
                         <div className="idcard-gold-bar" />
-                        <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
+                        <span className="text-base font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
                       </div>
                       <div className="grid grid-cols-5 gap-1.5">
                         {ownedCharNames.slice(0, 16).map(name => {
@@ -236,7 +236,7 @@ export default function IdCardModal({
                         <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
                           <div className="idcard-gold-bar" />
-                          <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
+                          <span className="text-base font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
                         </div>
                         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
                           {sorted.map(trophy => {
@@ -271,7 +271,7 @@ export default function IdCardModal({
               <div className="flex rounded-xl overflow-hidden kuro-border-medium" style={{ background: 'var(--bg-btn)' }}>
                 <button
                   onClick={() => setIdCardFormat('landscape')}
-                  className="px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all"
+                  className="px-3 py-2.5 text-base font-medium flex items-center gap-1.5 transition-all"
                   style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid var(--border-medium)' } : { color: '#6b7280', borderRight: '1px solid var(--border-medium)' }}
                   title="Landscape 16:9"
                 >
@@ -279,7 +279,7 @@ export default function IdCardModal({
                 </button>
                 <button
                   onClick={() => setIdCardFormat('portrait')}
-                  className="px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all"
+                  className="px-3 py-2.5 text-base font-medium flex items-center gap-1.5 transition-all"
                   style={idCardFormat === 'portrait' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18' } : { color: '#6b7280' }}
                   title="Portrait 9:16"
                 >

@@ -97,11 +97,11 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
       <CardBody className="space-y-3 text-base text-gray-400">
         <div className="text-center">
           <h4 className="text-gray-100 font-bold text-md">Whispering Wishes</h4>
-          <p className="text-gray-500 text-sm">Version {APP_VERSION}</p>
+          <p className="text-gray-500 text-base">Version {APP_VERSION}</p>
         </div>
 
         <div className="text-center">
-          <p className="text-gray-400 text-sm mb-1">Questions, issues, or feedback?</p>
+          <p className="text-gray-400 text-base mb-1">Questions, issues, or feedback?</p>
           <a
             href="mailto:whisperingwishes.app@gmail.com"
             className="text-cyan-400 text-base hover:text-cyan-300 transition-colors underline"
@@ -110,7 +110,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
           </a>
         </div>
 
-        <p className="text-center text-sm text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+        <p className="text-center text-base text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
 
         <div className="kuro-divider" />
 
@@ -126,7 +126,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
               <ChevronDown size={14} className={`transition-transform duration-200 text-gray-500 ${aboutSections[key] ? 'rotate-180' : ''}`} />
             </button>
             {aboutSections[key] && (
-              <div className="text-sm text-gray-400" style={{ padding: '0 12px 10px' }}>
+              <div className="text-base text-gray-400" style={{ padding: '0 12px 10px' }}>
                 {content}
               </div>
             )}

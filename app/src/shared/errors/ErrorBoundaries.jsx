@@ -44,8 +44,8 @@ class TabErrorBoundary extends React.Component {
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left" open>
-                    <summary className="text-gray-400 text-sm cursor-pointer">Error details</summary>
-                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-sm overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
+                    <summary className="text-gray-400 text-base cursor-pointer">Error details</summary>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-base overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
                   </details>
                 )}
               </div>
@@ -126,7 +126,7 @@ class AppErrorBoundary extends React.Component {
             {this.state.error && (
               <details style={{ marginTop: 'var(--space-lg)', textAlign: 'left' }}>
                 <summary style={{ color: '#6b7280', fontSize: 'var(--font-base)', cursor: 'pointer' }}>Error details</summary>
-                <pre style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-md)', background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: 'var(--font-sm)', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+                <pre style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-md)', background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: 'var(--font-base)', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
               </details>
             )}
           </div>

@@ -975,13 +975,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       {collectionImages[m.name] ? (
                         <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">{m.name[0]}</div>
+                        <div className="w-full h-full flex items-center justify-center text-base text-gray-400">{m.name[0]}</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-white text-md font-semibold">{m.name}</span>
-                        <span className={`text-sm ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                        <span className={`text-base ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">
                         <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{m.d.role}</span>
@@ -989,7 +989,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element}
                         </span>
-                        <span className="text-sm text-gray-500">{m.d.weapon}</span>
+                        <span className="text-base text-gray-500">{m.d.weapon}</span>
                       </div>
                     </div>
                     {/* Auto Equip button */}
@@ -997,7 +997,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       const aeqKey = state.activeTeamIndex + ':' + m.name;
                       return (
                         <button
-                          className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"
+                          className="kuro-btn text-base px-2 py-1 flex-shrink-0 self-start"
                           aria-label={`Auto equip best build for ${m.name}`}
                           onClick={() => {
                             const d = m.d;
@@ -1085,12 +1085,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 ) : equippedWeap ? (
                                   <>
                                     <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
-                                    <span className="text-sm text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
+                                    <span className="text-base text-gray-300 truncate w-full px-0.5 leading-tight mt-0.5">{eq.weapon.split(' ').slice(0, 2).join(' ')}</span>
                                   </>
                                 ) : (
                                   <>
                                     <Sword size={14} className="text-gray-500" />
-                                    <span className="text-sm text-gray-500">Weapon</span>
+                                    <span className="text-base text-gray-500">Weapon</span>
                                   </>
                                 )}
                               </div>
@@ -1120,12 +1120,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     ) : echoName ? (
                                       <>
                                         <Diamond size={12} className={`text-${costColor}-400`} />
-                                        <span className={`text-sm text-${costColor}-400 truncate w-full px-0.5 leading-tight`}>{echoName.split(' ').slice(0, 2).join(' ')}</span>
+                                        <span className={`text-base text-${costColor}-400 truncate w-full px-0.5 leading-tight`}>{echoName.split(' ').slice(0, 2).join(' ')}</span>
                                       </>
                                     ) : (
                                       <>
                                         <Diamond size={12} className="text-gray-500" />
-                                        <span className="text-sm text-gray-500">{costLabel}</span>
+                                        <span className="text-base text-gray-500">{costLabel}</span>
                                       </>
                                     )}
                                   </div>
@@ -1135,12 +1135,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             {/* Weapon & Echo info beside grid */}
                             <div className="flex-1 min-w-0 pt-0.5">
                               {equippedWeap ? (
-                                <div className="text-sm space-y-0.5">
+                                <div className="text-base space-y-0.5">
                                   <div className="text-yellow-400/80 font-medium truncate">{eq.weapon}</div>
                                   <div className="text-gray-500">{equippedWeap.stat} {equippedWeap.subStatValue}</div>
                                 </div>
                               ) : m.d.bestWeapon ? (
-                                <div className="text-sm space-y-0.5">
+                                <div className="text-base space-y-0.5">
                                   <div><span className="text-gray-500">Rec: </span><span className="text-yellow-400/50">{m.d.bestWeapon}</span></div>
                                   {m.d.bestEchoes && <div className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</div>}
                                 </div>
@@ -1157,7 +1157,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 });
                                 const activeSets = Object.entries(setCounts).filter(([, c]) => c >= 2);
                                 return (
-                                  <div className="text-sm mt-1 space-y-0.5">
+                                  <div className="text-base mt-1 space-y-0.5">
                                     <div className="text-cyan-400/70">{equipped.length}/5 echoes</div>
                                     {activeSets.map(([setName, count]) => (
                                       <div key={setName} className="text-gray-500">{setName} <span className="text-emerald-400/70">×{count}</span></div>
@@ -1171,7 +1171,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
                         {/* Echo Preset */}
                         {isMain && (
-                          <div className="text-sm text-gray-500 italic">Echo stats: default ATK/Crit preset</div>
+                          <div className="text-base text-gray-500 italic">Echo stats: default ATK/Crit preset</div>
                         )}
                         {!isMain && (
                           <div>
@@ -1186,7 +1186,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 const isActive = currentPreset === opt.value;
                                 return (
                                   <button key={opt.value}
-                                    className={`flex-1 py-1 rounded text-sm font-medium transition-all ${isActive ? `bg-${opt.color}-500/20 border-${opt.color}-500/40 text-${opt.color}-400 border` : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
+                                    className={`flex-1 py-1 rounded text-base font-medium transition-all ${isActive ? `bg-${opt.color}-500/20 border-${opt.color}-500/40 text-${opt.color}-400 border` : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
                                     onClick={() => {
                                       setTeamEquipment(prev => {
                                         const n = { ...prev };
@@ -1361,24 +1361,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {/* DPS Tiers */}
             <div className="grid grid-cols-2 gap-2">
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
-                <div className="text-gray-400 text-sm">Raw DPS</div>
+                <div className="text-gray-400 text-base">Raw DPS</div>
                 <div className="text-xl font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{rawDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">equipment only</div>
+                <div className="text-gray-500 text-base">equipment only</div>
               </div>
               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
-                <div className="text-gray-400 text-sm">Full DPS</div>
+                <div className="text-gray-400 text-base">Full DPS</div>
                 <div className="text-xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{realDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">+buffs &amp; debuffs</div>
+                <div className="text-gray-500 text-base">+buffs &amp; debuffs</div>
               </div>
               <div className="kuro-stat kuro-stat-gold p-2 text-center">
-                <div className="text-gray-400 text-sm">Perfect DPS</div>
+                <div className="text-gray-400 text-base">Perfect DPS</div>
                 <div className="text-xl font-bold text-yellow-400 kuro-number kuro-tshadow-glow-yellow">{perfectDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">+echo active skills</div>
+                <div className="text-gray-500 text-base">+echo active skills</div>
               </div>
               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
-                <div className="text-gray-400 text-sm">Synergy</div>
+                <div className="text-gray-400 text-base">Synergy</div>
                 <div className={`text-xl font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}%</div>
-                <div className="text-gray-500 text-sm">team comp</div>
+                <div className="text-gray-500 text-base">team comp</div>
               </div>
             </div>
 
@@ -1387,11 +1387,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               <div className="mt-2 space-y-1">
                 {memberDps.map(m => (
                   <div key={m.name} className="flex items-center gap-2">
-                    <span className="text-sm text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
+                    <span className="text-base text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
                     <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
                       <div className="h-full rounded-l-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
                     </div>
-                    <span className="text-sm text-gray-500 w-8 text-right">{m.pct}%</span>
+                    <span className="text-base text-gray-500 w-8 text-right">{m.pct}%</span>
                   </div>
                 ))}
               </div>
@@ -1407,7 +1407,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 ))}
               </div>
             )}
-            <p className="text-sm text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills. Synergy is an approximate team composition score.</p>
+            <p className="text-base text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills. Synergy is an approximate team composition score.</p>
           </div>
         </CardBody>
       </Card>

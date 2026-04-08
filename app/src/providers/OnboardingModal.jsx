@@ -42,7 +42,7 @@ const OnboardingModal = ({ onComplete }) => {
             {s.icon}
           </div>
           <h4 className="font-bold text-md text-gray-200 mb-1">{s.title}</h4>
-          <p className="text-gray-400 text-sm">{s.desc}</p>
+          <p className="text-gray-400 text-base">{s.desc}</p>
         </div>
 
         {/* Step indicators */}

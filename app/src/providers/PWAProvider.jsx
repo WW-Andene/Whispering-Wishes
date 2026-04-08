@@ -202,7 +202,7 @@ const PWAProvider = ({ children }) => {
               </div>
               <div>
                 <div className="text-white font-semibold text-md">Install Whispering Wishes</div>
-                <div className="text-gray-500 text-sm">Add to your home screen</div>
+                <div className="text-gray-500 text-base">Add to your home screen</div>
               </div>
             </div>
             <InstallSteps />
@@ -229,40 +229,40 @@ function InstallSteps() {
   if (isIOS || isSafari) {
     platform = 'Safari / iOS';
     steps = [
-      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-sm">{'\u2191'}</span> in the toolbar</>,
+      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-base">{'\u2191'}</span> in the toolbar</>,
       <>Scroll down and tap <b className="text-white">Add to Home Screen</b></>,
       <>Tap <b className="text-white">Add</b> to confirm</>,
     ];
   } else if (isFirefox) {
     platform = 'Firefox';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-sm">{'\u22EE'}</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-base">{'\u22EE'}</span></>,
       <>Tap <b className="text-white">Install</b> or <b className="text-white">Add to Home Screen</b></>,
     ];
   } else if (isSamsung) {
     platform = 'Samsung Internet';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-sm">{'\u2630'}</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-base">{'\u2630'}</span></>,
       <>Tap <b className="text-white">Add page to</b> {'\u2192'} <b className="text-white">Home screen</b></>,
     ];
   } else if (isAndroid) {
     platform = 'Chrome / Android';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-sm">{'\u22EE'}</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-base">{'\u22EE'}</span></>,
       <>Tap <b className="text-white">Install app</b> or <b className="text-white">Add to Home screen</b></>,
       <>Tap <b className="text-white">Install</b> to confirm</>,
     ];
   } else {
     platform = 'Desktop';
     steps = [
-      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-sm">{'\u2295'}</span> in the address bar</>,
+      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-base">{'\u2295'}</span> in the address bar</>,
       <>Or click <b className="text-white">{'\u22EE'}</b> {'\u2192'} <b className="text-white">Install Whispering Wishes</b></>,
     ];
   }
 
   return (
     <div className="space-y-2 text-base text-gray-300">
-      <p className="text-gray-400 text-sm uppercase tracking-wider font-medium">{platform}</p>
+      <p className="text-gray-400 text-base uppercase tracking-wider font-medium">{platform}</p>
       {steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
           <span className="text-yellow-400 font-bold shrink-0">{i + 1}.</span>
