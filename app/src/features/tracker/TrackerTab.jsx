@@ -224,7 +224,7 @@ function TrackerTab({
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white text-md font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-white text-xl font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-sm">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="space-y-1.5">
@@ -284,7 +284,7 @@ function TrackerTab({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
-                    <span className="text-white text-md font-semibold">Banner History</span>
+                    <span className="text-white text-xl font-semibold">Banner History</span>
                   </div>
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
@@ -322,7 +322,7 @@ function TrackerTab({
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white text-md font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-white text-xl font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-sm">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="space-y-1.5">
@@ -375,7 +375,7 @@ function TrackerTab({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-cyan-400" />
-                    <span className="text-white text-md font-semibold">Convene History</span>
+                    <span className="text-white text-xl font-semibold">Convene History</span>
                     <span className="text-gray-500 text-sm">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>

@@ -126,7 +126,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
             const commonTiers = COMMON_MAT_TIERS[data.ascensionMaterials.common];
             return (
               <div>
-                <h3 className="text-white font-semibold text-md mb-2 flex items-center gap-2">
+                <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
                   <Swords size={14} className="text-orange-400" /> Ascension Materials
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -145,7 +145,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
 
           {/* 6. EXP Materials */}
           <div>
-            <h3 className="text-white font-semibold text-md mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">

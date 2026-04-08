@@ -35,7 +35,7 @@ export default function EnemyEchoSelectorModal({
       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
           <div>
-            <h3 className="text-white font-semibold text-md">Select Target Enemy</h3>
+            <h3 className="text-white font-semibold text-xl">Select Target Enemy</h3>
             <p className="text-gray-400 text-sm">All echoes — select an enemy to fight against</p>
           </div>
           <button onClick={onClose} className="modal-close-btn min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20" aria-label="Close"><X size={16} className="text-gray-400" /></button>

@@ -404,7 +404,7 @@ function AnalyticsTab({
                 <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel="Leaderboard consent" centered>
                   <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
                     <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
-                      <h3 className="text-white font-semibold text-md">Leaderboard - Data Sharing Notice</h3>
+                      <h3 className="text-white font-semibold text-xl">Leaderboard - Data Sharing Notice</h3>
                       <div className="text-gray-300 text-base space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-400">
@@ -428,7 +428,7 @@ function AnalyticsTab({
                       <div className="px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h3 className="text-white font-semibold text-md">Community</h3>
+                            <h3 className="text-white font-semibold text-xl">Community</h3>
                             <p className="text-gray-400 text-sm">Leaderboard & stats</p>
                           </div>
                           <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
@@ -496,7 +496,7 @@ function AnalyticsTab({
                                       <div className="text-sm text-gray-500">{entry.pulls} five-stars</div>
                                     </div>
                                     <div className="text-right flex-shrink-0">
-                                      <div className={`text-md font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      <div className={`text-xl font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
                                         {entry.avgPity.toFixed(1)}
                                       </div>
                                       <div className="text-sm text-gray-400">avg pity</div>
@@ -752,7 +752,7 @@ function AnalyticsTab({
                               >
                                 <Icon size={28} style={{ color: t.color }} />
                               </div>
-                              <div className="text-md font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
+                              <div className="text-xl font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
                               <div className="text-base text-gray-300 leading-relaxed italic">{t.desc}</div>
                               <div className="mt-3 text-sm text-gray-400">tap outside or ✕ to close</div>
                             </div>
@@ -765,7 +765,7 @@ function AnalyticsTab({
                         <div className="mt-3 pt-3 border-t border-[var(--border-medium)]">
                           <div className="flex items-center justify-between">
                             <span className="text-gray-400 text-sm">Current 50/50 Streak</span>
-                            <span className={`text-md font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`text-xl font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
                               {trophies.stats.currentStreak.count}× {trophies.stats.currentStreak.type === 'win' ? '✓ Won' : '✗ Lost'}
                             </span>
                           </div>
@@ -788,11 +788,11 @@ function AnalyticsTab({
                       <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString('en-US')}</div><div className="text-gray-400 text-sm">Astrite Spent (in-game)</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-md kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-sm">Won 50/50</div></div>
-                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-md kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-sm">Lost 50/50</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-md kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-sm">Avg. Pity</div></div>
+                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-xl kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-sm">Won 50/50</div></div>
+                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-xl kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-sm">Lost 50/50</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-xl kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-sm">Avg. Pity</div></div>
                     </div>
-                    {overallStats.winRate != null && <div className="text-center text-base text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-md kuro-number">{overallStats.winRate}%</span></div>}
+                    {overallStats.winRate != null && <div className="text-center text-base text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-xl kuro-number">{overallStats.winRate}%</span></div>}
                   </CardBody>
                 </Card>
 
@@ -805,19 +805,19 @@ function AnalyticsTab({
                       return (<>
                     <p className="text-gray-400 text-sm mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-md kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-sm">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-md kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-sm">4★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-sm">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-sm">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-sm mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-md kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-sm">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-md kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-sm">4★</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-md kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-sm">3★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-sm">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-sm">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-xl kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-sm">3★</div></div>
                     </div>
 
                     <p className="text-gray-400 text-sm mb-1.5 mt-3">Total</p>
-                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-md kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-sm">All Items</div></div>
+                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-xl kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-sm">All Items</div></div>
                       </>);
                     })()}
                   </CardBody>

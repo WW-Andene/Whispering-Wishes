@@ -96,7 +96,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
       <CardHeader>About</CardHeader>
       <CardBody className="space-y-3 text-base text-gray-400">
         <div className="text-center">
-          <h4 className="text-gray-100 font-bold text-md">Whispering Wishes</h4>
+          <h4 className="text-gray-100 font-bold text-xl">Whispering Wishes</h4>
           <p className="text-gray-500 text-sm">Version {APP_VERSION}</p>
         </div>
 

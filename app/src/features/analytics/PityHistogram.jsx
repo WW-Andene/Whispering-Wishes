@@ -105,15 +105,15 @@ function PityHistogram({ statsTabData }) {
 
         <div className="mt-3 pt-3 border-t border-[var(--border-medium)] grid grid-cols-3 gap-2 text-center">
           <div>
-            <div className="text-emerald-400 font-bold text-md kuro-number kuro-tshadow-glow-emerald">{minPity}</div>
+            <div className="text-emerald-400 font-bold text-xl kuro-number kuro-tshadow-glow-emerald">{minPity}</div>
             <div className="text-gray-400 text-sm">Lowest</div>
           </div>
           <div>
-            <div className="text-yellow-400 font-bold text-md kuro-number kuro-tshadow-glow-gold">{avgPity}</div>
+            <div className="text-yellow-400 font-bold text-xl kuro-number kuro-tshadow-glow-gold">{avgPity}</div>
             <div className="text-gray-400 text-sm">Average</div>
           </div>
           <div>
-            <div className="text-red-400 font-bold text-md kuro-number kuro-tshadow-glow-red">{maxPity}</div>
+            <div className="text-red-400 font-bold text-xl kuro-number kuro-tshadow-glow-red">{maxPity}</div>
             <div className="text-gray-400 text-sm">Highest</div>
           </div>
         </div>

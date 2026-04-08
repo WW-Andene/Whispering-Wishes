@@ -196,11 +196,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                   <div className={`text-sm mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-md kuro-number">{stats.pity4}<span className="text-gray-400 text-sm ml-0.5">/10</span></div>
+                  <div className="text-purple-400 font-bold text-xl kuro-number">{stats.pity4}<span className="text-gray-400 text-sm ml-0.5">/10</span></div>
                   <div className={`text-sm mt-0.5 ${stats.guaranteed4Star ? 'text-emerald-400 font-medium' : 'text-gray-400'}`}>{stats.guaranteed4Star ? '4★ Featured ✓' : '4★ Pity'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-white font-bold text-md kuro-number">{stats.totalPulls}</div>
+                  <div className="text-white font-bold text-xl kuro-number">{stats.totalPulls}</div>
                   <div className="text-gray-400 text-sm mt-0.5">Convenes</div>
                 </div>
               </div>

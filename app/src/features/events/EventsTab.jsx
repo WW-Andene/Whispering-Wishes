@@ -132,7 +132,7 @@ function EventsTab({
               <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-base font-medium">{progressStats.hasProgress ? 'Weekly Progress' : 'Weekly Rewards'}</span>
-                  <span className="text-yellow-400 font-bold text-md kuro-number">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
+                  <span className="text-yellow-400 font-bold text-xl kuro-number">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex">
@@ -152,15 +152,15 @@ function EventsTab({
               </div>
               <div className="flex gap-2">
                 <div className="kuro-stat kuro-stat-emerald flex-1 p-2">
-                  <div className="text-emerald-400 text-md font-bold kuro-number">{progressStats.doneCount}</div>
+                  <div className="text-emerald-400 text-xl font-bold kuro-number">{progressStats.doneCount}</div>
                   <div className="text-gray-500 kuro-micro-label">Completed</div>
                 </div>
                 <div className="kuro-stat kuro-stat-gold flex-1 p-2">
-                  <div className="text-yellow-400 text-md font-bold kuro-number">{progressStats.pendingCount}</div>
+                  <div className="text-yellow-400 text-xl font-bold kuro-number">{progressStats.pendingCount}</div>
                   <div className="text-gray-500 kuro-micro-label">Pending</div>
                 </div>
                 <div className="kuro-stat kuro-stat-gray flex-1 p-2">
-                  <div className="text-gray-400 text-md font-bold kuro-number">{progressStats.skippedCount}</div>
+                  <div className="text-gray-400 text-xl font-bold kuro-number">{progressStats.skippedCount}</div>
                   <div className="text-gray-500 kuro-micro-label">Skipped</div>
                 </div>
               </div>

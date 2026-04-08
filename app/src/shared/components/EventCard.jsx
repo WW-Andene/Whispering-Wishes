@@ -75,7 +75,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-md ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
+            <h4 className={`font-bold text-xl ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
               {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
               {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}

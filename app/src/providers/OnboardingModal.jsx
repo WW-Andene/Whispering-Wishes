@@ -41,7 +41,7 @@ const OnboardingModal = ({ onComplete }) => {
           <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${s.bg} border ${s.border} mb-3`} style={{color: s.color}}>
             {s.icon}
           </div>
-          <h4 className="font-bold text-md text-gray-200 mb-1">{s.title}</h4>
+          <h4 className="font-bold text-xl text-gray-200 mb-1">{s.title}</h4>
           <p className="text-gray-400 text-sm">{s.desc}</p>
         </div>
 

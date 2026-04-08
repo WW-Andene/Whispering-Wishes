@@ -980,7 +980,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-white text-md font-semibold">{m.name}</span>
+                        <span className="text-white text-xl font-semibold">{m.name}</span>
                         <span className={`text-sm ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">

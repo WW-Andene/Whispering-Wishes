@@ -975,7 +975,7 @@ function WhisperingWishesInner() {
                 )}
               </div>
               <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-base) var(--space-md)' } : undefined}>
-                <h1 className="text-white font-semibold text-md tracking-wide leading-tight">Whispering Wishes</h1>
+                <h1 className="text-white font-semibold text-xl tracking-wide leading-tight">Whispering Wishes</h1>
                 <p className="text-sm tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
@@ -1203,7 +1203,7 @@ function WhisperingWishesInner() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)] flex-shrink-0" data-sheet-header>
               <div className="flex items-center gap-2">
                 <Download size={14} className="text-yellow-400" />
-                <span className="text-white text-md font-semibold">Backup</span>
+                <span className="text-white text-xl font-semibold">Backup</span>
               </div>
               <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
             </div>

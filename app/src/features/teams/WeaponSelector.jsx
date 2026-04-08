@@ -20,7 +20,7 @@ export default function WeaponSelector({
                       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
-                            <h3 className="text-white font-semibold text-md">Select Weapon</h3>
+                            <h3 className="text-white font-semibold text-xl">Select Weapon</h3>
                             <p className="text-gray-400 text-sm">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
                           </div>
                           <button onClick={() => setWeaponSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close weapon selector"><X size={16} className="text-gray-400" /></button>

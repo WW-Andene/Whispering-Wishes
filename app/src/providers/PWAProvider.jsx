@@ -18,7 +18,7 @@ const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
         <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
-        <div className="text-black font-semibold text-md">Install Whispering Wishes</div>
+        <div className="text-black font-semibold text-xl">Install Whispering Wishes</div>
         <div className="text-black/70 text-base">{subtitle}</div>
       </div>
       <button
@@ -201,7 +201,7 @@ const PWAProvider = ({ children }) => {
                 <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
               </div>
               <div>
-                <div className="text-white font-semibold text-md">Install Whispering Wishes</div>
+                <div className="text-white font-semibold text-xl">Install Whispering Wishes</div>
                 <div className="text-gray-500 text-sm">Add to your home screen</div>
               </div>
             </div>
