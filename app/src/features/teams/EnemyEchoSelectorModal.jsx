@@ -38,7 +38,7 @@ export default function EnemyEchoSelectorModal({
             <h3 className="text-white font-semibold text-xl">Select Target Enemy</h3>
             <p className="text-gray-400 text-sm">All echoes — select an enemy to fight against</p>
           </div>
-          <button onClick={onClose} className="modal-close-btn min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20" aria-label="Close"><X size={16} className="text-gray-400" /></button>
+          <button onClick={onClose} className="modal-close-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
         </div>
 
         {/* Search + Filters */}

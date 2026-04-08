@@ -46,8 +46,8 @@ export default function TeamSelector({
                             <h3 className="text-white text-xl font-semibold">Select Resonator</h3>
                             <p className="text-gray-500 text-sm">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
-                            <X size={18} />
+                          <button onClick={() => setTeamSelectorOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
+                            <X size={16} />
                           </button>
                         </div>
 

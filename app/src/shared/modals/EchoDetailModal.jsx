@@ -73,7 +73,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
             <EchoImage src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" noBgProcess={data?.noBgProcess} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close echo details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close echo details">
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">

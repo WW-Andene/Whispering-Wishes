@@ -268,7 +268,7 @@ function CalculatorTab({ state, dispatch }) {
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
                         <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-gold" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('astrite', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Astrite">Clear</button>
+                      <button onClick={() => setCalc('astrite', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Astrite">Clear</button>
                     </div>
                   </div>
                   <div>
@@ -278,7 +278,7 @@ function CalculatorTab({ state, dispatch }) {
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
                         <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('lunite', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Lunite">Clear</button>
+                      <button onClick={() => setCalc('lunite', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Lunite">Clear</button>
                     </div>
                   </div>
                   {(() => {
@@ -298,7 +298,7 @@ function CalculatorTab({ state, dispatch }) {
                             {[1, 5, 10].map(amt => (
                               <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-gold">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Radiant Tides">Clear</button>
+                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Radiant Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -310,7 +310,7 @@ function CalculatorTab({ state, dispatch }) {
                             {[1, 5, 10].map(amt => (
                               <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-pink">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Forging Tides">Clear</button>
+                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Forging Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -326,7 +326,7 @@ function CalculatorTab({ state, dispatch }) {
                         {[1, 5, 10].map(amt => (
                           <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-cyan">+{amt}</button>
                         ))}
-                        <button onClick={() => setCalc('lustrous', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Lustrous Tides">Clear</button>
+                        <button onClick={() => setCalc('lustrous', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Lustrous Tides">Clear</button>
                       </div>
                     </div>
                   )}

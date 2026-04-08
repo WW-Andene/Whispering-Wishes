@@ -79,7 +79,7 @@ export default function EchoSelector({
                     <h3 className="text-white font-semibold text-xl">Select Echo</h3>
                     <p className="text-gray-400 text-sm">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                   </div>
-                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
+                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close echo selector"><X size={16} /></button>
                 </div>
                 {/* Search + Filters */}
                 <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
@@ -280,7 +280,7 @@ export default function EchoSelector({
                       <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>
-                  <button onClick={() => setEchoStatPanel(null)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>
+                  <button onClick={() => setEchoStatPanel(null)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0" aria-label="Close echo stats"><X size={16} /></button>
                 </div>
                 <div className="overflow-y-auto flex-1 p-3 space-y-4">
                   {/* Sonata sets — highlight recommended */}
