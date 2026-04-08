@@ -70,7 +70,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
     mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
-    const mainDps = mems.find(m => m.d.role === 'Main DPS') || mems[0];
+    // Smart DPS selection: prefer 'Main DPS' role, fallback to highest totalMult character
+    const mainDps = mems.find(m => m.d.role === 'Main DPS')
+      || mems.reduce((best, m) => (!best || (m.d.totalMult || 0) > (best.d.totalMult || 0)) ? m : best, null)
+      || mems[0];
 
     const _passiveCache = new Map();
     const parsePassive = (passive, element) => {
@@ -129,18 +132,23 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     };
 
     // ── RAW TIER: equipment-only stats, no team buffs ──
-    const rawRotTime = mainDps.d.rotTime || 25;
-    const rawMainOnField = mainDps.d.onField || 15;
+    // Adaptive rotation time: sum of all members' onField, clamped to reasonable range
+    const sumOnField = mems.reduce((s, m) => s + (m.d.onField || (m.name === mainDps.name ? 15 : 5)), 0);
+    const rawRotTime = Math.max(15, Math.min(35, sumOnField + 2)); // +2s for swap animations
+    const rawMainOnField = Math.min(mainDps.d.onField || 15, rawRotTime * 0.8); // DPS gets at most 80% of rotation
     const rawOffFieldTime = Math.max(0, rawRotTime - rawMainOnField);
-    const rawNumSubDps = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0).length || 1;
-    const rawSubFieldEach = rawOffFieldTime / rawNumSubDps;
+    // Proportional field time based on each sub-DPS's onField needs
+    const subDpsMembers = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0);
+    const totalSubNeed = subDpsMembers.reduce((s, m) => s + (m.d.onField || 5), 0) || 1;
     let rawTotalRotDmg = 0;
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
       if (mult === 0) return;
       if (m.name !== mainDps.name) {
-        const subOnField = m.d.onField ?? 15;
-        mult = mult * Math.min(1, rawSubFieldEach / subOnField);
+        const subOnField = m.d.onField || 5;
+        // Proportional share: each sub-DPS gets field time proportional to their onField needs
+        const allocatedTime = rawOffFieldTime * (subOnField / totalSubNeed);
+        mult = mult * Math.min(1, allocatedTime / subOnField);
       }
       const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
       let rStatPct = 0, rCr = 5, rCd = 150, rElem = 0, rSkillDmg = 0;
@@ -333,9 +341,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
             const val = b.value * uptime;
             if (b.stat === 'atkPct') {
-              // ATK% buffs only scale the main stat for ATK-scalers; for HP/DEF-scalers they add minor ATK contribution
+              // ATK% buffs scale ATK for all characters. For HP/DEF-scalers, their main damage
+              // stat (baseStat) uses HP/DEF, but ATK buffs still contribute to non-scaled damage.
+              // In WuWa most "team ATK" buffs actually increase each member's ATK stat.
               if (mainDps.scaling === 'ATK') atkPct += val;
-              else atkPct += val * 0.15; // HP/DEF scalers benefit marginally from ATK buffs
+              // HP/DEF scalers: ATK contributes ~25% of damage via non-HP-scaled hits + echo active
+              else atkPct += val * 0.25;
             }
             else if (b.stat === 'allDmg') elemDmg += val;
             else if (b.stat === 'elemDmg') {
@@ -496,7 +507,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
-    const rotTime = mainDps.d.rotTime || 25;
+    // Adaptive rotation time for FULL tier (same logic as RAW)
+    const rotTime = rawRotTime;
     const DOT_LEVEL_MULT = 3674;
     const DOT_BASE_FACTOR = 1.25078;
     let dotDmgPerRotation = 0;
@@ -599,10 +611,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     let totalRotDmg = 0;
     const memberDmgArr = [];
-    const mainOnField = mainDps.d.onField || 15;
+    const mainOnField = Math.min(mainDps.d.onField || 15, rotTime * 0.8);
     const offFieldTime = Math.max(0, rotTime - mainOnField);
-    const numSubDps = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0).length || 1;
-    const subFieldEach = offFieldTime / numSubDps;
+    // Proportional field time allocation based on each sub-DPS's actual needs
+    const fullSubDpsMembers = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0);
+    const fullTotalSubNeed = fullSubDpsMembers.reduce((s, m) => s + (m.d.onField || 5), 0) || 1;
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
       if (mult === 0) { memberDmgArr.push({ name: m.name, dmg: 0 }); return; }
@@ -610,8 +623,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const isMain = m.name === mainDps.name;
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
       if (!isMain) {
-        const subOnField = m.d.onField ?? 15;
-        const fieldRatio = Math.min(1, subFieldEach / subOnField);
+        const subOnField = m.d.onField || 5;
+        const allocatedTime = offFieldTime * (subOnField / fullTotalSubNeed);
+        const fieldRatio = Math.min(1, allocatedTime / subOnField);
         mult = mult * fieldRatio;
       }
       if (isMain && m.weapon?.pv?.atkSpeed) {
@@ -825,9 +839,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           const echoResMult = calcResMult(echoResRate, resShred);
           let echoSkillBonus = 0;
           if (m.echoSet) {
-            const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
-            if (p2.echoDmg) echoSkillBonus += p2.echoDmg;
-            if (p5.echoDmg) echoSkillBonus += p5.echoDmg;
+            if (m.echoSet.p3val) {
+              if (m.echoSet.p3val.echoDmg) echoSkillBonus += m.echoSet.p3val.echoDmg;
+            } else {
+              const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
+              if (p2.echoDmg) echoSkillBonus += p2.echoDmg;
+              if (p5.echoDmg) echoSkillBonus += p5.echoDmg;
+            }
           }
           const echoDmgMult = 1 + echoSkillBonus / 100;
           const isMain = m.name === mainDps.name;
@@ -860,6 +878,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
       const els = new Set(mems.map(m => m.d.element));
       if (els.size === mems.length) warnings.push('No element resonance');
+      const dpsCount = mems.filter(m => m.d.role === 'Main DPS').length;
+      if (dpsCount >= 2) warnings.push('Dual DPS: rotation time shared');
+      if (dpsCount === 0) warnings.push('No Main DPS: using highest damage dealer');
     }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
