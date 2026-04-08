@@ -1301,13 +1301,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         </CardBody>
       </Card>
 
-      {/* Rotation Timeline — own Card with overflow-visible inner */}
+      {/* Rotation Timeline — standalone, no Card wrapper to avoid overflow:hidden */}
       {rotationTimeline?.segments?.length > 0 && (
-        <Card className="rotation-card">
-          <CardBody>
-            <RotationTimeline rotationTimeline={rotationTimeline} />
-          </CardBody>
-        </Card>
+        <RotationTimeline rotationTimeline={rotationTimeline} />
       )}
 
       <DPSComparisonCard

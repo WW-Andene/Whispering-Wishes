@@ -64,19 +64,25 @@ export default function RotationTimeline({ rotationTimeline }) {
   const ticks = [];
   for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
 
-  const barWidth = Math.max(500, totalTime * 22);
+  const tableWidth = Math.max(600, totalTime * 24 + 64);
 
   return (
-    <div>
-      <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
-
-      {/* Single scrollable container */}
-      <div>
-        <table style={{ width: barWidth + 64, borderCollapse: 'collapse' }}>
-          {/* Time axis row */}
+    <div className="kuro-card" style={{ overflow: 'visible' }}>
+      <div style={{
+        padding: 'var(--card-padding)',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        borderRadius: 16,
+      }}>
+        <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
+        <table style={{ width: tableWidth, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: 64 }} />
+            <col />
+          </colgroup>
           <thead>
             <tr>
-              <td style={{ width: 64 }} />
+              <td />
               <td>
                 <div className="relative h-4">
                   {ticks.map(tick => (
@@ -94,7 +100,7 @@ export default function RotationTimeline({ rotationTimeline }) {
               const isField = row.type === 'field';
               return (
                 <tr key={i}>
-                  <td className="align-middle pr-1.5 text-right" style={{ width: 64 }}>
+                  <td className="align-middle pr-1.5 text-right">
                     <span className={`text-[9px] ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
                       {isField ? row.label : '↳'}
                     </span>
