@@ -110,7 +110,7 @@ async function networkFirst(request, cacheName) {
       return new Response(
         `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Offline — Whispering Wishes</title>
-        <style>body{background:#080c14;color:#e2e8f0;font-family:'Cinzel Decorative',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
+        <style>body{background:#080c14;color:#e2e8f0;font-family:'Rajdhani',system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
         .box{max-width:400px;padding:2rem}h1{font-size:1.5rem;margin-bottom:1rem}p{opacity:0.7;line-height:1.6}
         button{margin-top:1.5rem;padding:0.75rem 1.5rem;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-family:inherit}
         button:hover{background:#3b82f6}</style></head>
