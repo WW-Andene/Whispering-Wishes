@@ -175,7 +175,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`kuro-badge ${style.text}`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>{isChar ? item.element : item.type}</span>
           </div>
-          <h4 className="font-bold text-lg text-white leading-tight">{item.name}</h4>
+          <h4 className="font-bold text-xl text-white leading-tight">{item.name}</h4>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
@@ -192,7 +192,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-lg kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-sm ml-0.5">/{HARD_PITY}</span></div>
+                  <div className={`font-bold text-xl kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-sm ml-0.5">/{HARD_PITY}</span></div>
                   <div className={`text-sm mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
