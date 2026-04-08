@@ -21,6 +21,7 @@ const COMPARISON_STATS = [
   ['Crit Rate', e => Math.min(e.stats.critRate, 100).toFixed(1) + '%'],
   ['Crit DMG', e => e.stats.critDmg?.toFixed(1) + '%'],
   ['Elem DMG', e => e.stats.elemDmg?.toFixed(1) + '%'],
+  ['Amplify', e => (e.stats.amplify || 0).toFixed(1) + '%'],
   ['DEF Shred', e => (e.stats.defShred || 0) + '%'],
   ['RES Shred', e => (e.stats.resShred || 0) + '%'],
   ['Synergy', e => e.stats.synergy + '%'],

@@ -241,6 +241,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     // ── FULL TIER: Base stats with team buffs ──
     const mainStatKey = mainDps.scaling === 'HP' ? 'HP%' : mainDps.scaling === 'DEF' ? 'DEF%' : 'ATK%';
     let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
+    let amplify = 0; // WuWa DMG Amplification layer — separate from DMG Bonus, multiplicative
 
     if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
@@ -360,6 +361,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       }
     }
 
+    const dpsFocus = mainDps.d.dmgFocus || [];
     let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg;
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
@@ -368,34 +370,32 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
       if (!isMain) {
         const teamRotTime = rotTime;
+        // WuWa outro buffs are "DMG Amplification" — a SEPARATE multiplicative layer
+        // from self DMG Bonus. Route element/skill/type Amp buffs to `amplify`.
         (bt.outroBuffs || []).forEach(b => {
           if (b.target === 'next' || b.target === 'enemy') {
             const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
             const val = b.value * uptime;
             if (b.stat === 'atkPct') {
-              // ATK% buffs scale ATK for all characters. For HP/DEF-scalers, their main damage
-              // stat (baseStat) uses HP/DEF, but ATK buffs still contribute to non-scaled damage.
-              // In WuWa most "team ATK" buffs actually increase each member's ATK stat.
               if (mainDps.scaling === 'ATK') atkPct += val;
-              // HP/DEF scalers: ATK contributes ~25% of damage via non-HP-scaled hits + echo active
               else atkPct += val * 0.25;
             }
-            else if (b.stat === 'allDmg') elemDmg += val;
+            else if (b.stat === 'allDmg') amplify += val;
             else if (b.stat === 'elemDmg') {
               const buffEl = (b.condition || '').toLowerCase();
               const dpsEl = (mainDps.d.element || '').toLowerCase();
-              if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
+              if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) amplify += val;
             }
             else if (b.stat === 'deepen') deepen += val;
-            else if (b.stat === 'basicDmg') basicDmg += val;
-            else if (b.stat === 'heavyDmg') heavyDmg += val;
-            else if (b.stat === 'libDmg') libDmg += val;
-            else if (b.stat === 'echoDmg') echoDmg += val;
+            else if (b.stat === 'basicDmg') { if (dpsFocus.includes('Basic ATK')) amplify += val; }
+            else if (b.stat === 'heavyDmg') { if (dpsFocus.includes('Heavy ATK')) amplify += val; }
+            else if (b.stat === 'libDmg') { if (dpsFocus.includes('Liberation')) amplify += val; }
+            else if (b.stat === 'echoDmg') { if (dpsFocus.includes('Echo')) amplify += val; }
+            else if (b.stat === 'skillDmg') amplify += val;
             else if (b.stat === 'critRate') cr += val;
             else if (b.stat === 'critDmg') cd += val;
             else if (b.stat === 'resShred') resShred += val;
             else if (b.stat === 'defShred') defShred += val;
-            else if (b.stat === 'skillDmg') skillDmg += val;
           }
         });
       }
@@ -433,18 +433,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       });
     });
 
+    // DMG Bonus layer: weapon + echo self-bonuses (NOT outro amplify)
     basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
     skillDmg += echoSkillDmg;
 
-    const focus = mainDps.d.dmgFocus || [];
-    if (focus.includes('Basic ATK')) skillDmg += basicDmg;
-    else if (basicDmg > 0 && !focus.length) skillDmg += basicDmg * 0.5;
-    if (focus.includes('Heavy ATK')) skillDmg += heavyDmg;
-    else if (heavyDmg > 0 && !focus.length) skillDmg += heavyDmg * 0.5;
-    if (focus.includes('Liberation')) skillDmg += libDmg;
+    // Route type-specific DMG Bonus into skillDmg based on character's damage focus
+    if (dpsFocus.includes('Basic ATK')) skillDmg += basicDmg;
+    else if (basicDmg > 0 && !dpsFocus.length) skillDmg += basicDmg * 0.5;
+    if (dpsFocus.includes('Heavy ATK')) skillDmg += heavyDmg;
+    else if (heavyDmg > 0 && !dpsFocus.length) skillDmg += heavyDmg * 0.5;
+    if (dpsFocus.includes('Liberation')) skillDmg += libDmg;
     else if (libDmg > 0) skillDmg += libDmg * 0.3;
-    if (focus.includes('Echo')) skillDmg += echoDmg;
-    if (focus.includes('Coordinated ATK')) skillDmg += coordDmg;
+    if (dpsFocus.includes('Echo')) skillDmg += echoDmg;
+    if (dpsFocus.includes('Coordinated ATK')) skillDmg += coordDmg;
 
     const mainDpsEl = (mainDps.d.element || '').toLowerCase();
     mems.forEach(m => {
@@ -552,7 +553,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     const effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     const avgCrit = 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
-    const dmgBonus = (1 + (elemDmg + skillDmg) / 100) * (1 + deepen / 100);
+    // WuWa 3-layer multiplicative formula: DMG Bonus × DMG Amplify × DMG Deepen
+    const dmgBonus = (1 + (elemDmg + skillDmg) / 100) * (1 + amplify / 100) * (1 + deepen / 100);
     const reducedDef = enemyDef90 * Math.max(0, 1 - defShred / 100);
     const effectiveDef = reducedDef * Math.max(0, 1 - defIgnore / 100);
     const defMult = Math.min(2, attackerFactor / (attackerFactor + effectiveDef));
@@ -709,7 +711,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const sEl = (m.d.element || '').toLowerCase();
         const sElDmgKey = sEl ? sEl.charAt(0).toUpperCase() + sEl.slice(1) + ' DMG' : '';
         const sStatKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
-        let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0;
+        let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0, sAmplify = 0;
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
         const teamRotTime = rotTime;
@@ -741,15 +743,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
               const val = b.value * uptime;
               if (b.stat === 'atkPct' && m.scaling === 'ATK') sAtkPct += val;
-              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sElem += val;
+              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sAmplify += val;
               else if (b.stat === 'deepen') sDeepen += val;
-              else if (b.stat === 'basicDmg') sBasicDmg += val;
-              else if (b.stat === 'heavyDmg') sHeavyDmg += val;
-              else if (b.stat === 'libDmg') sLibDmg += val;
-              else if (b.stat === 'echoDmg') sEchoDmg += val;
+              else if (b.stat === 'basicDmg') sAmplify += val;
+              else if (b.stat === 'heavyDmg') sAmplify += val;
+              else if (b.stat === 'libDmg') sAmplify += val;
+              else if (b.stat === 'echoDmg') sAmplify += val;
               else if (b.stat === 'critRate') sCr += val;
               else if (b.stat === 'critDmg') sCd += val;
-              else if (b.stat === 'skillDmg') sSkillDmg += val;
+              else if (b.stat === 'skillDmg') sAmplify += val;
               else if (b.stat === 'resShred') sResShred += val;
               else if (b.stat === 'defShred') sDefShred += val;
             }
@@ -871,7 +873,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         if (focus.includes('Liberation')) sTypeDmg += sLibDmg;
         if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
         if (focus.includes('Coordinated ATK')) sTypeDmg += sCoordDmg;
-        const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sDeepen / 100);
+        const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sAmplify / 100) * (1 + sDeepen / 100);
         const sReducedDef = enemyDef90 * Math.max(0, 1 - sDefShred / 100);
         const sEffDef = sReducedDef * Math.max(0, 1 - sDefIgnore / 100);
         const sDefMult = Math.min(2, attackerFactor / (attackerFactor + sEffDef));
@@ -944,7 +946,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     if (mainEl && elCounts[mainEl] >= 3) syn += 5;  // Mono-element bonus
     // Buff alignment (0-25): do teammates buff what the DPS actually uses?
     const dpsBuffTable = CHAR_BUFF_TABLE[mainDps.name];
-    const dpsFocus = mainDps.d.dmgFocus || [];
     mems.forEach(m => {
       if (m.name === mainDps.name) return;
       const bt = CHAR_BUFF_TABLE[m.name];
@@ -1134,7 +1135,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       return { segments: timeline, buffs, totalTime: rotTime };
     })();
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps, rotationTimeline };
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps, rotationTimeline };
   }, [teamEquipment, enemyLevel, enemyEcho]);
 
   // Expose calcTeamStats to parent via ref
@@ -1149,7 +1150,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
   const stats = activeTeamStats;
   if (!stats) return null;
-  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps, rotationTimeline } = stats;
+  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps, rotationTimeline } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
