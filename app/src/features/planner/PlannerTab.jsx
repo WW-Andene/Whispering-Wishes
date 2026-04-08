@@ -342,7 +342,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           {/* U6-03: Show "Today" pill when viewing a non-current month */}
           <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-sm font-bold tracking-wide hover:text-yellow-400 transition-colors" style={{ fontFamily: 'var(--font-display)' }} title={monthOffset !== 0 ? 'Jump to current month' : undefined}>
             {cal.monthName}
-            {monthOffset !== 0 && <span style={{ fontSize: 'var(--font-xs)', marginLeft: 'var(--space-base)', padding: '1px var(--space-base)', borderRadius: 'var(--radius-pill)', background: 'rgba(237,175,24,0.15)', border: '1px solid rgba(237,175,24,0.3)', color: '#edaf18', verticalAlign: 'middle' }}>Today</span>}
+            {monthOffset !== 0 && <span className="kuro-badge kuro-badge-yellow" style={{ borderRadius: 'var(--radius-pill)', verticalAlign: 'middle', marginLeft: 'var(--space-base)' }}>Today</span>}
           </button>
           <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Next month"><ChevronRight size={16} /></button>
         </div>

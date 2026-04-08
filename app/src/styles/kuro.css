@@ -830,6 +830,14 @@
       line-height: 1.4;
       white-space: nowrap;
     }
+    /* Badge color variants */
+    .kuro-badge-yellow { background: rgba(234,179,8,0.1); border-color: rgba(234,179,8,0.25); color: #facc15; }
+    .kuro-badge-amber { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+    .kuro-badge-cyan { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.25); color: #38bdf8; }
+    .kuro-badge-emerald { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.25); color: #22c55e; }
+    .kuro-badge-red { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.25); color: #f87171; }
+    .kuro-badge-purple { background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.25); color: #a855f7; }
+    .kuro-badge-violet { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.25); color: #8b5cf6; }
 
     /* MED-6: Compact button variants for inline actions */
     .kuro-btn-sm {

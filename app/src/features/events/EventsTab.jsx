@@ -151,17 +151,17 @@ function EventsTab({
                 </div>
               </div>
               <div className="flex gap-2">
-                <div className="flex-1 text-center py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <div className="kuro-stat kuro-stat-emerald flex-1 p-2">
                   <div className="text-emerald-400 text-sm font-bold kuro-number">{progressStats.doneCount}</div>
-                  <div className="text-gray-500 text-[10px]">Completed</div>
+                  <div className="text-gray-500 kuro-micro-label">Completed</div>
                 </div>
-                <div className="flex-1 text-center py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <div className="kuro-stat kuro-stat-gold flex-1 p-2">
                   <div className="text-yellow-400 text-sm font-bold kuro-number">{progressStats.pendingCount}</div>
-                  <div className="text-gray-500 text-[10px]">Pending</div>
+                  <div className="text-gray-500 kuro-micro-label">Pending</div>
                 </div>
-                <div className="flex-1 text-center py-1.5 rounded-lg bg-gray-500/10 border border-gray-500/20">
+                <div className="kuro-stat kuro-stat-gray flex-1 p-2">
                   <div className="text-gray-400 text-sm font-bold kuro-number">{progressStats.skippedCount}</div>
-                  <div className="text-gray-500 text-[10px]">Skipped</div>
+                  <div className="text-gray-500 kuro-micro-label">Skipped</div>
                 </div>
               </div>
         </CardBody>

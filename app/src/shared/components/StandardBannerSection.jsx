@@ -147,7 +147,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-[10px] px-2 py-0.5 rounded text-cyan-400 border border-cyan-500/40" style={{ backgroundColor: 'rgba(0,200,255,0.1)' }}>{subtitle}</span>
+            <span className="kuro-badge kuro-badge-cyan" style={{ backgroundColor: 'rgba(0,200,255,0.1)' }}>{subtitle}</span>
           </div>
           <h4 className="font-bold text-base text-white leading-tight">{title}</h4>
         </div>

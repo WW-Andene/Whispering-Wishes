@@ -173,7 +173,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             {item.isNew && <span className="text-[10px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
-            <span className={`text-[10px] px-2 py-0.5 rounded ${style.text} border`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>{isChar ? item.element : item.type}</span>
+            <span className={`kuro-badge ${style.text}`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>{isChar ? item.element : item.type}</span>
           </div>
           <h4 className="font-bold text-base text-white leading-tight">{item.name}</h4>
           {item.title && <p className="text-gray-200 text-[10px] mt-0.5 line-clamp-1">{item.title}</p>}

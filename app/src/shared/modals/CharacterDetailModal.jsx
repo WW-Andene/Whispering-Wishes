@@ -86,9 +86,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
+              <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
+              <span className="kuro-badge bg-white/10 text-gray-300 border-[var(--border-medium)]">{data.weapon}</span>
+              <span className="kuro-badge bg-white/10 text-gray-300 border-[var(--border-medium)]">{data.role}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -143,9 +143,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
             <div className="text-[10px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
-              <span className={`text-[10px] px-2 py-0.5 rounded font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
+              <span className={`kuro-badge font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
+              <span className="kuro-badge bg-white/5 text-gray-300 border-[var(--border-medium)]">{data.weapon}</span>
+              <span className="kuro-badge bg-white/5 text-gray-300 border-[var(--border-medium)]">{data.role}</span>
             </div>
             {data.buffs?.length > 0 && (
               <div>

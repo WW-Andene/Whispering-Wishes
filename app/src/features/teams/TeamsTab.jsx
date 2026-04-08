@@ -399,7 +399,7 @@ function TeamsTab({
                           {teamSlots.filter(s => s).map((name, i) => {
                             const d = CHARACTER_DATA[name];
                             return d ? (
-                              <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium"
+                              <div key={i} className="kuro-badge font-medium"
                                 style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
                                 {d.element}
                               </div>
@@ -525,7 +525,7 @@ function TeamsTab({
                                 </div>
                               </div>
                               {s.allOwned ? (
-                                <span className="text-[8px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1 py-0.5 rounded flex-shrink-0">All owned</span>
+                                <span className="kuro-badge kuro-badge-emerald flex-shrink-0">All owned</span>
                               ) : (
                                 <span className="text-[8px] text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}

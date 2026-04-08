@@ -873,8 +873,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <span className={`text-[10px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                        <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{m.d.role}</span>
+                        <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element}
                         </span>
@@ -940,10 +940,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div>
                     <div className="kuro-label">Base Stats (Lv.90)</div>
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">ATK {m.charAtk}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
+                      <span className="kuro-badge bg-white/5 border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge bg-white/5 border-[var(--border-medium)] text-gray-300">ATK {m.charAtk}</span>
+                      <span className="kuro-badge bg-white/5 border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge kuro-badge-amber">+Weapon {m.weapAtk}</span>
                     </div>
                   </div>
 
@@ -1158,15 +1158,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div className="min-w-0">
                       <div className="kuro-label">Damage Focus</div>
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                        <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element} DMG
                         </span>
                         {(m.d.dmgFocus || []).map((df, di) => (
-                          <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                          <span key={di} className="kuro-badge kuro-badge-amber">{df}</span>
                         ))}
                         {m.d.statScaling && (
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{m.d.statScaling} Scaling</span>
+                          <span className="kuro-badge kuro-badge-violet">{m.d.statScaling} Scaling</span>
                         )}
                       </div>
                     </div>
@@ -1176,7 +1176,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <div className="kuro-label">Buffs</div>
                         <div className="flex flex-wrap gap-1">
                           {m.d.buffs.map((b, bi) => (
-                            <span key={bi} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                            <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>
                           ))}
                         </div>
                       </div>
@@ -1187,7 +1187,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <div className="kuro-label">Debuffs</div>
                         <div className="flex flex-wrap gap-1">
                           {m.d.debuffs.map((db, di) => (
-                            <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                            <span key={di} className="kuro-badge kuro-badge-red">{db}</span>
                           ))}
                         </div>
                       </div>
@@ -1199,19 +1199,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div>
                       <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString('en-US')}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                        <span className="kuro-badge kuro-badge-yellow">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString('en-US')}</span>
+                        <span className="kuro-badge kuro-badge-cyan">CR {cr.toFixed(1)}%</span>
+                        <span className="kuro-badge kuro-badge-cyan">CD {cd.toFixed(1)}%</span>
+                        <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element} +{elemDmg.toFixed(0)}%
                         </span>
-                        {skillDmg > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
-                        {atkPct > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
-                        {deepen > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
-                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {Math.round(defShred)}%</span>}
-                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {Math.round(resShred)}%</span>}
-                        {defIgnore > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
+                        {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">Skill +{skillDmg.toFixed(0)}%</span>}
+                        {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">ATK% +{atkPct.toFixed(0)}%</span>}
+                        {deepen > 0 && <span className="kuro-badge kuro-badge-purple">Deepen +{deepen.toFixed(0)}%</span>}
+                        {defShred > 0 && <span className="kuro-badge kuro-badge-red">DEF Shred {Math.round(defShred)}%</span>}
+                        {resShred > 0 && <span className="kuro-badge kuro-badge-red">RES Shred {Math.round(resShred)}%</span>}
+                        {defIgnore > 0 && <span className="kuro-badge kuro-badge-red">DEF Ignore {defIgnore}%</span>}
                       </div>
                     </div>
                   )}
@@ -1227,7 +1227,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="kuro-label">Team Buffs</div>
                 <div className="flex flex-wrap gap-1">
                   {allBuffs.map((b, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                    <span key={i} className="kuro-badge kuro-badge-emerald">
                       {b.buff} <span className="text-gray-500">({b.source})</span>
                     </span>
                   ))}
@@ -1239,7 +1239,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="kuro-label">Enemy Debuffs</div>
                 <div className="flex flex-wrap gap-1">
                   {allDebuffs.map((b, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                    <span key={i} className="kuro-badge kuro-badge-red">
                       {b.debuff} <span className="text-gray-500">({b.source})</span>
                     </span>
                   ))}
@@ -1293,7 +1293,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {warnings.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {warnings.map((w, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
+                  <span key={i} className="kuro-badge kuro-badge-amber flex items-center gap-1">
                     <AlertTriangle size={12} /> {w}
                   </span>
                 ))}

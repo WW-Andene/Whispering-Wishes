@@ -48,7 +48,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
+              <span className={`kuro-badge ${colors.bg} ${colors.text} ${colors.border}`}>{data.type}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">

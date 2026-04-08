@@ -290,7 +290,7 @@ export default function EchoSelector({
                       <div className="flex flex-wrap gap-1">
                         {echoData.sets.map(s => {
                           const isRec = charRecSets.has(s);
-                          return <span key={s} className={`text-[10px] px-2 py-0.5 rounded border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
+                          return <span key={s} className={`kuro-badge border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
                         })}
                       </div>
                       {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
@@ -331,11 +331,11 @@ export default function EchoSelector({
                       <div className="kuro-detail-box kuro-detail-box--danger">
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(echoData.enemyRes).map(([el, val]) => (
-                            <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                            <span key={el} className="kuro-badge kuro-badge-red">
                               {el.charAt(0).toUpperCase() + el.slice(1)} RES: {val}%
                             </span>
                           ))}
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">
+                          <span className="kuro-badge bg-gray-500/10 border-gray-500/25 text-gray-400">
                             Other: 10%
                           </span>
                         </div>

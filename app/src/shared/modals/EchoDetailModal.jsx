@@ -78,7 +78,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              <span className={`kuro-badge ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
               {/* Element badges from echo skill element(s) */}
               {(() => {
                 const elements = [];
@@ -95,13 +95,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                 return elements.map(el => {
                   const ec = ELEMENT_COLORS[el];
                   return ec ? (
-                    <span key={el} className="text-[10px] px-2 py-0.5 rounded font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
+                    <span key={el} className="kuro-badge font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
                   ) : null;
                 });
               })()}
               {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
                 const bc = ECHO_BUFF_COLORS[b] || buffColors;
-                return <span key={b} className={`text-[10px] px-2 py-0.5 rounded ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
+                return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
               })}
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
@@ -135,11 +135,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
               <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.enemyRes).map(([el, val]) => (
-                  <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
+                  <span key={el} className="kuro-badge kuro-badge-red font-medium">
                     {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
                   </span>
                 ))}
-                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
+                <span className="kuro-badge bg-gray-500/10 border-gray-500/25 text-gray-400">Others: 10%</span>
               </div>
             </div>
           )}
@@ -221,13 +221,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
             <div className="flex flex-wrap gap-1">
               {cost === 4 && ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-yellow">{s}</span>
               ))}
               {cost === 3 && ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-purple">{s}</span>
               ))}
               {cost === 1 && ['ATK%', 'HP%', 'DEF%'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-cyan">{s}</span>
               ))}
             </div>
             <div className="text-[10px] text-gray-500 mt-1">
@@ -240,7 +240,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
             <div className="flex flex-wrap gap-1">
               {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-[var(--border-medium)]">{s}</span>
+                <span key={s} className="kuro-badge bg-white/5 text-gray-400 border-[var(--border-medium)]">{s}</span>
               ))}
             </div>
           </div>
