@@ -115,7 +115,7 @@ const PWAProvider = ({ children }) => {
     // Blob URLs bypass CSP, are invisible to security scanners, and prevent proper SW update lifecycle.
     // The static /sw.js file works in all browsers (Firefox, Safari, Chrome).
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then((registration) => {
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
