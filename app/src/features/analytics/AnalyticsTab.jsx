@@ -374,8 +374,8 @@ function AnalyticsTab({
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': '12s'}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
-                            <div className="text-[15px] font-bold tracking-[0.2em] uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-accent)'}}>{luckRating.tier}</div>
-                            <div className="text-[26px] font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-accent)', letterSpacing: '0.05em'}}>{luckRating.rating}</div>
+                            <div className="text-[20px] font-bold tracking-[0.2em] uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-accent)'}}>{luckRating.tier}</div>
+                            <div className="text-[15px] font-medium" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-accent)', letterSpacing: '0.08em'}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 min-w-0 space-y-2">

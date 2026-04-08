@@ -1165,7 +1165,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               const isMain = m.name === mainDps.name;
               return (
                 <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2 team-member-card"
-                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
+                  style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10`, '--element-glow': `${getElementColor(m.d.element)}30` }}>
 
                   {/* ── Section 1: Character Header ── */}
                   <div className="flex items-center gap-2.5">
