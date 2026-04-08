@@ -18,31 +18,84 @@ const STAT_LABELS = {
 export default function RotationTimeline({ rotationTimeline }) {
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 
+  const totalTime = rotationTimeline.totalTime;
+  // Build a color map from character name → element color
+  const charColors = {};
+  rotationTimeline.segments.forEach(seg => {
+    charColors[seg.name] = ELEMENT_COLORS[seg.element] || '#6b7280';
+  });
+
+  // Generate tick marks every 5s (or every 1s if total < 10s)
+  const tickInterval = totalTime <= 10 ? 1 : 5;
+  const ticks = [];
+  for (let t = 0; t <= totalTime; t += tickInterval) ticks.push(t);
+
   return (
     <div className="mt-3 kuro-detail-box">
       <div className="kuro-section-label mb-2">
-        Rotation Timeline ({rotationTimeline.totalTime}s)
+        Rotation Timeline ({totalTime}s)
       </div>
 
-      {/* Segments bar */}
-      <div className="flex rounded-lg overflow-hidden h-6 mb-2">
-        {rotationTimeline.segments.map((seg, i) => {
-          const pct = (seg.duration / rotationTimeline.totalTime) * 100;
-          const color = ELEMENT_COLORS[seg.element] || '#6b7280';
-          return (
-            <div key={i} className="flex items-center justify-center relative"
-              style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
-              title={`${seg.name}: ${seg.duration}s on-field`}>
-              <span className="text-[8px] font-bold truncate px-0.5" style={{ color }}>{seg.name}</span>
-            </div>
-          );
-        })}
+      {/* Time scale */}
+      <div className="relative h-3 mb-0.5">
+        {ticks.map(t => (
+          <span key={t} className="absolute text-[8px] text-gray-600 -translate-x-1/2" style={{ left: `${(t / totalTime) * 100}%` }}>{t}s</span>
+        ))}
+      </div>
+
+      {/* Tick grid lines — shared across segments + buffs */}
+      <div className="relative">
+        {/* Grid lines */}
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+          {ticks.map(t => (
+            <div key={t} className="absolute top-0 bottom-0 border-l border-white/5" style={{ left: `${(t / totalTime) * 100}%` }} />
+          ))}
+        </div>
+
+        {/* Segments bar */}
+        <div className="flex rounded-lg overflow-hidden h-7 mb-1 relative" style={{ zIndex: 2 }}>
+          {rotationTimeline.segments.map((seg, i) => {
+            const pct = (seg.duration / totalTime) * 100;
+            const color = charColors[seg.name];
+            return (
+              <div key={i} className="flex items-center justify-center relative"
+                style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
+                title={`${seg.name}: ${seg.duration}s on-field`}>
+                <span className="text-[9px] font-bold truncate px-1" style={{ color }}>{seg.name}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Buff windows */}
+        {rotationTimeline.buffs.length > 0 && (
+          <div className="space-y-1 mt-1 relative" style={{ zIndex: 2 }}>
+            {rotationTimeline.buffs.slice(0, 6).map((buff, i) => {
+              const startPct = Math.min((buff.start / totalTime) * 100, 100);
+              const durPct = Math.min((buff.duration / totalTime) * 100, 100 - startPct);
+              const color = charColors[buff.source] || '#10b981';
+              return (
+                <div key={i} className="flex items-center gap-1.5">
+                  <span className="text-[9px] text-gray-500 w-16 truncate text-right flex-shrink-0" title={buff.source}>{buff.source}</span>
+                  <div className="flex-1 h-5 rounded bg-white/5 relative overflow-hidden">
+                    <div className="absolute h-full rounded flex items-center justify-center" style={{ left: `${startPct}%`, width: `${durPct}%`, background: `${color}30`, border: `1px solid ${color}50` }}>
+                      <span className="text-[8px] font-medium truncate px-1" style={{ color }}>{STAT_LABELS[buff.stat] || buff.stat} +{buff.value}%</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {rotationTimeline.buffs.length > 6 && (
+              <div className="text-[8px] text-gray-500 text-center mt-0.5">+{rotationTimeline.buffs.length - 6} more</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
         {rotationTimeline.segments.map((seg, i) => {
-          const color = ELEMENT_COLORS[seg.element] || '#6b7280';
+          const color = charColors[seg.name];
           return (
             <div key={i} className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full" style={{ background: color }} />
@@ -51,30 +104,6 @@ export default function RotationTimeline({ rotationTimeline }) {
           );
         })}
       </div>
-
-      {/* Buff windows */}
-      {rotationTimeline.buffs.length > 0 && (
-        <div className="mt-2 pt-2 border-t border-[var(--border-medium)]/30 space-y-1">
-          <div className="text-[10px] text-gray-500 mb-1">Buff Windows</div>
-          {rotationTimeline.buffs.slice(0, 6).map((buff, i) => {
-            const startPct = Math.min((buff.start / rotationTimeline.totalTime) * 100, 100);
-            const durPct = Math.min((buff.duration / rotationTimeline.totalTime) * 100, 100 - startPct);
-            return (
-              <div key={i} className="flex items-center gap-1.5">
-                <span className="text-[8px] text-gray-500 w-16 truncate text-right" title={buff.source}>{buff.source}</span>
-                <div className="flex-1 h-2.5 rounded-full bg-white/5 relative overflow-hidden">
-                  <div className="absolute h-full rounded-full bg-emerald-500/40 flex items-center justify-center" style={{ left: `${startPct}%`, width: `${durPct}%` }}>
-                    <span className="text-[7px] text-emerald-300 font-medium truncate px-0.5">{STAT_LABELS[buff.stat] || buff.stat} +{buff.value}%</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-          {rotationTimeline.buffs.length > 6 && (
-            <div className="text-[8px] text-gray-500 text-center mt-0.5">+{rotationTimeline.buffs.length - 6} more</div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
