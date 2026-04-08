@@ -135,6 +135,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     // Adaptive rotation time: sum of all members' onField, clamped to reasonable range
     const sumOnField = mems.reduce((s, m) => s + (m.d.onField || (m.name === mainDps.name ? 15 : 5)), 0);
     const rawRotTime = Math.max(15, Math.min(35, sumOnField + 2)); // +2s for swap animations
+    const rotTime = rawRotTime; // Shared rotation time for all tiers
     const rawMainOnField = Math.min(mainDps.d.onField || 15, rawRotTime * 0.8); // DPS gets at most 80% of rotation
     const rawOffFieldTime = Math.max(0, rawRotTime - rawMainOnField);
     // Proportional field time based on each sub-DPS's onField needs
@@ -562,8 +563,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
-    // Adaptive rotation time for FULL tier (same logic as RAW)
-    const rotTime = rawRotTime;
     const DOT_LEVEL_MULT = 3674;
     const DOT_BASE_FACTOR = 1.25078;
     let dotDmgPerRotation = 0;
