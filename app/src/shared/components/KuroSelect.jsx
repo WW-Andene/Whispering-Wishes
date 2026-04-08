@@ -123,7 +123,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
           role="listbox"
           aria-label={ariaLabel ? ariaLabel + ' options' : undefined}
           aria-activedescendant={focusIdx >= 0 && options[focusIdx] ? `kuroselect-opt-${options[focusIdx].value}` : undefined}
-          style={{ top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
+          style={{ top: pos.top, left: pos.left, width: pos.width, zIndex: 10001 }}
         >
           {options.map((opt, i) => {
             const active = opt.value === value;
