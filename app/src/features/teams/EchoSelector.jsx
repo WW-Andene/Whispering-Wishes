@@ -177,7 +177,7 @@ export default function EchoSelector({
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-white text-base font-semibold truncate">{name}</span>
-                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
+                                  {isRec && <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                   {buffs.map(b => <span key={b} className="text-sm text-gray-400">{b}</span>)}

@@ -205,7 +205,7 @@ export default function TeamSelector({
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                                   {/* Element dot */}
-                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center"
+                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[9px] font-bold text-white flex items-center justify-center"
                                     style={{ background: getElementColor(el) }}>
                                     {el?.[0]}
                                   </div>
@@ -222,18 +222,18 @@ export default function TeamSelector({
                                   {/* Recommended badge */}
                                   {isRecommended && (
                                     <div className="absolute top-0.5 right-0.5 z-10">
-                                      <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>
+                                      <span className="text-[9px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>
                                     </div>
                                   )}
                                   {/* Role tag */}
                                   {cd?.role && (
                                     <div className="absolute bottom-4 inset-x-0 flex justify-center">
-                                      <span className="text-[8px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span>
+                                      <span className="text-[9px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span>
                                     </div>
                                   )}
                                   {/* Name */}
                                   <div className="absolute bottom-0 inset-x-0 p-1 z-10">
-                                    <div className="text-white text-[8px] font-medium truncate text-center leading-tight">{name}</div>
+                                    <div className="text-white text-[9px] font-medium truncate text-center leading-tight">{name}</div>
                                   </div>
                                 </button>
                               );

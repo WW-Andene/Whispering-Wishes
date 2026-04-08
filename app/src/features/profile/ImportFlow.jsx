@@ -385,7 +385,7 @@ Example: {"pulls":[…]}'
                 </div>
                 <div className="grid grid-cols-4 gap-1">
                   {Object.entries(directProgress).map(([pool, info]) => (
-                    <div key={pool} className={`text-center p-1 rounded text-[8px] ${info.status === 'done' ? 'text-emerald-400 bg-emerald-500/10' : info.status === 'error' ? 'text-red-400 bg-red-500/10' : 'text-gray-400 bg-white/5'}`}>
+                    <div key={pool} className={`text-center p-1 rounded text-[9px] ${info.status === 'done' ? 'text-emerald-400 bg-emerald-500/10' : info.status === 'error' ? 'text-red-400 bg-red-500/10' : 'text-gray-400 bg-white/5'}`}>
                       {POOL_LABELS[pool]?.split(' ')[0] || pool}: {info.count || '...'}
                     </div>
                   ))}

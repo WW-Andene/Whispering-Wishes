@@ -25,7 +25,7 @@ export default function AdminTrophiesTab({
                 <span className="text-sm font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
                 <span className={`text-sm flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
-                <span className="text-[8px] text-gray-500 flex-shrink-0">{t.name.length}ch</span>
+                <span className="text-[9px] text-gray-500 flex-shrink-0">{t.name.length}ch</span>
               </div>
             ))}
             {(!trophies?.list || trophies.list.length === 0) && (

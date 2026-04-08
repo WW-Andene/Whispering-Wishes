@@ -385,7 +385,7 @@ function TeamsTab({
                                 <X size={12} />
                               </button>}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
-                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[9px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-sm truncate text-gray-200">{charName}</div>
                               </div>
                             </div>
@@ -520,14 +520,14 @@ function TeamsTab({
                                   {s.members.slice(0, 3).map((m, j) => {
                                     const role = CHARACTER_DATA[m]?.role;
                                     const rc = role === 'Main DPS' ? 'text-red-400' : role === 'Sub DPS' ? 'text-orange-400' : role === 'Healer' ? 'text-emerald-400' : 'text-blue-400';
-                                    return <span key={j} className={`text-[8px] ${rc}`}>{role || '?'}</span>;
+                                    return <span key={j} className={`text-[9px] ${rc}`}>{role || '?'}</span>;
                                   })}
                                 </div>
                               </div>
                               {s.allOwned ? (
                                 <span className="kuro-badge kuro-badge-emerald flex-shrink-0">All owned</span>
                               ) : (
-                                <span className="text-[8px] text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
+                                <span className="text-[9px] text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}
                             </button>
                           ));
