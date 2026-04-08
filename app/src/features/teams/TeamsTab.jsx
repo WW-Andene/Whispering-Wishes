@@ -462,14 +462,27 @@ function TeamsTab({
                               suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
                             }
                           }
-                          // ── Comprehensive scoring ──
+                          // ── Comprehensive scoring — team strength first, ownership as tiebreaker ──
                           const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
+                          const ownedWeaps = new Set([
+                            ...Object.keys(collectionData.weaps5Counts || {}),
+                            ...Object.keys(collectionData.weaps4Counts || {}),
+                          ]);
                           suggestions.forEach(s => {
-                            let score = s.ownedCount * 25;
-                            if (s.allOwned) score += 40;
+                            let score = 0;
                             const roles = s.members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
                             const tags = [];
-                            // Role balance
+
+                            // ─ Tier weighting (heaviest factor: determines team strength) ─
+                            let tierSum = 0;
+                            s.members.forEach(m => {
+                              const tier = CHARACTER_DATA[m]?.tier?.toa;
+                              if (tier) tierSum += (TIER_SCORES[tier] ?? 10);
+                            });
+                            score += tierSum * 2; // Double-weighted: tier is king
+                            if (tierSum >= 100) tags.push('Meta');
+
+                            // ─ Role balance ─
                             const hasMain = roles.includes('Main DPS');
                             const hasSub = roles.includes('Sub DPS');
                             const hasHeal = roles.includes('Healer');
@@ -478,26 +491,15 @@ function TeamsTab({
                             if (hasHeal || hasSupp) score += 10;
                             if (hasSub) score += 8;
                             if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
-                            // Tier weighting (ToA tier)
-                            let tierSum = 0;
-                            s.members.forEach(m => {
-                              const tier = CHARACTER_DATA[m]?.tier?.toa;
-                              if (tier) tierSum += (TIER_SCORES[tier] ?? 10);
-                            });
-                            score += tierSum;
-                            if (tierSum >= 100) tags.push('Meta');
-                            // DPS power
+
+                            // ─ DPS power ─
                             const mainDps = s.members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
                             if (mainDps) {
                               const mult = CHARACTER_DATA[mainDps]?.totalMult || 0;
                               score += Math.min(25, Math.round(mult / 120));
                             }
-                            // Element synergy
-                            const elements = s.members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
-                            const elSet = new Set(elements);
-                            if (elements.length > elSet.size) { score += 12; tags.push('Resonance'); }
-                            if (elSet.size === 1) { score += 8; tags.push('Mono'); }
-                            // Buff synergy: check if sub/support buffs match DPS focus
+
+                            // ─ Buff synergy ─
                             if (mainDps) {
                               const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
                               s.members.forEach(m => {
@@ -519,14 +521,33 @@ function TeamsTab({
                                 });
                               });
                             }
-                            // Dedupe tags
+
+                            // ─ Element synergy ─
+                            const elements = s.members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
+                            const elSet = new Set(elements);
+                            if (elements.length > elSet.size) { score += 12; tags.push('Resonance'); }
+                            if (elSet.size === 1) { score += 8; tags.push('Mono'); }
+
+                            // ─ Ownership bonus (tiebreaker, NOT dominant) ─
+                            score += s.ownedCount * 8;
+                            if (s.allOwned) score += 12;
+
+                            // ─ BiS weapon bonus: reward teams where DPS has signature weapon ─
+                            let hasBis = false;
+                            s.members.forEach(m => {
+                              const d = CHARACTER_DATA[m];
+                              if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) {
+                                score += d.role === 'Main DPS' ? 15 : 5;
+                                hasBis = true;
+                              }
+                            });
+                            if (hasBis) tags.push('BiS Weapon');
+
                             s.tags = [...new Set(tags)].slice(0, 3);
                             s.score = score;
                           });
-                          suggestions.sort((a, b) => {
-                            if (a.allOwned !== b.allOwned) return b.allOwned ? 1 : -1;
-                            return b.score - a.score;
-                          });
+                          // Sort purely by score — no more all-owned override
+                          suggestions.sort((a, b) => b.score - a.score);
                           if (suggestions.length === 0) {
                             return <p className="text-gray-500 text-sm text-center py-2">No team suggestions available</p>;
                           }
