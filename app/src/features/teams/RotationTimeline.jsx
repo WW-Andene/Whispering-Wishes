@@ -64,62 +64,62 @@ export default function RotationTimeline({ rotationTimeline }) {
   const ticks = [];
   for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
 
-  const barWidth = Math.max(400, totalTime * 20);
+  const barWidth = Math.max(500, totalTime * 22);
 
   return (
     <div>
       <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
 
-      {/* Two-column layout: sticky labels | scrollable bars */}
-      <div className="flex">
-        {/* Labels column */}
-        <div className="flex-shrink-0 w-16">
-          <div className="h-4" /> {/* spacer for time axis */}
-          {ordered.map((row, i) => (
-            <div key={i} className="h-5 flex items-center justify-end pr-1.5 mb-0.5">
-              <span className={`text-[9px] truncate ${row.type === 'field' ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
-                {row.type === 'field' ? row.label : '↳'}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Scrollable bars column */}
-        <div className="flex-1 overflow-x-auto scrollbar-hide min-w-0">
-          <div style={{ width: barWidth }}>
-            {/* Time axis */}
-            <div className="relative h-4">
-              {ticks.map(tick => (
-                <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
-                  style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
-              ))}
-            </div>
-
-            {/* Bar rows */}
+      {/* Single scrollable container */}
+      <div className="overflow-x-auto scrollbar-hide">
+        <table style={{ width: barWidth + 64, borderCollapse: 'collapse' }}>
+          {/* Time axis row */}
+          <thead>
+            <tr>
+              <td style={{ width: 64 }} />
+              <td>
+                <div className="relative h-4">
+                  {ticks.map(tick => (
+                    <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
+                      style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
+                  ))}
+                </div>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
             {ordered.map((row, i) => {
               const leftPct = (row.start / totalTime) * 100;
               const widthPct = (row.duration / totalTime) * 100;
               const isField = row.type === 'field';
               return (
-                <div key={i} className="relative h-5 mb-0.5">
-                  {ticks.map(tick => (
-                    <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
-                      style={{ left: `${(tick / totalTime) * 100}%` }} />
-                  ))}
-                  <div className={`absolute h-full flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
-                    style={{
-                      left: `${leftPct}%`, width: `${widthPct}%`,
-                      background: `${row.color}${isField ? '30' : '18'}`,
-                      border: `1px solid ${row.color}${isField ? '60' : '35'}`,
-                    }}>
-                    <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
-                      style={{ color: row.color }}>{row.detail}</span>
-                  </div>
-                </div>
+                <tr key={i}>
+                  <td className="align-middle pr-1.5 text-right" style={{ width: 64 }}>
+                    <span className={`text-[9px] ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
+                      {isField ? row.label : '↳'}
+                    </span>
+                  </td>
+                  <td className="relative" style={{ height: 22 }}>
+                    {ticks.map(tick => (
+                      <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
+                        style={{ left: `${(tick / totalTime) * 100}%` }} />
+                    ))}
+                    <div className={`absolute flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
+                      style={{
+                        left: `${leftPct}%`, width: `${widthPct}%`,
+                        top: 1, bottom: 1,
+                        background: `${row.color}${isField ? '30' : '18'}`,
+                        border: `1px solid ${row.color}${isField ? '60' : '35'}`,
+                      }}>
+                      <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
+                        style={{ color: row.color }}>{row.detail}</span>
+                    </div>
+                  </td>
+                </tr>
               );
             })}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );
