@@ -1095,7 +1095,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <details className="group" open>
                           <summary className="kuro-label cursor-pointer hover:text-gray-200 transition-colors select-none !flex !flex-row items-center gap-1 list-none [&::-webkit-details-marker]:hidden" style={{ display: 'flex', flexDirection: 'row', marginBottom: 0 }}>
                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
-                            <span>Sequence · Refinement · Sonata</span>
+                            <span>Sequence · Refinement</span>
                           </summary>
                         <div className="kuro-detail-box mt-1 space-y-2">
                           <div className="flex" role="group" aria-label={`${m.name} sequence and refinement`} style={{ gap: 'var(--card-padding)' }}>
@@ -1145,27 +1145,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 })}
                               </div>
                             </div>
-                          </div>
-                          <div>
-                            <div className="kuro-micro-label">Sonata Set</div>
-                            <KuroSelect
-                              value={eq.echoSet || ''}
-                              onChange={v => {
-                                setTeamEquipment(prev => {
-                                  const n = { ...prev };
-                                  n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
-                                  return n;
-                                });
-                                haptic.light();
-                              }}
-                              options={[
-                                { value: '', label: 'Auto (from recommended)' },
-                                ...Object.keys(ECHO_SETS).map(setName => ({ value: setName, label: setName })),
-                              ]}
-                              className="w-full"
-                              ariaLabel={`${m.name} sonata echo set`}
-                              small
-                            />
                           </div>
                         </div>
                         </details>
