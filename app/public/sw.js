@@ -5,7 +5,7 @@
 // proper SW update lifecycle. A static file fixes all three issues.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-let APP_VERSION = '3.2.3'; // Fallback — can be overridden by app via message
+let APP_VERSION = '3.5.0'; // Fallback — can be overridden by app via message
 let APP_CACHE = `ww-app-v${APP_VERSION}`;
 let IMG_CACHE = `ww-images-v${APP_VERSION}`;
 let CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
