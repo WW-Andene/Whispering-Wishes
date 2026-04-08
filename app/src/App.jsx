@@ -950,7 +950,7 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
-                <div className="absolute inset-0 rounded-xl blur-sm opacity-30 group-hover:opacity-50 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
+                <div className="absolute inset-0 rounded-full blur-sm opacity-30 group-hover:opacity-50 transition-opacity" style={{ background: activeTheme ? `radial-gradient(circle, ${themeAccent}, ${themeAccent}80)` : 'radial-gradient(circle, #facc15, #f97316)' }} aria-hidden="true" />
                 <div className="relative w-14 h-14 group-hover:scale-[1.02] transition-transform flex items-center justify-center">
                   <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-contain" />
                 </div>
