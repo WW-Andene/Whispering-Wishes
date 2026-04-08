@@ -115,10 +115,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </div>
             )}
             {data.region && (
-              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{data.region}</span>
+              <span className="kuro-badge bg-white/5 text-gray-400 border-[var(--border-medium)]">{data.region}</span>
             )}
             {data.birthday && (
-              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{(() => {
+              <span className="kuro-badge bg-white/5 text-gray-400 border-[var(--border-medium)]">{(() => {
                 const [m, d] = data.birthday.split('-');
                 const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 return `${months[parseInt(m)]} ${parseInt(d)}`;
@@ -404,7 +404,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             ) : (
               <div className="flex flex-wrap gap-1">
                 {(data.skills || []).map((skill, i) => (
-                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
+                  <span key={i} className="kuro-badge bg-white/5 text-gray-300 border-[var(--border-medium)]">{skill}</span>
                 ))}
               </div>
             )}

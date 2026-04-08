@@ -120,7 +120,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
             )}
             {(data.sets || []).map(setName => {
               const sc = getSetElementColor(setName);
-              return <span key={setName} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
+              return <span key={setName} className="kuro-badge font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
             })}
           </div>
 

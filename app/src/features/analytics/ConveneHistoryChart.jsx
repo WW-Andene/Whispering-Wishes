@@ -88,7 +88,7 @@ function ConveneHistoryChart({ statsTabData }) {
             <button
               key={val}
               onClick={() => { setChartBanner(val); setChartOffset(9999); }}
-              className={`px-2 py-1 text-[10px] rounded transition-all ${chartBanner === val ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+              className={`kuro-chip ${chartBanner === val ? 'active-gold' : ''}`}
             >
               {label}
             </button>
@@ -99,7 +99,7 @@ function ConveneHistoryChart({ statsTabData }) {
             <button
               key={r}
               onClick={() => { setChartRange(r); setChartOffset(9999); }}
-              className={`px-2 py-1 text-[10px] rounded transition-all ${chartRange === r ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+              className={`kuro-chip ${chartRange === r ? 'active-gold' : ''}`}
             >
               {r.charAt(0).toUpperCase() + r.slice(1)}
             </button>

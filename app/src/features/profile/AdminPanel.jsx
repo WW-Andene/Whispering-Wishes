@@ -117,7 +117,7 @@ function EchoBgRemover({ toast, adminHash }) {
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
             {results.map(r => (
-              <div key={r.name} className={`flex items-center gap-2 text-[10px] px-2 py-1 rounded ${r.ok ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+              <div key={r.name} className={`kuro-badge ${r.ok ? 'kuro-badge-emerald' : 'kuro-badge-red'}`}>
                 <span>{r.ok ? '✓' : '✗'}</span>
                 <span className="flex-1 truncate">{r.name}</span>
                 {r.ok && r.resultUrl && (<a href={r.resultUrl} download={`${r.name}-nobg.png`} className="text-cyan-400 underline">Save</a>)}
