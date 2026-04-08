@@ -787,8 +787,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     const rotationTimeline = (() => {
       const buffs = [];
-      // Use team slot order — the user's intended rotation
-      const ordered = [...mems];
+      // Auto-order rotation: Main DPS last (receives buffs), supports before
+      // The character with the strongest outro→next buffs goes immediately before the DPS
+      const dps = mems.filter(m => m.name === mainDps.name);
+      const others = mems.filter(m => m.name !== mainDps.name);
+      // Sort others: the one with more outro→next buff value goes last (right before DPS)
+      others.sort((a, b) => {
+        const aOut = (CHAR_BUFF_TABLE[a.name]?.outroBuffs || []).filter(b => b.target === 'next').reduce((s, b) => s + b.value, 0);
+        const bOut = (CHAR_BUFF_TABLE[b.name]?.outroBuffs || []).filter(b => b.target === 'next').reduce((s, b) => s + b.value, 0);
+        return aOut - bOut;
+      });
+      const ordered = [...others, ...dps];
       // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
       const raw = ordered.map(m => ({
         m, onField: m.d.onField ?? (m.name === mainDps.name ? 15 : 5),
