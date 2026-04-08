@@ -30,7 +30,6 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 const EVENT_COLORS = {
   weeklyBoss:           '#60a5fa',  // marine (rarity-3star blue)
   endstateMatrix:       '#ec4899',  // fuchsia (featured weapon pink)
-  doubledPawnsMatrix:   '#f472b6',  // pink-400 (predecessor to endstateMatrix)
   towerOfAdversity:     '#ef4444',  // red-500 (better contrast at small sizes)
   whimperingWastes:     '#06b6d4',  // cyan
   tacticalHologram:     '#a3e635',  // lime
@@ -38,6 +37,15 @@ const EVENT_COLORS = {
   illusiveRealm:        '#c4b5fd',  // lavender
 };
 const BANNER_COLOR = '#edaf18';  // gold
+const GAME_LAUNCH = new Date('2024-05-23'); // Wuthering Waves global launch date
+GAME_LAUNCH.setHours(0, 0, 0, 0);
+
+// Legend labels — maps legendGroup keys to display names
+const LEGEND_LABELS = {
+  banner: 'Banner', weeklyBoss: 'Weekly Boss', illusiveRealm: 'Illusive Realm',
+  towerOfAdversity: 'Tower of Adversity', whimperingWastes: 'Whimpering Wastes',
+  matrix: 'Matrix', tacticalHologram: 'Tactical Hologram', pioneerPodcast: 'Pioneer Podcast',
+};
 
 // Get the earliest date an event type existed (from introducedVersion)
 const getIntroducedDate = (ev) => {
@@ -62,6 +70,7 @@ const get28DayCycle = (ev, date) => {
 };
 
 const getActiveEvents = (date) => {
+  if (date < GAME_LAUNCH) return []; // No events before game launch
   const result = [];
   // Weekly events — only show after their introduction version
   for (const [key, ev] of Object.entries(EVENTS)) {
@@ -199,9 +208,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [sel]);
 
   // ── Chronology bars ──────────────────────────────────────────────────────
+  const [selectedBar, setSelectedBar] = useState(null);
   const chronoBars = useMemo(() => {
     const monthStart = new Date(cal.year, cal.month, 1);
     const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
+    // No events before game launch
+    if (monthEnd < GAME_LAUNCH) return [];
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const bars = [];
 
@@ -216,7 +228,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
         const endLabel = bannerEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const startLabel = bannerStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel });
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel, legendGroup: 'banner', description: `Current banner phase — ${activeBanners?.version || '?'} Phase ${activeBanners?.phase || '?'}` });
       }
     }
 
@@ -226,7 +238,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       if (pastBannerCount >= 3) break;
       const bhStart = new Date(bh.startDate);
       const bhEnd = new Date(bh.endDate);
-      if (bhEnd < monthStart || bhStart > monthEnd) continue;
+      if (bhEnd < monthStart || bhStart > monthEnd || bhStart < GAME_LAUNCH) continue;
       if (activeBanners && bh.version === activeBanners.version && bh.phase === activeBanners.phase) continue;
       const pStart = Math.max(0, Math.floor((bhStart - monthStart) / 86400000));
       const pEnd = Math.min(cal.daysInMonth - 1, Math.floor((bhEnd - monthStart) / 86400000));
@@ -235,20 +247,21 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const label = `v${bh.version} P${bh.phase}`;
         const endLabel = bhEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const charNames = bh.characters?.slice(0, 2).join(', ') || '';
-        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true });
+        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true, legendGroup: 'banner', description: `v${bh.version} Phase ${bh.phase}: ${bh.characters?.join(', ') || 'N/A'}` });
         pastBannerCount++;
       }
     }
 
     // Helper: add a bar if it overlaps this month
     const addBar = (key, label, color, cStart, cEnd, astrite, extra = {}) => {
-      if (cEnd < monthStart || cStart > monthEnd) return;
+      if (cEnd < monthStart || cStart > monthEnd || cEnd < GAME_LAUNCH) return;
+      const clampedStart = cStart < GAME_LAUNCH ? GAME_LAUNCH : cStart;
       const ended = cEnd < today;
-      const eStart = Math.max(0, Math.floor((cStart - monthStart) / 86400000));
+      const eStart = Math.max(0, Math.floor((clampedStart - monthStart) / 86400000));
       const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((cEnd - monthStart) / 86400000));
       if (eEnd >= eStart) {
         const endLabel = cEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const startLabel = cStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const startLabel = clampedStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
         bars.push({ key, label, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft, ...extra });
       }
@@ -262,6 +275,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       if (!color) continue;
       const introduced = getIntroducedDate(ev);
       if (introduced && monthEnd < introduced) continue;
+      if (monthEnd < GAME_LAUNCH) continue;
       const astrite = parseInt(ev.rewards, 10) || 0;
       const mondays = [];
       for (let d = 1; d <= cal.daysInMonth; d++) {
@@ -279,7 +293,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         segments.push({ start: segStart, end: segEnd, isCurrent: todayIdx >= segStart && todayIdx <= segEnd });
       }
       if (mondays.length === 0) segments.push({ start: 0, end: cal.daysInMonth - 1 });
-      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
+      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments, legendGroup: key, description: `${ev.name} — ${ev.description || ev.subtitle}. Rewards: ${ev.rewards}` });
     }
 
     // 28-day cycling events (ToA, Whimpering Wastes) — compute all cycles
@@ -295,7 +309,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const cEnd = new Date(baseEnd.getTime() + c * cycleMs);
         const cStart = new Date(cEnd.getTime() - cycleMs);
         if (introduced && cStart < introduced) continue;
-        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite);
+        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite, { legendGroup: key, description: `${ev.name} — ${ev.description}. ${ev.resetType} cycle. Rewards: ${ev.rewards}` });
       }
     }
 
@@ -306,28 +320,26 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const color = EVENT_COLORS[key];
       if (!color) continue;
       const astrite = parseInt(ev.rewards, 10) || 0;
-      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite);
+      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite, { legendGroup: 'matrix', description: `${ev.name} — ${ev.description}. Rewards: ${ev.rewards}` });
     }
 
     // Pioneer Podcast — full history, one bar per version
     for (const pp of PIONEER_PODCAST_HISTORY) {
       const color = EVENT_COLORS.pioneerPodcast;
       if (!color) continue;
-      addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards);
+      addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards, { legendGroup: 'pioneerPodcast', description: `Pioneer Podcast — version ${pp.version} limited-time event. Rewards: ${pp.rewards} Astrite` });
     }
 
-    // Doubled Pawns Matrix: Pilot — predecessor to Endstate Matrix (v3.0–v3.1)
+    // Doubled Pawns Matrix: Pilot — predecessor to Endstate Matrix (v3.0–v3.1), same color as Matrix
     for (const dp of DOUBLED_PAWNS_MATRIX_HISTORY) {
-      const color = EVENT_COLORS.doubledPawnsMatrix;
-      if (!color) continue;
-      addBar(`dpm-${dp.version}`, `Doubled Pawns Matrix v${dp.version}`, color, new Date(dp.startDate), new Date(dp.endDate), dp.rewards);
+      const color = EVENT_COLORS.endstateMatrix;
+      addBar(`dpm-${dp.version}`, `Doubled Pawns Matrix v${dp.version}`, color, new Date(dp.startDate), new Date(dp.endDate), dp.rewards, { legendGroup: 'matrix', description: `Doubled Pawns Matrix: Pilot — v${dp.version} recurring boss rush (replaced by Endstate Matrix in v3.2). Rewards: ${dp.rewards} Astrite` });
     }
 
     // Tactical Hologram — permanent challenges, show when new arenas were introduced
     for (const th of TACTICAL_HOLOGRAM_HISTORY) {
       const color = EVENT_COLORS.tacticalHologram;
-      if (!color) continue;
-      addBar(`th-${th.version}`, `Tactical Hologram: ${th.name}`, color, new Date(th.startDate), new Date(th.endDate), 0);
+      addBar(`th-${th.version}`, `Tactical Hologram: ${th.name}`, color, new Date(th.startDate), new Date(th.endDate), 0, { legendGroup: 'tacticalHologram', description: `Tactical Hologram: ${th.name} — permanent combat challenge introduced in v${th.version}` });
     }
 
     // Version-scoped events without explicit start (Pioneer Podcast already handled above)
@@ -340,7 +352,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const astrite = parseInt(ev.rewards, 10) || 0;
       // Show for current version only
       const versionStart = BANNER_HISTORY.length > 0 ? new Date(BANNER_HISTORY[0].startDate) : monthStart;
-      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite);
+      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite, { legendGroup: key, description: `${ev.name} — ${ev.description}. Rewards: ${ev.rewards}` });
     }
     return bars;
   }, [cal, bannerEndDate, activeBanners]);
@@ -506,11 +518,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             })()}
             {chronoBars.map((bar) => {
               const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.startLabel && bar.endLabel ? ` — ${bar.startLabel} → ${bar.endLabel}` : bar.endLabel ? ` — ends ${bar.endLabel}` : ''}${bar.daysLeft != null ? ` (${bar.daysLeft}d left)` : ''}${bar.weekly ? ' (resets weekly Mon)' : ''}${bar.ended ? ' (ended)' : ''}`;
+              const handleBarClick = () => setSelectedBar(prev => prev?.key === bar.key ? null : bar);
 
               // Weekly events: render segmented bars showing Mon-Sun reset boundaries
               if (bar.weekly && bar.segments) {
                 return (
-                  <div key={bar.key} title={tooltipText} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px' }}>
+                  <div key={bar.key} title={tooltipText} onClick={handleBarClick} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px', cursor: 'pointer' }}>
                     {bar.segments.map((seg, si) => {
                       const segLeft = (seg.start / cal.daysInMonth) * 100;
                       const segWidth = ((seg.end - seg.start + 1) / cal.daysInMonth) * 100;
@@ -538,7 +551,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               const leftPct = (bar.start / cal.daysInMonth) * 100;
               const widthPct = ((bar.end - bar.start + 1) / cal.daysInMonth) * 100;
               return (
-                <div key={bar.key} title={tooltipText} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px' }}>
+                <div key={bar.key} title={tooltipText} onClick={handleBarClick} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px', cursor: 'pointer' }}>
                   <div style={{
                     position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`,
                     height: '100%', borderRadius: 'var(--radius-sm)',
@@ -563,18 +576,39 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             )}
           </div>
 
-          {/* Chronology legend */}
+          {/* Bar detail popup */}
+          {selectedBar && (
+            <div onClick={() => setSelectedBar(null)} style={{ marginTop: '4px', padding: '8px 12px', borderRadius: 'var(--radius-md)', background: `${selectedBar.color}15`, border: `1px solid ${selectedBar.color}40`, cursor: 'pointer' }}>
+              <div style={{ fontSize: 'var(--font-base)', fontWeight: 600, color: selectedBar.color }}>{selectedBar.label}</div>
+              {selectedBar.description && <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{selectedBar.description}</div>}
+              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {selectedBar.startLabel && <span>{selectedBar.startLabel} → {selectedBar.endLabel}</span>}
+                {selectedBar.astrite > 0 && <span className="text-yellow-400">+{selectedBar.astrite} Astrite</span>}
+                {selectedBar.daysLeft != null && <span>{selectedBar.daysLeft} days left</span>}
+                {selectedBar.ended && <span>Ended</span>}
+                {selectedBar.weekly && <span>Resets weekly (Monday)</span>}
+              </div>
+            </div>
+          )}
+
+          {/* Chronology legend — adaptive: only shows event types present this month */}
           <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: 'var(--space-sm)' }}>
-            <span className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
-            {Object.entries(EVENT_COLORS).map(([key, color]) => (
-              <span key={key} className="flex items-center gap-1">
-                {EVENTS[key]?.weeklyReset
-                  ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
-                  : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
-                }
-                {EVENTS[key]?.name || { doubledPawnsMatrix: 'Doubled Pawns Matrix' }[key] || key}
-              </span>
-            ))}
+            {(() => {
+              const seen = new Map();
+              for (const bar of chronoBars) {
+                const group = bar.legendGroup || bar.key;
+                if (!seen.has(group)) seen.set(group, { color: bar.color, weekly: !!bar.weekly });
+              }
+              return [...seen.entries()].map(([group, { color, weekly }]) => (
+                <span key={group} className="flex items-center gap-1">
+                  {weekly
+                    ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
+                    : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
+                  }
+                  {LEGEND_LABELS[group] || group}
+                </span>
+              ));
+            })()}
           </div>
         </div>
 
