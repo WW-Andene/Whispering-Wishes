@@ -94,7 +94,7 @@ export default function EnemyEchoSelectorModal({
                       </div>
                       <div className="flex gap-1 mt-0.5 flex-wrap">
                         {resEntries.length > 0 ? resEntries.map(([el, val]) => (
-                          <span key={el} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                          <span key={el} className="kuro-badge kuro-badge-red">
                             {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
                           </span>
                         )) : (

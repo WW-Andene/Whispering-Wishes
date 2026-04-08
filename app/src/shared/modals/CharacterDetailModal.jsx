@@ -140,8 +140,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           })()}
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
-            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
+          <div className="kuro-detail-box space-y-2">
+            <div className="kuro-section-label">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
               <span className={`kuro-badge font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
               <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
@@ -151,7 +151,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Buffs</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.buffs.map((b, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>)}
+                  {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{b}</span>)}
                 </div>
               </div>
             )}
@@ -159,7 +159,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Debuffs</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.debuffs.map((db, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>)}
+                  {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{db}</span>)}
                 </div>
               </div>
             )}
@@ -167,7 +167,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Damage Focus</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.dmgFocus.map((df, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
+                  {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{df}</span>)}
                 </div>
               </div>
             )}
@@ -175,7 +175,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Stat Scaling</div>
                 <div className="flex flex-wrap gap-1">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{data.statScaling} Scaling</span>
+                  <span className="kuro-badge kuro-badge-violet">{data.statScaling} Scaling</span>
                 </div>
               </div>
             )}
@@ -190,8 +190,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Base Stats (Lv.90) */}
           {data.baseAtk && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-2">Base Stats (Lv.90)</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">HP</div>
@@ -215,8 +215,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Resonance Chain (S1-S6) */}
           {RESONANCE_CHAIN_DATA[name] && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-2">Resonance Chain</div>
               <div className="space-y-1.5">
                 {[1,2,3,4,5,6].map(s => {
                   const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
@@ -256,8 +256,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
           {CHAR_BUFF_TABLE[name]?.note && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-1">Buff/Debuff Details</div>
               <p className="text-[10px] text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
             </div>
           )}
@@ -275,7 +275,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           return (
           <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider">Recommended Weapon</div>
+              <div className="kuro-section-label">Recommended Weapon</div>
               {!hasWeapon && <span className="text-[9px] text-gray-600 uppercase tracking-wider">Not Owned</span>}
             </div>
             <div className="flex items-center gap-3">
@@ -300,8 +300,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Best Echoes - enhanced */}
           {data.bestEchoes?.length > 0 && (
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Recommended Echoes</div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
@@ -337,7 +337,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 const members = parseTeamMembers(team);
                 const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m] || (m.includes('Rover') && DEFAULT_COLLECTION_IMAGES['Rover']));
                 return (
-                  <div key={i} className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                  <div key={i} className="kuro-detail-box">
                     {hasImages ? (
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {

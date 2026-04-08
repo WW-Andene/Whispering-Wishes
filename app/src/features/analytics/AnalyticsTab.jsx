@@ -357,7 +357,7 @@ function AnalyticsTab({
 
             {!overallStats ? (
               <Card>
-                <CardBody className="text-center py-8">
+                <CardBody className="kuro-empty-state text-center py-8">
                   <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
                   <p className="text-gray-300 text-sm font-medium">Awaiting signal data</p>
                   <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.</p>
@@ -461,7 +461,7 @@ function AnalyticsTab({
                                 ))}
                               </div>
                             ) : leaderboardData.length === 0 ? (
-                              <div className="text-center py-8">
+                              <div className="kuro-empty-state text-center py-8">
                                 <div className="text-gray-400 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
                                 <div className="text-gray-500 text-[10px]">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
                               </div>
@@ -678,7 +678,7 @@ function AnalyticsTab({
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
+                      <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
                     </CardBody>
                   </Card>
                 )}

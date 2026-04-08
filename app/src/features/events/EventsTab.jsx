@@ -169,7 +169,7 @@ function EventsTab({
 
       <div className="space-y-3 event-grid">
         {EVENT_ENTRIES.length === 0 ? (
-          <div className="text-center py-8 text-gray-400 text-sm">
+          <div className="kuro-empty-state text-center py-8">
             <Calendar size={24} className="mx-auto mb-2 opacity-50" />
             No events currently tracked
           </div>

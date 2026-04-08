@@ -145,8 +145,8 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           )}
 
           {/* 4. Sonata Sets */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Sonata Set Bonuses</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Sonata Set Bonuses</div>
             <div className="space-y-2">
               {(data.sets || []).map(setName => {
                 const setData = ECHO_SETS[setName];
@@ -209,16 +209,16 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
               return result;
             };
             return (
-              <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+              <div className="kuro-detail-box">
+                <div className="kuro-section-label mb-1">Skill</div>
                 <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
               </div>
             );
           })()}
 
           {/* 6. Main Stats */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Possible Main Stats</div>
             <div className="flex flex-wrap gap-1">
               {cost === 4 && ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen'].map(s => (
                 <span key={s} className="kuro-badge kuro-badge-yellow">{s}</span>
@@ -236,8 +236,8 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           </div>
 
           {/* 7. Substats */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Possible Substats</div>
             <div className="flex flex-wrap gap-1">
               {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
                 <span key={s} className="kuro-badge kuro-badge-neutral">{s}</span>
@@ -248,7 +248,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           {/* 8. Recommended For */}
           {usedBy.length > 0 && (
             <div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Recommended For</div>
+              <div className="kuro-section-label mb-1.5">Recommended For</div>
               <div className="flex flex-wrap gap-2">
                 {usedBy.map(charName => {
                   const charImg = DEFAULT_COLLECTION_IMAGES[charName];

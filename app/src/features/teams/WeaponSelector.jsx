@@ -96,7 +96,7 @@ export default function WeaponSelector({
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-xs font-semibold truncate">{name}</span>
                                             <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                            {isBest && <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                            {isBest && <span className="kuro-badge kuro-badge-emerald">BiS</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
                                             <span className="text-[10px] text-gray-400">ATK {w.baseAtk}</span>

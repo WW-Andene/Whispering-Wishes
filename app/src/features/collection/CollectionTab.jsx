@@ -269,7 +269,7 @@ function CollectionTab({
 
       {!state.profile.importedAt ? (
         <Card>
-          <CardBody className="text-center py-8">
+          <CardBody className="kuro-empty-state text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />
             <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
             <p className="text-gray-400 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>

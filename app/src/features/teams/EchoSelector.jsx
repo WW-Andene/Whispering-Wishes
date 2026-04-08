@@ -312,7 +312,7 @@ export default function EchoSelector({
                             <span className="text-[10px] text-gray-400">Damage:</span>
                             <span className="text-xs font-bold text-yellow-400">{echoData.dmg}%</span>
                             {echoData.element && echoData.element !== 'Healing' && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{echoData.element}</span>
+                              <span className="kuro-badge kuro-badge-neutral">{echoData.element}</span>
                             )}
                           </div>
                         )}

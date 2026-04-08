@@ -19,7 +19,7 @@ export default function RotationTimeline({ rotationTimeline }) {
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 
   return (
-    <div className="mt-3 p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+    <div className="mt-3 kuro-detail-box">
       <div className="kuro-section-label mb-2">
         Rotation Timeline ({rotationTimeline.totalTime}s)
       </div>

@@ -86,7 +86,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
             const effect = dot > 0 ? rest.slice(dot + 2) : rest;
             return (
               <div className="text-sm space-y-1">
-                {sig && <div className="text-[10px] text-gray-500 uppercase tracking-wider">{sig[1]}</div>}
+                {sig && <div className="kuro-section-label">{sig[1]}</div>}
                 {lore && <p className="text-gray-400 italic">{lore}</p>}
                 <p className="text-gray-300">{effect}</p>
               </div>
@@ -95,14 +95,14 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
 
           {/* 3. Passive */}
           <div className={`p-3 rounded-xl border ${colors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
+            <div className="kuro-section-label mb-1">Passive</div>
             <div className={`text-xs font-medium ${colors.text}`}>{data.passive}</div>
           </div>
 
           {/* 4. Refinement Scaling */}
           {data.pv && Object.keys(data.pv).length > 0 && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Refinement Scaling</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-2">Refinement Scaling</div>
               <div className="grid grid-cols-5 gap-1">
                 {WEAPON_REFINE_SCALE.map((scale, i) => (
                   <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
