@@ -65,8 +65,24 @@ export default function RotationTimeline({ rotationTimeline }) {
     }
   });
 
-  // Sort by start time, then on-field before buffs
-  rows.sort((a, b) => a.start - b.start || (a.type === 'field' ? -1 : 1));
+  // Group: each on-field segment followed by its buffs sorted by start time
+  const ordered = [];
+  const usedBuffIdx = new Set();
+  // For each looped segment, attach its buffs right after
+  looped.forEach(seg => {
+    const fieldRow = rows.find(r => r.type === 'field' && r.start === seg.start && r.label === seg.name);
+    if (fieldRow) ordered.push(fieldRow);
+    // Find buffs from this character that fire during/after this segment
+    const segEnd = seg.start + seg.duration;
+    const myBuffs = rows
+      .map((r, idx) => ({ ...r, _idx: idx }))
+      .filter(r => r.type === 'buff' && r.label === seg.name && !usedBuffIdx.has(r._idx)
+        && (Math.abs(r.start - seg.start) < 0.5 || Math.abs(r.start - segEnd) < 0.5))
+      .sort((a, b) => a.start - b.start);
+    myBuffs.forEach(b => { usedBuffIdx.add(b._idx); ordered.push(b); });
+  });
+  // Append any remaining buffs not attached to a segment
+  rows.forEach((r, idx) => { if (r.type === 'buff' && !usedBuffIdx.has(idx)) ordered.push(r); });
 
   // Time axis ticks
   const tickInterval = totalTime <= 10 ? 1 : 5;
@@ -92,7 +108,7 @@ export default function RotationTimeline({ rotationTimeline }) {
 
       {/* Rows */}
       <div className="space-y-0.5">
-        {rows.map((row, i) => {
+        {ordered.map((row, i) => {
           const leftPct = (row.start / totalTime) * 100;
           const widthPct = (row.duration / totalTime) * 100;
           const isField = row.type === 'field';
