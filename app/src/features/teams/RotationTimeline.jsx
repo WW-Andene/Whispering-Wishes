@@ -40,9 +40,12 @@ export default function RotationTimeline({ rotationTimeline }) {
   });
   buffs.forEach(buff => {
     const color = ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
-    const clampedDur = Math.min(buff.duration, totalTime - buff.start);
-    if (clampedDur > 0) rows.push({ label: buff.source, start: buff.start, duration: clampedDur, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
+    if (buff.duration > 0 && buff.start < totalTime) rows.push({ label: buff.source, start: buff.start, duration: buff.duration, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
+
+  // Find the true end of all content (buffs can extend past totalTime)
+  const maxEnd = Math.max(totalTime, ...rows.map(r => r.start + r.duration));
+  const timeScale = maxEnd;
 
   // Group: each on-field segment followed by its buffs
   const ordered = [];
@@ -59,12 +62,13 @@ export default function RotationTimeline({ rotationTimeline }) {
   });
   rows.forEach((r, i) => { if (r.type === 'buff' && !usedBuffIdx.has(i)) ordered.push(r); });
 
-  // Ticks
-  const tickInterval = totalTime <= 10 ? 1 : 5;
+  // Ticks — cover full timeScale
+  const tickInterval = timeScale <= 10 ? 1 : 5;
   const ticks = [];
-  for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
+  for (let i = 0; i <= timeScale; i += tickInterval) ticks.push(i);
+  if (ticks[ticks.length - 1] < timeScale) ticks.push(Math.ceil(timeScale));
 
-  const tableWidth = Math.max(600, totalTime * 24 + 64);
+  const tableWidth = Math.max(600, timeScale * 24 + 64);
 
   return (
     <div className="kuro-card" style={{ overflow: 'visible' }}>
@@ -87,7 +91,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                 <div className="relative h-4">
                   {ticks.map(tick => (
                     <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
-                      style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
+                      style={{ left: `${(tick / timeScale) * 100}%` }}>{tick}s</span>
                   ))}
                 </div>
               </td>
@@ -95,8 +99,8 @@ export default function RotationTimeline({ rotationTimeline }) {
           </thead>
           <tbody>
             {ordered.map((row, i) => {
-              const leftPct = (row.start / totalTime) * 100;
-              const widthPct = (row.duration / totalTime) * 100;
+              const leftPct = (row.start / timeScale) * 100;
+              const widthPct = (row.duration / timeScale) * 100;
               const isField = row.type === 'field';
               return (
                 <tr key={i}>
@@ -108,7 +112,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                   <td className="relative" style={{ height: 22 }}>
                     {ticks.map(tick => (
                       <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
-                        style={{ left: `${(tick / totalTime) * 100}%` }} />
+                        style={{ left: `${(tick / timeScale) * 100}%` }} />
                     ))}
                     <div className={`absolute flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
                       style={{
