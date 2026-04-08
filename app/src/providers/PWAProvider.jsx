@@ -163,22 +163,6 @@ const PWAProvider = ({ children }) => {
   });
   const [iframeBannerDismissed, setIframeBannerDismissed] = useState(false);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
-  // Track whether native prompt ever fired — if not, show manual guide banner
-  const [nativePromptAvailable, setNativePromptAvailable] = useState(false);
-  const [manualBannerDismissed, setManualBannerDismissed] = useState(() => {
-    try { return sessionStorage.getItem('ww-install-dismissed') === '1'; } catch { return false; }
-  });
-
-  // When installPrompt is set, mark native as available
-  useEffect(() => { if (installPrompt) setNativePromptAvailable(true); }, [installPrompt]);
-
-  // Show manual banner = not installed, not iframe, no native prompt, not dismissed
-  const showManualBanner = !isInstalled && !isInIframe && !nativePromptAvailable && !manualBannerDismissed && !installPrompt;
-
-  const dismissManualBanner = useCallback(() => {
-    setManualBannerDismissed(true);
-    try { sessionStorage.setItem('ww-install-dismissed', '1'); } catch {}
-  }, []);
 
   const pwaValue = useMemo(() => ({
     canInstall: !!installPrompt && !isInstalled,
@@ -196,22 +180,13 @@ const PWAProvider = ({ children }) => {
           You are offline - some features may be limited
         </div>
       )}
-      {/* Install prompt banner — native */}
+      {/* Install prompt banner — native (only when browser supports it) */}
       {installPrompt && !isInstalled && !isInIframe && (
         <InstallBanner
           subtitle="Add to home screen for the best experience"
           actionLabel="Install"
           onAction={promptInstall}
           onDismiss={() => setInstallPrompt(null)}
-        />
-      )}
-      {/* Install prompt banner — manual fallback (no native prompt available) */}
-      {showManualBanner && (
-        <InstallBanner
-          subtitle="Add to home screen for the best experience"
-          actionLabel="How to"
-          onAction={() => setShowInstallGuide(true)}
-          onDismiss={dismissManualBanner}
         />
       )}
       {/* Install prompt banner — iframe fallback */}
