@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// RotationTimeline — Vertical step-by-step rotation with on-field + buff windows
+// RotationTimeline — Gantt-style chronology: rows top-to-bottom, time left-to-right
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
@@ -20,11 +20,58 @@ export default function RotationTimeline({ rotationTimeline }) {
 
   const { segments, buffs, totalTime } = rotationTimeline;
 
-  // Group buffs by which segment triggers them (buff.start matches segment end)
-  const segmentBuffs = segments.map(seg => {
-    const segEnd = seg.start + seg.duration;
-    return buffs.filter(b => b.source === seg.name && Math.abs(b.start - seg.start) < 0.5 || b.source === seg.name && Math.abs(b.start - segEnd) < 0.5);
+  // Build looping segments to fill full rotation
+  const loopDur = segments.reduce((s, seg) => s + seg.duration, 0);
+  const looped = [];
+  let t = 0;
+  let idx = 0;
+  while (t < totalTime && loopDur > 0) {
+    const seg = segments[idx % segments.length];
+    const dur = Math.min(seg.duration, totalTime - t);
+    looped.push({ ...seg, start: t, duration: dur });
+    t += dur;
+    idx++;
+  }
+
+  // Build rows: each row is a step (on-field) or a buff, ordered by start time
+  const rows = [];
+
+  // On-field segments
+  looped.forEach((seg, i) => {
+    const color = ELEMENT_COLORS[seg.element] || '#6b7280';
+    rows.push({
+      label: seg.name,
+      start: seg.start,
+      duration: seg.duration,
+      color,
+      type: 'field',
+      detail: `${seg.duration}s`,
+    });
   });
+
+  // Buffs
+  buffs.forEach(buff => {
+    const color = ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
+    const clampedDur = Math.min(buff.duration, totalTime - buff.start);
+    if (clampedDur > 0) {
+      rows.push({
+        label: buff.source,
+        start: buff.start,
+        duration: clampedDur,
+        color,
+        type: 'buff',
+        detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%`,
+      });
+    }
+  });
+
+  // Sort by start time, then on-field before buffs
+  rows.sort((a, b) => a.start - b.start || (a.type === 'field' ? -1 : 1));
+
+  // Time axis ticks
+  const tickInterval = totalTime <= 10 ? 1 : 5;
+  const ticks = [];
+  for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
 
   return (
     <div className="mt-3 kuro-detail-box">
@@ -32,51 +79,50 @@ export default function RotationTimeline({ rotationTimeline }) {
         Rotation ({totalTime}s)
       </div>
 
-      <div className="space-y-1">
-        {segments.map((seg, i) => {
-          const color = ELEMENT_COLORS[seg.element] || '#6b7280';
-          const myBuffs = segmentBuffs[i];
+      {/* Time axis */}
+      <div className="flex">
+        <div className="w-16 flex-shrink-0" />
+        <div className="flex-1 relative h-3 mb-0.5">
+          {ticks.map(tick => (
+            <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
+              style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Rows */}
+      <div className="space-y-0.5">
+        {rows.map((row, i) => {
+          const leftPct = (row.start / totalTime) * 100;
+          const widthPct = (row.duration / totalTime) * 100;
+          const isField = row.type === 'field';
           return (
-            <div key={i}>
-              {/* On-field step */}
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] text-gray-600 w-5 text-right flex-shrink-0">{i + 1}</span>
-                <div className="flex-1 flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
-                  style={{ background: `${color}20`, border: `1px solid ${color}40` }}>
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                  <span className="text-[10px] font-bold flex-1" style={{ color }}>{seg.name}</span>
-                  <span className="text-[9px] text-gray-400">{seg.duration}s on-field</span>
-                  <span className="text-[9px] text-gray-600">{seg.role}</span>
+            <div key={i} className="flex items-center">
+              <span className={`text-[9px] w-16 truncate text-right pr-2 flex-shrink-0 ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
+                {isField ? row.label : `↳ ${row.label}`}
+              </span>
+              <div className="flex-1 relative h-5">
+                {/* Grid lines */}
+                {ticks.map(tick => (
+                  <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
+                    style={{ left: `${(tick / totalTime) * 100}%` }} />
+                ))}
+                {/* Bar */}
+                <div className={`absolute h-full flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
+                  style={{
+                    left: `${leftPct}%`,
+                    width: `${widthPct}%`,
+                    background: `${row.color}${isField ? '30' : '18'}`,
+                    border: `1px solid ${row.color}${isField ? '60' : '35'}`,
+                  }}>
+                  <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
+                    style={{ color: row.color }}>{row.detail}</span>
                 </div>
               </div>
-              {/* Buffs triggered by this step */}
-              {myBuffs.length > 0 && (
-                <div className="ml-7 mt-0.5 space-y-0.5 mb-1">
-                  {myBuffs.map((buff, j) => (
-                    <div key={j} className="flex items-center gap-2 px-2 py-1 rounded"
-                      style={{ background: `${color}10`, borderLeft: `2px solid ${color}40` }}>
-                      <span className="text-[9px] text-gray-500">↳</span>
-                      <span className="text-[9px] font-medium" style={{ color }}>{STAT_LABELS[buff.stat] || buff.stat} +{buff.value}%</span>
-                      <span className="text-[8px] text-gray-600">{buff.duration}s</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           );
         })}
       </div>
-
-      {/* Loop indicator */}
-      {(() => {
-        const loopDur = segments.reduce((s, seg) => s + seg.duration, 0);
-        const loops = Math.round(totalTime / loopDur * 10) / 10;
-        return loopDur < totalTime ? (
-          <div className="text-[9px] text-gray-600 text-center mt-2 pt-1.5 border-t border-[var(--border-medium)]/30">
-            ↻ Repeats ~{loops}× over {totalTime}s rotation
-          </div>
-        ) : null;
-      })()}
     </div>
   );
 }
