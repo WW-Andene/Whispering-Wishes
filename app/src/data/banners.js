@@ -514,7 +514,7 @@ const VERSION_SPLASH_SCREENS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 const OTHER_BACKGROUNDS = [
   { id: 'dream-team', name: 'The Dream Team', art: 'https://i.ibb.co/Gfkn50Fk/The-dream-team.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '40% 50%' } },
-  { id: 'utterance-of-marvels', name: 'Utterance of Marvels', art: 'https://i.ibb.co/KjjRTp27/1-2-2.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 40%' } },
+  { id: 'utterance-of-marvels', name: 'Utterance of Marvels', art: 'https://i.ibb.co/KjjRTp27/1-2-2.jpg', pos: { header: '50% 28%', nav: '50% 26%', bg: '58% 50%' } },
 ];
 
 
