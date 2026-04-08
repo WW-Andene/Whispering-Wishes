@@ -26,13 +26,13 @@ export default {
         'sm':  'var(--font-sm)',    // 11px
         'base':'var(--font-base)',  // 13px
         'md':  'var(--font-md)',    // 15px
-        'lg':  'var(--font-lg)',    // 18px
-        'xl':  'var(--font-xl)',    // 21px
-        '2xl': 'var(--font-2xl)',   // 26px
-        '3xl': 'var(--font-3xl)',   // 31px
-        '4xl': 'var(--font-4xl)',   // 36px
-        '5xl': 'var(--font-5xl)',   // 41px
-        '6xl': 'var(--font-6xl)',   // 46px
+        'lg':  'var(--font-lg)',    // 17px
+        'xl':  'var(--font-xl)',    // 19px
+        '2xl': 'var(--font-2xl)',   // 21px
+        '3xl': 'var(--font-3xl)',   // 23px
+        '4xl': 'var(--font-4xl)',   // 25px
+        '5xl': 'var(--font-5xl)',   // 27px
+        '6xl': 'var(--font-6xl)',   // 29px
       },
       // D-TYPE-1: Display + data font families for cyberpunk-luxe character
       fontFamily: {
