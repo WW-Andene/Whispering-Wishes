@@ -440,7 +440,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                   <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note…" className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
                   <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: 'var(--font-sm)', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
                 </div>
-                {noteInput.length > 70 && <div style={{ fontSize: 'var(--font-xs)', color: noteInput.length >= 100 ? '#ef4444' : 'var(--text-disabled)', textAlign: 'right', marginTop: '2px' }}>{noteInput.length}/100</div>}
+                {noteInput.length > 70 && <div style={{ fontSize: 'var(--font-2xs)', color: noteInput.length >= 100 ? '#ef4444' : 'var(--text-disabled)', textAlign: 'right', marginTop: '2px' }}>{noteInput.length}/100</div>}
               </div>
             )}
 
@@ -535,9 +535,9 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     opacity: bar.pastBanner ? 0.45 : bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: 'var(--font-sm)', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
-                    {bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-xs)', color: bar.color, opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
+                    {bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-2xs)', color: bar.color, opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
                     {bar.astrite > 0 && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
-                    {bar.endLabel && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-xs)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.startLabel ? `${bar.startLabel}→` : '→'}{bar.endLabel}</span>}
+                    {bar.endLabel && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-2xs)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.startLabel ? `${bar.startLabel}→` : '→'}{bar.endLabel}</span>}
                     {bar.daysLeft != null && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
                   </div>
                 </div>

@@ -153,7 +153,7 @@ export default function AdminMiniPanel({
             <div className="text-cyan-400 text-sm font-medium mb-2">
               Editing: {editingBgTarget === 'header' ? 'Header' : editingBgTarget === 'nav' ? 'Navigation' : 'Background'}
             </div>
-            <div className="text-gray-400 text-xs mb-2 font-mono text-center">{getBgPositionLabel()}</div>
+            <div className="text-gray-400 text-[8px] mb-2 font-mono text-center">{getBgPositionLabel()}</div>
             <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-2">
               <div />
               <button onClick={() => updateBgPosition(0, -2)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95">▲</button>
@@ -163,13 +163,13 @@ export default function AdminMiniPanel({
                 const key = editingBgTarget === 'header' ? 'headerBg' : editingBgTarget === 'nav' ? 'navBg' : 'appBg';
                 const current = visualSettings[key];
                 if (current) saveVisualSettings({ ...visualSettings, [key]: { ...current, objectPosition: '50% 50%' } });
-              }} className="bg-red-500/20 text-red-400 rounded p-1 text-xs hover:bg-red-500/30 active:scale-95">RST</button>
+              }} className="bg-red-500/20 text-red-400 rounded p-1 text-[8px] hover:bg-red-500/30 active:scale-95">RST</button>
               <button onClick={() => updateBgPosition(2, 0)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95">▶</button>
               <div />
               <button onClick={() => updateBgPosition(0, 2)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95">▼</button>
               <div />
             </div>
-            <p className="text-gray-500 text-xs text-center">Tap header, nav, or background to switch</p>
+            <p className="text-gray-500 text-[8px] text-center">Tap header, nav, or background to switch</p>
           </div>
         )}
 

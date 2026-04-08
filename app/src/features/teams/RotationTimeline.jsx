@@ -80,7 +80,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                     style={{ left: `${(tick / maxEnd) * 100}%` }} />
                 ))}
                 {/* Label */}
-                <span className={`absolute text-xs ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
+                <span className={`absolute text-[8px] ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
                   style={{ left: 0, top: '50%', transform: 'translateY(-50%)', width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }}>
                   {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : '↳') : ''}
                 </span>
@@ -93,7 +93,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                     border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : '35'}`,
                     borderStyle: isEcho ? 'dashed' : 'solid',
                   }}>
-                  <span className={`truncate px-1 ${isField ? 'text-xs font-bold' : 'text-[8px]'}`}
+                  <span className={`truncate px-1 ${isField ? 'text-[8px] font-bold' : 'text-[8px]'}`}
                     style={{ color: row.color }}>{isField ? `${row.label} ${row.detail}` : row.detail}</span>
                 </div>
               </div>

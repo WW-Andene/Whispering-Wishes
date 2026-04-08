@@ -906,7 +906,7 @@ function WhisperingWishesInner() {
           <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
           {bgFramingMode && (
             <div className={`absolute inset-0 ${editingBgTarget === 'bg' ? 'ring-4 ring-inset ring-cyan-400' : ''}`}>
-              <span className="absolute top-16 left-3 text-xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'bg' ? '● BACKGROUND' : 'Background'}</span>
+              <span className="absolute top-16 left-3 text-[8px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'bg' ? '● BACKGROUND' : 'Background'}</span>
             </div>
           )}
         </div>
@@ -934,7 +934,7 @@ function WhisperingWishesInner() {
         )}
         {bgFramingMode && headerBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'header' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('header')}>
-            <span className="absolute top-1 left-1 text-xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
+            <span className="absolute top-1 left-1 text-[8px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
           </div>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
@@ -1008,7 +1008,7 @@ function WhisperingWishesInner() {
         )}
         {bgFramingMode && navBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'nav' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('nav')}>
-            <span className="absolute top-1 left-1 text-xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'nav' ? '● NAV' : 'Nav'}</span>
+            <span className="absolute top-1 left-1 text-[8px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'nav' ? '● NAV' : 'Nav'}</span>
           </div>
         )}
         <div className="tab-indicator" />

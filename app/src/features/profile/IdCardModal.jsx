@@ -218,7 +218,7 @@ export default function IdCardModal({
                         })}
                         {ownedCharNames.length > 16 && (
                           <div className="flex items-center justify-center rounded-lg w-full kuro-border-subtle" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)' }}>
-                            <span className="text-gray-500 font-mono" style={{ fontSize: 'var(--font-xs)' }}>+{ownedCharNames.length - 16}</span>
+                            <span className="text-gray-500 font-mono" style={{ fontSize: 'var(--font-2xs)' }}>+{ownedCharNames.length - 16}</span>
                           </div>
                         )}
                       </div>
