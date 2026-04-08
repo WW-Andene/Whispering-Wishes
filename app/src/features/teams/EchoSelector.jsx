@@ -76,14 +76,14 @@ export default function EchoSelector({
               <>
                 <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div>
-                    <h3 className="text-white font-semibold text-sm">Select Echo</h3>
-                    <p className="text-gray-400 text-[10px]">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
+                    <h3 className="text-white font-semibold text-md">Select Echo</h3>
+                    <p className="text-gray-400 text-sm">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                   </div>
                   <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
                 </div>
                 {/* Search + Filters */}
                 <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-xs" />
+                  <input value={echoSearch} onChange={e => setEchoSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-base" />
                   <div className="flex gap-1.5">
                     <KuroSelect
                       value={echoSetFilter}
@@ -92,7 +92,7 @@ export default function EchoSelector({
                         { value: 'all', label: 'All Sets' },
                         ...availableSets.map(s => ({ value: s, label: s })),
                       ]}
-                      className="flex-1 text-[10px]"
+                      className="flex-1 text-sm"
                     />
                     <KuroSelect
                       value={echoBuffFilter}
@@ -101,7 +101,7 @@ export default function EchoSelector({
                         { value: 'all', label: 'All Buffs' },
                         ...availableBuffs.map(b => ({ value: b, label: b })),
                       ]}
-                      className="flex-1 text-[10px]"
+                      className="flex-1 text-sm"
                     />
                     {hasFilters && (
                       <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="kuro-btn kuro-btn-sm">Clear</button>
@@ -109,7 +109,7 @@ export default function EchoSelector({
                   </div>
                   {/* Recommendation indicator */}
                   {recommendedEchoes.size > 0 && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-orange-400">
+                    <div className="flex items-center gap-1.5 text-sm text-orange-400">
                       <Star size={10} className="text-orange-400" fill="currentColor" />
                       <span>Orange glow = recommended for {echoSelectorTarget.charName}</span>
                     </div>
@@ -134,7 +134,7 @@ export default function EchoSelector({
                         setEchoSetFilter('all'); setEchoBuffFilter('all');
                         haptic.light();
                       }}
-                      className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                      className="w-full p-2 rounded-lg border border-dashed border-white/15 text-sm text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
                       style={{ background: 'var(--bg-btn)' }}
                     >
                       ✕ Unequip echo
@@ -176,12 +176,12 @@ export default function EchoSelector({
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-white text-xs font-semibold truncate">{name}</span>
+                                  <span className="text-white text-base font-semibold truncate">{name}</span>
                                   {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                  {buffs.map(b => <span key={b} className="text-[10px] text-gray-400">{b}</span>)}
-                                  {ed?.sets && <span className="text-[10px] text-gray-500">· {ed.sets.join(', ')}</span>}
+                                  {buffs.map(b => <span key={b} className="text-sm text-gray-400">{b}</span>)}
+                                  {ed?.sets && <span className="text-sm text-gray-500">· {ed.sets.join(', ')}</span>}
                                 </div>
                               </div>
                             </div>
@@ -189,7 +189,7 @@ export default function EchoSelector({
                         );
                       })}
                     {filtered.length === 0 && (
-                      <div className="text-center py-6 text-gray-400 text-xs">No echoes match filters</div>
+                      <div className="text-center py-6 text-gray-400 text-base">No echoes match filters</div>
                     )}
                   </div>
                 </div>
@@ -276,8 +276,8 @@ export default function EchoSelector({
                       <Diamond size={16} className={`text-${costColor}-400`} />
                     )}
                     <div className="min-w-0">
-                      <h3 className="text-white font-semibold text-sm truncate">{echoName}</h3>
-                      <p className="text-gray-400 text-[10px]">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
+                      <h3 className="text-white font-semibold text-md truncate">{echoName}</h3>
+                      <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>
                   <button onClick={() => setEchoStatPanel(null)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>
@@ -294,7 +294,7 @@ export default function EchoSelector({
                         })}
                       </div>
                       {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
-                        <div className="flex items-center gap-1 mt-1 text-[10px] text-orange-400/80">
+                        <div className="flex items-center gap-1 mt-1 text-sm text-orange-400/80">
                           <Star size={8} className="text-orange-400" fill="currentColor" />
                           <span>Recommended set for {charName}</span>
                         </div>
@@ -309,17 +309,17 @@ export default function EchoSelector({
                       <div className="kuro-detail-box">
                         {echoData.dmg > 0 && (
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-[10px] text-gray-400">Damage:</span>
-                            <span className="text-xs font-bold text-yellow-400">{echoData.dmg}%</span>
+                            <span className="text-sm text-gray-400">Damage:</span>
+                            <span className="text-base font-bold text-yellow-400">{echoData.dmg}%</span>
                             {echoData.element && echoData.element !== 'Healing' && (
                               <span className="kuro-badge kuro-badge-neutral">{echoData.element}</span>
                             )}
                           </div>
                         )}
                         {echoData.dmg === 0 && (
-                          <div className="text-[10px] text-gray-500 mb-1">Utility / Healing (no damage)</div>
+                          <div className="text-sm text-gray-500 mb-1">Utility / Healing (no damage)</div>
                         )}
-                        <p className="text-[10px] text-gray-400 leading-relaxed">{echoData.desc}</p>
+                        <p className="text-sm text-gray-400 leading-relaxed">{echoData.desc}</p>
                       </div>
                     </div>
                   )}
@@ -339,7 +339,7 @@ export default function EchoSelector({
                             Other: 10%
                           </span>
                         </div>
-                        <p className="text-[10px] text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
+                        <p className="text-sm text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
                       </div>
                     </div>
                   )}
@@ -353,7 +353,7 @@ export default function EchoSelector({
                         const isRec = recMainStats.has(stat);
                         return (
                           <button key={stat}
-                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isRec && !isActive ? 'kuro-shadow-rec-subtle' : ''} ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                            className={`px-2 py-1.5 rounded-lg text-base text-left transition-all border ${isRec && !isActive ? 'kuro-shadow-rec-subtle' : ''} ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
                             onClick={() => { updateEchoData({ mainStat: isActive ? null : stat }); haptic.light(); }}
                           >
                             {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}
@@ -374,7 +374,7 @@ export default function EchoSelector({
                         return (
                           <button key={stat}
                             disabled={atMax}
-                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : isRec ? 'border-orange-500/30 bg-orange-500/5 text-orange-300/80 hover:bg-orange-500/10' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
+                            className={`px-2 py-1.5 rounded-lg text-base text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : isRec ? 'border-orange-500/30 bg-orange-500/5 text-orange-300/80 hover:bg-orange-500/10' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
                             onClick={() => {
                               if (atMax) return;
                               const newSubs = isActive ? currentSubstats.filter(s => s !== stat) : [...currentSubstats, stat];
@@ -400,7 +400,7 @@ export default function EchoSelector({
                         setEchoSelectorOpen(true);
                         haptic.light();
                       }}
-                      className="flex-1 py-2 rounded-lg text-xs border border-[var(--border-medium)] text-gray-400 hover:text-white hover:border-white/20 transition-all"
+                      className="flex-1 py-2 rounded-lg text-base border border-[var(--border-medium)] text-gray-400 hover:text-white hover:border-white/20 transition-all"
                     >
                       Change Echo
                     </button>
@@ -420,7 +420,7 @@ export default function EchoSelector({
                         setEchoStatPanel(null);
                         haptic.light();
                       }}
-                      className="px-4 py-2 rounded-lg text-xs border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all"
+                      className="px-4 py-2 rounded-lg text-base border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all"
                     >
                       Unequip
                     </button>

@@ -43,8 +43,8 @@ export default function TeamSelector({
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
-                            <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
-                            <p className="text-gray-500 text-[10px]">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
+                            <h3 className="text-white text-md font-semibold">Select Resonator</h3>
+                            <p className="text-gray-500 text-sm">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
                           <button onClick={() => setTeamSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
                             <X size={18} />
@@ -60,7 +60,7 @@ export default function TeamSelector({
                               value={teamSearch}
                               onChange={(e) => setTeamSearch(e.target.value)}
                               placeholder="Search resonators…"
-                              className="kuro-input w-full pl-8 text-xs"
+                              className="kuro-input w-full pl-8 text-base"
                               aria-label="Search resonators"
                               autoFocus
                             />
@@ -155,7 +155,7 @@ export default function TeamSelector({
                           </div>
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (
-                            <div className="flex items-center gap-1.5 text-[10px] text-orange-400">
+                            <div className="flex items-center gap-1.5 text-sm text-orange-400">
                               <Star size={10} className="text-orange-400" fill="currentColor" />
                               <span>Orange glow = recommended teammate</span>
                             </div>
@@ -242,7 +242,7 @@ export default function TeamSelector({
                           {filteredChars.length === 0 && (
                             <div className="text-center py-8">
                               <Search size={24} className="mx-auto mb-2 text-gray-600" />
-                              <p className="text-gray-400 text-xs">No resonators match</p>
+                              <p className="text-gray-400 text-base">No resonators match</p>
                             </div>
                           )}
                         </div>

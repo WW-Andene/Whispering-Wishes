@@ -20,8 +20,8 @@ export default function WeaponSelector({
                       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
-                            <h3 className="text-white font-semibold text-sm">Select Weapon</h3>
-                            <p className="text-gray-400 text-[10px]">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
+                            <h3 className="text-white font-semibold text-md">Select Weapon</h3>
+                            <p className="text-gray-400 text-sm">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
                           </div>
                           <button onClick={() => setWeaponSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close weapon selector"><X size={16} className="text-gray-400" /></button>
                         </div>
@@ -30,7 +30,7 @@ export default function WeaponSelector({
                             value={weaponSearch}
                             onChange={e => setWeaponSearch(e.target.value)}
                             placeholder="Search weapons…"
-                            className="kuro-input w-full text-xs"
+                            className="kuro-input w-full text-base"
                           />
                         </div>
                         <div className="overflow-y-auto flex-1 p-2">
@@ -49,7 +49,7 @@ export default function WeaponSelector({
                                 setWeaponSelectorOpen(false);
                                 haptic.light();
                               }}
-                              className="w-full p-2 rounded-lg border border-dashed border-white/15 text-[10px] text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                              className="w-full p-2 rounded-lg border border-dashed border-white/15 text-sm text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
                               style={{ background: 'var(--bg-btn)' }}
                             >
                               ✕ Unequip weapon
@@ -94,13 +94,13 @@ export default function WeaponSelector({
                                         )}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5">
-                                            <span className="text-white text-xs font-semibold truncate">{name}</span>
+                                            <span className="text-white text-base font-semibold truncate">{name}</span>
                                             <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                             {isBest && <span className="kuro-badge kuro-badge-emerald">BiS</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-[10px] text-gray-400">ATK {w.baseAtk}</span>
-                                            <span className="text-[10px] text-cyan-400/80">{w.stat} {w.subStatValue}</span>
+                                            <span className="text-sm text-gray-400">ATK {w.baseAtk}</span>
+                                            <span className="text-sm text-cyan-400/80">{w.stat} {w.subStatValue}</span>
                                           </div>
                                         </div>
                                       </div>

@@ -33,19 +33,19 @@ class TabErrorBoundary extends React.Component {
             <div className="kuro-card-inner">
               <div className="kuro-body text-center py-8">
                 <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
-                <div className="text-white font-bold text-sm mb-1">Something went wrong</div>
-                <p className="text-gray-400 text-xs mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
+                <div className="text-white font-bold text-md mb-1">Something went wrong</div>
+                <p className="text-gray-400 text-base mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
                 <button
                   onClick={() => this.setState({ hasError: false, error: null })}
-                  className="kuro-btn active-cyan text-xs px-4 py-2"
+                  className="kuro-btn active-cyan text-base px-4 py-2"
                   aria-label={`Reload the ${this.props.tabName || 'tab'} tab`}
                 >
                   ↻ Reload
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left" open>
-                    <summary className="text-gray-400 text-[10px] cursor-pointer">Error details</summary>
-                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
+                    <summary className="text-gray-400 text-sm cursor-pointer">Error details</summary>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-sm overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
                   </details>
                 )}
               </div>

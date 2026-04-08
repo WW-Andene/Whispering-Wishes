@@ -20,6 +20,19 @@ export default {
       '2xl': '99999px', // ENCAPSULATED — desktop layout disabled
     },
     extend: {
+      // D-TYPE-0: Unified font-size scale backed by CSS variables (kuro.css)
+      fontSize: {
+        'xs':  'var(--font-xs)',    // 9px
+        'sm':  'var(--font-sm)',    // 10px
+        'base':'var(--font-base)',  // 12px
+        'md':  'var(--font-md)',    // 14px
+        'lg':  'var(--font-lg)',    // 16px
+        'xl':  'var(--font-xl)',    // 18px
+        '2xl': 'var(--font-2xl)',   // 20px
+        '3xl': 'var(--font-3xl)',   // 24px
+        '4xl': 'var(--font-4xl)',   // 30px
+        '5xl': 'var(--font-5xl)',   // 48px
+      },
       // D-TYPE-1: Display + data font families for cyberpunk-luxe character
       fontFamily: {
         display: ['Rajdhani', 'ui-sans-serif', 'system-ui', 'sans-serif'],

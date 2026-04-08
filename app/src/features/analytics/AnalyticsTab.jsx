@@ -359,9 +359,9 @@ function AnalyticsTab({
               <Card>
                 <CardBody className="kuro-empty-state text-center py-8">
                   <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-gray-300 text-sm font-medium">Awaiting signal data</p>
-                  <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.</p>
-                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
+                  <p className="text-gray-300 text-md font-medium">Awaiting signal data</p>
+                  <p className="text-gray-400 text-base mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
             ) : (
@@ -369,7 +369,7 @@ function AnalyticsTab({
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
-                    <CardHeader action={FIREBASE_AVAILABLE ? <button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-[10px] flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button> : null}>Luck Rating</CardHeader>
+                    <CardHeader action={FIREBASE_AVAILABLE ? <button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-sm flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button> : null}>Luck Rating</CardHeader>
                     <CardBody>
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': '12s'}}>
@@ -383,17 +383,17 @@ function AnalyticsTab({
                             <div className="h-full rounded-full transition-[width] duration-300" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
                           </div>
                           <div className="flex items-baseline justify-between">
-                            <span className="text-gray-400 text-[10px]">Avg Pity</span>
-                            <span className="text-gray-200 text-xs font-medium">{overallStats?.avgPity}</span>
+                            <span className="text-gray-400 text-sm">Avg Pity</span>
+                            <span className="text-gray-200 text-base font-medium">{overallStats?.avgPity}</span>
                           </div>
-                          <p className="text-[10px] text-center" style={{color: `${luckRating.color}90`}}>
+                          <p className="text-sm text-center" style={{color: `${luckRating.color}90`}}>
                             {luckRating.percentile >= 80 ? `Luckier than ${luckRating.percentile}% of players — incredible!`
                               : luckRating.percentile >= 60 ? `Luckier than ${luckRating.percentile}% of players — above average!`
                               : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
                               : `Unluckier than most — keep tracking to see your trends`}
                           </p>
                           {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                          <p className="text-[10px] text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.0), adjusted for sample size</p>
+                          <p className="text-sm text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.0), adjusted for sample size</p>
                         </div>
                       </div>
                     </CardBody>
@@ -404,8 +404,8 @@ function AnalyticsTab({
                 <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel="Leaderboard consent" centered>
                   <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
                     <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
-                      <h3 className="text-white font-semibold text-sm">Leaderboard - Data Sharing Notice</h3>
-                      <div className="text-gray-300 text-xs space-y-2">
+                      <h3 className="text-white font-semibold text-md">Leaderboard - Data Sharing Notice</h3>
+                      <div className="text-gray-300 text-base space-y-2">
                         <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-400">
                           <li>Your player ID (<span className="text-cyan-400 font-mono">{effectiveLeaderboardId}</span>)</li>
@@ -428,18 +428,18 @@ function AnalyticsTab({
                       <div className="px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h3 className="text-white font-semibold text-sm">Community</h3>
-                            <p className="text-gray-400 text-[10px]">Leaderboard & stats</p>
+                            <h3 className="text-white font-semibold text-md">Community</h3>
+                            <p className="text-gray-400 text-sm">Leaderboard & stats</p>
                           </div>
                           <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
                             <X size={16} />
                           </button>
                         </div>
                         <div className="flex gap-1" role="tablist" aria-label="Leaderboard view">
-                          <button onClick={() => setLeaderboardTab('rankings')} role="tab" aria-selected={leaderboardTab === 'rankings'} className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'rankings' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
+                          <button onClick={() => setLeaderboardTab('rankings')} role="tab" aria-selected={leaderboardTab === 'rankings'} className={`flex-1 text-sm font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'rankings' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
                             Rankings
                           </button>
-                          <button onClick={() => setLeaderboardTab('popular')} role="tab" aria-selected={leaderboardTab === 'popular'} className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'popular' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
+                          <button onClick={() => setLeaderboardTab('popular')} role="tab" aria-selected={leaderboardTab === 'popular'} className={`flex-1 text-sm font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'popular' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
                             Most Convened
                           </button>
                         </div>
@@ -462,8 +462,8 @@ function AnalyticsTab({
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="kuro-empty-state text-center py-8">
-                                <div className="text-gray-400 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
-                                <div className="text-gray-500 text-[10px]">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
+                                <div className="text-gray-400 text-md mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
+                                <div className="text-gray-500 text-sm">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
                               </div>
                             ) : (
                               leaderboardData.map((entry, i) => {
@@ -476,7 +476,7 @@ function AnalyticsTab({
                                     className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
                                   >
                                     <div 
-                                      className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                      className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
                                       style={{
                                         background: i < 3 ? `linear-gradient(135deg, ${(MEDAL_COLORS[i] ?? '#9ca3af')}40, ${(MEDAL_COLORS[i] ?? '#9ca3af')}20)` : 'rgba(255,255,255,0.1)',
                                         color: i < 3 ? MEDAL_COLORS[i] : '#9ca3af',
@@ -488,18 +488,18 @@ function AnalyticsTab({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2">
-                                        <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
+                                        <span className={`text-base font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
                                           {isYou ? (entry.id?.slice(0, 4) + '*** (You)') : (entry.id?.slice(0, 4) + '***')}
                                         </span>
                                         {isYou && <span className="kuro-badge kuro-badge-cyan">YOU</span>}
                                       </div>
-                                      <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
+                                      <div className="text-sm text-gray-500">{entry.pulls} five-stars</div>
                                     </div>
                                     <div className="text-right flex-shrink-0">
-                                      <div className={`text-sm font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                      <div className={`text-md font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
                                         {entry.avgPity.toFixed(1)}
                                       </div>
-                                      <div className="text-[10px] text-gray-400">avg pity</div>
+                                      <div className="text-sm text-gray-400">avg pity</div>
                                     </div>
                                   </div>
                                 );
@@ -525,21 +525,21 @@ function AnalyticsTab({
                               </div>
                             ) : (
                               <>
-                                <p className="text-gray-400 text-[10px] text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
+                                <p className="text-gray-400 text-sm text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
                                 {communityPulls.chars.length > 0 && (
                                   <>
-                                    <p className="text-[10px] text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
+                                    <p className="text-sm text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
                                     {communityPulls.chars.slice(0, 10).map(([name, count], i) => {
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
                                       const imgUrl = collectionImages[name] || '';
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
-                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
+                                          <span className="text-sm font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
                                           {imgUrl && <img src={imgUrl} alt={name} className="w-[28px] h-[28px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
-                                              <span className="text-xs text-gray-200 truncate">{name}</span>
-                                              <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
+                                              <span className="text-base text-gray-200 truncate">{name}</span>
+                                              <span className="text-sm text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
                                             <div className="h-1 rounded-full mt-0.5 overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                                               <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
@@ -552,18 +552,18 @@ function AnalyticsTab({
                                 )}
                                 {communityPulls.weaps.length > 0 && (
                                   <>
-                                    <p className="text-[10px] text-cyan-400/80 font-semibold uppercase tracking-wider mt-3 mb-1">★ Weapons</p>
+                                    <p className="text-sm text-cyan-400/80 font-semibold uppercase tracking-wider mt-3 mb-1">★ Weapons</p>
                                     {communityPulls.weaps.slice(0, 10).map(([name, count], i) => {
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
                                       const imgUrl = collectionImages[name] || '';
                                       return (
                                         <div key={name} className="flex items-center gap-2.5 py-1.5">
-                                          <span className="text-[10px] font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
+                                          <span className="text-sm font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
                                           {imgUrl && <div className="w-[28px] h-[28px] rounded-md overflow-hidden bg-neutral-800 flex-shrink-0 holo-5star" style={{ position: 'relative' }}><img src={imgUrl} alt={name} className="w-full h-full object-cover" loading="lazy" onError={hideOnError} /></div>}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
-                                              <span className="text-xs text-gray-200 truncate">{name}</span>
-                                              <span className="text-[10px] text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
+                                              <span className="text-base text-gray-200 truncate">{name}</span>
+                                              <span className="text-sm text-gray-500 flex-shrink-0 ml-2">{pct}%</span>
                                             </div>
                                             <div className="h-1 rounded-full mt-0.5 overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
                                               <div className="h-full rounded-full" style={{width: `${pct}%`, background: i < 3 ? MEDAL_COLORS[i] : '#4b5563'}} />
@@ -582,32 +582,32 @@ function AnalyticsTab({
                       {/* Community Stats */}
                       {communityStats && leaderboardTab === 'rankings' && (
                         <div className="px-4 py-3 border-t border-[var(--border-medium)] space-y-2">
-                          <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                          <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
                             <BarChart3 size={10} /> Community Stats
                             <span className="text-gray-500 font-normal">• {communityStats.totalPlayers} players</span>
                           </p>
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
-                              <div className="text-yellow-400 font-bold text-xs">{communityStats.avgPityAll}</div>
-                              <div className="text-gray-400 text-[10px]">Global Avg Pity</div>
+                              <div className="text-yellow-400 font-bold text-base">{communityStats.avgPityAll}</div>
+                              <div className="text-gray-400 text-sm">Global Avg Pity</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
-                              <div className="text-emerald-400 font-bold text-xs">{communityStats.globalWinRate != null ? `${communityStats.globalWinRate}%` : '—'}</div>
-                              <div className="text-gray-400 text-[10px]">50/50 Win Rate</div>
+                              <div className="text-emerald-400 font-bold text-base">{communityStats.globalWinRate != null ? `${communityStats.globalWinRate}%` : '—'}</div>
+                              <div className="text-gray-400 text-sm">50/50 Win Rate</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
-                              <div className="text-cyan-400 font-bold text-xs">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-400 text-[10px]">Total 5★</div>
+                              <div className="text-cyan-400 font-bold text-base">{communityStats.totalFiveStars}</div>
+                              <div className="text-gray-400 text-sm">Total 5★</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
-                            <div className="flex justify-between text-[10px]">
+                            <div className="flex justify-between text-sm">
                               <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString('en-US')} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
                           {communityStats.luckiest && communityStats.unluckiest && communityStats.totalPlayers >= 2 && (
-                            <div className="flex justify-between text-[10px] gap-2">
+                            <div className="flex justify-between text-sm gap-2">
                               <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={10} /> Luckiest: {communityStats.luckiest.avgPity.toFixed(1)}</span>
                               <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={10} /> Unluckiest: {communityStats.unluckiest.avgPity.toFixed(1)}</span>
                             </div>
@@ -617,21 +617,21 @@ function AnalyticsTab({
                       <div className="p-4 border-t border-[var(--border-medium)] space-y-2">
                         {effectiveLeaderboardId && overallStats?.avgPity && overallStats.avgPity !== '—' ? (
                           <>
-                            <div className="flex items-center justify-between text-[10px]">
+                            <div className="flex items-center justify-between text-sm">
                               <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-500 ml-1">(UID)</span>}</span>
                               <span className="text-gray-400">Your Avg: <span className="text-white font-bold">{overallStats.avgPity}</span></span>
                             </div>
                             <button
                               onClick={submitToLeaderboard}
                               disabled={leaderboardSubmitting || rateLimitCooldown > 0}
-                              className={`w-full kuro-btn active-cyan py-2 text-xs font-medium ${leaderboardSubmitting || rateLimitCooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              className={`w-full kuro-btn active-cyan py-2 text-base font-medium ${leaderboardSubmitting || rateLimitCooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                               {leaderboardSubmitting ? 'Submitting…' : rateLimitCooldown > 0 ? `Wait ${rateLimitCooldown}s…` : 'Submit My Score'}
                             </button>
-                            <p className="text-gray-400 text-[10px] text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
+                            <p className="text-gray-400 text-sm text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
                           </>
                         ) : (
-                          <p className="text-gray-500 text-[10px] text-center">Import convene history to participate</p>
+                          <p className="text-gray-500 text-sm text-center">Import convene history to participate</p>
                         )}
                       </div>
                     </div>
@@ -643,24 +643,24 @@ function AnalyticsTab({
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Awaiting 5★ signal resonance</p>;
+                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-400 text-base text-center py-4">Awaiting 5★ signal resonance</p>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
                           {fiveStars.map((p, i) => {
                             const pityColor = p.pity <= 20 ? '#22c55e' : p.pity <= 40 ? '#4ade80' : p.pity <= 50 ? '#edaf18' : p.pity <= 60 ? '#f97316' : '#ef4444';
                             const pityTextColor = p.pity <= 20 ? 'text-emerald-400' : p.pity <= 40 ? 'text-green-400' : p.pity <= 50 ? 'text-yellow-400' : p.pity <= 60 ? 'text-orange-400' : 'text-red-400';
                             return (
-                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-xs" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
+                              <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-base" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
-                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
-                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-xs font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-xs font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed - pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
+                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-base font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
+                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-base font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-base font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed - pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-400 text-xs">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-400 text-base">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );
@@ -678,14 +678,14 @@ function AnalyticsTab({
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
+                      <p className="kuro-empty-state text-gray-400 text-base text-center py-4">Import more history to earn trophies</p>
                     </CardBody>
                   </Card>
                 )}
                 {trophies && trophies.list.length > 0 && (
                   <Card>
-                    <CardHeader action={<span className="text-gray-500 text-[10px]">{trophies.list.length} earned</span>}>
-                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies <span className="text-gray-500 font-normal text-[10px]">({trophies.list.length})</span></span>
+                    <CardHeader action={<span className="text-gray-500 text-sm">{trophies.list.length} earned</span>}>
+                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies <span className="text-gray-500 font-normal text-sm">({trophies.list.length})</span></span>
                     </CardHeader>
                     <CardBody>
                       {(() => {
@@ -716,8 +716,8 @@ function AnalyticsTab({
                               >
                                 <IconComponent size={18} style={{ color: trophy.color }} />
                               </div>
-                              <div className="text-[10px] font-bold text-white truncate">{trophy.name}</div>
-                              {trophy.desc && <div className="text-[10px] text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
+                              <div className="text-sm font-bold text-white truncate">{trophy.name}</div>
+                              {trophy.desc && <div className="text-sm text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
                             </div>
                           );
                         })}
@@ -752,9 +752,9 @@ function AnalyticsTab({
                               >
                                 <Icon size={28} style={{ color: t.color }} />
                               </div>
-                              <div className="text-sm font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
-                              <div className="text-xs text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-[10px] text-gray-400">tap outside or ✕ to close</div>
+                              <div className="text-md font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
+                              <div className="text-base text-gray-300 leading-relaxed italic">{t.desc}</div>
+                              <div className="mt-3 text-sm text-gray-400">tap outside or ✕ to close</div>
                             </div>
                           </FocusTrapModal>
                         );
@@ -764,8 +764,8 @@ function AnalyticsTab({
                       {trophies.stats.currentStreak.type && (
                         <div className="mt-3 pt-3 border-t border-[var(--border-medium)]">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-400 text-[10px]">Current 50/50 Streak</span>
-                            <span className={`text-sm font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className="text-gray-400 text-sm">Current 50/50 Streak</span>
+                            <span className={`text-md font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
                               {trophies.stats.currentStreak.count}× {trophies.stats.currentStreak.type === 'win' ? '✓ Won' : '✗ Lost'}
                             </span>
                           </div>
@@ -784,15 +784,15 @@ function AnalyticsTab({
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString('en-US')}</div><div className="text-gray-400 text-[10px]">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString('en-US')}</div><div className="text-gray-400 text-[10px]">Astrite Spent (in-game)</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString('en-US')}</div><div className="text-gray-400 text-sm">Total Convenes</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString('en-US')}</div><div className="text-gray-400 text-sm">Astrite Spent (in-game)</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-[10px]">Won 50/50</div></div>
-                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-sm kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-[10px]">Lost 50/50</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-[10px]">Avg. Pity</div></div>
+                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-md kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-sm">Won 50/50</div></div>
+                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-md kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-sm">Lost 50/50</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-md kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-sm">Avg. Pity</div></div>
                     </div>
-                    {overallStats.winRate != null && <div className="text-center text-xs text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-sm kuro-number">{overallStats.winRate}%</span></div>}
+                    {overallStats.winRate != null && <div className="text-center text-base text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-md kuro-number">{overallStats.winRate}%</span></div>}
                   </CardBody>
                 </Card>
 
@@ -803,21 +803,21 @@ function AnalyticsTab({
                     {(() => {
                       const { totalObtained } = statsTabData;
                       return (<>
-                    <p className="text-gray-400 text-[10px] mb-1.5">Resonators</p>
+                    <p className="text-gray-400 text-sm mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-md kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-sm">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-md kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-sm">4★</div></div>
                     </div>
                     
-                    <p className="text-gray-400 text-[10px] mb-1.5">Weapons</p>
+                    <p className="text-gray-400 text-sm mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">3★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-md kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-sm">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-md kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-sm">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-md kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-sm">3★</div></div>
                     </div>
 
-                    <p className="text-gray-400 text-[10px] mb-1.5 mt-3">Total</p>
-                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">All Items</div></div>
+                    <p className="text-gray-400 text-sm mb-1.5 mt-3">Total</p>
+                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-md kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-sm">All Items</div></div>
                       </>);
                     })()}
                   </CardBody>
@@ -839,10 +839,10 @@ function AnalyticsTab({
                       return (
                         <div key={banner.name} className="p-2 bg-white/5 rounded-lg">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs font-medium" style={{color: colorHex}}>{banner.name}</span>
-                            <span className="text-gray-400 text-[10px]">{hist.length} Convenes</span>
+                            <span className="text-base font-medium" style={{color: colorHex}}>{banner.name}</span>
+                            <span className="text-gray-400 text-sm">{hist.length} Convenes</span>
                           </div>
-                          <div className="flex gap-2 text-[10px]">
+                          <div className="flex gap-2 text-sm">
                             <span className="text-yellow-400">{hist.filter(p => p.rarity === 5).length} 5★</span>
                             <span className="text-purple-400">{hist.filter(p => p.rarity === 4).length} 4★</span>
                             <span className="text-gray-400">Pity: {pity}/{HARD_PITY}</span>

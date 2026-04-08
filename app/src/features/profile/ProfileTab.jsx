@@ -1043,7 +1043,7 @@ function ProfileTab({
               <CardBody className="space-y-3">
                 {/* Username */}
                 <div>
-                  <label htmlFor="profile-display-name" className="text-gray-400 text-[10px] block mb-2">Display Name</label>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-sm block mb-2">Display Name</label>
                   <input
                     id="profile-display-name"
                     type="text"
@@ -1054,12 +1054,12 @@ function ProfileTab({
                     className="kuro-input w-full"
                   />
                   {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                  <p className="text-gray-400 text-[10px] mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
+                  <p className="text-gray-400 text-sm mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
                 <div>
-                  <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
+                  <label className="text-gray-400 text-sm block mb-2">Profile Picture</label>
                   <div className="flex items-center gap-3">
                     <div className={`w-14 h-14 rounded-lg flex-shrink-0 kuro-avatar-frame kuro-shadow-card-deep${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
@@ -1070,12 +1070,12 @@ function ProfileTab({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-gray-200 text-xs truncate">{state.profile.profilePic || 'Default icon'}</p>
-                      <p className="text-gray-400 text-[10px] mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      <p className="text-gray-200 text-base truncate">{state.profile.profilePic || 'Default icon'}</p>
+                      <p className="text-gray-400 text-sm mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
                       {state.profile.profilePic && (
                         <button
                           onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
-                          className="text-red-400/70 text-[10px] hover:text-red-400 mt-0.5"
+                          className="text-red-400/70 text-sm hover:text-red-400 mt-0.5"
                         >Reset to default</button>
                       )}
                     </div>
@@ -1085,7 +1085,7 @@ function ProfileTab({
                 {/* View ID Card Button */}
                 <button
                   onClick={() => setShowIdCard(true)}
-                  className="kuro-btn kuro-btn-hero w-full text-xs flex items-center justify-center gap-2"
+                  className="kuro-btn kuro-btn-hero w-full text-base flex items-center justify-center gap-2"
                 >
                   <Award size={14} /> View Resonator ID Card
                 </button>
@@ -1098,10 +1098,10 @@ function ProfileTab({
               <CardBody>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
                   {Object.keys(SERVERS).map(s => (
-                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[44px] py-2 text-[10px] font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
+                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[44px] py-2 text-sm font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
-                <p className="text-gray-400 text-[10px] mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+                <p className="text-gray-400 text-sm mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
               </CardBody>
             </Card>
 
@@ -1118,8 +1118,8 @@ function ProfileTab({
                       <Monitor size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">OLED Mode</div>
-                      <div className="text-gray-400 text-[10px]">True black (#000) for OLED screens</div>
+                      <div className="text-white text-base font-medium">OLED Mode</div>
+                      <div className="text-gray-400 text-sm">True black (#000) for OLED screens</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -1135,7 +1135,7 @@ function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.oledMode && (
-                  <p className="text-emerald-400 text-[10px] text-center">OLED mode active. Saves battery on OLED displays</p>
+                  <p className="text-emerald-400 text-sm text-center">OLED mode active. Saves battery on OLED displays</p>
                 )}
 
                 {/* Dyslexic Font Toggle */}
@@ -1145,8 +1145,8 @@ function ProfileTab({
                       <Type size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Accessibility Font</div>
-                      <div className="text-gray-400 text-[10px]">OpenDyslexic - easier to read</div>
+                      <div className="text-white text-base font-medium">Accessibility Font</div>
+                      <div className="text-gray-400 text-sm">OpenDyslexic - easier to read</div>
                     </div>
                   </div>
                   <button
@@ -1168,8 +1168,8 @@ function ProfileTab({
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Swipe Navigation</div>
-                      <div className="text-gray-400 text-[10px]">Swipe left/right to switch tabs</div>
+                      <div className="text-white text-base font-medium">Swipe Navigation</div>
+                      <div className="text-gray-400 text-sm">Swipe left/right to switch tabs</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -1185,7 +1185,7 @@ function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
-                  <p className="text-cyan-300 text-xs text-center">Swipe left or right on content area to navigate</p>
+                  <p className="text-cyan-300 text-base text-center">Swipe left or right on content area to navigate</p>
                 )}
 
                 {/* Animations Toggle — 3-state: off < on < full */}
@@ -1195,8 +1195,8 @@ function ProfileTab({
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Animations</div>
-                      <div className="text-gray-400 text-[10px]">Background effects, transitions & glow</div>
+                      <div className="text-white text-base font-medium">Animations</div>
+                      <div className="text-gray-400 text-sm">Background effects, transitions & glow</div>
                     </div>
                   </div>
                   <button
@@ -1211,20 +1211,20 @@ function ProfileTab({
                     aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()} — click to switch to ${visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF'}`}
                     title={`Currently: ${visualSettings.animationsEnabled.toUpperCase()}. Click to cycle.`}
                   >
-                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold tracking-wide text-white/80 pointer-events-none select-none">
+                    <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-wide text-white/80 pointer-events-none select-none">
                       {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
                     </span>
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[28px]' : 'left-[52px]'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - Background effects, transitions and glow</p>
+                  <p className="text-purple-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - Background effects, transitions and glow</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
+                  <p className="text-fuchsia-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
                 )}
 
                 {/* Background Picker */}
@@ -1255,8 +1255,8 @@ function ProfileTab({
                         <Sparkles size={16} />
                       </div>
                       <div>
-                        <div className="text-white text-xs font-medium">Backgrounds</div>
-                        <div className="text-gray-400 text-[10px]">Set images for header, navigation, and background independently</div>
+                        <div className="text-white text-base font-medium">Backgrounds</div>
+                        <div className="text-gray-400 text-sm">Set images for header, navigation, and background independently</div>
                       </div>
                     </div>
 
@@ -1269,7 +1269,7 @@ function ProfileTab({
                       ].map(t => {
                         const bg = visualSettings[t.settingKey];
                         return (
-                          <button key={t.key} onClick={() => { setBgTarget(t.key); if (t.key !== 'background' && bgCategory === 'custom') setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-[10px] relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                          <button key={t.key} onClick={() => { setBgTarget(t.key); if (t.key !== 'background' && bgCategory === 'custom') setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
                             {bg?.url && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" style={{ objectPosition: bg.objectPosition || 'center' }} />}
                             <span className="relative z-10">{t.label}</span>
                             {bg && <span className="relative z-10 ml-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />}
@@ -1281,7 +1281,7 @@ function ProfileTab({
                     {/* Category tabs */}
                     <div className="flex gap-1.5 mb-3">
                       {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['custom'] : [])].map(c => (
-                        <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-[10px] ${bgCategory === c ? 'active-cyan' : ''}`}>
+                        <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-sm ${bgCategory === c ? 'active-cyan' : ''}`}>
                           {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : 'Animated'}
                         </button>
                       ))}
@@ -1289,7 +1289,7 @@ function ProfileTab({
 
                     {/* Clear current target */}
                     {currentBg && (
-                      <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-[10px] mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
+                      <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-sm mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
                         Clear {bgTarget} image
                       </button>
                     )}
@@ -1305,7 +1305,7 @@ function ProfileTab({
                         >
                           <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
+                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{t.name}</span>
                           {isSelected('resonator', t.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
@@ -1318,7 +1318,7 @@ function ProfileTab({
                         >
                           <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">v{v.version}</span>
+                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">v{v.version}</span>
                           {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
@@ -1331,7 +1331,7 @@ function ProfileTab({
                         >
                           <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{o.name}</span>
+                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{o.name}</span>
                           {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
@@ -1348,7 +1348,7 @@ function ProfileTab({
                               return (
                                 <button key={bg.id}
                                   onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id, appBg: null })}
-                                  className={`min-h-[36px] py-1.5 rounded-md text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white ring-1 ring-white/20' : `${bg.color} hover:text-white`}`}
+                                  className={`min-h-[36px] py-1.5 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white ring-1 ring-white/20' : `${bg.color} hover:text-white`}`}
                                   style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                                 >{bg.label}</button>
                               );
@@ -1357,28 +1357,28 @@ function ProfileTab({
                           {visualSettings.bgStyle !== 'none' && (
                             <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
                               <div className="flex items-center gap-3">
-                                <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">Resolution</div>
+                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">Resolution</div>
                                 <div className="flex gap-1 flex-1">
                                   {[25, 50, 100, 200].map(res => {
                                     const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
                                     const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
                                     return <button key={res}
                                       onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
-                                      className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                      className={`flex-1 min-h-[32px] py-1 rounded text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                       style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                                     >{res}%</button>;
                                   })}
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">FPS</div>
+                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">FPS</div>
                                 <div className="flex gap-1 flex-1">
                                   {[15, 30, 45, 60].map(fps => {
                                     const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
                                     const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
                                     return <button key={fps}
                                       onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
-                                      className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                      className={`flex-1 min-h-[32px] py-1 rounded text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
                                       style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
                                     >{fps}</button>;
                                   })}
@@ -1400,14 +1400,14 @@ function ProfileTab({
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Accent Theme</div>
-                      <div className="text-gray-400 text-[10px]">Changes accent colors across the app</div>
+                      <div className="text-white text-base font-medium">Accent Theme</div>
+                      <div className="text-gray-400 text-sm">Changes accent colors across the app</div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })} className={`kuro-btn text-[10px] ${visualSettings.theme === 'default' ? 'active-gold' : ''}`}>Default</button>
+                    <button onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })} className={`kuro-btn text-sm ${visualSettings.theme === 'default' ? 'active-gold' : ''}`}>Default</button>
                     {['Spectro', 'Glacio', 'Fusion', 'Electro', 'Aero', 'Havoc'].map(el => (
-                      <button key={el} onClick={() => saveVisualSettings({ ...visualSettings, theme: el })} className={`kuro-btn text-[10px]`} style={visualSettings.theme === el ? { borderColor: getElementColor(el), background: getElementBg(el), color: getElementColor(el), boxShadow: `0 0 8px ${getElementColor(el)}40` } : undefined}>
+                      <button key={el} onClick={() => saveVisualSettings({ ...visualSettings, theme: el })} className={`kuro-btn text-sm`} style={visualSettings.theme === el ? { borderColor: getElementColor(el), background: getElementBg(el), color: getElementColor(el), boxShadow: `0 0 8px ${getElementColor(el)}40` } : undefined}>
                         {el}
                       </button>
                     ))}
@@ -1422,8 +1422,8 @@ function ProfileTab({
                         <Download size={16} />
                       </div>
                       <div>
-                        <div className="text-white text-xs font-medium">Install App</div>
-                        <div className="text-gray-400 text-[10px]">Add to home screen for offline use</div>
+                        <div className="text-white text-base font-medium">Install App</div>
+                        <div className="text-gray-400 text-sm">Add to home screen for offline use</div>
                       </div>
                     </div>
                     <button
@@ -1431,14 +1431,14 @@ function ProfileTab({
                         const accepted = await pwa.promptInstall();
                         if (accepted) toast?.addToast?.('App installed successfully!', 'success');
                       }}
-                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-xs font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-base font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
                     >
                       Install
                     </button>
                   </div>
                 )}
                 {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-[10px] text-center">✓ App is installed on your device</p>
+                  <p className="text-emerald-400 text-sm text-center">✓ App is installed on your device</p>
                 )}
               </CardBody>
             </Card>
@@ -1451,11 +1451,11 @@ function ProfileTab({
 
             {state.profile.importedAt && (
               <Card>
-                <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear history', message: 'Clear all imported Convene history?\nThis cannot be undone.', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); } }} className="text-red-400 text-[10px] hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
+                <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear history', message: 'Clear all imported Convene history?\nThis cannot be undone.', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); toast?.addToast?.('Profile cleared!', 'info'); } }} className="text-red-400 text-sm hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
                 <CardBody>
-                  {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
-                  <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
-                  <p className="text-gray-400 text-[10px] mt-2">View detailed stats in the Stats tab</p>
+                  {state.profile.uid && <div className="flex justify-between text-base mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
+                  <div className="flex justify-between text-base"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
+                  <p className="text-gray-400 text-sm mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
             )}
@@ -1467,25 +1467,25 @@ function ProfileTab({
                 {googleUser ? (
                   <>
                     <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--bg-stat)' }}>
-                      {googleUser.photoUrl ? <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" onError={e => { e.target.style.display = 'none'; }} /> : <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-xs font-bold">{(googleUser.displayName || 'U')[0]}</div>}
+                      {googleUser.photoUrl ? <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" onError={e => { e.target.style.display = 'none'; }} /> : <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-base font-bold">{(googleUser.displayName || 'U')[0]}</div>}
                       <div className="flex-1 min-w-0">
                         <div style={{ color: 'var(--text-heading)', fontSize: 'var(--font-base)', fontWeight: 600 }} className="truncate">{googleUser.displayName}</div>
                         <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
                       </div>
-                      <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-[10px] px-2 py-1 flex-shrink-0">Sign out</button>
+                      <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-sm px-2 py-1 flex-shrink-0">Sign out</button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={handleCloudBackup}
                         disabled={cloudBackupStatus === 'saving'}
-                        className="kuro-btn py-2 text-xs flex items-center justify-center gap-1 active-emerald"
+                        className="kuro-btn py-2 text-base flex items-center justify-center gap-1 active-emerald"
                       >
                         {cloudBackupStatus === 'saving' ? 'Saving...' : '↑ Backup'}
                       </button>
                       <button
                         onClick={handleCloudRestore}
                         disabled={cloudBackupStatus === 'loading'}
-                        className="kuro-btn py-2 text-xs flex items-center justify-center gap-1 active-gold"
+                        className="kuro-btn py-2 text-base flex items-center justify-center gap-1 active-gold"
                       >
                         {cloudBackupStatus === 'loading' ? 'Loading...' : '↓ Restore'}
                       </button>
@@ -1495,7 +1495,7 @@ function ProfileTab({
                 ) : (
                   <button
                     onClick={handleGoogleSignIn}
-                    className="kuro-btn w-full py-2.5 flex items-center justify-center gap-2 text-xs"
+                    className="kuro-btn w-full py-2.5 flex items-center justify-center gap-2 text-base"
                   >
                     <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                     Sign in with Google

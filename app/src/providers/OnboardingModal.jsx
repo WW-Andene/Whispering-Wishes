@@ -34,15 +34,15 @@ const OnboardingModal = ({ onComplete }) => {
         </div>
 
         {/* Skip button - always white */}
-        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-xs min-h-[44px] min-w-[44px] px-3 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors flex items-center justify-center" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
+        <button onClick={onComplete} className="absolute top-3 right-3 z-20 text-base min-h-[44px] min-w-[44px] px-3 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors flex items-center justify-center" style={{background:'rgba(255,255,255,0.05)'}}>Skip</button>
 
         {/* Content */}
         <div className="relative z-10 p-5 pt-8 text-center" aria-live="polite" aria-atomic="true">
           <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${s.bg} border ${s.border} mb-3`} style={{color: s.color}}>
             {s.icon}
           </div>
-          <h4 className="font-bold text-sm text-gray-200 mb-1">{s.title}</h4>
-          <p className="text-gray-400 text-[10px]">{s.desc}</p>
+          <h4 className="font-bold text-md text-gray-200 mb-1">{s.title}</h4>
+          <p className="text-gray-400 text-sm">{s.desc}</p>
         </div>
 
         {/* Step indicators */}
@@ -56,14 +56,14 @@ const OnboardingModal = ({ onComplete }) => {
         <div className="p-3 flex justify-between items-center" style={{borderTop:'1px solid rgba(255,255,255,0.05)'}}>
           <div className="w-12">
             {step > 0 && (
-              <button onClick={() => setStep(step - 1)} className="text-xs min-h-[44px] px-4 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
+              <button onClick={() => setStep(step - 1)} className="text-base min-h-[44px] px-4 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Back</button>
             )}
           </div>
           <div>
             {step < steps.length - 1 ? (
-              <button onClick={() => setStep(step + 1)} className="text-xs min-h-[44px] px-4 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Next</button>
+              <button onClick={() => setStep(step + 1)} className="text-base min-h-[44px] px-4 py-2 rounded text-gray-400 hover:text-gray-300 transition-colors" style={{background:'rgba(255,255,255,0.05)'}}>Next</button>
             ) : (
-              <button onClick={onComplete} className="text-xs min-h-[44px] px-4 py-2 rounded border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-medium">Get Started</button>
+              <button onClick={onComplete} className="text-base min-h-[44px] px-4 py-2 rounded border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 font-medium">Get Started</button>
             )}
           </div>
         </div>

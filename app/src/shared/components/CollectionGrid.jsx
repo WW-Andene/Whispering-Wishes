@@ -98,7 +98,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-sm font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
     )}
     {/* Profile pic setter — top-right corner */}
     {owned && !framingMode && onSetProfilePic && (
@@ -114,16 +114,16 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     )}
     {isSelected && (
       <div className="absolute top-1 right-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-        <span className="text-black text-[10px]">✓</span>
+        <span className="text-black text-sm">✓</span>
       </div>
     )}
     <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
       {owned ? (
-        <div className={`${countColor} font-bold text-xl kuro-number`}>{countLabel}</div>
+        <div className={`${countColor} font-bold text-2xl kuro-number`}>{countLabel}</div>
       ) : (
-        <div className="text-gray-500 font-bold text-xl">—</div>
+        <div className="text-gray-500 font-bold text-2xl">—</div>
       )}
-      <div className={`text-[10px] truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
+      <div className={`text-sm truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
     </div>
   </button>
   );
@@ -142,10 +142,10 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
-      <div className="text-gray-400 text-sm mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
-      <p className="text-gray-600 text-[10px] mb-3">Try adjusting your filters or clearing them</p>
+      <div className="text-gray-400 text-md mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
+      <p className="text-gray-600 text-sm mb-3">Try adjusting your filters or clearing them</p>
       {hasActiveFilters && onClearFilters && (
-        <button onClick={onClearFilters} className="kuro-btn text-[10px] px-3 py-1.5 active-gold">Clear Filters</button>
+        <button onClick={onClearFilters} className="kuro-btn text-sm px-3 py-1.5 active-gold">Clear Filters</button>
       )}
     </div>
   );
@@ -157,7 +157,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   const canCollapse = collapsible && items.length > collapsedCount;
   return (
     <>
-      <div className="text-[10px] text-gray-400 mb-2 text-right">{ownedCount}/{items.length} shown{hasActiveFilters ? ` (${totalCount} total)` : ''}</div>
+      <div className="text-sm text-gray-400 mb-2 text-right">{ownedCount}/{items.length} shown{hasActiveFilters ? ` (${totalCount} total)` : ''}</div>
       <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
         {showItems.map(([name, count]) => {
           const imgUrl = collectionImages[name];

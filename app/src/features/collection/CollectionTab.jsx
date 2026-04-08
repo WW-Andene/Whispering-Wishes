@@ -271,9 +271,9 @@ function CollectionTab({
         <Card>
           <CardBody className="kuro-empty-state text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />
-            <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
-            <p className="text-gray-400 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
-            <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
+            <p className="text-gray-400 text-md">Awaiting Convene data transmission</p>
+            <p className="text-gray-400 text-base mt-1 mb-3">Import via Profile to initialize your archive</p>
+            <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">Open Profile to import</button>
           </CardBody>
         </Card>
       ) : (
@@ -294,13 +294,13 @@ function CollectionTab({
             return (
               <Card><CardBody>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-xs font-medium">Collection Progress</span>
-                  <span className="text-yellow-400 text-sm font-bold kuro-number">{pct}%</span>
+                  <span className="text-white text-base font-medium">Collection Progress</span>
+                  <span className="text-yellow-400 text-md font-bold kuro-number">{pct}%</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-[10px]">
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
                   <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Resonator</div></div>
                   <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Resonator</div></div>
                   <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Weapon</div></div>
@@ -323,7 +323,7 @@ function CollectionTab({
                 value={collectionSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search by name, DPS, Electro, Broadblade…"
-                className="kuro-input w-full pl-8 text-xs"
+                className="kuro-input w-full pl-8 text-base"
                 aria-label="Search collection by keyword"
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -380,7 +380,7 @@ function CollectionTab({
                       Filters active
                     </span>
                   </div>
-                  <button onClick={clearCollectionFilters} className="text-[10px] text-gray-400 hover:text-white underline">
+                  <button onClick={clearCollectionFilters} className="text-sm text-gray-400 hover:text-white underline">
                     Clear all
                   </button>
                 </div>
@@ -565,7 +565,7 @@ function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('copies')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-xs font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                   title="Sort by copies"
                   aria-label="Sort by copies"
                   aria-pressed={collectionSort === 'copies'}
@@ -584,7 +584,7 @@ function CollectionTab({
                 {collectionView === 'items' && (
                   <button
                     onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-[10px] font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
+                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
                     title={collectionSort === 'nameDesc' ? 'Sort Z-A' : 'Sort A-Z'}
                     aria-label={collectionSort === 'nameDesc' ? 'Sorted Z to A, click for A to Z' : 'Sort alphabetically'}
                     aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}
