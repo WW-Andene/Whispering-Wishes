@@ -22,6 +22,7 @@ export default {
     extend: {
       // D-TYPE-0: Unified font-size scale backed by CSS variables (kuro.css)
       fontSize: {
+        '2xs': 'var(--font-2xs)',   // 7px
         'xs':  'var(--font-xs)',    // 9px
         'sm':  'var(--font-sm)',    // 10px
         'base':'var(--font-base)',  // 12px
@@ -31,7 +32,8 @@ export default {
         '2xl': 'var(--font-2xl)',   // 20px
         '3xl': 'var(--font-3xl)',   // 24px
         '4xl': 'var(--font-4xl)',   // 30px
-        '5xl': 'var(--font-5xl)',   // 48px
+        '5xl': 'var(--font-5xl)',   // 36px
+        '6xl': 'var(--font-6xl)',   // 48px
       },
       // D-TYPE-1: Display + data font families for cyberpunk-luxe character
       fontFamily: {
