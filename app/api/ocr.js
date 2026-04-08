@@ -7,6 +7,7 @@ const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha
 // F-013: Origin allowlist (prevents unauthorized API usage / quota drain)
 const ALLOWED_ORIGINS = [
   'https://whispering-wishes.vercel.app',
+  'http://localhost:3000',
   'http://localhost:5000',
   'http://localhost:5173',
 ];

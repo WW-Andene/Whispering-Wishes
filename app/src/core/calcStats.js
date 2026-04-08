@@ -4,12 +4,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import {
-  HARD_PITY, SOFT_PITY_START,
-  ASTRITE_PER_PULL,
-  MAX_CALC_PULLS,
+  HARD_PITY, SOFT_PITY_START, ASTRITE_PER_PULL, MAX_CALC_PULLS,
   HARD_PITY_4STAR, FEATURED_4STAR_RATE,
   AVG_PULLS_PER_4STAR, AVG_4STAR_PULLS_PER_FEATURED,
-} from '../appcore-data.js';
+} from '../data/constants.js';
 
 // [SECTION:SIMULATION]
 // === GACHA PROBABILITY ENGINE v2.0 ===

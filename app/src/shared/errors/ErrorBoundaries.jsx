@@ -43,9 +43,9 @@ class TabErrorBoundary extends React.Component {
                   ↻ Reload
                 </button>
                 {this.state.error && (
-                  <details className="mt-3 text-left">
+                  <details className="mt-3 text-left" open>
                     <summary className="text-gray-400 text-[10px] cursor-pointer">Error details</summary>
-                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+                    <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-[10px] overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
                   </details>
                 )}
               </div>
@@ -103,13 +103,13 @@ class AppErrorBoundary extends React.Component {
       return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#080c12', color: '#fff', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
           {/* §E10-ER-F3: Red border accent to distinguish app-level crash from tab-level */}
-          <div style={{ textAlign: 'center', maxWidth: 420, border: '1px solid rgba(239,68,68,0.4)', borderRadius: 16, padding: '2rem', background: 'rgba(239,68,68,0.05)' }}>
-            <div style={{ fontSize: 48, marginBottom: 16, color: '#ef4444' }}>!</div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Whispering Wishes crashed</h1>
-            <p style={{ color: '#9ca3af', fontSize: 14, marginBottom: 24 }}>Something unexpected went wrong. Your data is safe in local storage.</p>
+          <div style={{ textAlign: 'center', maxWidth: '420px', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 'var(--radius-xl)', padding: '2rem', background: 'rgba(239,68,68,0.05)' }}>
+            <div style={{ fontSize: 48, marginBottom: 'var(--space-lg)', color: '#ef4444' }}>!</div>
+            <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, marginBottom: 'var(--space-sm)' }}>Whispering Wishes crashed</h1>
+            <p style={{ color: '#9ca3af', fontSize: 'var(--font-md)', marginBottom: 'var(--space-xl)' }}>Something unexpected went wrong. Your data is safe in local storage.</p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
-              style={{ padding: '10px 24px', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee', borderRadius: 8, cursor: 'pointer', fontSize: 14, marginRight: 8, outline: 'none' }}
+              style={{ padding: 'var(--space-sm) var(--space-xl)', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-md)', marginRight: 8, outline: 'none' }}
               onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(6,182,212,0.5)'; }}
               onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             >
@@ -117,16 +117,16 @@ class AppErrorBoundary extends React.Component {
             </button>
             <button
               onClick={() => window.location.reload()}
-              style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#d1d5db', borderRadius: 8, cursor: 'pointer', fontSize: 14, outline: 'none' }}
+              style={{ padding: 'var(--space-sm) var(--space-xl)', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#d1d5db', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-md)', outline: 'none' }}
               onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.3)'; }}
               onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             >
               Reload Page
             </button>
             {this.state.error && (
-              <details style={{ marginTop: 16, textAlign: 'left' }}>
-                <summary style={{ color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>Error details</summary>
-                <pre style={{ marginTop: 8, padding: 12, background: 'rgba(0,0,0,0.5)', borderRadius: 8, color: '#f87171', fontSize: 10, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+              <details style={{ marginTop: 'var(--space-lg)', textAlign: 'left' }}>
+                <summary style={{ color: '#6b7280', fontSize: 'var(--font-base)', cursor: 'pointer' }}>Error details</summary>
+                <pre style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-md)', background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: 'var(--font-sm)', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
               </details>
             )}
           </div>

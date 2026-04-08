@@ -11,18 +11,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { BarChart3, ChevronDown, ChevronLeft, ChevronRight, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
+import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
+import PityHistogram from './PityHistogram.jsx';
+import ConveneHistoryChart from './ConveneHistoryChart.jsx';
 import { ALL_CHARACTERS } from '../../data/characters.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
 function AnalyticsTab({
   state,
@@ -33,18 +36,11 @@ function AnalyticsTab({
   trophies,
   collectionImages,
   toast,
-  getFirebaseAuth,
-  firebaseUrl,
-  firebaseFetch,
-  fetchWithTimeout,
   hashUidForStorage,
   checkFirebaseRateLimit,
-  FIREBASE_AVAILABLE,
 }) {
+  const { getFirebaseAuth, firebaseUrl, firebaseFetch, FIREBASE_AVAILABLE } = useCloudStorage();
   // ── Analytics-only state ──────────────────────────────────────────────────
-  const [chartRange, setChartRange] = useState('monthly');
-  const [chartOffset, setChartOffset] = useState(9999);
-  const [chartBanner, setChartBanner] = useState('all');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [selectedTrophy, setSelectedTrophy] = useState(null);
   const [leaderboardConsented, setLeaderboardConsented] = useState(() => {
@@ -361,7 +357,7 @@ function AnalyticsTab({
 
             {!overallStats ? (
               <Card>
-                <CardBody className="text-center py-8">
+                <CardBody className="kuro-empty-state text-center py-8">
                   <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
                   <p className="text-gray-300 text-sm font-medium">Awaiting signal data</p>
                   <p className="text-gray-400 text-xs mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.</p>
@@ -465,7 +461,7 @@ function AnalyticsTab({
                                 ))}
                               </div>
                             ) : leaderboardData.length === 0 ? (
-                              <div className="text-center py-8">
+                              <div className="kuro-empty-state text-center py-8">
                                 <div className="text-gray-400 text-sm mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
                                 <div className="text-gray-500 text-[10px]">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
                               </div>
@@ -495,7 +491,7 @@ function AnalyticsTab({
                                         <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
                                           {isYou ? (entry.id?.slice(0, 4) + '*** (You)') : (entry.id?.slice(0, 4) + '***')}
                                         </span>
-                                        {isYou && <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded">YOU</span>}
+                                        {isYou && <span className="kuro-badge kuro-badge-cyan">YOU</span>}
                                       </div>
                                       <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
                                     </div>
@@ -682,7 +678,7 @@ function AnalyticsTab({
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
+                      <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Import more history to earn trophies</p>
                     </CardBody>
                   </Card>
                 )}
@@ -780,328 +776,9 @@ function AnalyticsTab({
                   </Card>
                 )}
 
-                {/* 5★ Pity Distribution Histogram */}
-                {(() => {
-                  if (!statsTabData.histogramStats) return (
-                    <Card>
-                      <CardHeader>
-                        <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
-                      </CardHeader>
-                      <CardBody>
-                        <p className="text-gray-400 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
-                      </CardBody>
-                    </Card>
-                  );
-                  const { fiveStars, histogramBuckets: buckets, allBucketLabels: allBuckets, histogramStats } = statsTabData;
-                  const { maxCount, avgPity, minPity, maxPity } = histogramStats;
-                  
-                  // Color coding
-                  const getBarColor = (label) => {
-                    const start = parseInt(label.split('-')[0], 10);
-                    if (start <= 20) return '#22c55e'; // Green - very lucky
-                    if (start <= 40) return '#4ade80'; // Lime - lucky
-                    if (start <= 50) return '#edaf18'; // Yellow - average
-                    if (start <= 60) return '#f97316'; // Orange - unlucky
-                    return '#ef4444'; // Red - soft pity / hard pity
-                  };
-                  
-                  return (
-                    <Card>
-                      {/* AUDIT-FIX M32: Use "Convenes" consistently */}
-                      <CardHeader action={<span className="text-gray-500 text-[10px]">{fiveStars.length} Convenes</span>}>
-                        <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
-                      </CardHeader>
-                      <CardBody>
-                        {/* Screen reader accessible summary */}
-                        <div className="sr-only">
-                          Pity distribution: {allBuckets.map(label => `${label} Convenes: ${buckets[label] || 0}`).join(', ')}.
-                          Average pity: {avgPity}, range: {minPity} to {maxPity}.
-                        </div>
-                        {/* Histogram bars - neon glow style */}
-                        <div className="flex items-end gap-1.5 h-24 pt-5 mb-2" aria-hidden="true">
-                          {allBuckets.map(label => {
-                            const count = buckets[label] || 0;
-                            const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                            const color = getBarColor(label);
-                            return (
-                              <div key={label} className="flex-1 flex flex-col items-center" title={`${label} pity: ${count} Convene${count !== 1 ? 's' : ''}`}>
-                                <div className="w-full relative" style={{ height: '72px' }}>
-                                  {count > 0 && (
-                                    <div 
-                                      className="absolute left-0 right-0 text-[10px] text-center font-bold"
-                                      style={{
-                                        bottom: `${height}%`,
-                                        marginBottom: '4px',
-                                        color: color,
-                                        textShadow: `0 0 8px ${color}`,
-                                        fontFamily: 'var(--font-data)'
-                                      }}
-                                    >
-                                      {count}
-                                    </div>
-                                  )}
-                                  {/* Neon bar - semi-filled with glowing border */}
-                                  <div 
-                                    className="absolute bottom-0 left-1 right-1 rounded-t transition-all"
-                                    style={{ 
-                                      height: `${height}%`, 
-                                      minHeight: count > 0 ? '8px' : '0',
-                                      background: `linear-gradient(to top, ${color}40, ${color}20)`,
-                                      border: count > 0 ? `1px solid ${color}90` : 'none',
-                                      borderBottom: 'none',
-                                      boxShadow: count > 0 ? `0 0 12px ${color}50, inset 0 0 15px ${color}30` : 'none',
-                                    }} 
-                                  />
-                                  {/* Bottom glow line */}
-                                  {count > 0 && (
-                                    <div 
-                                      className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full"
-                                      style={{ 
-                                        background: color,
-                                        boxShadow: `0 0 8px ${color}, 0 0 16px ${color}80`
-                                      }} 
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        {/* X-axis labels */}
-                        <div className="flex gap-1.5">
-                          {allBuckets.map(label => (
-                            <div key={label} className="flex-1 text-[10px] text-gray-400 text-center">
-                              {label}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* Stats summary */}
-                        <div className="mt-3 pt-3 border-t border-[var(--border-medium)] grid grid-cols-3 gap-2 text-center">
-                          <div>
-                            <div className="text-emerald-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)', fontFamily: 'var(--font-data)' }}>{minPity}</div>
-                            <div className="text-gray-400 text-[10px]">Lowest</div>
-                          </div>
-                          <div>
-                            <div className="text-yellow-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(237,175,24,0.5)', fontFamily: 'var(--font-data)' }}>{avgPity}</div>
-                            <div className="text-gray-400 text-[10px]">Average</div>
-                          </div>
-                          <div>
-                            <div className="text-red-400 font-bold text-sm" style={{ textShadow: '0 0 10px rgba(239,68,68,0.5)', fontFamily: 'var(--font-data)' }}>{maxPity}</div>
-                            <div className="text-gray-400 text-[10px]">Highest</div>
-                          </div>
-                        </div>
-                        
-                        {/* Pity zone legend - neon dots (all 5 tiers) */}
-                        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }}></span> 
-                            <span className="text-gray-400">1-20</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#4ade80', boxShadow: '0 0 6px #4ade80' }}></span> 
-                            <span className="text-gray-400">21-40</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#edaf18', boxShadow: '0 0 6px #edaf18' }}></span> 
-                            <span className="text-gray-400">41-50</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#f97316', boxShadow: '0 0 6px #f97316' }}></span> 
-                            <span className="text-gray-400">51-60</span>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full" style={{ background: '#ef4444', boxShadow: '0 0 6px #ef4444' }}></span> 
-                            <span className="text-gray-400">61-80</span>
-                          </span>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  );
-                })()}
+                <PityHistogram statsTabData={statsTabData} />
 
-                {/* Convenes Chart with Time Range */}
-                {/* P2-FIX: Now reads from memoized statsTabData instead of recomputing allHist */}
-                <Card className="stats-full-width">
-                  <CardHeader>
-                    <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
-                  </CardHeader>
-                  <CardBody>
-                    {/* Banner + Range filter buttons — always visible so user can switch even with empty data */}
-                    <div className="flex gap-1 mb-2 flex-wrap">
-                      {[['all', 'All'], ['featured', 'Featured'], ['weapon', 'Weapon'], ['stdChar', 'Standard Resonator'], ['stdWeap', 'Standard Weapon']].map(([val, label]) => (
-                        <button
-                          key={val}
-                          onClick={() => { setChartBanner(val); setChartOffset(9999); }}
-                          className={`px-2 py-1 text-[10px] rounded transition-all ${chartBanner === val ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex gap-1 mb-3 flex-wrap">
-                      {['daily', 'weekly', 'monthly', 'yearly'].map(r => (
-                        <button
-                          key={r}
-                          onClick={() => { setChartRange(r); setChartOffset(9999); }}
-                          className={`px-2 py-1 text-[10px] rounded transition-all ${chartRange === r ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
-                        >
-                          {r.charAt(0).toUpperCase() + r.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-                    {(() => {
-                      const chartHist = chartBanner === 'all' ? statsTabData.allHist
-                        : chartBanner === 'featured' ? statsTabData.featuredHist
-                        : chartBanner === 'weapon' ? statsTabData.weaponHist
-                        : chartBanner === 'stdChar' ? statsTabData.stdCharHist
-                        : statsTabData.stdWeapHist;
-                      if (chartHist.length < 10) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this filter. Try a different banner type or time range.</p>;
-
-                      const groupData = (range) => {
-                        const grouped = {};
-                        chartHist.forEach(p => {
-                          if (p.timestamp) {
-                            const date = new Date(p.timestamp);
-                            let key;
-                            if (range === 'daily') {
-                              key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-                            } else if (range === 'weekly') {
-                              // Proper ISO 8601 week number calculation
-                              const target = new Date(date.valueOf());
-                              target.setDate(target.getDate() - ((target.getDay() + 6) % 7) + 3); // nearest Thursday
-                              const jan4 = new Date(target.getFullYear(), 0, 4);
-                              const weekNum = 1 + Math.round(((target.getTime() - jan4.getTime()) / 86400000 - 3 + ((jan4.getDay() + 6) % 7)) / 7);
-                              const isoYear = target.getFullYear(); // ISO year may differ at year boundaries
-                              key = `${isoYear}-W${String(Math.max(1, weekNum)).padStart(2,'0')}`;
-                            } else if (range === 'monthly') {
-                              key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
-                            } else {
-                              key = `${date.getFullYear()}`;
-                            }
-                            if (!grouped[key]) grouped[key] = { pulls: 0, fiveStars: 0 };
-                            grouped[key].pulls++;
-                            if (p.rarity === 5) grouped[key].fiveStars++;
-                          }
-                        });
-                        return grouped;
-                      };
-                      
-                      const formatLabel = (key, range) => {
-                        if (range === 'daily') {
-                          const d = new Date(key + 'T12:00:00'); // Avoid UTC midnight → local day shift
-                          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        } else if (range === 'weekly') {
-                          return key.split('-')[1];
-                        } else if (range === 'monthly') {
-                          return new Date(key + '-15T12:00:00').toLocaleDateString('en-US', { month: 'short' }); // Mid-month avoids day shift
-                        } else {
-                          return key;
-                        }
-                      };
-                      
-                      const visibleCount = { daily: 14, weekly: 12, monthly: 6, yearly: 6 };
-                      const grouped = groupData(chartRange);
-                      const allData = Object.entries(grouped)
-                        .sort((a,b) => a[0].localeCompare(b[0]))
-                        .map(([key, data]) => ({
-                          key,
-                          label: formatLabel(key, chartRange),
-                          pulls: data.pulls
-                        }));
-                      
-                      if (allData.length < 2) return <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No data for this combination. Try a different filter or time range.</p>;
-
-                      const maxVisible = visibleCount[chartRange];
-                      const maxOffset = Math.max(0, allData.length - maxVisible);
-                      const clampedOffset = Math.min(chartOffset, maxOffset);
-                      const chartData = allData.slice(clampedOffset, clampedOffset + maxVisible);
-                      const canGoLeft = clampedOffset > 0;
-                      const canGoRight = clampedOffset < maxOffset;
-
-                      return (
-                        <>
-                          <div className="flex items-center justify-between mb-3">
-                            <div />
-                            {allData.length > maxVisible && (
-                              <div className="flex gap-1">
-                                <button 
-                                  onClick={() => setChartOffset(Math.max(0, clampedOffset - Math.floor(maxVisible / 2)))}
-                                  disabled={!canGoLeft}
-                                  className={`p-1 rounded transition-colors ${canGoLeft ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
-                                >
-                                  <ChevronLeft size={14} />
-                                </button>
-                                <button 
-                                  onClick={() => setChartOffset(Math.min(maxOffset, clampedOffset + Math.floor(maxVisible / 2)))}
-                                  disabled={!canGoRight}
-                                  className={`p-1 rounded transition-colors ${canGoRight ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-white/5 text-gray-500'}`}
-                                >
-                                  <ChevronRight size={14} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="h-32">
-                            <div className="sr-only">Convene history chart showing activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} Convenes`).join(', ')}.</div>
-                            {(() => {
-                              if (!chartData || chartData.length === 0) return null;
-                              const W = 400, H = 128, PAD = { top: 10, right: 10, bottom: 20, left: 35 };
-                              const cW = W - PAD.left - PAD.right, cH = H - PAD.top - PAD.bottom;
-                              const maxVal = Math.max(...chartData.map(d => d.pulls), 1);
-                              const yTicks = [0, Math.round(maxVal / 2), maxVal];
-                              const pts = chartData.map((d, i) => ({
-                                x: PAD.left + (chartData.length > 1 ? (i / (chartData.length - 1)) * cW : cW / 2),
-                                y: PAD.top + cH - (d.pulls / maxVal) * cH,
-                                ...d,
-                              }));
-                              const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
-                              const area = `${line} L${pts[pts.length - 1].x},${PAD.top + cH} L${pts[0].x},${PAD.top + cH} Z`;
-                              const xStep = Math.max(1, Math.ceil(chartData.length / 6));
-                              return (
-                                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
-                                  <defs>
-                                    <linearGradient id="pullGrad" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="0%" stopColor="rgba(237,175,24,0.22)" />
-                                      <stop offset="100%" stopColor="rgba(237,175,24,0)" />
-                                    </linearGradient>
-                                  </defs>
-                                  {yTicks.map(v => {
-                                    const y = PAD.top + cH - (v / maxVal) * cH;
-                                    return <g key={v}>
-                                      <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
-                                      <text x={PAD.left - 4} y={y + 3} textAnchor="end" fill="#8892a4" fontSize="9" fontFamily="var(--font-data)">{v}</text>
-                                    </g>;
-                                  })}
-                                  <path d={area} fill="url(#pullGrad)" />
-                                  <path d={line} fill="none" stroke="rgba(237,175,24,0.4)" strokeWidth="1.5" />
-                                  {pts.map((p, i) => i % xStep === 0 ? (
-                                    <text key={i} x={p.x} y={H - 4} textAnchor="middle" fill="#8892a4" fontSize="9" fontFamily="var(--font-data)">{p.label}</text>
-                                  ) : null)}
-                                  {pts.map((p, i) => (
-                                    <g key={i}>
-                                      <circle cx={p.x} cy={p.y} r="8" fill="transparent" className="cursor-pointer">
-                                        <title>{p.label}: {p.pulls} Convenes</title>
-                                      </circle>
-                                      <circle cx={p.x} cy={p.y} r="2" fill="rgba(237,175,24,0.6)" className="pointer-events-none" />
-                                    </g>
-                                  ))}
-                                </svg>
-                              );
-                            })()}
-                          </div>
-                          {allData.length > maxVisible && (
-                            <div className="text-center text-[10px] text-gray-400 mt-1">
-                              {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </CardBody>
-                </Card>
-
+                <ConveneHistoryChart statsTabData={statsTabData} />
                 {/* Overall Stats */}
                 <Card>
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
@@ -1128,19 +805,19 @@ function AnalyticsTab({
                       return (<>
                     <p className="text-gray-400 text-[10px] mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.res5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.res4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-[10px] mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm">{totalObtained.wep5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm">{totalObtained.wep4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm">{totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">3★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-sm kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-[10px]">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-sm kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-[10px]">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-sm kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">3★</div></div>
                     </div>
 
                     <p className="text-gray-400 text-[10px] mb-1.5 mt-3">Total</p>
-                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">All Items</div></div>
+                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-sm kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-[10px]">All Items</div></div>
                       </>);
                     })()}
                   </CardBody>
@@ -1186,5 +863,5 @@ function AnalyticsTab({
 export default React.memo(AnalyticsTab, (prev, next) =>
   prev.state.profile === next.state.profile && prev.overallStats === next.overallStats &&
   prev.luckRating === next.luckRating && prev.trophies === next.trophies &&
-  prev.collectionImages === next.collectionImages && prev.FIREBASE_AVAILABLE === next.FIREBASE_AVAILABLE
+  prev.collectionImages === next.collectionImages
 );

@@ -6,8 +6,8 @@
 import {
   HARD_PITY, HARD_PITY_4STAR, FEATURED_4STAR_RATE,
   LUNITE_DAILY_ASTRITE, MAX_ASTRITE,
-  generateUniqueId,
-} from '../appcore-data.js';
+} from '../data/constants.js';
+import { generateUniqueId } from '../utils/helpers.js';
 // NOTE: circular import with storage.js — safe because sanitizeImportedState
 // and sanitizeStateObj are only referenced inside function bodies (reducer case
 // handlers), never at module-evaluation time.
@@ -130,7 +130,7 @@ const reducer = (state, action) => {
         ...state,
         planner: {
           ...state.planner,
-          addedIncome: [...state.planner.addedIncome, action.income],
+          addedIncome: [...state.planner.addedIncome, { ...action.income, astrite: incAst, lunite: incLun, radiant: incRad, lustrous: incLus }],
         },
         calc: {
           ...state.calc,
@@ -272,7 +272,7 @@ const reducer = (state, action) => {
     case ACTION.CLEAR_PROFILE: return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
     case ACTION.SAVE_BOOKMARK: return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
     case ACTION.LOAD_BOOKMARK: {
-      const b = state.bookmarks.find(bm => bm.id === action.id);
+      const b = state.bookmarks.find(bm => bm?.id === action.id);
       if (!b) return state;
       // P9-FIX: Restore ALL saved calc fields, not just a subset (Step 4 audit)
       // Bookmarks save ...state.calc, so we restore every calc field that was captured.

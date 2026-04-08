@@ -24,6 +24,8 @@ export default {
       fontFamily: {
         display: ['Rajdhani', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         data: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        // Unify font-mono with the data font so Tailwind `font-mono` === `--font-data`
+        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       // D-COLOR-1: Cool-tinted gray scale to match the app's blue-tinted surfaces
       // Replaces Tailwind's neutral grays with chromatic cool variants

@@ -4,12 +4,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { getTimeRemaining } from '../../appcore-engine.js';
+import { getTimeRemaining } from '../../core/time.js';
 
 const TIMER_COLOR_MAP = { yellow: 'text-yellow-400', pink: 'text-pink-400', cyan: 'text-cyan-400', orange: 'text-orange-400', purple: 'text-purple-400' };
 
 // P11-FIX: Hoisted constant style objects outside components to prevent recreation on every render (Step 7 audit — NIT-3c)
-const TIMER_BOX_STYLE = Object.freeze({ backgroundColor: 'rgba(15,20,28,0.3)', borderRadius: '12px' });
+const TIMER_BOX_STYLE = Object.freeze({ backgroundColor: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' });
 
 const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alwaysShow = false, onExpire, recalcFn }) => {
   const [currentEnd, setCurrentEnd] = useState(endDate);

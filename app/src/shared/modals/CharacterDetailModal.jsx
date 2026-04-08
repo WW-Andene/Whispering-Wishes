@@ -5,15 +5,14 @@
 
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid } from 'lucide-react';
-import {
-  CHARACTER_DATA, WEAPON_DATA, DEFAULT_COLLECTION_IMAGES,
-  RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS,
-  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
-  RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS,
-} from '../../appcore-data.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
@@ -28,7 +27,8 @@ const DETAIL_ELEMENT_COLORS = {
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, getImageFraming, framingMode, editingImage, setEditingImage, onViewInTeams }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData }) => {
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const data = CHARACTER_DATA[name];
   if (!data) return null;
 
@@ -36,6 +36,21 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
   const bestWeapon = data.bestWeapon || null;
   const weaponData = bestWeapon ? WEAPON_DATA[bestWeapon] : null;
   const weaponImg = bestWeapon ? DEFAULT_COLLECTION_IMAGES[bestWeapon] : null;
+
+  // Ownership helpers for greyed-out completion indicators
+  const ownsChar = (n) => {
+    if (!collectionData) return true; // no data = don't grey out
+    return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
+  };
+  const charCopies = (n) => {
+    if (!collectionData) return 0;
+    return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0);
+  };
+  const ownsWeapon = (n) => {
+    if (!collectionData) return true;
+    return (collectionData.weaps5Counts?.[n] || 0) + (collectionData.weaps4Counts?.[n] || 0) + (collectionData.weaps3Counts?.[n] || 0) > 0;
+  };
+  const ownedCopies = charCopies(name); // how many copies of THIS character
   
   // Info framing: use info-specific framing, falling back to collection framing offset
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
@@ -71,9 +86,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
+              <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -100,10 +115,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             )}
             {data.region && (
-              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{data.region}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.region}</span>
             )}
             {data.birthday && (
-              <span className="text-[10px] px-2 py-1 rounded-lg bg-white/5 text-gray-400 border border-[var(--border-medium)]">{(() => {
+              <span className="kuro-badge kuro-badge-neutral">{(() => {
                 const [m, d] = data.birthday.split('-');
                 const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 return `${months[parseInt(m)]} ${parseInt(d)}`;
@@ -125,18 +140,18 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           })()}
 
           {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)] space-y-2">
-            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
+          <div className="kuro-detail-box space-y-2">
+            <div className="kuro-section-label">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
-              <span className={`text-[10px] px-2 py-0.5 rounded font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.weapon}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{data.role}</span>
+              <span className={`kuro-badge font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             {data.buffs?.length > 0 && (
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Buffs</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.buffs.map((b, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>)}
+                  {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{b}</span>)}
                 </div>
               </div>
             )}
@@ -144,7 +159,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Debuffs</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.debuffs.map((db, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>)}
+                  {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{db}</span>)}
                 </div>
               </div>
             )}
@@ -152,7 +167,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Damage Focus</div>
                 <div className="flex flex-wrap gap-1">
-                  {data.dmgFocus.map((df, i) => <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>)}
+                  {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{df}</span>)}
                 </div>
               </div>
             )}
@@ -160,7 +175,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               <div>
                 <div className="text-[10px] text-gray-400 mb-1">Stat Scaling</div>
                 <div className="flex flex-wrap gap-1">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{data.statScaling} Scaling</span>
+                  <span className="kuro-badge kuro-badge-violet">{data.statScaling} Scaling</span>
                 </div>
               </div>
             )}
@@ -175,24 +190,24 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Base Stats (Lv.90) */}
           {data.baseAtk && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Base Stats (Lv.90)</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-2">Base Stats (Lv.90)</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">HP</div>
-                  <div className="text-sm font-bold text-white">{(data.baseHp || 0).toLocaleString('en-US')}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{(data.baseHp || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">ATK</div>
-                  <div className="text-sm font-bold text-white">{data.baseAtk}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{data.baseAtk}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">DEF</div>
-                  <div className="text-sm font-bold text-white">{(data.baseDef || 0).toLocaleString('en-US')}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{(data.baseDef || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-[10px] text-gray-500">Energy</div>
-                  <div className="text-sm font-bold text-white">{data.maxEnergy || '?'}</div>
+                  <div className="text-sm font-bold text-white kuro-number">{data.maxEnergy || '?'}</div>
                 </div>
               </div>
             </div>
@@ -200,12 +215,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Resonance Chain (S1-S6) */}
           {RESONANCE_CHAIN_DATA[name] && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Resonance Chain</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-2">Resonance Chain</div>
               <div className="space-y-1.5">
                 {[1,2,3,4,5,6].map(s => {
                   const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
                   if (!lvl) return null;
+                  const unlocked = ownedCopies >= s + 1; // S1 needs 2 copies, S2 needs 3, etc.
                   const stats = Object.entries(lvl).map(([k, v]) => {
                     const labels = {
                       atkPct: 'ATK%',
@@ -228,9 +244,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                     return (labels[k] || k) + ' +' + v + '%';
                   }).join(', ');
                   return (
-                    <div key={s} className="flex items-center gap-2 text-[10px]">
-                      <span className={`w-7 text-center font-bold rounded py-0.5 ${s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
-                      <span className="text-gray-300 flex-1">{stats}</span>
+                    <div key={s} className={`flex items-center gap-2 text-[10px] ${!unlocked ? 'opacity-50' : ''}`}>
+                      <span className={`w-7 text-center font-bold rounded py-0.5 ${!unlocked ? 'text-gray-400 bg-gray-500/10 border border-gray-500/30' : s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
+                      <span className={`flex-1 ${unlocked ? 'text-gray-300' : 'text-gray-500'}`}>{stats}</span>
                     </div>
                   );
                 })}
@@ -240,8 +256,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
 
           {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
           {CHAR_BUFF_TABLE[name]?.note && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Buff/Debuff Details</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-1">Buff/Debuff Details</div>
               <p className="text-[10px] text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
             </div>
           )}
@@ -254,17 +270,22 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
           </div>
 
           {/* Best Weapon - with image and stats */}
-          {data.bestWeapon && (
-          <div className={`p-3 rounded-xl border ${colors.border} bg-gradient-to-r ${colors.bg} from-transparent`}>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Recommended Weapon</div>
+          {data.bestWeapon && (() => {
+          const hasWeapon = ownsWeapon(data.bestWeapon);
+          return (
+          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="kuro-section-label">Recommended Weapon</div>
+              {!hasWeapon && <span className="text-[9px] text-gray-600 uppercase tracking-wider">Not Owned</span>}
+            </div>
             <div className="flex items-center gap-3">
               {weaponImg && (
-                <div className={`w-14 h-14 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${weaponData?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative' }}>
+                <div className={`w-14 h-14 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${hasWeapon && weaponData?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: hasWeapon ? 'none' : 'grayscale(100%)' }}>
                   <img src={weaponImg} alt={data.bestWeapon} className="w-full h-full object-cover" onError={hideOnError} />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="text-yellow-400 text-sm font-bold">{data.bestWeapon}</div>
+                <div className={`text-sm font-bold ${hasWeapon ? 'text-yellow-400' : 'text-gray-500'}`}>{data.bestWeapon}</div>
                 {weaponData && (
                   <>
                     <div className="text-gray-400 text-[10px] mt-0.5">{weaponData.type} • {weaponData.baseAtk ? `${weaponData.baseAtk} Base ATK` : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
@@ -274,12 +295,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
               </div>
             </div>
           </div>
-          )}
+          );
+          })()}
 
           {/* Best Echoes - enhanced */}
           {data.bestEchoes?.length > 0 && (
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Recommended Echoes</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Recommended Echoes</div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
@@ -290,6 +312,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                   <div className="text-gray-400 text-[10px]">Main Echo</div>
                 </div>
               </div>
+              {data.bestEchoes[1] && (
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
                   <LayoutGrid size={14} className="text-purple-400" />
@@ -299,6 +322,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                   <div className="text-gray-400 text-[10px]">Echo Set</div>
                 </div>
               </div>
+              )}
             </div>
           </div>
           )}
@@ -313,17 +337,18 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                 const members = parseTeamMembers(team);
                 const hasImages = members.some(m => DEFAULT_COLLECTION_IMAGES[m] || (m.includes('Rover') && DEFAULT_COLLECTION_IMAGES['Rover']));
                 return (
-                  <div key={i} className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
+                  <div key={i} className="kuro-detail-box">
                     {hasImages ? (
                       <div className="flex items-center gap-2">
                         {members.map((member, j) => {
                           const memberImg = DEFAULT_COLLECTION_IMAGES[member] || (member.includes('Rover') ? DEFAULT_COLLECTION_IMAGES['Rover'] : null);
                           const mf = getImageFraming ? getImageFraming(`collection-${member}`) : { x: 0, y: 0, zoom: 100 };
                           const is5Star = CHARACTER_DATA[member]?.rarity === 5;
+                          const memberOwned = ownsChar(member) || member === name; // current char always "owned"
                           return (
-                            <div key={j} className="flex flex-col items-center gap-1 flex-1 min-w-0">
+                            <div key={j} className={`flex flex-col items-center gap-1 flex-1 min-w-0 ${!memberOwned ? 'opacity-50' : ''}`}>
                               {memberImg ? (
-                                <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                                <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${memberOwned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: memberOwned ? 'none' : 'grayscale(100%)' }}>
                                   <div className="absolute inset-0 breath-zoom">
                                     <img src={memberImg} alt={member} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${mf.zoom / 100}) translate(${-mf.x}%, ${-mf.y}%)` }} />
                                   </div>
@@ -379,7 +404,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
             ) : (
               <div className="flex flex-wrap gap-1">
                 {(data.skills || []).map((skill, i) => (
-                  <span key={i} className="text-[10px] px-2 py-1 rounded bg-white/5 text-gray-300 border border-[var(--border-medium)]">{skill}</span>
+                  <span key={i} className="kuro-badge kuro-badge-neutral">{skill}</span>
                 ))}
               </div>
             )}
@@ -414,7 +439,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, g
                   <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][0]} qty={SKILL_UPGRADE_COSTS.forgeryT3} />
                   <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][1]} qty={SKILL_UPGRADE_COSTS.forgeryT4} />
                 </>}
-                {COMMON_MAT_TIERS[data.ascension.common] && <>
+                {data.ascension?.common && COMMON_MAT_TIERS[data.ascension.common] && <>
                   <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={SKILL_UPGRADE_COSTS.commonT3} />
                   <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={SKILL_UPGRADE_COSTS.commonT4} />
                 </>}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Download, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -10,19 +10,17 @@ import TeamSelector from './TeamSelector.jsx';
 import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 function TeamsTab({
   state,
   dispatch,
   collectionImages,
   collectionData,
-  getImageFraming,
-  framingMode,
-  editingImage,
-  setEditingImage,
   toast,
   confirm,
 }) {
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -162,7 +160,7 @@ function TeamsTab({
                               toast?.addToast?.('Teams exported!', 'success');
                             } catch { toast?.addToast?.('Export failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Export team loadouts"
                         >
                           <Download size={12} />
@@ -202,7 +200,7 @@ function TeamsTab({
                             };
                             input.click();
                           }}
-                          className="kuro-btn kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm kuro-btn-primary text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Import team loadouts"
                         >
                           <Upload size={12} />
@@ -232,7 +230,7 @@ function TeamsTab({
                               haptic.light();
                             } catch { toast?.addToast?.('Share failed', 'error'); }
                           }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Copy team build to clipboard"
                         >
                           <Share2 size={12} />
@@ -249,14 +247,14 @@ function TeamsTab({
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
                           title={teamCompareEntries.length >= 5 ? 'Max 5 comparisons' : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? 'Add characters first' : 'Add to comparison'}
-                          className="kuro-btn kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Add current team to comparison"
                         >
                           + Compare
                         </button>
                         <button
                           onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
-                          className="kuro-btn text-[10px] px-2 py-1.5 whitespace-nowrap"
+                          className="kuro-btn kuro-btn-sm text-[10px] px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
                           <Trash2 size={12} />
@@ -317,7 +315,7 @@ function TeamsTab({
                       </div>
 
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
-                      <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5" style={{ boxShadow: '0 0 16px rgba(237,175,24,0.08)' }}>
+                      <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
                             <div className="text-gray-400 text-sm mb-1">No characters assigned</div>
@@ -328,7 +326,7 @@ function TeamsTab({
                           const charData = charName ? CHARACTER_DATA[charName] : null;
                           const imgUrl = charName ? (collectionImages[charName] || '') : '';
                           const teamKey = `team-${charName}`;
-                          const framing = charName ? getImageFraming(teamKey) : null;
+                          const framing = charName ? (getImageFraming(teamKey) || { x: 0, y: 0, zoom: 100 }) : { x: 0, y: 0, zoom: 100 };
 
                           if (!charName) {
                             return (
@@ -386,7 +384,7 @@ function TeamsTab({
                               >
                                 <X size={12} />
                               </button>}
-                              <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+                              <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-[8px]`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-[10px] truncate text-gray-200">{charName}</div>
                               </div>
@@ -401,7 +399,7 @@ function TeamsTab({
                           {teamSlots.filter(s => s).map((name, i) => {
                             const d = CHARACTER_DATA[name];
                             return d ? (
-                              <div key={i} className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium"
+                              <div key={i} className="kuro-badge font-medium"
                                 style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
                                 {d.element}
                               </div>
@@ -503,7 +501,7 @@ function TeamsTab({
                               <div className="flex gap-1 flex-shrink-0">
                                 {s.members.slice(0, 3).map((m, j) => {
                                   const cd = CHARACTER_DATA[m];
-                                  const sf = getImageFraming(`collection-${m}`);
+                                  const sf = getImageFraming(`collection-${m}`) || { x: 0, y: 0, zoom: 100 };
                                   return (
                                     <div key={j} className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>
@@ -527,7 +525,7 @@ function TeamsTab({
                                 </div>
                               </div>
                               {s.allOwned ? (
-                                <span className="text-[8px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1 py-0.5 rounded flex-shrink-0">All owned</span>
+                                <span className="kuro-badge kuro-badge-emerald flex-shrink-0">All owned</span>
                               ) : (
                                 <span className="text-[8px] text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}
@@ -563,7 +561,6 @@ function TeamsTab({
                     selectCharacter={selectCharacter}
                     collectionImages={collectionImages}
                     collectionData={collectionData}
-                    getImageFraming={getImageFraming}
                     state={state}
                   />
 

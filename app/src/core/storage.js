@@ -3,7 +3,7 @@
 // Persistent storage helpers: localStorage read/write, state sanitization.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { APP_VERSION } from '../appcore-data.js';
+import { APP_VERSION } from '../data/constants.js';
 // NOTE: circular import with reducer.js — safe because initialState is only
 // referenced inside function bodies (loadFromStorage), never at module-eval time.
 import { initialState } from './reducer.js';

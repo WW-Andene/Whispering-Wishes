@@ -7,9 +7,10 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import { BANNER_HISTORY } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { BannerCard, StandardBannerSection } from '../../shared/components/BannerCard.jsx';
+import { BannerCard } from '../../shared/components/BannerCard.jsx';
+import { StandardBannerSection } from '../../shared/components/StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 
@@ -87,7 +88,7 @@ function TrackerTab({
 
             {/* Onboarding hint for new users with no imported data */}
             {!state.profile.importedAt && setActiveTab && (
-              <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all text-left">
+              <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
                 <span className="text-cyan-300/90 text-xs">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
@@ -127,7 +128,7 @@ function TrackerTab({
                     item={c}
                     type="character"
                     bannerImage={activeBanners.characterBannerImage}
-                    stats={state.profile.featured.history.length ? {
+                    stats={state.profile.featured?.history?.length ? {
                       pity5: state.profile.featured.pity5,
                       pity4: state.profile.featured.pity4,
                       totalPulls: state.profile.featured.history.length,
@@ -156,7 +157,7 @@ function TrackerTab({
                     item={w}
                     type="weapon"
                     bannerImage={activeBanners.weaponBannerImage}
-                    stats={state.profile.weapon.history.length ? {
+                    stats={state.profile.weapon?.history?.length ? {
                       pity5: state.profile.weapon.pity5,
                       pity4: state.profile.weapon.pity4,
                       totalPulls: state.profile.weapon.history.length,

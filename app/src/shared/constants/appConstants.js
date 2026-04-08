@@ -31,6 +31,7 @@ export const isAllowedImageUrl = (url) => {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:') return false;
+    if (parsed.username || parsed.password) return false; // Block userinfo bypass (https://evil@trusted.com)
     return ALLOWED_IMAGE_HOSTS.some(host =>
       parsed.hostname === host || parsed.hostname.endsWith('.' + host)
     );

@@ -164,8 +164,7 @@ export default function EchoSelector({
                               setEchoStatPanel({ teamIdx: echoSelectorTarget.teamIdx, charName: echoSelectorTarget.charName, slotIdx, echoName: name });
                               haptic.success();
                             }}
-                            className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isRec ? 'border-2 border-orange-400' : `border-${costColor}-500/30 bg-${costColor}-500/5`} hover:bg-${costColor}-500/10`}
-                            style={isRec ? { boxShadow: '0 0 20px rgba(251,146,60,0.5), 0 0 40px rgba(251,146,60,0.2), inset 0 0 15px rgba(251,146,60,0.15)', background: 'rgba(251,146,60,0.12)' } : {}}
+                            className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isRec ? 'border-2 border-orange-400 kuro-shadow-rec-md' : `border-${costColor}-500/30 bg-${costColor}-500/5`} hover:bg-${costColor}-500/10`}
                           >
                             <div className="flex items-center gap-2">
                               {collectionImages[name] ? (
@@ -178,7 +177,7 @@ export default function EchoSelector({
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-white text-xs font-semibold truncate">{name}</span>
-                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>★ REC</span>}
+                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                   {buffs.map(b => <span key={b} className="text-[10px] text-gray-400">{b}</span>)}
@@ -287,11 +286,11 @@ export default function EchoSelector({
                   {/* Sonata sets — highlight recommended */}
                   {echoData?.sets && (
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sonata Sets</div>
+                      <div className="kuro-section-label">Sonata Sets</div>
                       <div className="flex flex-wrap gap-1">
                         {echoData.sets.map(s => {
                           const isRec = charRecSets.has(s);
-                          return <span key={s} className={`text-[10px] px-2 py-0.5 rounded border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
+                          return <span key={s} className={`kuro-badge border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
                         })}
                       </div>
                       {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
@@ -306,14 +305,14 @@ export default function EchoSelector({
                   {/* Echo Skill Details */}
                   {echoData && (
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Echo Skill</div>
-                      <div className="p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+                      <div className="kuro-section-label">Echo Skill</div>
+                      <div className="kuro-detail-box">
                         {echoData.dmg > 0 && (
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-[10px] text-gray-400">Damage:</span>
                             <span className="text-xs font-bold text-yellow-400">{echoData.dmg}%</span>
                             {echoData.element && echoData.element !== 'Healing' && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">{echoData.element}</span>
+                              <span className="kuro-badge kuro-badge-neutral">{echoData.element}</span>
                             )}
                           </div>
                         )}
@@ -328,15 +327,15 @@ export default function EchoSelector({
                   {/* Enemy Stats (4-cost bosses only) */}
                   {echoData?.enemyRes && (
                     <div>
-                      <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">As Enemy</div>
-                      <div className="p-2 rounded-lg border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
+                      <div className="kuro-section-label">As Enemy</div>
+                      <div className="kuro-detail-box kuro-detail-box--danger">
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(echoData.enemyRes).map(([el, val]) => (
-                            <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                            <span key={el} className="kuro-badge kuro-badge-red">
                               {el.charAt(0).toUpperCase() + el.slice(1)} RES: {val}%
                             </span>
                           ))}
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">
+                          <span className="kuro-badge kuro-badge-gray">
                             Other: 10%
                           </span>
                         </div>
@@ -347,15 +346,14 @@ export default function EchoSelector({
 
                   {/* Main Stat Selection */}
                   <div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="kuro-section-label mb-2">Main Stat {recMainStats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                     <div className="grid grid-cols-2 gap-1">
                       {mainStatOptions.map(stat => {
                         const isActive = currentMainStat === stat;
                         const isRec = recMainStats.has(stat);
                         return (
                           <button key={stat}
-                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
-                            style={isRec && !isActive ? { boxShadow: '0 0 8px rgba(251,146,60,0.2)' } : {}}
+                            className={`px-2 py-1.5 rounded-lg text-xs text-left transition-all border ${isRec && !isActive ? 'kuro-shadow-rec-subtle' : ''} ${isActive ? `bg-${costColor}-500/20 border-${costColor}-500/50 text-${costColor}-400 font-semibold` : isRec ? 'border-orange-500/40 bg-orange-500/8 text-orange-300 hover:bg-orange-500/15' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
                             onClick={() => { updateEchoData({ mainStat: isActive ? null : stat }); haptic.light(); }}
                           >
                             {isRec && !isActive && <span className="text-orange-400 mr-1">★</span>}{stat}
@@ -367,7 +365,7 @@ export default function EchoSelector({
 
                   {/* Sub Stats Selection */}
                   <div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="kuro-section-label">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                     <div className="grid grid-cols-2 gap-1">
                       {substatOptions.map(stat => {
                         const isActive = currentSubstats.includes(stat);

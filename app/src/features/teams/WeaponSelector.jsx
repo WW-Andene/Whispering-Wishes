@@ -86,7 +86,7 @@ export default function WeaponSelector({
                                     >
                                       <div className="flex items-center gap-2">
                                         {collectionImages[name] ? (
-                                          <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border${rarity5 ? ' holo-5star' : ''}`} style={{ borderColor: rarity5 ? 'rgba(234,179,8,0.3)' : 'rgba(168,85,247,0.3)', background: rarity5 ? 'rgba(234,179,8,0.08)' : 'rgba(168,85,247,0.08)', position: 'relative' }}>
+                                          <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${rarity5 ? 'kuro-rarity-frame-5 holo-5star' : 'kuro-rarity-frame-4'}`} style={{ position: 'relative' }}>
                                             <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
                                           </div>
                                         ) : (
@@ -96,7 +96,7 @@ export default function WeaponSelector({
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-xs font-semibold truncate">{name}</span>
                                             <span className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                            {isBest && <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">BiS</span>}
+                                            {isBest && <span className="kuro-badge kuro-badge-emerald">BiS</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
                                             <span className="text-[10px] text-gray-400">ATK {w.baseAtk}</span>

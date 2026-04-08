@@ -290,6 +290,60 @@ const ECHO_DATA = {
   'Nightmare: Havoc Warrior':        { sets: ['Dream of the Lost'], buff: 'Havoc DMG', desc: 'A nightmare variant of the Havoc Warrior radiating dark energy. Skill transforms into Nightmare: Havoc Warrior to perform a Counter. Successful counter deals 336% Havoc DMG and reduces enemy Havoc RES by 10% for 5s.' , imageUrl: 'https://i.ibb.co/pBBX7ZXS/Nightmare-Havoc-Warrior.png', noBgProcess: true},
   'Nightmare: Tick Tack':            { sets: ['Thread of Severed Fate'], buff: 'Havoc DMG', desc: 'A nightmare variant of Tick Tack whose ticking distorts time. Skill summons Nightmare: Tick Tack to swing its pendulum dealing 64% Havoc DMG x2, then chime to slow all nearby enemies by 35% for 3s.' , imageUrl: 'https://i.ibb.co/yc0hSd53/Nightmare-Tick-Tack.png', noBgProcess: true},
 };
+
+// [SECTION:ECHO_SKILL_BUFFS] — 4-cost echo active skill timed buffs
+// buffs: stat bonuses granted by using the echo active skill (or passive from main slot)
+// duration: seconds the buff lasts after activation (omit for passive main-slot buffs)
+// target: 'self' (default) | 'team' (all members) | 'next' (incoming character on outro)
+// passive: true = always active when equipped in main slot (no activation needed)
+const ECHO_SKILL_BUFFS = {
+  // ── v1.0 — Launch ──
+  'Mourning Aix':            { buffs: [{ stat: 'spectroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], duration: 15 },
+  'Feilian Beringal':        { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], duration: 15 },
+  'Tempest Mephis':          { buffs: [{ stat: 'electroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], duration: 15 },
+  'Thundering Mephis':       { buffs: [{ stat: 'electroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], duration: 15 },
+  'Inferno Rider':           { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], duration: 15 },
+  'Bell-Borne Geochelone':   { buffs: [{ stat: 'allDmg', value: 10 }], duration: 15, target: 'team' },
+  'Impermanence Heron':      { buffs: [{ stat: 'allDmg', value: 12 }], duration: 15, target: 'next' },
+  'Lampylumen Myriad':       { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  'Mech Abomination':        { buffs: [{ stat: 'atkPct', value: 12 }], duration: 15 },
+  'Crownless':               { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  // ── v1.2–1.3 ──
+  'Jué':                     { buffs: [{ stat: 'skillDmg', value: 16 }], duration: 15 },
+  'Fallacy of No Return':    { buffs: [{ stat: 'atkPct', value: 10 }], duration: 20, target: 'team' },
+  // ── v2.0 — Rinascita ──
+  'Sentry Construct':        { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  'Dreamless':               { buffs: [{ stat: 'allDmg', value: 50 }], duration: 5, condition: 'Rover: Havoc' },
+  'Nightmare: Impermanence Heron': { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
+  'Nightmare: Lampylumen Myriad':  { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'coordDmg', value: 30 }], passive: true },
+  // ── v2.1–2.5 — Rinascita expansion ──
+  'Reminiscence: Fleurdelys':      { buffs: [{ stat: 'aeroDmg', value: 10 }], passive: true },
+  'Dragon of Dirge':               { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], passive: true },
+  'Nightmare: Hecate':             { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'echoDmg', value: 20 }], passive: true },
+  'Hecate':                        { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  'Nightmare: Crownless':          { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], passive: true },
+  'Nightmare: Mourning Aix':       { buffs: [{ stat: 'spectroDmg', value: 12 }], passive: true },
+  'Nightmare: Feilian Beringal':   { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
+  'Nightmare: Inferno Rider':      { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], passive: true },
+  'Nightmare: Tempest Mephis':     { buffs: [{ stat: 'electroDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], passive: true },
+  'Nightmare: Thundering Mephis':  { buffs: [{ stat: 'electroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
+  // ── v2.6 — Sanguis Plateaus ──
+  'Lioness of Glory':              { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
+  'The False Sovereign':           { buffs: [{ stat: 'electroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
+  'Lady of the Sea':               { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
+  'Lorelei':                       { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'libDmg', value: 12 }], duration: 15 },
+  'Nightmare: Kelpie':             { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], duration: 15 },
+  'Reminiscence: Fenrico':         { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], duration: 15 },
+  // ── v2.8 — Chronorift ──
+  'Reminiscence: Threnodian - Leviathan': { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
+  // ── v3.0+ — Lahai-Roi ──
+  'Hyvatia':                       { buffs: [{ stat: 'allDmg', value: 10 }], duration: 15, target: 'next' },
+  'Twin Nova - Nebulous Cannon':   { buffs: [{ stat: 'spectroDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], passive: true },
+  'Sigillum':                      { buffs: [{ stat: 'libDmg', value: 25 }], passive: true, condition: 'Aemeath' },
+  'Reactor Husk':                  { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  'Nameless Explorer':             { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], duration: 15 },
+};
+
 // [SECTION:ECHO_DMG_DATA] — Per-echo active skill damage multipliers & enemy resistance
 // dmg: total ATK% damage multiplier of echo active skill (sum of all hits)
 // element: damage element of the echo skill
@@ -467,4 +521,4 @@ const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).flatMap(e => Ar
 
 // [SECTION:WEAPON_DATA]
 
-export { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES };
+export { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES };

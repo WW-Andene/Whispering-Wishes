@@ -5,13 +5,9 @@
 
 import React from 'react';
 import { Swords, Star, TrendingUp, X } from 'lucide-react';
-import {
-  WEAPON_DATA,
-  COMMON_MAT_TIERS, FORGERY_MAT_TIERS,
-  WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4,
-  WEAPON_REFINE_SCALE,
-} from '../../appcore-data.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 
@@ -22,9 +18,14 @@ const WEAPON_RARITY_COLORS = {
   2: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50' },
   1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
 };
-const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
+const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
   const data = WEAPON_DATA[name];
   if (!data) return null;
+
+  const ownsChar = (n) => {
+    if (!collectionData) return true;
+    return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
+  };
 
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
 
@@ -47,7 +48,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border}`}>{data.type}</span>
+              <span className={`kuro-badge ${colors.bg} ${colors.text} ${colors.border}`}>{data.type}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -70,9 +71,10 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
               <span className="text-[10px] text-gray-400">{data.stat}</span>
               <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
             </div>
-            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => (
-              <span key={i} className="text-[10px] px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">{char}</span>
-            ))}
+            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => {
+              const owned = ownsChar(char);
+              return <span key={i} className={`kuro-badge ${owned ? 'kuro-badge-yellow' : 'kuro-badge-gray'}`}>{char}{!owned && ' ✗'}</span>;
+            })}
           </div>
 
           {/* 2. Description */}
@@ -84,7 +86,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
             const effect = dot > 0 ? rest.slice(dot + 2) : rest;
             return (
               <div className="text-sm space-y-1">
-                {sig && <div className="text-[10px] text-gray-500 uppercase tracking-wider">{sig[1]}</div>}
+                {sig && <div className="kuro-section-label">{sig[1]}</div>}
                 {lore && <p className="text-gray-400 italic">{lore}</p>}
                 <p className="text-gray-300">{effect}</p>
               </div>
@@ -93,14 +95,14 @@ const WeaponDetailModal = ({ name, onClose, imageUrl }) => {
 
           {/* 3. Passive */}
           <div className={`p-3 rounded-xl border ${colors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Passive</div>
+            <div className="kuro-section-label mb-1">Passive</div>
             <div className={`text-xs font-medium ${colors.text}`}>{data.passive}</div>
           </div>
 
           {/* 4. Refinement Scaling */}
           {data.pv && Object.keys(data.pv).length > 0 && (
-            <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Refinement Scaling</div>
+            <div className="kuro-detail-box">
+              <div className="kuro-section-label mb-2">Refinement Scaling</div>
               <div className="grid grid-cols-5 gap-1">
                 {WEAPON_REFINE_SCALE.map((scale, i) => (
                   <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>

@@ -5,12 +5,11 @@
 
 import React from 'react';
 import { User, Star, X } from 'lucide-react';
-import {
-  CHARACTER_DATA, DEFAULT_COLLECTION_IMAGES,
-  ECHO_DATA, ECHO_SETS,
-  ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor,
-} from '../../appcore-data.js';
-import { FocusTrapModal } from '../../appcore-providers.jsx';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { ECHO_DATA, ECHO_SETS } from '../../data/echoes.js';
+import { ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor } from '../../utils/helpers.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
 
@@ -30,8 +29,12 @@ const ECHO_BUFF_COLORS = {
   'Shield':       { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
   'Physical DMG': { bg: 'bg-slate-400/10',     text: 'text-slate-300',   border: 'border-slate-400/25' },
 };
-const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
+const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
   const data = ECHO_DATA[name];
+  const ownsChar = (n) => {
+    if (!collectionData) return true;
+    return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
+  };
   if (!data) return null;
 
   const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
@@ -75,7 +78,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] px-2 py-0.5 rounded ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              <span className={`kuro-badge ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
               {/* Element badges from echo skill element(s) */}
               {(() => {
                 const elements = [];
@@ -92,13 +95,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
                 return elements.map(el => {
                   const ec = ELEMENT_COLORS[el];
                   return ec ? (
-                    <span key={el} className="text-[10px] px-2 py-0.5 rounded font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
+                    <span key={el} className="kuro-badge font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
                   ) : null;
                 });
               })()}
               {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
                 const bc = ECHO_BUFF_COLORS[b] || buffColors;
-                return <span key={b} className={`text-[10px] px-2 py-0.5 rounded ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
+                return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
               })}
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
@@ -117,7 +120,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
             )}
             {(data.sets || []).map(setName => {
               const sc = getSetElementColor(setName);
-              return <span key={setName} className="text-[10px] px-2 py-1 rounded-lg font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
+              return <span key={setName} className="kuro-badge font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
             })}
           </div>
 
@@ -132,18 +135,18 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
               <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.enemyRes).map(([el, val]) => (
-                  <span key={el} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400 font-medium">
+                  <span key={el} className="kuro-badge kuro-badge-red font-medium">
                     {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
                   </span>
                 ))}
-                <span className="text-[10px] px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/25 text-gray-400">Others: 10%</span>
+                <span className="kuro-badge kuro-badge-gray">Others: 10%</span>
               </div>
             </div>
           )}
 
           {/* 4. Sonata Sets */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Sonata Set Bonuses</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Sonata Set Bonuses</div>
             <div className="space-y-2">
               {(data.sets || []).map(setName => {
                 const setData = ECHO_SETS[setName];
@@ -206,25 +209,25 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
               return result;
             };
             return (
-              <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Skill</div>
+              <div className="kuro-detail-box">
+                <div className="kuro-section-label mb-1">Skill</div>
                 <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
               </div>
             );
           })()}
 
           {/* 6. Main Stats */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Main Stats</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Possible Main Stats</div>
             <div className="flex flex-wrap gap-1">
               {cost === 4 && ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/25">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-yellow">{s}</span>
               ))}
               {cost === 3 && ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/25">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-purple">{s}</span>
               ))}
               {cost === 1 && ['ATK%', 'HP%', 'DEF%'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/25">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-cyan">{s}</span>
               ))}
             </div>
             <div className="text-[10px] text-gray-500 mt-1">
@@ -233,11 +236,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           </div>
 
           {/* 7. Substats */}
-          <div className="p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Possible Substats</div>
             <div className="flex flex-wrap gap-1">
               {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
-                <span key={s} className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-[var(--border-medium)]">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-neutral">{s}</span>
               ))}
             </div>
           </div>
@@ -245,15 +248,16 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost }) => {
           {/* 8. Recommended For */}
           {usedBy.length > 0 && (
             <div>
-              <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Recommended For</div>
+              <div className="kuro-section-label mb-1.5">Recommended For</div>
               <div className="flex flex-wrap gap-2">
                 {usedBy.map(charName => {
                   const charImg = DEFAULT_COLLECTION_IMAGES[charName];
                   const is5Star = CHARACTER_DATA[charName]?.rarity === 5;
+                  const owned = ownsChar(charName);
                   return (
-                    <div key={charName} className="flex flex-col items-center gap-1">
+                    <div key={charName} className={`flex flex-col items-center gap-1 ${!owned ? 'opacity-50' : ''}`}>
                       {charImg ? (
-                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative' }}>
+                        <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${owned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
                           <div className="absolute inset-0 breath-zoom">
                             <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
                           </div>

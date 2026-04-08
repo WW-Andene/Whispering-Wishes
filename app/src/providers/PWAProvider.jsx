@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
-import { HEADER_ICON } from '../appcore-data.js';
+import { HEADER_ICON } from '../data/constants.js';
 
 // P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
 // Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
@@ -115,7 +115,7 @@ const PWAProvider = ({ children }) => {
     // Blob URLs bypass CSP, are invisible to security scanners, and prevent proper SW update lifecycle.
     // The static /sw.js file works in all browsers (Firefox, Safari, Chrome).
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then((registration) => {
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -156,11 +156,13 @@ const PWAProvider = ({ children }) => {
     try { return window.self !== window.top; } catch { return true; }
   });
   const [iframeBannerDismissed, setIframeBannerDismissed] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
 
   const pwaValue = useMemo(() => ({
     canInstall: !!installPrompt && !isInstalled,
     isInstalled,
     promptInstall,
+    showInstallGuide: () => setShowInstallGuide(true),
   }), [installPrompt, isInstalled, promptInstall]);
 
   return (
@@ -190,8 +192,85 @@ const PWAProvider = ({ children }) => {
           onDismiss={() => setIframeBannerDismissed(true)}
         />
       )}
+      {/* Install guide modal — platform-specific instructions (opened via logo tap) */}
+      {showInstallGuide && (
+        <div className="fixed inset-0 z-[9900] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInstallGuide(false)}>
+          <div className="w-[300px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+                <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div className="text-white font-semibold text-sm">Install Whispering Wishes</div>
+                <div className="text-gray-500 text-[10px]">Add to your home screen</div>
+              </div>
+            </div>
+            <InstallSteps />
+            <button onClick={() => setShowInstallGuide(false)} className="mt-4 w-full py-2 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </PWAContext.Provider>
   );
 };
+
+/** Platform-specific install instructions */
+function InstallSteps() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+  const isFirefox = /Firefox/.test(ua);
+  const isSamsung = /SamsungBrowser/.test(ua);
+  const isAndroid = /Android/.test(ua);
+
+  let platform, steps;
+  if (isIOS || isSafari) {
+    platform = 'Safari / iOS';
+    steps = [
+      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">{'\u2191'}</span> in the toolbar</>,
+      <>Scroll down and tap <b className="text-white">Add to Home Screen</b></>,
+      <>Tap <b className="text-white">Add</b> to confirm</>,
+    ];
+  } else if (isFirefox) {
+    platform = 'Firefox';
+    steps = [
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">{'\u22EE'}</span></>,
+      <>Tap <b className="text-white">Install</b> or <b className="text-white">Add to Home Screen</b></>,
+    ];
+  } else if (isSamsung) {
+    platform = 'Samsung Internet';
+    steps = [
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">{'\u2630'}</span></>,
+      <>Tap <b className="text-white">Add page to</b> {'\u2192'} <b className="text-white">Home screen</b></>,
+    ];
+  } else if (isAndroid) {
+    platform = 'Chrome / Android';
+    steps = [
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">{'\u22EE'}</span></>,
+      <>Tap <b className="text-white">Install app</b> or <b className="text-white">Add to Home screen</b></>,
+      <>Tap <b className="text-white">Install</b> to confirm</>,
+    ];
+  } else {
+    platform = 'Desktop';
+    steps = [
+      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">{'\u2295'}</span> in the address bar</>,
+      <>Or click <b className="text-white">{'\u22EE'}</b> {'\u2192'} <b className="text-white">Install Whispering Wishes</b></>,
+    ];
+  }
+
+  return (
+    <div className="space-y-2 text-xs text-gray-300">
+      <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">{platform}</p>
+      {steps.map((step, i) => (
+        <div key={i} className="flex items-start gap-2">
+          <span className="text-yellow-400 font-bold shrink-0">{i + 1}.</span>
+          <span>{step}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export { PWAProvider, usePWA };

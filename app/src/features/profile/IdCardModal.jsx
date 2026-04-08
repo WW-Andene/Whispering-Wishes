@@ -11,6 +11,7 @@ import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -25,8 +26,8 @@ export default function IdCardModal({
   ownedCharNames,
   idCardTrapRef,
   trophies,
-  getImageFraming,
 }) {
+  const { getImageFraming } = useImageFramingContext();
   if (!showIdCard) return null;
   return (
       <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
@@ -41,16 +42,16 @@ export default function IdCardModal({
                 </div>
 
                 {/* Main content */}
-                <div className="kuro-body" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="kuro-body" style={{ padding: 'var(--space-md)', display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
 
                   {/* ═══ PROFILE PANEL ═══ */}
-                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '12px' }}>
-                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
-                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
-                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                  <div className="idcard-section idcard-section--lg">
+                    <div className="idcard-shimmer" />
+                    <div className="idcard-corner-tr" />
+                    <div className="idcard-corner-bl" />
                     <div className="flex gap-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-lg truncate leading-tight" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <h3 className="text-white font-semibold text-lg truncate leading-tight kuro-tshadow-overlay" style={{ fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
@@ -58,21 +59,21 @@ export default function IdCardModal({
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
-                            <span className="text-xs font-mono" style={{ color: '#edaf18', textShadow: '0 0 8px rgba(237,175,24,0.3)' }}>{state.server}</span>
+                            <span className="text-xs font-mono kuro-tshadow-brand" style={{ color: '#edaf18' }}>{state.server}</span>
                           </div>
                         </div>
                         {luckRating && (
                           <div className="mt-2.5 flex items-center gap-2">
-                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                              <div className="h-full rounded-full" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%`, background: 'linear-gradient(90deg, #f87171, #edaf18, #34d399)', boxShadow: '0 0 6px rgba(237,175,24,0.4)' }} />
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden kuro-border-subtle" style={{ background: 'var(--bg-stat)' }}>
+                              <div className="h-full rounded-full kuro-gradient-luck kuro-shadow-luck-bar" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%` }} />
                             </div>
                             <span className="text-[10px] font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60`, fontFamily: 'var(--font-display)' }}>{luckRating.tier} {luckRating.rating}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex-shrink-0 flex flex-col items-center">
-                        <div className={`relative rounded-xl overflow-hidden${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: '110px', height: '110px', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.12)', boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08)', contain: 'paint' }}>
-                          <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)' }} />
+                        <div className={`relative rounded-xl overflow-hidden kuro-avatar-frame kuro-shadow-portrait${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: 'var(--size-avatar-lg)', height: 'var(--size-avatar-lg)', border: '1px solid var(--border-medium)' }}>
+                          <div className="idcard-img-shimmer" />
                           {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                             const f = getImageFraming(`collection-${state.profile.profilePic}`);
                             {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
@@ -82,22 +83,22 @@ export default function IdCardModal({
                               <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
                             </div>
                           )}
-                          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.7))' }} />
+                          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />
                         </div>
                         {state.profile.profilePic && (
-                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: '7px', width: '110px' }}>{state.profile.profilePic}</p>
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-2xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
                         )}
                       </div>
                     </div>
                   </div>
 
                   {/* ═══ CONVENE STATS PANEL ═══ */}
-                  <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
-                    <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.4), transparent)' }} />
-                    <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
-                    <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                  <div className="idcard-section">
+                    <div className="idcard-shimmer idcard-shimmer--gold" />
+                    <div className="idcard-corner-tr" />
+                    <div className="idcard-corner-bl" />
                     <div className="flex items-center gap-2 mb-2">
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                      <div className="idcard-gold-bar" />
                       <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Convene Stats</span>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
@@ -111,8 +112,8 @@ export default function IdCardModal({
                     ].map((s, i) => (
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
-                        <div className="font-bold text-sm" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30`, fontFamily: 'var(--font-data)' }}>{s.value}</div>
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: '7px', letterSpacing: '0.04em' }}>{s.label}</div>
+                        <div className="font-bold text-sm kuro-number" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30` }}>{s.value}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
                     </div>
@@ -131,12 +132,12 @@ export default function IdCardModal({
                     const lo = Math.min(...fsp.map(p=>p.pity));
                     const hi = Math.max(...fsp.map(p=>p.pity));
                     return (
-                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
-                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.35), transparent)' }} />
-                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
-                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                      <div className="idcard-section">
+                        <div className="idcard-shimmer idcard-shimmer--cyan" />
+                        <div className="idcard-corner-tr" />
+                        <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
-                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                          <div className="idcard-gold-bar" />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Pity Distribution</span>
                         </div>
                         {/* §E10-CH-F2: Summary moved above histogram, escalated to text-xs */}
@@ -154,7 +155,7 @@ export default function IdCardModal({
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {cnt > 0 && (
                                     <div className="absolute left-0 right-0 text-center font-bold"
-                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: '4px', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: 'var(--space-xs)', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
                                       {cnt}
                                     </div>
                                   )}
@@ -174,7 +175,7 @@ export default function IdCardModal({
                         </div>
                         <div className="flex gap-1.5">
                           {labs.map((lab, i) => (
-                            <div key={i} className="flex-1 text-center" style={{ fontSize: '7px', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: 'var(--font-2xs)', color: '#6b7280' }}>{lab.split('-')[0]}</div>
                           ))}
                         </div>
                         {/* Summary moved above histogram per §E10-CH-F2 */}
@@ -184,12 +185,12 @@ export default function IdCardModal({
 
                   {/* ═══ RESONATORS PANEL ═══ */}
                   {ownedCharNames.length > 0 && (
-                    <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
-                      <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent)' }} />
-                      <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
-                      <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                    <div className="idcard-section">
+                      <div className="idcard-shimmer idcard-shimmer--purple" />
+                      <div className="idcard-corner-tr" />
+                      <div className="idcard-corner-bl" />
                       <div className="flex items-center gap-2 mb-2">
-                        <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                        <div className="idcard-gold-bar" />
                         <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
                       </div>
                       <div className="grid grid-cols-5 gap-1.5">
@@ -199,25 +200,25 @@ export default function IdCardModal({
                           const is5Star = CHARACTER_DATA[name]?.rarity === 5;
                           return (
                             <div key={name}>
-                              <div className={`relative rounded-lg overflow-hidden w-full${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', contain: 'paint' }}>
-                                <div className="absolute top-0 left-0 right-0 h-px z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)' }} />
+                              <div className={`relative rounded-lg overflow-hidden w-full kuro-avatar-frame kuro-shadow-card-subtle${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', border: '1px solid var(--border-medium)' }}>
+                                <div className="idcard-img-shimmer" />
                                 {imgUrl ? (
                                   <div className="absolute inset-0 breath-zoom"><img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} /></div>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-gray-500" style={{ fontSize: '14px' }}>{name[0]}</span>
+                                    <span className="text-gray-500" style={{ fontSize: 'var(--font-md)' }}>{name[0]}</span>
                                   </div>
                                 )}
-                                <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.85))' }}>
-                                  <span className="text-gray-200 text-center truncate block" style={{ fontSize: '8px', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{name}</span>
+                                <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none idcard-img-fade--strong">
+                                  <span className="text-gray-200 text-center truncate block kuro-tshadow-micro" style={{ fontSize: '8px' }}>{name}</span>
                                 </div>
                               </div>
                             </div>
                           );
                         })}
                         {ownedCharNames.length > 16 && (
-                          <div className="flex items-center justify-center rounded-lg w-full" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                            <span className="text-gray-500 font-mono" style={{ fontSize: '9px' }}>+{ownedCharNames.length - 16}</span>
+                          <div className="flex items-center justify-center rounded-lg w-full kuro-border-subtle" style={{ aspectRatio: '9/14', background: 'var(--bg-stat)' }}>
+                            <span className="text-gray-500 font-mono" style={{ fontSize: 'var(--font-xs)' }}>+{ownedCharNames.length - 16}</span>
                           </div>
                         )}
                       </div>
@@ -229,12 +230,12 @@ export default function IdCardModal({
                     const sorted = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
                     if (!sorted.length) return null;
                     return (
-                      <div className="relative rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008))', border: '1px solid rgba(255,255,255,0.08)', padding: '10px' }}>
-                        <div className="absolute top-0 left-3 right-3 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(237,175,24,0.3), transparent)' }} />
-                        <div className="absolute" style={{ top: 6, right: 6, width: 10, height: 10, borderTop: '1px solid rgba(255,255,255,0.12)', borderRight: '1px solid rgba(255,255,255,0.12)', borderRadius: '0 3px 0 0' }} />
-                        <div className="absolute" style={{ bottom: 6, left: 6, width: 10, height: 10, borderBottom: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)', borderRadius: '0 0 0 3px' }} />
+                      <div className="idcard-section">
+                        <div className="idcard-shimmer idcard-shimmer--gold-subtle" />
+                        <div className="idcard-corner-tr" />
+                        <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
-                          <div style={{ width: 3, height: 14, borderRadius: 2, background: 'linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3))', boxShadow: '0 0 6px rgba(237,175,24,0.3)' }} />
+                          <div className="idcard-gold-bar" />
                           <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
                         </div>
                         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
@@ -242,7 +243,7 @@ export default function IdCardModal({
                             const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                             return (
                               <div key={trophy.id} className="relative p-2 rounded-lg text-center overflow-hidden" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${trophy.color}18, ${trophy.color}08)`, border: `1px solid ${trophy.color}50`, boxShadow: `0 0 20px ${trophy.color}15, inset 0 0 20px ${trophy.color}05` }}>
-                                <div className="rounded-full flex items-center justify-center mb-1" style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
+                                <div className="rounded-full flex items-center justify-center mb-1" style={{ width: 'var(--size-avatar-sm)', height: 'var(--size-avatar-sm)', background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`, boxShadow: `0 0 15px ${trophy.color}40` }}>
                                   <IconComponent size={14} style={{ color: trophy.color }} />
                                 </div>
                                 <div className="font-bold text-white w-full px-0.5 leading-tight" style={{ fontSize: '8px', wordBreak: 'break-word' }}>{trophy.name}</div>
@@ -256,7 +257,7 @@ export default function IdCardModal({
 
                   {/* ═══ FOOTER ═══ */}
                   <div className="relative flex items-center justify-between pt-1.5">
-                    <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }} />
+                    <div className="absolute top-0 left-0 right-0 h-px idcard-shimmer--subtle" />
                     <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
                     <span className="text-gray-500" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
                   </div>
@@ -267,11 +268,11 @@ export default function IdCardModal({
             {/* Format toggle + action buttons */}
             <div className="flex gap-2 mt-3">
               {/* Format toggle */}
-              <div className="flex rounded-xl overflow-hidden" style={{ background: 'var(--bg-btn)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="flex rounded-xl overflow-hidden kuro-border-medium" style={{ background: 'var(--bg-btn)' }}>
                 <button
                   onClick={() => setIdCardFormat('landscape')}
                   className="px-3 py-2.5 text-[10px] font-medium flex items-center gap-1.5 transition-all"
-                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid rgba(255,255,255,0.1)' } : { color: '#6b7280', borderRight: '1px solid rgba(255,255,255,0.1)' }}
+                  style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid var(--border-medium)' } : { color: '#6b7280', borderRight: '1px solid var(--border-medium)' }}
                   title="Landscape 16:9"
                 >
                   <Monitor size={12} /> 16:9

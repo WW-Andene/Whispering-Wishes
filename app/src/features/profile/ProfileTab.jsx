@@ -9,20 +9,23 @@ import { Award, Check, ChevronDown, Crown, Diamond, Download, Monitor, Settings,
 import ImportFlow from './ImportFlow.jsx';
 import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES } from '../../data/banners.js';
+import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS } from '../../data/banners.js';
 import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/BannerCard.jsx';
+import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/bannerUtils.js';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
+import AboutSection from './AboutSection.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
 import {
   ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
@@ -62,19 +65,6 @@ function ProfileTab({
   confirm,
   // PWA
   pwa,
-  // Image framing
-  imageFraming,
-  getImageFraming,
-  saveImageFraming,
-  editingImage,
-  setEditingImage,
-  framingMode,
-  setFramingMode,
-  miniPanelPosition,
-  saveMiniPanelPosition,
-  getMiniPanelPositionClasses,
-  updateEditingFraming,
-  resetEditingFraming,
   // Collection images
   collectionImages,
   customCollectionImages,
@@ -95,10 +85,6 @@ function ProfileTab({
   trophies,
   trophyOverrides, setTrophyOverrides,
   DEFAULT_VISUAL_SETTINGS,
-  // Firebase (for admin fetch)
-  getFirebaseAuth,
-  firebaseUrl,
-  firebaseFetch,
   // Tab navigation (for admin collection/trophy "Go to Import" buttons)
   setActiveTab,
   // Cache busting (for admin collection images)
@@ -106,13 +92,25 @@ function ProfileTab({
   // Admin panel state (lifted to App.jsx so mini panel survives tab switches)
   showAdminPanel, setShowAdminPanel,
   adminMiniMode, setAdminMiniMode,
-  // Google Auth + Cloud Backup
-  googleUser, handleGoogleSignIn, handleGoogleSignOut,
-  handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
+  bgFramingMode, setBgFramingMode, editingBgTarget, setEditingBgTarget,
+  updateBgPosition, getBgPositionLabel, exportBgPositions, getCustomBgPosition,
 }) {
+  // Image framing from context (was 11 props)
+  const {
+    imageFraming, getImageFraming, saveImageFraming, editingImage, setEditingImage,
+    framingMode, setFramingMode, miniPanelPosition, saveMiniPanelPosition,
+    getMiniPanelPositionClasses, updateEditingFraming, resetEditingFraming,
+  } = useImageFramingContext();
+
+  // Cloud storage from context (was 10 props)
+  const {
+    googleUser, handleGoogleSignIn, handleGoogleSignOut,
+    handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
+    getFirebaseAuth, firebaseUrl, firebaseFetch,
+  } = useCloudStorage();
+
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showIdCard, setShowIdCard] = useState(false);
-  const [aboutSections, setAboutSections] = useState({});
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
   // ── Admin state (showAdminPanel + adminMiniMode from props — survives tab switches) ──
@@ -124,6 +122,14 @@ function ProfileTab({
   const [adminTab, setAdminTab] = useState('banners');
   const [adminLockedUntil, setAdminLockedUntil] = useState(() => {
     try {
+      // One-time ban reset (v3.5.0 fix for React.memo bug that caused false bans)
+      if (!localStorage.getItem('ww-admin-reset-v350')) {
+        localStorage.removeItem('ww-admin-banned');
+        localStorage.removeItem('ww-admin-lockout');
+        localStorage.removeItem('ww-admin-fails');
+        localStorage.removeItem('ww-admin-lockdowns');
+        localStorage.setItem('ww-admin-reset-v350', '1');
+      }
       // Check permanent ban
       if (localStorage.getItem('ww-admin-banned') === 'true') return Infinity;
       const lockoutUntil = localStorage.getItem('ww-admin-lockout');
@@ -139,6 +145,9 @@ function ProfileTab({
     return false;
   });
   const [trophyJsonInput, setTrophyJsonInput] = useState('');
+  // ── Background picker state ─────────────────────────────────────────────
+  const [bgTarget, setBgTarget] = useState('header');
+  const [bgCategory, setBgCategory] = useState('resonators');
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -417,7 +426,7 @@ function ProfileTab({
         }
       }
     }
-  }, [adminPassword, toast, hashPasswordPBKDF2, hashPasswordSHA256, activeBanners, buildBannerForm]);
+  }, [adminPassword, toast, hashPasswordPBKDF2, activeBanners, buildBannerForm]);
 
   // Fetch admin data when Players tab is open
   useEffect(() => {
@@ -1011,9 +1020,9 @@ function ProfileTab({
 
     try {
       canvas.toBlob(blob=>{
-        if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        if(!blob){toast?.addToast?.('ID Card export failed — image may be blocked by CORS','error');return;}const url=URL.createObjectURL(blob);const a=document.createElement('a');
         a.href=url;a.download='resonator-id-'+(state.profile.username||state.profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
-        a.click();URL.revokeObjectURL(url);toast?.addToast?.('ID Card saved!','success');
+        a.click();setTimeout(() => URL.revokeObjectURL(url), 100);toast?.addToast?.('ID Card saved!','success');
       },'image/png');
     } catch (e) {
       console.error('ID card export failed (possible CORS tainted canvas):', e);
@@ -1052,7 +1061,7 @@ function ProfileTab({
                 <div>
                   <label className="text-gray-400 text-[10px] block mb-2">Profile Picture</label>
                   <div className="flex items-center gap-3">
-                    <div className={`w-14 h-14 rounded-lg flex-shrink-0${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ background: 'var(--bg-stat)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', contain: 'paint', position: 'relative', overflow: 'hidden' }}>
+                    <div className={`w-14 h-14 rounded-lg flex-shrink-0 kuro-avatar-frame kuro-shadow-card-deep${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
                         return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
@@ -1218,113 +1227,191 @@ function ProfileTab({
                   <p className="text-fuchsia-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
                 )}
 
-                {/* Background Style Selector */}
-                {visualSettings.animationsEnabled !== 'off' && (
+                {/* Background Picker */}
+                {(() => {
+                  const targetKey = bgTarget === 'header' ? 'headerBg' : bgTarget === 'navigation' ? 'navBg' : 'appBg';
+                  const currentBg = visualSettings[targetKey];
+
+                  const selectImage = (type, id, url, pos) => {
+                    if (currentBg?.id === id && currentBg?.type === type) {
+                      saveVisualSettings({ ...visualSettings, [targetKey]: null });
+                    } else {
+                      const posKey = bgTarget === 'header' ? 'header' : bgTarget === 'navigation' ? 'nav' : 'bg';
+                      // Use custom position if user adjusted it before, otherwise fall back to hardcoded default
+                      const customPos = getCustomBgPosition(posKey, id);
+                      const rawPos = customPos || pos?.[posKey] || 'center center';
+                      const objectPosition = typeof rawPos === 'string' ? rawPos : 'center center';
+                      const extra = bgTarget === 'background' ? { bgStyle: 'none' } : {};
+                      saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition }, ...extra });
+                    }
+                  };
+
+                  const isSelected = (type, id) => currentBg?.type === type && currentBg?.id === id;
+
+                  return (
                   <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.bgStyle === 'resonance' ? 'bg-blue-500 text-white' : visualSettings.bgStyle === 'honour' ? 'bg-amber-600 text-white' : visualSettings.bgStyle === 'reflect' ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={visualSettings.bgStyle === 'none' ? { background: 'var(--bg-btn)' } : undefined}>
-                        <Diamond size={16} />
+                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
+                        <Sparkles size={16} />
                       </div>
                       <div>
-                        <div className="text-white text-xs font-medium">Background Style</div>
-                        <div className="text-gray-400 text-[10px]">{visualSettings.bgStyle === 'resonance' ? 'Holographic rings & energy' : visualSettings.bgStyle === 'honour' ? 'Sword field & clouds' : visualSettings.bgStyle === 'reflect' ? 'Triangle mirror wave' : 'No background'}</div>
+                        <div className="text-white text-xs font-medium">Backgrounds</div>
+                        <div className="text-gray-400 text-[10px]">Set images for header, navigation, and background independently</div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-1.5">
+
+                    {/* Target buttons with previews */}
+                    <div className="flex gap-1.5 mb-3">
                       {[
-                        { id: 'none', label: 'None', color: 'bg-gray-600' },
-                        { id: 'reflect', label: 'Reflect', color: 'bg-purple-500' },
-                        { id: 'resonance', label: 'Resonance', color: 'bg-blue-500' },
-                        { id: 'honour', label: 'Honour', color: 'bg-amber-600' },
-                      ].map(bg => (
-                        <button key={bg.id}
-                          onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id })}
-                          className={`min-h-[36px] py-1.5 rounded-md text-[10px] font-medium transition-colors ${visualSettings.bgStyle === bg.id ? bg.color + ' text-white' : 'text-gray-400 hover:text-white'}`}
-                          style={visualSettings.bgStyle !== bg.id ? { background: 'var(--bg-btn)' } : undefined}
-                        >{bg.label}</button>
+                        { key: 'header', label: 'Header', settingKey: 'headerBg' },
+                        { key: 'navigation', label: 'Navigation', settingKey: 'navBg' },
+                        { key: 'background', label: 'Background', settingKey: 'appBg' },
+                      ].map(t => {
+                        const bg = visualSettings[t.settingKey];
+                        return (
+                          <button key={t.key} onClick={() => { setBgTarget(t.key); if (t.key !== 'background' && bgCategory === 'custom') setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-[10px] relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                            {bg?.url && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" style={{ objectPosition: bg.objectPosition || 'center' }} />}
+                            <span className="relative z-10">{t.label}</span>
+                            {bg && <span className="relative z-10 ml-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Category tabs */}
+                    <div className="flex gap-1.5 mb-3">
+                      {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['custom'] : [])].map(c => (
+                        <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-[10px] ${bgCategory === c ? 'active-cyan' : ''}`}>
+                          {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : 'Animated'}
+                        </button>
                       ))}
                     </div>
-                    {visualSettings.bgStyle !== 'none' && (
-                      <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">Resolution</div>
-                          <div className="flex gap-1 flex-1">
-                            {[25, 50, 100, 200].map(res => {
-                              const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
-                              const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
-                              return <button key={res}
-                                onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
-                                className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                              >{res}%</button>;
-                            })}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">FPS</div>
-                          <div className="flex gap-1 flex-1">
-                            {[15, 30, 45, 60].map(fps => {
-                              const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
-                              const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
-                              return <button key={fps}
-                                onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
-                                className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                                style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                              >{fps}</button>;
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
 
-                {/* Theme Selector */}
+                    {/* Clear current target */}
+                    {currentBg && (
+                      <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-[10px] mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
+                        Clear {bgTarget} image
+                      </button>
+                    )}
+
+                    {/* Image grid */}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                      {bgCategory === 'resonators' && CHARACTER_THEMES.map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => selectImage('resonator', t.id, t.bannerArt, t.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('resonator', t.id) ? 'ring-1' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9', borderColor: isSelected('resonator', t.id) ? getElementColor(t.element) : undefined, boxShadow: isSelected('resonator', t.id) ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
+                        >
+                          <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
+                          {isSelected('resonator', t.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'version' && VERSION_SPLASH_SCREENS.map(v => (
+                        <button
+                          key={v.id}
+                          onClick={() => selectImage('version', v.id, v.art, v.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('version', v.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9' }}
+                        >
+                          <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">v{v.version}</span>
+                          {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'others' && OTHER_BACKGROUNDS.map(o => (
+                        <button
+                          key={o.id}
+                          onClick={() => selectImage('other', o.id, o.art, o.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('other', o.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9' }}
+                        >
+                          <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{o.name}</span>
+                          {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'custom' && (
+                        <div className="col-span-full">
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {[
+                              { id: 'none', label: 'None', color: 'text-gray-400' },
+                              { id: 'resonance', label: 'Resonance', color: 'text-blue-400' },
+                              { id: 'reflect', label: 'Reflect', color: 'text-purple-400' },
+                              { id: 'honour', label: 'Honour', color: 'text-amber-400' },
+                            ].map(bg => {
+                              const isActive = visualSettings.bgStyle === bg.id;
+                              return (
+                                <button key={bg.id}
+                                  onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id, appBg: null })}
+                                  className={`min-h-[36px] py-1.5 rounded-md text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white ring-1 ring-white/20' : `${bg.color} hover:text-white`}`}
+                                  style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                                >{bg.label}</button>
+                              );
+                            })}
+                          </div>
+                          {visualSettings.bgStyle !== 'none' && (
+                            <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">Resolution</div>
+                                <div className="flex gap-1 flex-1">
+                                  {[25, 50, 100, 200].map(res => {
+                                    const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
+                                    const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
+                                    return <button key={res}
+                                      onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
+                                      className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                      style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                                    >{res}%</button>;
+                                  })}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-500 text-[10px] font-medium w-[56px] shrink-0">FPS</div>
+                                <div className="flex gap-1 flex-1">
+                                  {[15, 30, 45, 60].map(fps => {
+                                    const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
+                                    const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
+                                    return <button key={fps}
+                                      onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
+                                      className={`flex-1 min-h-[32px] py-1 rounded text-[10px] font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                                      style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
+                                    >{fps}</button>;
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  );
+                })()}
+
+                {/* Accent Theme — element-based */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(CHARACTER_THEMES.find(t => t.id === visualSettings.theme)?.element) : '#9ca3af' }}>
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(visualSettings.theme) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(visualSettings.theme) : '#9ca3af' }}>
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-xs font-medium">Header Theme</div>
-                      <div className="text-gray-400 text-[10px]">Character banner art & accent colors</div>
+                      <div className="text-white text-xs font-medium">Accent Theme</div>
+                      <div className="text-gray-400 text-[10px]">Changes accent colors across the app</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                    {/* Default theme */}
-                    <button
-                      onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })}
-                      className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === 'default' ? 'border-yellow-500 ring-1 ring-yellow-500/50' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                      style={{ aspectRatio: '16/9' }}
-                      aria-pressed={visualSettings.theme === 'default'}
-                      aria-label="Default theme"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#080c14] to-[#0f141c] flex items-center justify-center">
-                        <span className="text-gray-400 text-[10px] font-medium">Default</span>
-                      </div>
-                      {visualSettings.theme === 'default' && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
-                    </button>
-                    {/* Character themes */}
-                    {CHARACTER_THEMES.map(t => (
-                      <button
-                        key={t.id}
-                        onClick={() => saveVisualSettings({ ...visualSettings, theme: t.id })}
-                        className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.theme === t.id ? `ring-1` : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                        style={{ aspectRatio: '16/9', borderColor: visualSettings.theme === t.id ? getElementColor(t.element) : undefined, boxShadow: visualSettings.theme === t.id ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
-                        aria-pressed={visualSettings.theme === t.id}
-                        aria-label={`${t.name} theme`}
-                      >
-                        <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <span className="absolute bottom-0.5 left-1 text-white text-[10px] font-medium drop-shadow-lg">{t.name}</span>
-                        {visualSettings.theme === t.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                  <div className="flex flex-wrap gap-1.5">
+                    <button onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })} className={`kuro-btn text-[10px] ${visualSettings.theme === 'default' ? 'active-gold' : ''}`}>Default</button>
+                    {['Spectro', 'Glacio', 'Fusion', 'Electro', 'Aero', 'Havoc'].map(el => (
+                      <button key={el} onClick={() => saveVisualSettings({ ...visualSettings, theme: el })} className={`kuro-btn text-[10px]`} style={visualSettings.theme === el ? { borderColor: getElementColor(el), background: getElementBg(el), color: getElementColor(el), boxShadow: `0 0 8px ${getElementColor(el)}40` } : undefined}>
+                        {el}
                       </button>
                     ))}
                   </div>
-                  {visualSettings.theme !== 'default' && (() => {
-                    const t = CHARACTER_THEMES.find(th => th.id === visualSettings.theme);
-                    return t ? <p className="text-[10px] text-center mt-2" style={{ color: getElementColor(t.element) }}>{t.name} - {t.element} theme active</p> : null;
-                  })()}
                 </div>
 
                 {/* Install App on Device */}
@@ -1382,8 +1469,8 @@ function ProfileTab({
                     <div className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--bg-stat)' }}>
                       {googleUser.photoUrl ? <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" onError={e => { e.target.style.display = 'none'; }} /> : <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-xs font-bold">{(googleUser.displayName || 'U')[0]}</div>}
                       <div className="flex-1 min-w-0">
-                        <div style={{ color: 'var(--text-heading)', fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
+                        <div style={{ color: 'var(--text-heading)', fontSize: 'var(--font-base)', fontWeight: 600, fontFamily: 'var(--font-display)' }} className="truncate">{googleUser.displayName}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
                       </div>
                       <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-[10px] px-2 py-1 flex-shrink-0">Sign out</button>
                     </div>
@@ -1403,7 +1490,7 @@ function ProfileTab({
                         {cloudBackupStatus === 'loading' ? 'Loading...' : '↓ Restore'}
                       </button>
                     </div>
-                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: '10px' }}>Done!</div>}
+                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: 'var(--font-sm)' }}>Done!</div>}
                   </>
                 ) : (
                   <button
@@ -1414,7 +1501,7 @@ function ProfileTab({
                     Sign in with Google
                   </button>
                 )}
-                <p style={{ color: 'var(--text-disabled)', fontSize: '10px', textAlign: 'center' }}>Sync your Convene history across devices</p>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', textAlign: 'center' }}>Sync your Convene history across devices</p>
               </CardBody>
             </Card>
 
@@ -1430,8 +1517,8 @@ function ProfileTab({
                     // P4-F001: Clear ALL auxiliary localStorage keys on reset
                     const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-calendar-notes', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id'];
                     auxKeys.forEach(k => { try { localStorage.removeItem(k); } catch {} });
-                    // Delete cloud backup if signed in
-                    if (handleCloudDelete) handleCloudDelete();
+                    // Delete cloud backup if signed in (await before sign-out to preserve auth token)
+                    if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();
                     toast?.addToast?.('All data reset!', 'info');
                   } }} className="kuro-btn w-full py-2 active-red">
@@ -1441,127 +1528,7 @@ function ProfileTab({
               </CardBody>
             </Card>
 
-            {/* About & Legal */}
-            <Card>
-              <CardHeader>About</CardHeader>
-              <CardBody className="space-y-3">
-                <div className="text-center">
-                  <h4 className="text-gray-100 font-bold text-sm">Whispering Wishes</h4>
-                  <p className="text-gray-500 text-[10px]">Version {APP_VERSION}</p>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-gray-400 text-[10px] mb-1">Questions, issues, or feedback?</p>
-                  <a
-                    href="mailto:whisperingwishes.app@gmail.com"
-                    className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors underline"
-                  >
-                    whisperingwishes.app@gmail.com
-                  </a>
-                </div>
-
-                <p className="text-center text-[10px] text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
-
-                <div className="kuro-divider" />
-
-                {/* ── COLLAPSIBLE LEGAL SECTIONS ──────────────── */}
-                {[
-                  { key: 'disclaimer', label: 'Disclaimer', content: (
-                    <div className="space-y-1.5">
-                      <p>Whispering Wishes is an <strong className="text-gray-300">unofficial fan-made tool</strong>. It is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.</p>
-                      <p>Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024–{currentYear}.</p>
-                    </div>
-                  )},
-                  { key: 'privacy', label: 'Privacy Policy', content: (
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <p className="font-medium text-gray-300">Data stored on your device</p>
-                        <p>Convene history, calculator settings, team builds, planner notes, and visual preferences are stored <strong className="text-gray-300">locally</strong> in your browser (localStorage). This data never leaves your device unless you explicitly use Cloud Backup or the Leaderboard.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gray-300">Data sent online</p>
-                        <ul className="space-y-1.5 ml-1">
-                          <li><strong className="text-gray-300">Google Sign-In</strong> — If you sign in, we receive your display name, profile picture, and a unique ID. We do <em>not</em> store your email.</li>
-                          <li><strong className="text-gray-300">Cloud Backup</strong> — Your Convene history is stored in Firebase under your Google user ID. Only you can read or write your own backup.</li>
-                          <li><strong className="text-gray-300">Leaderboard</strong> — Opt-in. Your hashed user ID (not your real game UID), average pity, pull count, 50/50 stats, and owned 5★ items are displayed publicly.</li>
-                          <li><strong className="text-gray-300">Active users</strong> — An anonymous heartbeat (timestamp only) is sent every 60 seconds. It expires automatically after 2 minutes.</li>
-                        </ul>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gray-300">Permissions</p>
-                        <p><strong className="text-gray-300">Camera</strong> — requested only when you use the Convene URL scanner to photograph your screen. The image is processed for OCR and is not stored.</p>
-                        <p>No other device permissions (microphone, location, etc.) are used.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gray-300">Third-party services</p>
-                        <ul className="space-y-1 ml-1">
-                          <li><strong className="text-gray-300">Google Identity Services</strong> — Sign-In authentication. Google's privacy policy applies.</li>
-                          <li><strong className="text-gray-300">Firebase (Google)</strong> — Cloud storage for backups, leaderboard, and presence.</li>
-                          <li><strong className="text-gray-300">Groq API</strong> — Server-side screenshot OCR. Images are processed and discarded, never stored.</li>
-                          <li><strong className="text-gray-300">Wuthering Waves API</strong> — Proxied to fetch your Convene history. We do not log requests.</li>
-                        </ul>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gray-300">Tracking & cookies</p>
-                        <p>This app does not use analytics, advertising trackers, cookies, or fingerprinting. No personal data is sold or shared with third parties.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-medium text-gray-300">How to delete your data</p>
-                        <ul className="space-y-1 ml-1">
-                          <li><strong className="text-gray-300">All data (local + cloud)</strong> — Use the "Reset All Data" button below. If you are signed in with Google, this also deletes your cloud backup and signs you out.</li>
-                          <li><strong className="text-gray-300">Local data only</strong> — Clear your browser's site data for this domain.</li>
-                          <li><strong className="text-gray-300">Leaderboard removal</strong> — Contact <a href="mailto:whisperingwishes.app@gmail.com" className="text-cyan-400 hover:underline">whisperingwishes.app@gmail.com</a> with your leaderboard ID.</li>
-                        </ul>
-                      </div>
-                    </div>
-                  )},
-                  { key: 'terms', label: 'Terms of Use', content: (
-                    <div className="space-y-2">
-                      <p>By using Whispering Wishes you agree to the following:</p>
-                      <ul className="space-y-1.5 ml-1">
-                        <li><strong className="text-gray-300">Personal use only</strong> — This tool is for personal, non-commercial use to manage your own game data.</li>
-                        <li><strong className="text-gray-300">No abuse</strong> — Do not use the API proxy, OCR, or cloud features for automated scraping, mass requests, or anything unrelated to your personal game data.</li>
-                        <li><strong className="text-gray-300">Your responsibility</strong> — You are responsible for your Google account and game credentials. We are not liable for data loss or unauthorized access.</li>
-                        <li><strong className="text-gray-300">Leaderboard</strong> — By submitting, you consent to your pseudonymous stats being displayed publicly. Offensive usernames may be removed.</li>
-                        <li><strong className="text-gray-300">No warranty</strong> — Provided "as is". We do not guarantee uptime, accuracy, or availability. Features may change or be removed.</li>
-                        <li><strong className="text-gray-300">Unofficial</strong> — We are not responsible for any consequences to your game account from using third-party tools.</li>
-                        <li><strong className="text-gray-300">Age</strong> — You must be at least 13 years old to use Google Sign-In or the leaderboard.</li>
-                      </ul>
-                      <p>We may restrict access to users who violate these terms.</p>
-                    </div>
-                  )},
-                  { key: 'sources', label: 'Data Sources & Attribution', content: (
-                    <div className="space-y-1.5">
-                      <p>Game data, banner schedules, event timings, and character/weapon information sourced from:</p>
-                      <ul className="space-y-0.5 ml-1">
-                        <li><a href="https://wuwatracker.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">WuWa Tracker</a> — event timeline and pity tracking</li>
-                        <li><a href="https://game8.co/games/Wuthering-Waves" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Game8</a> — game guides and data</li>
-                        <li><a href="https://wutheringwaves.wiki" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Wuthering Waves Wiki</a> — character, weapon, and echo data</li>
-                        <li><a href="https://www.prydwen.gg/wuthering-waves/" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Prydwen.gg</a> — character builds and analytics</li>
-                      </ul>
-                      <p className="mt-1">We thank these community resources for their work.</p>
-                    </div>
-                  )},
-                ].map(({ key, label, content }) => (
-                  <div key={key} style={{ background: 'var(--bg-stat)', borderRadius: 8 }}>
-                    <button
-                      onClick={() => setAboutSections(prev => ({ ...prev, [key]: !prev[key] }))}
-                      className="w-full flex items-center justify-between text-xs font-semibold text-gray-300 hover:text-gray-200 transition-colors"
-                      style={{ padding: '8px 12px' }}
-                      aria-expanded={!!aboutSections[key]}
-                    >
-                      <span>{label}</span>
-                      <ChevronDown size={14} className={`transition-transform duration-200 text-gray-500 ${aboutSections[key] ? 'rotate-180' : ''}`} />
-                    </button>
-                    {aboutSections[key] && (
-                      <div className="text-[10px] text-gray-400" style={{ padding: '0 12px 10px' }}>
-                        {content}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </CardBody>
-            </Card>
+            <AboutSection handleAdminTap={handleAdminTap} adminTapCount={adminTapCount} />
           </div>
           </TabErrorBoundary>
           </div>
@@ -1580,7 +1547,6 @@ function ProfileTab({
         ownedCharNames={ownedCharNames}
         idCardTrapRef={idCardTrapRef}
         trophies={trophies}
-        getImageFraming={getImageFraming}
       />
 
       {/* Admin Panel Modal + Mini Window */}
@@ -1604,19 +1570,16 @@ function ProfileTab({
         customCollectionImages={customCollectionImages} saveCollectionImages={saveCollectionImages}
         collectionImages={collectionImages}
         activeBanners={activeBanners} setActiveBanners={setActiveBanners}
-        imageFraming={imageFraming} framingMode={framingMode} setFramingMode={setFramingMode}
-        editingImage={editingImage} setEditingImage={setEditingImage}
-        getImageFraming={getImageFraming} updateEditingFraming={updateEditingFraming}
-        resetEditingFraming={resetEditingFraming}
-        miniPanelPosition={miniPanelPosition} saveMiniPanelPosition={saveMiniPanelPosition}
-        getMiniPanelPositionClasses={getMiniPanelPositionClasses}
         state={state} dispatch={dispatch} toast={toast} confirm={confirm}
         adminTrapRef={adminTrapRef}
         setActiveTab={setActiveTab}
         withCacheBuster={withCacheBuster}
         detailModal={detailModal}
-        saveImageFraming={saveImageFraming}
         DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
+        bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
+        editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}
+        updateBgPosition={updateBgPosition} getBgPositionLabel={getBgPositionLabel}
+        exportBgPositions={exportBgPositions}
       />
 
     </>
@@ -1626,7 +1589,12 @@ function ProfileTab({
 export default React.memo(ProfileTab, (prev, next) =>
   prev.state.profile === next.state.profile && prev.state.server === next.state.server &&
   prev.state.settings === next.state.settings && prev.visualSettings === next.visualSettings &&
-  prev.googleUser === next.googleUser && prev.cloudBackupStatus === next.cloudBackupStatus &&
   prev.overallStats === next.overallStats && prev.trophies === next.trophies &&
-  prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners
+  prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners &&
+  prev.showAdminPanel === next.showAdminPanel && prev.adminMiniMode === next.adminMiniMode &&
+  prev.bgFramingMode === next.bgFramingMode && prev.editingBgTarget === next.editingBgTarget &&
+  prev.detailModal === next.detailModal &&
+  prev.luckRating === next.luckRating && prev.ownedCharNames === next.ownedCharNames &&
+  prev.trophyOverrides === next.trophyOverrides && prev.pwa === next.pwa &&
+  prev.customCollectionImages === next.customCollectionImages
 );

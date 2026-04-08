@@ -3,14 +3,37 @@
 // CollectionGridSection component
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { User, Crown } from 'lucide-react';
-import { CHARACTER_DATA, haptic } from '../../appcore-data.js';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { eraseEchoBg } from '../utils/echoBackground.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+
+// Long-press detection hook (500ms hold)
+function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
+  const timerRef = useRef(null);
+  const firedRef = useRef(false);
+  const onPointerDown = useCallback(() => {
+    firedRef.current = false;
+    timerRef.current = setTimeout(() => {
+      firedRef.current = true;
+      haptic.success();
+      onLongPress?.();
+    }, delay);
+  }, [onLongPress, delay]);
+  const onPointerUp = useCallback(() => {
+    clearTimeout(timerRef.current);
+    if (!firedRef.current) onClick?.();
+  }, [onClick]);
+  const onPointerLeave = useCallback(() => { clearTimeout(timerRef.current); }, []);
+  const onContextMenu = useCallback((e) => { if (onLongPress) e.preventDefault(); }, [onLongPress]);
+  return { onPointerDown, onPointerUp, onPointerLeave, onContextMenu };
+}
 
 // Internal: CollectionGridCard
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess }) => {
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter }) => {
   // Pixel-level background removal for echo images (skip if pre-processed)
   const [processedUrl, setProcessedUrl] = useState((isEcho && !noBgProcess) ? null : imgUrl);
   useEffect(() => {
@@ -19,6 +42,17 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     eraseEchoBg(imgUrl).then(url => { if (!cancelled) setProcessedUrl(url); }).catch(() => { if (!cancelled) setProcessedUrl(imgUrl); });
     return () => { cancelled = true; };
   }, [imgUrl, isEcho, noBgProcess]);
+  const longPressHandlers = useLongPress(
+    onLongPress ? () => onLongPress(name, isCharacter) : null,
+    () => {
+      if (framingMode) {
+        setEditingImage(imageKey);
+      } else if (onClickCard) {
+        haptic.light();
+        onClickCard();
+      }
+    }
+  );
   const cardStateClass = isSelected
     ? 'border-emerald-500 ring-2 ring-emerald-500/50'
     : isProfilePic
@@ -31,16 +65,9 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   <button
     type="button"
     className={cardClassName}
-    style={{ height: '140px', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
+    style={{ height: 'var(--height-card-sm)', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
     aria-label={`${name}${owned ? `, owned${count > 1 ? ` ×${count}` : ''}` : ', not owned'}${isProfilePic ? ', current profile picture' : ''}${isNew ? ', new' : ''}`}
-    onClick={() => {
-      if (framingMode) {
-        setEditingImage(imageKey);
-      } else if (onClickCard) {
-        haptic.light();
-        onClickCard();
-      }
-    }}
+    {...longPressHandlers}
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
@@ -71,13 +98,13 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black" style={{boxShadow: '0 0 8px rgba(237,175,24,0.5)', textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
     )}
     {/* Profile pic setter — top-right corner */}
     {owned && !framingMode && onSetProfilePic && (
       <button
         className={`profile-pic-btn absolute z-20 flex items-center justify-center transition-all ${isProfilePic ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-yellow-500/30 hover:text-yellow-300'}`}
-        style={{ top: '4px', right: '4px', width: '22px', height: '22px', minHeight: '22px', borderRadius: '6px', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
+        style={{ top: '4px', right: '4px', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', minHeight: 'var(--size-icon-btn)', borderRadius: 'var(--radius-sm)', padding: 0, ...(isProfilePic ? { background: '#fb923c', boxShadow: '0 0 10px rgba(251,146,60,0.5)' } : {}) }}
         onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
         title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
         aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
@@ -90,9 +117,9 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         <span className="text-black text-[10px]">✓</span>
       </div>
     )}
-    <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9)' }}>
+    <div className="absolute bottom-0 left-0 right-0 z-10 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
       {owned ? (
-        <div className={`${countColor} font-bold text-xl`}>{countLabel}</div>
+        <div className={`${countColor} font-bold text-xl kuro-number`}>{countLabel}</div>
       ) : (
         <div className="text-gray-500 font-bold text-xl">—</div>
       )}
@@ -110,7 +137,8 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
 CollectionGridCard.displayName = 'CollectionGridCard';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, getImageFraming, framingMode, editingImage, setEditingImage, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false }) => {
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
@@ -154,6 +182,8 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               onToggleOwned={toggleOwned}
               isEcho={dataType === 'echo'}
               noBgProcess={dataType === 'echo' && dataLookup[name]?.noBgProcess}
+              onLongPress={onLongPress}
+              isCharacter={isCharacter}
             />
           );
         })}

@@ -121,7 +121,7 @@ const EVENTS = {
     resetType: 'Daily 4:00 AM',
     color: 'yellow',
     dailyReset: true,
-    rewards: 'Waveplates',
+    rewards: '60 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow'
   },
@@ -474,16 +474,47 @@ const DEFAULT_COLLECTION_IMAGES = {
 // CHARACTER THEMES — Curated theme presets based on character banner art & element
 // ═══════════════════════════════════════════════════════════════════════════════
 const CHARACTER_THEMES = [
-  { id: 'sigrika',       name: 'Sigrika',       element: 'Aero',    bannerArt: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg' },
-  { id: 'qiuyuan',       name: 'Qiuyuan',       element: 'Aero',    bannerArt: 'https://i.ibb.co/yndZmfvB/Qiuyuan-Banner-Art.jpg' },
-  { id: 'luuk-herssen',  name: 'Luuk Herssen',  element: 'Spectro', bannerArt: 'https://i.ibb.co/DPcdf0RY/Luuk-Hersen-Banner-Art.jpg' },
-  { id: 'aemeath',       name: 'Aemeath',       element: 'Fusion',  bannerArt: 'https://i.ibb.co/YFQBgJ8W/Aemaeth-Banner-Art.jpg' },
-  { id: 'mornye',        name: 'Mornye',        element: 'Fusion',  bannerArt: 'https://i.ibb.co/cKY4dY6W/Mornye-Banner-Art.png' },
-  { id: 'chisa',         name: 'Chisa',         element: 'Havoc',   bannerArt: 'https://i.ibb.co/p6gwfsWC/Chisa-Banner-Art.jpg' },
-  { id: 'galbrena',      name: 'Galbrena',      element: 'Fusion',  bannerArt: 'https://i.ibb.co/0jJLjwws/Galbrena-Banner-Art.jpg' },
-  { id: 'iuno',          name: 'Iuno',          element: 'Aero',    bannerArt: 'https://i.ibb.co/xtdnyxRH/Iuno-Banner-Art.png' },
-  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/Hfx3kqG0/Augusta-Banner-Art.jpg' },
-  { id: 'lupa',          name: 'Lupa',          element: 'Fusion',  bannerArt: 'https://i.ibb.co/bjTy2MYT/Lupa-Banner-Art.jpg' },
+  { id: 'sigrika',       name: 'Sigrika',       element: 'Aero',    bannerArt: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',       pos: { header: '50% 25%', nav: '50% 27%', bg: '64% 50%' } },
+  { id: 'qiuyuan',       name: 'Qiuyuan',       element: 'Aero',    bannerArt: 'https://i.ibb.co/yndZmfvB/Qiuyuan-Banner-Art.jpg',       pos: { header: '50% 19%', nav: '50% 21%', bg: '55% 50%' } },
+  { id: 'luuk-herssen',  name: 'Luuk Herssen',  element: 'Spectro', bannerArt: 'https://i.ibb.co/DPcdf0RY/Luuk-Hersen-Banner-Art.jpg',   pos: { header: '50% 52%', nav: '50% 52%', bg: '64% 50%' } },
+  { id: 'aemeath',       name: 'Aemeath',       element: 'Fusion',  bannerArt: 'https://i.ibb.co/YFQBgJ8W/Aemaeth-Banner-Art.jpg',       pos: { header: '50% 47%', nav: '50% 46%', bg: '73% 50%' } },
+  { id: 'mornye',        name: 'Mornye',        element: 'Fusion',  bannerArt: 'https://i.ibb.co/cKY4dY6W/Mornye-Banner-Art.png',        pos: { header: '50% 27%', nav: '50% 27%', bg: '72% 50%' } },
+  { id: 'chisa',         name: 'Chisa',         element: 'Havoc',   bannerArt: 'https://i.ibb.co/p6gwfsWC/Chisa-Banner-Art.jpg',         pos: { header: '50% 22%', nav: '50% 24%', bg: '68% 50%' } },
+  { id: 'galbrena',      name: 'Galbrena',      element: 'Fusion',  bannerArt: 'https://i.ibb.co/0jJLjwws/Galbrena-Banner-Art.jpg',      pos: { header: '50% 31%', nav: '50% 35%', bg: '60% 50%' } },
+  { id: 'iuno',          name: 'Iuno',          element: 'Aero',    bannerArt: 'https://i.ibb.co/xtdnyxRH/Iuno-Banner-Art.png',          pos: { header: '50% 27%', nav: '50% 29%', bg: '66% 50%' } },
+  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/Hfx3kqG0/Augusta-Banner-Art.jpg',       pos: { header: '50% 36%', nav: '50% 35%', bg: '62% 50%' } },
+  { id: 'lupa',          name: 'Lupa',          element: 'Fusion',  bannerArt: 'https://i.ibb.co/bjTy2MYT/Lupa-Banner-Art.jpg',          pos: { header: '52% 56%', nav: '50% 56%', bg: '62% 50%' } },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VERSION SPLASH SCREENS — Official game version key art
+// ═══════════════════════════════════════════════════════════════════════════════
+const VERSION_SPLASH_SCREENS = [
+  { id: 'v3.2', version: '3.2', name: 'Resolution to Illuminate the Shadows', art: 'https://i.ibb.co/7J4nf7jT/3-2-Resolution-to-Illuminate-the-Shadows.webp',                        pos: { header: '50% 26%', nav: '50% 22%', bg: '52% 50%' } },
+  { id: 'v3.1', version: '3.1', name: 'For You Who Walk in Snow',              art: 'https://i.ibb.co/QvxjFT7f/3-1-For-You-Who-Walk-in-Snow.webp',                                     pos: { header: '50% 22%', nav: '50% 23%', bg: '50% 50%' } },
+  { id: 'v3.0', version: '3.0', name: 'We Who See The Stars',                  art: 'https://i.ibb.co/wZ1YLZL3/3-0-We-Who-See-The-Stars.webp',                                         pos: { header: '50% 25%', nav: '50% 21%', bg: '24% 50%' } },
+  { id: 'v2.8', version: '2.8', name: 'To the City Set in Amber',              art: 'https://i.ibb.co/vtrgdN5/2-8-To-the-City-Set-in-Amber.webp',                                      pos: { header: '50% 20%', nav: '50% 22%', bg: '52% 50%' } },
+  { id: 'v2.7', version: '2.7', name: 'Dawn Breaks on Dark Tides',             art: 'https://i.ibb.co/ccSMLBWQ/2-7-Dawn-Breaks-on-Dark-Tides.webp',                                    pos: { header: '50% 35%', nav: '50% 33%', bg: '50% 50%' } },
+  { id: 'v2.6', version: '2.6', name: "By Sun's Scourge, By Moon's Revelation", art: 'https://i.ibb.co/tPmjm4Gj/2-6-By-Sun-039-s-Scourge-By-Moon-039-s-Revelation.webp',              pos: { header: '50% 18%', nav: '50% 18%', bg: '50% 50%' } },
+  { id: 'v2.5', version: '2.5', name: 'Unfading Melody of Life',               art: 'https://i.ibb.co/9mPqRNB5/2-5-Unfading-Melody-of-Life.webp',                                      pos: { header: '50% 30%', nav: '50% 32%', bg: '38% 50%' } },
+  { id: 'v2.4', version: '2.4', name: 'Lightly We Toss the Crown',             art: 'https://i.ibb.co/1Y9nQ0fh/2-4-Lightly-We-Toss-the-Crown.webp',                                    pos: { header: '50% 26%', nav: '50% 25%', bg: '52% 50%' } },
+  { id: 'v2.3', version: '2.3', name: 'Fiery Arpeggio of Summer Reunion',      art: 'https://i.ibb.co/xqGcwWtp/2-3-Fiery-Arpeggio-of-Summer-Reunion.webp',                             pos: { header: '50% 34%', nav: '50% 32%', bg: '26% 50%' } },
+  { id: 'v2.2', version: '2.2', name: 'Tangled Truths in the Inverted Tower',  art: 'https://i.ibb.co/CsJzN541/2-2-Tangled-Truths-in-the-Inverted-Tower.webp',                         pos: { header: '50% 28%', nav: '50% 26%', bg: '62% 50%' } },
+  { id: 'v2.1', version: '2.1', name: 'Waves Sing and the Cerulean Bird Calls', art: 'https://i.ibb.co/NR8Y3hX/2-1-Waves-Sing-and-the-Cerulean-Bird-Calls.webp',                       pos: { header: '50% 10%', nav: '50% 12%', bg: '78% 50%' } },
+  { id: 'v2.0', version: '2.0', name: 'All Silent Souls Can Sing',             art: 'https://i.ibb.co/ymyhCL34/2-0-All-Silent-Souls-Can-Sing.webp',                                    pos: { header: '50% 52%', nav: '50% 49%', bg: '36% 50%' } },
+  { id: 'v1.4', version: '1.4', name: 'When the Night Knocks',                 art: 'https://i.ibb.co/gs28SY3/1-4-When-the-Night-Knocks.webp',                                         pos: { header: '50% 66%', nav: '50% 70%', bg: '46% 50%' } },
+  { id: 'v1.3', version: '1.3', name: "To the Shore's End",                    art: 'https://i.ibb.co/Pv1CG7BX/1-3-To-the-Shore-039-s-End.webp',                                       pos: { header: '50% 16%', nav: '50% 16%', bg: '16% 50%' } },
+  { id: 'v1.2', version: '1.2', name: 'In the Turquoise Moonglow',             art: 'https://i.ibb.co/mV6XsJzv/1-2-In-the-Turquoise-Moonglow.webp',                                    pos: { header: '50% 47%', nav: '50% 51%', bg: '44% 50%' } },
+  { id: 'v1.1', version: '1.1', name: 'Thaw of Eons',                          art: 'https://i.ibb.co/LXNDc40c/1-1-Thaw-of-Eons.webp',                                                 pos: { header: '50% 26%', nav: '50% 29%', bg: '50% 50%' } },
+  { id: 'v1.0', version: '1.0', name: 'Waking of a World',                     art: 'https://i.ibb.co/XkXrD9NF/1-0-Waking-of-a-World.webp',                                            pos: { header: '50% 32%', nav: '50% 34%', bg: '50% 50%' } },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OTHER BACKGROUNDS — Miscellaneous promotional art
+// ═══════════════════════════════════════════════════════════════════════════════
+const OTHER_BACKGROUNDS = [
+  { id: 'dream-team', name: 'The Dream Team', art: 'https://i.ibb.co/Gfkn50Fk/The-dream-team.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '40% 50%' } },
+  { id: 'utterance-of-marvels', name: 'Utterance of Marvels', art: 'https://i.ibb.co/KjjRTp27/1-2-2.jpg', pos: { header: '50% 28%', nav: '50% 26%', bg: '58% 50%' } },
 ];
 
 
@@ -544,4 +575,6 @@ export {
   VERSION_DATES,
   DEFAULT_COLLECTION_IMAGES,
   CHARACTER_THEMES,
+  VERSION_SPLASH_SCREENS,
+  OTHER_BACKGROUNDS,
 };

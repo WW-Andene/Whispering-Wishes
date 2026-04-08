@@ -12,10 +12,11 @@ import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECH
 import { WEAPON_RELEASE_ORDER, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { generateVerticalMaskGradient } from '../../shared/utils/maskGradient.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 function CollectionTab({
   state,
@@ -24,15 +25,13 @@ function CollectionTab({
   visualSettings,
   setActiveTab,
   setDetailModal,
-  framingMode,
-  editingImage,
-  setEditingImage,
   activeBanners,
   withCacheBuster,
-  getImageFraming,
   refreshImages,
   handleSetProfilePic,
 }) {
+  const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
+
   // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
   const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'copies');
   const [collectionSearch, setCollectionSearch] = useState('');
@@ -62,6 +61,27 @@ function CollectionTab({
   });
   useEffect(() => { try { localStorage.setItem('ww-owned-chars', JSON.stringify(ownedChars)); } catch {} }, [ownedChars]);
   const toggleOwned = useCallback((name) => setOwnedChars(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]), []);
+
+  // ── Manual copy count overrides (long-press to add copies) ─────────────────
+  const [manualCounts, setManualCounts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ww-manual-counts') || '{}'); } catch { return {}; }
+  });
+  useEffect(() => { try { localStorage.setItem('ww-manual-counts', JSON.stringify(manualCounts)); } catch {} }, [manualCounts]);
+  const addManualCopy = useCallback((name, isCharacter) => {
+    setManualCounts(prev => {
+      const current = prev[name] || 0;
+      const max = isCharacter ? 7 : 5; // S0-S6 = 7 copies, R1-R5 = 5 copies
+      if (current >= max) return prev;
+      return { ...prev, [name]: current + 1 };
+    });
+    // Also mark as owned if character
+    if (isCharacter) {
+      setOwnedChars(prev => prev.includes(name) ? prev : [...prev, name]);
+    }
+  }, []);
+
+  // Merge pull history counts with manual overrides (take the higher value)
+  const mergeCount = useCallback((name, historyCount) => Math.max(historyCount || 0, manualCounts[name] || 0), [manualCounts]);
 
   // ── Derived / computed ────────────────────────────────────────────────────────
 
@@ -142,8 +162,9 @@ function CollectionTab({
 
   const filterCollectionItems = useCallback((items, countsObj, isCharacter = true) => {
     return items.filter(name => {
-      if (collectionOwnedFilter === 'owned' && !ownedChars.includes(name)) return false;
-      if (collectionOwnedFilter === 'not-owned' && ownedChars.includes(name)) return false;
+      const isOwned = ownedChars.includes(name) || (countsObj && countsObj[name] > 0);
+      if (collectionOwnedFilter === 'owned' && !isOwned) return false;
+      if (collectionOwnedFilter === 'not-owned' && isOwned) return false;
       if (collectionCategoryFilter === 'character' && !isCharacter) return false;
       if (collectionCategoryFilter === 'weapon' && isCharacter) return false;
       if (debouncedSearch) {
@@ -248,7 +269,7 @@ function CollectionTab({
 
       {!state.profile.importedAt ? (
         <Card>
-          <CardBody className="text-center py-8">
+          <CardBody className="kuro-empty-state text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />
             <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
             <p className="text-gray-400 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
@@ -274,7 +295,7 @@ function CollectionTab({
               <Card><CardBody>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white text-xs font-medium">Collection Progress</span>
-                  <span className="text-yellow-400 text-sm font-bold">{pct}%</span>
+                  <span className="text-yellow-400 text-sm font-bold kuro-number">{pct}%</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
@@ -355,7 +376,7 @@ function CollectionTab({
               {hasActiveFilters && (
                 <div className="flex items-center justify-between mb-2 px-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/30 text-yellow-400 border border-yellow-500/40 font-medium">
+                    <span className="kuro-badge kuro-badge-yellow font-medium" style={{ borderRadius: 'var(--radius-pill)' }}>
                       Filters active
                     </span>
                   </div>
@@ -588,8 +609,7 @@ function CollectionTab({
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="" totalCount={ALL_4COST_ECHOES.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
                 dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -610,8 +630,7 @@ function CollectionTab({
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="" totalCount={ALL_3COST_ECHOES.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
                 dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -632,8 +651,7 @@ function CollectionTab({
                 glowClass="" ownedBg="bg-cyan-500/10" ownedBorder="border-cyan-500/30"
                 countColor="text-cyan-400" countPrefix="" totalCount={ALL_1COST_ECHOES.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
                 dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
@@ -651,17 +669,17 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={applySortOverride(collectionData.sortItems(filterCollectionItems(ALL_5STAR_RESONATORS, collectionData.chars5Counts, true).map(name => [name, collectionData.chars5Counts[name] || 0]), collectionSort))}
+                items={applySortOverride(collectionData.sortItems(filterCollectionItems(ALL_5STAR_RESONATORS, collectionData.chars5Counts, true).map(name => [name, mergeCount(name, collectionData.chars5Counts[name])]), collectionSort))}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="S" totalCount={ALL_5STAR_RESONATORS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -674,17 +692,17 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={applySortOverride(collectionData.sortItems(filterCollectionItems(ALL_4STAR_RESONATORS, collectionData.chars4Counts, true).map(name => [name, collectionData.chars4Counts[name] || 0]), collectionSort))}
+                items={applySortOverride(collectionData.sortItems(filterCollectionItems(ALL_4STAR_RESONATORS, collectionData.chars4Counts, true).map(name => [name, mergeCount(name, collectionData.chars4Counts[name])]), collectionSort))}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="S" totalCount={ALL_4STAR_RESONATORS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -699,16 +717,16 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_5STAR_WEAPONS, collectionData.weaps5Counts, false).map(name => [name, collectionData.weaps5Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                items={collectionData.sortItems(filterCollectionItems(ALL_5STAR_WEAPONS, collectionData.weaps5Counts, false).map(name => [name, mergeCount(name, collectionData.weaps5Counts[name])]), collectionSort, WEAPON_RELEASE_ORDER)}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-gold" ownedBg="bg-yellow-500/10" ownedBorder="border-yellow-500/30"
                 countColor="text-yellow-400" countPrefix="R" totalCount={ALL_5STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -721,16 +739,16 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_4STAR_WEAPONS, collectionData.weaps4Counts, false).map(name => [name, collectionData.weaps4Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                items={collectionData.sortItems(filterCollectionItems(ALL_4STAR_WEAPONS, collectionData.weaps4Counts, false).map(name => [name, mergeCount(name, collectionData.weaps4Counts[name])]), collectionSort, WEAPON_RELEASE_ORDER)}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="glow-purple" ownedBg="bg-purple-500/10" ownedBorder="border-purple-500/30"
                 countColor="text-purple-400" countPrefix="R" totalCount={ALL_4STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -743,16 +761,16 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_3STAR_WEAPONS, collectionData.weaps3Counts, false).map(name => [name, collectionData.weaps3Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                items={collectionData.sortItems(filterCollectionItems(ALL_3STAR_WEAPONS, collectionData.weaps3Counts, false).map(name => [name, mergeCount(name, collectionData.weaps3Counts[name])]), collectionSort, WEAPON_RELEASE_ORDER)}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-blue-500/10" ownedBorder="border-blue-500/30"
                 countColor="text-blue-400" countPrefix="R" totalCount={ALL_3STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -765,16 +783,16 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_2STAR_WEAPONS, collectionData.weaps2Counts, false).map(name => [name, collectionData.weaps2Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                items={collectionData.sortItems(filterCollectionItems(ALL_2STAR_WEAPONS, collectionData.weaps2Counts, false).map(name => [name, mergeCount(name, collectionData.weaps2Counts[name])]), collectionSort, WEAPON_RELEASE_ORDER)}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-green-500/10" ownedBorder="border-green-500/30"
                 countColor="text-green-400" countPrefix="R" totalCount={ALL_2STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -787,16 +805,16 @@ function CollectionTab({
             </CardHeader>
             <CardBody>
               <CollectionGridSection
-                items={collectionData.sortItems(filterCollectionItems(ALL_1STAR_WEAPONS, collectionData.weaps1Counts, false).map(name => [name, collectionData.weaps1Counts[name] || 0]), collectionSort, WEAPON_RELEASE_ORDER)}
+                items={collectionData.sortItems(filterCollectionItems(ALL_1STAR_WEAPONS, collectionData.weaps1Counts, false).map(name => [name, mergeCount(name, collectionData.weaps1Counts[name])]), collectionSort, WEAPON_RELEASE_ORDER)}
                 collMask={collectionMaskData.collMask} collOpacity={collectionMaskData.collOpacity}
                 glowClass="" ownedBg="bg-gray-500/10" ownedBorder="border-gray-500/30"
                 countColor="text-gray-400" countPrefix="R" totalCount={ALL_1STAR_WEAPONS.length}
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
-                withCacheBuster={withCacheBuster} getImageFraming={getImageFraming}
-                framingMode={framingMode} editingImage={editingImage} setEditingImage={setEditingImage}
+                withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                onLongPress={addManualCopy}
                 collapsible
               />
             </CardBody>
@@ -813,6 +831,5 @@ function CollectionTab({
 export default React.memo(CollectionTab, (prev, next) =>
   prev.state.profile === next.state.profile && prev.collectionData === next.collectionData &&
   prev.collectionImages === next.collectionImages && prev.visualSettings === next.visualSettings &&
-  prev.activeBanners === next.activeBanners && prev.framingMode === next.framingMode &&
-  prev.editingImage === next.editingImage
+  prev.activeBanners === next.activeBanners
 );

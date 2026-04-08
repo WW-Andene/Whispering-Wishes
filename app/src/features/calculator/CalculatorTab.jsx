@@ -14,7 +14,7 @@ import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/consta
 import { haptic } from '../../utils/helpers.js';
 import { calcStats } from '../../core/calcStats.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/Backgrounds.jsx';
+import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { PityCounterInput } from '../../shared/components/PityCounterInput.jsx';
 import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
@@ -77,6 +77,8 @@ function CalculatorTab({ state, dispatch }) {
         stdWeapTotal: totalPulls + lustrous,
         charPercent: 100,
         weapPercent: 100,
+        stdCharAstrite: totalPulls,
+        stdWeapAstrite: totalPulls,
         stdCharLustrous: lustrous,
         stdWeapLustrous: lustrous,
       };
@@ -110,6 +112,8 @@ function CalculatorTab({ state, dispatch }) {
       stdWeapTotal: stdWeapAstrite + stdWeapLustrous,
       charPercent,
       weapPercent,
+      stdCharAstrite,
+      stdWeapAstrite,
       stdCharLustrous,
       stdWeapLustrous,
     };
@@ -292,9 +296,9 @@ function CalculatorTab({ state, dispatch }) {
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded border border-yellow-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-gold">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('radiant', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Radiant Tides">Clear</button>
+                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Radiant Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -304,9 +308,9 @@ function CalculatorTab({ state, dispatch }) {
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 rounded border border-pink-500/30 transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-pink">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('forging', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Forging Tides">Clear</button>
+                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Forging Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -320,9 +324,9 @@ function CalculatorTab({ state, dispatch }) {
                       <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="px-2 py-1 text-[10px] bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-cyan">+{amt}</button>
                         ))}
-                        <button onClick={() => setCalc('lustrous', '')} className="px-2 py-1 text-[10px] bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors" aria-label="Clear Lustrous Tides">Clear</button>
+                        <button onClick={() => setCalc('lustrous', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Lustrous Tides">Clear</button>
                       </div>
                     </div>
                   )}
@@ -384,14 +388,14 @@ function CalculatorTab({ state, dispatch }) {
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.stdCharAstrite.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls.toLocaleString('en-US')}</div>
                           <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.stdWeapAstrite.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -430,7 +434,7 @@ function CalculatorTab({ state, dispatch }) {
                 <CardHeader>Combined Analysis</CardHeader>
                 <CardBody>
                     <p className="text-gray-400 text-[10px] mb-2 text-center">
-                      Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.charCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
+                      Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.charCopies : state.calc.stdCharCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
                     </p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">

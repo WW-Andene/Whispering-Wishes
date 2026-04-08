@@ -2,14 +2,16 @@ import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef 
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
-import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
+import RotationTimeline from './RotationTimeline.jsx';
+import DPSComparisonCard from './DPSComparisonCard.jsx';
+import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -48,7 +50,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
       const scaling = d.statScaling || 'ATK';
       const baseStat = scaling === 'HP' ? (d.baseHp || 0) : scaling === 'DEF' ? (d.baseDef || 0) : charAtk + weapAtk;
-      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
+      const mainEchoName = eq?.echoes?.[0]?.name || '';
+      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel, mainEchoName };
     }).filter(Boolean);
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
@@ -97,7 +100,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     // ── Enemy scaling ──
     const attackerFactor = 800 + 8 * 90; // 1520 at attacker level 90
-    const enemyDef90 = 792 + 8 * enemyLevel;
+    const enemyDef90 = 792 + 8 * (Number(enemyLevel) || 90);
     const calcResMult = (baseRes, shred) => {
       const totalRes = (baseRes - shred) / 100;
       if (totalRes < 0) return 1 - totalRes / 2;
@@ -784,19 +787,48 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
     const rotationTimeline = (() => {
-      const timeline = [];
       const buffs = [];
-      let t = 0;
-      const ordered = [...mems].sort((a, b) => {
-        if (a.name === mainDps.name) return -1;
-        if (b.name === mainDps.name) return 1;
-        const roleOrder = { 'Main DPS': 0, 'Sub DPS': 1, 'Support': 2, 'Healer': 3 };
-        return (roleOrder[a.d.role] || 2) - (roleOrder[b.d.role] || 2);
+      // ── Smart rotation ordering based on WuWa swap mechanics ──
+      // Rule 1: Main DPS goes LAST (receives all buffs in DPS window)
+      // Rule 2: Characters with team-wide outro buffs go FIRST (persist through swaps)
+      // Rule 3: Characters with next-only outro buffs go immediately BEFORE the DPS
+      //         (next-only buffs vanish when recipient swaps out, so only the last one reaches DPS)
+      // Rule 4: If multiple next-only buffers, the one with higher total value goes last (closer to DPS)
+      const dpsChar = mems.find(m => m.name === mainDps.name);
+      const supports = mems.filter(m => m.name !== mainDps.name);
+
+      // Classify supports by outro buff type
+      const hasTeamOutro = (m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (!bt) return false;
+        // Team-wide outro buffs persist through swaps (Verina, Shorekeeper, Baizhi, Mornye)
+        return (bt.outroBuffs || []).some(b => b.target === 'team');
+      };
+      const nextOutroValue = (m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (!bt) return 0;
+        return (bt.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'enemy').reduce((s, b) => s + b.value, 0);
+      };
+
+      // Sort: team-wide outro first, then by next-outro value ascending (strongest last = closest to DPS)
+      supports.sort((a, b) => {
+        const aTeam = hasTeamOutro(a) ? 0 : 1;
+        const bTeam = hasTeamOutro(b) ? 0 : 1;
+        if (aTeam !== bTeam) return aTeam - bTeam; // team-wide outro goes first
+        return nextOutroValue(a) - nextOutroValue(b); // stronger next-outro goes last (closer to DPS)
       });
-      ordered.forEach(m => {
-        const rawOnField = m.d.onField ?? (m.name === mainDps.name ? 15 : 5);
-        const onField = Math.min(rawOnField, Math.max(0, rotTime - t));
-        if (onField <= 0) return;
+      const ordered = dpsChar ? [...supports, dpsChar] : [...mems];
+      // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
+      const raw = ordered.map(m => ({
+        m, onField: m.d.onField ?? (m.name === mainDps.name ? 15 : 5),
+      }));
+      const totalRaw = raw.reduce((s, r) => s + r.onField, 0);
+      const scale = totalRaw > rotTime ? rotTime / totalRaw : 1;
+
+      const timeline = [];
+      let t = 0;
+      raw.forEach(({ m, onField: rawField }) => {
+        const onField = Math.round(rawField * scale * 10) / 10; // scale + round to 0.1s
         timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
         const bt = CHAR_BUFF_TABLE[m.name];
         if (bt) {
@@ -811,7 +843,93 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
             }
           });
+          (bt.selfBuffs || []).forEach(b => {
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+          });
+          (bt.weaponBuffs || []).forEach(b => {
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+          });
         }
+
+        // ── Echo set p5 timed buffs ──
+        if (m.echoSet) {
+          const setName = m.echoSetName;
+          const p5 = m.echoSet.p5 || '';
+          const p5v = m.echoSet.p5val || {};
+          // Outro-triggered echo set buffs (fire when character swaps out)
+          if (p5.includes('Outro')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              if (stat === 'outroDmg') return; // raw damage, not a buff
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t + onField, duration: 14 });
+            });
+          }
+          // Intro-triggered echo set buffs (fire when character swaps in)
+          else if (p5.includes('Intro')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+          // Liberation-triggered echo set buffs
+          else if (p5.includes('Liberation') || p5.includes('Lib')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: 35 });
+            });
+          }
+          // Heal-triggered team buffs
+          else if (p5.includes('Heal') && p5v.teamAtk) {
+            buffs.push({ source: `${setName}`, owner: m.name, stat: 'atkPct', value: p5v.teamAtk, start: t, duration: 20 });
+          }
+          // On-field stacking buffs (active during field time only)
+          else if (p5.includes('max x') || p5.includes('stack')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+        }
+
+        // ── Weapon passive timed buffs ──
+        if (m.weapon?.pv) {
+          const wpn = m.weapon;
+          const passive = wpn.passive || '';
+          // Weapons with on-hit/on-skill stacking buffs — active during field time
+          if (passive.includes('stack') || passive.includes('grant') || passive.includes('use')) {
+            Object.entries(wpn.pv).forEach(([stat, val]) => {
+              buffs.push({ source: m.weapName, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+        }
+
+        // ── 4-cost echo active skill buffs ──
+        if (m.mainEchoName) {
+          const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
+          if (esb) {
+            const echoLabel = m.mainEchoName.length > 18 ? m.mainEchoName.split(/[:\s-]+/).slice(0, 2).join(' ') : m.mainEchoName;
+            const target = esb.target || 'self';
+            if (target === 'next') {
+              // Outro-triggered echo buff → fires when character swaps out, applies to next
+              esb.buffs.forEach(b => {
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo' });
+              });
+            } else if (target === 'team') {
+              // Team-wide buff → active during field time, persists for duration
+              esb.buffs.forEach(b => {
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: esb.duration || 15, type: 'echo' });
+              });
+            } else if (esb.passive) {
+              // Passive main-slot buff → always active during field time
+              esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: onField, type: 'echo' });
+              });
+            } else {
+              // Standard active skill buff → used during field time
+              esb.buffs.forEach(b => {
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo' });
+              });
+            }
+          }
+        }
+
         t += onField;
       });
       return { segments: timeline, buffs, totalTime: rotTime };
@@ -866,8 +984,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <span className={`text-[10px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">
-                        <span className={`text-[10px] px-2 py-0.5 rounded ${rc.bg} ${rc.border} ${rc.text} border font-medium`}>{m.d.role}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                        <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{m.d.role}</span>
+                        <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element}
                         </span>
@@ -933,10 +1051,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div>
                     <div className="kuro-label">Base Stats (Lv.90)</div>
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">ATK {m.charAtk}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">+Weapon {m.weapAtk}</span>
+                      <span className="kuro-badge kuro-badge-neutral">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge kuro-badge-neutral">ATK {m.charAtk}</span>
+                      <span className="kuro-badge kuro-badge-neutral">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge kuro-badge-amber">+Weapon {m.weapAtk}</span>
                     </div>
                   </div>
 
@@ -1057,7 +1175,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         )}
                         {!isMain && (
                           <div>
-                            <div className="text-[10px] text-gray-400 mb-0.5">Echo Preset</div>
+                            <div className="kuro-micro-label">Echo Preset</div>
                             <div className="flex gap-0.5">
                               {[
                                 { value: 'default', label: 'ATK/Crit', color: 'yellow' },
@@ -1088,78 +1206,57 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <details className="group" open>
                           <summary className="kuro-label cursor-pointer hover:text-gray-200 transition-colors select-none !flex !flex-row items-center gap-1 list-none [&::-webkit-details-marker]:hidden" style={{ display: 'flex', flexDirection: 'row', marginBottom: 0 }}>
                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
-                            <span>Sequence · Refinement · Sonata</span>
+                            <span>Sequence · Refinement</span>
                           </summary>
-                        <div className="flex gap-2 mt-1">
-                          <div className="flex-1">
-                            <div className="text-[10px] text-gray-400 mb-0.5">Sequence</div>
-                            <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
-                              {[0,1,2,3,4,5,6].map(s => {
-                                const isActive = (eq.sequence || 0) === s;
-                                return (
-                                  <button key={s}
-                                    role="radio"
-                                    aria-checked={isActive}
-                                    className={`flex-1 py-1.5 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
-                                    onClick={() => {
-                                      setTeamEquipment(prev => {
-                                        const n = { ...prev };
-                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                  return n;
-                                      });
-                                      haptic.light();
-                                    }}
-                                  >S{s}</button>
-                                );
-                              })}
+                        <div className="kuro-detail-box mt-1 space-y-2">
+                          <div className="flex" role="group" aria-label={`${m.name} sequence and refinement`} style={{ gap: 'var(--card-padding)' }}>
+                            <div className="flex-[7] min-w-0 space-y-0.5">
+                              <div className="kuro-micro-label">Sequence</div>
+                              <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
+                                {[0,1,2,3,4,5,6].map(s => {
+                                  const isActive = (eq.sequence || 0) === s;
+                                  return (
+                                    <button key={s}
+                                      role="radio"
+                                      aria-checked={isActive}
+                                      className={`kuro-chip flex-1 text-[9px] ${isActive ? 'active-gold' : ''}`}
+                                      onClick={() => {
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                    return n;
+                                        });
+                                        haptic.light();
+                                      }}
+                                    >S{s}</button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="flex-[5] min-w-0 space-y-0.5">
+                              <div className="kuro-micro-label">Refinement</div>
+                              <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
+                                {[1,2,3,4,5].map(r => {
+                                  const isActive = (eq.refinement || 1) === r;
+                                  return (
+                                    <button key={r}
+                                      role="radio"
+                                      aria-checked={isActive}
+                                      className={`kuro-chip flex-1 text-[9px] ${isActive ? 'active-gold' : ''}`}
+                                      onClick={() => {
+                                        setTeamEquipment(prev => {
+                                          const n = { ...prev };
+                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
+                                                    return n;
+                                        });
+                                        haptic.light();
+                                      }}
+                                    >R{r}</button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
-                          <div className="flex-shrink-0">
-                            <div className="text-[10px] text-gray-400 mb-0.5">Refinement</div>
-                            <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
-                              {[1,2,3,4,5].map(r => {
-                                const isActive = (eq.refinement || 1) === r;
-                                return (
-                                  <button key={r}
-                                    role="radio"
-                                    aria-checked={isActive}
-                                    className={`min-w-[36px] py-1.5 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 border' : 'border border-[var(--border-medium)] text-gray-500 hover:text-gray-300 hover:border-white/15'}`}
-                                    onClick={() => {
-                                      setTeamEquipment(prev => {
-                                        const n = { ...prev };
-                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
-                                                  return n;
-                                      });
-                                      haptic.light();
-                                    }}
-                                  >R{r}</button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Sonata Set */}
-                        <div>
-                          <div className="text-[10px] text-gray-400 mb-0.5">Sonata Set</div>
-                          <KuroSelect
-                            value={eq.echoSet || ''}
-                            onChange={v => {
-                              setTeamEquipment(prev => {
-                                const n = { ...prev };
-                                n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), echoSet: v || '' };
-                                return n;
-                              });
-                              haptic.light();
-                            }}
-                            options={[
-                              { value: '', label: 'Auto (from recommended)' },
-                              ...Object.keys(ECHO_SETS).map(setName => ({ value: setName, label: setName })),
-                            ]}
-                            className="w-full"
-                            ariaLabel={`${m.name} sonata echo set`}
-                            small
-                          />
                         </div>
                         </details>
                       </div>
@@ -1172,15 +1269,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div className="min-w-0">
                       <div className="kuro-label">Damage Focus</div>
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                        <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element} DMG
                         </span>
                         {(m.d.dmgFocus || []).map((df, di) => (
-                          <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">{df}</span>
+                          <span key={di} className="kuro-badge kuro-badge-amber">{df}</span>
                         ))}
                         {m.d.statScaling && (
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/25 text-violet-400">{m.d.statScaling} Scaling</span>
+                          <span className="kuro-badge kuro-badge-violet">{m.d.statScaling} Scaling</span>
                         )}
                       </div>
                     </div>
@@ -1190,7 +1287,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <div className="kuro-label">Buffs</div>
                         <div className="flex flex-wrap gap-1">
                           {m.d.buffs.map((b, bi) => (
-                            <span key={bi} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">{b}</span>
+                            <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>
                           ))}
                         </div>
                       </div>
@@ -1201,7 +1298,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <div className="kuro-label">Debuffs</div>
                         <div className="flex flex-wrap gap-1">
                           {m.d.debuffs.map((db, di) => (
-                            <span key={di} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">{db}</span>
+                            <span key={di} className="kuro-badge kuro-badge-red">{db}</span>
                           ))}
                         </div>
                       </div>
@@ -1213,19 +1310,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div>
                       <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
                       <div className="flex flex-wrap gap-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/25 text-yellow-400">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString('en-US')}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CR {cr.toFixed(1)}%</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-cyan-400">CD {cd.toFixed(1)}%</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded font-medium"
+                        <span className="kuro-badge kuro-badge-yellow">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString('en-US')}</span>
+                        <span className="kuro-badge kuro-badge-cyan">CR {cr.toFixed(1)}%</span>
+                        <span className="kuro-badge kuro-badge-cyan">CD {cd.toFixed(1)}%</span>
+                        <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element} +{elemDmg.toFixed(0)}%
                         </span>
-                        {skillDmg > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400">Skill +{skillDmg.toFixed(0)}%</span>}
-                        {atkPct > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">ATK% +{atkPct.toFixed(0)}%</span>}
-                        {deepen > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/25 text-purple-400">Deepen +{deepen.toFixed(0)}%</span>}
-                        {defShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Shred {defShred}%</span>}
-                        {resShred > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">RES Shred {resShred}%</span>}
-                        {defIgnore > 0 && <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">DEF Ignore {defIgnore}%</span>}
+                        {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">Skill +{skillDmg.toFixed(0)}%</span>}
+                        {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">ATK% +{atkPct.toFixed(0)}%</span>}
+                        {deepen > 0 && <span className="kuro-badge kuro-badge-purple">Deepen +{deepen.toFixed(0)}%</span>}
+                        {defShred > 0 && <span className="kuro-badge kuro-badge-red">DEF Shred {Math.round(defShred)}%</span>}
+                        {resShred > 0 && <span className="kuro-badge kuro-badge-red">RES Shred {Math.round(resShred)}%</span>}
+                        {defIgnore > 0 && <span className="kuro-badge kuro-badge-red">DEF Ignore {defIgnore}%</span>}
                       </div>
                     </div>
                   )}
@@ -1241,7 +1338,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="kuro-label">Team Buffs</div>
                 <div className="flex flex-wrap gap-1">
                   {allBuffs.map((b, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-400">
+                    <span key={i} className="kuro-badge kuro-badge-emerald">
                       {b.buff} <span className="text-gray-500">({b.source})</span>
                     </span>
                   ))}
@@ -1253,7 +1350,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="kuro-label">Enemy Debuffs</div>
                 <div className="flex flex-wrap gap-1">
                   {allDebuffs.map((b, i) => (
-                    <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
+                    <span key={i} className="kuro-badge kuro-badge-red">
                       {b.debuff} <span className="text-gray-500">({b.source})</span>
                     </span>
                   ))}
@@ -1265,17 +1362,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             <div className="grid grid-cols-2 gap-2">
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Raw DPS</div>
-                <div className="text-lg font-bold text-emerald-400 kuro-number" style={{ textShadow: '0 0 10px rgba(34,197,94,0.5)' }}>{rawDps.toLocaleString('en-US')}/s</div>
+                <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{rawDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[10px]">equipment only</div>
               </div>
               <div className="kuro-stat kuro-stat-cyan p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Full DPS</div>
-                <div className="text-lg font-bold text-cyan-400 kuro-number" style={{ textShadow: '0 0 10px rgba(6,182,212,0.5)' }}>{realDps.toLocaleString('en-US')}/s</div>
+                <div className="text-lg font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{realDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[10px]">+buffs &amp; debuffs</div>
               </div>
               <div className="kuro-stat kuro-stat-gold p-2 text-center">
                 <div className="text-gray-400 text-[10px]">Perfect DPS</div>
-                <div className="text-lg font-bold text-yellow-400 kuro-number" style={{ textShadow: '0 0 10px rgba(234,179,8,0.5)' }}>{perfectDps.toLocaleString('en-US')}/s</div>
+                <div className="text-lg font-bold text-yellow-400 kuro-number kuro-tshadow-glow-yellow">{perfectDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-[10px]">+echo active skills</div>
               </div>
               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
@@ -1292,7 +1389,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div key={m.name} className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
                     <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
+                      <div className="h-full rounded-l-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
                     </div>
                     <span className="text-[10px] text-gray-500 w-8 text-right">{m.pct}%</span>
                   </div>
@@ -1300,65 +1397,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               </div>
             )}
 
-            {/* Rotation Timeline Visualizer */}
-            {rotationTimeline && rotationTimeline.segments.length > 0 && (
-              <div className="mt-3 p-3 rounded-xl bg-white/5 border border-[var(--border-medium)]">
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Rotation Timeline ({rotationTimeline.totalTime}s)</div>
-                <div className="flex rounded-lg overflow-hidden h-6 mb-2">
-                  {rotationTimeline.segments.map((seg, i) => {
-                    const pct = (seg.duration / rotationTimeline.totalTime) * 100;
-                    const elColors = { Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Spectro: '#edaf18', Havoc: '#ec4899' };
-                    const color = elColors[seg.element] || '#6b7280';
-                    return (
-                      <div key={i} className="flex items-center justify-center relative" style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }} title={`${seg.name}: ${seg.duration}s on-field`}>
-                        <span className="text-[8px] font-bold truncate px-0.5" style={{ color }}>{seg.name}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-x-3 gap-y-1">
-                  {rotationTimeline.segments.map((seg, i) => {
-                    const elColors = { Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7', Aero: '#10b981', Spectro: '#edaf18', Havoc: '#ec4899' };
-                    const color = elColors[seg.element] || '#6b7280';
-                    return (
-                      <div key={i} className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                        <span className="text-[10px] text-gray-400">{seg.name} <span className="text-gray-500">{seg.duration}s</span></span>
-                      </div>
-                    );
-                  })}
-                </div>
-                {rotationTimeline.buffs.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-[var(--border-medium)]/30 space-y-1">
-                    <div className="text-[10px] text-gray-500 mb-1">Buff Windows</div>
-                    {rotationTimeline.buffs.slice(0, 6).map((buff, i) => {
-                      const startPct = Math.min((buff.start / rotationTimeline.totalTime) * 100, 100);
-                      const durPct = Math.min((buff.duration / rotationTimeline.totalTime) * 100, 100 - startPct);
-                      const statLabels = { atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elem DMG', deepen: 'Deepen', basicDmg: 'Basic', heavyDmg: 'Heavy', libDmg: 'Lib', echoDmg: 'Echo', skillDmg: 'Skill', critRate: 'CR', critDmg: 'CD', resShred: 'RES↓', defShred: 'DEF↓' };
-                      return (
-                        <div key={i} className="flex items-center gap-1.5">
-                          <span className="text-[8px] text-gray-500 w-16 truncate text-right" title={buff.source}>{buff.source}</span>
-                          <div className="flex-1 h-2.5 rounded-full bg-white/5 relative overflow-hidden">
-                            <div className="absolute h-full rounded-full bg-emerald-500/40 flex items-center justify-center" style={{ left: `${startPct}%`, width: `${durPct}%` }}>
-                              <span className="text-[7px] text-emerald-300 font-medium truncate px-0.5">{statLabels[buff.stat] || buff.stat} +{buff.value}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {rotationTimeline.buffs.length > 6 && (
-                      <div className="text-[8px] text-gray-500 text-center mt-0.5">+{rotationTimeline.buffs.length - 6} more</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Warnings */}
             {warnings.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {warnings.map((w, i) => (
-                  <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-amber-400 flex items-center gap-1">
+                  <span key={i} className="kuro-badge kuro-badge-amber flex items-center gap-1">
                     <AlertTriangle size={12} /> {w}
                   </span>
                 ))}
@@ -1369,265 +1412,26 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         </CardBody>
       </Card>
 
-      {/* DPS Comparison */}
-      {teamCompareEntries.length > 0 && (() => {
-        const computed = teamCompareEntries.map(entry => ({
-          ...entry,
-          stats: calcTeamStats(entry.slots, entry.teamIdx ?? 0),
-        })).filter(e => e.stats);
-        if (!computed.length) return null;
-        const unifiedMax = Math.max(
-          ...computed.flatMap(e => [e.stats.rawDps, e.stats.realDps, e.stats.perfectDps]),
-          1
-        );
-        const bossEchoes = ALL_4COST_ECHOES.filter(n => ECHO_DATA[n]?.enemyRes);
-        return (
-        <Card id="team-dps-comparison">
-          <CardHeader action={
-            <button onClick={async () => { if (await confirm?.({ title: 'Clear comparison', message: 'Remove all comparison entries?', confirmLabel: 'Clear', destructive: true })) { setTeamCompareEntries([]); haptic.light(); } }}
-              className="kuro-btn text-[10px]"
-              aria-label="Clear all team comparisons">
-              Clear All
-            </button>
-          }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
-          <CardBody>
-            {/* Enemy Target Selector */}
-            <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
-              <Sword size={12} className="text-red-400" />
-              <span className="text-gray-400 text-[10px] font-medium">Target:</span>
-              <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
-                className="kuro-btn text-[10px] px-2 py-1 flex-1 min-w-[120px] max-w-[240px] text-left truncate">
-                {enemyEcho ? (() => {
-                  const ed = ECHO_DATA[enemyEcho];
-                  const resEl = ed?.enemyRes ? Object.keys(ed.enemyRes)[0] : '';
-                  const resVal = ed?.enemyRes?.[resEl] || 10;
-                  return `${enemyEcho} (${resEl ? resEl.charAt(0).toUpperCase() + resEl.slice(1) + ' ' + resVal + '%' : '10%'})`;
-                })() : 'Default (10% all RES)'}
-              </button>
-              <div className="flex items-center gap-1">
-                <span className="text-gray-500 text-[10px]">Lv.</span>
-                <input type="text" inputMode="numeric" value={enemyLevel}
-                  onFocus={e => e.target.select()}
-                  onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
-                  onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
-                  className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
-              </div>
-              <span className="text-gray-600 text-[10px]">DEF {792 + 8 * enemyLevel}</span>
-            </div>
-            <div className="space-y-3">
-              {computed.map((entry) => {
-                const s = entry.stats;
-                const rawPct = (s.rawDps / unifiedMax) * 100;
-                const fullPct = (s.realDps / unifiedMax) * 100;
-                const perfectPct = (s.perfectDps / unifiedMax) * 100;
-                return (
-                  <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
-                    <div className="flex items-center justify-between mb-1.5 pr-8">
-                      <span className="text-[10px] font-medium text-gray-300 truncate" title={entry.slots.filter(Boolean).join(' / ')}>
-                        {entry.slots.filter(Boolean).join(' / ') || 'Empty Team'}
-                      </span>
-                    </div>
-                    <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
-                      aria-label="Remove this team from comparison">
-                      <X size={12} />
-                    </button>
+      {/* Rotation Timeline — outside Team Overview Card to avoid overflow:hidden clipping */}
+      <RotationTimeline rotationTimeline={rotationTimeline} />
 
-                    {/* Character cards */}
-                    <div className="flex gap-1.5 mb-2">
-                      {s.members.map((m, mi) => {
-                        const rarity5 = m.d.rarity === 5;
-                        const rc2 = roleColors[m.d.role] || roleColors.Support;
-                        return (
-                          <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'border-yellow-500/50' : 'border-purple-500/50'}`}
-                            style={{
-                              background: rarity5 ? 'linear-gradient(to top, rgba(237,175,24,0.15), rgba(237,175,24,0.05))' : 'linear-gradient(to top, rgba(168,85,247,0.15), rgba(168,85,247,0.05))',
-                              boxShadow: rarity5 ? '0 0 12px rgba(237,175,24,0.15), inset 0 0 10px rgba(237,175,24,0.05)' : '0 0 12px rgba(168,85,247,0.15), inset 0 0 10px rgba(168,85,247,0.05)'
-                            }}>
-                            <div className="text-[10px] font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
-                            <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                            <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
+      <DPSComparisonCard
+        teamCompareEntries={teamCompareEntries} setTeamCompareEntries={setTeamCompareEntries}
+        calcTeamStats={calcTeamStats}
+        enemyEcho={enemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+        setEnemyEchoSearch={setEnemyEchoSearch} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
+        confirm={confirm}
+      />
 
-                    {/* Three-tier DPS bars */}
-                    {[
-                      { label: 'Raw', value: s.rawDps, pct: rawPct, color: '#22c55e' },
-                      { label: 'Full', value: s.realDps, pct: fullPct, color: '#06b6d4' },
-                      { label: 'Perfect', value: s.perfectDps, pct: perfectPct, color: '#eab308' },
-                    ].map((bar, bi) => (
-                      <div key={bi} className={bi < 2 ? 'mb-1' : 'mb-0.5'}>
-                        <div className="flex items-baseline justify-between mb-0.5">
-                          <span className="text-gray-400 text-[10px]">{bar.label}</span>
-                          <span className="font-bold text-xs kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
-                        </div>
-                        <div className="relative h-4 rounded" style={{ background: 'transparent' }}>
-                          <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
-                            style={{
-                              width: Math.max(bar.pct, 4) + '%',
-                              background: `linear-gradient(90deg, ${bar.color}40, ${bar.color}20)`,
-                              border: `1px solid ${bar.color}90`,
-                              borderLeft: 'none',
-                              boxShadow: `0 0 12px ${bar.color}50, inset 0 0 15px ${bar.color}30`
-                            }} />
-                          <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
-                            style={{ left: 0, background: bar.color, boxShadow: `0 0 8px ${bar.color}, 0 0 16px ${bar.color}80` }} />
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Quick stats */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-[var(--border-medium)]">
-                      <div className="text-[10px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
-                      <div className="text-[10px]"><span className="text-gray-500">{s.mainDps.scaling !== 'ATK' ? s.mainDps.scaling : 'ATK'}: </span><span className="text-yellow-400 kuro-number">{s.effAtk}</span></div>
-                      <div className="text-[10px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
-                      <div className="text-[10px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
-                      <div className="text-[10px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
-                      {s.mainDps.scaling !== 'ATK' && <div className="text-[10px]"><span className="text-violet-400">{s.mainDps.scaling} scaling</span></div>}
-                      {s.defShred > 0 && <div className="text-[10px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{s.defShred}%</span></div>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {/* Side-by-side stats */}
-            {computed.length > 1 && (
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full text-[10px]">
-                  <thead>
-                    <tr className="border-b border-[var(--border-medium)]">
-                      <th className="text-left text-gray-500 py-1 pr-2">Stat</th>
-                      {computed.map((e, i) => (
-                        <th key={i} className="text-center text-gray-400 py-1 px-1">{e.stats.mainDps.name}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      ['Eff. ATK', e => e.stats.effAtk?.toLocaleString('en-US')],
-                      ['Crit Rate', e => Math.min(e.stats.critRate, 100).toFixed(1) + '%'],
-                      ['Crit DMG', e => e.stats.critDmg?.toFixed(1) + '%'],
-                      ['Elem DMG', e => e.stats.elemDmg?.toFixed(1) + '%'],
-                      ['DEF Shred', e => (e.stats.defShred || 0) + '%'],
-                      ['RES Shred', e => (e.stats.resShred || 0) + '%'],
-                      ['Synergy', e => e.stats.synergy + '%'],
-                    ].map(([label, fn]) => (
-                      <tr key={label} className="border-b border-[var(--border-medium)]/30">
-                        <td className="text-gray-500 py-0.5 pr-2">{label}</td>
-                        {computed.map((e, i) => {
-                          const val = fn(e);
-                          const nums = computed.map(c => parseFloat(fn(c)) || 0);
-                          const isMax = parseFloat(val) === Math.max(...nums) && nums.filter(n => n === Math.max(...nums)).length === 1;
-                          return <td key={i} className={`text-center py-0.5 px-1 ${isMax ? 'text-yellow-400 font-bold' : 'text-gray-300'}`}>{val}</td>;
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {teamCompareEntries.length < 5 && (
-              <p className="text-gray-500 text-[10px] text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
-            )}
-          </CardBody>
-        </Card>
-        );
-      })()}
-
-      {/* Enemy Echo Selector Modal */}
-      <FocusTrapModal isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)} className="" onClick={() => setEnemyEchoModalOpen(false)} centered>
-        <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-          <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
-            <div>
-              <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
-              <p className="text-gray-400 text-[10px]">All echoes — select an enemy to fight against</p>
-            </div>
-            <button onClick={() => setEnemyEchoModalOpen(false)} className="modal-close-btn min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20" aria-label="Close"><X size={16} className="text-gray-400" /></button>
-          </div>
-          {/* Search + Filters */}
-          <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-            <input value={enemyEchoSearch} onChange={e => setEnemyEchoSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-xs" />
-            <div className="flex gap-1">
-              {[['all', 'All'], ['4', '4-Cost'], ['3', '3-Cost'], ['1', '1-Cost']].map(([val, label]) => (
-                <button key={val} onClick={() => setEnemyEchoCostFilter(val)}
-                  className={`flex-1 text-[10px] py-1 rounded ${enemyEchoCostFilter === val ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-white/5 border-[var(--border-medium)] text-gray-500'} border`}>{label}</button>
-              ))}
-            </div>
-            <div className="flex gap-1.5">
-              <KuroSelect value={enemyEchoSetFilter} onChange={v => setEnemyEchoSetFilter(v)} small
-                options={[{ value: 'all', label: 'All Sets' }, ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s }))]}
-                className="flex-1 text-[10px]" />
-              <KuroSelect value={enemyEchoBuffFilter} onChange={v => setEnemyEchoBuffFilter(v)} small
-                options={[{ value: 'all', label: 'All Types' }, ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b }))]}
-                className="flex-1 text-[10px]" />
-            </div>
-          </div>
-          <div className="overflow-y-auto flex-1 p-2">
-            <div className="space-y-1">
-              <button onClick={() => { setEnemyEcho(''); setEnemyEchoModalOpen(false); haptic.light(); }}
-                className={`w-full p-2 rounded-lg border text-left transition-all ${!enemyEcho ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-[var(--border-medium)] hover:border-white/20'}`}>
-                <div className="text-xs font-semibold text-white">Default Enemy</div>
-                <div className="text-[10px] text-gray-400">10% all element RES · No special mechanics</div>
-              </button>
-              {(() => {
-                const costList = enemyEchoCostFilter === '4' ? ALL_4COST_ECHOES : enemyEchoCostFilter === '3' ? ALL_3COST_ECHOES : enemyEchoCostFilter === '1' ? ALL_1COST_ECHOES : [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
-                return costList.filter(n => {
-                  if (enemyEchoSearch && !n.toLowerCase().includes(enemyEchoSearch.toLowerCase())) return false;
-                  const ed = ECHO_DATA[n];
-                  if (!ed) return false;
-                  if (enemyEchoSetFilter !== 'all' && !ed.sets?.includes(enemyEchoSetFilter)) return false;
-                  if (enemyEchoBuffFilter !== 'all' && !(Array.isArray(ed.buff) ? ed.buff.includes(enemyEchoBuffFilter) : ed.buff === enemyEchoBuffFilter)) return false;
-                  return true;
-                }).map(name => {
-                  const ed = ECHO_DATA[name];
-                  const isActive = enemyEcho === name;
-                  const hasRes = ed?.enemyRes;
-                  const resEntries = hasRes ? Object.entries(ed.enemyRes) : [];
-                  const cost = ALL_4COST_ECHOES.includes(name) ? 4 : ALL_3COST_ECHOES.includes(name) ? 3 : 1;
-                  const costColor = cost === 4 ? 'yellow' : cost === 3 ? 'purple' : 'cyan';
-                  return (
-                    <button key={name} onClick={() => { setEnemyEcho(name); setEnemyEchoModalOpen(false); haptic.success(); }}
-                      className={`w-full p-2 rounded-lg border text-left transition-all hover:scale-[1.01] ${isActive ? `border-2 border-${costColor}-400 bg-${costColor}-500/10` : `border-[var(--border-medium)] hover:border-${costColor}-500/30`}`}
-                      style={isActive ? { boxShadow: `0 0 12px rgba(234,179,8,0.3)` } : {}}>
-                      <div className="flex items-center gap-2">
-                        {collectionImages[name] ? (
-                          <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`}>
-                            <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
-                          </div>
-                        ) : (
-                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-${costColor}-500/30 bg-${costColor}-500/5`}>
-                            <Diamond size={14} className={`text-${costColor}-400`} />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-semibold text-white truncate">{name}</span>
-                            <span className={`text-[8px] px-1 py-0.5 rounded bg-${costColor}-500/15 text-${costColor}-400 border border-${costColor}-500/25`}>{cost}C</span>
-                          </div>
-                          <div className="flex gap-1 mt-0.5 flex-wrap">
-                            {resEntries.length > 0 ? resEntries.map(([el, val]) => (
-                              <span key={el} className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-red-400">
-                                {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
-                              </span>
-                            )) : (
-                              <span className="text-[10px] text-gray-500">10% all RES</span>
-                            )}
-                            {ed?.element && ed.element !== 'Healing' && (
-                              <span className="text-[10px] text-gray-500">· {ed.element}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                });
-              })()}
-            </div>
-          </div>
-        </div>
-      </FocusTrapModal>
+      <EnemyEchoSelectorModal
+        isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
+        enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
+        collectionImages={collectionImages}
+        search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
+        costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}
+        setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
+        buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
+      />
     </>
   );
 });

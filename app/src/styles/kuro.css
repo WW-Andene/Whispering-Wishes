@@ -1,15 +1,9 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — KuroStyles
-// Global CSS variable injection and design system styles.
-// ═══════════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════
+   WHISPERING WISHES — LAHAI-ROI DESIGN LANGUAGE
+   Extracted from KuroStyles.jsx — global CSS variables and design system.
+   OLED mode overrides via .oled-mode class (no JavaScript needed).
+   ═══════════════════════════════════════════════════════════════════════ */
 
-import { memo } from 'react';
-
-// [SECTION:STYLES]
-// P11-FIX: Wrapped in memo — this component injects ~960 lines of CSS; re-rendering it on every
-// parent render is wasteful. Only needs to re-render when oledMode changes. (Step 7 audit — MEDIUM-3a)
-const KuroStyles = memo(({ oledMode }) => (
-  <style>{`
     /* ══════════════════════════════════════════════════════════════════════
        LAHAI-ROI DESIGN LANGUAGE - Black, White, Gold
        ══════════════════════════════════════════════════════════════════════
@@ -23,7 +17,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     /* Global - prevent white flash, hide scrollbars on mobile */
     html, body {
-      background: ${oledMode ? '#000000' : '#080c14'};
+      background: #080c14;
       margin: 0;
       padding: 0;
       overscroll-behavior: none;
@@ -34,6 +28,19 @@ const KuroStyles = memo(({ oledMode }) => (
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+
+    /* ── OLED Mode Overrides ─────────────────────────────────────────────── */
+    /* Applied via .oled-mode class on root div (toggled by visualSettings.oledMode) */
+    .oled-mode, .oled-mode html, .oled-mode body { background: #000000; }
+    .oled-mode {
+      --bg-card: rgba(8, 8, 8, 0.95);
+      --bg-card-inner: rgba(10, 10, 10, 1);
+      --bg-elevated: rgba(16, 16, 16, 0.95);
+      --bg-btn: rgba(12, 12, 12, 0.95);
+      --bg-input: rgba(14, 14, 14, 0.95);
+      --bg-stat: rgba(6, 6, 6, 0.9);
+    }
+
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
        is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
     @supports (padding-top: env(safe-area-inset-top)) {
@@ -98,12 +105,12 @@ const KuroStyles = memo(({ oledMode }) => (
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
       /* MED-8: Widened surface elevation spread (+2% lightness per step) */
-      --bg-card: ${oledMode ? 'rgba(8, 8, 8, 0.95)' : 'rgba(14, 19, 30, 0.55)'};
-      --bg-card-inner: ${oledMode ? 'rgba(10, 10, 10, 1)' : 'rgba(6, 10, 18, 1)'};
-      --bg-elevated: ${oledMode ? 'rgba(16, 16, 16, 0.95)' : 'rgba(20, 26, 38, 0.7)'};
-      --bg-btn: ${oledMode ? 'rgba(12, 12, 12, 0.95)' : 'rgba(15, 20, 28, 0.85)'};
-      --bg-input: ${oledMode ? 'rgba(14, 14, 14, 0.95)' : 'rgba(15, 20, 28, 0.9)'};
-      --bg-stat: ${oledMode ? 'rgba(6, 6, 6, 0.9)' : 'rgba(10, 14, 22, 0.8)'};
+      --bg-card: rgba(14, 19, 30, 0.55);
+      --bg-card-inner: rgba(6, 10, 18, 1);
+      --bg-elevated: rgba(20, 26, 38, 0.7);
+      --bg-btn: rgba(15, 20, 28, 0.85);
+      --bg-input: rgba(15, 20, 28, 0.9);
+      --bg-stat: rgba(10, 14, 22, 0.8);
       /* D-TOKEN-1: Border opacity tokens — replaces 30+ raw rgba(255,255,255,0.xx) border values */
       --border-subtle: rgba(255,255,255,0.06);
       --border-default: rgba(255,255,255,0.08);
@@ -132,15 +139,46 @@ const KuroStyles = memo(({ oledMode }) => (
       --space-lg: 16px;
       --space-xl: 24px;
       --space-2xl: 32px;
+      /* §E4-TS: Type scale — Major Second 1.125× from 14px base
+         Micro range (7–12px) is linear by design for data-dense instrument UIs.
+         7px: IdCard metadata only   8px: badge counters, star indicators
+         9px: timestamps, decorative  10px: labels, categories, button text
+         12px: compact body           14px: primary values, card content
+         16px: section headers        18px: large display    20px+: hero display */
+      --font-2xs: 7px;
+      --font-xs: 9px;
+      --font-sm: 10px;
+      --font-base: 12px;
+      --font-md: 14px;
+      --font-lg: 16px;
+      --font-xl: 18px;
+      --font-2xl: 20px;
+      /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
+      --height-banner: 190px;     /* Banner/Event cards minimum height */
+      --height-card-sm: 140px;    /* Collection grid cards */
+      --height-card-md: 160px;    /* Team selector cards */
+      --size-avatar-lg: 110px;    /* Profile picture (IdCard, profile tab) */
+      --size-avatar-md: 68px;     /* Camera button, medium icons */
+      --size-avatar-sm: 28px;     /* Trophy icons, small avatars */
+      --size-touch-min: 44px;     /* iOS HIG minimum touch target */
+      --size-icon-btn: 22px;      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
+      --radius-micro: 2px;
+      --radius-xs: 4px;
       --radius-sm: 6px;
       --radius-md: 8px;
       --radius-lg: 12px;
       --radius-xl: 16px;
+      --radius-pill: 9999px;
       --card-radius: var(--radius-xl);
       --card-padding: 14px;
-      --btn-radius: var(--radius-md);
+      --btn-radius: var(--radius-lg);       /* FIX: was --radius-md (8px), actual button uses 12px */
+      --btn-padding: 10px 12px;             /* Button default padding (matches input) */
+      --input-padding: 10px 12px;           /* Input/select default padding */
+      --input-radius: var(--radius-md);     /* Input/select border-radius (8px) */
       --stat-radius: var(--radius-lg);
+      --label-margin: var(--space-base);    /* Label bottom margin (6px) */
+      --divider-margin: var(--space-md);    /* Divider vertical margin (12px) */
       /* HIGH-2: Domain-semantic color tokens — consolidated from 66 unique hex values */
       /* Element colors */
       --element-fusion: #ef4444;
@@ -192,7 +230,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .overflow-y-auto::-webkit-scrollbar-thumb {
       background: rgba(140,160,200,0.18);
-      border-radius: 3px;
+      border-radius: 2px;
     }
     .overflow-y-auto::-webkit-scrollbar-thumb:hover {
       background: rgba(140,160,200,0.28);
@@ -264,10 +302,10 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-calc select {
       background: var(--bg-input);
       border: 1px solid var(--border-bright);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: var(--input-radius);
+      padding: var(--input-padding);
       color: var(--text-heading);
-      font-size: 14px;
+      font-size: var(--font-md);
       width: 100%;
       transition: border-color var(--transition-fast);
       appearance: none;
@@ -506,7 +544,7 @@ const KuroStyles = memo(({ oledMode }) => (
       bottom: 0;
       left: 0;
       height: 2px;
-      border-radius: 6px 6px 0 0;
+      border-radius: 4px 4px 0 0;
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: transform, width;
     }
@@ -578,7 +616,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-card-inner {
       position: relative;
       overflow: hidden;
-      border-radius: 15px;
+      border-radius: 16px;
     }
     
     /* Corner decorations */
@@ -612,7 +650,7 @@ const KuroStyles = memo(({ oledMode }) => (
     
     .kuro-header {
       position: relative;
-      padding: 14px;
+      padding: var(--card-padding);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       justify-content: space-between;
@@ -637,10 +675,10 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-header h3 {
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: 14px;
+      font-size: var(--font-md);
       font-weight: 600;
       line-height: 1.25;
-      letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking at 14px */
+      letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking */
       display: flex;
       align-items: center;
       gap: 10px;
@@ -658,7 +696,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     
     .kuro-body {
-      padding: 14px;
+      padding: var(--card-padding);
       color: var(--text-body);
     }
 
@@ -689,11 +727,11 @@ const KuroStyles = memo(({ oledMode }) => (
       position: relative;
       background: var(--bg-btn);
       border: 1px solid var(--border-medium);
-      border-radius: 12px;
-      padding: 10px 12px;
+      border-radius: var(--btn-radius);
+      padding: var(--btn-padding);
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: 12px;
+      font-size: var(--font-base);
       font-weight: 500;
       letter-spacing: 0.02em;
       cursor: pointer;
@@ -787,17 +825,28 @@ const KuroStyles = memo(({ oledMode }) => (
       gap: 3px;
       font-size: 10px;
       padding: 2px 8px;
-      border-radius: 6px;
+      border-radius: 4px;
       border: 1px solid;
       line-height: 1.4;
       white-space: nowrap;
     }
+    /* Badge color variants */
+    .kuro-badge-yellow { background: rgba(234,179,8,0.1); border-color: rgba(234,179,8,0.25); color: #facc15; }
+    .kuro-badge-amber { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+    .kuro-badge-cyan { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.25); color: #38bdf8; }
+    .kuro-badge-emerald { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.25); color: #22c55e; }
+    .kuro-badge-red { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.25); color: #f87171; }
+    .kuro-badge-purple { background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.25); color: #a855f7; }
+    .kuro-badge-violet { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.25); color: #8b5cf6; }
+    .kuro-badge-neutral { background: rgba(255,255,255,0.05); border-color: var(--border-medium); color: var(--text-secondary); }
+    .kuro-badge-gray { background: rgba(107,114,128,0.1); border-color: rgba(107,114,128,0.25); color: #9ca3af; }
 
     /* MED-6: Compact button variants for inline actions */
     .kuro-btn-sm {
       font-size: 12px;
       padding: 4px 10px;
       min-height: 28px;
+      border-radius: 8px;
     }
     .kuro-btn-icon {
       padding: 6px;
@@ -915,10 +964,10 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-input {
       background: var(--bg-input);
       border: 1px solid var(--border-bright);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: var(--input-radius);
+      padding: var(--input-padding);
       color: var(--text-heading);
-      font-size: 14px;
+      font-size: var(--font-md);
       width: 100%;
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
       backdrop-filter: blur(var(--blur-md));
@@ -972,8 +1021,8 @@ const KuroStyles = memo(({ oledMode }) => (
       position: relative;
       background: var(--bg-stat);
       border: 1px solid var(--border-hover);
-      border-radius: 12px; /* E7-AD1: Standardized to 12px (8/12/16 scale) */
-      padding: 14px;
+      border-radius: var(--stat-radius);
+      padding: var(--card-padding);
       text-align: center;
       overflow: hidden;
       font-family: var(--font-data);
@@ -1110,13 +1159,13 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-label {
       color: var(--text-body);
       font-family: var(--font-display);
-      font-size: 10px;
+      font-size: var(--font-sm);
       line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-      margin-bottom: 6px;
+      margin-bottom: var(--label-margin);
       display: block;
     }
     
@@ -1126,7 +1175,7 @@ const KuroStyles = memo(({ oledMode }) => (
       appearance: none;
       width: 100%;
       height: 6px;
-      border-radius: 3px;
+      border-radius: 2px;
       background: rgba(255, 255, 255, 0.15);
       outline: none;
       margin: 8px 0;
@@ -1166,7 +1215,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .kuro-slider::-moz-range-track {
       background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
+      border-radius: 2px;
       height: 6px;
       border: none;
     }
@@ -1317,7 +1366,7 @@ const KuroStyles = memo(({ oledMode }) => (
       color: var(--text-heading);
       background: rgba(12, 16, 24, 0.92);
       border: 1px solid rgba(237, 175, 24, 0.3);
-      border-radius: 6px;
+      border-radius: 4px;
       backdrop-filter: blur(var(--blur-md));
       -webkit-backdrop-filter: blur(var(--blur-md));
       box-shadow: var(--shadow-md);
@@ -1351,7 +1400,7 @@ const KuroStyles = memo(({ oledMode }) => (
       background-image: linear-gradient(90deg, transparent 0%, rgba(237, 175, 24, 0.06) 40%, rgba(237, 175, 24, 0.10) 50%, rgba(237, 175, 24, 0.06) 60%, transparent 100%);
       background-size: 200% 100%;
       animation: kuroShimmer 1.8s ease-in-out infinite;
-      border-radius: 6px;
+      border-radius: 4px;
     }
     .kuro-skeleton-row {
       height: 36px;
@@ -1360,7 +1409,7 @@ const KuroStyles = memo(({ oledMode }) => (
     }
     .kuro-skeleton-stat {
       height: 72px;
-      border-radius: 10px;
+      border-radius: 8px;
     }
     .kuro-skeleton-text {
       height: 10px;
@@ -1373,7 +1422,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-skeleton-image {
       width: 100%;
       aspect-ratio: 1;
-      border-radius: 10px;
+      border-radius: 8px;
     }
 
     /* ═══ EMPTY STATE — D-STATE-1 atmospheric upgrade ═══ */
@@ -1647,7 +1696,7 @@ const KuroStyles = memo(({ oledMode }) => (
     .kuro-divider {
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--border-hover), transparent);
-      margin: 12px 0;
+      margin: var(--divider-margin) 0;
     }
     
     /* ═══ COLLECTION CARD HOVER ═══ */
@@ -2153,7 +2202,7 @@ const KuroStyles = memo(({ oledMode }) => (
         scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
       }
       .desktop-layout > main::-webkit-scrollbar { width: 6px; }
-      .desktop-layout > main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+      .desktop-layout > main::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
       .desktop-layout > main::-webkit-scrollbar-track { background: transparent; }
       .desktop-layout > main > [role="tabpanel"] { max-width: none; width: 100%; }
       .desktop-layout > main .tab-content { max-width: none !important; }
@@ -2307,8 +2356,365 @@ const KuroStyles = memo(({ oledMode }) => (
     @media (max-width: 1023px) {
       .desktop-ad-margin { display: none !important; }
     }
-    `}</style>
-));
-KuroStyles.displayName = 'KuroStyles';
 
-export { KuroStyles };
+    /* ═══════════════════════════════════════════════════════════════════════
+       UI STANDARDIZATION — Utility Classes
+       §E1 Design Token System + §DTA1-DTA2 Token Layer Architecture
+       Replaces 50+ inline style={{}} patterns with reusable CSS classes.
+       ═══════════════════════════════════════════════════════════════════════ */
+
+    /* ═══ SHADOW UTILITIES (§E1-SHD) ═══ */
+    /* Replaces inline boxShadow strings across feature tabs */
+
+    /* Gold ambient glow — TeamsTab stat grid, IdCard elements */
+    .kuro-shadow-glow-gold {
+      box-shadow: 0 0 16px rgba(237,175,24,0.08);
+    }
+    /* Deep card shadow — profile pics, IdCard portrait frames */
+    .kuro-shadow-card-deep {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+    /* Portrait frame shadow — IdCard large portrait */
+    .kuro-shadow-portrait {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 15px rgba(237,175,24,0.04), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    /* Subtle card shadow — smaller card elements */
+    .kuro-shadow-card-subtle {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    /* Admin panel shadow */
+    .kuro-shadow-admin {
+      box-shadow: 0 0 40px rgba(0,0,0,0.8), 0 0 20px rgba(34,211,238,0.3);
+    }
+    /* Recommendation highlight — TeamSelector/EchoSelector */
+    .kuro-shadow-rec {
+      box-shadow: 0 0 28px rgba(251,146,60,0.65), 0 0 56px rgba(251,146,60,0.3), inset 0 0 20px rgba(251,146,60,0.2);
+      background: rgba(251,146,60,0.15);
+    }
+    .kuro-shadow-rec-md {
+      box-shadow: 0 0 20px rgba(251,146,60,0.5), 0 0 40px rgba(251,146,60,0.2), inset 0 0 15px rgba(251,146,60,0.15);
+      background: rgba(251,146,60,0.12);
+    }
+    .kuro-shadow-rec-subtle {
+      box-shadow: 0 0 8px rgba(251,146,60,0.2);
+    }
+    /* Double-ring outline — ConveneScanner avatar */
+    .kuro-shadow-ring {
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    /* Luck bar glow */
+    .kuro-shadow-luck-bar {
+      box-shadow: 0 0 6px rgba(237,175,24,0.4);
+    }
+
+    /* ═══ TEXT SHADOW UTILITIES (§E1-TS) ═══ */
+    /* Replaces inline textShadow strings — color-matched glow variants */
+
+    .kuro-tshadow-glow-emerald {
+      text-shadow: 0 0 10px rgba(34,197,94,0.5);
+    }
+    .kuro-tshadow-glow-gold {
+      text-shadow: 0 0 10px rgba(237,175,24,0.5);
+    }
+    .kuro-tshadow-glow-gold-lg {
+      text-shadow: 0 0 20px rgba(52,211,153,0.4);
+    }
+    .kuro-tshadow-glow-red {
+      text-shadow: 0 0 10px rgba(239,68,68,0.5);
+    }
+    .kuro-tshadow-glow-cyan {
+      text-shadow: 0 0 10px rgba(6,182,212,0.5);
+    }
+    .kuro-tshadow-glow-yellow {
+      text-shadow: 0 0 10px rgba(234,179,8,0.5);
+    }
+    /* Deep overlay text shadow — banner/card overlays */
+    .kuro-tshadow-deep {
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8);
+    }
+    /* Medium overlay text shadow — headings on images */
+    .kuro-tshadow-overlay {
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    /* Subtle rec badge text shadow */
+    .kuro-tshadow-badge {
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    /* Tiny label shadow */
+    .kuro-tshadow-micro {
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    /* Gold brand text shadow — server display */
+    .kuro-tshadow-brand {
+      text-shadow: 0 0 8px rgba(237,175,24,0.3);
+    }
+
+    /* ═══ IDCARD SECTION CLASSES (§DCO3) ═══ */
+    /* Replaces 5× repeated inline styles in IdCardModal.jsx */
+
+    /* Glassmorphic section container */
+    .idcard-section {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px;
+    }
+    .idcard-section--lg {
+      padding: 12px;
+    }
+    /* Top shimmer line — default white, variants for accent colors */
+    .idcard-shimmer {
+      position: absolute;
+      top: 0;
+      left: 12px;
+      right: 12px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    }
+    .idcard-shimmer--gold {
+      background: linear-gradient(90deg, transparent, rgba(237,175,24,0.4), transparent);
+    }
+    .idcard-shimmer--gold-subtle {
+      background: linear-gradient(90deg, transparent, rgba(237,175,24,0.3), transparent);
+    }
+    .idcard-shimmer--cyan {
+      background: linear-gradient(90deg, transparent, rgba(56,189,248,0.35), transparent);
+    }
+    .idcard-shimmer--purple {
+      background: linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent);
+    }
+    .idcard-shimmer--subtle {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    }
+    /* Corner decorations (top-right, bottom-left) */
+    .idcard-corner-tr {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 10px;
+      height: 10px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      border-right: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0 3px 0 0;
+    }
+    .idcard-corner-bl {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      width: 10px;
+      height: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 0 0 3px;
+    }
+    /* Gold accent bar — repeated 5× in IdCard sections */
+    .idcard-gold-bar {
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: linear-gradient(180deg, rgba(237,175,24,0.9), rgba(237,175,24,0.3));
+      box-shadow: 0 0 6px rgba(237,175,24,0.3);
+    }
+    /* Image overlay gradient — bottom fade for text legibility */
+    .idcard-img-fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    }
+    .idcard-img-fade--strong {
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    }
+    /* Image shimmer top-line */
+    .idcard-img-shimmer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      z-index: 10;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    }
+
+    /* ═══ GRADIENT OVERLAY UTILITIES (§E1-GR) ═══ */
+    /* Replaces inline background gradient strings */
+
+    /* Bottom-to-top fade for footer overlays */
+    .kuro-gradient-fade-up {
+      background: linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent);
+    }
+    /* Top-to-bottom fade for image overlays */
+    .kuro-gradient-fade-down {
+      background: linear-gradient(to bottom, rgba(8,12,20,0.85) 60%, transparent);
+    }
+    /* Luck rating bar gradient (red → gold → green) */
+    .kuro-gradient-luck {
+      background: linear-gradient(90deg, #f87171, #edaf18, #34d399);
+    }
+
+    /* ═══ PLANNER EVENT COLOR TOKENS (§DC2-AC) ═══ */
+    /* Domain-semantic color variables for resource planner events */
+    :root {
+      --event-weekly-boss: #60a5fa;
+      --event-endstate-matrix: #ec4899;
+      --event-tower: #ef4444;
+      --event-whimpering: #06b6d4;
+      --event-hologram: #a3e635;
+      --event-podcast: #fb923c;
+      --event-illusive: #c4b5fd;
+    }
+
+    /* ═══ INLINE CONTAINER STANDARDIZATION (§E7-PD) ═══ */
+    /* Standard border for stat-like containers */
+    .kuro-border-default {
+      border: 1px solid var(--border-default);
+    }
+    .kuro-border-subtle {
+      border: 1px solid var(--border-subtle);
+    }
+    .kuro-border-medium {
+      border: 1px solid var(--border-medium);
+    }
+    /* Profile pic / avatar container — consistent treatment */
+    .kuro-avatar-frame {
+      background: var(--bg-stat);
+      border: 1px solid rgba(255,255,255,0.08);
+      contain: paint;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ═══ PLANNER LEGEND SWATCH (§E5-CD) ═══ */
+    /* Tiny color swatch for planner calendar legends */
+    .kuro-legend-swatch {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .kuro-legend-swatch--banner {
+      background: linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03));
+      border: 1px solid rgba(237,175,24,0.15);
+    }
+    .kuro-legend-swatch--dailies {
+      background: linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08));
+      border: 1px solid rgba(34,197,94,0.4);
+    }
+
+    /* Selection glow — gold halo for selected items */
+    .kuro-shadow-selected-gold {
+      box-shadow: 0 0 8px rgba(237,175,24,0.4);
+    }
+
+    /* Standard banner section glow */
+    .kuro-shadow-standard-banner {
+      box-shadow: 0 0 40px rgba(0,200,255,0.06), 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    /* ═══ CHIP RADIO BUTTONS (§E5-BT / §DCO5) ═══ */
+    /* Compact radio-style chip selectors for Sequence, Refinement, stats */
+    .kuro-chip {
+      padding: var(--space-xs) 0;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      border-radius: var(--radius-xs);
+      font-size: var(--font-sm);
+      font-weight: 700;
+      transition: all var(--transition-fast);
+      border: 1px solid var(--border-medium);
+      color: var(--text-disabled);
+      background: transparent;
+      text-align: center;
+      cursor: pointer;
+    }
+    @media (hover: hover) {
+      .kuro-chip:hover {
+        color: var(--text-secondary);
+        border-color: var(--border-hover);
+      }
+    }
+    /* Active color variants */
+    .kuro-chip.active-gold {
+      background: rgba(234,179,8,0.2);
+      border-color: rgba(234,179,8,0.4);
+      color: #facc15;
+    }
+    .kuro-chip.active-amber {
+      background: rgba(245,158,11,0.2);
+      border-color: rgba(245,158,11,0.4);
+      color: #fbbf24;
+    }
+    .kuro-chip.active-white {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.3);
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    /* ═══ INLINE DETAIL BOX (§DCO3) ═══ */
+    /* Reusable container for echo skill details, enemy stats, etc. */
+    .kuro-detail-box {
+      padding: var(--space-sm);
+      border-radius: var(--input-radius);
+      border: 1px solid var(--border-medium);
+      background: var(--bg-stat);
+    }
+    .kuro-detail-box--danger {
+      border-color: rgba(239,68,68,0.2);
+      background: rgba(239,68,68,0.05);
+    }
+
+    /* ═══ SECTION MICRO-LABEL (§E4-LB) ═══ */
+    /* Small section labels (Sequence, Refinement, Sonata Set, etc.) */
+    .kuro-micro-label {
+      font-size: var(--font-sm);
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .kuro-section-label {
+      font-size: var(--font-sm);
+      color: var(--text-disabled);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-xs);
+    }
+
+    /* ═══ RARITY FRAME (§DCO4) ═══ */
+    /* Weapon/character thumbnail with rarity-based border */
+    .kuro-rarity-frame-5 {
+      border-color: rgba(234,179,8,0.3);
+      background: rgba(234,179,8,0.08);
+    }
+    .kuro-rarity-frame-4 {
+      border-color: rgba(168,85,247,0.3);
+      background: rgba(168,85,247,0.08);
+    }
+
+    /* ═══ SCANNER UI (§E5-SC) ═══ */
+    /* ConveneScanner button style */
+    .kuro-scanner-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(6,10,18,0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    /* Scanner shutter ring */
+    .kuro-scanner-ring-outer {
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(6,10,18,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 50%;
+    }
+    .kuro-scanner-ring-inner {
+      background: rgba(6,10,18,1);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
