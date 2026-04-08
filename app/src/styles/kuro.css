@@ -166,12 +166,12 @@
       --size-touch-min: 44px;     /* iOS HIG minimum touch target */
       --size-icon-btn: 22px;      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
-      --radius-micro: 2px;
-      --radius-xs: 4px;
-      --radius-sm: 6px;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-      --radius-xl: 16px;
+      --radius-micro: 1px;
+      --radius-xs: 3px;
+      --radius-sm: 5px;
+      --radius-md: 7px;
+      --radius-lg: 11px;
+      --radius-xl: 15px;
       --radius-pill: 9999px;
       --card-radius: var(--radius-xl);
       --card-padding: 14px;
