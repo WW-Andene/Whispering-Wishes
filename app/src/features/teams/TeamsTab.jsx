@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Download, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
-import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -452,31 +452,75 @@ function TeamsTab({
                             const d = CHARACTER_DATA[name];
                             if (!d?.teams) continue;
                             for (const t of d.teams) {
-                              if (seen.has(t)) continue;
-                              seen.add(t);
+                              // Deduplicate by sorted member names (catches A+B+C vs B+A+C)
                               const members = t.split('+').map(m => m.trim());
+                              const dedupeKey = [...members].sort().join('|');
+                              if (seen.has(dedupeKey)) continue;
+                              seen.add(dedupeKey);
                               if (members.length < 2) continue;
                               const ownedCount = members.filter(m => ownedNames.has(m)).length;
                               suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
                             }
                           }
-                          // Score each suggestion: ownership + DPS estimate + role balance
+                          // ── Comprehensive scoring ──
+                          const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
                           suggestions.forEach(s => {
-                            let score = s.ownedCount * 30;
-                            if (s.allOwned) score += 50;
+                            let score = s.ownedCount * 25;
+                            if (s.allOwned) score += 40;
                             const roles = s.members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
-                            if (roles.includes('Main DPS')) score += 20;
-                            if (roles.includes('Healer') || roles.includes('Support')) score += 15;
-                            if (roles.includes('Sub DPS')) score += 10;
-                            const hasMainDps = s.members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
-                            if (hasMainDps) {
-                              const dpsData = CHARACTER_DATA[hasMainDps];
-                              score += Math.min(30, Math.round((dpsData?.totalMult || 0) / 100));
+                            const tags = [];
+                            // Role balance
+                            const hasMain = roles.includes('Main DPS');
+                            const hasSub = roles.includes('Sub DPS');
+                            const hasHeal = roles.includes('Healer');
+                            const hasSupp = roles.includes('Support');
+                            if (hasMain) score += 15;
+                            if (hasHeal || hasSupp) score += 10;
+                            if (hasSub) score += 8;
+                            if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
+                            // Tier weighting (ToA tier)
+                            let tierSum = 0;
+                            s.members.forEach(m => {
+                              const tier = CHARACTER_DATA[m]?.tier?.toa;
+                              if (tier) tierSum += (TIER_SCORES[tier] ?? 10);
+                            });
+                            score += tierSum;
+                            if (tierSum >= 100) tags.push('Meta');
+                            // DPS power
+                            const mainDps = s.members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+                            if (mainDps) {
+                              const mult = CHARACTER_DATA[mainDps]?.totalMult || 0;
+                              score += Math.min(25, Math.round(mult / 120));
                             }
-                            // Element synergy bonus
+                            // Element synergy
                             const elements = s.members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
                             const elSet = new Set(elements);
-                            if (elements.length > elSet.size) score += 15; // element resonance
+                            if (elements.length > elSet.size) { score += 12; tags.push('Resonance'); }
+                            if (elSet.size === 1) { score += 8; tags.push('Mono'); }
+                            // Buff synergy: check if sub/support buffs match DPS focus
+                            if (mainDps) {
+                              const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
+                              s.members.forEach(m => {
+                                if (m === mainDps) return;
+                                const bt = CHAR_BUFF_TABLE[m];
+                                if (!bt) return;
+                                (bt.outroBuffs || []).forEach(b => {
+                                  if (b.stat === 'deepen') { score += 8; }
+                                  else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) { score += 10; tags.push('ATK Amp'); }
+                                  else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) { score += 10; tags.push('Heavy Amp'); }
+                                  else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) { score += 10; tags.push('Echo Amp'); }
+                                  else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) { score += 8; }
+                                  else if (b.stat === 'elemDmg') { score += 6; }
+                                });
+                                (bt.debuffs || []).forEach(db => {
+                                  if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
+                                  if (db.stat === 'frazzle') tags.push('Frazzle');
+                                  if (db.stat === 'erosion') tags.push('Erosion');
+                                });
+                              });
+                            }
+                            // Dedupe tags
+                            s.tags = [...new Set(tags)].slice(0, 3);
                             s.score = score;
                           });
                           suggestions.sort((a, b) => {
@@ -516,16 +560,19 @@ function TeamsTab({
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm text-gray-300 truncate">{s.text}</div>
-                                <div className="flex gap-1 mt-0.5">
+                                <div className="flex gap-1 mt-0.5 flex-wrap">
                                   {s.members.slice(0, 3).map((m, j) => {
                                     const role = CHARACTER_DATA[m]?.role;
                                     const rc = role === 'Main DPS' ? 'text-red-400' : role === 'Sub DPS' ? 'text-orange-400' : role === 'Healer' ? 'text-emerald-400' : 'text-blue-400';
                                     return <span key={j} className={`text-2xs ${rc}`}>{role || '?'}</span>;
                                   })}
+                                  {s.tags?.map((tag, j) => (
+                                    <span key={`t${j}`} className={`text-2xs px-1 rounded ${tag === 'Meta' ? 'text-yellow-400 bg-yellow-500/10' : tag === 'Balanced' ? 'text-emerald-400 bg-emerald-500/10' : 'text-cyan-400 bg-cyan-500/10'}`}>{tag}</span>
+                                  ))}
                                 </div>
                               </div>
                               {s.allOwned ? (
-                                <span className="kuro-badge kuro-badge-emerald flex-shrink-0">All owned</span>
+                                <span className="kuro-badge kuro-badge-emerald flex-shrink-0 text-2xs">Ready</span>
                               ) : (
                                 <span className="text-2xs text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}
