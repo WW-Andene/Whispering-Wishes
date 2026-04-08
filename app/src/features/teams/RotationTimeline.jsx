@@ -21,27 +21,14 @@ export default function RotationTimeline({ rotationTimeline }) {
 
   const { segments, buffs, totalTime } = rotationTimeline;
 
-  // Build looping segments to fill full rotation
-  const loopDur = segments.reduce((s, seg) => s + seg.duration, 0);
-  const looped = [];
-  let t = 0;
-  let idx = 0;
-  while (t < totalTime && loopDur > 0) {
-    const seg = segments[idx % segments.length];
-    const dur = Math.min(seg.duration, totalTime - t);
-    looped.push({ ...seg, start: t, duration: dur });
-    t += dur;
-    idx++;
-  }
-
-  // Build rows
+  // One cycle only — no looping
   const rows = [];
-  looped.forEach(seg => {
+  segments.forEach(seg => {
     rows.push({ label: seg.name, start: seg.start, duration: seg.duration, color: ELEMENT_COLORS[seg.element] || '#6b7280', type: 'field', detail: `${seg.duration}s` });
   });
   buffs.forEach(buff => {
     const color = ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
-    if (buff.duration > 0 && buff.start < totalTime) rows.push({ label: buff.source, start: buff.start, duration: buff.duration, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
+    if (buff.duration > 0) rows.push({ label: buff.source, start: buff.start, duration: buff.duration, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
 
   // timeScale = furthest end of any bar
@@ -50,7 +37,7 @@ export default function RotationTimeline({ rotationTimeline }) {
   // Group: each on-field segment followed by its buffs
   const ordered = [];
   const usedBuffIdx = new Set();
-  looped.forEach(seg => {
+  segments.forEach(seg => {
     const fieldRow = rows.find(r => r.type === 'field' && r.start === seg.start && r.label === seg.name);
     if (fieldRow) ordered.push(fieldRow);
     const segEnd = seg.start + seg.duration;

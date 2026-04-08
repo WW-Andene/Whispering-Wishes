@@ -788,9 +788,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const rotationTimeline = (() => {
       const buffs = [];
       const ordered = [...mems].sort((a, b) => {
-        if (a.name === mainDps.name) return -1;
-        if (b.name === mainDps.name) return 1;
-        const roleOrder = { 'Main DPS': 0, 'Sub DPS': 1, 'Support': 2, 'Healer': 3 };
+        // Real rotation: supports/healers set up buffs first, then DPS gets the window
+        if (a.name === mainDps.name) return 1;
+        if (b.name === mainDps.name) return -1;
+        const roleOrder = { 'Healer': 0, 'Support': 1, 'Sub DPS': 2, 'Main DPS': 3 };
         return (roleOrder[a.d.role] || 2) - (roleOrder[b.d.role] || 2);
       });
       // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
