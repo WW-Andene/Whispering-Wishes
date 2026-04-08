@@ -547,6 +547,24 @@ const PIONEER_PODCAST_HISTORY = [
   { version: '1.0', startDate: '2024-05-23', endDate: '2024-06-27', rewards: 400 },
 ];
 
+// Doubled Pawns Matrix: Pilot — recurring boss rush introduced in v3.0, replaced by Endstate Matrix in v3.2
+// Source: Fandom wiki (Doubled_Pawns_Matrix:_Pilot), rewards reset each version
+const DOUBLED_PAWNS_MATRIX_HISTORY = [
+  { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
+  { version: '3.0', startDate: '2025-12-25', endDate: '2026-02-04', rewards: 400 },
+];
+
+// Tactical Hologram — permanent combat challenges, new arenas added with new regions
+// Source: Fandom wiki (Change History per page: Calamity=1.0, Phantom Pain=2.0, Synchronization=3.0)
+// One entry per version where a new Tactical Hologram arena was introduced
+const TACTICAL_HOLOGRAM_HISTORY = [
+  { version: '3.2', name: 'Synchronization — Hyvatia',   startDate: '2026-03-19', endDate: '2026-04-29' },
+  { version: '3.0', name: 'Synchronization (Lahai-Roi)',  startDate: '2025-12-25', endDate: '2026-02-04' },
+  { version: '2.0', name: 'Phantom Pain (Rinascita)',     startDate: '2025-01-02', endDate: '2025-02-12' },
+  { version: '1.3', name: 'Calamity — Inferno Rider',     startDate: '2024-09-29', endDate: '2024-11-13' },
+  { version: '1.0', name: 'Calamity (Huanglong)',         startDate: '2024-05-23', endDate: '2024-06-27' },
+];
+
 // Version start dates (P1 start from BANNER_HISTORY) — used to derive event boundaries
 const VERSION_DATES = [
   { version: '3.2', start: '2026-03-19', end: '2026-04-29' },
@@ -573,6 +591,8 @@ export {
   BANNER_HISTORY,
   EVENTS,
   PIONEER_PODCAST_HISTORY,
+  DOUBLED_PAWNS_MATRIX_HISTORY,
+  TACTICAL_HOLOGRAM_HISTORY,
   VERSION_DATES,
   DEFAULT_COLLECTION_IMAGES,
   CHARACTER_THEMES,

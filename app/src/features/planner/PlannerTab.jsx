@@ -13,7 +13,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Minus, Plus, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
-import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, VERSION_DATES } from '../../data/banners.js';
+import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES } from '../../data/banners.js';
 import { generateUniqueId } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -28,13 +28,14 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 // interpolation (e.g. `${color}40` for alpha) where CSS var() would be invalid.
 // Canonical tokens are defined in kuro.css (--event-*) for pure-CSS contexts.
 const EVENT_COLORS = {
-  weeklyBoss:        '#60a5fa',  // marine (rarity-3star blue)
-  endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
-  towerOfAdversity:  '#ef4444',  // red-500 (better contrast at small sizes)
-  whimperingWastes:  '#06b6d4',  // cyan
-  tacticalHologram:  '#a3e635',  // lime
-  pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
-  illusiveRealm:     '#c4b5fd',  // lavender
+  weeklyBoss:           '#60a5fa',  // marine (rarity-3star blue)
+  endstateMatrix:       '#ec4899',  // fuchsia (featured weapon pink)
+  doubledPawnsMatrix:   '#f472b6',  // pink-400 (predecessor to endstateMatrix)
+  towerOfAdversity:     '#ef4444',  // red-500 (better contrast at small sizes)
+  whimperingWastes:     '#06b6d4',  // cyan
+  tacticalHologram:     '#a3e635',  // lime
+  pioneerPodcast:       '#fb923c',  // pumpkin (pity ring orange)
+  illusiveRealm:        '#c4b5fd',  // lavender
 };
 const BANNER_COLOR = '#edaf18';  // gold
 
@@ -315,6 +316,20 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards);
     }
 
+    // Doubled Pawns Matrix: Pilot — predecessor to Endstate Matrix (v3.0–v3.1)
+    for (const dp of DOUBLED_PAWNS_MATRIX_HISTORY) {
+      const color = EVENT_COLORS.doubledPawnsMatrix;
+      if (!color) continue;
+      addBar(`dpm-${dp.version}`, `Doubled Pawns Matrix v${dp.version}`, color, new Date(dp.startDate), new Date(dp.endDate), dp.rewards);
+    }
+
+    // Tactical Hologram — permanent challenges, show when new arenas were introduced
+    for (const th of TACTICAL_HOLOGRAM_HISTORY) {
+      const color = EVENT_COLORS.tacticalHologram;
+      if (!color) continue;
+      addBar(`th-${th.version}`, `Tactical Hologram: ${th.name}`, color, new Date(th.startDate), new Date(th.endDate), 0);
+    }
+
     // Version-scoped events without explicit start (Pioneer Podcast already handled above)
     for (const [key, ev] of Object.entries(EVENTS)) {
       if (ev.dailyReset || ev.weeklyReset || ev.permanent || ev.resetType === '28 days') continue;
@@ -557,7 +572,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                   ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
                   : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
                 }
-                {EVENTS[key]?.name || key}
+                {EVENTS[key]?.name || { doubledPawnsMatrix: 'Doubled Pawns Matrix' }[key] || key}
               </span>
             ))}
           </div>
