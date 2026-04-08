@@ -51,7 +51,7 @@ export default function DPSComparisonCard({
     <Card id="team-dps-comparison">
       <CardHeader action={
         <button onClick={async () => { if (await confirm?.({ title: 'Clear comparison', message: 'Remove all comparison entries?', confirmLabel: 'Clear', destructive: true })) { setTeamCompareEntries([]); haptic.light(); } }}
-          className="kuro-btn text-[10px]" aria-label="Clear all team comparisons">
+          className="kuro-btn text-sm" aria-label="Clear all team comparisons">
           Clear All
         </button>
       }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
@@ -59,9 +59,9 @@ export default function DPSComparisonCard({
         {/* Enemy Target Selector */}
         <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
           <Sword size={12} className="text-red-400" />
-          <span className="text-gray-400 text-[10px] font-medium">Target:</span>
+          <span className="text-gray-400 text-sm font-medium">Target:</span>
           <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
-            className="kuro-btn text-[10px] px-2 py-1 flex-1 min-w-[120px] max-w-[240px] text-left truncate">
+            className="kuro-btn text-sm px-2 py-1 flex-1 min-w-[120px] max-w-[240px] text-left truncate">
             {enemyEcho ? (() => {
               const ed = ECHO_DATA[enemyEcho];
               const resEl = ed?.enemyRes ? Object.keys(ed.enemyRes)[0] : '';
@@ -70,14 +70,14 @@ export default function DPSComparisonCard({
             })() : 'Default (10% all RES)'}
           </button>
           <div className="flex items-center gap-1">
-            <span className="text-gray-500 text-[10px]">Lv.</span>
+            <span className="text-gray-500 text-sm">Lv.</span>
             <input type="text" inputMode="numeric" value={enemyLevel}
               onFocus={e => e.target.select()}
               onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
               onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
-              className="kuro-input w-12 text-[10px] px-1 py-0.5 text-center" />
+              className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
           </div>
-          <span className="text-gray-600 text-[10px]">DEF {792 + 8 * (Number(enemyLevel) || 90)}</span>
+          <span className="text-gray-600 text-sm">DEF {792 + 8 * (Number(enemyLevel) || 90)}</span>
         </div>
 
         <div className="space-y-3">
@@ -89,7 +89,7 @@ export default function DPSComparisonCard({
             return (
               <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                 <div className="flex items-center justify-between mb-1.5 pr-8">
-                  <span className="text-[10px] font-medium text-gray-300 truncate" title={entry.slots.filter(Boolean).join(' / ')}>
+                  <span className="text-sm font-medium text-gray-300 truncate" title={entry.slots.filter(Boolean).join(' / ')}>
                     {entry.slots.filter(Boolean).join(' / ') || 'Empty Team'}
                   </span>
                 </div>
@@ -106,7 +106,7 @@ export default function DPSComparisonCard({
                     const rc2 = roleColors[m.d.role] || roleColors.Support;
                     return (
                       <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'border-yellow-500/50 glow-gold bg-yellow-500/10' : 'border-purple-500/50 glow-purple bg-purple-500/10'}`}>
-                        <div className="text-[10px] font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
+                        <div className="text-sm font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
                         <div className={`text-[8px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                         <span className={`text-[8px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
                       </div>
@@ -122,8 +122,8 @@ export default function DPSComparisonCard({
                 ].map((bar, bi) => (
                   <div key={bi} className={bi < 2 ? 'mb-1' : 'mb-0.5'}>
                     <div className="flex items-baseline justify-between mb-0.5">
-                      <span className="text-gray-400 text-[10px]">{bar.label}</span>
-                      <span className="font-bold text-xs kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
+                      <span className="text-gray-400 text-sm">{bar.label}</span>
+                      <span className="font-bold text-base kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
                     </div>
                     <div className="relative h-4 rounded" style={{ background: 'transparent' }}>
                       <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
@@ -142,13 +142,13 @@ export default function DPSComparisonCard({
 
                 {/* Quick stats */}
                 <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-[var(--border-medium)]">
-                  <div className="text-[10px]"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
-                  <div className="text-[10px]"><span className="text-gray-500">{s.mainDps.scaling !== 'ATK' ? s.mainDps.scaling : 'ATK'}: </span><span className="text-yellow-400 kuro-number">{s.effAtk?.toLocaleString('en-US')}</span></div>
-                  <div className="text-[10px]"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
-                  <div className="text-[10px]"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
-                  <div className="text-[10px]"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
-                  {s.mainDps.scaling !== 'ATK' && <div className="text-[10px]"><span className="text-violet-400">{s.mainDps.scaling} scaling</span></div>}
-                  {s.defShred > 0 && <div className="text-[10px]"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{Math.round(s.defShred)}%</span></div>}
+                  <div className="text-sm"><span className="text-gray-500">DPS: </span><span className="text-white font-medium">{s.mainDps.name}</span></div>
+                  <div className="text-sm"><span className="text-gray-500">{s.mainDps.scaling !== 'ATK' ? s.mainDps.scaling : 'ATK'}: </span><span className="text-yellow-400 kuro-number">{s.effAtk?.toLocaleString('en-US')}</span></div>
+                  <div className="text-sm"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
+                  <div className="text-sm"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
+                  <div className="text-sm"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
+                  {s.mainDps.scaling !== 'ATK' && <div className="text-sm"><span className="text-violet-400">{s.mainDps.scaling} scaling</span></div>}
+                  {s.defShred > 0 && <div className="text-sm"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{Math.round(s.defShred)}%</span></div>}
                 </div>
               </div>
             );
@@ -158,7 +158,7 @@ export default function DPSComparisonCard({
         {/* Side-by-side stats table */}
         {computed.length > 1 && (
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-[10px]">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border-medium)]">
                   <th className="text-left text-gray-500 py-1 pr-2">Stat</th>
@@ -185,7 +185,7 @@ export default function DPSComparisonCard({
           </div>
         )}
         {teamCompareEntries.length < 5 && (
-          <p className="text-gray-500 text-[10px] text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
+          <p className="text-gray-500 text-sm text-center mt-2">Tap <span className="text-yellow-400">+ Compare</span> to add more ({5 - teamCompareEntries.length} left)</p>
         )}
       </CardBody>
     </Card>

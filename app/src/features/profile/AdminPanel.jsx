@@ -85,18 +85,18 @@ function EchoBgRemover({ toast, adminHash }) {
   return (
     <div className="space-y-3">
       <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-3">
-        <p className="text-pink-400 text-xs font-medium mb-1">Echo Background Removal</p>
-        <p className="text-gray-400 text-[10px]">
+        <p className="text-pink-400 text-base font-medium mb-1">Echo Background Removal</p>
+        <p className="text-gray-400 text-sm">
           Removes backgrounds from all {allEchoes.length} echo images using HuggingFace AI (BRIA-RMBG-1.4).
           Requires HF_API_KEY + ADMIN_HASH in Vercel env vars. Download results as PNGs and re-upload to ibb.co.
         </p>
       </div>
       <div className="flex gap-2">
-        <button onClick={runBatch} disabled={status === 'running'} className={`kuro-btn flex-1 text-xs py-2 ${status === 'running' ? 'opacity-50' : 'active-pink'}`}>
+        <button onClick={runBatch} disabled={status === 'running'} className={`kuro-btn flex-1 text-base py-2 ${status === 'running' ? 'opacity-50' : 'active-pink'}`}>
           {status === 'running' ? `Processing ${progress.done}/${progress.total}...` : status === 'done' ? 'Run Again' : `Remove BG (${allEchoes.length} images)`}
         </button>
         {status === 'running' && (
-          <button onClick={() => { abortRef.current = true; }} className="kuro-btn text-xs py-2 text-red-400 border-red-500/30">Stop</button>
+          <button onClick={() => { abortRef.current = true; }} className="kuro-btn text-base py-2 text-red-400 border-red-500/30">Stop</button>
         )}
       </div>
       {status === 'running' && (
@@ -104,15 +104,15 @@ function EchoBgRemover({ toast, adminHash }) {
           <div className="h-2 rounded-full overflow-hidden bg-white/5">
             <div className="h-full bg-pink-500 transition-all duration-300 rounded-full" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
           </div>
-          <p className="text-gray-400 text-[10px] mt-1 truncate">Processing: {progress.current}</p>
+          <p className="text-gray-400 text-sm mt-1 truncate">Processing: {progress.current}</p>
         </div>
       )}
       {results.length > 0 && (
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <p className="text-gray-400 text-[10px]">{results.filter(r => r.ok).length} succeeded, {results.filter(r => !r.ok).length} failed</p>
+            <p className="text-gray-400 text-sm">{results.filter(r => r.ok).length} succeeded, {results.filter(r => !r.ok).length} failed</p>
             {results.some(r => r.ok) && (
-              <button onClick={downloadAll} className="kuro-btn text-[10px] px-3 py-1 active-emerald">Download All PNGs</button>
+              <button onClick={downloadAll} className="kuro-btn text-sm px-3 py-1 active-emerald">Download All PNGs</button>
             )}
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
@@ -186,8 +186,8 @@ export default function AdminPanel({
               {!adminUnlocked ? (
                 <div className="space-y-3">
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
-                    <p className="text-yellow-400 text-sm font-medium">Admin Access Required</p>
-                    <p className="text-gray-400 text-[10px] mt-1">Enter admin password to continue</p>
+                    <p className="text-yellow-400 text-md font-medium">Admin Access Required</p>
+                    <p className="text-gray-400 text-sm mt-1">Enter admin password to continue</p>
                   </div>
                   <div className="flex gap-2">
                     <input
@@ -196,7 +196,7 @@ export default function AdminPanel({
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && verifyAdminPassword()}
-                      className="kuro-input flex-1 text-sm"
+                      className="kuro-input flex-1 text-md"
                       aria-label="Admin password"
                       aria-invalid={adminLockedUntil > Date.now() ? true : undefined}
                       aria-describedby={adminLockedUntil > Date.now() ? 'admin-lockout-msg' : undefined}
@@ -207,7 +207,7 @@ export default function AdminPanel({
               ) : (
                 <>
                   <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
-                    <p className="text-emerald-400 text-xs">Admin Panel Unlocked</p>
+                    <p className="text-emerald-400 text-base">Admin Panel Unlocked</p>
                   </div>
 
                   {/* Tab Switcher */}
@@ -216,7 +216,7 @@ export default function AdminPanel({
                       <button
                         key={key}
                         onClick={() => setAdminTab(key)}
-                        className={`px-3 py-1.5 rounded text-[10px] transition-all ${adminTab === key ? active : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                        className={`px-3 py-1.5 rounded text-sm transition-all ${adminTab === key ? active : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                       >
                         {label}
                       </button>
@@ -238,8 +238,8 @@ export default function AdminPanel({
                   {adminTab === 'collection' && (
                     <div className="space-y-4">
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-                        <h3 className="text-purple-400 text-sm font-medium mb-3">Collection Images</h3>
-                        <p className="text-gray-400 text-[10px] mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
+                        <h3 className="text-purple-400 text-md font-medium mb-3">Collection Images</h3>
+                        <p className="text-gray-400 text-sm mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
                         {(() => {
                           const allHistory = [
                             ...state.profile.featured.history,
@@ -249,7 +249,7 @@ export default function AdminPanel({
                           ];
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           if (uniqueNames.length === 0) {
-                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-xs">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-[10px] mt-2 px-3 py-1.5">Go to Import</button></div>;
+                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-sm mt-2 px-3 py-1.5">Go to Import</button></div>;
                           }
                           return (
                             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
@@ -259,7 +259,7 @@ export default function AdminPanel({
                                 const displayUrl = collectionImages[name];
                                 return (
                                   <div key={name} className="flex items-center gap-2">
-                                    <span className={`text-[10px] w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
+                                    <span className={`text-sm w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
                                       {name} {!hasDefault && '⚠'}
                                     </span>
                                     <input
@@ -278,7 +278,7 @@ export default function AdminPanel({
                                         }
                                         saveCollectionImages(newCustom);
                                       }}
-                                      className={`kuro-input flex-1 text-[10px] py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
+                                      className={`kuro-input flex-1 text-sm py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
                                     />
                                     {displayUrl && (
                                       <img src={displayUrl} alt={name} className="w-[28px] h-[28px] object-cover rounded border border-purple-500/30" loading="lazy" onError={hideOnError} />
@@ -293,7 +293,7 @@ export default function AdminPanel({
                       <div className="flex gap-2">
                         <button
                           onClick={async () => { if (await confirm({ title: 'Clear overrides', message: 'Clear all custom image overrides?', confirmLabel: 'Clear', destructive: true })) saveCollectionImages({}); }}
-                          className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-xs hover:bg-red-500/30"
+                          className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-base hover:bg-red-500/30"
                         >
                           Clear Custom Overrides
                         </button>
@@ -316,8 +316,8 @@ export default function AdminPanel({
                         </React.Fragment>
                       ))}
                       <div className="flex gap-2">
-                        <button onClick={() => setAdminMiniMode(true)} className="flex-1 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded text-xs hover:bg-emerald-500/30">🗗 Mini Window</button>
-                        <button onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }} className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-xs hover:bg-neutral-600">Reset to Defaults</button>
+                        <button onClick={() => setAdminMiniMode(true)} className="flex-1 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded text-base hover:bg-emerald-500/30">🗗 Mini Window</button>
+                        <button onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }} className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-base hover:bg-neutral-600">Reset to Defaults</button>
                       </div>
                     </div>
                   )}
@@ -345,11 +345,11 @@ export default function AdminPanel({
                     try { diag = JSON.parse(localStorage.getItem('ww-import-diagnostic')); } catch {}
                     return (
                       <div className="space-y-3">
-                        <div className="text-xs text-gray-400">Last import diagnostic{diag?.timestamp ? ` — ${new Date(diag.timestamp).toLocaleString()}` : ''}</div>
+                        <div className="text-base text-gray-400">Last import diagnostic{diag?.timestamp ? ` — ${new Date(diag.timestamp).toLocaleString()}` : ''}</div>
                         {diag?.log ? (
-                          <pre className="text-[10px] font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
+                          <pre className="text-sm font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
                         ) : (
-                          <div className="text-gray-400 text-xs text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
+                          <div className="text-gray-400 text-base text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
                         )}
                         {diag && (
                           <button onClick={() => {
@@ -360,7 +360,7 @@ export default function AdminPanel({
                             a.download = `ww-import-diagnostic-${new Date().toISOString().slice(0,10)}.json`;
                             document.body.appendChild(a); a.click(); document.body.removeChild(a);
                             setTimeout(() => URL.revokeObjectURL(url), 100);
-                          }} className="kuro-btn w-full text-xs">Download Diagnostic Log</button>
+                          }} className="kuro-btn w-full text-base">Download Diagnostic Log</button>
                         )}
                       </div>
                     );

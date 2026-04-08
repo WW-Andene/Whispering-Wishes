@@ -172,17 +172,17 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            {item.isNew && <span className="text-[10px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
+            {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`kuro-badge ${style.text}`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>{isChar ? item.element : item.type}</span>
           </div>
-          <h4 className="font-bold text-base text-white leading-tight">{item.name}</h4>
-          {item.title && <p className="text-gray-200 text-[10px] mt-0.5 line-clamp-1">{item.title}</p>}
+          <h4 className="font-bold text-lg text-white leading-tight">{item.name}</h4>
+          {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
         <div className={stats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-[10px] mb-0.5 uppercase tracking-wider">Featured 4★</div>
+          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-1 flex-wrap">
-            {(item.featured4Stars || []).map(n => <span key={n} className="text-[10px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+            {(item.featured4Stars || []).map(n => <span key={n} className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
           </div>
         </div>
       </div>
@@ -192,25 +192,25 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex items-center gap-3">
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
-                  <div className={`font-bold text-base kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-[10px] ml-0.5">/{HARD_PITY}</span></div>
-                  <div className={`text-[10px] mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
+                  <div className={`font-bold text-lg kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-sm ml-0.5">/{HARD_PITY}</span></div>
+                  <div className={`text-sm mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-purple-400 font-bold text-sm kuro-number">{stats.pity4}<span className="text-gray-400 text-[10px] ml-0.5">/10</span></div>
-                  <div className={`text-[10px] mt-0.5 ${stats.guaranteed4Star ? 'text-emerald-400 font-medium' : 'text-gray-400'}`}>{stats.guaranteed4Star ? '4★ Featured ✓' : '4★ Pity'}</div>
+                  <div className="text-purple-400 font-bold text-md kuro-number">{stats.pity4}<span className="text-gray-400 text-sm ml-0.5">/10</span></div>
+                  <div className={`text-sm mt-0.5 ${stats.guaranteed4Star ? 'text-emerald-400 font-medium' : 'text-gray-400'}`}>{stats.guaranteed4Star ? '4★ Featured ✓' : '4★ Pity'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-white font-bold text-sm kuro-number">{stats.totalPulls}</div>
-                  <div className="text-gray-400 text-[10px] mt-0.5">Convenes</div>
+                  <div className="text-white font-bold text-md kuro-number">{stats.totalPulls}</div>
+                  <div className="text-gray-400 text-sm mt-0.5">Convenes</div>
                 </div>
               </div>
-              {/* MED-27: Escalated from text-[10px] to text-xs font-bold for visual weight */}
+              {/* MED-27: Escalated from text-sm to text-base font-bold for visual weight */}
               {isChar ? (
-                <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
+                <div className={`text-base font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
                 </div>
               ) : (
-                <div className={`text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-pink-500/20 text-pink-400 border border-pink-500/30'}`}>
+                <div className={`text-base font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-pink-500/20 text-pink-400 border border-pink-500/30'}`}>
                   {stats.guaranteed ? '✓ Guaranteed' : 'No Guarantee'}
                 </div>
               )}
@@ -225,13 +225,13 @@ BannerCard.displayName = 'BannerCard';
 
 const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2" role="meter" aria-label={`${label}: ${value}%`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
-    <span className="text-gray-400 text-[10px] w-12">{label}</span>
+    <span className="text-gray-400 text-sm w-12">{label}</span>
     <div className="flex-1 h-5 bg-neutral-800 rounded overflow-hidden">
       <div className={`h-full ${color === 'cyan' ? 'bg-cyan-500' : color === 'pink' ? 'bg-pink-500' : 'bg-yellow-500'} transition-[width] duration-300 flex items-center justify-end pr-1`} style={{ width: `${Math.max(value, 1)}%` }}>
-        {value > 10 && <span className="text-[10px] text-black font-bold">{value}%</span>}
+        {value > 10 && <span className="text-sm text-black font-bold">{value}%</span>}
       </div>
     </div>
-    {value <= 10 && <span className="text-[10px] text-gray-400 w-10">{value}%</span>}
+    {value <= 10 && <span className="text-sm text-gray-400 w-10">{value}%</span>}
   </div>
 ));
 ProbabilityBar.displayName = 'ProbabilityBar';

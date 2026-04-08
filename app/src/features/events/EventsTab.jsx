@@ -121,18 +121,18 @@ function EventsTab({
                 toast?.addToast?.('Banner data refreshed!', 'success');
               }}
               disabled={refreshCooling}
-              className={`text-[10px] flex items-center gap-1 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
+              className={`text-sm flex items-center gap-1 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
             >
               <RefreshCcw size={12} className={refreshCooling ? 'animate-spin' : ''} /> Refresh Timers
             </button>
-            <span className="text-gray-400 text-[10px]">Server: {state.server}</span>
+            <span className="text-gray-400 text-sm">Server: {state.server}</span>
           </div>
         }>Events &amp; Resets</CardHeader>
         <CardBody className="space-y-2">
               <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="text-yellow-400 text-xs font-medium">{progressStats.hasProgress ? 'Weekly Progress' : 'Weekly Rewards'}</span>
-                  <span className="text-yellow-400 font-bold text-sm kuro-number">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
+                  <span className="text-yellow-400 text-base font-medium">{progressStats.hasProgress ? 'Weekly Progress' : 'Weekly Rewards'}</span>
+                  <span className="text-yellow-400 font-bold text-md kuro-number">{progressStats.hasProgress ? `${progressStats.earnedAstrite.toLocaleString('en-US')} / ${progressStats.totalAstrite.toLocaleString('en-US')}` : progressStats.totalAstrite.toLocaleString('en-US')} Astrite</span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex">
@@ -147,20 +147,20 @@ function EventsTab({
                       />
                     )}
                   </div>
-                  <span className="text-gray-400 text-[10px] flex-shrink-0">{progressStats.doneCount}/{progressStats.totalCount} done</span>
+                  <span className="text-gray-400 text-sm flex-shrink-0">{progressStats.doneCount}/{progressStats.totalCount} done</span>
                 </div>
               </div>
               <div className="flex gap-2">
                 <div className="kuro-stat kuro-stat-emerald flex-1 p-2">
-                  <div className="text-emerald-400 text-sm font-bold kuro-number">{progressStats.doneCount}</div>
+                  <div className="text-emerald-400 text-md font-bold kuro-number">{progressStats.doneCount}</div>
                   <div className="text-gray-500 kuro-micro-label">Completed</div>
                 </div>
                 <div className="kuro-stat kuro-stat-gold flex-1 p-2">
-                  <div className="text-yellow-400 text-sm font-bold kuro-number">{progressStats.pendingCount}</div>
+                  <div className="text-yellow-400 text-md font-bold kuro-number">{progressStats.pendingCount}</div>
                   <div className="text-gray-500 kuro-micro-label">Pending</div>
                 </div>
                 <div className="kuro-stat kuro-stat-gray flex-1 p-2">
-                  <div className="text-gray-400 text-sm font-bold kuro-number">{progressStats.skippedCount}</div>
+                  <div className="text-gray-400 text-md font-bold kuro-number">{progressStats.skippedCount}</div>
                   <div className="text-gray-500 kuro-micro-label">Skipped</div>
                 </div>
               </div>
@@ -180,7 +180,7 @@ function EventsTab({
               <>
                 <div className="flex items-center gap-2 pt-2 pb-1">
                   <div className="flex-1 h-px bg-gray-700/50" />
-                  <span className="text-gray-500 text-[10px] font-medium uppercase tracking-wider">Expired</span>
+                  <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">Expired</span>
                   <div className="flex-1 h-px bg-gray-700/50" />
                 </div>
                 {expired.map((entry) => renderCard(entry, true))}
@@ -189,7 +189,7 @@ function EventsTab({
           </>
         )}
       </div>
-      <p className="text-gray-500 text-[10px] text-center content-layer sticky bottom-0 py-2 kuro-gradient-fade-up">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+      <p className="text-gray-500 text-sm text-center content-layer sticky bottom-0 py-2 kuro-gradient-fade-up">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
     </div>
     </TabErrorBoundary>
     </div>

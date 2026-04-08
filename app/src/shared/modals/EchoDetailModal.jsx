@@ -104,7 +104,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                 return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
               })}
             </div>
-            <h2 className="text-xl font-semibold text-white">{name}</h2>
+            <h2 className="text-2xl font-semibold text-white">{name}</h2>
           </div>
         </div>
 
@@ -114,8 +114,8 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-[10px] text-gray-400">DMG</span>
-                <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
+                <span className="text-sm text-gray-400">DMG</span>
+                <span className="text-base font-bold text-red-400">{data.dmg}%</span>
               </div>
             )}
             {(data.sets || []).map(setName => {
@@ -126,13 +126,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
 
           {/* 2. Description (identity) */}
           {data.desc && (
-            <p className="text-sm text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
+            <p className="text-md text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
           )}
 
           {/* 3. Enemy resistance (boss echoes with known resistance) */}
           {data.enemyRes && (
             <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
-              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
+              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.enemyRes).map(([el, val]) => (
                   <span key={el} className="kuro-badge kuro-badge-red font-medium">
@@ -153,15 +153,15 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                 const setColor = getSetElementColor(setName);
                 return (
                   <div key={setName} className="p-2 rounded-lg" style={{ background: `${setColor}10`, borderLeft: `3px solid ${setColor}80` }}>
-                    <div className="text-xs font-bold mb-0.5" style={{ color: setColor }}>{setName}</div>
+                    <div className="text-base font-bold mb-0.5" style={{ color: setColor }}>{setName}</div>
                     {setData ? (
                       <div className="space-y-0.5">
-                        {setData.p2 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
-                        {setData.p3 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
-                        {setData.p5 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
+                        {setData.p2 && <div className="text-sm text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
+                        {setData.p3 && <div className="text-sm text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
+                        {setData.p5 && <div className="text-sm text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-gray-500 italic">Set data not available</div>
+                      <div className="text-sm text-gray-500 italic">Set data not available</div>
                     )}
                   </div>
                 );
@@ -211,7 +211,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
             return (
               <div className="kuro-detail-box">
                 <div className="kuro-section-label mb-1">Skill</div>
-                <p className="text-xs leading-relaxed">{formatSkillText(allSkillText)}</p>
+                <p className="text-base leading-relaxed">{formatSkillText(allSkillText)}</p>
               </div>
             );
           })()}
@@ -230,7 +230,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                 <span key={s} className="kuro-badge kuro-badge-cyan">{s}</span>
               ))}
             </div>
-            <div className="text-[10px] text-gray-500 mt-1">
+            <div className="text-sm text-gray-500 mt-1">
               Secondary: {cost === 1 ? 'Flat HP' : 'Flat ATK'}
             </div>
           </div>
@@ -267,7 +267,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                           <User size={14} className="text-gray-500" />
                         </div>
                       )}
-                      <span className="text-[10px] text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
+                      <span className="text-sm text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
                     </div>
                   );
                 })}

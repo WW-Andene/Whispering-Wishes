@@ -94,23 +94,23 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
   return (
     <Card>
       <CardHeader>About</CardHeader>
-      <CardBody className="space-y-3 text-xs text-gray-400">
+      <CardBody className="space-y-3 text-base text-gray-400">
         <div className="text-center">
-          <h4 className="text-gray-100 font-bold text-sm">Whispering Wishes</h4>
-          <p className="text-gray-500 text-[10px]">Version {APP_VERSION}</p>
+          <h4 className="text-gray-100 font-bold text-md">Whispering Wishes</h4>
+          <p className="text-gray-500 text-sm">Version {APP_VERSION}</p>
         </div>
 
         <div className="text-center">
-          <p className="text-gray-400 text-[10px] mb-1">Questions, issues, or feedback?</p>
+          <p className="text-gray-400 text-sm mb-1">Questions, issues, or feedback?</p>
           <a
             href="mailto:whisperingwishes.app@gmail.com"
-            className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors underline"
+            className="text-cyan-400 text-base hover:text-cyan-300 transition-colors underline"
           >
             whisperingwishes.app@gmail.com
           </a>
         </div>
 
-        <p className="text-center text-[10px] text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+        <p className="text-center text-sm text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
 
         <div className="kuro-divider" />
 
@@ -118,7 +118,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
           <div key={key} style={{ background: 'var(--bg-stat)', borderRadius: 'var(--radius-md)' }}>
             <button
               onClick={() => setAboutSections(prev => ({ ...prev, [key]: !prev[key] }))}
-              className="w-full flex items-center justify-between text-xs font-semibold text-gray-300 hover:text-gray-200 transition-colors"
+              className="w-full flex items-center justify-between text-base font-semibold text-gray-300 hover:text-gray-200 transition-colors"
               style={{ padding: 'var(--space-sm) var(--space-md)' }}
               aria-expanded={!!aboutSections[key]}
             >
@@ -126,7 +126,7 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
               <ChevronDown size={14} className={`transition-transform duration-200 text-gray-500 ${aboutSections[key] ? 'rotate-180' : ''}`} />
             </button>
             {aboutSections[key] && (
-              <div className="text-[10px] text-gray-400" style={{ padding: '0 12px 10px' }}>
+              <div className="text-sm text-gray-400" style={{ padding: '0 12px 10px' }}>
                 {content}
               </div>
             )}

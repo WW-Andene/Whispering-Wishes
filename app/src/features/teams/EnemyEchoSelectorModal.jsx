@@ -35,28 +35,28 @@ export default function EnemyEchoSelectorModal({
       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
           <div>
-            <h3 className="text-white font-semibold text-sm">Select Target Enemy</h3>
-            <p className="text-gray-400 text-[10px]">All echoes — select an enemy to fight against</p>
+            <h3 className="text-white font-semibold text-md">Select Target Enemy</h3>
+            <p className="text-gray-400 text-sm">All echoes — select an enemy to fight against</p>
           </div>
           <button onClick={onClose} className="modal-close-btn min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20" aria-label="Close"><X size={16} className="text-gray-400" /></button>
         </div>
 
         {/* Search + Filters */}
         <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-xs" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search echoes…" className="kuro-input w-full text-base" />
           <div className="flex gap-1">
             {[['all', 'All'], ['4', '4-Cost'], ['3', '3-Cost'], ['1', '1-Cost']].map(([val, label]) => (
               <button key={val} onClick={() => setCostFilter(val)}
-                className={`flex-1 text-[10px] py-1 rounded ${costFilter === val ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-white/5 border-[var(--border-medium)] text-gray-500'} border`}>{label}</button>
+                className={`flex-1 text-sm py-1 rounded ${costFilter === val ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-white/5 border-[var(--border-medium)] text-gray-500'} border`}>{label}</button>
             ))}
           </div>
           <div className="flex gap-1.5">
             <KuroSelect value={setFilter} onChange={v => setSetFilter(v)} small
               options={[{ value: 'all', label: 'All Sets' }, ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s }))]}
-              className="flex-1 text-[10px]" />
+              className="flex-1 text-sm" />
             <KuroSelect value={buffFilter} onChange={v => setBuffFilter(v)} small
               options={[{ value: 'all', label: 'All Types' }, ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b }))]}
-              className="flex-1 text-[10px]" />
+              className="flex-1 text-sm" />
           </div>
         </div>
 
@@ -64,8 +64,8 @@ export default function EnemyEchoSelectorModal({
           <div className="space-y-1">
             <button onClick={() => { setEnemyEcho(''); onClose(); haptic.light(); }}
               className={`w-full p-2 rounded-lg border text-left transition-all ${!enemyEcho ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-[var(--border-medium)] hover:border-white/20'}`}>
-              <div className="text-xs font-semibold text-white">Default Enemy</div>
-              <div className="text-[10px] text-gray-400">10% all element RES · No special mechanics</div>
+              <div className="text-base font-semibold text-white">Default Enemy</div>
+              <div className="text-sm text-gray-400">10% all element RES · No special mechanics</div>
             </button>
             {filtered.map(name => {
               const ed = ECHO_DATA[name];
@@ -89,7 +89,7 @@ export default function EnemyEchoSelectorModal({
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-semibold text-white truncate">{name}</span>
+                        <span className="text-base font-semibold text-white truncate">{name}</span>
                         <span className={`text-[8px] px-1 py-0.5 rounded bg-${costColor}-500/15 text-${costColor}-400 border border-${costColor}-500/25`}>{cost}C</span>
                       </div>
                       <div className="flex gap-1 mt-0.5 flex-wrap">
@@ -98,10 +98,10 @@ export default function EnemyEchoSelectorModal({
                             {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
                           </span>
                         )) : (
-                          <span className="text-[10px] text-gray-500">10% all RES</span>
+                          <span className="text-sm text-gray-500">10% all RES</span>
                         )}
                         {ed?.element && ed.element !== 'Healing' && (
-                          <span className="text-[10px] text-gray-500">· {ed.element}</span>
+                          <span className="text-sm text-gray-500">· {ed.element}</span>
                         )}
                       </div>
                     </div>
