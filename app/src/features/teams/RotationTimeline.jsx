@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// RotationTimeline — Gantt-style chronology: rows top-to-bottom, time left-to-right
+// RotationTimeline — Gantt chronology matching Planner style (percentage-based)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
@@ -59,73 +59,61 @@ export default function RotationTimeline({ rotationTimeline }) {
   });
   rows.forEach((r, i) => { if (r.type === 'buff' && !usedBuffIdx.has(i)) ordered.push(r); });
 
-  // Ticks
+  // Tick marks
   const tickInterval = totalTime <= 10 ? 1 : 5;
   const ticks = [];
   for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
 
-  const tableWidth = Math.max(600, totalTime * 24 + 64);
-
   return (
-    <div className="kuro-card" style={{ overflow: 'visible' }}>
-      <div style={{
-        padding: 'var(--card-padding)',
-        overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        borderRadius: 16,
-      }}>
-        <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
-        <table style={{ width: tableWidth, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: 64 }} />
-            <col />
-          </colgroup>
-          <thead>
-            <tr>
-              <td />
-              <td>
-                <div className="relative h-4">
-                  {ticks.map(tick => (
-                    <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
-                      style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
-                  ))}
-                </div>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            {ordered.map((row, i) => {
-              const leftPct = (row.start / totalTime) * 100;
-              const widthPct = (row.duration / totalTime) * 100;
-              const isField = row.type === 'field';
-              return (
-                <tr key={i}>
-                  <td className="align-middle pr-1.5 text-right">
-                    <span className={`text-[9px] ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
-                      {isField ? row.label : '↳'}
-                    </span>
-                  </td>
-                  <td className="relative" style={{ height: 22 }}>
-                    {ticks.map(tick => (
-                      <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
-                        style={{ left: `${(tick / totalTime) * 100}%` }} />
-                    ))}
-                    <div className={`absolute flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
-                      style={{
-                        left: `${leftPct}%`, width: `${widthPct}%`,
-                        top: 1, bottom: 1,
-                        background: `${row.color}${isField ? '30' : '18'}`,
-                        border: `1px solid ${row.color}${isField ? '60' : '35'}`,
-                      }}>
-                      <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
-                        style={{ color: row.color }}>{row.detail}</span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+    <div>
+      <div style={{ fontSize: 'var(--font-base)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}>
+        Rotation ({totalTime}s)
+      </div>
+
+      {/* Time scale — same pattern as Planner chronology day scale */}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${totalTime}, 1fr)`, marginBottom: '4px' }}>
+        {Array.from({ length: totalTime }, (_, i) => {
+          const sec = i + 1;
+          const show = sec === 1 || sec % tickInterval === 0 || sec === totalTime;
+          return <span key={i} style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: 'center' }}>{show ? sec : ''}</span>;
+        })}
+      </div>
+
+      {/* Bars — same pattern as Planner chronology bars */}
+      <div style={{ position: 'relative' }}>
+        {ordered.map((row, i) => {
+          const leftPct = (row.start / totalTime) * 100;
+          const widthPct = (row.duration / totalTime) * 100;
+          const isField = row.type === 'field';
+          return (
+            <div key={i} title={`${row.label}: ${row.detail}`} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '2px' }}>
+              <div style={{
+                position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`,
+                height: '100%', borderRadius: 'var(--radius-sm)',
+                background: isField
+                  ? `linear-gradient(to right, ${row.color}45, ${row.color}28)`
+                  : `linear-gradient(to right, ${row.color}25, ${row.color}15)`,
+                border: `1px solid ${row.color}${isField ? '90' : '50'}`,
+                boxShadow: isField ? `0 0 6px ${row.color}30` : 'none',
+                display: 'flex', alignItems: 'center', padding: '0 4px',
+                overflow: 'hidden', minWidth: '0',
+              }}>
+                <span style={{
+                  fontSize: 'var(--font-sm)', color: row.color, fontWeight: isField ? 700 : 500,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1,
+                }}>
+                  {isField ? row.label : row.detail}
+                </span>
+                <span style={{
+                  fontSize: 'var(--font-xs)', color: row.color, fontFamily: 'var(--font-data)',
+                  opacity: 0.6, marginLeft: '4px', flexShrink: 0,
+                }}>
+                  {isField ? `${row.duration}s` : row.label}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
