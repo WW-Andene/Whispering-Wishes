@@ -44,7 +44,7 @@ export default function TeamSelector({
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
                             <h3 className="text-white text-md font-semibold">Select Resonator</h3>
-                            <p className="text-gray-500 text-sm">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
+                            <p className="text-gray-500 text-base">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
                           <button onClick={() => setTeamSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
                             <X size={18} />
@@ -155,7 +155,7 @@ export default function TeamSelector({
                           </div>
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (
-                            <div className="flex items-center gap-1.5 text-sm text-orange-400">
+                            <div className="flex items-center gap-1.5 text-base text-orange-400">
                               <Star size={10} className="text-orange-400" fill="currentColor" />
                               <span>Orange glow = recommended teammate</span>
                             </div>
@@ -205,7 +205,7 @@ export default function TeamSelector({
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                                   {/* Element dot */}
-                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white flex items-center justify-center"
+                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-base font-bold text-white flex items-center justify-center"
                                     style={{ background: getElementColor(el) }}>
                                     {el?.[0]}
                                   </div>
@@ -222,18 +222,18 @@ export default function TeamSelector({
                                   {/* Recommended badge */}
                                   {isRecommended && (
                                     <div className="absolute top-0.5 right-0.5 z-10">
-                                      <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>
+                                      <span className="text-base px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>
                                     </div>
                                   )}
                                   {/* Role tag */}
                                   {cd?.role && (
                                     <div className="absolute bottom-4 inset-x-0 flex justify-center">
-                                      <span className="text-[8px] px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span>
+                                      <span className="text-base px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span>
                                     </div>
                                   )}
                                   {/* Name */}
                                   <div className="absolute bottom-0 inset-x-0 p-1 z-10">
-                                    <div className="text-white text-[8px] font-medium truncate text-center leading-tight">{name}</div>
+                                    <div className="text-white text-base font-medium truncate text-center leading-tight">{name}</div>
                                   </div>
                                 </button>
                               );

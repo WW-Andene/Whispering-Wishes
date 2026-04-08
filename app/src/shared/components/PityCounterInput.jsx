@@ -15,7 +15,7 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
       <div className="flex-1">
         <div className="text-md font-medium mb-1" style={{ color }}>{label} <span className="text-gray-500  cursor-help" title="Soft pity starts at pull 64 (increasing rate). Hard pity at pull 80 (guaranteed 5★). 50/50 means a 50% chance for the featured character; losing gives a guarantee next time.">ⓘ</span></div>
         <input type="range" min="0" max="79" value={pity} onChange={e => onPityChange(+e.target.value)} className={`kuro-slider ${sliderClass}`} aria-label={`${ariaPrefix} pity`} />
-        {pity >= SOFT_PITY_START && <p className={`text-sm ${softPityClass}`} style={{ color: softColor }}><SoftPityIcon size={10} className="inline mr-1" style={{ color: softColor, filter: `drop-shadow(0 0 4px ${softColor})` }} />Soft Pity Zone!</p>}
+        {pity >= SOFT_PITY_START && <p className={`text-base ${softPityClass}`} style={{ color: softColor }}><SoftPityIcon size={10} className="inline mr-1" style={{ color: softColor, filter: `drop-shadow(0 0 4px ${softColor})` }} />Soft Pity Zone!</p>}
       </div>
       <div className="text-right">
         <span style={{ color: pity >= SOFT_PITY_START ? softColor : color }} className={`text-3xl kuro-number ${pity >= SOFT_PITY_START ? softPityClass : ''}`}>{pity}</span>

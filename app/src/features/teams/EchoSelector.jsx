@@ -77,7 +77,7 @@ export default function EchoSelector({
                 <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div>
                     <h3 className="text-white font-semibold text-md">Select Echo</h3>
-                    <p className="text-gray-400 text-sm">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
+                    <p className="text-gray-400 text-base">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                   </div>
                   <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
                 </div>
@@ -92,7 +92,7 @@ export default function EchoSelector({
                         { value: 'all', label: 'All Sets' },
                         ...availableSets.map(s => ({ value: s, label: s })),
                       ]}
-                      className="flex-1 text-sm"
+                      className="flex-1 text-base"
                     />
                     <KuroSelect
                       value={echoBuffFilter}
@@ -101,7 +101,7 @@ export default function EchoSelector({
                         { value: 'all', label: 'All Buffs' },
                         ...availableBuffs.map(b => ({ value: b, label: b })),
                       ]}
-                      className="flex-1 text-sm"
+                      className="flex-1 text-base"
                     />
                     {hasFilters && (
                       <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="kuro-btn kuro-btn-sm">Clear</button>
@@ -109,7 +109,7 @@ export default function EchoSelector({
                   </div>
                   {/* Recommendation indicator */}
                   {recommendedEchoes.size > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm text-orange-400">
+                    <div className="flex items-center gap-1.5 text-base text-orange-400">
                       <Star size={10} className="text-orange-400" fill="currentColor" />
                       <span>Orange glow = recommended for {echoSelectorTarget.charName}</span>
                     </div>
@@ -134,7 +134,7 @@ export default function EchoSelector({
                         setEchoSetFilter('all'); setEchoBuffFilter('all');
                         haptic.light();
                       }}
-                      className="w-full p-2 rounded-lg border border-dashed border-white/15 text-sm text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
+                      className="w-full p-2 rounded-lg border border-dashed border-white/15 text-base text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
                       style={{ background: 'var(--bg-btn)' }}
                     >
                       ✕ Unequip echo
@@ -177,11 +177,11 @@ export default function EchoSelector({
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-white text-base font-semibold truncate">{name}</span>
-                                  {isRec && <span className="text-[8px] px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
+                                  {isRec && <span className="text-base px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                  {buffs.map(b => <span key={b} className="text-sm text-gray-400">{b}</span>)}
-                                  {ed?.sets && <span className="text-sm text-gray-500">· {ed.sets.join(', ')}</span>}
+                                  {buffs.map(b => <span key={b} className="text-base text-gray-400">{b}</span>)}
+                                  {ed?.sets && <span className="text-base text-gray-500">· {ed.sets.join(', ')}</span>}
                                 </div>
                               </div>
                             </div>
@@ -277,7 +277,7 @@ export default function EchoSelector({
                     )}
                     <div className="min-w-0">
                       <h3 className="text-white font-semibold text-md truncate">{echoName}</h3>
-                      <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
+                      <p className="text-gray-400 text-base">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>
                   <button onClick={() => setEchoStatPanel(null)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>
@@ -294,7 +294,7 @@ export default function EchoSelector({
                         })}
                       </div>
                       {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
-                        <div className="flex items-center gap-1 mt-1 text-sm text-orange-400/80">
+                        <div className="flex items-center gap-1 mt-1 text-base text-orange-400/80">
                           <Star size={8} className="text-orange-400" fill="currentColor" />
                           <span>Recommended set for {charName}</span>
                         </div>
@@ -309,7 +309,7 @@ export default function EchoSelector({
                       <div className="kuro-detail-box">
                         {echoData.dmg > 0 && (
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm text-gray-400">Damage:</span>
+                            <span className="text-base text-gray-400">Damage:</span>
                             <span className="text-base font-bold text-yellow-400">{echoData.dmg}%</span>
                             {echoData.element && echoData.element !== 'Healing' && (
                               <span className="kuro-badge kuro-badge-neutral">{echoData.element}</span>
@@ -317,9 +317,9 @@ export default function EchoSelector({
                           </div>
                         )}
                         {echoData.dmg === 0 && (
-                          <div className="text-sm text-gray-500 mb-1">Utility / Healing (no damage)</div>
+                          <div className="text-base text-gray-500 mb-1">Utility / Healing (no damage)</div>
                         )}
-                        <p className="text-sm text-gray-400 leading-relaxed">{echoData.desc}</p>
+                        <p className="text-base text-gray-400 leading-relaxed">{echoData.desc}</p>
                       </div>
                     </div>
                   )}
@@ -339,7 +339,7 @@ export default function EchoSelector({
                             Other: 10%
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
+                        <p className="text-base text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
                       </div>
                     </div>
                   )}
