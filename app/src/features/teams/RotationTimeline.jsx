@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// RotationTimeline — Gantt chronology matching Planner style (percentage-based)
+// RotationTimeline — Visual rotation timeline with on-field segments + buff windows
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
@@ -18,103 +18,63 @@ const STAT_LABELS = {
 export default function RotationTimeline({ rotationTimeline }) {
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 
-  const { segments, buffs, totalTime } = rotationTimeline;
-
-  // Build looping segments to fill full rotation
-  const loopDur = segments.reduce((s, seg) => s + seg.duration, 0);
-  const looped = [];
-  let t = 0;
-  let idx = 0;
-  while (t < totalTime && loopDur > 0) {
-    const seg = segments[idx % segments.length];
-    const dur = Math.min(seg.duration, totalTime - t);
-    looped.push({ ...seg, start: t, duration: dur });
-    t += dur;
-    idx++;
-  }
-
-  // Build rows
-  const rows = [];
-  looped.forEach(seg => {
-    rows.push({ label: seg.name, start: seg.start, duration: seg.duration, color: ELEMENT_COLORS[seg.element] || '#6b7280', type: 'field', detail: `${seg.duration}s` });
-  });
-  buffs.forEach(buff => {
-    const color = ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
-    const clampedDur = Math.min(buff.duration, totalTime - buff.start);
-    if (clampedDur > 0) rows.push({ label: buff.source, start: buff.start, duration: clampedDur, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
-  });
-
-  // Group: each on-field segment followed by its buffs
-  const ordered = [];
-  const usedBuffIdx = new Set();
-  looped.forEach(seg => {
-    const fieldRow = rows.find(r => r.type === 'field' && r.start === seg.start && r.label === seg.name);
-    if (fieldRow) ordered.push(fieldRow);
-    const segEnd = seg.start + seg.duration;
-    const myBuffs = rows.map((r, i) => ({ ...r, _idx: i }))
-      .filter(r => r.type === 'buff' && r.label === seg.name && !usedBuffIdx.has(r._idx)
-        && (Math.abs(r.start - seg.start) < 0.5 || Math.abs(r.start - segEnd) < 0.5))
-      .sort((a, b) => a.start - b.start);
-    myBuffs.forEach(b => { usedBuffIdx.add(b._idx); ordered.push(b); });
-  });
-  rows.forEach((r, i) => { if (r.type === 'buff' && !usedBuffIdx.has(i)) ordered.push(r); });
-
-  // Tick marks
-  const tickInterval = totalTime <= 10 ? 1 : 5;
-  const ticks = [];
-  for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
-
   return (
-    <div>
-      <div style={{ fontSize: 'var(--font-base)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}>
-        Rotation ({totalTime}s)
+    <div className="mt-3 kuro-detail-box">
+      <div className="kuro-section-label mb-2">
+        Rotation Timeline ({rotationTimeline.totalTime}s)
       </div>
 
-      {/* Time scale — same pattern as Planner chronology day scale */}
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${totalTime}, 1fr)`, marginBottom: '4px' }}>
-        {Array.from({ length: totalTime }, (_, i) => {
-          const sec = i + 1;
-          const show = sec === 1 || sec % tickInterval === 0 || sec === totalTime;
-          return <span key={i} style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: 'center' }}>{show ? sec : ''}</span>;
-        })}
-      </div>
-
-      {/* Bars — same pattern as Planner chronology bars */}
-      <div style={{ position: 'relative' }}>
-        {ordered.map((row, i) => {
-          const leftPct = (row.start / totalTime) * 100;
-          const widthPct = (row.duration / totalTime) * 100;
-          const isField = row.type === 'field';
+      {/* Segments bar */}
+      <div className="flex rounded-lg overflow-hidden h-6 mb-2">
+        {rotationTimeline.segments.map((seg, i) => {
+          const pct = (seg.duration / rotationTimeline.totalTime) * 100;
+          const color = ELEMENT_COLORS[seg.element] || '#6b7280';
           return (
-            <div key={i} title={`${row.label}: ${row.detail}`} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '2px' }}>
-              <div style={{
-                position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`,
-                height: '100%', borderRadius: 'var(--radius-sm)',
-                background: isField
-                  ? `linear-gradient(to right, ${row.color}45, ${row.color}28)`
-                  : `linear-gradient(to right, ${row.color}25, ${row.color}15)`,
-                border: `1px solid ${row.color}${isField ? '90' : '50'}`,
-                boxShadow: isField ? `0 0 6px ${row.color}30` : 'none',
-                display: 'flex', alignItems: 'center', padding: '0 4px',
-                overflow: 'hidden', minWidth: '0',
-              }}>
-                <span style={{
-                  fontSize: 'var(--font-sm)', color: row.color, fontWeight: isField ? 700 : 500,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1,
-                }}>
-                  {isField ? row.label : row.detail}
-                </span>
-                <span style={{
-                  fontSize: 'var(--font-xs)', color: row.color, fontFamily: 'var(--font-data)',
-                  opacity: 0.6, marginLeft: '4px', flexShrink: 0,
-                }}>
-                  {isField ? `${row.duration}s` : row.label}
-                </span>
-              </div>
+            <div key={i} className="flex items-center justify-center relative"
+              style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
+              title={`${seg.name}: ${seg.duration}s on-field`}>
+              <span className="text-[8px] font-bold truncate px-0.5" style={{ color }}>{seg.name}</span>
             </div>
           );
         })}
       </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {rotationTimeline.segments.map((seg, i) => {
+          const color = ELEMENT_COLORS[seg.element] || '#6b7280';
+          return (
+            <div key={i} className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+              <span className="text-[10px] text-gray-400">{seg.name} <span className="text-gray-500">{seg.duration}s</span></span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Buff windows */}
+      {rotationTimeline.buffs.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-[var(--border-medium)]/30 space-y-1">
+          <div className="text-[10px] text-gray-500 mb-1">Buff Windows</div>
+          {rotationTimeline.buffs.slice(0, 6).map((buff, i) => {
+            const startPct = Math.min((buff.start / rotationTimeline.totalTime) * 100, 100);
+            const durPct = Math.min((buff.duration / rotationTimeline.totalTime) * 100, 100 - startPct);
+            return (
+              <div key={i} className="flex items-center gap-1.5">
+                <span className="text-[8px] text-gray-500 w-16 truncate text-right" title={buff.source}>{buff.source}</span>
+                <div className="flex-1 h-2.5 rounded-full bg-white/5 relative overflow-hidden">
+                  <div className="absolute h-full rounded-full bg-emerald-500/40 flex items-center justify-center" style={{ left: `${startPct}%`, width: `${durPct}%` }}>
+                    <span className="text-[7px] text-emerald-300 font-medium truncate px-0.5">{STAT_LABELS[buff.stat] || buff.stat} +{buff.value}%</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {rotationTimeline.buffs.length > 6 && (
+            <div className="text-[8px] text-gray-500 text-center mt-0.5">+{rotationTimeline.buffs.length - 6} more</div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
