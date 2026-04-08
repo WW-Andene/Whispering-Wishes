@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef 
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
-import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -50,7 +50,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
       const scaling = d.statScaling || 'ATK';
       const baseStat = scaling === 'HP' ? (d.baseHp || 0) : scaling === 'DEF' ? (d.baseDef || 0) : charAtk + weapAtk;
-      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel };
+      const mainEchoName = eq?.echoes?.[0]?.name || '';
+      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel, mainEchoName };
     }).filter(Boolean);
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
@@ -895,6 +896,37 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             Object.entries(wpn.pv).forEach(([stat, val]) => {
               buffs.push({ source: m.weapName, owner: m.name, stat, value: val, start: t, duration: onField });
             });
+          }
+        }
+
+        // ── 4-cost echo active skill buffs ──
+        if (m.mainEchoName) {
+          const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
+          if (esb) {
+            const echoLabel = m.mainEchoName.length > 18 ? m.mainEchoName.split(/[:\s-]+/).slice(0, 2).join(' ') : m.mainEchoName;
+            const target = esb.target || 'self';
+            if (target === 'next') {
+              // Outro-triggered echo buff → fires when character swaps out, applies to next
+              esb.buffs.forEach(b => {
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo' });
+              });
+            } else if (target === 'team') {
+              // Team-wide buff → active during field time, persists for duration
+              esb.buffs.forEach(b => {
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: esb.duration || 15, type: 'echo' });
+              });
+            } else if (esb.passive) {
+              // Passive main-slot buff → always active during field time
+              esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: onField, type: 'echo' });
+              });
+            } else {
+              // Standard active skill buff → used during field time
+              esb.buffs.forEach(b => {
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo' });
+              });
+            }
           }
         }
 
