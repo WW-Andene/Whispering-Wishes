@@ -8,7 +8,7 @@ const APP_VERSION = '3.5.0';
 const MAX_IMPORT_SIZE_MB = 5; // P7-FIX: Import file size limit constant (7E)
 
 // Header icon (Radiant Tide emblem)
-const HEADER_ICON = './Radiant_Tide.png';
+const HEADER_ICON = './WW_Radiant_Tide.png.png';
 // Previously was base64 data URI — replaced with public asset
 
 // Each server has its own timezone for daily/weekly resets (04:00 local)
