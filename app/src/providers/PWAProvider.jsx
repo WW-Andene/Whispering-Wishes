@@ -3,7 +3,7 @@
 // PWA infrastructure: install prompt, online status, meta tags, service worker.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useMemo, useCallback, useEffect, createContext, useContext, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
 import { HEADER_ICON } from '../data/constants.js';
 
@@ -87,16 +87,10 @@ const PWAProvider = ({ children }) => {
       setIsInstalled(true);
     }
 
-    // Pick up early-captured install prompt (fires before React mounts — see main.jsx)
-    if (window.__pwaInstallPrompt) {
-      setInstallPrompt(window.__pwaInstallPrompt);
-      window.__pwaInstallPrompt = null;
-    }
-
-    // Listen for future install prompts — don't suppress the browser's native install bar
+    // Listen for install prompt
     const handleBeforeInstall = (e) => {
+      e.preventDefault();
       setInstallPrompt(e);
-      window.__pwaInstallPrompt = null;
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
@@ -180,7 +174,7 @@ const PWAProvider = ({ children }) => {
           You are offline - some features may be limited
         </div>
       )}
-      {/* Install prompt banner — native (only when browser supports it) */}
+      {/* Install prompt banner — native */}
       {installPrompt && !isInstalled && !isInIframe && (
         <InstallBanner
           subtitle="Add to home screen for the best experience"
@@ -198,7 +192,7 @@ const PWAProvider = ({ children }) => {
           onDismiss={() => setIframeBannerDismissed(true)}
         />
       )}
-      {/* Install guide modal — platform-specific instructions */}
+      {/* Install guide modal — platform-specific instructions (opened via logo tap) */}
       {showInstallGuide && (
         <div className="fixed inset-0 z-[9900] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInstallGuide(false)}>
           <div className="w-[300px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
@@ -235,34 +229,34 @@ function InstallSteps() {
   if (isIOS || isSafari) {
     platform = 'Safari / iOS';
     steps = [
-      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">\u2191</span> in the toolbar</>,
+      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">{'\u2191'}</span> in the toolbar</>,
       <>Scroll down and tap <b className="text-white">Add to Home Screen</b></>,
       <>Tap <b className="text-white">Add</b> to confirm</>,
     ];
   } else if (isFirefox) {
     platform = 'Firefox';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">\u22EE</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">{'\u22EE'}</span></>,
       <>Tap <b className="text-white">Install</b> or <b className="text-white">Add to Home Screen</b></>,
     ];
   } else if (isSamsung) {
     platform = 'Samsung Internet';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">\u2630</span></>,
-      <>Tap <b className="text-white">Add page to</b> \u2192 <b className="text-white">Home screen</b></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">{'\u2630'}</span></>,
+      <>Tap <b className="text-white">Add page to</b> {'\u2192'} <b className="text-white">Home screen</b></>,
     ];
   } else if (isAndroid) {
     platform = 'Chrome / Android';
     steps = [
-      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">\u22EE</span></>,
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">{'\u22EE'}</span></>,
       <>Tap <b className="text-white">Install app</b> or <b className="text-white">Add to Home screen</b></>,
       <>Tap <b className="text-white">Install</b> to confirm</>,
     ];
   } else {
     platform = 'Desktop';
     steps = [
-      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">\u2295</span> in the address bar</>,
-      <>Or click <b className="text-white">\u22EE</b> \u2192 <b className="text-white">Install Whispering Wishes</b></>,
+      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">{'\u2295'}</span> in the address bar</>,
+      <>Or click <b className="text-white">{'\u22EE'}</b> {'\u2192'} <b className="text-white">Install Whispering Wishes</b></>,
     ];
   }
 
