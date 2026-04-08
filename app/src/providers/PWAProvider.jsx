@@ -93,9 +93,8 @@ const PWAProvider = ({ children }) => {
       window.__pwaInstallPrompt = null;
     }
 
-    // Listen for future install prompts
+    // Listen for future install prompts — don't suppress the browser's native install bar
     const handleBeforeInstall = (e) => {
-      e.preventDefault();
       setInstallPrompt(e);
       window.__pwaInstallPrompt = null;
     };

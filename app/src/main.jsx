@@ -5,9 +5,9 @@ import "./index.css";
 
 // Capture beforeinstallprompt EARLY — the browser fires it before React mounts,
 // so useEffect listeners miss it. Store on window for PWAProvider to pick up.
+// Do NOT call e.preventDefault() here — let the browser show its native install bar.
 window.__pwaInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
   window.__pwaInstallPrompt = e;
 });
 
