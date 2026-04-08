@@ -1576,23 +1576,28 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               </div>
               <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
                 <div className="text-gray-400 text-sm">Synergy</div>
-                <div className={`text-xl font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}%</div>
+                <div className={`text-xl font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400 synergy-high' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}%</div>
                 <div className="text-gray-500 text-sm">team comp</div>
               </div>
             </div>
 
             {/* DPS Breakdown per character */}
             {memberDps && (
-              <div className="mt-2 space-y-1">
-                {memberDps.map(m => (
-                  <div key={m.name} className="flex items-center gap-2">
-                    <span className="text-sm text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
-                    <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-l-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
+              <div className="mt-2 p-2 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="text-gray-500 text-sm mb-1">Damage Distribution</div>
+                {memberDps.map(m => {
+                  const mData = members.find(mem => mem.name === m.name);
+                  const elColor = mData ? getElementColor(mData.d.element) : '#67e8f9';
+                  return (
+                    <div key={m.name} className="flex items-center gap-2">
+                      <span className="text-sm text-gray-300 w-24 truncate font-medium" title={m.name}>{m.name}</span>
+                      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <div className="h-full rounded-full dps-bar" style={{ width: `${m.pct}%`, background: `linear-gradient(90deg, ${elColor}30, ${elColor}60)`, boxShadow: `0 0 8px ${elColor}30` }} />
+                      </div>
+                      <span className="text-sm font-medium w-10 text-right" style={{ color: elColor }}>{m.pct}%</span>
                     </div>
-                    <span className="text-sm text-gray-500 w-8 text-right">{m.pct}%</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

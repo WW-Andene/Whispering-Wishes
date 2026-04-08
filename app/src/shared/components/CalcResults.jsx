@@ -20,7 +20,7 @@ const CalcResultsCard = memo(({ title, stats, accentStatClass, copiesLabel, copi
     <CardHeader>{title}</CardHeader>
     <CardBody className="space-y-3">
       <div className="grid grid-cols-2 gap-2">
-        <div className={`kuro-stat ${accentStatClass}`}>
+        <div className={`kuro-stat prob-result ${accentStatClass}`}>
           <div className={`text-4xl kuro-number ${getSuccessColor(stats.successRate)}`}>{stats.successRateBelow01 ? '<0.1' : stats.successRate}%</div>
           <div className="text-gray-400 text-sm mt-1">P(≥{copies} copies)</div>
         </div>

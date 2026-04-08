@@ -298,7 +298,7 @@ function CollectionTab({
                   <span className="text-yellow-400 text-xl font-bold kuro-number">{pct}%</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
-                  <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
+                  <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300 progress-fill" style={{width: `${pct}%`}} />
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
                   <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Resonator</div></div>

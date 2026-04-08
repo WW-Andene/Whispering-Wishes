@@ -128,7 +128,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
         <div className="text-gray-400 text-2xs uppercase tracking-wider mt-0.5">Min</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
-      <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
+      <div className="px-2.5 py-1.5 text-center countdown-tick" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
         <div className="text-gray-400 text-2xs uppercase tracking-wider mt-0.5">Sec</div>
       </div>

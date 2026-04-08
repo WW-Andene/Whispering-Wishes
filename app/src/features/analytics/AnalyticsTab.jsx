@@ -374,13 +374,13 @@ function AnalyticsTab({
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': '12s'}}>
                           <div className="luck-badge-inner rounded-xl px-4 py-3 text-center" style={{minWidth: '90px'}}>
-                            <div className="text-[16px] font-bold tracking-widest uppercase mb-1" style={{color: luckRating.color}}>{luckRating.tier}</div>
-                            <div className="text-[24px] font-extrabold kuro-number" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`}}>{luckRating.rating}</div>
+                            <div className="text-[15px] font-bold tracking-[0.2em] uppercase mb-1" style={{color: luckRating.color, fontFamily: 'var(--font-accent)'}}>{luckRating.tier}</div>
+                            <div className="text-[26px] font-bold" style={{color: luckRating.color, textShadow: `0 0 20px ${luckRating.color}40`, fontFamily: 'var(--font-accent)', letterSpacing: '0.05em'}}>{luckRating.rating}</div>
                           </div>
                         </div>
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }}>
-                            <div className="h-full rounded-full transition-[width] duration-300" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
+                            <div className="h-full rounded-full transition-[width] duration-300 progress-fill" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
                           </div>
                           <div className="flex items-baseline justify-between">
                             <span className="text-gray-400 text-sm">Avg Pity</span>
