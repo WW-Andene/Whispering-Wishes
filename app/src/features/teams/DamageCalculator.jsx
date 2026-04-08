@@ -818,6 +818,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
             }
           });
+          (bt.selfBuffs || []).forEach(b => {
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+          });
+          (bt.weaponBuffs || []).forEach(b => {
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+          });
         }
         t += onField;
       });
