@@ -47,14 +47,6 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     return () => document.removeEventListener('keydown', handler);
   }, [open]);
 
-  // Close on scroll
-  useEffect(() => {
-    if (!open) return;
-    const handler = () => setOpen(false);
-    window.addEventListener('scroll', handler, true);
-    return () => window.removeEventListener('scroll', handler, true);
-  }, [open]);
-
   // Focus the highlighted option when focusIdx changes
   useEffect(() => {
     if (open && focusIdx >= 0 && optionRefs.current[focusIdx]) {
