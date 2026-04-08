@@ -42,10 +42,13 @@ const PWAContext = createContext(null);
 const usePWA = () => useContext(PWAContext);
 
 // Meta tag definitions for PWA support
-// viewport, theme-color, and apple-mobile-web-app-* are already in index.html — only inject extras here
 const PWA_META_TAGS = [
+  { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
   { name: 'mobile-web-app-capable', content: 'yes' },
+  { name: 'apple-mobile-web-app-capable', content: 'yes' },
+  { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
   { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
+  { name: 'theme-color', content: '#edaf18' },
   { name: 'msapplication-TileColor', content: '#edaf18' },
   { name: 'msapplication-navbutton-color', content: '#edaf18' }
 ];
