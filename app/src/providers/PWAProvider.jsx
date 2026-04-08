@@ -3,7 +3,7 @@
 // PWA infrastructure: install prompt, online status, meta tags, service worker.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
+import { useState, useMemo, useCallback, useEffect, createContext, useContext, useRef } from 'react';
 import { X } from 'lucide-react';
 import { HEADER_ICON } from '../data/constants.js';
 
@@ -153,11 +153,29 @@ const PWAProvider = ({ children }) => {
     try { return window.self !== window.top; } catch { return true; }
   });
   const [iframeBannerDismissed, setIframeBannerDismissed] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  // Track whether native prompt ever fired — if not, show manual guide banner
+  const [nativePromptAvailable, setNativePromptAvailable] = useState(false);
+  const [manualBannerDismissed, setManualBannerDismissed] = useState(() => {
+    try { return sessionStorage.getItem('ww-install-dismissed') === '1'; } catch { return false; }
+  });
+
+  // When installPrompt is set, mark native as available
+  useEffect(() => { if (installPrompt) setNativePromptAvailable(true); }, [installPrompt]);
+
+  // Show manual banner = not installed, not iframe, no native prompt, not dismissed
+  const showManualBanner = !isInstalled && !isInIframe && !nativePromptAvailable && !manualBannerDismissed && !installPrompt;
+
+  const dismissManualBanner = useCallback(() => {
+    setManualBannerDismissed(true);
+    try { sessionStorage.setItem('ww-install-dismissed', '1'); } catch {}
+  }, []);
 
   const pwaValue = useMemo(() => ({
     canInstall: !!installPrompt && !isInstalled,
     isInstalled,
     promptInstall,
+    showInstallGuide: () => setShowInstallGuide(true),
   }), [installPrompt, isInstalled, promptInstall]);
 
   return (
@@ -178,6 +196,15 @@ const PWAProvider = ({ children }) => {
           onDismiss={() => setInstallPrompt(null)}
         />
       )}
+      {/* Install prompt banner — manual fallback (no native prompt available) */}
+      {showManualBanner && (
+        <InstallBanner
+          subtitle="Add to home screen for the best experience"
+          actionLabel="How to"
+          onAction={() => setShowInstallGuide(true)}
+          onDismiss={dismissManualBanner}
+        />
+      )}
       {/* Install prompt banner — iframe fallback */}
       {isInIframe && !isInstalled && !iframeBannerDismissed && (
         <InstallBanner
@@ -187,8 +214,85 @@ const PWAProvider = ({ children }) => {
           onDismiss={() => setIframeBannerDismissed(true)}
         />
       )}
+      {/* Install guide modal — platform-specific instructions */}
+      {showInstallGuide && (
+        <div className="fixed inset-0 z-[9900] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInstallGuide(false)}>
+          <div className="w-[300px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+                <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div className="text-white font-semibold text-sm">Install Whispering Wishes</div>
+                <div className="text-gray-500 text-[10px]">Add to your home screen</div>
+              </div>
+            </div>
+            <InstallSteps />
+            <button onClick={() => setShowInstallGuide(false)} className="mt-4 w-full py-2 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors">
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </PWAContext.Provider>
   );
 };
+
+/** Platform-specific install instructions */
+function InstallSteps() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+  const isFirefox = /Firefox/.test(ua);
+  const isSamsung = /SamsungBrowser/.test(ua);
+  const isAndroid = /Android/.test(ua);
+
+  let platform, steps;
+  if (isIOS || isSafari) {
+    platform = 'Safari / iOS';
+    steps = [
+      <>Tap the <b className="text-white">Share</b> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">\u2191</span> in the toolbar</>,
+      <>Scroll down and tap <b className="text-white">Add to Home Screen</b></>,
+      <>Tap <b className="text-white">Add</b> to confirm</>,
+    ];
+  } else if (isFirefox) {
+    platform = 'Firefox';
+    steps = [
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">\u22EE</span></>,
+      <>Tap <b className="text-white">Install</b> or <b className="text-white">Add to Home Screen</b></>,
+    ];
+  } else if (isSamsung) {
+    platform = 'Samsung Internet';
+    steps = [
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">\u2630</span></>,
+      <>Tap <b className="text-white">Add page to</b> \u2192 <b className="text-white">Home screen</b></>,
+    ];
+  } else if (isAndroid) {
+    platform = 'Chrome / Android';
+    steps = [
+      <>Tap the <b className="text-white">menu</b> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">\u22EE</span></>,
+      <>Tap <b className="text-white">Install app</b> or <b className="text-white">Add to Home screen</b></>,
+      <>Tap <b className="text-white">Install</b> to confirm</>,
+    ];
+  } else {
+    platform = 'Desktop';
+    steps = [
+      <>Click the <b className="text-white">install icon</b> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">\u2295</span> in the address bar</>,
+      <>Or click <b className="text-white">\u22EE</b> \u2192 <b className="text-white">Install Whispering Wishes</b></>,
+    ];
+  }
+
+  return (
+    <div className="space-y-2 text-xs text-gray-300">
+      <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">{platform}</p>
+      {steps.map((step, i) => (
+        <div key={i} className="flex items-start gap-2">
+          <span className="text-yellow-400 font-bold shrink-0">{i + 1}.</span>
+          <span>{step}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export { PWAProvider, usePWA };
