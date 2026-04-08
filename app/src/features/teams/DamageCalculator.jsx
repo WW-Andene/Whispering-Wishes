@@ -1303,12 +1303,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               </div>
             )}
             <p className="text-[10px] text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills. Synergy is an approximate team composition score.</p>
-
-            {/* Rotation Timeline Visualizer */}
-            <RotationTimeline rotationTimeline={rotationTimeline} />
           </div>
         </CardBody>
       </Card>
+
+      {/* Rotation Timeline — outside Team Overview Card to avoid overflow:hidden clipping */}
+      <RotationTimeline rotationTimeline={rotationTimeline} />
 
       <DPSComparisonCard
         teamCompareEntries={teamCompareEntries} setTeamCompareEntries={setTeamCompareEntries}

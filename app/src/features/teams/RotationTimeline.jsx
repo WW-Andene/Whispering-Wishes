@@ -74,6 +74,7 @@ export default function RotationTimeline({ rotationTimeline }) {
     <div className="kuro-card" style={{ overflow: 'visible' }}>
       <div style={{
         padding: 'var(--card-padding)',
+        paddingBottom: 'var(--card-padding)',
         overflowX: 'auto',
         WebkitOverflowScrolling: 'touch',
         borderRadius: 16,
