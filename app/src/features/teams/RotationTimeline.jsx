@@ -33,113 +33,91 @@ export default function RotationTimeline({ rotationTimeline }) {
     idx++;
   }
 
-  // Build rows: each row is a step (on-field) or a buff, ordered by start time
+  // Build rows
   const rows = [];
-
-  // On-field segments
-  looped.forEach((seg, i) => {
-    const color = ELEMENT_COLORS[seg.element] || '#6b7280';
-    rows.push({
-      label: seg.name,
-      start: seg.start,
-      duration: seg.duration,
-      color,
-      type: 'field',
-      detail: `${seg.duration}s`,
-    });
+  looped.forEach(seg => {
+    rows.push({ label: seg.name, start: seg.start, duration: seg.duration, color: ELEMENT_COLORS[seg.element] || '#6b7280', type: 'field', detail: `${seg.duration}s` });
   });
-
-  // Buffs
   buffs.forEach(buff => {
     const color = ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
     const clampedDur = Math.min(buff.duration, totalTime - buff.start);
-    if (clampedDur > 0) {
-      rows.push({
-        label: buff.source,
-        start: buff.start,
-        duration: clampedDur,
-        color,
-        type: 'buff',
-        detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%`,
-      });
-    }
+    if (clampedDur > 0) rows.push({ label: buff.source, start: buff.start, duration: clampedDur, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
 
-  // Group: each on-field segment followed by its buffs sorted by start time
+  // Group: each on-field segment followed by its buffs
   const ordered = [];
   const usedBuffIdx = new Set();
-  // For each looped segment, attach its buffs right after
   looped.forEach(seg => {
     const fieldRow = rows.find(r => r.type === 'field' && r.start === seg.start && r.label === seg.name);
     if (fieldRow) ordered.push(fieldRow);
-    // Find buffs from this character that fire during/after this segment
     const segEnd = seg.start + seg.duration;
-    const myBuffs = rows
-      .map((r, idx) => ({ ...r, _idx: idx }))
+    const myBuffs = rows.map((r, i) => ({ ...r, _idx: i }))
       .filter(r => r.type === 'buff' && r.label === seg.name && !usedBuffIdx.has(r._idx)
         && (Math.abs(r.start - seg.start) < 0.5 || Math.abs(r.start - segEnd) < 0.5))
       .sort((a, b) => a.start - b.start);
     myBuffs.forEach(b => { usedBuffIdx.add(b._idx); ordered.push(b); });
   });
-  // Append any remaining buffs not attached to a segment
-  rows.forEach((r, idx) => { if (r.type === 'buff' && !usedBuffIdx.has(idx)) ordered.push(r); });
+  rows.forEach((r, i) => { if (r.type === 'buff' && !usedBuffIdx.has(i)) ordered.push(r); });
 
-  // Time axis ticks
+  // Ticks
   const tickInterval = totalTime <= 10 ? 1 : 5;
   const ticks = [];
   for (let i = 0; i <= totalTime; i += tickInterval) ticks.push(i);
 
+  const barWidth = Math.max(400, totalTime * 20);
+
   return (
     <div className="mt-3 kuro-detail-box">
-      <div className="kuro-section-label mb-2">
-        Rotation ({totalTime}s)
-      </div>
+      <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
 
-      {/* Scrollable chart */}
-      <div className="overflow-x-auto scrollbar-hide -mx-1 px-1" style={{ minWidth: 0 }}>
-        <div style={{ minWidth: `${Math.max(500, totalTime * 25)}px` }}>
-          <div className="flex">
-            <div className="w-16 flex-shrink-0" />
-            <div className="flex-1 relative h-3 mb-0.5">
+      {/* Two-column layout: sticky labels | scrollable bars */}
+      <div className="flex">
+        {/* Labels column */}
+        <div className="flex-shrink-0 w-16">
+          <div className="h-4" /> {/* spacer for time axis */}
+          {ordered.map((row, i) => (
+            <div key={i} className="h-5 flex items-center justify-end pr-1.5 mb-0.5">
+              <span className={`text-[9px] truncate ${row.type === 'field' ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
+                {row.type === 'field' ? row.label : '↳'}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Scrollable bars column */}
+        <div className="flex-1 overflow-x-auto scrollbar-hide min-w-0">
+          <div style={{ width: barWidth }}>
+            {/* Time axis */}
+            <div className="relative h-4">
               {ticks.map(tick => (
                 <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
                   style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
               ))}
             </div>
-          </div>
 
-          {/* Rows */}
-          <div className="space-y-0.5">
-        {ordered.map((row, i) => {
-          const leftPct = (row.start / totalTime) * 100;
-          const widthPct = (row.duration / totalTime) * 100;
-          const isField = row.type === 'field';
-          return (
-            <div key={i} className="flex items-center">
-              <span className={`text-[9px] w-16 truncate text-right pr-2 flex-shrink-0 ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
-                {isField ? row.label : `↳ ${row.label}`}
-              </span>
-              <div className="flex-1 relative h-5">
-                {/* Grid lines */}
-                {ticks.map(tick => (
-                  <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
-                    style={{ left: `${(tick / totalTime) * 100}%` }} />
-                ))}
-                {/* Bar */}
-                <div className={`absolute h-full flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
-                  style={{
-                    left: `${leftPct}%`,
-                    width: `${widthPct}%`,
-                    background: `${row.color}${isField ? '30' : '18'}`,
-                    border: `1px solid ${row.color}${isField ? '60' : '35'}`,
-                  }}>
-                  <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
-                    style={{ color: row.color }}>{row.detail}</span>
+            {/* Bar rows */}
+            {ordered.map((row, i) => {
+              const leftPct = (row.start / totalTime) * 100;
+              const widthPct = (row.duration / totalTime) * 100;
+              const isField = row.type === 'field';
+              return (
+                <div key={i} className="relative h-5 mb-0.5">
+                  {ticks.map(tick => (
+                    <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
+                      style={{ left: `${(tick / totalTime) * 100}%` }} />
+                  ))}
+                  <div className={`absolute h-full flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
+                    style={{
+                      left: `${leftPct}%`, width: `${widthPct}%`,
+                      background: `${row.color}${isField ? '30' : '18'}`,
+                      border: `1px solid ${row.color}${isField ? '60' : '35'}`,
+                    }}>
+                    <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
+                      style={{ color: row.color }}>{row.detail}</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
           </div>
         </div>
       </div>
