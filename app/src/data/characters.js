@@ -198,7 +198,7 @@ const CHARACTER_DATA = {
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Lupa + Mornye'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS who buffs the team\'s Echo Skill DMG and grants Crit DMG Amplify via Outro and Resonance Liberation.',
-    skills: ['Frost Edge', 'Winter Slash', 'Blizzard Dance', 'Eternal Winter'],
+    skills: ['Wind Brush', 'Bamboo Sweep', 'Emerald Judgment', 'Qingfeng Stance'],
     ascension: { boss: 'Truth in Lies', common: 'Whisperin Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Metallic Drip' },
     bestEchoes: ['Impermanence Heron', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
@@ -849,13 +849,7 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
   },
-  'Xiangli Yao': {
-    outroBuffs: [],
-    libBuffs: [],
-    selfBuffs: [],
-    debuffs: [],
-    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
-  },
+  // Xiangli Yao: moved to Main DPS section below
   'Zani': {
     outroBuffs: [],
     libBuffs: [],
@@ -994,14 +988,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Lion Form aerial Basic ATK DPS.',
   },
   'Cartethyia': {
-    outroBuffs: [],
+    outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],
     libBuffs: [],
     selfBuffs: [
       { stat: 'elemDmg', value: 20, target: 'self', duration: 20, condition: 'Erosion stacks on target: Aero DMG amp' },
       { stat: 'defIgnore', value: 16, target: 'self', duration: 8, condition: 'Weapon: DEF Ignore +16% on Aero Eroded targets' },
     ],
     debuffs: [{ stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' }],
-    note: 'Top-tier Aero DPS. HP-scaling. Self-sufficient Erosion duo with Ciaccona. Weapon: DEF Ignore +16%.',
+    note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Weapon: DEF Ignore +16%.',
   },
   'Brant': {
     outroBuffs: [
@@ -1066,13 +1060,7 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
   },
-  'Jinhsi': {
-    outroBuffs: [],
-    libBuffs: [],
-    selfBuffs: [],
-    debuffs: [],
-    note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
-  },
+  // Jinhsi: defined earlier in Main DPS section
   'Rover': {
     outroBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Spectro RES Shred' }],
     libBuffs: [],

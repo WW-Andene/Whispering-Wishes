@@ -18,23 +18,23 @@ const ECHO_SETS = {
   'Eternal Radiance':     { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Frazzle → +20% Crit Rate; 10 stacks → +15% Spectro', p5val: { critRate: 20, spectroDmg: 15 } },
   'Midnight Veil':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Outro → 480% Havoc + 15% Havoc for next', p5val: { havocDmg: 15, outroDmg: 480 } },
   'Empyrean Anthem':      { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Coord ATK +80%; on crit → +20% ATK', p5val: { coordDmg: 80, atkPct: 40 } },
-  'Tidebreaking Courage': { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: '+15% ATK; ≥250% ER → +30% all DMG', p5val: { atkPct: 15, allDmg: 40 } },
-  'Gusts of Welkin':      { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Erosion → +15% Aero team + extra 15%', p5val: { aeroDmg: 40 } },
+  'Tidebreaking Courage': { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: '+15% ATK; ≥250% ER → +30% all DMG', p5val: { atkPct: 15, allDmg: 30 } },
+  'Gusts of Welkin':      { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Erosion → +10% Aero DMG per 3s (max x4)', p5val: { aeroDmg: 30 } },
   'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
   // v2.5–2.6 — Sanguis Plateaus sets
-  'Flaming Clawprint':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Liberation → +15% Fusion team, +20% Lib DMG for 35s', p5val: { fusionDmg: 15, libDmg: 40 } },
+  'Flaming Clawprint':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Liberation → +15% Fusion team, +20% Lib DMG for 35s', p5val: { fusionDmg: 15, libDmg: 20 } },
   'Crown of Valor':       { element: 'Shield',  p3: 'Shield → ATK +6%, Crit DMG +4% for 4s (0.5s CD, max x5)', p3val: { atkPct: 30, critDmg: 40 } },
   'Law of Harmony':       { element: 'Support', p3: 'Echo Skill → +30% Heavy ATK DMG 4s; team Echo Skill DMG +4% 30s (max x4)', p3val: { heavyDmg: 30, echoDmg: 16 } },
   // v2.7–2.8 — Chronorift sets
   "Flamewing's Shadow":   { element: 'Fusion',  p3: 'Echo Skill → +20% Heavy Crit Rate; Heavy ATK → +20% Echo Crit Rate; both → +16% Fusion DMG', p3val: { critRate: 20, fusionDmg: 16 } },
-  'Thread of Severed Fate': { element: 'Havoc', p3: 'Havoc Bane → +20% ATK, +30% Liberation DMG for 5s', p3val: { atkPct: 20, libDmg: 40 } },
+  'Thread of Severed Fate': { element: 'Havoc', p3: 'Havoc Bane → +20% ATK, +30% Liberation DMG for 5s', p3val: { atkPct: 20, libDmg: 30 } },
   'Dream of the Lost':    { element: 'Havoc',   p3: '0 Resonance Energy → +20% Crit Rate, +35% Echo Skill DMG', p3val: { critRate: 20, echoDmg: 35 } },
   // v3.0 — Lahai-Roi sets
   'Pact of Neonlight Leap': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Outro → next +15% ATK; per Tune Break Boost +0.3% ATK (max +15%)', p5val: { atkPct: 40 } },
   'Rite of Gilded Revelation': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Basic ATK → +10% Spectro DMG (max x3); 3 stacks + Lib → +40% Basic ATK DMG', p5val: { spectroDmg: 30, basicDmg: 40 } },
   'Halo of Starry Radiance': { element: 'Heal', p2: '+10% Healing',      p2val: { healBonus: 10 },   p5: 'Heal → per 1% Off-Tune Rate +0.2% ATK team (max +25%)', p5val: { teamAtk: 25 } },
   // v3.1 — Frostlands sets
-  'Trailblazing Star':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst/Tune Rupture → +20% Crit Rate, +20% Fusion DMG for 8s', p5val: { critRate: 20, fusionDmg: 40 } },
+  'Trailblazing Star':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst/Tune Rupture → +20% Crit Rate, +20% Fusion DMG for 8s', p5val: { critRate: 20, fusionDmg: 20 } },
   'Chromatic Foam':        { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst → +10% Fusion DMG 15s; Outro → +25% Fusion DMG for next 15s', p5val: { fusionDmg: 35 } },
   'Sound of True Name':    { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Echo Skill DMG → +20% Echo Crit Rate, +15% Aero DMG for 5s', p5val: { critRate: 20, aeroDmg: 15 } },
 };

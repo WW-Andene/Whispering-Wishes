@@ -47,11 +47,25 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const weapAtk = weapon ? weapon.baseAtk : 0;
       const seqLevel = eq?.sequence || 0;
       let echoSetName = eq?.echoSet || '';
-      if (!echoSetName && d.bestEchoes) { for (const e of d.bestEchoes) { const k = Object.keys(ECHO_SETS).find(k => e.includes(k)); if (k) { echoSetName = k; break; } } }
+      let echoSet2Name = eq?.echoSet2 || '';
+      if (!echoSetName && d.bestEchoes) {
+        for (const e of d.bestEchoes) {
+          // Parse hybrid "SetA 3pc + SetB 2pc" format
+          const hybridMatch = e.match(/^(.+?)\s+3pc\s*\+\s*(.+?)\s+2pc$/i);
+          if (hybridMatch) {
+            const s1 = hybridMatch[1].trim(), s2 = hybridMatch[2].trim();
+            if (ECHO_SETS[s1]) { echoSetName = s1; }
+            if (ECHO_SETS[s2]) { echoSet2Name = s2; }
+            break;
+          }
+          const k = Object.keys(ECHO_SETS).find(k => e.includes(k));
+          if (k) { echoSetName = k; break; }
+        }
+      }
       const scaling = d.statScaling || 'ATK';
       const baseStat = scaling === 'HP' ? (d.baseHp || 0) : scaling === 'DEF' ? (d.baseDef || 0) : charAtk + weapAtk;
       const mainEchoName = eq?.echoes?.[0]?.name || '';
-      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel, mainEchoName };
+      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, echoSet2Name: (echoSet2Name && ECHO_SETS[echoSet2Name]) ? echoSet2Name : '', echoSet2: (echoSet2Name && ECHO_SETS[echoSet2Name]) ? ECHO_SETS[echoSet2Name] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel, mainEchoName };
     }).filter(Boolean);
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
@@ -144,13 +158,31 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         rElem += (wp.elemDmg || 0); rSkillDmg += (wp.skillDmg || 0);
         rCr += (wp.critRate || 0); rCd += (wp.critDmg || 0);
       }
-      if (m.echoSet) {
-        const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
-        if (m.scaling === 'ATK') { if (p2.atkPct) rStatPct += p2.atkPct; if (p5.atkPct) rStatPct += p5.atkPct; }
-        if (p2.critRate) rCr += p2.critRate; if (p5.critRate) rCr += p5.critRate;
-        if (p2.skillDmg) rSkillDmg += p2.skillDmg; if (p5.skillDmg) rSkillDmg += p5.skillDmg;
+      // Apply echo set bonuses (supports p2+p5, p3, and hybrid 3pc+2pc)
+      const applySetVals = (setData, valKey) => {
+        const vals = setData[valKey] || {};
         const ek = (m.d.element || '').toLowerCase() + 'Dmg';
-        if (p2[ek]) rElem += p2[ek]; if (p5[ek]) rElem += p5[ek];
+        if (m.scaling === 'ATK' && vals.atkPct) rStatPct += vals.atkPct;
+        else if (m.scaling === 'HP' && vals.hpPct) rStatPct += vals.hpPct;
+        else if (m.scaling === 'DEF' && vals.defPct) rStatPct += vals.defPct;
+        if (vals.critRate) rCr += vals.critRate;
+        if (vals.critDmg) rCd += vals.critDmg;
+        if (vals.skillDmg) rSkillDmg += vals.skillDmg;
+        if (vals[ek]) rElem += vals[ek];
+        if (vals.allDmg) rElem += vals.allDmg;
+      };
+      if (m.echoSet) {
+        if (m.echoSet.p3val) {
+          // 3-piece set (Crown of Valor, Law of Harmony, etc.)
+          applySetVals(m.echoSet, 'p3val');
+        } else {
+          applySetVals(m.echoSet, 'p2val');
+          applySetVals(m.echoSet, 'p5val');
+        }
+      }
+      if (m.echoSet2) {
+        // Hybrid 2pc bonus from second set
+        applySetVals(m.echoSet2, 'p2val');
       }
       const eqKey = teamIdx + ':' + m.name;
       const eq = teamEquipment[eqKey];
@@ -215,15 +247,33 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       wpCoordDmg = (wp.coordDmg || 0);
     }
 
-    if (mainDps.echoSet) {
-      const p2 = mainDps.echoSet.p2val || {}, p5 = mainDps.echoSet.p5val || {};
-      if (mainDps.scaling === 'ATK') { if (p2.atkPct) atkPct += p2.atkPct; if (p5.atkPct) atkPct += p5.atkPct; }
-      else if (mainDps.scaling === 'HP') { if (p2.hpPct) atkPct += p2.hpPct; if (p5.hpPct) atkPct += p5.hpPct; }
-      else if (mainDps.scaling === 'DEF') { if (p2.defPct) atkPct += p2.defPct; if (p5.defPct) atkPct += p5.defPct; }
-      if (p2.critRate) cr += p2.critRate; if (p5.critRate) cr += p5.critRate;
-      if (p2.skillDmg) skillDmg += p2.skillDmg; if (p5.skillDmg) skillDmg += p5.skillDmg;
+    // Apply main DPS echo set bonuses (supports p2+p5, p3, and hybrid 3pc+2pc)
+    const applyMainSetVals = (setData, valKey) => {
+      const vals = setData[valKey] || {};
       const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
-      if (p2[ek]) elemDmg += p2[ek]; if (p5[ek]) elemDmg += p5[ek];
+      if (mainDps.scaling === 'ATK' && vals.atkPct) atkPct += vals.atkPct;
+      else if (mainDps.scaling === 'HP' && vals.hpPct) atkPct += vals.hpPct;
+      else if (mainDps.scaling === 'DEF' && vals.defPct) atkPct += vals.defPct;
+      if (vals.critRate) cr += vals.critRate;
+      if (vals.critDmg) cd += vals.critDmg;
+      if (vals.skillDmg) skillDmg += vals.skillDmg;
+      if (vals[ek]) elemDmg += vals[ek];
+      if (vals.allDmg) elemDmg += vals.allDmg;
+      if (vals.basicDmg) wpBasicDmg += vals.basicDmg;
+      if (vals.heavyDmg) wpHeavyDmg += vals.heavyDmg;
+      if (vals.libDmg) wpLibDmg += vals.libDmg;
+      if (vals.echoDmg) wpEchoDmg += vals.echoDmg;
+    };
+    if (mainDps.echoSet) {
+      if (mainDps.echoSet.p3val) {
+        applyMainSetVals(mainDps.echoSet, 'p3val');
+      } else {
+        applyMainSetVals(mainDps.echoSet, 'p2val');
+        applyMainSetVals(mainDps.echoSet, 'p5val');
+      }
+    }
+    if (mainDps.echoSet2) {
+      applyMainSetVals(mainDps.echoSet2, 'p2val');
     }
 
     let echoBasicDmg = 0, echoHeavyDmg = 0, echoSkillDmg = 0, echoLibDmg = 0;
@@ -282,9 +332,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           if (b.target === 'next' || b.target === 'enemy') {
             const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
             const val = b.value * uptime;
-            if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
-            else if (b.stat === 'atkPct' && mainDps.scaling === 'HP') { /* HP-scalers need hpPct, not atkPct */ }
-            else if (b.stat === 'atkPct' && mainDps.scaling === 'DEF') { /* DEF-scalers need defPct, not atkPct */ }
+            if (b.stat === 'atkPct') {
+              // ATK% buffs only scale the main stat for ATK-scalers; for HP/DEF-scalers they add minor ATK contribution
+              if (mainDps.scaling === 'ATK') atkPct += val;
+              else atkPct += val * 0.15; // HP/DEF scalers benefit marginally from ATK buffs
+            }
             else if (b.stat === 'allDmg') elemDmg += val;
             else if (b.stat === 'elemDmg') {
               const buffEl = (b.condition || '').toLowerCase();
@@ -355,17 +407,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     mems.forEach(m => {
       if (m.name === mainDps.name) return;
       const sn = m.echoSetName;
-      if (sn === 'Rejuvenating Glow' && mainDps.scaling === 'ATK') atkPct += 15;
-      if (sn === 'Moonlit Clouds' && mainDps.scaling === 'ATK') atkPct += 22.5;
-      if (sn === 'Empyrean Anthem' && mainDps.scaling === 'ATK') { atkPct += 20; }
-      if (sn === 'Tidebreaking Courage') { if (mainDps.scaling === 'ATK') atkPct += 15; elemDmg += 20; }
-      if (sn === 'Halo of Starry Radiance' && mainDps.scaling === 'ATK') atkPct += 20;
-      if (sn === 'Pact of Neonlight Leap' && mainDps.scaling === 'ATK') atkPct += 25;
-      if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 25;
+      const sn2 = m.echoSet2Name;
+      // Healer/Support set team buffs (ATK applies to main DPS's scaling stat)
+      // Team ATK buffs generally apply as ATK% to all characters regardless of scaling
+      // (WuWa team ATK buffs like Rejuvenating Glow, Moonlit Clouds give flat ATK% to all)
+      const addTeamAtk = (val) => { atkPct += val; };
+      if (sn === 'Rejuvenating Glow') addTeamAtk(15);
+      if (sn === 'Moonlit Clouds') addTeamAtk(22.5);
+      if (sn === 'Empyrean Anthem') addTeamAtk(30); // 20% ATK × 2 stacks, ~75% uptime ≈ 30%
+      if (sn === 'Tidebreaking Courage') elemDmg += 30; // 30% All-Attr DMG team-wide at ≥250% ER (ATK buff is self-only)
+      if (sn === 'Halo of Starry Radiance') addTeamAtk(25); // Up to +25% ATK via Off-Tune healing
+      if (sn === 'Pact of Neonlight Leap') addTeamAtk(30); // +15% ATK base + up to 15% from Tune Break Boost
+      if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 30; // 15% + 15% Aero DMG on Erosion trigger
       if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
-      if (sn === 'Flaming Clawprint' && mainDpsEl === 'fusion') elemDmg += 15;
+      if (sn === 'Flaming Clawprint') { if (mainDpsEl === 'fusion') elemDmg += 15; libDmg += 20; } // +15% Fusion team + 20% Lib DMG (uptime-adjusted)
       if (sn === 'Midnight Veil' && mainDpsEl === 'havoc') elemDmg += 15;
-      if (sn === 'Chromatic Foam' && mainDpsEl === 'fusion') elemDmg += 25;
+      if (sn === 'Chromatic Foam' && mainDpsEl === 'fusion') elemDmg += 25; // Outro: +25% Fusion for next
+      // 3pc set team contribution from sub-DPS (wearer benefits, no direct team buff)
+      // 2pc bonus from hybrid secondary set applied to wearer only (handled in sub-DPS calc)
       const bt = CHAR_BUFF_TABLE[m.name];
       (bt?.weaponBuffs || []).forEach(wb => {
         if (wb.target !== 'team') return;
@@ -665,15 +724,33 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           sCoordDmg += (swp.coordDmg || 0);
           sDefIgnore += (swp.defIgnore || 0); sResShred += (swp.resShred || 0);
         }
-        if (m.echoSet) {
+        // Apply sub-DPS echo set bonuses (p2+p5, p3, hybrid 3pc+2pc)
+        const applySubSetVals = (setData, valKey) => {
+          const vals = setData[valKey] || {};
           const ek2 = sEl + 'Dmg';
-          const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {};
-          if (m.scaling === 'ATK') { if (p2.atkPct) sAtkPct += p2.atkPct; if (p5.atkPct) sAtkPct += p5.atkPct; }
-          else if (m.scaling === 'HP') { if (p2.hpPct) sAtkPct += p2.hpPct; if (p5.hpPct) sAtkPct += p5.hpPct; }
-          else if (m.scaling === 'DEF') { if (p2.defPct) sAtkPct += p2.defPct; if (p5.defPct) sAtkPct += p5.defPct; }
-          if (p2.critRate) sCr += p2.critRate; if (p5.critRate) sCr += p5.critRate;
-          if (p2[ek2]) sElem += p2[ek2]; if (p5[ek2]) sElem += p5[ek2];
-          if (p2.skillDmg) sSkillDmg += p2.skillDmg; if (p5.skillDmg) sSkillDmg += p5.skillDmg;
+          if (m.scaling === 'ATK' && vals.atkPct) sAtkPct += vals.atkPct;
+          else if (m.scaling === 'HP' && vals.hpPct) sAtkPct += vals.hpPct;
+          else if (m.scaling === 'DEF' && vals.defPct) sAtkPct += vals.defPct;
+          if (vals.critRate) sCr += vals.critRate;
+          if (vals.critDmg) sCd += vals.critDmg;
+          if (vals[ek2]) sElem += vals[ek2];
+          if (vals.allDmg) sElem += vals.allDmg;
+          if (vals.skillDmg) sSkillDmg += vals.skillDmg;
+          if (vals.basicDmg) sBasicDmg += vals.basicDmg;
+          if (vals.heavyDmg) sHeavyDmg += vals.heavyDmg;
+          if (vals.libDmg) sLibDmg += vals.libDmg;
+          if (vals.echoDmg) sEchoDmg += vals.echoDmg;
+        };
+        if (m.echoSet) {
+          if (m.echoSet.p3val) {
+            applySubSetVals(m.echoSet, 'p3val');
+          } else {
+            applySubSetVals(m.echoSet, 'p2val');
+            applySubSetVals(m.echoSet, 'p5val');
+          }
+        }
+        if (m.echoSet2) {
+          applySubSetVals(m.echoSet2, 'p2val');
         }
         const subElCounts = {};
         mems.forEach(mm => { const el = mm.d.element; if (el) subElCounts[el] = (subElCounts[el] || 0) + 1; });
