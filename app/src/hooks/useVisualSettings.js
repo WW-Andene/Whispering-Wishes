@@ -37,7 +37,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   theme: 'default',
   headerBg: null,
   navBg: null,
-  appBg: null,
+  appBg: { url: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg', position: 'center center' },
   dyslexicFont: false,
 });
 
