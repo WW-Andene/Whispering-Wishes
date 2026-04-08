@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 const ELEMENT_COLORS = {
   Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7',
@@ -43,9 +44,8 @@ export default function RotationTimeline({ rotationTimeline }) {
     if (buff.duration > 0 && buff.start < totalTime) rows.push({ label: buff.source, start: buff.start, duration: buff.duration, color, type: 'buff', detail: `${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
 
-  // Find the true end of all content (buffs can extend past totalTime)
+  // timeScale = furthest end of any bar
   const maxEnd = Math.max(totalTime, ...rows.map(r => r.start + r.duration));
-  const timeScale = maxEnd;
 
   // Group: each on-field segment followed by its buffs
   const ordered = [];
@@ -62,76 +62,58 @@ export default function RotationTimeline({ rotationTimeline }) {
   });
   rows.forEach((r, i) => { if (r.type === 'buff' && !usedBuffIdx.has(i)) ordered.push(r); });
 
-  // Ticks — cover full timeScale
-  const tickInterval = timeScale <= 10 ? 1 : 5;
+  // Ticks
+  const tickInterval = maxEnd <= 10 ? 1 : 5;
   const ticks = [];
-  for (let i = 0; i <= timeScale; i += tickInterval) ticks.push(i);
-  if (ticks[ticks.length - 1] < timeScale) ticks.push(Math.ceil(timeScale));
-
-  const tableWidth = Math.max(600, timeScale * 24 + 64);
+  for (let i = 0; i <= maxEnd; i += tickInterval) ticks.push(i);
+  if (ticks[ticks.length - 1] < Math.ceil(maxEnd)) ticks.push(Math.ceil(maxEnd));
 
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border-default)',
-      borderRadius: 16,
-      overflowX: 'auto',
-      overflowY: 'visible',
-      WebkitOverflowScrolling: 'touch',
-      padding: 'var(--card-padding)',
-    }}>
-        <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
-        <table style={{ width: tableWidth, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: 64 }} />
-            <col />
-          </colgroup>
-          <thead>
-            <tr>
-              <td />
-              <td>
-                <div className="relative h-4">
-                  {ticks.map(tick => (
-                    <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
-                      style={{ left: `${(tick / timeScale) * 100}%` }}>{tick}s</span>
-                  ))}
+    <Card>
+      <CardHeader>Rotation ({totalTime}s)</CardHeader>
+      <CardBody>
+        {/* All percentage-based — no fixed width, no scroll, fits any container */}
+        <div style={{ position: 'relative' }}>
+          {ordered.map((row, i) => {
+            const leftPct = (row.start / maxEnd) * 100;
+            const widthPct = (row.duration / maxEnd) * 100;
+            const isField = row.type === 'field';
+            return (
+              <div key={i} style={{ position: 'relative', height: 22, marginBottom: 2 }}>
+                {/* Grid lines */}
+                {ticks.map(tick => (
+                  <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
+                    style={{ left: `${(tick / maxEnd) * 100}%` }} />
+                ))}
+                {/* Label */}
+                <span className={`absolute text-[9px] ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}
+                  style={{ left: 0, top: '50%', transform: 'translateY(-50%)', width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }}>
+                  {leftPct > 8 ? (isField ? row.label : '↳') : ''}
+                </span>
+                {/* Bar */}
+                <div className={`absolute flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
+                  style={{
+                    left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`,
+                    top: 1, bottom: 1,
+                    background: `${row.color}${isField ? '30' : '18'}`,
+                    border: `1px solid ${row.color}${isField ? '60' : '35'}`,
+                  }}>
+                  <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
+                    style={{ color: row.color }}>{isField ? `${row.label} ${row.detail}` : row.detail}</span>
                 </div>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            {ordered.map((row, i) => {
-              const leftPct = (row.start / timeScale) * 100;
-              const widthPct = (row.duration / timeScale) * 100;
-              const isField = row.type === 'field';
-              return (
-                <tr key={i}>
-                  <td className="align-middle pr-1.5 text-right">
-                    <span className={`text-[9px] ${isField ? 'font-bold text-gray-300' : 'text-gray-500'}`}>
-                      {isField ? row.label : '↳'}
-                    </span>
-                  </td>
-                  <td className="relative" style={{ height: 22 }}>
-                    {ticks.map(tick => (
-                      <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
-                        style={{ left: `${(tick / timeScale) * 100}%` }} />
-                    ))}
-                    <div className={`absolute flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
-                      style={{
-                        left: `${leftPct}%`, width: `${widthPct}%`,
-                        top: 1, bottom: 1,
-                        background: `${row.color}${isField ? '30' : '18'}`,
-                        border: `1px solid ${row.color}${isField ? '60' : '35'}`,
-                      }}>
-                      <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[8px]'}`}
-                        style={{ color: row.color }}>{row.detail}</span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-    </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Time scale at bottom */}
+        <div style={{ position: 'relative', height: 14, marginTop: 4 }}>
+          {ticks.map(tick => (
+            <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
+              style={{ left: `${(tick / maxEnd) * 100}%` }}>{tick}s</span>
+          ))}
+        </div>
+      </CardBody>
+    </Card>
   );
 }
