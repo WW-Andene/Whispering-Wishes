@@ -27,7 +27,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-color: #080c14;
-  font-family: var(--font-display, 'Exo 2'), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-display, 'Barlow'), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
@@ -56,7 +56,7 @@ html.dyslexic-font,
 html.dyslexic-font *,
 html.dyslexic-font #root,
 html.dyslexic-font [style*="font-family"] {
-  font-family: 'OpenDyslexic', 'Exo 2', system-ui, sans-serif !important;
+  font-family: 'OpenDyslexic', 'Barlow', system-ui, sans-serif !important;
 }
 
 /* TX-F1 / AT-F1: CSS radial-gradient fallback when canvas atmosphere fails */

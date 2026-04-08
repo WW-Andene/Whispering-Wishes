@@ -8,7 +8,7 @@
        LAHAI-ROI DESIGN LANGUAGE - Black, White, Gold
        ══════════════════════════════════════════════════════════════════════
        BI-F1: BRAND GUIDELINES
-       Protected elements: Gold #edaf18, Navy void #080c14, Exo 2 display font
+       Protected elements: Gold #edaf18, Navy void #080c14, Barlow display font
        Emotional target: Tactical precision meets gacha anticipation
        Visual signatures: Corner bracket frames, glassmorphic cards, gold glow accents
        Archetype: Magician (transformation) + Sage (data mastery)
@@ -101,7 +101,8 @@
       --radius-full: 100px;
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
-      --font-display: 'Exo 2', ui-sans-serif, system-ui, sans-serif;
+      --font-display: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+      --font-heading: 'Cinzel', serif;
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
       /* MED-8: Widened surface elevation spread (+2% lightness per step) */
@@ -677,7 +678,7 @@
     
     .kuro-header h3 {
       color: var(--text-heading);
-      font-family: var(--font-display);
+      font-family: var(--font-heading);
       font-size: var(--font-md);
       font-weight: 600;
       line-height: 1.25;

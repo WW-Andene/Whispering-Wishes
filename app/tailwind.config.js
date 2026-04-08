@@ -36,7 +36,8 @@ export default {
       },
       // D-TYPE-1: Display + data font families for cyberpunk-luxe character
       fontFamily: {
-        display: ['Exo 2', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Barlow', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        heading: ['Cinzel', 'serif'],
         data: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
         // Unify font-mono with the data font so Tailwind `font-mono` === `--font-data`
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
