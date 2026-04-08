@@ -86,7 +86,7 @@ export default function IdCardModal({
                           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />
                         </div>
                         {state.profile.profilePic && (
-                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-2xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
+                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
                         )}
                       </div>
                     </div>
@@ -113,7 +113,7 @@ export default function IdCardModal({
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
                         <div className="font-bold text-md kuro-number" style={{ color: s.color, textShadow: `0 0 8px ${s.color}30` }}>{s.value}</div>
-                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.04em' }}>{s.label}</div>
+                        <div className="text-gray-500 mt-0.5" style={{ fontSize: 'var(--font-xs)', letterSpacing: '0.04em' }}>{s.label}</div>
                       </div>
                     ))}
                     </div>
@@ -175,7 +175,7 @@ export default function IdCardModal({
                         </div>
                         <div className="flex gap-1.5">
                           {labs.map((lab, i) => (
-                            <div key={i} className="flex-1 text-center" style={{ fontSize: 'var(--font-2xs)', color: '#6b7280' }}>{lab.split('-')[0]}</div>
+                            <div key={i} className="flex-1 text-center" style={{ fontSize: 'var(--font-xs)', color: '#6b7280' }}>{lab.split('-')[0]}</div>
                           ))}
                         </div>
                         {/* Summary moved above histogram per §E10-CH-F2 */}

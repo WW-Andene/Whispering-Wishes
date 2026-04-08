@@ -139,7 +139,7 @@ export default function ConveneScanner({
       {/* Instruction text */}
       <div className="absolute left-0 right-0 text-center pointer-events-none" style={{ top: `${zone.top + zone.height + 2}%` }}>
         <p style={{ fontSize: 'var(--font-xs)', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>Align URL text box within frame</p>
-        <p style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.12)', marginTop: 4 }}>Pinch to zoom</p>
+        <p style={{ fontSize: 'var(--font-xs)', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.12)', marginTop: 4 }}>Pinch to zoom</p>
       </div>
 
       {/* Bottom bar */}
