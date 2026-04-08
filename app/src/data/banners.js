@@ -56,13 +56,14 @@ const CURRENT_BANNERS = {
 
 const BANNER_HISTORY = [
   // Version 3.2
+  { id: 'v3.2-p2', version: '3.2', phase: 2, characters: ['Lynae', 'Zani', 'Phoebe'], weapons: ['Spectrum Blaster', 'Blazing Justice', 'Luminous Hymn'], startDate: '2026-04-09', endDate: '2026-04-29' },
   { id: 'v3.2-p1', version: '3.2', phase: 1, characters: ['Sigrika', 'Qiuyuan'], weapons: ['Solsworn Ciphers', 'Emerald Sentence'], startDate: '2026-03-19', endDate: '2026-04-09', bannerArt: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg' },
   // Version 3.1
   { id: 'v3.1-p2', version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18', bannerArt: 'https://i.ibb.co/DPcdf0RY/Luuk-Hersen-Banner-Art.jpg' },
   { id: 'v3.1-p1', version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26', bannerArt: 'https://i.ibb.co/YFQBgJ8W/Aemaeth-Banner-Art.jpg' },
   // Version 3.0
   { id: 'v3.0-p2', version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04', bannerArt: 'https://i.ibb.co/cKY4dY6W/Mornye-Banner-Art.png' },
-  { id: 'v3.0-p1', version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-24', endDate: '2026-01-15' },
+  { id: 'v3.0-p1', version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-25', endDate: '2026-01-15' },
   // Version 2.8
   { id: 'v2.8-p2', version: '2.8', phase: 2, characters: ['Phrolova', 'Cantarella'], weapons: ['Lethean Elegy', 'Whispers of Sirens'], startDate: '2025-12-11', endDate: '2025-12-24' },
   { id: 'v2.8-p1', version: '2.8', phase: 1, characters: ['Chisa', 'Phoebe'], weapons: ['Kumokiri', 'Luminous Hymn'], startDate: '2025-11-20', endDate: '2025-12-11', bannerArt: 'https://i.ibb.co/p6gwfsWC/Chisa-Banner-Art.jpg' },
@@ -144,7 +145,7 @@ const EVENTS = {
     resetType: 'Weekly (Monday)',
     color: 'purple',
     weeklyReset: true,
-    introducedVersion: '2.1', // Replaced Depths of Illusive Realm in v2.1
+    introducedVersion: '1.0', // Originally "Depths of Illusive Realm" (v1.0–v2.0), renamed to current in v2.1
     rewards: '160 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
@@ -529,7 +530,7 @@ const OTHER_BACKGROUNDS = [
 const PIONEER_PODCAST_HISTORY = [
   { version: '3.2', startDate: '2026-03-19', endDate: '2026-04-29', rewards: 400 },
   { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
-  { version: '3.0', startDate: '2025-12-24', endDate: '2026-02-04', rewards: 400 },
+  { version: '3.0', startDate: '2025-12-25', endDate: '2026-02-04', rewards: 400 },
   { version: '2.8', startDate: '2025-11-20', endDate: '2025-12-24', rewards: 400 },
   { version: '2.7', startDate: '2025-10-09', endDate: '2025-11-19', rewards: 400 },
   { version: '2.6', startDate: '2025-08-28', endDate: '2025-10-08', rewards: 400 },
@@ -550,7 +551,7 @@ const PIONEER_PODCAST_HISTORY = [
 const VERSION_DATES = [
   { version: '3.2', start: '2026-03-19', end: '2026-04-29' },
   { version: '3.1', start: '2026-02-05', end: '2026-03-18' },
-  { version: '3.0', start: '2025-12-24', end: '2026-02-04' },
+  { version: '3.0', start: '2025-12-25', end: '2026-02-04' },
   { version: '2.8', start: '2025-11-20', end: '2025-12-24' },
   { version: '2.7', start: '2025-10-09', end: '2025-11-19' },
   { version: '2.6', start: '2025-08-28', end: '2025-10-08' },
