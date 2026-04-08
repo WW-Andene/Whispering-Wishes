@@ -89,7 +89,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   }, []); // Callbacks accessed via refs (P9-FIX: MEDIUM-5f)
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
-  if (time.expired && !alwaysShow) return <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Ended</span>;
+  if (time.expired && !alwaysShow) return <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
     // If expired but alwaysShow and has recalcFn, skip rendering zeros — next tick will recalculate
     if (recalcFn) return null;
@@ -113,24 +113,24 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
         <>
           <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
             <div className="text-white kuro-scoreboard">{time.days}</div>
-            <div className="text-gray-400 text-xs uppercase tracking-wider mt-0.5">{time.days === 1 ? 'Day' : 'Days'}</div>
+            <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">{time.days === 1 ? 'Day' : 'Days'}</div>
           </div>
           <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
         </>
       )}
       <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.hours).padStart(2, '0')}</div>
-        <div className="text-gray-400 text-xs uppercase tracking-wider mt-0.5">Hr</div>
+        <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Hr</div>
       </div>
       <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
       <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.minutes).padStart(2, '0')}</div>
-        <div className="text-gray-400 text-xs uppercase tracking-wider mt-0.5">Min</div>
+        <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Min</div>
       </div>
       <span className={`${textColor} font-bold text-sm opacity-60`}>:</span>
       <div className="px-2.5 py-1.5 text-center" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
-        <div className="text-gray-400 text-xs uppercase tracking-wider mt-0.5">Sec</div>
+        <div className="text-gray-400 text-[8px] uppercase tracking-wider mt-0.5">Sec</div>
       </div>
     </div>
   );

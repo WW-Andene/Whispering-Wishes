@@ -67,7 +67,7 @@ const ToastProvider = ({ children }) => {
                 setToasts(prev => prev.filter(t => t.id !== toast.id));
                 const timer = timerRefs.current.get(toast.id);
                 if (timer) { clearTimeout(timer); timerRefs.current.delete(toast.id); }
-              }} className={`ml-2 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider transition-colors flex-shrink-0 ${toast.type === 'warning' ? 'bg-amber-900/15 hover:bg-amber-900/25 text-amber-900' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
+              }} className={`ml-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors flex-shrink-0 ${toast.type === 'warning' ? 'bg-amber-900/15 hover:bg-amber-900/25 text-amber-900' : 'bg-white/20 hover:bg-white/30 text-white'}`}>
                 Undo
               </button>
             )}

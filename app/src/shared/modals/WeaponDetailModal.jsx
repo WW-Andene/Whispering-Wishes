@@ -63,12 +63,12 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.baseAtk && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-xs text-gray-400">ATK</span>
+                <span className="text-[10px] text-gray-400">ATK</span>
                 <span className="text-xs font-bold text-red-400">{data.baseAtk}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
-              <span className="text-xs text-gray-400">{data.stat}</span>
+              <span className="text-[10px] text-gray-400">{data.stat}</span>
               <span className="text-xs font-bold text-white">{data.subStatValue || ''}</span>
             </div>
             {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => {
@@ -106,11 +106,11 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
               <div className="grid grid-cols-5 gap-1">
                 {WEAPON_REFINE_SCALE.map((scale, i) => (
                   <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
-                    <div className={`text-xs mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
+                    <div className={`text-[10px] mb-0.5 ${i === 0 ? 'text-yellow-400 font-bold' : 'text-gray-500'}`}>R{i + 1}</div>
                     {Object.entries(data.pv).map(([stat, val]) => (
-                      <div key={stat} className="text-xs text-gray-300">
+                      <div key={stat} className="text-[10px] text-gray-300">
                         <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
-                        <div className="text-gray-500 text-xs">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
+                        <div className="text-gray-500 text-[8px]">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
                       </div>
                     ))}
                   </div>
@@ -126,7 +126,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
             const commonTiers = COMMON_MAT_TIERS[data.ascensionMaterials.common];
             return (
               <div>
-                <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
+                <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
                   <Swords size={14} className="text-orange-400" /> Ascension Materials
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -145,7 +145,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
 
           {/* 6. EXP Materials */}
           <div>
-            <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">

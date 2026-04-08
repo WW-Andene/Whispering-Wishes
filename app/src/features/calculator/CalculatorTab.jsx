@@ -162,12 +162,12 @@ function CalculatorTab({ state, dispatch }) {
 
             {/* Banner Selection */}
             <Card>
-              <CardHeader action={<button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-xs flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button>}>Banner Selection</CardHeader>
+              <CardHeader action={<button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-[10px] flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button>}>Banner Selection</CardHeader>
               <CardBody className="space-y-3">
                   {/* Featured Banners */}
                   <div className="space-y-2">
                     <div className="kuro-label" id="featured-convene-label">Featured Convene</div>
-                    <div className="text-gray-400 text-xs -mt-1">Limited-time banner</div>
+                    <div className="text-gray-400 text-[10px] -mt-1">Limited-time banner</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="featured-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'char'); setCalc('forging', ''); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char' ? 'active-gold' : ''}`}>
                         <Crown size={16} className="mx-auto mb-1.5" />Resonator
@@ -184,7 +184,7 @@ function CalculatorTab({ state, dispatch }) {
                   {/* Standard Banners */}
                   <div className="space-y-2">
                     <div className="kuro-label" id="standard-convene-label">Standard Convene</div>
-                    <div className="text-gray-400 text-xs -mt-1">Permanent banner</div>
+                    <div className="text-gray-400 text-[10px] -mt-1">Permanent banner</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="standard-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'char'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char' ? 'active-cyan' : ''}`}>
                         <Star size={16} className="mx-auto mb-1.5" />Resonator
@@ -205,7 +205,7 @@ function CalculatorTab({ state, dispatch }) {
                     </button>
                   )}
                   {state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' && (
-                    <p className="text-gray-400 text-sm text-center">Weapon banners do not have a guaranteed pity system.</p>
+                    <p className="text-gray-400 text-[10px] text-center">Weapon banners do not have a guaranteed pity system.</p>
                   )}
               </CardBody>
             </Card>
@@ -263,10 +263,10 @@ function CalculatorTab({ state, dispatch }) {
                   <div>
                     <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-yellow-400" />Astrite</label>
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('astrite', clamped); }} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
-                    <span className="text-gray-600 text-xs">Max {MAX_ASTRITE.toLocaleString('en-US')}</span>
+                    <span className="text-gray-600 text-[10px]">Max {MAX_ASTRITE.toLocaleString('en-US')}</span>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-gold" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-xs">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-gold" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('astrite', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Astrite">Clear</button>
                     </div>
@@ -276,7 +276,7 @@ function CalculatorTab({ state, dispatch }) {
                     <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('lunite', clamped); }} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-xs">({tip.split(' ')[0]})</span></button>
+                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-[10px]">({tip.split(' ')[0]})</span></button>
                       ))}
                       <button onClick={() => setCalc('lunite', '')} className="kuro-btn kuro-btn-sm active-red" aria-label="Clear Lunite">Clear</button>
                     </div>
@@ -284,7 +284,7 @@ function CalculatorTab({ state, dispatch }) {
                   {(() => {
                     const combined = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
                     const totalConvenes = Math.floor(combined / ASTRITE_PER_PULL);
-                    return <p className="text-gray-400 text-xs">= {totalConvenes.toLocaleString('en-US')} Convenes from {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString('en-US')})</span> : ''}</p>;
+                    return <p className="text-gray-400 text-[10px]">= {totalConvenes.toLocaleString('en-US')} Convenes from {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString('en-US')})</span> : ''}</p>;
                   })()}
 
                   {/* Featured banner resources */}
@@ -373,29 +373,29 @@ function CalculatorTab({ state, dispatch }) {
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-yellow-400 kuro-number text-xl">{charPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-xs">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-xs">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {(+state.calc.radiant || 0).toLocaleString('en-US')} tides)</div>}
+                          <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {(+state.calc.radiant || 0).toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-pink-400 kuro-number text-xl">{weapPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-xs">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-xs">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {(+state.calc.forging || 0).toLocaleString('en-US')} tides)</div>}
+                          <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {(+state.calc.forging || 0).toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdCharPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-xs">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-xs">({astriteAllocation.stdCharAstrite.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
+                          <div className="text-gray-400 text-[10px]">Resonator Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.stdCharAstrite.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
                           <div className="text-cyan-400 kuro-number text-xl">{stdWeapPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-xs">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-xs">({astriteAllocation.stdWeapAstrite.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
+                          <div className="text-gray-400 text-[10px]">Weapon Convenes</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-[10px]">({astriteAllocation.stdWeapAstrite.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
                         </div>
                       )}
                     </div>
@@ -405,7 +405,7 @@ function CalculatorTab({ state, dispatch }) {
 
             {/* Results Cards — aria-live for screen reader announcements (Finding 13.5) */}
             {isCalcPending && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1" aria-live="polite">
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mb-1" aria-live="polite">
                 <span className="inline-block w-2 h-2 rounded-full bg-yellow-400/60 animate-pulse" />
                 Calculating…
               </div>
@@ -433,20 +433,20 @@ function CalculatorTab({ state, dispatch }) {
               <Card>
                 <CardHeader>Combined Analysis</CardHeader>
                 <CardBody>
-                    <p className="text-gray-400 text-sm mb-2 text-center">
+                    <p className="text-gray-400 text-[10px] mb-2 text-center">
                       Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.charCopies : state.calc.stdCharCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
                     </p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">
                         <div className="text-2xl kuro-number text-emerald-400 font-extrabold">{combined.both}%</div>
-                        <div className="text-gray-400 text-xs mt-1">Get Both</div>
+                        <div className="text-gray-400 text-[10px] mt-1">Get Both</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gold kuro-stat-hero">
                         <div className="text-yellow-400 text-2xl kuro-number font-extrabold">{combined.atLeastOne}%</div>
-                        <div className="text-gray-400 text-xs mt-1">At Least One</div>
+                        <div className="text-gray-400 text-[10px] mt-1">At Least One</div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                    <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
                       <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-gold' : 'kuro-stat-cyan'}`}>
                         <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-yellow-400' : 'text-cyan-400'}`}>{combined.charOnly}%</span>
                         <div className="text-gray-400 mt-0.5">Char Only</div>
@@ -461,7 +461,7 @@ function CalculatorTab({ state, dispatch }) {
                       </div>
                     </div>
                     <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
-                      <p className="text-emerald-400/80 text-xs">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
+                      <p className="text-emerald-400/80 text-[10px]">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
                     </div>
                 </CardBody>
               </Card>
@@ -476,7 +476,7 @@ function CalculatorTab({ state, dispatch }) {
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name…" maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
-              <div className="text-gray-300 text-xs">
+              <div className="text-gray-300 text-[10px]">
                 <p>Banner: {state.calc.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {state.calc.selectedBanner === 'char' ? 'Resonator' : state.calc.selectedBanner === 'weap' ? 'Weapon' : 'Both'}</p>
                 <p>Astrite: {(+state.calc.astrite || 0).toLocaleString('en-US')} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
                 <p>Resonator Pity: {state.calc.charPity}{state.calc.charGuaranteed ? ' (G)' : ''} • Weapon Pity: {state.calc.weapPity}</p>

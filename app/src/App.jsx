@@ -906,7 +906,7 @@ function WhisperingWishesInner() {
           <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
           {bgFramingMode && (
             <div className={`absolute inset-0 ${editingBgTarget === 'bg' ? 'ring-4 ring-inset ring-cyan-400' : ''}`}>
-              <span className="absolute top-16 left-3 text-xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'bg' ? '● BACKGROUND' : 'Background'}</span>
+              <span className="absolute top-16 left-3 text-[9px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'bg' ? '● BACKGROUND' : 'Background'}</span>
             </div>
           )}
         </div>
@@ -934,7 +934,7 @@ function WhisperingWishesInner() {
         )}
         {bgFramingMode && headerBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'header' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('header')}>
-            <span className="absolute top-1 left-1 text-xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
+            <span className="absolute top-1 left-1 text-[9px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
           </div>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
@@ -975,12 +975,12 @@ function WhisperingWishesInner() {
                 )}
               </div>
               <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-base) var(--space-md)' } : undefined}>
-                <h1 className="text-white font-semibold text-base tracking-wide leading-tight">Whispering Wishes</h1>
-                <p className="text-xs tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
+                <h1 className="text-white font-semibold text-sm tracking-wide leading-tight">Whispering Wishes</h1>
+                <p className="text-[10px] tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-sm px-2 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
+              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-[10px] px-2 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
                 {state.server} <ChevronDown size={10} />
               </button>
               <button onClick={handleExport} aria-label="Export backup" title="Export backup" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
@@ -1008,7 +1008,7 @@ function WhisperingWishesInner() {
         )}
         {bgFramingMode && navBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'nav' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('nav')}>
-            <span className="absolute top-1 left-1 text-xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'nav' ? '● NAV' : 'Nav'}</span>
+            <span className="absolute top-1 left-1 text-[9px] bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'nav' ? '● NAV' : 'Nav'}</span>
           </div>
         )}
         <div className="tab-indicator" />
@@ -1203,16 +1203,16 @@ function WhisperingWishesInner() {
             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)] flex-shrink-0" data-sheet-header>
               <div className="flex items-center gap-2">
                 <Download size={14} className="text-yellow-400" />
-                <span className="text-white text-base font-semibold">Backup</span>
+                <span className="text-white text-sm font-semibold">Backup</span>
               </div>
               <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
             </div>
             <div className="overflow-y-auto flex-1 p-4 space-y-3">
-              <p className="text-gray-400 text-sm">Copy this data and save it as a .json file:</p>
+              <p className="text-gray-400 text-[10px]">Copy this data and save it as a .json file:</p>
               <textarea
                 value={exportData}
                 readOnly
-                className="kuro-input w-full h-24 text-xs font-mono"
+                className="kuro-input w-full h-24 text-[10px] font-mono"
                 onClick={e => e.target.select()}
                 aria-label="Export backup data"
               />
@@ -1260,15 +1260,15 @@ function WhisperingWishesInner() {
 
               <div className="relative my-1">
                 <div className="kuro-divider" />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-xs text-gray-400 uppercase tracking-wider">Restore</span>
+                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-[10px] text-gray-400 uppercase tracking-wider">Restore</span>
               </div>
               
-              <p className="text-gray-400 text-sm">Paste backup data to restore:</p>
+              <p className="text-gray-400 text-[10px]">Paste backup data to restore:</p>
               <textarea
                 value={restoreText}
                 onChange={(e) => setRestoreText(e.target.value)}
                 placeholder="Paste backup JSON here…"
-                className="kuro-input w-full h-20 text-xs font-mono"
+                className="kuro-input w-full h-20 text-[10px] font-mono"
                 aria-label="Paste backup data to restore"
               />
               <button
@@ -1409,7 +1409,7 @@ function WhisperingWishesInner() {
                       setShowExportModal(false);
                     } catch (e) { toast?.addToast?.('Failed to restore: ' + e.message, 'error'); }
                   }}
-                  className="kuro-btn w-full text-xs mt-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                  className="kuro-btn w-full text-[10px] mt-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
                 >
                   Restore Pre-Import Backup
                 </button>
@@ -1464,7 +1464,7 @@ function WhisperingWishesInner() {
       <div className="desktop-ad-margin">
         <div className="ad-slot">160×600</div>
         <div className="ad-margin-footer">
-          <p className="text-gray-600 text-xs leading-relaxed">
+          <p className="text-gray-600 text-[8px] leading-relaxed">
             {`v${APP_VERSION}`} • u/WW_Andene<br/>Not affiliated with Kuro Games<br/>
             <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-600 hover:text-yellow-400 transition-colors">Contact</a>
           </p>

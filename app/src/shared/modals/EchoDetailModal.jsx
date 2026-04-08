@@ -114,7 +114,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-xs text-gray-400">DMG</span>
+                <span className="text-[10px] text-gray-400">DMG</span>
                 <span className="text-xs font-bold text-red-400">{data.dmg}%</span>
               </div>
             )}
@@ -132,7 +132,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
           {/* 3. Enemy resistance (boss echoes with known resistance) */}
           {data.enemyRes && (
             <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
-              <div className="text-xs text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
+              <div className="text-[10px] text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(data.enemyRes).map(([el, val]) => (
                   <span key={el} className="kuro-badge kuro-badge-red font-medium">
@@ -156,12 +156,12 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                     <div className="text-xs font-bold mb-0.5" style={{ color: setColor }}>{setName}</div>
                     {setData ? (
                       <div className="space-y-0.5">
-                        {setData.p2 && <div className="text-xs text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
-                        {setData.p3 && <div className="text-xs text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
-                        {setData.p5 && <div className="text-xs text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
+                        {setData.p2 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
+                        {setData.p3 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
+                        {setData.p5 && <div className="text-[10px] text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
                       </div>
                     ) : (
-                      <div className="text-xs text-gray-500 italic">Set data not available</div>
+                      <div className="text-[10px] text-gray-500 italic">Set data not available</div>
                     )}
                   </div>
                 );
@@ -230,7 +230,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                 <span key={s} className="kuro-badge kuro-badge-cyan">{s}</span>
               ))}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-[10px] text-gray-500 mt-1">
               Secondary: {cost === 1 ? 'Flat HP' : 'Flat ATK'}
             </div>
           </div>
@@ -267,7 +267,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                           <User size={14} className="text-gray-500" />
                         </div>
                       )}
-                      <span className="text-xs text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
+                      <span className="text-[10px] text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
                     </div>
                   );
                 })}

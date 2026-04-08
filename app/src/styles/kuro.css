@@ -142,18 +142,17 @@
       /* §E4-TS: Type scale — Major Second 1.125× from 14px base
          Micro range (7–12px) is linear by design for data-dense instrument UIs.
          7px: IdCard metadata only   8px: badge counters, star indicators
-         12px: body text, labels       14px: buttons, card content
-         16px: section headers        18px: emphasis
-         20px: large display          24px+: hero display */
-      --font-xs: 12px;
-      --font-sm: 14px;
-      --font-base: 16px;
-      --font-md: 18px;
-      --font-lg: 20px;
-      --font-xl: 24px;
-      --font-2xl: 30px;
-      --font-3xl: 36px;
-      --font-4xl: 48px;
+         9px: timestamps, decorative  10px: labels, categories, button text
+         12px: compact body           14px: primary values, card content
+         16px: section headers        18px: large display    20px+: hero display */
+      --font-2xs: 7px;
+      --font-xs: 9px;
+      --font-sm: 10px;
+      --font-base: 12px;
+      --font-md: 14px;
+      --font-lg: 16px;
+      --font-xl: 18px;
+      --font-2xl: 20px;
       /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
       --height-banner: 190px;     /* Banner/Event cards minimum height */
       --height-card-sm: 140px;    /* Collection grid cards */
@@ -306,7 +305,7 @@
       border-radius: var(--input-radius);
       padding: var(--input-padding);
       color: var(--text-heading);
-      font-size: var(--font-base);
+      font-size: var(--font-md);
       width: 100%;
       transition: border-color var(--transition-fast);
       appearance: none;
@@ -732,7 +731,7 @@
       padding: var(--btn-padding);
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: var(--font-sm);
+      font-size: var(--font-base);
       font-weight: 500;
       letter-spacing: 0.02em;
       cursor: pointer;
@@ -968,7 +967,7 @@
       border-radius: var(--input-radius);
       padding: var(--input-padding);
       color: var(--text-heading);
-      font-size: var(--font-base);
+      font-size: var(--font-md);
       width: 100%;
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
       backdrop-filter: blur(var(--blur-md));
@@ -1160,7 +1159,7 @@
     .kuro-label {
       color: var(--text-body);
       font-family: var(--font-display);
-      font-size: var(--font-xs);
+      font-size: var(--font-sm);
       line-height: 1.3;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -1673,9 +1672,9 @@
 
     /* RS-F1: Responsive typography compression for narrow viewports */
     @media (max-width: 768px) {
-      .text-4xl { font-size: var(--font-3xl) !important; }
-      .text-3xl { font-size: var(--font-2xl) !important; }
-      .text-2xl { font-size: var(--font-xl) !important; }
+      .text-5xl { font-size: 36px !important; }
+      .text-4xl { font-size: 30px !important; }
+      .text-2xl { font-size: 20px !important; }
     }
 
     /* §DST1: Ghost-grid placeholder cells for collection empty state */
@@ -2623,7 +2622,7 @@
       padding-top: 6px;
       padding-bottom: 6px;
       border-radius: var(--radius-xs);
-      font-size: var(--font-xs);
+      font-size: var(--font-sm);
       font-weight: 700;
       transition: all var(--transition-fast);
       border: 1px solid var(--border-medium);
@@ -2672,12 +2671,12 @@
     /* ═══ SECTION MICRO-LABEL (§E4-LB) ═══ */
     /* Small section labels (Sequence, Refinement, Sonata Set, etc.) */
     .kuro-micro-label {
-      font-size: var(--font-xs);
+      font-size: var(--font-sm);
       color: var(--text-muted);
       margin-bottom: 2px;
     }
     .kuro-section-label {
-      font-size: var(--font-xs);
+      font-size: var(--font-sm);
       color: var(--text-disabled);
       text-transform: uppercase;
       letter-spacing: 0.05em;
