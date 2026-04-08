@@ -60,13 +60,12 @@ function PityHistogram({ statsTabData }) {
                 <div className="w-full relative" style={{ height: '72px' }}>
                   {count > 0 && (
                     <div
-                      className="absolute left-0 right-0 text-[10px] text-center font-bold"
+                      className="absolute left-0 right-0 text-[10px] text-center font-bold kuro-number"
                       style={{
                         bottom: `${height}%`,
                         marginBottom: '4px',
                         color: color,
                         textShadow: `0 0 8px ${color}`,
-                        fontFamily: 'var(--font-data)',
                       }}
                     >
                       {count}

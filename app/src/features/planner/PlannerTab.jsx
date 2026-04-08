@@ -340,7 +340,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           {/* U6-04: Don't clear selectedDay on month nav — panel hides naturally, note input preserved */}
           <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Previous month"><ChevronLeft size={16} /></button>
           {/* U6-03: Show "Today" pill when viewing a non-current month */}
-          <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-sm font-bold tracking-wide hover:text-yellow-400 transition-colors" style={{ fontFamily: 'var(--font-display)' }} title={monthOffset !== 0 ? 'Jump to current month' : undefined}>
+          <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-sm font-bold tracking-wide hover:text-yellow-400 transition-colors" title={monthOffset !== 0 ? 'Jump to current month' : undefined}>
             {cal.monthName}
             {monthOffset !== 0 && <span className="kuro-badge kuro-badge-yellow" style={{ borderRadius: 'var(--radius-pill)', verticalAlign: 'middle', marginLeft: 'var(--space-base)' }}>Today</span>}
           </button>
@@ -376,8 +376,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                       transition: 'all var(--transition-fast)',
                     }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                      <span style={{
-                        fontSize: 'var(--font-md)', fontWeight: 700, fontFamily: 'var(--font-data)',
+                      <span className="kuro-number" style={{
+                        fontSize: 'var(--font-md)',
                         color: d.isToday ? '#edaf18' : d.isPast ? 'var(--text-disabled)' : isGreen ? '#22c55e' : isSel ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)',
                       }}>{d.day}</span>
                       {d.note && <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#edaf18', marginTop: '2px', opacity: d.isPast ? 0.5 : 1 }} />}
@@ -403,7 +403,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-md)', animation: 'slideUp 0.2s ease-out' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-sm)' }}>
               <div>
-                <span style={{ fontSize: 'var(--font-md)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)' }}>
+                <span style={{ fontSize: 'var(--font-md)', fontWeight: 700, color: 'var(--text-heading)' }}>
                   {sel.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                 </span>
                 {sel.isDailyDone && <span style={{ fontSize: 'var(--font-sm)', color: '#22c55e', marginLeft: '8px' }}>&#x2713; Dailies</span>}
@@ -465,14 +465,14 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* ── VIEW 2: Chronology ────────────────────────────────────────────── */}
 
         <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-md)' }}>
-          <div style={{ fontSize: 'var(--font-base)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}><GanttChart size={12} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Chronology</div>
+          <div style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}><GanttChart size={12} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Chronology</div>
 
           {/* V5-02: Day scale header — show 1st, every 5th, and last for readability */}
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cal.daysInMonth}, 1fr)`, marginBottom: '4px' }}>
             {Array.from({ length: cal.daysInMonth }, (_, i) => {
               const day = i + 1;
               const show = day === 1 || day % 5 === 0 || day === cal.daysInMonth;
-              return <span key={i} style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', fontFamily: 'var(--font-data)', textAlign: 'center' }}>{show ? day : ''}</span>;
+              return <span key={i} className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', textAlign: 'center' }}>{show ? day : ''}</span>;
             })}
           </div>
 
@@ -535,10 +535,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     opacity: bar.pastBanner ? 0.45 : bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: 'var(--font-sm)', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
-                    {bar.ended && <span style={{ fontSize: 'var(--font-xs)', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
-                    {bar.astrite > 0 && !bar.ended && <span style={{ fontSize: 'var(--font-sm)', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
-                    {bar.endLabel && !bar.ended && <span style={{ fontSize: 'var(--font-xs)', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.startLabel ? `${bar.startLabel}→` : '→'}{bar.endLabel}</span>}
-                    {bar.daysLeft != null && <span style={{ fontSize: 'var(--font-sm)', color: bar.color, fontFamily: 'var(--font-data)', opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
+                    {bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-xs)', color: bar.color, opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
+                    {bar.astrite > 0 && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
+                    {bar.endLabel && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-xs)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.startLabel ? `${bar.startLabel}→` : '→'}{bar.endLabel}</span>}
+                    {bar.daysLeft != null && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
                   </div>
                 </div>
               );

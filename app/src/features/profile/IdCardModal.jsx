@@ -51,7 +51,7 @@ export default function IdCardModal({
                     <div className="idcard-corner-bl" />
                     <div className="flex gap-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-lg truncate leading-tight kuro-tshadow-overlay" style={{ fontFamily: 'var(--font-display)' }}>{state.profile.username || 'Resonator'}</h3>
+                        <h3 className="text-white font-semibold text-lg truncate leading-tight kuro-tshadow-overlay">{state.profile.username || 'Resonator'}</h3>
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-[10px] uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
@@ -67,7 +67,7 @@ export default function IdCardModal({
                             <div className="flex-1 h-1.5 rounded-full overflow-hidden kuro-border-subtle" style={{ background: 'var(--bg-stat)' }}>
                               <div className="h-full rounded-full kuro-gradient-luck kuro-shadow-luck-bar" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%` }} />
                             </div>
-                            <span className="text-[10px] font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60`, fontFamily: 'var(--font-display)' }}>{luckRating.tier} {luckRating.rating}</span>
+                            <span className="text-[10px] font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60` }}>{luckRating.tier} {luckRating.rating}</span>
                           </div>
                         )}
                       </div>
@@ -99,7 +99,7 @@ export default function IdCardModal({
                     <div className="idcard-corner-bl" />
                     <div className="flex items-center gap-2 mb-2">
                       <div className="idcard-gold-bar" />
-                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Convene Stats</span>
+                      <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
@@ -138,11 +138,11 @@ export default function IdCardModal({
                         <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
                           <div className="idcard-gold-bar" />
-                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em', fontFamily: 'var(--font-display)' }}>Pity Distribution</span>
+                          <span className="text-[10px] font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
                         </div>
                         {/* §E10-CH-F2: Summary moved above histogram, escalated to text-xs */}
                         <div className="text-right mb-1.5">
-                          <span className="text-xs text-gray-400 kuro-number" style={{ fontFamily: 'var(--font-data)' }}>Lo {lo} · Avg {avg} · Hi {hi}</span>
+                          <span className="text-xs text-gray-400 kuro-number">Lo {lo} · Avg {avg} · Hi {hi}</span>
                         </div>
                         <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
                           {labs.map((lab, i) => {
@@ -155,7 +155,7 @@ export default function IdCardModal({
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {cnt > 0 && (
                                     <div className="absolute left-0 right-0 text-center font-bold"
-                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: 'var(--space-xs)', color, textShadow: `0 0 8px ${color}`, fontFamily: 'var(--font-data)' }}>
+                                      className="kuro-number" style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: 'var(--space-xs)', color, textShadow: `0 0 8px ${color}` }}>
                                       {cnt}
                                     </div>
                                   )}
