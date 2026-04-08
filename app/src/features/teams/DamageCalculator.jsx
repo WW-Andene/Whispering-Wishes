@@ -1286,9 +1286,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               </div>
             )}
 
-            {/* Rotation Timeline Visualizer */}
-            <RotationTimeline rotationTimeline={rotationTimeline} />
-
             {/* Warnings */}
             {warnings.length > 0 && (
               <div className="flex flex-wrap gap-1">
@@ -1303,6 +1300,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           </div>
         </CardBody>
       </Card>
+
+      {/* Rotation Timeline — outside Card so overflow-x scroll works */}
+      <RotationTimeline rotationTimeline={rotationTimeline} />
 
       <DPSComparisonCard
         teamCompareEntries={teamCompareEntries} setTeamCompareEntries={setTeamCompareEntries}
