@@ -102,7 +102,6 @@
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
       --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
-      --font-heading: 'Cinzel', serif;
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
       /* MED-8: Widened surface elevation spread (+2% lightness per step) */
@@ -678,7 +677,7 @@
     
     .kuro-header h3 {
       color: var(--text-heading);
-      font-family: var(--font-heading);
+      font-family: var(--font-display);
       font-size: var(--font-md);
       font-weight: 600;
       line-height: 1.25;
