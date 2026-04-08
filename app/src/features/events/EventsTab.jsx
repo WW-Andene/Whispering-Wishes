@@ -121,11 +121,11 @@ function EventsTab({
                 toast?.addToast?.('Banner data refreshed!', 'success');
               }}
               disabled={refreshCooling}
-              className={`text-base flex items-center gap-1 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
+              className={`text-sm flex items-center gap-1 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
             >
               <RefreshCcw size={12} className={refreshCooling ? 'animate-spin' : ''} /> Refresh Timers
             </button>
-            <span className="text-gray-400 text-base">Server: {state.server}</span>
+            <span className="text-gray-400 text-sm">Server: {state.server}</span>
           </div>
         }>Events &amp; Resets</CardHeader>
         <CardBody className="space-y-2">
@@ -147,7 +147,7 @@ function EventsTab({
                       />
                     )}
                   </div>
-                  <span className="text-gray-400 text-base flex-shrink-0">{progressStats.doneCount}/{progressStats.totalCount} done</span>
+                  <span className="text-gray-400 text-sm flex-shrink-0">{progressStats.doneCount}/{progressStats.totalCount} done</span>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -180,7 +180,7 @@ function EventsTab({
               <>
                 <div className="flex items-center gap-2 pt-2 pb-1">
                   <div className="flex-1 h-px bg-gray-700/50" />
-                  <span className="text-gray-500 text-base font-medium uppercase tracking-wider">Expired</span>
+                  <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">Expired</span>
                   <div className="flex-1 h-px bg-gray-700/50" />
                 </div>
                 {expired.map((entry) => renderCard(entry, true))}
@@ -189,7 +189,7 @@ function EventsTab({
           </>
         )}
       </div>
-      <p className="text-gray-500 text-base text-center content-layer sticky bottom-0 py-2 kuro-gradient-fade-up">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+      <p className="text-gray-500 text-sm text-center content-layer sticky bottom-0 py-2 kuro-gradient-fade-up">Reset times based on {state.server} server (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
     </div>
     </TabErrorBoundary>
     </div>

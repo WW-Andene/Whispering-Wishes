@@ -12,7 +12,7 @@ const IMPORT_GUIDE_DATA = {
     steps: [
       <>Open Wuthering Waves, go to <span className="text-gray-100 font-medium">Convene</span> → <span className="text-gray-100 font-medium">History</span> → <span className="text-gray-100 font-medium">View Details</span></>,
       <>Open <span className="text-gray-100 font-medium">PowerShell</span> and paste this command:</>,
-      <><code className="block bg-black/40 rounded px-2 py-1.5 text-base font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
+      <><code className="block bg-black/40 rounded px-2 py-1.5 text-sm font-mono text-cyan-400 break-all select-all">iwr -useb https://raw.githubusercontent.com/WW-Andene/Whispering-Wishes/main/app/public/import.ps1 | iex</code></>,
       <>The URL is <span className="text-gray-100 font-medium">automatically copied</span> to your clipboard</>,
       <>Paste it in the <span className="text-gray-100 font-medium">URL field</span> below and click <span className="text-gray-100 font-medium">Import</span></>,
     ],
@@ -43,15 +43,15 @@ const ImportGuide = memo(({ platform }) => {
   const guide = IMPORT_GUIDE_DATA[platform];
   if (!guide) return null;
   return (
-    <div className="p-3 bg-white/5 border border-[var(--border-medium)] rounded-lg text-base text-gray-200 space-y-2">
+    <div className="p-3 bg-white/5 border border-[var(--border-medium)] rounded-lg text-sm text-gray-200 space-y-2">
       <p className="text-gray-100 font-medium text-base">{guide.title}</p>
       {guide.steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
-          <span className="flex-shrink-0 w-5 h-5 rounded bg-white/10 text-gray-200 flex items-center justify-center text-base font-bold">{i + 1}</span>
+          <span className="flex-shrink-0 w-5 h-5 rounded bg-white/10 text-gray-200 flex items-center justify-center text-sm font-bold">{i + 1}</span>
           <p>{step}</p>
         </div>
       ))}
-      {guide.footer && <p className="text-gray-400 text-base pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
+      {guide.footer && <p className="text-gray-400 text-sm pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
     </div>
   );
 });

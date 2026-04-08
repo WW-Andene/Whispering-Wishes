@@ -86,7 +86,7 @@ function EchoBgRemover({ toast, adminHash }) {
     <div className="space-y-3">
       <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-3">
         <p className="text-pink-400 text-base font-medium mb-1">Echo Background Removal</p>
-        <p className="text-gray-400 text-base">
+        <p className="text-gray-400 text-sm">
           Removes backgrounds from all {allEchoes.length} echo images using HuggingFace AI (BRIA-RMBG-1.4).
           Requires HF_API_KEY + ADMIN_HASH in Vercel env vars. Download results as PNGs and re-upload to ibb.co.
         </p>
@@ -104,15 +104,15 @@ function EchoBgRemover({ toast, adminHash }) {
           <div className="h-2 rounded-full overflow-hidden bg-white/5">
             <div className="h-full bg-pink-500 transition-all duration-300 rounded-full" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
           </div>
-          <p className="text-gray-400 text-base mt-1 truncate">Processing: {progress.current}</p>
+          <p className="text-gray-400 text-sm mt-1 truncate">Processing: {progress.current}</p>
         </div>
       )}
       {results.length > 0 && (
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <p className="text-gray-400 text-base">{results.filter(r => r.ok).length} succeeded, {results.filter(r => !r.ok).length} failed</p>
+            <p className="text-gray-400 text-sm">{results.filter(r => r.ok).length} succeeded, {results.filter(r => !r.ok).length} failed</p>
             {results.some(r => r.ok) && (
-              <button onClick={downloadAll} className="kuro-btn text-base px-3 py-1 active-emerald">Download All PNGs</button>
+              <button onClick={downloadAll} className="kuro-btn text-sm px-3 py-1 active-emerald">Download All PNGs</button>
             )}
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
@@ -187,7 +187,7 @@ export default function AdminPanel({
                 <div className="space-y-3">
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
                     <p className="text-yellow-400 text-md font-medium">Admin Access Required</p>
-                    <p className="text-gray-400 text-base mt-1">Enter admin password to continue</p>
+                    <p className="text-gray-400 text-sm mt-1">Enter admin password to continue</p>
                   </div>
                   <div className="flex gap-2">
                     <input
@@ -216,7 +216,7 @@ export default function AdminPanel({
                       <button
                         key={key}
                         onClick={() => setAdminTab(key)}
-                        className={`px-3 py-1.5 rounded text-base transition-all ${adminTab === key ? active : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
+                        className={`px-3 py-1.5 rounded text-sm transition-all ${adminTab === key ? active : 'text-gray-400 hover:text-white border border-[var(--border-medium)]'}`}
                       >
                         {label}
                       </button>
@@ -239,7 +239,7 @@ export default function AdminPanel({
                     <div className="space-y-4">
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
                         <h3 className="text-purple-400 text-md font-medium mb-3">Collection Images</h3>
-                        <p className="text-gray-400 text-base mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
+                        <p className="text-gray-400 text-sm mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
                         {(() => {
                           const allHistory = [
                             ...state.profile.featured.history,
@@ -249,7 +249,7 @@ export default function AdminPanel({
                           ];
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           if (uniqueNames.length === 0) {
-                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-base mt-2 px-3 py-1.5">Go to Import</button></div>;
+                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-sm mt-2 px-3 py-1.5">Go to Import</button></div>;
                           }
                           return (
                             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
@@ -259,7 +259,7 @@ export default function AdminPanel({
                                 const displayUrl = collectionImages[name];
                                 return (
                                   <div key={name} className="flex items-center gap-2">
-                                    <span className={`text-base w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
+                                    <span className={`text-sm w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
                                       {name} {!hasDefault && '⚠'}
                                     </span>
                                     <input
@@ -278,7 +278,7 @@ export default function AdminPanel({
                                         }
                                         saveCollectionImages(newCustom);
                                       }}
-                                      className={`kuro-input flex-1 text-base py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
+                                      className={`kuro-input flex-1 text-sm py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
                                     />
                                     {displayUrl && (
                                       <img src={displayUrl} alt={name} className="w-[28px] h-[28px] object-cover rounded border border-purple-500/30" loading="lazy" onError={hideOnError} />
@@ -347,7 +347,7 @@ export default function AdminPanel({
                       <div className="space-y-3">
                         <div className="text-base text-gray-400">Last import diagnostic{diag?.timestamp ? ` — ${new Date(diag.timestamp).toLocaleString()}` : ''}</div>
                         {diag?.log ? (
-                          <pre className="text-base font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
+                          <pre className="text-sm font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
                         ) : (
                           <div className="text-gray-400 text-base text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
                         )}

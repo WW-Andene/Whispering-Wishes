@@ -138,7 +138,7 @@ function ConveneHistoryChart({ statsTabData }) {
               <ChartSvg chartData={chartData} />
             </div>
             {allData.length > maxVisible && (
-              <div className="text-center text-base text-gray-400 mt-1">
+              <div className="text-center text-sm text-gray-400 mt-1">
                 {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
               </div>
             )}

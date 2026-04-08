@@ -44,7 +44,7 @@ export default function TeamSelector({
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
                             <h3 className="text-white text-md font-semibold">Select Resonator</h3>
-                            <p className="text-gray-500 text-base">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
+                            <p className="text-gray-500 text-sm">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
                           <button onClick={() => setTeamSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
                             <X size={18} />
@@ -155,7 +155,7 @@ export default function TeamSelector({
                           </div>
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (
-                            <div className="flex items-center gap-1.5 text-base text-orange-400">
+                            <div className="flex items-center gap-1.5 text-sm text-orange-400">
                               <Star size={10} className="text-orange-400" fill="currentColor" />
                               <span>Orange glow = recommended teammate</span>
                             </div>

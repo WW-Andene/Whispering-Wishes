@@ -300,7 +300,7 @@ function CollectionTab({
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-base">
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
                   <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Resonator</div></div>
                   <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Resonator</div></div>
                   <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Weapon</div></div>
@@ -380,7 +380,7 @@ function CollectionTab({
                       Filters active
                     </span>
                   </div>
-                  <button onClick={clearCollectionFilters} className="text-base text-gray-400 hover:text-white underline">
+                  <button onClick={clearCollectionFilters} className="text-sm text-gray-400 hover:text-white underline">
                     Clear all
                   </button>
                 </div>
@@ -584,7 +584,7 @@ function CollectionTab({
                 {collectionView === 'items' && (
                   <button
                     onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
+                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
                     title={collectionSort === 'nameDesc' ? 'Sort Z-A' : 'Sort A-Z'}
                     aria-label={collectionSort === 'nameDesc' ? 'Sorted Z to A, click for A to Z' : 'Sort alphabetically'}
                     aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}

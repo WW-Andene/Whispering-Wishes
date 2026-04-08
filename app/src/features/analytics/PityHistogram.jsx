@@ -42,7 +42,7 @@ function PityHistogram({ statsTabData }) {
 
   return (
     <Card>
-      <CardHeader action={<span className="text-gray-500 text-base">{fiveStars.length} Convenes</span>}>
+      <CardHeader action={<span className="text-gray-500 text-sm">{fiveStars.length} Convenes</span>}>
         <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
       </CardHeader>
       <CardBody>
@@ -60,7 +60,7 @@ function PityHistogram({ statsTabData }) {
                 <div className="w-full relative" style={{ height: '72px' }}>
                   {count > 0 && (
                     <div
-                      className="absolute left-0 right-0 text-base text-center font-bold kuro-number"
+                      className="absolute left-0 right-0 text-sm text-center font-bold kuro-number"
                       style={{
                         bottom: `${height}%`,
                         marginBottom: '4px',
@@ -99,26 +99,26 @@ function PityHistogram({ statsTabData }) {
 
         <div className="flex gap-1.5">
           {allBuckets.map(label => (
-            <div key={label} className="flex-1 text-base text-gray-400 text-center">{label}</div>
+            <div key={label} className="flex-1 text-sm text-gray-400 text-center">{label}</div>
           ))}
         </div>
 
         <div className="mt-3 pt-3 border-t border-[var(--border-medium)] grid grid-cols-3 gap-2 text-center">
           <div>
             <div className="text-emerald-400 font-bold text-md kuro-number kuro-tshadow-glow-emerald">{minPity}</div>
-            <div className="text-gray-400 text-base">Lowest</div>
+            <div className="text-gray-400 text-sm">Lowest</div>
           </div>
           <div>
             <div className="text-yellow-400 font-bold text-md kuro-number kuro-tshadow-glow-gold">{avgPity}</div>
-            <div className="text-gray-400 text-base">Average</div>
+            <div className="text-gray-400 text-sm">Average</div>
           </div>
           <div>
             <div className="text-red-400 font-bold text-md kuro-number kuro-tshadow-glow-red">{maxPity}</div>
-            <div className="text-gray-400 text-base">Highest</div>
+            <div className="text-gray-400 text-sm">Highest</div>
           </div>
         </div>
 
-        <div className="mt-2 flex items-center justify-center gap-2 text-base flex-wrap">
+        <div className="mt-2 flex items-center justify-center gap-2 text-sm flex-wrap">
           {PITY_ZONES.map(z => (
             <span key={z.label} className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full" style={{ background: z.color, boxShadow: `0 0 6px ${z.color}` }} />
