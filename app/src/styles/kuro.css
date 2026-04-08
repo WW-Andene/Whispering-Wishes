@@ -145,8 +145,7 @@
          9px: timestamps, decorative  10px: labels, categories, button text
          12px: compact body           14px: primary values, card content
          16px: section headers        18px: large display    20px+: hero display */
-      --font-2xs: 8px;
-      --font-xs: 10px;
+      --font-2xs: 9px;
       --font-sm: 11px;
       --font-base: 13px;
       --font-md: 15px;

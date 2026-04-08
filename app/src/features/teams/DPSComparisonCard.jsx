@@ -107,8 +107,8 @@ export default function DPSComparisonCard({
                     return (
                       <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'border-yellow-500/50 glow-gold bg-yellow-500/10' : 'border-purple-500/50 glow-purple bg-purple-500/10'}`}>
                         <div className="text-sm font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
-                        <div className={`text-[9px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                        <span className={`text-[9px] px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
+                        <div className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                        <span className={`text-2xs px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
                       </div>
                     );
                   })}

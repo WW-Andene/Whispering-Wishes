@@ -1219,7 +1219,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     <button key={s}
                                       role="radio"
                                       aria-checked={isActive}
-                                      className={`kuro-chip flex-1 text-[9px] ${isActive ? 'active-gold' : ''}`}
+                                      className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
                                       onClick={() => {
                                         setTeamEquipment(prev => {
                                           const n = { ...prev };
@@ -1242,7 +1242,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     <button key={r}
                                       role="radio"
                                       aria-checked={isActive}
-                                      className={`kuro-chip flex-1 text-[9px] ${isActive ? 'active-gold' : ''}`}
+                                      className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
                                       onClick={() => {
                                         setTeamEquipment(prev => {
                                           const n = { ...prev };

@@ -90,7 +90,7 @@ export default function EnemyEchoSelectorModal({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-base font-semibold text-white truncate">{name}</span>
-                        <span className={`text-[9px] px-1 py-0.5 rounded bg-${costColor}-500/15 text-${costColor}-400 border border-${costColor}-500/25`}>{cost}C</span>
+                        <span className={`text-2xs px-1 py-0.5 rounded bg-${costColor}-500/15 text-${costColor}-400 border border-${costColor}-500/25`}>{cost}C</span>
                       </div>
                       <div className="flex gap-1 mt-0.5 flex-wrap">
                         {resEntries.length > 0 ? resEntries.map(([el, val]) => (

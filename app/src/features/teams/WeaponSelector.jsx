@@ -95,7 +95,7 @@ export default function WeaponSelector({
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-base font-semibold truncate">{name}</span>
-                                            <span className={`text-[9px] ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                            <span className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                             {isBest && <span className="kuro-badge kuro-badge-emerald">BiS</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">

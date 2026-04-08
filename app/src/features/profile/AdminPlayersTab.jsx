@@ -105,7 +105,7 @@ export default function AdminPlayersTab({
                     <span className="text-gray-400 text-sm w-4 text-right flex-shrink-0">{i + 1}</span>
                     <span className="text-white text-base font-mono font-medium truncate">{p.uid || p.id}</span>
                     {p.uid && p.id !== p.uid && (
-                      <span className="text-gray-500 text-[9px] font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
+                      <span className="text-gray-500 text-2xs font-mono flex-shrink-0">({p.id.slice(0, 6)}…)</span>
                     )}
                   </div>
                   <div className="flex items-center gap-3 ml-6 mt-0.5">
@@ -115,7 +115,7 @@ export default function AdminPlayersTab({
                     <span className="text-gray-400 text-sm">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                   </div>
                 </div>
-                <div className="text-gray-500 text-[9px] text-right flex-shrink-0 ml-2">
+                <div className="text-gray-500 text-2xs text-right flex-shrink-0 ml-2">
                   {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
                 </div>
               </div>

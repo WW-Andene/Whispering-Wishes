@@ -276,7 +276,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
             <div className="flex items-center justify-between mb-2">
               <div className="kuro-section-label">Recommended Weapon</div>
-              {!hasWeapon && <span className="text-[9px] text-gray-600 uppercase tracking-wider">Not Owned</span>}
+              {!hasWeapon && <span className="text-2xs text-gray-600 uppercase tracking-wider">Not Owned</span>}
             </div>
             <div className="flex items-center gap-3">
               {weaponImg && (

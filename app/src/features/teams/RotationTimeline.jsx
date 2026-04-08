@@ -80,7 +80,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                     style={{ left: `${(tick / maxEnd) * 100}%` }} />
                 ))}
                 {/* Label */}
-                <span className={`absolute text-[9px] ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
+                <span className={`absolute text-2xs ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
                   style={{ left: 0, top: '50%', transform: 'translateY(-50%)', width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }}>
                   {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : '↳') : ''}
                 </span>
@@ -93,7 +93,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                     border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : '35'}`,
                     borderStyle: isEcho ? 'dashed' : 'solid',
                   }}>
-                  <span className={`truncate px-1 ${isField ? 'text-[9px] font-bold' : 'text-[9px]'}`}
+                  <span className={`truncate px-1 ${isField ? 'text-2xs font-bold' : 'text-2xs'}`}
                     style={{ color: row.color }}>{isField ? `${row.label} ${row.detail}` : row.detail}</span>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function RotationTimeline({ rotationTimeline }) {
         {/* Time scale at bottom */}
         <div style={{ position: 'relative', height: 14, marginTop: 4 }}>
           {ticks.map(tick => (
-            <span key={tick} className="absolute text-[9px] text-gray-600 -translate-x-1/2"
+            <span key={tick} className="absolute text-2xs text-gray-600 -translate-x-1/2"
               style={{ left: `${(tick / maxEnd) * 100}%` }}>{tick}s</span>
           ))}
         </div>
@@ -112,10 +112,10 @@ export default function RotationTimeline({ rotationTimeline }) {
         {/* Legend */}
         {ordered.some(r => r.buffKind === 'echo') && (
           <div className="flex items-center gap-3 mt-3 pt-2 border-t border-white/5">
-            <span className="text-[9px] text-gray-500 flex items-center gap-1">
+            <span className="text-2xs text-gray-500 flex items-center gap-1">
               <span className="inline-block w-3 h-[6px] rounded-sm border border-white/30 bg-white/15" /> ↳ Char/Set/Weapon
             </span>
-            <span className="text-[9px] text-gray-500 flex items-center gap-1">
+            <span className="text-2xs text-gray-500 flex items-center gap-1">
               <span className="inline-block w-3 h-[6px] rounded-sm border border-dashed border-white/25 bg-white/10" /> ◆ Echo Skill
             </span>
           </div>

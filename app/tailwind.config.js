@@ -22,9 +22,8 @@ export default {
     extend: {
       // D-TYPE-0: Unified font-size scale backed by CSS variables (kuro.css)
       fontSize: {
-        '2xs': 'var(--font-2xs)',   // 7px
-        'xs':  'var(--font-xs)',    // 9px
-        'sm':  'var(--font-sm)',    // 10px
+        '2xs': 'var(--font-2xs)',   // 9px
+        'sm':  'var(--font-sm)',    // 11px
         'base':'var(--font-base)',  // 12px
         'md':  'var(--font-md)',    // 14px
         'lg':  'var(--font-lg)',    // 16px

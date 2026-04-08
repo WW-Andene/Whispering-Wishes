@@ -17,7 +17,7 @@ const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVis
 
   const renderSlider = (slider) => (
     <div key={slider.key}>
-      <div className={`flex justify-between ${compact ? 'text-[9px]' : 'text-sm'} mb-${compact ? '0.5' : '1'}`}>
+      <div className={`flex justify-between ${compact ? 'text-2xs' : 'text-sm'} mb-${compact ? '0.5' : '1'}`}>
         <span className={compact ? 'text-gray-400' : 'text-gray-300'}>{compact ? slider.shortLabel : slider.label}</span>
         <span className={c.text}>{visualSettings[slider.key] ?? slider.fallback ?? 50}%</span>
       </div>

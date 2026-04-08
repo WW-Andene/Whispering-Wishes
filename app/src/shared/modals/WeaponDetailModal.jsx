@@ -110,7 +110,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
                     {Object.entries(data.pv).map(([stat, val]) => (
                       <div key={stat} className="text-sm text-gray-300">
                         <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
-                        <div className="text-gray-500 text-[9px]">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
+                        <div className="text-gray-500 text-2xs">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
                       </div>
                     ))}
                   </div>
