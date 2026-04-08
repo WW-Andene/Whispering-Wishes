@@ -2035,6 +2035,149 @@
       animation: breathZoom 6s ease-in-out infinite !important;
     }
 
+    /* ═══ FULL MODE — Additional Enhancements ═══ */
+
+    /* ── DPS bars: glow + slide-in ── */
+    .animations-full .dps-bar {
+      animation: dpsBarSlide 0.6s var(--ease-branded) both;
+      box-shadow: 0 0 12px var(--bar-glow, rgba(237, 175, 24, 0.2));
+    }
+    @keyframes dpsBarSlide {
+      0% { width: 0 !important; opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    /* ── Rotation timeline segments: sequential slide-in ── */
+    .animations-full .rotation-segment {
+      animation: segmentReveal 0.4s var(--ease-branded) both;
+    }
+    .animations-full .rotation-segment:nth-child(2) { animation-delay: 0.1s; }
+    .animations-full .rotation-segment:nth-child(3) { animation-delay: 0.2s; }
+    @keyframes segmentReveal {
+      0% { transform: scaleX(0); opacity: 0; }
+      100% { transform: scaleX(1); opacity: 1; }
+    }
+
+    /* ── Team member cards: element-colored border glow on hover ── */
+    @media (hover: hover) {
+      .animations-full .team-member-card:hover {
+        box-shadow: 0 0 20px var(--element-glow, rgba(100, 140, 200, 0.15)),
+                    inset 0 0 12px var(--element-glow, rgba(100, 140, 200, 0.05));
+        transform: translateY(-2px);
+      }
+    }
+
+    /* ── Synergy score: pulse when high ── */
+    .animations-full .synergy-high {
+      animation: synergyPulse 2s ease-in-out infinite;
+    }
+    @keyframes synergyPulse {
+      0%, 100% { text-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+      50% { text-shadow: 0 0 16px rgba(34, 197, 94, 0.8); }
+    }
+
+    /* ── DPS number: count-up reveal ── */
+    .animations-full .dps-number {
+      animation: dpsReveal 0.5s var(--ease-branded) both;
+    }
+    @keyframes dpsReveal {
+      0% { opacity: 0; transform: translateY(8px) scale(0.9); filter: blur(4px); }
+      60% { opacity: 1; transform: translateY(-2px) scale(1.05); filter: blur(0); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    /* ── Pull log entries: stagger slide-in ── */
+    .animations-full .pull-log-row {
+      animation: pullRowSlide 0.3s var(--ease-branded) both;
+    }
+    @keyframes pullRowSlide {
+      0% { opacity: 0; transform: translateX(-12px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── Probability result: dramatic reveal ── */
+    .animations-full .prob-result {
+      animation: probReveal 0.6s var(--ease-branded) both;
+    }
+    @keyframes probReveal {
+      0% { opacity: 0; transform: scale(0.85); filter: blur(8px); }
+      50% { opacity: 1; filter: blur(0); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Progress bars: smooth fill with glow ── */
+    .animations-full .progress-fill {
+      transition: width 0.8s var(--ease-branded) !important;
+      box-shadow: 0 0 8px var(--bar-glow, rgba(237, 175, 24, 0.3));
+    }
+
+    /* ── Histogram bars: stagger rise ── */
+    .animations-full .histogram-bar {
+      animation: histBarRise 0.5s var(--ease-branded) both;
+      transform-origin: bottom;
+    }
+    @keyframes histBarRise {
+      0% { transform: scaleY(0); opacity: 0; }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+
+    /* ── Toast notifications: slide + glow ── */
+    .animations-full .kuro-toast {
+      animation: toastEnter 0.25s var(--ease-branded);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 12px var(--toast-glow, rgba(34, 197, 94, 0.2));
+    }
+    @keyframes toastEnter {
+      0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Modal backdrop: blur entrance ── */
+    .animations-full .modal-backdrop {
+      animation: backdropBlur 0.25s var(--ease-branded) both;
+    }
+    @keyframes backdropBlur {
+      0% { backdrop-filter: blur(0); opacity: 0; }
+      100% { backdrop-filter: blur(4px); opacity: 1; }
+    }
+
+    /* ── Banner card: parallax-like hover tilt ── */
+    @media (hover: hover) {
+      .animations-full .banner-card:hover {
+        transform: perspective(600px) rotateX(1deg) translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 20px var(--banner-glow, rgba(237, 175, 24, 0.1));
+      }
+    }
+
+    /* ── Event card countdown: subtle tick pulse ── */
+    .animations-full .countdown-tick {
+      animation: countdownTick 1s ease-in-out infinite;
+    }
+    @keyframes countdownTick {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; transform: scale(0.98); }
+    }
+
+    /* ── Buff timeline bars: cascade in ── */
+    .animations-full .buff-bar {
+      animation: buffBarCascade 0.35s var(--ease-branded) both;
+    }
+    @keyframes buffBarCascade {
+      0% { width: 0 !important; opacity: 0; }
+      100% { opacity: 0.8; }
+    }
+
+    /* ── Warning badges: attention shake ── */
+    .animations-full .warning-badge {
+      animation: warningShake 0.4s var(--ease-branded);
+    }
+    @keyframes warningShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+
     /* ═══ REDUCED MOTION — handled by user Animations toggle ═══ */
 
     /* ═══ USER TOGGLE: NO ANIMATIONS ═══ */

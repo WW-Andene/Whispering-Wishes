@@ -124,10 +124,10 @@ export default function DPSComparisonCard({
                   <div key={bi} className={bi < 2 ? 'mb-1' : 'mb-0.5'}>
                     <div className="flex items-baseline justify-between mb-0.5">
                       <span className="text-gray-400 text-sm">{bar.label}</span>
-                      <span className="font-bold text-base kuro-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
+                      <span className="font-bold text-base kuro-number dps-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
                     </div>
                     <div className="relative h-4 rounded" style={{ background: 'transparent' }}>
-                      <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700"
+                      <div className="absolute top-0 left-0 bottom-0 rounded transition-all duration-700 dps-bar"
                         style={{
                           width: Math.max(bar.pct, 4) + '%',
                           background: `linear-gradient(90deg, ${bar.color}40, ${bar.color}20)`,

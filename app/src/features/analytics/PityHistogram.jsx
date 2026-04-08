@@ -72,7 +72,7 @@ function PityHistogram({ statsTabData }) {
                     </div>
                   )}
                   <div
-                    className="absolute bottom-0 left-1 right-1 rounded-t transition-all"
+                    className="absolute bottom-0 left-1 right-1 rounded-t transition-all histogram-bar"
                     style={{
                       height: `${height}%`,
                       minHeight: count > 0 ? '8px' : '0',

@@ -1164,7 +1164,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               const rc = roleColors[m.d.role] || roleColors.Support;
               const isMain = m.name === mainDps.name;
               return (
-                <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2"
+                <div key={m.name} className="p-3 rounded-lg border hover:border-white/15 transition-colors space-y-2 team-member-card"
                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10` }}>
 
                   {/* ── Section 1: Character Header ── */}
@@ -1600,7 +1600,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {warnings.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {warnings.map((w, i) => (
-                  <span key={i} className="kuro-badge kuro-badge-amber flex items-center gap-1">
+                  <span key={i} className="kuro-badge kuro-badge-amber flex items-center gap-1 warning-badge">
                     <AlertTriangle size={12} /> {w}
                   </span>
                 ))}

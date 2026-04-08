@@ -85,7 +85,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                   {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : '↳') : ''}
                 </span>
                 {/* Bar */}
-                <div className={`absolute flex items-center ${isField ? 'rounded' : 'rounded-sm'}`}
+                <div className={`absolute flex items-center ${isField ? 'rounded rotation-segment' : 'rounded-sm buff-bar'}`}
                   style={{
                     left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`,
                     top: 1, bottom: 1,
