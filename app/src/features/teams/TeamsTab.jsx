@@ -460,7 +460,9 @@ function TeamsTab({
                             let tierSum = 0;
                             members.forEach(m => { const t = CHARACTER_DATA[m]?.tier?.toa; if (t) tierSum += (TIER_SCORES[t] ?? 10); });
                             score += tierSum;
-                            if (tierSum >= 90) tags.push('Meta');
+                            // Meta = truly top-tier (needs ≥2 T0 members, ~115+ pts)
+                            if (tierSum >= 115) tags.push('Meta');
+                            else if (tierSum >= 95) tags.push('Strong');
                             // Roles
                             const hasMain = roles.includes('Main DPS'), hasSub = roles.includes('Sub DPS');
                             const hasHeal = roles.includes('Healer'), hasSupp = roles.includes('Support');
@@ -634,7 +636,7 @@ function TeamsTab({
                                     return <span key={j} className={`text-2xs ${rc}`}>{role || '?'}</span>;
                                   })}
                                   {s.tags?.map((tag, j) => (
-                                    <span key={`t${j}`} className={`text-2xs px-1 rounded ${tag === 'Meta' ? 'text-yellow-400 bg-yellow-500/10' : tag === 'Balanced' ? 'text-emerald-400 bg-emerald-500/10' : 'text-cyan-400 bg-cyan-500/10'}`}>{tag}</span>
+                                    <span key={`t${j}`} className={`text-2xs px-1 rounded ${tag === 'Meta' ? 'text-yellow-400 bg-yellow-500/10' : tag === 'Strong' ? 'text-orange-400 bg-orange-500/10' : tag === 'Balanced' ? 'text-emerald-400 bg-emerald-500/10' : 'text-cyan-400 bg-cyan-500/10'}`}>{tag}</span>
                                   ))}
                                 </div>
                               </div>
