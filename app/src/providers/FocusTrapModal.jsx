@@ -130,7 +130,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        style={{ transition: 'transform 0.2s ease-out', animation: centered ? 'scaleIn 0.3s ease-out' : 'sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
+        style={{ transition: 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)', animation: centered ? 'scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)' : 'sheetSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         {children}
       </div>

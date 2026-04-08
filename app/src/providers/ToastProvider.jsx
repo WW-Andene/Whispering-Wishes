@@ -52,7 +52,7 @@ const ToastProvider = ({ children }) => {
       <div className="fixed bottom-20 left-3 right-3 z-[9500] flex flex-col items-center gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {toasts.map(toast => (
           <div key={toast.id} className={`px-4 py-3 rounded-lg flex items-center gap-2 text-base font-medium pointer-events-auto border ${toast.type === 'warning' ? 'text-amber-900 border-amber-300/40' : 'text-white border-white/20'}`} style={{
-            animation: 'slideUp 0.2s ease-out',
+            animation: 'slideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
             background: toast.type === 'success' ? 'rgba(34,197,94,0.9)' : toast.type === 'error' ? 'rgba(248,113,113,0.9)' : toast.type === 'warning' ? 'rgba(252,211,77,0.95)' : 'rgba(56,189,248,0.9)',
           }}>
             {toast.type === 'success' && <CheckCircle size={16} />}

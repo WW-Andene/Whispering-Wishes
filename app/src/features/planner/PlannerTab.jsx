@@ -400,7 +400,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
         {/* Detail panel */}
         {sel && (
-          <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-md)', animation: 'slideUp 0.2s ease-out' }}>
+          <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-md)', animation: 'slideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1)' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-sm)' }}>
               <div>
                 <span style={{ fontSize: 'var(--font-md)', fontWeight: 700, color: 'var(--text-heading)' }}>
