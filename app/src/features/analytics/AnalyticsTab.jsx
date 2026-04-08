@@ -491,7 +491,7 @@ function AnalyticsTab({
                                         <span className={`text-xs font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
                                           {isYou ? (entry.id?.slice(0, 4) + '*** (You)') : (entry.id?.slice(0, 4) + '***')}
                                         </span>
-                                        {isYou && <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded">YOU</span>}
+                                        {isYou && <span className="kuro-badge kuro-badge-cyan">YOU</span>}
                                       </div>
                                       <div className="text-[10px] text-gray-500">{entry.pulls} five-stars</div>
                                     </div>

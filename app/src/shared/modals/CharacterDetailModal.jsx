@@ -87,8 +87,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
-              <span className="kuro-badge bg-white/10 text-gray-300 border-[var(--border-medium)]">{data.weapon}</span>
-              <span className="kuro-badge bg-white/10 text-gray-300 border-[var(--border-medium)]">{data.role}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             <h2 className="text-xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -115,10 +115,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </div>
             )}
             {data.region && (
-              <span className="kuro-badge bg-white/5 text-gray-400 border-[var(--border-medium)]">{data.region}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.region}</span>
             )}
             {data.birthday && (
-              <span className="kuro-badge bg-white/5 text-gray-400 border-[var(--border-medium)]">{(() => {
+              <span className="kuro-badge kuro-badge-neutral">{(() => {
                 const [m, d] = data.birthday.split('-');
                 const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 return `${months[parseInt(m)]} ${parseInt(d)}`;
@@ -144,8 +144,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             <div className="text-[10px] text-gray-400 uppercase tracking-wider">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
               <span className={`kuro-badge font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
-              <span className="kuro-badge bg-white/5 text-gray-300 border-[var(--border-medium)]">{data.weapon}</span>
-              <span className="kuro-badge bg-white/5 text-gray-300 border-[var(--border-medium)]">{data.role}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             {data.buffs?.length > 0 && (
               <div>
@@ -404,7 +404,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             ) : (
               <div className="flex flex-wrap gap-1">
                 {(data.skills || []).map((skill, i) => (
-                  <span key={i} className="kuro-badge bg-white/5 text-gray-300 border-[var(--border-medium)]">{skill}</span>
+                  <span key={i} className="kuro-badge kuro-badge-neutral">{skill}</span>
                 ))}
               </div>
             )}

@@ -296,9 +296,9 @@ function CalculatorTab({ state, dispatch }) {
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="kuro-badge kuro-badge-yellow hover:bg-yellow-500/20 cursor-pointer transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="kuro-chip active-gold">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('radiant', '')} className="kuro-badge kuro-badge-red hover:bg-red-500/20 cursor-pointer transition-colors" aria-label="Clear Radiant Tides">Clear</button>
+                            <button onClick={() => setCalc('radiant', '')} className="kuro-chip bg-red-500/10 border-red-500/30 text-red-400" aria-label="Clear Radiant Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -308,9 +308,9 @@ function CalculatorTab({ state, dispatch }) {
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="kuro-badge bg-pink-500/10 border-pink-500/30 text-pink-400 hover:bg-pink-500/20 cursor-pointer transition-colors">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="kuro-chip bg-pink-500/10 border-pink-500/30 text-pink-400">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('forging', '')} className="kuro-badge kuro-badge-red hover:bg-red-500/20 cursor-pointer transition-colors" aria-label="Clear Forging Tides">Clear</button>
+                            <button onClick={() => setCalc('forging', '')} className="kuro-chip bg-red-500/10 border-red-500/30 text-red-400" aria-label="Clear Forging Tides">Clear</button>
                           </div>
                         </div>
                       )}
@@ -324,9 +324,9 @@ function CalculatorTab({ state, dispatch }) {
                       <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="kuro-badge kuro-badge-cyan hover:bg-cyan-500/20 cursor-pointer transition-colors">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="kuro-chip bg-cyan-500/10 border-cyan-500/30 text-cyan-400">+{amt}</button>
                         ))}
-                        <button onClick={() => setCalc('lustrous', '')} className="kuro-badge kuro-badge-red hover:bg-red-500/20 cursor-pointer transition-colors" aria-label="Clear Lustrous Tides">Clear</button>
+                        <button onClick={() => setCalc('lustrous', '')} className="kuro-chip bg-red-500/10 border-red-500/30 text-red-400" aria-label="Clear Lustrous Tides">Clear</button>
                       </div>
                     </div>
                   )}

@@ -84,7 +84,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           </div>
           <div className="text-right flex-shrink-0">
             {isExpired ? (
-              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/15 text-red-400 border border-red-500/20">Expired</span>
+              <span className="kuro-badge kuro-badge-red font-medium">Expired</span>
             ) : (
               <>
                 <div className="text-gray-400 text-[10px] mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
@@ -95,7 +95,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
         </div>
 
         <div className="flex justify-between items-end">
-          <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${isExpired ? 'bg-gray-500/20 text-gray-500' : isDone ? 'bg-emerald-500/20 text-emerald-400' : isSkipped ? 'bg-gray-500/20 text-gray-500 line-through' : `${colors.bg} ${colors.text}`} backdrop-blur-sm`}>
+          <div className={`kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : isDone ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}`}>
             {event.rewards}
           </div>
           {onStatusChange && !isExpired && (

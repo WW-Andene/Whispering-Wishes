@@ -838,6 +838,8 @@
     .kuro-badge-red { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.25); color: #f87171; }
     .kuro-badge-purple { background: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.25); color: #a855f7; }
     .kuro-badge-violet { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.25); color: #8b5cf6; }
+    .kuro-badge-neutral { background: rgba(255,255,255,0.05); border-color: var(--border-medium); color: var(--text-secondary); }
+    .kuro-badge-gray { background: rgba(107,114,128,0.1); border-color: rgba(107,114,128,0.25); color: #9ca3af; }
 
     /* MED-6: Compact button variants for inline actions */
     .kuro-btn-sm {

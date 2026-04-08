@@ -335,7 +335,7 @@ export default function EchoSelector({
                               {el.charAt(0).toUpperCase() + el.slice(1)} RES: {val}%
                             </span>
                           ))}
-                          <span className="kuro-badge bg-gray-500/10 border-gray-500/25 text-gray-400">
+                          <span className="kuro-badge kuro-badge-gray">
                             Other: 10%
                           </span>
                         </div>

@@ -940,9 +940,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div>
                     <div className="kuro-label">Base Stats (Lv.90)</div>
                     <div className="flex flex-wrap gap-1">
-                      <span className="kuro-badge bg-white/5 border-[var(--border-medium)] text-gray-300">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
-                      <span className="kuro-badge bg-white/5 border-[var(--border-medium)] text-gray-300">ATK {m.charAtk}</span>
-                      <span className="kuro-badge bg-white/5 border-[var(--border-medium)] text-gray-300">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge kuro-badge-neutral">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge kuro-badge-neutral">ATK {m.charAtk}</span>
+                      <span className="kuro-badge kuro-badge-neutral">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
                       <span className="kuro-badge kuro-badge-amber">+Weapon {m.weapAtk}</span>
                     </div>
                   </div>

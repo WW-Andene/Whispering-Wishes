@@ -139,7 +139,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                     {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
                   </span>
                 ))}
-                <span className="kuro-badge bg-gray-500/10 border-gray-500/25 text-gray-400">Others: 10%</span>
+                <span className="kuro-badge kuro-badge-gray">Others: 10%</span>
               </div>
             </div>
           )}
@@ -240,7 +240,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
             <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Possible Substats</div>
             <div className="flex flex-wrap gap-1">
               {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
-                <span key={s} className="kuro-badge bg-white/5 text-gray-400 border-[var(--border-medium)]">{s}</span>
+                <span key={s} className="kuro-badge kuro-badge-neutral">{s}</span>
               ))}
             </div>
           </div>
