@@ -34,7 +34,7 @@ class TabErrorBoundary extends React.Component {
               <div className="kuro-body text-center py-8">
                 <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
                 <div className="text-white font-bold text-sm mb-1">Something went wrong</div>
-                <p className="text-gray-400 text-xs mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
+                <p className="text-gray-400 text-sm mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
                 <button
                   onClick={() => this.setState({ hasError: false, error: null })}
                   className="kuro-btn active-cyan text-xs px-4 py-2"

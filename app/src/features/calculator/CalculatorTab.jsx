@@ -205,7 +205,7 @@ function CalculatorTab({ state, dispatch }) {
                     </button>
                   )}
                   {state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' && (
-                    <p className="text-gray-400 text-xs text-center">Weapon banners do not have a guaranteed pity system.</p>
+                    <p className="text-gray-400 text-sm text-center">Weapon banners do not have a guaranteed pity system.</p>
                   )}
               </CardBody>
             </Card>
@@ -433,7 +433,7 @@ function CalculatorTab({ state, dispatch }) {
               <Card>
                 <CardHeader>Combined Analysis</CardHeader>
                 <CardBody>
-                    <p className="text-gray-400 text-xs mb-2 text-center">
+                    <p className="text-gray-400 text-sm mb-2 text-center">
                       Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.charCopies : state.calc.stdCharCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
                     </p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
@@ -446,7 +446,7 @@ function CalculatorTab({ state, dispatch }) {
                         <div className="text-gray-400 text-xs mt-1">At Least One</div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
                       <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-gold' : 'kuro-stat-cyan'}`}>
                         <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-yellow-400' : 'text-cyan-400'}`}>{combined.charOnly}%</span>
                         <div className="text-gray-400 mt-0.5">Char Only</div>

@@ -90,7 +90,7 @@ function TrackerTab({
             {!state.profile.importedAt && setActiveTab && (
               <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
-                <span className="text-cyan-300/90 text-xs">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
+                <span className="text-cyan-300/90 text-sm">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
               </button>
             )}
@@ -224,7 +224,7 @@ function TrackerTab({
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-white text-base font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-xs">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="space-y-1.5">
@@ -284,7 +284,7 @@ function TrackerTab({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Archive size={14} className="text-purple-400" />
-                    <span className="text-white text-sm font-semibold">Banner History</span>
+                    <span className="text-white text-base font-semibold">Banner History</span>
                   </div>
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
@@ -316,13 +316,13 @@ function TrackerTab({
                         )
                       : BANNER_HISTORY;
                     return filtered.length === 0
-                      ? <div className="text-center text-gray-400 text-xs py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
+                      ? <div className="text-center text-gray-400 text-sm py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
                       : filtered.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                       <div className="relative z-10">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white text-sm font-semibold">v{b.version} P{b.phase}</span>
+                        <span className="text-white text-base font-semibold">v{b.version} P{b.phase}</span>
                         <span className="text-gray-500 text-xs">{new Date(b.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}{b.predicted ? ' (est.)' : ''}</span>
                       </div>
                       <div className="space-y-1.5">
@@ -375,7 +375,7 @@ function TrackerTab({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-cyan-400" />
-                    <span className="text-white text-sm font-semibold">Convene History</span>
+                    <span className="text-white text-base font-semibold">Convene History</span>
                     <span className="text-gray-500 text-xs">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
@@ -422,7 +422,7 @@ function TrackerTab({
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
                   {filteredPulls.length === 0 ? (
-                    <div className="text-center text-gray-400 text-xs py-6">
+                    <div className="text-center text-gray-400 text-sm py-6">
                       {allPulls.length === 0 ? 'No Convene history. Import your data in the Profile tab.' : 'No Convenes match your filters.'}
                     </div>
                   ) : (

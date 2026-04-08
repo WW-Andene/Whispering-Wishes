@@ -174,7 +174,7 @@ export default function AdminBannersTab({
             </div>
           ))}
         </div>
-        <p className="text-gray-400 text-xs">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
+        <p className="text-gray-400 text-sm">Paste direct image URLs from ibb.co (use i.ibb.co links)</p>
       </div>
 
       <div className="flex gap-2">

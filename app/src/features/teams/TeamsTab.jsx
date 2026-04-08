@@ -285,7 +285,7 @@ function TeamsTab({
                                 onChange={e => setRenameValue(e.target.value.slice(0, 20))}
                                 onBlur={() => { dispatch({ type: 'RENAME_TEAM', teamIndex: idx, name: renameValue }); setRenamingTeamIdx(null); }}
                                 onKeyDown={e => { if (e.key === 'Enter') { e.target.blur(); } else if (e.key === 'Escape') { setRenamingTeamIdx(null); } }}
-                                className="kuro-input flex-1 min-w-0 text-center text-xs py-1.5"
+                                className="kuro-input flex-1 min-w-0 text-center text-sm py-1.5"
                                 maxLength={20}
                                 autoFocus
                                 aria-label={`Rename team ${idx + 1}`}

@@ -152,7 +152,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <h4 className="font-bold text-base text-white leading-tight">{title}</h4>
         </div>
         <div className={hasStats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-xs mb-0.5 uppercase tracking-wider">Available 5★</div>
+          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Available 5★</div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
             {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-xs text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
           </div>

@@ -676,7 +676,7 @@
     .kuro-header h3 {
       color: var(--text-heading);
       font-family: var(--font-display);
-      font-size: var(--font-base);
+      font-size: var(--font-md);
       font-weight: 600;
       line-height: 1.25;
       letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking */

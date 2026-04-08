@@ -1054,7 +1054,7 @@ function ProfileTab({
                     className="kuro-input w-full"
                   />
                   {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                  <p className="text-gray-400 text-xs mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
+                  <p className="text-gray-400 text-sm mt-0.5 text-right">{state.profile.username.length}/{MAX_USERNAME_LENGTH}</p>
                 </div>
 
                 {/* Profile Picture — current selection */}
@@ -1101,7 +1101,7 @@ function ProfileTab({
                     <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[44px] py-2 text-xs font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
-                <p className="text-gray-400 text-xs mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+                <p className="text-gray-400 text-sm mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
               </CardBody>
             </Card>
 
@@ -1218,7 +1218,7 @@ function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-sm font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
                   <p className="text-purple-400 text-xs font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - Background effects, transitions and glow</p>
@@ -1455,7 +1455,7 @@ function ProfileTab({
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-xs mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
                   <div className="flex justify-between text-xs"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
-                  <p className="text-gray-400 text-xs mt-2">View detailed stats in the Stats tab</p>
+                  <p className="text-gray-400 text-sm mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
             )}

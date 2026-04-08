@@ -264,7 +264,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* BUILD GUIDE SECTION */}
           <div className="space-y-1">
-            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+            <h3 className="text-white font-semibold text-base flex items-center gap-2">
               <Target size={14} className={colors.text} /> Build Guide
             </h3>
           </div>
@@ -329,7 +329,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Team Suggestions - with avatars */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
               <Swords size={14} className="text-pink-400" /> Team Comps
             </h3>
             <div className="space-y-2">
@@ -375,7 +375,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Skills with Multipliers */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
               <span className="text-xs text-gray-500 font-normal ml-auto">Lv.1 ATK%</span>
             </h3>
@@ -412,7 +412,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           
           {/* Ascension Materials (Lv 1→90) */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
@@ -430,7 +430,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Skill Upgrade Materials (all skills to Lv 10) */}
           {data.skillMaterials && (
             <div>
-              <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+              <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
                 <Zap size={14} className="text-purple-400" /> Skill Materials
               </h3>
               <div className="grid grid-cols-2 gap-1.5">
@@ -449,7 +449,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* EXP Materials */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-2 flex items-center gap-2">
+            <h3 className="text-white font-semibold text-base mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
             </h3>
             <div className="grid grid-cols-2 gap-1.5">

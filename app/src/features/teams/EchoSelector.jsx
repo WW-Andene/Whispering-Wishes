@@ -76,8 +76,8 @@ export default function EchoSelector({
               <>
                 <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div>
-                    <h3 className="text-white font-semibold text-sm">Select Echo</h3>
-                    <p className="text-gray-400 text-xs">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
+                    <h3 className="text-white font-semibold text-base">Select Echo</h3>
+                    <p className="text-gray-400 text-sm">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                   </div>
                   <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center" aria-label="Close echo selector"><X size={16} className="text-gray-400" /></button>
                 </div>
@@ -276,8 +276,8 @@ export default function EchoSelector({
                       <Diamond size={16} className={`text-${costColor}-400`} />
                     )}
                     <div className="min-w-0">
-                      <h3 className="text-white font-semibold text-sm truncate">{echoName}</h3>
-                      <p className="text-gray-400 text-xs">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
+                      <h3 className="text-white font-semibold text-base truncate">{echoName}</h3>
+                      <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>
                   <button onClick={() => setEchoStatPanel(null)} className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 flex items-center justify-center flex-shrink-0" aria-label="Close echo stats"><X size={16} className="text-gray-400" /></button>

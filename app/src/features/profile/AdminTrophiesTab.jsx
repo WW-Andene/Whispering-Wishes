@@ -14,7 +14,7 @@ export default function AdminTrophiesTab({
     <div className="space-y-4">
       <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
         <h3 className="text-amber-400 text-sm font-medium mb-2">Trophy Name Editor</h3>
-        <p className="text-gray-400 text-xs mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
+        <p className="text-gray-400 text-sm mb-3">Override trophy names and descriptions. Paste a JSON object where keys are trophy IDs and values have <code className="text-amber-400/80">name</code> and/or <code className="text-amber-400/80">desc</code> fields.</p>
 
         {/* Current trophies list */}
         <div className="mb-3">
@@ -29,7 +29,7 @@ export default function AdminTrophiesTab({
               </div>
             ))}
             {(!trophies?.list || trophies.list.length === 0) && (
-              <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-xs">Import Convene data to unlock achievements</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-xs mt-2 px-3 py-1.5">Go to Import</button></div>
+              <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-sm">Import Convene data to unlock achievements</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-xs mt-2 px-3 py-1.5">Go to Import</button></div>
             )}
           </div>
         </div>

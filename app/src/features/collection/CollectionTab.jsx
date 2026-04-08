@@ -272,7 +272,7 @@ function CollectionTab({
           <CardBody className="kuro-empty-state text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />
             <p className="text-gray-400 text-sm">Awaiting Convene data transmission</p>
-            <p className="text-gray-400 text-xs mt-1 mb-3">Import via Profile to initialize your archive</p>
+            <p className="text-gray-400 text-sm mt-1 mb-3">Import via Profile to initialize your archive</p>
             <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-xs px-4 py-2">Open Profile to import</button>
           </CardBody>
         </Card>
@@ -300,7 +300,7 @@ function CollectionTab({
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300" style={{width: `${pct}%`}} />
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-xs">
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
                   <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Resonator</div></div>
                   <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Resonator</div></div>
                   <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Weapon</div></div>

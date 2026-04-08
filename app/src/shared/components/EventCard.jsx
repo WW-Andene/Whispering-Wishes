@@ -75,7 +75,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-sm ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
+            <h4 className={`font-bold text-base ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
               {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
               {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}
@@ -87,7 +87,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
               <span className="kuro-badge kuro-badge-red font-medium">Expired</span>
             ) : (
               <>
-                <div className="text-gray-400 text-xs mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+                <div className="text-gray-400 text-sm mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
                 <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
               </>
             )}

@@ -18,7 +18,7 @@ const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
         <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
-        <div className="text-black font-semibold text-sm">Install Whispering Wishes</div>
+        <div className="text-black font-semibold text-base">Install Whispering Wishes</div>
         <div className="text-black/70 text-xs">{subtitle}</div>
       </div>
       <button
@@ -201,7 +201,7 @@ const PWAProvider = ({ children }) => {
                 <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
               </div>
               <div>
-                <div className="text-white font-semibold text-sm">Install Whispering Wishes</div>
+                <div className="text-white font-semibold text-base">Install Whispering Wishes</div>
                 <div className="text-gray-500 text-xs">Add to your home screen</div>
               </div>
             </div>
@@ -262,7 +262,7 @@ function InstallSteps() {
 
   return (
     <div className="space-y-2 text-xs text-gray-300">
-      <p className="text-gray-400 text-xs uppercase tracking-wider font-medium">{platform}</p>
+      <p className="text-gray-400 text-sm uppercase tracking-wider font-medium">{platform}</p>
       {steps.map((step, i) => (
         <div key={i} className="flex items-start gap-2">
           <span className="text-yellow-400 font-bold shrink-0">{i + 1}.</span>

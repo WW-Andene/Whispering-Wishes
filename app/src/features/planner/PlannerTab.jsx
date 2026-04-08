@@ -350,12 +350,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1">
           {['MON','TUE','WED','THU','FRI','SAT','SUN'].map(d => (
-            <div key={d} className="text-center text-xs font-bold tracking-wider" style={{ color: 'var(--text-disabled)' }}>{d}</div>
+            <div key={d} className="text-center text-sm font-bold tracking-wider" style={{ color: 'var(--text-disabled)' }}>{d}</div>
           ))}
         </div>
 
         {/* P7-F002: Hint that days are tappable (shown only when no day selected) */}
-        {!selectedDay && <p className="text-center text-xs text-gray-600 -mb-0.5">Tap a day to view events & add notes</p>}
+        {!selectedDay && <p className="text-center text-sm text-gray-600 -mb-0.5">Tap a day to view events & add notes</p>}
         {/* U6-06: Day grid with arrow key navigation */}
         <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label="Calendar days">
           {rows.map((row, ri) => (
@@ -772,7 +772,7 @@ function PlannerTab({
             <div className="grid grid-cols-3 gap-2">
               {[7, 30, 90].map(days => (
                 <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
-                  <div className="text-gray-400 text-xs mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
+                  <div className="text-gray-400 text-sm mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
                   <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-4xl' : 'text-xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
                   <div className="text-gray-400 text-xs">Convenes</div>
                   <div className="text-gray-400 text-xs">{(dailyIncome * days).toLocaleString('en-US')} Astrite</div>
@@ -928,7 +928,7 @@ function PlannerTab({
         {!collapsed.saved && (
         <CardBody className="space-y-2">
           {state.bookmarks.length === 0 ? (
-            <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">No saved states yet — head to the Calculator and tap Save to bookmark a configuration.</p>
+            <p className="kuro-empty-state text-gray-400 text-sm text-center py-4">No saved states yet — head to the Calculator and tap Save to bookmark a configuration.</p>
           ) : state.bookmarks.map(b => (
             <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
               <div>

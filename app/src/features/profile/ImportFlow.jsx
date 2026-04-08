@@ -226,7 +226,7 @@ export default function ImportFlow({
     <Card>
       <CardHeader>Import Convene History</CardHeader>
       <CardBody className="space-y-3">
-        <p className="text-gray-300 text-xs">Import your Convene history directly from the game.</p>
+        <p className="text-gray-300 text-sm">Import your Convene history directly from the game.</p>
         <div className="grid grid-cols-3 gap-2">
           {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
             <button key={k} onClick={() => { setImportPlatform(k); if (k === 'pc' || k === 'android') setImportMethod('direct'); if (k === 'ps5') setImportMethod('direct'); }} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
@@ -327,7 +327,7 @@ Example: {"pulls":[…]}'
         {/* Direct Import Method — fetch from WuWa API */}
         {importMethod === 'direct' && (
           <div className="space-y-2">
-            <p className="text-gray-400 text-xs">Paste your Convene History URL below or enter IDs manually.</p>
+            <p className="text-gray-400 text-sm">Paste your Convene History URL below or enter IDs manually.</p>
             <input
               type="text"
               value={directUrl}

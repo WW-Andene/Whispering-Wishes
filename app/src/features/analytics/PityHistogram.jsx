@@ -31,7 +31,7 @@ function PityHistogram({ statsTabData }) {
           <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
         </CardHeader>
         <CardBody>
-          <p className="text-gray-400 text-xs text-center py-4">Need 2+ five-star Convenes to show distribution</p>
+          <p className="text-gray-400 text-sm text-center py-4">Need 2+ five-star Convenes to show distribution</p>
         </CardBody>
       </Card>
     );

@@ -153,7 +153,7 @@ export default function AdminMiniPanel({
             <div className="text-cyan-400 text-xs font-medium mb-2">
               Editing: {editingBgTarget === 'header' ? 'Header' : editingBgTarget === 'nav' ? 'Navigation' : 'Background'}
             </div>
-            <div className="text-gray-400 text-xs mb-2 font-mono text-center">{getBgPositionLabel()}</div>
+            <div className="text-gray-400 text-sm mb-2 font-mono text-center">{getBgPositionLabel()}</div>
             <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-2">
               <div />
               <button onClick={() => updateBgPosition(0, -2)} className="bg-white/10 text-white rounded p-1 text-xs hover:bg-white/20 active:scale-95">▲</button>

@@ -43,7 +43,7 @@ export default function TeamSelector({
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
-                            <h3 className="text-white text-sm font-semibold">Select Resonator</h3>
+                            <h3 className="text-white text-base font-semibold">Select Resonator</h3>
                             <p className="text-gray-500 text-xs">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
                           </div>
                           <button onClick={() => setTeamSelectorOpen(false)} className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
@@ -242,7 +242,7 @@ export default function TeamSelector({
                           {filteredChars.length === 0 && (
                             <div className="text-center py-8">
                               <Search size={24} className="mx-auto mb-2 text-gray-600" />
-                              <p className="text-gray-400 text-xs">No resonators match</p>
+                              <p className="text-gray-400 text-sm">No resonators match</p>
                             </div>
                           )}
                         </div>

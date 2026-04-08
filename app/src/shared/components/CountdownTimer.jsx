@@ -89,7 +89,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   }, []); // Callbacks accessed via refs (P9-FIX: MEDIUM-5f)
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
-  if (time.expired && !alwaysShow) return <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Ended</span>;
+  if (time.expired && !alwaysShow) return <span className="text-gray-400 text-sm font-medium uppercase tracking-wider">Ended</span>;
   if (time.expired && alwaysShow) {
     // If expired but alwaysShow and has recalcFn, skip rendering zeros — next tick will recalculate
     if (recalcFn) return null;

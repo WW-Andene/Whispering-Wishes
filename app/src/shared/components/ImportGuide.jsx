@@ -51,7 +51,7 @@ const ImportGuide = memo(({ platform }) => {
           <p>{step}</p>
         </div>
       ))}
-      {guide.footer && <p className="text-gray-400 text-xs pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
+      {guide.footer && <p className="text-gray-400 text-sm pt-1 border-t border-[var(--border-medium)]">{guide.footer}</p>}
     </div>
   );
 });

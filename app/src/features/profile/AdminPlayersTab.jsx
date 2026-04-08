@@ -95,7 +95,7 @@ export default function AdminPlayersTab({
             ))}
           </div>
         ) : adminPlayerList.length === 0 ? (
-          <p className="kuro-empty-state text-gray-400 text-xs text-center py-4">Awaiting operative registration</p>
+          <p className="kuro-empty-state text-gray-400 text-sm text-center py-4">Awaiting operative registration</p>
         ) : (
           <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
             {adminPlayerList.map((p, i) => (
