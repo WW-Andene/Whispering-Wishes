@@ -181,7 +181,7 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
-    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Yinlin + Verina'] },
+    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Verina', 'Augusta + Yinlin + Verina'] },
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
     desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro while providing healing and shielding through Resonance Skill and Liberation.',
     skills: ['Temporal Fist', 'Chrono Shift', 'Time Dilation', 'Wan Light'],
@@ -244,7 +244,7 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Pendant', specialty: 'Arithmetic Shell' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
-    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Ciaccona + Shorekeeper'] },
+    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Ciaccona + Shorekeeper'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
