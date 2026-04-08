@@ -96,18 +96,20 @@ export default function RotationTimeline({ rotationTimeline }) {
       </div>
 
       {/* Time axis */}
-      <div className="flex">
-        <div className="w-16 flex-shrink-0" />
-        <div className="flex-1 relative h-3 mb-0.5">
-          {ticks.map(tick => (
-            <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
-              style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
-          ))}
-        </div>
-      </div>
+      <div className="overflow-x-auto scrollbar-hide" style={{ minWidth: 0 }}>
+        <div style={{ minWidth: '500px' }}>
+          <div className="flex">
+            <div className="w-16 flex-shrink-0" />
+            <div className="flex-1 relative h-3 mb-0.5">
+              {ticks.map(tick => (
+                <span key={tick} className="absolute text-[8px] text-gray-600 -translate-x-1/2"
+                  style={{ left: `${(tick / totalTime) * 100}%` }}>{tick}s</span>
+              ))}
+            </div>
+          </div>
 
-      {/* Rows */}
-      <div className="space-y-0.5 max-h-[280px] overflow-y-auto scrollbar-hide">
+          {/* Rows */}
+          <div className="space-y-0.5">
         {ordered.map((row, i) => {
           const leftPct = (row.start / totalTime) * 100;
           const widthPct = (row.duration / totalTime) * 100;
@@ -138,6 +140,8 @@ export default function RotationTimeline({ rotationTimeline }) {
             </div>
           );
         })}
+          </div>
+        </div>
       </div>
     </div>
   );
