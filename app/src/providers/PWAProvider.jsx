@@ -87,10 +87,17 @@ const PWAProvider = ({ children }) => {
       setIsInstalled(true);
     }
 
-    // Listen for install prompt
+    // Pick up early-captured install prompt (fires before React mounts — see main.jsx)
+    if (window.__pwaInstallPrompt) {
+      setInstallPrompt(window.__pwaInstallPrompt);
+      window.__pwaInstallPrompt = null;
+    }
+
+    // Listen for future install prompts
     const handleBeforeInstall = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
+      window.__pwaInstallPrompt = null;
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
