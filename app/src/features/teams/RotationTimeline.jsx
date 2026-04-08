@@ -52,20 +52,37 @@ export default function RotationTimeline({ rotationTimeline }) {
           ))}
         </div>
 
-        {/* Segments bar */}
-        <div className="flex rounded-lg overflow-hidden h-7 mb-1 relative" style={{ zIndex: 2 }}>
-          {rotationTimeline.segments.map((seg, i) => {
-            const pct = (seg.duration / totalTime) * 100;
-            const color = charColors[seg.name];
-            return (
-              <div key={i} className="flex items-center justify-center relative"
-                style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < rotationTimeline.segments.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
-                title={`${seg.name}: ${seg.duration}s on-field`}>
-                <span className="text-[9px] font-bold truncate px-1" style={{ color }}>{seg.name}</span>
-              </div>
-            );
-          })}
-        </div>
+        {/* Segments bar — loop to fill full rotation time */}
+        {(() => {
+          const looped = [];
+          const oneLoop = rotationTimeline.segments;
+          const loopDur = oneLoop.reduce((s, seg) => s + seg.duration, 0);
+          let t = 0;
+          let idx = 0;
+          while (t < totalTime && loopDur > 0) {
+            const seg = oneLoop[idx % oneLoop.length];
+            const remaining = totalTime - t;
+            const dur = Math.min(seg.duration, remaining);
+            looped.push({ ...seg, duration: dur, order: idx + 1 });
+            t += dur;
+            idx++;
+          }
+          return (
+            <div className="flex rounded-lg overflow-hidden h-7 mb-1 relative" style={{ zIndex: 2 }}>
+              {looped.map((seg, i) => {
+                const pct = (seg.duration / totalTime) * 100;
+                const color = charColors[seg.name];
+                return (
+                  <div key={i} className="flex items-center justify-center relative"
+                    style={{ width: `${pct}%`, background: `${color}30`, borderRight: i < looped.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
+                    title={`#${seg.order} ${seg.name}: ${seg.duration}s on-field`}>
+                    <span className="text-[9px] font-bold truncate px-1" style={{ color }}>{seg.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* Buff windows */}
         {rotationTimeline.buffs.length > 0 && (
