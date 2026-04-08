@@ -1278,7 +1278,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div key={m.name} className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-400 w-24 truncate" title={m.name}>{m.name}</span>
                     <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
+                      <div className="h-full rounded-l-full bg-cyan-500/50" style={{ width: `${m.pct}%` }} />
                     </div>
                     <span className="text-[10px] text-gray-500 w-8 text-right">{m.pct}%</span>
                   </div>
