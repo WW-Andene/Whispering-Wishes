@@ -787,17 +787,36 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     const rotationTimeline = (() => {
       const buffs = [];
-      // Auto-order rotation: Main DPS last (receives buffs), supports before
-      // The character with the strongest outro→next buffs goes immediately before the DPS
-      const dps = mems.filter(m => m.name === mainDps.name);
-      const others = mems.filter(m => m.name !== mainDps.name);
-      // Sort others: the one with more outro→next buff value goes last (right before DPS)
-      others.sort((a, b) => {
-        const aOut = (CHAR_BUFF_TABLE[a.name]?.outroBuffs || []).filter(b => b.target === 'next').reduce((s, b) => s + b.value, 0);
-        const bOut = (CHAR_BUFF_TABLE[b.name]?.outroBuffs || []).filter(b => b.target === 'next').reduce((s, b) => s + b.value, 0);
-        return aOut - bOut;
+      // ── Smart rotation ordering based on WuWa swap mechanics ──
+      // Rule 1: Main DPS goes LAST (receives all buffs in DPS window)
+      // Rule 2: Characters with team-wide outro buffs go FIRST (persist through swaps)
+      // Rule 3: Characters with next-only outro buffs go immediately BEFORE the DPS
+      //         (next-only buffs vanish when recipient swaps out, so only the last one reaches DPS)
+      // Rule 4: If multiple next-only buffers, the one with higher total value goes last (closer to DPS)
+      const dpsChar = mems.find(m => m.name === mainDps.name);
+      const supports = mems.filter(m => m.name !== mainDps.name);
+
+      // Classify supports by outro buff type
+      const hasTeamOutro = (m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (!bt) return false;
+        // Team-wide outro buffs persist through swaps (Verina, Shorekeeper, Baizhi, Mornye)
+        return (bt.outroBuffs || []).some(b => b.target === 'team');
+      };
+      const nextOutroValue = (m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (!bt) return 0;
+        return (bt.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'enemy').reduce((s, b) => s + b.value, 0);
+      };
+
+      // Sort: team-wide outro first, then by next-outro value ascending (strongest last = closest to DPS)
+      supports.sort((a, b) => {
+        const aTeam = hasTeamOutro(a) ? 0 : 1;
+        const bTeam = hasTeamOutro(b) ? 0 : 1;
+        if (aTeam !== bTeam) return aTeam - bTeam; // team-wide outro goes first
+        return nextOutroValue(a) - nextOutroValue(b); // stronger next-outro goes last (closer to DPS)
       });
-      const ordered = [...others, ...dps];
+      const ordered = dpsChar ? [...supports, dpsChar] : [...mems];
       // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
       const raw = ordered.map(m => ({
         m, onField: m.d.onField ?? (m.name === mainDps.name ? 15 : 5),
