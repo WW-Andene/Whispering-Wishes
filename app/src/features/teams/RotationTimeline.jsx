@@ -107,7 +107,7 @@ export default function RotationTimeline({ rotationTimeline }) {
       </div>
 
       {/* Rows */}
-      <div className="space-y-0.5">
+      <div className="space-y-0.5 max-h-[280px] overflow-y-auto scrollbar-hide">
         {ordered.map((row, i) => {
           const leftPct = (row.start / totalTime) * 100;
           const widthPct = (row.duration / totalTime) * 100;
