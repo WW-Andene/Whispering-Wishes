@@ -146,9 +146,18 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (mult === 0) return;
       if (m.name !== mainDps.name) {
         const subOnField = m.d.onField || 5;
-        // Proportional share: each sub-DPS gets field time proportional to their onField needs
         const allocatedTime = rawOffFieldTime * (subOnField / totalSubNeed);
-        mult = mult * Math.min(1, allocatedTime / subOnField);
+        const fieldRatio = Math.min(1, allocatedTime / subOnField);
+        // Coordinated ATK chars deal off-field damage during main DPS field time
+        const rawFocus = m.d.dmgFocus || [];
+        const rawHasCoord = rawFocus.includes('Coordinated ATK');
+        if (rawHasCoord) {
+          const coordShare = rawFocus.length === 1 ? 0.8 : 0.5;
+          const coordUptime = Math.min(1, rawMainOnField / rawRotTime);
+          mult = mult * (coordShare * coordUptime + (1 - coordShare) * fieldRatio);
+        } else {
+          mult = mult * fieldRatio;
+        }
       }
       const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
       let rStatPct = 0, rCr = 5, rCd = 150, rElem = 0, rSkillDmg = 0;
@@ -227,7 +236,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const rResMult = calcResMult(rBaseRes, 0);
       rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
     });
-    const rawDps = Math.round(rawTotalRotDmg / (mainDps.d.rotTime || 25));
+    const rawDps = Math.round(rawTotalRotDmg / rawRotTime);
 
     // ── FULL TIER: Base stats with team buffs ──
     const mainStatKey = mainDps.scaling === 'HP' ? 'HP%' : mainDps.scaling === 'DEF' ? 'DEF%' : 'ATK%';
@@ -328,6 +337,29 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (mainEl && elCounts[mainEl] >= 2) elemDmg += 10;
     }
 
+    // ── Main DPS echo skill buffs (self buffs from their own 4-cost echo) ──
+    if (mainDps.mainEchoName) {
+      const mainEsb = ECHO_SKILL_BUFFS[mainDps.mainEchoName];
+      if (mainEsb && (mainEsb.target || 'self') === 'self') {
+        const esbUp = mainEsb.passive ? 1 : Math.min(1, (mainEsb.duration || 15) / rotTime);
+        mainEsb.buffs.forEach(b => {
+          const val = b.value * esbUp;
+          const mainEl = (mainDps.d.element || '').toLowerCase();
+          if (b.stat === mainEl + 'Dmg') elemDmg += val;
+          else if (b.stat === 'allDmg') elemDmg += val;
+          else if (b.stat === 'atkPct') atkPct += val;
+          else if (b.stat === 'skillDmg') skillDmg += val;
+          else if (b.stat === 'basicDmg') wpBasicDmg += val;
+          else if (b.stat === 'heavyDmg') wpHeavyDmg += val;
+          else if (b.stat === 'libDmg') wpLibDmg += val;
+          else if (b.stat === 'echoDmg') wpEchoDmg += val;
+          else if (b.stat === 'coordDmg') wpCoordDmg += val;
+          else if (b.stat === 'critRate') cr += val;
+          else if (b.stat === 'critDmg') cd += val;
+        });
+      }
+    }
+
     let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg;
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
@@ -335,7 +367,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const isMain = m.name === mainDps.name;
 
       if (!isMain) {
-        const teamRotTime = mainDps.d.rotTime || 25;
+        const teamRotTime = rotTime;
         (bt.outroBuffs || []).forEach(b => {
           if (b.target === 'next' || b.target === 'enemy') {
             const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
@@ -370,7 +402,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
       (bt.libBuffs || []).forEach(b => {
         if (b.target === 'team' || (!isMain && b.target === 'next')) {
-          const teamRotTime = mainDps.d.rotTime || 25;
+          const teamRotTime = rotTime;
           const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
           const val = b.value * uptime;
           if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
@@ -439,7 +471,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const bt = CHAR_BUFF_TABLE[m.name];
       (bt?.weaponBuffs || []).forEach(wb => {
         if (wb.target !== 'team') return;
-        const teamRotTime = mainDps.d.rotTime || 25;
+        const teamRotTime = rotTime;
         const uptime = Math.min(1, (wb.duration || 10) / teamRotTime);
         const val = wb.value * uptime;
         if (wb.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
@@ -451,12 +483,33 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const tvRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
         const tvRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[tvRefLevel - 1] || 1 : 1;
         const wt = m.weapon.tv;
-        const teamRotTime = mainDps.d.rotTime || 25;
+        const teamRotTime = rotTime;
         const uptime = Math.min(1, (wt.duration || 15) / teamRotTime);
         if (wt.atkPct) atkPct += wt.atkPct * tvRefScale * uptime;
         if (wt.elemDmg) elemDmg += wt.elemDmg * tvRefScale * uptime;
         if (wt.critRate) cr += wt.critRate * tvRefScale * uptime;
         if (wt.critDmg) cd += wt.critDmg * tvRefScale * uptime;
+      }
+      // ── Echo active skill buffs from sub-DPS (team/next buffs) ──
+      if (m.mainEchoName) {
+        const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
+        if (esb) {
+          const target = esb.target || 'self';
+          const esbUptime = esb.passive ? 1 : Math.min(1, (esb.duration || 15) / rotTime);
+          if (target === 'team' || target === 'next') {
+            esb.buffs.forEach(b => {
+              const val = b.value * esbUptime;
+              if (b.stat === 'allDmg') elemDmg += val;
+              else if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
+              else if (b.stat === 'critRate') cr += val;
+              else if (b.stat === 'critDmg') cd += val;
+              else {
+                const mainEl = (mainDps.d.element || '').toLowerCase();
+                if (b.stat === mainEl + 'Dmg') elemDmg += val;
+              }
+            });
+          }
+        }
       }
     });
 
@@ -626,7 +679,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const subOnField = m.d.onField || 5;
         const allocatedTime = offFieldTime * (subOnField / fullTotalSubNeed);
         const fieldRatio = Math.min(1, allocatedTime / subOnField);
-        mult = mult * fieldRatio;
+        // Coordinated ATK characters deal off-field damage during main DPS's field time.
+        // Their coordinated portion should scale with main DPS uptime, not their own field time.
+        const focus = m.d.dmgFocus || [];
+        const hasCoord = focus.includes('Coordinated ATK');
+        if (hasCoord) {
+          // Split damage: coordinated portion (60-80%) scales with DPS uptime, on-field portion scales with field ratio
+          const coordShare = focus.length === 1 ? 0.8 : 0.5; // Pure coord chars vs hybrid
+          const coordUptime = Math.min(1, mainOnField / rotTime); // Active during DPS field time
+          const onFieldShare = 1 - coordShare;
+          mult = mult * (coordShare * coordUptime + onFieldShare * fieldRatio);
+        } else {
+          mult = mult * fieldRatio;
+        }
       }
       if (isMain && m.weapon?.pv?.atkSpeed) {
         const mainRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
@@ -647,7 +712,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0;
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
-        const teamRotTime = mainDps.d.rotTime || 25;
+        const teamRotTime = rotTime;
         const echoPreset = sEq?.echoPreset || 'default';
         if (sEchoes.length === 0) {
           if (echoPreset === 'er') {
@@ -863,13 +928,49 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     });
     const perfectDps = Math.round(realDps + (echoActiveDmg / rotTime));
 
+    // ── Synergy scoring: measures how well the team works together ──
     let syn = 0;
-    if (mems.some(m => m.d.role === 'Healer')) syn += 25;
-    if (mems.some(m => m.d.role === 'Support' || m.d.role === 'Sub DPS')) syn += 25;
-    if (allBuffs.length >= 2) syn += 15;
-    if (allDebuffs.length >= 1) syn += 10;
-    if (allBuffs.some(b => b.buff.includes(mainDps.d.element))) syn += 15;
-    if (mainDps.d.dmgFocus?.length > 0 && allBuffs.some(b => mainDps.d.dmgFocus.some(df => b.buff.includes(df)))) syn += 10;
+    // Role coverage (0-30)
+    const hasHealer = mems.some(m => m.d.role === 'Healer');
+    const hasSubDps = mems.some(m => m.d.role === 'Sub DPS');
+    const hasSupport = mems.some(m => m.d.role === 'Support');
+    if (hasHealer) syn += 15;
+    if (hasSubDps || hasSupport) syn += 15;
+    // Element synergy (0-20): matching elements enable resonance + buff alignment
+    const elCounts = {};
+    mems.forEach(m => { const el = m.d.element; if (el) elCounts[el] = (elCounts[el] || 0) + 1; });
+    const mainEl = mainDps.d.element;
+    if (mainEl && elCounts[mainEl] >= 2) syn += 10; // Element resonance with DPS
+    if (mainEl && elCounts[mainEl] >= 3) syn += 5;  // Mono-element bonus
+    // Buff alignment (0-25): do teammates buff what the DPS actually uses?
+    const dpsBuffTable = CHAR_BUFF_TABLE[mainDps.name];
+    const dpsFocus = mainDps.d.dmgFocus || [];
+    mems.forEach(m => {
+      if (m.name === mainDps.name) return;
+      const bt = CHAR_BUFF_TABLE[m.name];
+      if (!bt) return;
+      (bt.outroBuffs || []).forEach(b => {
+        if (b.stat === 'deepen') syn += 5; // Universal deepen is always good
+        else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) syn += 5;
+        else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) syn += 5;
+        else if (b.stat === 'libDmg' && dpsFocus.includes('Liberation')) syn += 3;
+        else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) syn += 5;
+        else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) syn += 4;
+        else if (b.stat === 'elemDmg') {
+          const cond = (b.condition || '').toLowerCase();
+          const dpsEl = (mainEl || '').toLowerCase();
+          if (!cond || cond.includes(dpsEl) || cond.includes('all')) syn += 4;
+        }
+      });
+      // Debuff contribution
+      (bt.debuffs || []).forEach(db => {
+        if (db.stat === 'defShred' || db.stat === 'resShred') syn += 3;
+      });
+    });
+    // Off-field damage contribution (0-10)
+    const offFieldDamagers = mems.filter(m => m.name !== mainDps.name && (m.d.dmgFocus || []).includes('Coordinated ATK'));
+    if (offFieldDamagers.length > 0) syn += 5;
+    if (offFieldDamagers.length > 1) syn += 5;
     syn = Math.min(syn, 100);
     const warnings = [];
     if (mems.length < 3) {
