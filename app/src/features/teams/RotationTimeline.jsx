@@ -95,9 +95,9 @@ export default function RotationTimeline({ rotationTimeline }) {
         Rotation ({totalTime}s)
       </div>
 
-      {/* Time axis */}
-      <div className="overflow-x-auto scrollbar-hide" style={{ minWidth: 0 }}>
-        <div style={{ minWidth: '500px' }}>
+      {/* Scrollable chart */}
+      <div className="overflow-x-auto scrollbar-hide -mx-1 px-1" style={{ minWidth: 0 }}>
+        <div style={{ minWidth: `${Math.max(500, totalTime * 25)}px` }}>
           <div className="flex">
             <div className="w-16 flex-shrink-0" />
             <div className="flex-1 relative h-3 mb-0.5">
