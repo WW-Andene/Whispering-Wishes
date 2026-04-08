@@ -144,6 +144,7 @@ function WhisperingWishesInner() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showServerDropdown, setShowServerDropdown] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   // Admin panel state lifted to App so mini panel survives tab switches
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminMiniMode, setAdminMiniMode] = useState(false);
@@ -947,7 +948,7 @@ function WhisperingWishesInner() {
                 } else if (pwa?.isInstalled) {
                   toast?.addToast?.('App is already installed', 'success');
                 } else {
-                  toast?.addToast?.('Use your browser menu to add to home screen', 'info');
+                  setShowInstallGuide(true);
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="absolute inset-0 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" style={{ background: activeTheme ? `linear-gradient(135deg, ${themeAccent}, ${themeAccent}80)` : 'linear-gradient(135deg, #facc15, #f97316)' }} aria-hidden="true" />
@@ -1170,6 +1171,69 @@ function WhisperingWishesInner() {
         )}
 
       </main>
+
+      {/* Install Guide Modal */}
+      <FocusTrapModal isOpen={showInstallGuide} onClose={() => setShowInstallGuide(false)} className="" onClick={() => setShowInstallGuide(false)} ariaLabel="Install app guide" centered>
+        <div className="kuro-card w-full max-w-xs rounded-2xl p-4" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+              <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <h3 className="text-white font-semibold text-sm">Install Whispering Wishes</h3>
+              <p className="text-gray-500 text-[10px]">Add to your home screen</p>
+            </div>
+          </div>
+          {(() => {
+            const ua = navigator.userAgent;
+            const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+            const isFirefox = /Firefox/.test(ua);
+            const isSamsung = /SamsungBrowser/.test(ua);
+            const isAndroid = /Android/.test(ua);
+            if (isIOS || isSafari) return (
+              <div className="space-y-2 text-xs text-gray-300">
+                <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">Safari / iOS</p>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">1.</span><span>Tap the <strong className="text-white">Share</strong> button <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">↑</span> in the toolbar</span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">2.</span><span>Scroll down and tap <strong className="text-white">Add to Home Screen</strong></span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">3.</span><span>Tap <strong className="text-white">Add</strong> to confirm</span></div>
+              </div>
+            );
+            if (isFirefox) return (
+              <div className="space-y-2 text-xs text-gray-300">
+                <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">Firefox</p>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">1.</span><span>Tap the <strong className="text-white">menu</strong> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">⋮</span></span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">2.</span><span>Tap <strong className="text-white">Install</strong> or <strong className="text-white">Add to Home Screen</strong></span></div>
+              </div>
+            );
+            if (isSamsung) return (
+              <div className="space-y-2 text-xs text-gray-300">
+                <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">Samsung Internet</p>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">1.</span><span>Tap the <strong className="text-white">menu</strong> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">☰</span></span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">2.</span><span>Tap <strong className="text-white">Add page to</strong> → <strong className="text-white">Home screen</strong></span></div>
+              </div>
+            );
+            if (isAndroid) return (
+              <div className="space-y-2 text-xs text-gray-300">
+                <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">Chrome / Android</p>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">1.</span><span>Tap the <strong className="text-white">menu</strong> button <span className="inline-block px-1.5 py-0.5 bg-white/10 rounded text-[10px]">⋮</span></span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">2.</span><span>Tap <strong className="text-white">Install app</strong> or <strong className="text-white">Add to Home screen</strong></span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">3.</span><span>Tap <strong className="text-white">Install</strong> to confirm</span></div>
+              </div>
+            );
+            return (
+              <div className="space-y-2 text-xs text-gray-300">
+                <p className="text-gray-400 text-[10px] uppercase tracking-wider font-medium">Desktop</p>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">1.</span><span>Click the <strong className="text-white">install icon</strong> <span className="inline-block px-1 py-0.5 bg-white/10 rounded text-[10px]">⊕</span> in the address bar, or</span></div>
+                <div className="flex items-start gap-2"><span className="text-yellow-400 font-bold shrink-0">2.</span><span>Click <strong className="text-white">⋮</strong> → <strong className="text-white">Install Whispering Wishes</strong></span></div>
+              </div>
+            );
+          })()}
+          <button onClick={() => setShowInstallGuide(false)} className="mt-4 w-full py-2 rounded-lg text-xs font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors">
+            Got it
+          </button>
+        </div>
+      </FocusTrapModal>
 
       {/* Server Selector Modal */}
       <FocusTrapModal isOpen={showServerDropdown} onClose={() => setShowServerDropdown(false)} className="" onClick={() => setShowServerDropdown(false)} ariaLabel="Select server region" centered>
