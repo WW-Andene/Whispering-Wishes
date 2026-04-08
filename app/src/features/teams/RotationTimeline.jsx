@@ -67,7 +67,7 @@ export default function RotationTimeline({ rotationTimeline }) {
   const barWidth = Math.max(400, totalTime * 20);
 
   return (
-    <div className="mt-3 kuro-detail-box">
+    <div>
       <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
 
       {/* Two-column layout: sticky labels | scrollable bars */}

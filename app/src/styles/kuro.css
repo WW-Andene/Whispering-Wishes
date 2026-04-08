@@ -618,6 +618,9 @@
       overflow: hidden;
       border-radius: 16px;
     }
+    .rotation-card .kuro-card-inner {
+      overflow: visible;
+    }
     
     /* Corner decorations */
     .kuro-card-inner::before {

@@ -1301,8 +1301,14 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         </CardBody>
       </Card>
 
-      {/* Rotation Timeline — outside Card so overflow-x scroll works */}
-      <RotationTimeline rotationTimeline={rotationTimeline} />
+      {/* Rotation Timeline — own Card with overflow-visible inner */}
+      {rotationTimeline?.segments?.length > 0 && (
+        <Card className="rotation-card">
+          <CardBody>
+            <RotationTimeline rotationTimeline={rotationTimeline} />
+          </CardBody>
+        </Card>
+      )}
 
       <DPSComparisonCard
         teamCompareEntries={teamCompareEntries} setTeamCompareEntries={setTeamCompareEntries}
