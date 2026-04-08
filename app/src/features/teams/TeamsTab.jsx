@@ -445,74 +445,42 @@ function TeamsTab({
                             ...Object.keys(collectionData.chars5Counts),
                             ...Object.keys(collectionData.chars4Counts),
                           ]);
-                          const suggestions = [];
-                          const seen = new Set();
-                          const orderedChars = [...RELEASE_ORDER].reverse();
-                          for (const name of orderedChars) {
-                            const d = CHARACTER_DATA[name];
-                            if (!d?.teams) continue;
-                            for (const t of d.teams) {
-                              // Deduplicate by sorted member names (catches A+B+C vs B+A+C)
-                              const members = t.split('+').map(m => m.trim());
-                              const dedupeKey = [...members].sort().join('|');
-                              if (seen.has(dedupeKey)) continue;
-                              seen.add(dedupeKey);
-                              if (members.length < 2) continue;
-                              const ownedCount = members.filter(m => ownedNames.has(m)).length;
-                              suggestions.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
-                            }
-                          }
-                          // ── Comprehensive scoring — team strength first, ownership as tiebreaker ──
-                          const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
                           const ownedWeaps = new Set([
                             ...Object.keys(collectionData.weaps5Counts || {}),
                             ...Object.keys(collectionData.weaps4Counts || {}),
                           ]);
-                          suggestions.forEach(s => {
+                          const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
+
+                          // ── Score a team (shared logic) ──
+                          const scoreTeam = (members) => {
                             let score = 0;
-                            const roles = s.members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
+                            const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
                             const tags = [];
-
-                            // ─ Tier weighting (heaviest factor: determines team strength) ─
+                            // Tier
                             let tierSum = 0;
-                            s.members.forEach(m => {
-                              const tier = CHARACTER_DATA[m]?.tier?.toa;
-                              if (tier) tierSum += (TIER_SCORES[tier] ?? 10);
-                            });
-                            score += tierSum * 2; // Double-weighted: tier is king
-                            if (tierSum >= 100) tags.push('Meta');
-
-                            // ─ Role balance ─
-                            const hasMain = roles.includes('Main DPS');
-                            const hasSub = roles.includes('Sub DPS');
-                            const hasHeal = roles.includes('Healer');
-                            const hasSupp = roles.includes('Support');
-                            if (hasMain) score += 15;
-                            if (hasHeal || hasSupp) score += 10;
-                            if (hasSub) score += 8;
+                            members.forEach(m => { const t = CHARACTER_DATA[m]?.tier?.toa; if (t) tierSum += (TIER_SCORES[t] ?? 10); });
+                            score += tierSum;
+                            if (tierSum >= 90) tags.push('Meta');
+                            // Roles
+                            const hasMain = roles.includes('Main DPS'), hasSub = roles.includes('Sub DPS');
+                            const hasHeal = roles.includes('Healer'), hasSupp = roles.includes('Support');
+                            if (hasMain) score += 15; if (hasHeal || hasSupp) score += 10; if (hasSub) score += 8;
                             if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
-
-                            // ─ DPS power ─
-                            const mainDps = s.members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+                            // DPS power + buff synergy
+                            const mainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
                             if (mainDps) {
-                              const mult = CHARACTER_DATA[mainDps]?.totalMult || 0;
-                              score += Math.min(25, Math.round(mult / 120));
-                            }
-
-                            // ─ Buff synergy ─
-                            if (mainDps) {
+                              score += Math.min(25, Math.round((CHARACTER_DATA[mainDps]?.totalMult || 0) / 120));
                               const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
-                              s.members.forEach(m => {
+                              members.forEach(m => {
                                 if (m === mainDps) return;
-                                const bt = CHAR_BUFF_TABLE[m];
-                                if (!bt) return;
+                                const bt = CHAR_BUFF_TABLE[m]; if (!bt) return;
                                 (bt.outroBuffs || []).forEach(b => {
-                                  if (b.stat === 'deepen') { score += 8; }
+                                  if (b.stat === 'deepen') score += 8;
                                   else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) { score += 10; tags.push('ATK Amp'); }
                                   else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) { score += 10; tags.push('Heavy Amp'); }
                                   else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) { score += 10; tags.push('Echo Amp'); }
-                                  else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) { score += 8; }
-                                  else if (b.stat === 'elemDmg') { score += 6; }
+                                  else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) score += 8;
+                                  else if (b.stat === 'elemDmg') score += 6;
                                 });
                                 (bt.debuffs || []).forEach(db => {
                                   if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
@@ -521,37 +489,115 @@ function TeamsTab({
                                 });
                               });
                             }
-
-                            // ─ Element synergy ─
-                            const elements = s.members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
-                            const elSet = new Set(elements);
-                            if (elements.length > elSet.size) { score += 12; tags.push('Resonance'); }
+                            // Element
+                            const els = members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
+                            const elSet = new Set(els);
+                            if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
                             if (elSet.size === 1) { score += 8; tags.push('Mono'); }
-
-                            // ─ Ownership bonus (tiebreaker, NOT dominant) ─
-                            score += s.ownedCount * 8;
-                            if (s.allOwned) score += 12;
-
-                            // ─ BiS weapon bonus: reward teams where DPS has signature weapon ─
+                            // BiS weapon
                             let hasBis = false;
-                            s.members.forEach(m => {
-                              const d = CHARACTER_DATA[m];
-                              if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) {
-                                score += d.role === 'Main DPS' ? 15 : 5;
-                                hasBis = true;
-                              }
-                            });
+                            members.forEach(m => { const d = CHARACTER_DATA[m]; if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) { score += d.role === 'Main DPS' ? 12 : 4; hasBis = true; } });
                             if (hasBis) tags.push('BiS Weapon');
+                            return { score, tags: [...new Set(tags)].slice(0, 3) };
+                          };
 
-                            s.tags = [...new Set(tags)].slice(0, 3);
-                            s.score = score;
-                          });
-                          // Sort purely by score — no more all-owned override
-                          suggestions.sort((a, b) => b.score - a.score);
-                          if (suggestions.length === 0) {
+                          // ═══ SECTION 1: Build custom teams from YOUR owned characters ═══
+                          const customTeams = [];
+                          const ownedArr = [...ownedNames].filter(n => CHARACTER_DATA[n]);
+                          const ownedDps = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Main DPS');
+                          const ownedSub = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Sub DPS');
+                          const ownedHeal = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Healer' || CHARACTER_DATA[n].role === 'Support');
+                          const customSeen = new Set();
+                          // For each owned DPS, find best sub + best healer/support
+                          for (const dps of ownedDps) {
+                            const dpsEl = CHARACTER_DATA[dps]?.element;
+                            const dpsFocus = CHARACTER_DATA[dps]?.dmgFocus || [];
+                            // Score each potential sub-DPS partner
+                            const subCandidates = ownedSub.filter(s => s !== dps).map(sub => {
+                              let fit = 0;
+                              const bt = CHAR_BUFF_TABLE[sub];
+                              if (bt) {
+                                (bt.outroBuffs || []).forEach(b => {
+                                  if (b.stat === 'deepen') fit += 10;
+                                  else if (b.stat === 'elemDmg') { const cond = (b.condition || '').toLowerCase(); if (!cond || cond.includes((dpsEl || '').toLowerCase())) fit += 8; }
+                                  else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) fit += 12;
+                                  else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) fit += 12;
+                                  else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) fit += 12;
+                                  else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) fit += 10;
+                                });
+                                (bt.debuffs || []).forEach(db => { if (db.stat === 'defShred' || db.stat === 'resShred') fit += 6; });
+                              }
+                              if (CHARACTER_DATA[sub]?.element === dpsEl) fit += 5; // element resonance
+                              const tier = CHARACTER_DATA[sub]?.tier?.toa;
+                              fit += (TIER_SCORES[tier] ?? 5);
+                              return { name: sub, fit };
+                            }).sort((a, b) => b.fit - a.fit);
+                            // Score each potential healer/support
+                            const healCandidates = ownedHeal.filter(h => h !== dps).map(heal => {
+                              let fit = 0;
+                              const bt = CHAR_BUFF_TABLE[heal];
+                              if (bt) {
+                                (bt.outroBuffs || []).forEach(b => { if (b.stat === 'deepen') fit += 10; else if (b.stat === 'atkPct') fit += 6; });
+                                (bt.libBuffs || []).forEach(b => { if (b.stat === 'critRate' || b.stat === 'critDmg') fit += 8; else if (b.stat === 'atkPct') fit += 6; });
+                              }
+                              const tier = CHARACTER_DATA[heal]?.tier?.toa;
+                              fit += (TIER_SCORES[tier] ?? 5);
+                              return { name: heal, fit };
+                            }).sort((a, b) => b.fit - a.fit);
+                            // Build top 2 teams per DPS
+                            const bestSubs = subCandidates.slice(0, 3);
+                            const bestHeals = healCandidates.slice(0, 2);
+                            for (const sub of bestSubs) {
+                              for (const heal of bestHeals) {
+                                if (sub.name === heal.name) continue;
+                                const members = [dps, sub.name, heal.name];
+                                const key = [...members].sort().join('|');
+                                if (customSeen.has(key)) continue;
+                                customSeen.add(key);
+                                const { score, tags } = scoreTeam(members);
+                                customTeams.push({ text: members.join(' + '), members, score, tags, ownedCount: 3, allOwned: true, custom: true });
+                              }
+                            }
+                          }
+                          customTeams.sort((a, b) => b.score - a.score);
+
+                          // ═══ SECTION 2: Curated meta teams (from CHARACTER_DATA.teams) ═══
+                          const metaTeams = [];
+                          const metaSeen = new Set();
+                          const orderedChars = [...RELEASE_ORDER].reverse();
+                          for (const name of orderedChars) {
+                            const d = CHARACTER_DATA[name];
+                            if (!d?.teams) continue;
+                            for (const t of d.teams) {
+                              const members = t.split('+').map(m => m.trim());
+                              const dedupeKey = [...members].sort().join('|');
+                              if (metaSeen.has(dedupeKey) || customSeen.has(dedupeKey)) continue;
+                              metaSeen.add(dedupeKey);
+                              if (members.length < 2) continue;
+                              const ownedCount = members.filter(m => ownedNames.has(m)).length;
+                              const { score, tags } = scoreTeam(members);
+                              metaTeams.push({ text: t, members, score: score + ownedCount * 8 + (ownedCount === members.length ? 12 : 0), tags, ownedCount, allOwned: ownedCount === members.length });
+                            }
+                          }
+                          metaTeams.sort((a, b) => b.score - a.score);
+
+                          const allSuggestions = [];
+                          // Show custom teams first (built from your roster), then meta
+                          if (customTeams.length > 0) {
+                            allSuggestions.push({ header: 'Built from your roster' });
+                            customTeams.slice(0, 8).forEach(s => allSuggestions.push(s));
+                          }
+                          if (metaTeams.length > 0) {
+                            allSuggestions.push({ header: 'Curated teams' });
+                            metaTeams.slice(0, customTeams.length > 0 ? 7 : 15).forEach(s => allSuggestions.push(s));
+                          }
+
+                          if (allSuggestions.length === 0) {
                             return <p className="text-gray-500 text-sm text-center py-2">No team suggestions available</p>;
                           }
-                          return suggestions.slice(0, 15).map((s, i) => (
+                          return allSuggestions.map((s, i) => {
+                            if (s.header) return <div key={`h${i}`} className="text-xs text-gray-500 uppercase tracking-wider font-medium pt-2 pb-0.5 flex items-center gap-2"><span className="h-px flex-1 bg-white/5" />{s.header}<span className="h-px flex-1 bg-white/5" /></div>;
+                            return (
                             <button
                               key={i}
                               onClick={() => {
@@ -598,7 +644,8 @@ function TeamsTab({
                                 <span className="text-2xs text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}
                             </button>
-                          ));
+                          );
+                          });
                         })()}
                       </div>
                     </CardBody>
