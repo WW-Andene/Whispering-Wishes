@@ -71,14 +71,15 @@ export default function RotationTimeline({ rotationTimeline }) {
   const tableWidth = Math.max(600, timeScale * 24 + 64);
 
   return (
-    <div className="kuro-card" style={{ overflow: 'visible' }}>
-      <div style={{
-        padding: 'var(--card-padding)',
-        paddingBottom: 'var(--card-padding)',
-        overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        borderRadius: 16,
-      }}>
+    <div style={{
+      background: 'var(--bg-card)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 16,
+      overflowX: 'auto',
+      overflowY: 'visible',
+      WebkitOverflowScrolling: 'touch',
+      padding: 'var(--card-padding)',
+    }}>
         <div className="kuro-section-label mb-2">Rotation ({totalTime}s)</div>
         <table style={{ width: tableWidth, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <colgroup>
@@ -131,7 +132,6 @@ export default function RotationTimeline({ rotationTimeline }) {
             })}
           </tbody>
         </table>
-      </div>
     </div>
   );
 }
