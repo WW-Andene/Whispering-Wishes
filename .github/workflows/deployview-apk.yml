@@ -12,7 +12,7 @@ on:
         default: 'dist'
       working_directory:
         description: Subdirectory containing package.json (leave blank for repo root)
-        default: 'app'
+        default: '.'
 
 jobs:
   build-apk:
