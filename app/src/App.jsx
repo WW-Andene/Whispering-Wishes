@@ -950,11 +950,11 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
-                <div className="relative rounded-xl overflow-hidden shadow-lg group-hover:scale-[1.02] transition-transform" style={{ width: 60, height: 60 }}>
-                  <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-full h-full object-cover" />
+                <div className="relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg group-hover:scale-[1.02] transition-transform" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
+                  <img src={HEADER_ICON} alt="Whispering Wishes logo" className="w-8 h-8 object-contain" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
-                  <div className="absolute inset-0 pointer-events-none" style={{ width: 60, height: 60 }} aria-hidden="true">
+                  <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
                     {[0, 1, 2, 3].map(i => (
                       <span key={i} className="header-star" style={{
                         position: 'absolute',
