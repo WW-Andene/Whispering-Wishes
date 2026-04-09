@@ -580,31 +580,35 @@ const BANNER_THEMES = {
       rot: 0, rotV: (Math.random() - 0.5) * 0.015, active: false,
     }));
     let lastBoom = -1;
-    // Scattered timestamp instances — each with own position, time, glitch state
-    const timestamps = Array.from({ length: 8 }, () => ({
+    // Scattered timestamp instances — appear/disappear sequentially
+    const COUNT = 8;
+    const SLOT_DUR = 6.5 / COUNT; // each gets ~0.8s of the 6.5s phase
+    const timestamps = Array.from({ length: COUNT }, (_, i) => ({
       x: Math.random() * w * 0.7 + w * 0.15,
       y: Math.random() * h * 0.7 + h * 0.15,
-      hour: Math.floor(Math.random() * 24), min: Math.floor(Math.random() * 60),
+      min: Math.floor(Math.random() * 60),
       glitchX: 0, glitchY: 0, timer: Math.random() * 0.1,
-      size: 12 + Math.random() * 10, alpha: 0.4 + Math.random() * 0.4,
-      spawnDelay: Math.random() * 3, // staggered appearance
+      size: 12 + Math.random() * 10,
+      start: i * SLOT_DUR, // when this one appears
     }));
     return (ctx, t) => {
       const cycle = t % CYCLE;
       const cycleId = Math.floor(t / CYCLE);
-      // ── PHASE 1 (0–6.5s): SCATTERED GLITCHING TIMESTAMPS ──
+      // ── PHASE 1 (0–6.5s): SEQUENTIAL GLITCHING TIMESTAMPS ──
       if (cycle < 6.5) {
-        const fadeGlobal = cycle < 0.3 ? cycle / 0.3 : cycle > 6 ? (6.5 - cycle) / 0.5 : 1;
         for (const ts of timestamps) {
-          if (cycle < ts.spawnDelay) continue;
-          // Time progresses 23:00 → 00:00 → ... → 06:30 (night to dawn)
-          const localT = cycle - ts.spawnDelay;
-          const progress = Math.min(1, localT / 5.5); // 0→1 over 5.5s
-          // 23:00 = minute 1380, 06:30 = minute 390. Forward through midnight = 1380→1830 (mod 1440→390)
-          const startMin = 23 * 60 + ts.min; // each starts at 23:XX
-          const endMin = 6 * 60 + 30; // 06:30
-          // Total minutes forward: from 23:00 to 06:30 = 7.5 hours = 450 min
-          const totalForward = 450;
+          // Each timestamp is visible only during its slot
+          const localT = cycle - ts.start;
+          if (localT < 0 || localT > SLOT_DUR) continue;
+          // Fade in 20%, hold 50%, fade out 30%
+          const fadeIn = 0.2 * SLOT_DUR, fadeOut = 0.3 * SLOT_DUR;
+          const a = localT < fadeIn ? localT / fadeIn
+            : localT > SLOT_DUR - fadeOut ? (SLOT_DUR - localT) / fadeOut
+            : 1;
+          // Time: each slot shows its portion of the 23:00→06:30 journey
+          const progress = (ts.start + localT * 0.5) / 6.5; // where we are in the full night
+          const startMin = 23 * 60;
+          const totalForward = 450; // 23:00 to 06:30
           const currentMin = (startMin + Math.floor(progress * totalForward)) % 1440;
           const h2 = Math.floor(currentMin / 60);
           const m2 = currentMin % 60;
@@ -617,7 +621,7 @@ const BANNER_THEMES = {
             ts.timer = 0.02 + Math.random() * 0.06;
           }
           const dx = ts.x + ts.glitchX, dy = ts.y + ts.glitchY;
-          const a = fadeGlobal * ts.alpha;
+          // a is already computed above from fade in/out
           const fs = ts.size;
           ctx.save();
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
