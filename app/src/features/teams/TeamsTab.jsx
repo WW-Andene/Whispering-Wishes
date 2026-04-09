@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
+import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -34,6 +34,10 @@ function TeamsTab({
   const [teamEquipment, setTeamEquipment] = useState(() => {
     try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
   });
+  const [equipPresets, setEquipPresets] = useState(() => {
+    try { const s = localStorage.getItem('ww-equipment-presets'); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [showPresetDropdown, setShowPresetDropdown] = useState(false);
   // Debounced save for teamEquipment — prevents localStorage thrash on rapid interactions
   const eqSaveTimerRef = useRef(null);
   useEffect(() => {
@@ -43,6 +47,9 @@ function TeamsTab({
     }, 300);
     return () => { if (eqSaveTimerRef.current) clearTimeout(eqSaveTimerRef.current); };
   }, [teamEquipment]);
+  useEffect(() => {
+    try { localStorage.setItem('ww-equipment-presets', JSON.stringify(equipPresets)); } catch {}
+  }, [equipPresets]);
   const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false);
   const [weaponSelectorTarget, setWeaponSelectorTarget] = useState({ teamIdx: 0, charName: '' });
   const [weaponSearch, setWeaponSearch] = useState('');
@@ -314,6 +321,73 @@ function TeamsTab({
                         })}
                       </div>
 
+                      {/* Loadout Preset Buttons */}
+                      <div className="flex gap-1 mb-3 relative">
+                        <button
+                          onClick={() => {
+                            const name = window.prompt('Save loadout as:', `${activeTeam.name || 'Team ' + (state.activeTeamIndex + 1)} Loadout`);
+                            if (!name || !name.trim()) return;
+                            const preset = {
+                              name: name.trim(),
+                              teams: state.teams.map(t => t.name),
+                              equipment: { ...teamEquipment },
+                            };
+                            setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
+                            toast?.addToast?.(`Loadout "${name.trim()}" saved!`, 'success');
+                            haptic.success();
+                          }}
+                          className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 flex items-center gap-1"
+                          aria-label="Save equipment loadout preset"
+                        >
+                          <BookmarkPlus size={12} /> Save Loadout
+                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowPresetDropdown(prev => !prev)}
+                            className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 flex items-center gap-1"
+                            aria-label="Load equipment loadout preset"
+                            aria-expanded={showPresetDropdown}
+                          >
+                            <FolderOpen size={12} /> Load Loadout
+                          </button>
+                          {showPresetDropdown && (
+                            <div className="absolute top-full left-0 mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                              {equipPresets.length === 0 ? (
+                                <div className="px-3 py-2 text-sm text-gray-500">No saved loadouts</div>
+                              ) : (
+                                equipPresets.map((preset, i) => (
+                                  <div key={i} className="flex items-center border-b border-[var(--border-medium)] last:border-b-0">
+                                    <button
+                                      onClick={() => {
+                                        setTeamEquipment(preset.equipment);
+                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {}
+                                        setShowPresetDropdown(false);
+                                        toast?.addToast?.(`Loadout "${preset.name}" loaded!`, 'success');
+                                        haptic.success();
+                                      }}
+                                      className="flex-1 text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors"
+                                    >
+                                      {preset.name}
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEquipPresets(prev => prev.filter((_, idx) => idx !== i));
+                                        toast?.addToast?.(`Loadout "${preset.name}" deleted`, 'success');
+                                      }}
+                                      className="px-2 py-2 text-gray-500 hover:text-red-400 transition-colors"
+                                      aria-label={`Delete loadout ${preset.name}`}
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
                         {!teamSlots.some(s => s) && (
@@ -407,6 +481,62 @@ function TeamsTab({
                           })}
                         </div>
                       )}
+
+                      {/* Team Synergy Tips */}
+                      {(() => {
+                        const filled = teamSlots.filter(s => s);
+                        if (filled.length < 2) return null;
+                        const STAT_LABELS = {
+                          atkPct: 'ATK%', elemDmg: 'Elem DMG', skillDmg: 'Skill DMG', basicDmg: 'Basic DMG',
+                          heavyDmg: 'Heavy DMG', libDmg: 'Lib DMG', echoDmg: 'Echo DMG', deepen: 'Deepen',
+                          resShred: 'RES Shred', defShred: 'DEF Shred', critRate: 'Crit Rate', critDmg: 'Crit DMG',
+                          allDmg: 'All DMG',
+                        };
+                        const tips = [];
+                        // Outro & Lib buffs from supports/sub-DPS
+                        filled.forEach(name => {
+                          const bt = CHAR_BUFF_TABLE[name];
+                          if (!bt) return;
+                          bt.outroBuffs?.forEach(b => {
+                            if (b.target === 'next' && filled.length > 1) {
+                              tips.push({ char: name, text: `${name} outro: +${b.value}% ${STAT_LABELS[b.stat] || b.stat} to next`, element: CHARACTER_DATA[name]?.element });
+                            }
+                          });
+                          bt.libBuffs?.forEach(b => {
+                            if (b.target === 'team') {
+                              tips.push({ char: name, text: `${name} lib: +${b.value}% ${STAT_LABELS[b.stat] || b.stat} (team)`, element: CHARACTER_DATA[name]?.element });
+                            }
+                          });
+                          bt.debuffs?.forEach(b => {
+                            if (b.stat === 'defShred' || b.stat === 'resShred') {
+                              tips.push({ char: name, text: `${name}: ${b.value}% ${STAT_LABELS[b.stat]}`, element: CHARACTER_DATA[name]?.element });
+                            }
+                          });
+                        });
+                        // Element Resonance (2+ same element)
+                        const elemCounts = {};
+                        filled.forEach(name => { const el = CHARACTER_DATA[name]?.element; if (el) elemCounts[el] = (elemCounts[el] || 0) + 1; });
+                        Object.entries(elemCounts).forEach(([el, count]) => {
+                          if (count >= 2) tips.push({ text: `Element Resonance: ${count}x ${el} (+10% ${el} DMG)`, element: el });
+                        });
+                        if (tips.length === 0) return null;
+                        const shown = tips.slice(0, 4);
+                        return (
+                          <div className="mt-2">
+                            <div className="flex items-center gap-1 mb-1">
+                              <Zap size={11} className="text-yellow-400" />
+                              <span className="text-2xs font-semibold text-yellow-400/80 uppercase tracking-wider">Synergy</span>
+                            </div>
+                            <div className="space-y-0.5">
+                              {shown.map((tip, i) => (
+                                <div key={i} className="kuro-stat text-2xs" style={{ color: tip.element ? getElementColor(tip.element) : '#9ca3af' }}>
+                                  {tip.text}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </CardBody>
                   </Card>
 

@@ -39,6 +39,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   navBg: null,
   appBg: { url: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg', position: 'center center' },
   dyslexicFont: false,
+  colorBlindMode: false,
 });
 
 export { DEFAULT_VISUAL_SETTINGS };
@@ -125,6 +126,11 @@ export function useVisualSettings() {
     el.classList.toggle('animations-full', visualSettings.animationsEnabled === 'full');
     el.classList.toggle('no-animations', visualSettings.animationsEnabled === 'off');
   }, [visualSettings.animationsEnabled]);
+
+  // Sync color-blind mode class to <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle('colorblind-mode', !!visualSettings.colorBlindMode);
+  }, [visualSettings.colorBlindMode]);
 
   // Lazy-load OpenDyslexic font for accessibility
   useEffect(() => {

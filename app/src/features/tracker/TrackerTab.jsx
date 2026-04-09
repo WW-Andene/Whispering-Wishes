@@ -143,7 +143,7 @@ function TrackerTab({
                   <div className="kuro-empty-state text-center py-8">
                     <Sparkles size={32} className="mx-auto mb-2 text-yellow-500/40" />
                     <p className="text-gray-300 text-md font-medium">No active Resonator banners</p>
-                    <p className="text-gray-500 text-sm mt-1">Banner data will appear when a new phase starts</p>
+                    <p className="text-gray-500 text-sm mt-1">Check back when a new phase starts, or import your history in the Profile tab</p>
                   </div>
                 )}
               </div>
@@ -171,7 +171,7 @@ function TrackerTab({
                   <div className="kuro-empty-state text-center py-8">
                     <Sword size={32} className="mx-auto mb-2 text-pink-500/40" />
                     <p className="text-gray-300 text-md font-medium">No active weapon banners</p>
-                    <p className="text-gray-500 text-sm mt-1">Weapon banners rotate each phase</p>
+                    <p className="text-gray-500 text-sm mt-1">Weapon banners rotate each phase — import history in Profile to track pity</p>
                   </div>
                 )}
               </div>

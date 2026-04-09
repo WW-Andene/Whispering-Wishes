@@ -172,6 +172,7 @@ function EventsTab({
           <div className="kuro-empty-state text-center py-8">
             <Calendar size={24} className="mx-auto mb-2 opacity-50" />
             No events currently tracked
+            <p className="text-gray-600 text-sm mt-1">Events will appear automatically each version update</p>
           </div>
         ) : (
           <>
