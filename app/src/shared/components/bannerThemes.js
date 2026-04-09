@@ -678,7 +678,7 @@ const BANNER_THEMES = {
         const cT = cycle - 8.0;
         const bIn = Math.min(1, cT / 0.5);
         const cFade = cycle >= 10.5 ? Math.max(0, 1 - (cycle - 10.5) / 0.2) : 1;
-        const a = bIn * cFade * 0.6;
+        const a = bIn * cFade * 0.9;
         const r = clockR * bIn;
         // Light bloom from center-right (like the reference)
         ctx.save(); ctx.globalAlpha = a * 0.5;
@@ -691,8 +691,8 @@ const BANNER_THEMES = {
         const drawGear = (gx, gy, gr, teeth, rot, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha; ctx.translate(gx, gy); ctx.rotate(rot);
           // Filled gear body
-          ctx.fillStyle = 'rgba(200,180,140,0.35)';
-          ctx.strokeStyle = 'rgba(255,230,170,0.5)';
+          ctx.fillStyle = 'rgba(210,190,150,0.55)';
+          ctx.strokeStyle = 'rgba(255,235,180,0.7)';
           ctx.lineWidth = 1.5;
           ctx.beginPath();
           for (let i = 0; i < teeth; i++) {
@@ -707,7 +707,7 @@ const BANNER_THEMES = {
           }
           ctx.closePath(); ctx.fill(); ctx.stroke();
           // Inner hub
-          ctx.fillStyle = 'rgba(180,160,120,0.3)';
+          ctx.fillStyle = 'rgba(190,170,130,0.5)';
           ctx.beginPath(); ctx.arc(0, 0, gr * 0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
           // Center hole
           ctx.fillStyle = 'rgba(30,25,20,0.5)';
@@ -718,13 +718,13 @@ const BANNER_THEMES = {
           ctx.restore();
         };
         // Main large gear (left-center, like reference)
-        drawGear(cx - r * 0.25, cy - r * 0.1, r * 0.45, 16, t * 0.2, a * 0.7);
+        drawGear(cx - r * 0.25, cy - r * 0.1, r * 0.45, 16, t * 0.2, a);
         // Medium gear (interlocking right)
-        drawGear(cx + r * 0.3, cy + r * 0.2, r * 0.3, 12, -t * 0.28, a * 0.6);
+        drawGear(cx + r * 0.3, cy + r * 0.2, r * 0.3, 12, -t * 0.28, a * 0.85);
         // Small gear (top right)
-        drawGear(cx + r * 0.15, cy - r * 0.35, r * 0.18, 10, t * 0.45, a * 0.5);
+        drawGear(cx + r * 0.15, cy - r * 0.35, r * 0.18, 10, t * 0.45, a * 0.7);
         // Tiny gear (bottom left)
-        drawGear(cx - r * 0.4, cy + r * 0.3, r * 0.12, 8, -t * 0.6, a * 0.4);
+        drawGear(cx - r * 0.4, cy + r * 0.3, r * 0.12, 8, -t * 0.6, a * 0.6);
         // Outer ring — thick, bright, strong glow
         ctx.save(); ctx.globalAlpha = a * 0.9;
         ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.shadowColor = 'rgba(255,210,100,0.8)'; ctx.shadowBlur = 30; ctx.lineWidth = 5;
