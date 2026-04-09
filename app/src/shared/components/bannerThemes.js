@@ -642,9 +642,10 @@ const BANNER_THEMES = {
           // Erased by explosion (10.5-11): fast fade out
           if (cycle >= 10.5) a *= Math.max(0, 1 - (cycle - 10.5) / 0.4);
           if (a < 0.01) continue;
-          // Time: freeze at final value once slot ends
-          const slotEnd = ts.start + SLOT_DUR;
-          const activeT = Math.min(localT, SLOT_DUR);
+          // Time: freeze at the value each number had at cycle=8 (clock appear)
+          const frozenCycle = Math.min(cycle, 8.0);
+          const activeT = Math.min(frozenCycle - ts.start, SLOT_DUR);
+          if (activeT < 0) continue; // hasn't appeared yet at freeze point
           const progress = ts.start / 8.0;
           const startMin = 23 * 60;
           const totalForward = 450;
