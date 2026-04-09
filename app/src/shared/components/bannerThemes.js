@@ -608,14 +608,10 @@ const BANNER_THEMES = {
       width: 10 + Math.random() * 18, maxAlpha: 0.03 + Math.random() * 0.04,
       rot: 0, rotV: (Math.random() - 0.5) * 0.015, active: false,
     }));
-    // Explosion debris
-    const shards = Array.from({ length: 15 }, () => ({
-      x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotV: (Math.random() - 0.5) * 0.1,
-      size: 4 + Math.random() * 10, active: false,
-    }));
-    const miniGears = Array.from({ length: 10 }, () => ({
-      x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotV: (Math.random() - 0.5) * 0.15,
-      size: 3 + Math.random() * 6, teeth: 5 + Math.floor(Math.random() * 4), active: false,
+    // Explosion debris — only mini gears, lots of them, fly across full screen
+    const miniGears = Array.from({ length: 25 }, () => ({
+      x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotV: (Math.random() - 0.5) * 0.2,
+      size: 2 + Math.random() * 8, teeth: 5 + Math.floor(Math.random() * 5), active: false,
     }));
     let lastBoom = -1;
     // Timestamps — varied sizes, full spread, sequential
@@ -636,13 +632,14 @@ const BANNER_THEMES = {
       // ── PHASE 1 (0–8s): SEQUENTIAL GLITCHING TIMESTAMPS ──
       if (cycle < 8.0) {
         for (const ts of timestamps) {
-          // Each timestamp is visible only during its slot
+          // Each timestamp overlaps with neighbors — visible for 130% of slot
           const localT = cycle - ts.start;
-          if (localT < 0 || localT > SLOT_DUR) continue;
-          // Fade in 20%, hold 50%, fade out 30%
-          const fadeIn = 0.2 * SLOT_DUR, fadeOut = 0.3 * SLOT_DUR;
+          const visibleDur = SLOT_DUR * 1.3; // 30% overlap
+          if (localT < 0 || localT > visibleDur) continue;
+          // Fade in 15%, hold, fade out 25%
+          const fadeIn = 0.15 * visibleDur, fadeOut = 0.25 * visibleDur;
           const a = localT < fadeIn ? localT / fadeIn
-            : localT > SLOT_DUR - fadeOut ? (SLOT_DUR - localT) / fadeOut
+            : localT > visibleDur - fadeOut ? (visibleDur - localT) / fadeOut
             : 1;
           // Time: each slot shows its portion of the 23:00→06:30 journey
           const progress = ts.start / 8.0; // fixed per slot — each shows one hour
@@ -667,10 +664,12 @@ const BANNER_THEMES = {
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.font = `${fs}px 'Temporal Shift', monospace`;
           ctx.letterSpacing = '2px';
-          // Double shadow behind for depth
-          ctx.globalAlpha = a * 0.4;
+          // Double shadow — second one glitch-offset
+          const shGX = (Math.sin(t * 7 + ts.start * 3) * 3);
+          const shGY = (Math.cos(t * 5 + ts.start * 2) * 2);
+          ctx.globalAlpha = a * 0.35;
           ctx.fillStyle = 'rgba(0,0,0,0.7)';
-          ctx.fillText(str, dx + 3, dy + 3); // far shadow
+          ctx.fillText(str, dx + shGX, dy + shGY); // glitched far shadow
           ctx.globalAlpha = a * 0.6;
           ctx.fillStyle = 'rgba(0,0,0,0.9)';
           ctx.fillText(str, dx + 1, dy + 1); // near shadow
@@ -833,9 +832,17 @@ const BANNER_THEMES = {
         lastBoom = cycleId;
         for (const n of nebulae) { n.dist = 0; n.active = true; n.angle = Math.random() * Math.PI * 2; }
         for (const ws of wisps) { ws.dist = 0; ws.active = true; ws.angle = Math.random() * Math.PI * 2; ws.rot = Math.random() * Math.PI; }
-        // Reset shards
-        for (const sh of shards) { sh.x = cx + (Math.random() - 0.5) * clockR; sh.y = cy + (Math.random() - 0.5) * clockR; sh.vx = (Math.random() - 0.5) * 4; sh.vy = (Math.random() - 0.5) * 4; sh.rot = Math.random() * Math.PI * 2; sh.active = true; }
-        for (const mg of miniGears) { mg.x = cx + (Math.random() - 0.5) * clockR; mg.y = cy + (Math.random() - 0.5) * clockR; mg.vx = (Math.random() - 0.5) * 3; mg.vy = (Math.random() - 0.5) * 3; mg.rot = Math.random() * Math.PI * 2; mg.active = true; }
+        // Launch mini gears in all directions across the full screen
+        for (const mg of miniGears) {
+          mg.x = cx + (Math.random() - 0.5) * clockR * 0.6;
+          mg.y = cy + (Math.random() - 0.5) * clockR * 0.6;
+          const ang = Math.random() * Math.PI * 2;
+          const spd = 3 + Math.random() * 8; // fast — reaches screen edges
+          mg.vx = Math.cos(ang) * spd;
+          mg.vy = Math.sin(ang) * spd;
+          mg.rot = Math.random() * Math.PI * 2;
+          mg.active = true;
+        }
       }
       if (cycle >= 10.5 && cycle < 11.0) {
         const bT = (cycle - 10.5) / 0.5;
@@ -855,30 +862,12 @@ const BANNER_THEMES = {
       // ── PHASE 4 (10.5–15s): SHARDS + MINI GEARS + NEBULA ──
       if (cycle >= 10.5) {
         const nT = cycle - 10.5;
-        // Flying shards — angular clock fragments
-        for (const sh of shards) {
-          if (!sh.active) continue;
-          sh.x += sh.vx; sh.y += sh.vy; sh.rot += sh.rotV;
-          sh.vx *= 0.98; sh.vy *= 0.98; // drag
-          const fade = Math.max(0, 1 - nT / 3.5);
-          if (fade < 0.01) { sh.active = false; continue; }
-          ctx.save(); ctx.globalAlpha = fade * 0.5;
-          ctx.translate(sh.x, sh.y); ctx.rotate(sh.rot);
-          ctx.fillStyle = 'rgba(215,195,155,0.6)'; ctx.strokeStyle = 'rgba(255,230,170,0.5)'; ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(-sh.size, -sh.size * 0.4);
-          ctx.lineTo(sh.size * 0.6, -sh.size * 0.8);
-          ctx.lineTo(sh.size, sh.size * 0.3);
-          ctx.lineTo(-sh.size * 0.3, sh.size * 0.6);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          ctx.restore();
-        }
-        // Mini gears flying outward
+        // Mini gears flying across the full screen
         for (const mg of miniGears) {
           if (!mg.active) continue;
           mg.x += mg.vx; mg.y += mg.vy; mg.rot += mg.rotV;
-          mg.vx *= 0.97; mg.vy *= 0.97;
-          const fade = Math.max(0, 1 - nT / 3.5);
+          mg.vx *= 0.995; mg.vy *= 0.995; // minimal drag — fly far
+          const fade = Math.max(0, 1 - nT / 4.2);
           if (fade < 0.01) { mg.active = false; continue; }
           ctx.save(); ctx.globalAlpha = fade * 0.45;
           ctx.translate(mg.x, mg.y); ctx.rotate(mg.rot);
