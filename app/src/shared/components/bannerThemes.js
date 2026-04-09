@@ -568,14 +568,16 @@ const BANNER_THEMES = {
     const CYCLE = 15;
     // More gears, interlocking, varied sizes
     const gears = [
-      { x: -0.28, y: -0.12, r: 0.42, teeth: 20, speed: 0.15 },   // huge main gear
-      { x: 0.3, y: 0.22, r: 0.28, teeth: 14, speed: -0.22 },     // large secondary
-      { x: 0.35, y: -0.2, r: 0.16, teeth: 10, speed: 0.35 },     // medium top-right
-      { x: -0.35, y: 0.32, r: 0.14, teeth: 10, speed: -0.4 },    // medium bottom-left
-      { x: -0.08, y: -0.38, r: 0.10, teeth: 8, speed: 0.55 },    // small top
-      { x: 0.15, y: 0.38, r: 0.09, teeth: 8, speed: -0.6 },      // small bottom
-      { x: -0.42, y: -0.3, r: 0.07, teeth: 6, speed: 0.7 },      // tiny top-left
-      { x: 0.42, y: 0.0, r: 0.06, teeth: 6, speed: -0.8 },       // tiny right
+      { x: -0.30, y: -0.05, r: 0.38, teeth: 20, speed: 0.15 },   // huge main gear left-center
+      { x: 0.28, y: 0.20, r: 0.30, teeth: 16, speed: -0.2 },     // large bottom-right
+      { x: 0.25, y: -0.30, r: 0.22, teeth: 12, speed: 0.3 },     // medium top-right
+      { x: -0.38, y: 0.35, r: 0.18, teeth: 12, speed: -0.35 },   // medium bottom-left
+      { x: 0.0, y: -0.42, r: 0.14, teeth: 10, speed: 0.45 },     // small top-center
+      { x: -0.45, y: -0.25, r: 0.12, teeth: 8, speed: -0.55 },   // small far top-left
+      { x: 0.45, y: -0.05, r: 0.10, teeth: 8, speed: 0.6 },      // small far right
+      { x: 0.0, y: 0.42, r: 0.11, teeth: 8, speed: -0.5 },       // small bottom-center
+      { x: -0.15, y: -0.40, r: 0.08, teeth: 6, speed: 0.7 },     // tiny
+      { x: 0.42, y: 0.30, r: 0.07, teeth: 6, speed: -0.8 },      // tiny
     ];
     const nebulae = Array.from({ length: 20 }, () => ({
       angle: 0, dist: 0, speed: 0.3 + Math.random() * 1.5, size: 25 + Math.random() * 55,
@@ -761,47 +763,40 @@ const BANNER_THEMES = {
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
-        // Classic fleur-de-lis hand — proper 3-petal shape
+        // Fleur-de-lis hand — clean, elegant, no bar
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
           ctx.translate(cx, cy); ctx.rotate(angle + Math.PI / 2);
-          ctx.fillStyle = 'rgba(255,245,210,1)'; ctx.strokeStyle = 'rgba(255,230,160,0.9)';
-          ctx.shadowColor = 'rgba(255,230,100,1)'; ctx.shadowBlur = 22; ctx.lineWidth = 0.8;
-          const f = len * 0.14; // fleur size
-          // Shaft — tapered
+          ctx.fillStyle = 'rgba(255,248,215,1)'; ctx.strokeStyle = 'rgba(200,180,120,0.6)';
+          ctx.shadowColor = 'rgba(255,235,120,1)'; ctx.shadowBlur = 22; ctx.lineWidth = 0.6;
+          const f = len * 0.13;
+          // Shaft — long tapered rectangle
           ctx.beginPath();
-          ctx.moveTo(-hw * 0.35, len * 0.05);
-          ctx.lineTo(-hw * 0.2, -len * 0.62);
-          ctx.lineTo(hw * 0.2, -len * 0.62);
-          ctx.lineTo(hw * 0.35, len * 0.05);
+          ctx.moveTo(-hw * 0.25, len * 0.04);
+          ctx.lineTo(-hw * 0.12, -len * 0.58);
+          ctx.lineTo(hw * 0.12, -len * 0.58);
+          ctx.lineTo(hw * 0.25, len * 0.04);
           ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Center petal — tall, pointed, with bulge
+          // Center petal — tall narrow teardrop
           ctx.beginPath();
-          ctx.moveTo(0, -len); // apex
-          ctx.bezierCurveTo(-f * 0.3, -len + f * 0.15, -f * 0.5, -len + f * 0.7, -hw * 0.15, -len * 0.62);
-          ctx.lineTo(hw * 0.15, -len * 0.62);
-          ctx.bezierCurveTo(f * 0.5, -len + f * 0.7, f * 0.3, -len + f * 0.15, 0, -len);
+          ctx.moveTo(0, -len);
+          ctx.bezierCurveTo(-f * 0.45, -len + f * 0.3, -f * 0.35, -len + f * 1.0, 0, -len * 0.6);
+          ctx.bezierCurveTo(f * 0.35, -len + f * 1.0, f * 0.45, -len + f * 0.3, 0, -len);
           ctx.fill(); ctx.stroke();
-          // Left petal — curves outward then back
+          // Left petal — elegant S-curve outward
           ctx.beginPath();
-          ctx.moveTo(-hw * 0.15, -len * 0.65);
-          ctx.bezierCurveTo(-f * 1.1, -len * 0.68, -f * 1.5, -len * 0.55, -f * 1.0, -len * 0.48);
-          ctx.bezierCurveTo(-f * 0.6, -len * 0.42, -hw * 0.3, -len * 0.55, -hw * 0.2, -len * 0.62);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.moveTo(0, -len * 0.62);
+          ctx.bezierCurveTo(-f * 0.8, -len * 0.7, -f * 1.6, -len * 0.62, -f * 1.2, -len * 0.5);
+          ctx.bezierCurveTo(-f * 0.8, -len * 0.4, -f * 0.2, -len * 0.5, 0, -len * 0.58);
+          ctx.fill(); ctx.stroke();
           // Right petal — mirror
           ctx.beginPath();
-          ctx.moveTo(hw * 0.15, -len * 0.65);
-          ctx.bezierCurveTo(f * 1.1, -len * 0.68, f * 1.5, -len * 0.55, f * 1.0, -len * 0.48);
-          ctx.bezierCurveTo(f * 0.6, -len * 0.42, hw * 0.3, -len * 0.55, hw * 0.2, -len * 0.62);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Horizontal bar between petals and shaft
-          ctx.fillRect(-hw * 0.5, -len * 0.64, hw, hw * 0.15);
-          ctx.strokeRect(-hw * 0.5, -len * 0.64, hw, hw * 0.15);
-          // Counterweight — diamond
-          ctx.beginPath();
-          ctx.moveTo(0, len * 0.15); ctx.lineTo(-hw * 0.5, len * 0.05);
-          ctx.lineTo(0, -len * 0.02); ctx.lineTo(hw * 0.5, len * 0.05);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.moveTo(0, -len * 0.62);
+          ctx.bezierCurveTo(f * 0.8, -len * 0.7, f * 1.6, -len * 0.62, f * 1.2, -len * 0.5);
+          ctx.bezierCurveTo(f * 0.8, -len * 0.4, f * 0.2, -len * 0.5, 0, -len * 0.58);
+          ctx.fill(); ctx.stroke();
+          // Small circle counterweight
+          ctx.beginPath(); ctx.arc(0, len * 0.06, hw * 0.4, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
         };
         drawHand(minA, r * 0.82, 5, a * 1.5);
