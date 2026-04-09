@@ -459,182 +459,280 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🌈 PRISMATIC (Lynae): rainbow-shifting light beams + colorful prismatic sparkles
+  // 🎨 PRISMATIC (Lynae): graffiti paint drips, neon glow tubes, pixel blocks, spray mist
   prismatic: (w, h) => {
-    const COLORS = ['255,80,80', '255,160,40', '255,230,60', '80,230,120', '80,180,255', '180,100,255'];
-    const beams = Array.from({ length: 5 }, (_, i) => ({
-      x: w * 0.2 + (i / 4) * w * 0.6, angle: -0.3 + Math.random() * 0.6,
-      width: 12 + Math.random() * 20, phase: Math.random() * Math.PI * 2,
-      speed: 0.15 + Math.random() * 0.2, colorIdx: i % COLORS.length,
+    const NEON = ['255,50,80', '255,140,0', '240,220,0', '0,230,120', '0,160,255', '200,60,255'];
+    // Paint drips — streaks running down from random points
+    const drips = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: -Math.random() * h * 0.5,
+      speed: 0.3 + Math.random() * 0.5, width: 2 + Math.random() * 4,
+      len: 20 + Math.random() * 60, ci: Math.floor(Math.random() * NEON.length),
+      alpha: 0.3 + Math.random() * 0.35,
     }));
-    const sparkles = Array.from({ length: 20 }, () => ({
+    // Pixel blocks — small squares appearing/dissolving like a glitchy screen
+    const pixels = Array.from({ length: 25 }, () => ({
       x: Math.random() * w, y: Math.random() * h,
-      size: 1.5 + Math.random() * 2.5, phase: Math.random() * Math.PI * 2,
-      speed: 0.6 + Math.random() * 1.2, colorIdx: Math.floor(Math.random() * COLORS.length),
+      size: 3 + Math.random() * 6, phase: Math.random() * 10,
+      lifeSpeed: 1.5 + Math.random() * 3, ci: Math.floor(Math.random() * NEON.length),
+    }));
+    // Neon tube segments — lines that "draw" themselves across the canvas
+    const tubes = Array.from({ length: 4 }, () => ({
+      x1: Math.random() * w, y1: Math.random() * h,
+      angle: Math.random() * Math.PI * 2, len: 40 + Math.random() * 80,
+      progress: Math.random(), speed: 0.3 + Math.random() * 0.4,
+      ci: Math.floor(Math.random() * NEON.length), phase: Math.random() * 10,
+    }));
+    // Spray mist — fuzzy cloud drifting
+    const sprays = Array.from({ length: 5 }, () => ({
+      x: Math.random() * w, y: h * 0.3 + Math.random() * h * 0.5,
+      size: 25 + Math.random() * 40, vx: (Math.random() - 0.5) * 0.3,
+      ci: Math.floor(Math.random() * NEON.length), alpha: 0.04 + Math.random() * 0.04,
+      phase: Math.random() * Math.PI * 2,
     }));
     return (ctx, t) => {
-      for (const b of beams) {
-        const shift = Math.floor((t * 0.3 + b.colorIdx) % COLORS.length);
-        const a = 0.04 + Math.sin(t * b.speed + b.phase) * 0.03;
+      // Spray mist clouds
+      for (const s of sprays) {
+        s.x += s.vx; if (s.x < -s.size) s.x = w + s.size; if (s.x > w + s.size) s.x = -s.size;
         ctx.save();
-        ctx.globalAlpha = a;
-        ctx.translate(b.x, 0); ctx.rotate(b.angle);
-        const g = ctx.createLinearGradient(0, 0, 0, h * 1.2);
-        g.addColorStop(0, `rgba(${COLORS[shift]},0)`);
-        g.addColorStop(0.3, `rgba(${COLORS[shift]},0.5)`);
-        g.addColorStop(0.7, `rgba(${COLORS[(shift + 1) % COLORS.length]},0.3)`);
-        g.addColorStop(1, `rgba(${COLORS[(shift + 2) % COLORS.length]},0)`);
+        ctx.globalAlpha = s.alpha * (0.7 + Math.sin(t * 0.3 + s.phase) * 0.3);
+        const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size);
+        g.addColorStop(0, `rgba(${NEON[s.ci]},0.4)`);
+        g.addColorStop(1, `rgba(${NEON[s.ci]},0)`);
         ctx.fillStyle = g;
-        ctx.fillRect(-b.width / 2, 0, b.width, h * 1.2);
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      for (const s of sparkles) {
-        const tw = Math.sin(t * s.speed + s.phase);
-        const a = Math.max(0, tw) * 0.9;
-        if (a < 0.05) continue;
-        const ci = Math.floor((t * 0.5 + s.colorIdx) % COLORS.length);
+      // Paint drips running down
+      for (const d of drips) {
+        d.y += d.speed;
+        if (d.y > h + d.len) { d.y = -d.len - Math.random() * h * 0.3; d.x = Math.random() * w; d.ci = Math.floor(Math.random() * NEON.length); }
         ctx.save();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = `rgba(${COLORS[ci]},1)`;
-        ctx.shadowColor = `rgba(${COLORS[ci]},0.8)`;
-        ctx.shadowBlur = 10;
-        const sz = s.size * (0.5 + tw * 0.5);
-        ctx.beginPath();
-        ctx.moveTo(s.x, s.y - sz * 1.8); ctx.lineTo(s.x + sz * 0.3, s.y - sz * 0.3);
-        ctx.lineTo(s.x + sz * 1.8, s.y); ctx.lineTo(s.x + sz * 0.3, s.y + sz * 0.3);
-        ctx.lineTo(s.x, s.y + sz * 1.8); ctx.lineTo(s.x - sz * 0.3, s.y + sz * 0.3);
-        ctx.lineTo(s.x - sz * 1.8, s.y); ctx.lineTo(s.x - sz * 0.3, s.y - sz * 0.3);
-        ctx.closePath(); ctx.fill();
-        ctx.restore();
-      }
-    };
-  },
-
-  // ☀️ RADIANCE (Zani): golden-white burning radiance + clock-like rotating arcs
-  radiance: (w, h) => {
-    const cx = w * 0.5, cy = h * 0.4;
-    const arcs = Array.from({ length: 4 }, (_, i) => ({
-      radius: 30 + i * 22, speed: (0.08 + i * 0.03) * (i % 2 ? -1 : 1),
-      width: 1 + i * 0.3, alpha: 0.15 - i * 0.02,
-    }));
-    const rays = Array.from({ length: 8 }, (_, i) => ({
-      angle: (Math.PI * 2 / 8) * i, phase: Math.random() * Math.PI * 2,
-      speed: 0.3 + Math.random() * 0.4,
-    }));
-    const motes = Array.from({ length: 16 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vy: -0.1 - Math.random() * 0.2, phase: Math.random() * Math.PI * 2,
-      size: 1 + Math.random() * 1.8, alpha: 0.4 + Math.random() * 0.4,
-    }));
-    return (ctx, t) => {
-      // Central glow pulse
-      const gp = 0.08 + Math.sin(t * 0.2) * 0.04;
-      ctx.save();
-      ctx.globalAlpha = gp;
-      const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 100);
-      cg.addColorStop(0, 'rgba(255,230,150,0.6)');
-      cg.addColorStop(0.5, 'rgba(255,200,80,0.2)');
-      cg.addColorStop(1, 'rgba(255,180,50,0)');
-      ctx.fillStyle = cg;
-      ctx.beginPath(); ctx.arc(cx, cy, 100, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-      // Rotating arcs
-      for (const a of arcs) {
-        ctx.save();
-        ctx.globalAlpha = a.alpha;
-        ctx.strokeStyle = 'rgba(255,220,120,0.8)';
-        ctx.lineWidth = a.width;
-        ctx.translate(cx, cy); ctx.rotate(t * a.speed);
-        ctx.beginPath(); ctx.arc(0, 0, a.radius, 0, Math.PI * 0.6); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 0, a.radius, Math.PI, Math.PI * 1.6); ctx.stroke();
-        ctx.restore();
-      }
-      // Light rays
-      for (const r of rays) {
-        const a = 0.06 + Math.sin(t * r.speed + r.phase) * 0.04;
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.translate(cx, cy); ctx.rotate(r.angle + t * 0.02);
-        const rg = ctx.createLinearGradient(0, 0, 0, -h * 0.5);
-        rg.addColorStop(0, 'rgba(255,230,150,0.5)');
-        rg.addColorStop(1, 'rgba(255,200,80,0)');
-        ctx.fillStyle = rg;
-        ctx.fillRect(-2, 0, 4, -h * 0.5);
-        ctx.restore();
-      }
-      // Rising motes
-      for (const m of motes) {
-        m.y += m.vy; m.x += Math.sin(t * 0.4 + m.phase) * 0.15;
-        if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
-        ctx.save();
-        ctx.globalAlpha = m.alpha * (0.5 + Math.sin(t + m.phase) * 0.5);
-        ctx.fillStyle = 'rgba(255,235,170,1)';
-        ctx.shadowColor = 'rgba(255,220,100,0.7)';
-        ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-      }
-    };
-  },
-
-  // 🕊️ LUMINOUS (Phoebe): descending holy light rays + soft halos + gentle motes
-  luminous: (w, h) => {
-    const lightRays = Array.from({ length: 6 }, (_, i) => ({
-      x: w * 0.1 + (i / 5) * w * 0.8, width: 15 + Math.random() * 25,
-      phase: Math.random() * Math.PI * 2, speed: 0.12 + Math.random() * 0.15,
-      tilt: (Math.random() - 0.5) * 0.15,
-    }));
-    const halos = Array.from({ length: 3 }, () => ({
-      x: w * 0.2 + Math.random() * w * 0.6, y: h * 0.15 + Math.random() * h * 0.4,
-      radius: 20 + Math.random() * 30, phase: Math.random() * Math.PI * 2,
-      speed: 0.15 + Math.random() * 0.2,
-    }));
-    const motes = Array.from({ length: 14 }, () => ({
-      x: Math.random() * w, y: -5 - Math.random() * h * 0.3,
-      vy: 0.08 + Math.random() * 0.15, phase: Math.random() * Math.PI * 2,
-      size: 1 + Math.random() * 1.5, alpha: 0.3 + Math.random() * 0.35,
-      swayAmp: 5 + Math.random() * 10, swaySpeed: 0.2 + Math.random() * 0.3,
-    }));
-    return (ctx, t) => {
-      // Descending light rays
-      for (const r of lightRays) {
-        const a = 0.035 + Math.sin(t * r.speed + r.phase) * 0.025;
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.translate(r.x, 0); ctx.rotate(r.tilt);
-        const g = ctx.createLinearGradient(0, 0, 0, h);
-        g.addColorStop(0, 'rgba(255,250,230,0.6)');
-        g.addColorStop(0.4, 'rgba(255,240,200,0.25)');
-        g.addColorStop(1, 'rgba(255,230,180,0)');
+        ctx.globalAlpha = d.alpha;
+        const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.len);
+        g.addColorStop(0, `rgba(${NEON[d.ci]},0)`);
+        g.addColorStop(0.3, `rgba(${NEON[d.ci]},0.9)`);
+        g.addColorStop(1, `rgba(${NEON[d.ci]},0.6)`);
         ctx.fillStyle = g;
-        ctx.fillRect(-r.width / 2, 0, r.width, h);
+        ctx.shadowColor = `rgba(${NEON[d.ci]},0.6)`;
+        ctx.shadowBlur = 6;
+        // Drip shape: thin rect + round blob at bottom
+        ctx.fillRect(d.x - d.width / 2, d.y, d.width, d.len * 0.85);
+        ctx.beginPath(); ctx.arc(d.x, d.y + d.len, d.width * 0.8, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      // Soft halos
-      for (const hl of halos) {
-        const a = 0.08 + Math.sin(t * hl.speed + hl.phase) * 0.05;
+      // Pixel blocks — flash in/out
+      for (const p of pixels) {
+        p.phase += 0.016 * p.lifeSpeed;
+        const cycle = p.phase % 4;
+        const a = cycle < 0.4 ? cycle / 0.4 : cycle < 1.2 ? 1 : cycle < 1.6 ? (1.6 - cycle) / 0.4 : 0;
+        if (a < 0.02) { if (cycle > 3.5) { p.x = Math.random() * w; p.y = Math.random() * h; p.ci = Math.floor(Math.random() * NEON.length); } continue; }
         ctx.save();
-        ctx.globalAlpha = a;
-        ctx.strokeStyle = 'rgba(255,245,220,0.6)';
-        ctx.lineWidth = 1.2;
-        ctx.shadowColor = 'rgba(255,240,200,0.4)';
+        ctx.globalAlpha = a * 0.7;
+        ctx.fillStyle = `rgba(${NEON[p.ci]},1)`;
+        ctx.shadowColor = `rgba(${NEON[p.ci]},0.8)`;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.restore();
+      }
+      // Neon tube lines drawing themselves
+      for (const tb of tubes) {
+        tb.phase += 0.016 * tb.speed;
+        const cycle = tb.phase % 5;
+        const prog = Math.min(1, cycle / 1.5);
+        const fade = cycle > 3 ? (5 - cycle) / 2 : 1;
+        if (fade < 0.02) { if (cycle > 4.8) { tb.x1 = Math.random() * w; tb.y1 = Math.random() * h; tb.angle = Math.random() * Math.PI * 2; tb.ci = Math.floor(Math.random() * NEON.length); } continue; }
+        const x2 = tb.x1 + Math.cos(tb.angle) * tb.len * prog;
+        const y2 = tb.y1 + Math.sin(tb.angle) * tb.len * prog;
+        ctx.save();
+        ctx.globalAlpha = fade * 0.55;
+        ctx.strokeStyle = `rgba(${NEON[tb.ci]},1)`;
+        ctx.shadowColor = `rgba(${NEON[tb.ci]},0.9)`;
         ctx.shadowBlur = 12;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(tb.x1, tb.y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.restore();
+      }
+    };
+  },
+
+  // ⏰ RADIANCE (Zani): clock hands, tick marks, precise expanding geometry, edge flames
+  radiance: (w, h) => {
+    const cx = w * 0.5, cy = h * 0.42;
+    const clockR = Math.min(w, h) * 0.22;
+    // 12 tick marks around the clock face
+    const ticks = Array.from({ length: 12 }, (_, i) => ({ angle: (Math.PI * 2 / 12) * i - Math.PI / 2 }));
+    // Expanding geometric rings — precise hexagons
+    const rings = Array.from({ length: 3 }, (_, i) => ({
+      phase: i * 2.1, speed: 0.4 + i * 0.15,
+    }));
+    // Edge flames — warm fire licking the sides
+    const flames = Array.from({ length: 12 }, () => ({
+      x: Math.random() < 0.5 ? Math.random() * w * 0.15 : w - Math.random() * w * 0.15,
+      y: h * 0.3 + Math.random() * h * 0.7,
+      vy: -0.4 - Math.random() * 0.6, size: 2 + Math.random() * 4,
+      alpha: 0.3 + Math.random() * 0.3, life: Math.random(),
+    }));
+    return (ctx, t) => {
+      // Clock tick marks — appear sequentially
+      for (const tk of ticks) {
+        const inner = clockR * 0.85, outer = clockR * 0.95;
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.strokeStyle = 'rgba(255,220,120,0.8)';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(hl.x, hl.y, hl.radius + Math.sin(t * 0.3 + hl.phase) * 3, 0, Math.PI * 2);
+        ctx.moveTo(cx + Math.cos(tk.angle) * inner, cy + Math.sin(tk.angle) * inner);
+        ctx.lineTo(cx + Math.cos(tk.angle) * outer, cy + Math.sin(tk.angle) * outer);
         ctx.stroke();
         ctx.restore();
       }
-      // Gentle descending motes
-      for (const m of motes) {
-        m.y += m.vy;
-        m.x += Math.sin(t * m.swaySpeed + m.phase) * m.swayAmp * 0.01;
-        if (m.y > h + 5) { m.y = -5; m.x = Math.random() * w; }
+      // Clock hands — hour (slow) and minute (fast)
+      const hourAngle = (t * 0.02) % (Math.PI * 2) - Math.PI / 2;
+      const minAngle = (t * 0.12) % (Math.PI * 2) - Math.PI / 2;
+      for (const [angle, len, width, alpha] of [[hourAngle, clockR * 0.55, 2, 0.25], [minAngle, clockR * 0.8, 1.2, 0.2]]) {
         ctx.save();
-        ctx.globalAlpha = m.alpha * (0.5 + Math.sin(t * 0.6 + m.phase) * 0.5);
-        ctx.fillStyle = 'rgba(255,248,230,1)';
-        ctx.shadowColor = 'rgba(255,240,200,0.6)';
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = 'rgba(255,230,150,0.9)';
+        ctx.shadowColor = 'rgba(255,200,80,0.5)';
         ctx.shadowBlur = 8;
-        ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(angle) * len, cy + Math.sin(angle) * len); ctx.stroke();
+        ctx.restore();
+      }
+      // Center dot
+      ctx.save(); ctx.globalAlpha = 0.3; ctx.fillStyle = 'rgba(255,220,120,1)';
+      ctx.shadowColor = 'rgba(255,200,80,0.6)'; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      // Expanding hexagonal rings
+      for (const r of rings) {
+        const cycle = ((t * r.speed + r.phase) % 4);
+        const expand = cycle / 4;
+        const fade = expand < 0.1 ? expand / 0.1 : expand > 0.6 ? (1 - expand) / 0.4 : 1;
+        if (fade < 0.02) continue;
+        const radius = clockR * 0.3 + expand * clockR * 1.5;
+        ctx.save();
+        ctx.globalAlpha = fade * 0.12;
+        ctx.strokeStyle = 'rgba(255,210,100,0.8)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i - Math.PI / 6;
+          ctx[i === 0 ? 'moveTo' : 'lineTo'](cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
+        }
+        ctx.closePath(); ctx.stroke();
+        ctx.restore();
+      }
+      // Edge flames
+      for (const f of flames) {
+        f.life += 0.006; f.y += f.vy;
+        if (f.life > 1) {
+          f.life = 0; f.y = h * 0.3 + Math.random() * h * 0.7;
+          f.x = Math.random() < 0.5 ? Math.random() * w * 0.15 : w - Math.random() * w * 0.15;
+        }
+        const fade = f.life < 0.15 ? f.life / 0.15 : f.life > 0.5 ? (1 - f.life) / 0.5 : 1;
+        ctx.save();
+        ctx.globalAlpha = f.alpha * fade;
+        ctx.fillStyle = f.life < 0.3 ? 'rgba(255,200,60,1)' : 'rgba(255,100,30,1)';
+        ctx.shadowColor = 'rgba(255,130,30,0.7)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.size * (0.4 + fade * 0.6), 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌊 LUMINOUS (Phoebe): underwater caustics, rising bubbles, candle flickers, floating veils
+  luminous: (w, h) => {
+    // Caustic light pattern — shimmering refracted light on the "ceiling"
+    const caustics = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: Math.random() * h * 0.4,
+      size: 30 + Math.random() * 50, phase: Math.random() * Math.PI * 2,
+      speed: 0.2 + Math.random() * 0.3, vx: (Math.random() - 0.5) * 0.15,
+    }));
+    // Rising bubbles
+    const bubbles = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: h + Math.random() * h * 0.3,
+      size: 1.5 + Math.random() * 3, vy: -0.15 - Math.random() * 0.25,
+      wobbleAmp: 3 + Math.random() * 8, wobbleSpeed: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2, alpha: 0.2 + Math.random() * 0.25,
+    }));
+    // Candle flickers — warm points of light
+    const candles = Array.from({ length: 5 }, () => ({
+      x: w * 0.15 + Math.random() * w * 0.7, y: h * 0.5 + Math.random() * h * 0.4,
+      phase: Math.random() * Math.PI * 2, speed: 2 + Math.random() * 3,
+      size: 2 + Math.random() * 2.5,
+    }));
+    // Floating veil shapes — translucent arcs drifting slowly
+    const veils = Array.from({ length: 3 }, () => ({
+      x: Math.random() * w, y: h * 0.2 + Math.random() * h * 0.5,
+      width: 60 + Math.random() * 80, height: 15 + Math.random() * 25,
+      vx: -0.08 - Math.random() * 0.12, phase: Math.random() * Math.PI * 2,
+      alpha: 0.04 + Math.random() * 0.03,
+    }));
+    return (ctx, t) => {
+      // Caustic light ripples
+      for (const c of caustics) {
+        c.x += c.vx; if (c.x < -c.size) c.x = w + c.size;
+        const a = c.alpha = 0.04 + Math.sin(t * c.speed + c.phase) * 0.03;
+        ctx.save();
+        ctx.globalAlpha = a;
+        const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.size);
+        g.addColorStop(0, 'rgba(180,230,255,0.5)');
+        g.addColorStop(0.5, 'rgba(140,210,240,0.15)');
+        g.addColorStop(1, 'rgba(100,180,220,0)');
+        ctx.fillStyle = g;
+        // Distort shape with sin for watery feel
+        ctx.beginPath();
+        for (let i = 0; i <= 24; i++) {
+          const angle = (Math.PI * 2 / 24) * i;
+          const wobble = 1 + Math.sin(angle * 3 + t * 1.5 + c.phase) * 0.2;
+          const r = c.size * wobble;
+          ctx[i === 0 ? 'moveTo' : 'lineTo'](c.x + Math.cos(angle) * r, c.y + Math.sin(angle) * r * 0.6);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      // Floating veils
+      for (const v of veils) {
+        v.x += v.vx; if (v.x < -v.width) v.x = w + 10;
+        const sway = Math.sin(t * 0.3 + v.phase) * 8;
+        ctx.save();
+        ctx.globalAlpha = v.alpha;
+        ctx.fillStyle = 'rgba(220,240,255,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(v.x, v.y + sway);
+        ctx.quadraticCurveTo(v.x + v.width * 0.3, v.y - v.height + sway, v.x + v.width * 0.5, v.y + sway * 0.5);
+        ctx.quadraticCurveTo(v.x + v.width * 0.7, v.y + v.height + sway, v.x + v.width, v.y + sway);
+        ctx.fill();
+        ctx.restore();
+      }
+      // Rising bubbles
+      for (const b of bubbles) {
+        b.y += b.vy;
+        const wx = b.x + Math.sin(t * b.wobbleSpeed + b.phase) * b.wobbleAmp;
+        if (b.y < -10) { b.y = h + 10; b.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = b.alpha;
+        ctx.strokeStyle = 'rgba(180,220,255,0.7)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(wx, b.y, b.size, 0, Math.PI * 2); ctx.stroke();
+        // Highlight
+        ctx.globalAlpha = b.alpha * 0.6;
+        ctx.fillStyle = 'rgba(220,240,255,0.8)';
+        ctx.beginPath(); ctx.arc(wx - b.size * 0.3, b.y - b.size * 0.3, b.size * 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Candle flickers
+      for (const c of candles) {
+        const flicker = 0.4 + Math.sin(t * c.speed + c.phase) * 0.3 + Math.sin(t * c.speed * 1.7 + c.phase) * 0.2;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, flicker) * 0.5;
+        ctx.fillStyle = 'rgba(255,230,170,1)';
+        ctx.shadowColor = 'rgba(255,200,100,0.7)';
+        ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.arc(c.x, c.y, c.size * (0.6 + flicker * 0.4), 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
     };
