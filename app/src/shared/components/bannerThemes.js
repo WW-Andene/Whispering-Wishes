@@ -742,9 +742,23 @@ const BANNER_THEMES = {
           // Hub ring
           ctx.fillStyle = 'rgba(200,180,140,0.45)';
           ctx.beginPath(); ctx.arc(0, 0, gr * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          // Inner ring detail
+          // Inner ring detail with inverted thorns pointing inward
           ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = 0.8;
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.6, 0, Math.PI * 2); ctx.stroke();
+          const irR = gr * 0.6;
+          ctx.beginPath(); ctx.arc(0, 0, irR, 0, Math.PI * 2); ctx.stroke();
+          // Inverted thorns — small triangles pointing toward center
+          const thornCount = Math.max(8, Math.floor(teeth * 0.8));
+          ctx.fillStyle = 'rgba(215,195,155,0.4)';
+          for (let th = 0; th < thornCount; th++) {
+            const ta = (Math.PI * 2 / thornCount) * th;
+            const thH = gr * 0.06; // thorn height (inward)
+            const thW = Math.PI / thornCount * 0.5; // half angular width
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(ta - thW) * irR, Math.sin(ta - thW) * irR);
+            ctx.lineTo(Math.cos(ta) * (irR - thH), Math.sin(ta) * (irR - thH));
+            ctx.lineTo(Math.cos(ta + thW) * irR, Math.sin(ta + thW) * irR);
+            ctx.closePath(); ctx.fill();
+          }
           // Spokes (6 for larger gears, 4 for smaller)
           const spokeCount = teeth >= 12 ? 6 : 4;
           ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = Math.max(1, gr * 0.02);
