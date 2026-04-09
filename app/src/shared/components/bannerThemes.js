@@ -787,37 +787,70 @@ const BANNER_THEMES = {
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
-        // Hand with fleur-de-lis tip — like the reference: narrow pointed
-        // spike with two small decorative curls at the base of the tip
+        // Hand: shaft + large diamond tip + smaller diamond below + comma petals
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
           ctx.translate(cx, cy); ctx.rotate(angle + Math.PI / 2);
           ctx.fillStyle = 'rgba(255,248,215,1)';
-          ctx.shadowColor = 'rgba(255,235,120,1)'; ctx.shadowBlur = 25;
-          const ty = -len * 0.65; // where curls sit
-          // Draw as one continuous filled shape
+          ctx.shadowColor = 'rgba(255,235,120,1)'; ctx.shadowBlur = 22;
+          // Shaft — tapered
           ctx.beginPath();
-          // Counterweight circle base
-          ctx.arc(0, len * 0.06, hw * 0.4, 0, Math.PI * 2);
-          ctx.fill();
-          // Shaft + tip as one path
+          ctx.moveTo(-hw * 0.22, len * 0.04);
+          ctx.lineTo(-hw * 0.1, -len * 0.58);
+          ctx.lineTo(hw * 0.1, -len * 0.58);
+          ctx.lineTo(hw * 0.22, len * 0.04);
+          ctx.closePath(); ctx.fill();
+          // Large diamond at tip
+          const dY = -len * 0.88; // diamond center
+          const dH = len * 0.12;  // diamond half-height
+          const dW = hw * 0.7;    // diamond half-width
           ctx.beginPath();
-          ctx.moveTo(hw * 0.22, len * 0.03); // base right
-          ctx.lineTo(hw * 0.12, ty);           // shaft narrows to curl junction
-          // Right curl — small arc outward
-          ctx.quadraticCurveTo(hw * 1.2, ty - hw * 1.0, hw * 0.8, ty - hw * 1.8);
-          ctx.quadraticCurveTo(hw * 0.5, ty - hw * 1.2, hw * 0.15, ty - hw * 0.3);
-          // Center spike to apex
-          ctx.lineTo(hw * 0.08, ty);
-          ctx.lineTo(0, -len); // TIP
-          ctx.lineTo(-hw * 0.08, ty);
-          // Left curl — mirror
-          ctx.lineTo(-hw * 0.15, ty - hw * 0.3);
-          ctx.quadraticCurveTo(-hw * 0.5, ty - hw * 1.2, -hw * 0.8, ty - hw * 1.8);
-          ctx.quadraticCurveTo(-hw * 1.2, ty - hw * 1.0, -hw * 0.12, ty);
-          ctx.lineTo(-hw * 0.22, len * 0.03); // base left
-          ctx.closePath();
+          ctx.moveTo(0, dY - dH);     // top point
+          ctx.lineTo(dW, dY);          // right
+          ctx.lineTo(0, dY + dH);      // bottom
+          ctx.lineTo(-dW, dY);         // left
+          ctx.closePath(); ctx.fill();
+          // Smaller diamond just below
+          const d2Y = -len * 0.62;
+          const d2H = len * 0.06;
+          const d2W = hw * 0.45;
+          ctx.beginPath();
+          ctx.moveTo(0, d2Y - d2H);
+          ctx.lineTo(d2W, d2Y);
+          ctx.lineTo(0, d2Y + d2H);
+          ctx.lineTo(-d2W, d2Y);
+          ctx.closePath(); ctx.fill();
+          // Comma petals curling outward from small diamond sides
+          // Right comma — teardrop curling right and down
+          ctx.beginPath();
+          ctx.moveTo(d2W * 0.6, d2Y - d2H * 0.3);
+          ctx.bezierCurveTo(
+            d2W + hw * 1.0, d2Y - d2H * 2.0,  // curve up-outward
+            d2W + hw * 1.8, d2Y + d2H * 0.5,   // far out
+            d2W + hw * 0.4, d2Y + d2H * 2.5     // curl back down
+          );
+          ctx.bezierCurveTo(
+            d2W * 0.3, d2Y + d2H * 1.5,
+            d2W * 0.4, d2Y + d2H * 0.3,
+            d2W * 0.6, d2Y - d2H * 0.3
+          );
           ctx.fill();
+          // Left comma — mirror
+          ctx.beginPath();
+          ctx.moveTo(-d2W * 0.6, d2Y - d2H * 0.3);
+          ctx.bezierCurveTo(
+            -d2W - hw * 1.0, d2Y - d2H * 2.0,
+            -d2W - hw * 1.8, d2Y + d2H * 0.5,
+            -d2W - hw * 0.4, d2Y + d2H * 2.5
+          );
+          ctx.bezierCurveTo(
+            -d2W * 0.3, d2Y + d2H * 1.5,
+            -d2W * 0.4, d2Y + d2H * 0.3,
+            -d2W * 0.6, d2Y - d2H * 0.3
+          );
+          ctx.fill();
+          // Counterweight circle
+          ctx.beginPath(); ctx.arc(0, len * 0.06, hw * 0.35, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
         };
         drawHand(minA, r * 0.82, 5, a * 1.5);
