@@ -1531,44 +1531,39 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               );
             })}
 
-            {/* Computed buff/debuff breakdown with actual values */}
-            {(atkPct > 0 || elemDmg > 0 || skillDmg > 0 || cr > 5 || cd > 150 || deepen > 0 || amplify > 0 || defShred > 0 || resShred > 0 || defIgnore > 0) && (
-              <div className="space-y-1.5">
-                <div className="kuro-label">Active Buffs</div>
-                <div className="grid grid-cols-2 gap-1">
-                  {atkPct > 0 && <div className="kuro-stat p-1.5 text-center"><span className="text-emerald-400 font-bold kuro-number">+{atkPct.toFixed(1)}%</span><div className="text-gray-500 text-2xs">ATK</div></div>}
-                  {cr > 5 && <div className="kuro-stat p-1.5 text-center"><span className="text-cyan-400 font-bold kuro-number">{cr.toFixed(1)}%</span><div className="text-gray-500 text-2xs">Crit Rate</div></div>}
-                  {cd > 150 && <div className="kuro-stat p-1.5 text-center"><span className="text-cyan-400 font-bold kuro-number">{cd.toFixed(1)}%</span><div className="text-gray-500 text-2xs">Crit DMG</div></div>}
-                  {elemDmg > 0 && <div className="kuro-stat p-1.5 text-center"><span className="text-yellow-400 font-bold kuro-number">+{elemDmg.toFixed(1)}%</span><div className="text-gray-500 text-2xs">Elem DMG</div></div>}
-                  {skillDmg > 0 && <div className="kuro-stat p-1.5 text-center"><span className="text-orange-400 font-bold kuro-number">+{skillDmg.toFixed(1)}%</span><div className="text-gray-500 text-2xs">Skill DMG</div></div>}
-                  {deepen > 0 && <div className="kuro-stat p-1.5 text-center"><span className="text-purple-400 font-bold kuro-number">+{deepen.toFixed(1)}%</span><div className="text-gray-500 text-2xs">Deepen</div></div>}
-                  {amplify > 0 && <div className="kuro-stat p-1.5 text-center"><span className="text-pink-400 font-bold kuro-number">+{amplify.toFixed(1)}%</span><div className="text-gray-500 text-2xs">Amplify</div></div>}
+            {/* Aggregated buffs/debuffs — values appended to existing tags */}
+            {allBuffs.length > 0 && (
+              <div>
+                <div className="kuro-label">Team Buffs</div>
+                <div className="flex flex-wrap gap-1">
+                  {allBuffs.map((b, i) => (
+                    <span key={i} className="kuro-badge kuro-badge-emerald">
+                      {b.buff} <span className="text-gray-500">({b.source})</span>
+                    </span>
+                  ))}
+                  {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">+{atkPct.toFixed(1)}% ATK</span>}
+                  {elemDmg > 0 && <span className="kuro-badge kuro-badge-yellow">+{elemDmg.toFixed(1)}% Elem DMG</span>}
+                  {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">+{skillDmg.toFixed(1)}% Skill DMG</span>}
+                  {deepen > 0 && <span className="kuro-badge kuro-badge-purple">+{deepen.toFixed(1)}% Deepen</span>}
+                  {amplify > 0 && <span className="kuro-badge kuro-badge-pink">+{amplify.toFixed(1)}% Amplify</span>}
+                  {cr > 5 && <span className="kuro-badge kuro-badge-cyan">{cr.toFixed(1)}% Crit Rate</span>}
+                  {cd > 150 && <span className="kuro-badge kuro-badge-cyan">{cd.toFixed(1)}% Crit DMG</span>}
                 </div>
-                {/* Buff sources */}
-                {allBuffs.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {allBuffs.map((b, i) => (
-                      <span key={i} className="kuro-badge kuro-badge-emerald text-2xs">{b.buff} <span className="text-gray-500">({b.source})</span></span>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
-            {(defShred > 0 || resShred > 0 || defIgnore > 0 || allDebuffs.length > 0) && (
-              <div className="space-y-1.5">
+            {(allDebuffs.length > 0 || defShred > 0 || resShred > 0 || defIgnore > 0) && (
+              <div>
                 <div className="kuro-label">Enemy Debuffs</div>
-                <div className="grid grid-cols-3 gap-1">
-                  {defShred > 0 && <div className="kuro-stat kuro-stat-red p-1.5 text-center"><span className="text-red-400 font-bold kuro-number">-{defShred.toFixed(1)}%</span><div className="text-gray-500 text-2xs">DEF Shred</div></div>}
-                  {resShred > 0 && <div className="kuro-stat kuro-stat-red p-1.5 text-center"><span className="text-red-400 font-bold kuro-number">-{resShred.toFixed(1)}%</span><div className="text-gray-500 text-2xs">RES Shred</div></div>}
-                  {defIgnore > 0 && <div className="kuro-stat kuro-stat-red p-1.5 text-center"><span className="text-red-400 font-bold kuro-number">{defIgnore.toFixed(1)}%</span><div className="text-gray-500 text-2xs">DEF Ignore</div></div>}
+                <div className="flex flex-wrap gap-1">
+                  {allDebuffs.map((b, i) => (
+                    <span key={i} className="kuro-badge kuro-badge-red">
+                      {b.debuff} <span className="text-gray-500">({b.source})</span>
+                    </span>
+                  ))}
+                  {defShred > 0 && <span className="kuro-badge kuro-badge-red">-{defShred.toFixed(1)}% DEF Shred</span>}
+                  {resShred > 0 && <span className="kuro-badge kuro-badge-red">-{resShred.toFixed(1)}% RES Shred</span>}
+                  {defIgnore > 0 && <span className="kuro-badge kuro-badge-red">{defIgnore.toFixed(1)}% DEF Ignore</span>}
                 </div>
-                {allDebuffs.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {allDebuffs.map((b, i) => (
-                      <span key={i} className="kuro-badge kuro-badge-red text-2xs">{b.debuff} <span className="text-gray-500">({b.source})</span></span>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
 
