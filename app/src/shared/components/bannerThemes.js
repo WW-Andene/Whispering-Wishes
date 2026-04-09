@@ -742,22 +742,22 @@ const BANNER_THEMES = {
           // Hub ring
           ctx.fillStyle = 'rgba(200,180,140,0.45)';
           ctx.beginPath(); ctx.arc(0, 0, gr * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          // Inner ring detail with inverted thorns pointing inward
-          ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = 0.8;
+          // Inner ring with inverted thorns pointing inward
           const irR = gr * 0.6;
+          ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8;
           ctx.beginPath(); ctx.arc(0, 0, irR, 0, Math.PI * 2); ctx.stroke();
-          // Inverted thorns — small triangles pointing toward center
-          const thornCount = Math.max(8, Math.floor(teeth * 0.8));
-          ctx.fillStyle = 'rgba(215,195,155,0.4)';
+          const thornCount = Math.max(10, Math.floor(teeth * 1.2));
+          ctx.fillStyle = 'rgba(235,215,170,0.7)';
+          ctx.strokeStyle = 'rgba(255,235,180,0.5)'; ctx.lineWidth = 0.5;
           for (let th = 0; th < thornCount; th++) {
             const ta = (Math.PI * 2 / thornCount) * th;
-            const thH = gr * 0.06; // thorn height (inward)
-            const thW = Math.PI / thornCount * 0.5; // half angular width
+            const thH = gr * 0.1;
+            const thW = Math.PI / thornCount * 0.4;
             ctx.beginPath();
             ctx.moveTo(Math.cos(ta - thW) * irR, Math.sin(ta - thW) * irR);
             ctx.lineTo(Math.cos(ta) * (irR - thH), Math.sin(ta) * (irR - thH));
             ctx.lineTo(Math.cos(ta + thW) * irR, Math.sin(ta + thW) * irR);
-            ctx.closePath(); ctx.fill();
+            ctx.closePath(); ctx.fill(); ctx.stroke();
           }
           // Spokes (6 for larger gears, 4 for smaller)
           const spokeCount = teeth >= 12 ? 6 : 4;
@@ -791,10 +791,25 @@ const BANNER_THEMES = {
         ctx.strokeStyle = 'rgba(255,225,140,0.6)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 10; ctx.lineWidth = 1.2;
         ctx.beginPath(); ctx.arc(cx, cy, r * 0.94, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
-        // Inner ring
+        // Inner ring with inverted thorns
         ctx.save(); ctx.globalAlpha = a * 0.4;
         ctx.strokeStyle = 'rgba(255,220,140,0.5)'; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(cx, cy, r * 0.85, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        const cIR = r * 0.85;
+        ctx.beginPath(); ctx.arc(cx, cy, cIR, 0, Math.PI * 2); ctx.stroke();
+        // Thorns pointing inward on clock inner ring
+        ctx.fillStyle = 'rgba(255,230,170,0.5)';
+        const cThornN = 36;
+        for (let ti = 0; ti < cThornN; ti++) {
+          const ta = (Math.PI * 2 / cThornN) * ti;
+          const tW = Math.PI / cThornN * 0.4;
+          const tH = r * 0.03;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(ta - tW) * cIR, cy + Math.sin(ta - tW) * cIR);
+          ctx.lineTo(cx + Math.cos(ta) * (cIR - tH), cy + Math.sin(ta) * (cIR - tH));
+          ctx.lineTo(cx + Math.cos(ta + tW) * cIR, cy + Math.sin(ta + tW) * cIR);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
         // Hands — spinning, decelerating
         const decel = Math.min(1, cT / 2.0);
         const easeOut = 1 - Math.pow(1 - decel, 3);
