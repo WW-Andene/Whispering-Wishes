@@ -26,13 +26,13 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'lynae', name: 'Lynae', title: 'Undefined Spectrum', element: 'Glacio', weaponType: 'Pistols', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp', imagePosition: 'center 15%' },
-    { id: 'zani', name: 'Zani', title: 'Between Light and Shadow', element: 'Spectro', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp', imagePosition: 'center 15%' },
+    { id: 'lynae', name: 'Lynae', title: 'Undefined Spectrum', element: 'Spectro', weaponType: 'Pistols', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp', imagePosition: 'center 15%' },
+    { id: 'zani', name: 'Zani', title: 'Between Light and Shadow', element: 'Spectro', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp', imagePosition: 'center 15%' },
     { id: 'phoebe', name: 'Phoebe', title: 'With Hushed Whispers', element: 'Spectro', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/6SdsQ7M/Phoebe-Full-Sprite.webp', imagePosition: 'center 15%' },
   ],
   weapons: [
-    { id: 'spectrum-blaster', name: 'Spectrum Blaster', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lynae', element: 'Glacio', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp' },
-    { id: 'blazing-justice', name: 'Blazing Justice', title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Zani', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/pjbhYHP4/Blazing-Justice.webp' },
+    { id: 'spectrum-blaster', name: 'Spectrum Blaster', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lynae', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp' },
+    { id: 'blazing-justice', name: 'Blazing Justice', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Zani', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/pjbhYHP4/Blazing-Justice.webp' },
     { id: 'luminous-hymn', name: 'Luminous Hymn', title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Phoebe', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/prdDZjKg/Luminous-Hymn.png' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
