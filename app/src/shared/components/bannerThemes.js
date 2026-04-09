@@ -642,14 +642,13 @@ const BANNER_THEMES = {
           // Erased by explosion (10.5-11): fast fade out
           if (cycle >= 10.5) a *= Math.max(0, 1 - (cycle - 10.5) / 0.4);
           if (a < 0.01) continue;
-          // Time: freeze at the value each number had at cycle=8 (clock appear)
-          const frozenCycle = Math.min(cycle, 8.0);
-          const activeT = Math.min(frozenCycle - ts.start, SLOT_DUR);
-          if (activeT < 0) continue; // hasn't appeared yet at freeze point
+          // Time: keeps ticking until clock appears at 8s, then freezes
+          const runTime = Math.min(cycle, 8.0) - ts.start;
+          if (runTime < 0) continue;
           const progress = ts.start / 8.0;
           const startMin = 23 * 60;
           const totalForward = 450;
-          const slotMin = Math.floor(activeT * 8);
+          const slotMin = Math.floor(runTime * 8);
           const currentMin = (startMin + Math.floor(progress * totalForward) + slotMin) % 1440;
           const h2 = Math.floor(currentMin / 60);
           const m2 = currentMin % 60;
