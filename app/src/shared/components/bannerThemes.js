@@ -613,25 +613,27 @@ const BANNER_THEMES = {
             : localT > SLOT_DUR - fadeOut ? (SLOT_DUR - localT) / fadeOut
             : 1;
           // Time: each slot shows its portion of the 23:00→06:30 journey
-          const progress = (ts.start + localT * 0.5) / 8.0; // where we are in the full night
+          const progress = ts.start / 8.0; // fixed per slot — each shows one hour
           const startMin = 23 * 60;
           const totalForward = 450; // 23:00 to 06:30
-          const currentMin = (startMin + Math.floor(progress * totalForward)) % 1440;
+          // Minutes tick slowly within each slot
+          const slotMin = Math.floor(localT * 8); // ~8 minutes per second of real time
+          const currentMin = (startMin + Math.floor(progress * totalForward) + slotMin) % 1440;
           const h2 = Math.floor(currentMin / 60);
           const m2 = currentMin % 60;
           const str = `${String(h2).padStart(2, '0')}:${String(m2).padStart(2, '0')}`;
-          // Per-timestamp glitch
+          // Subtle position drift
           ts.timer -= 0.016;
           if (ts.timer <= 0) {
-            ts.glitchX = (Math.random() - 0.5) * (3 + cycle * 2);
-            ts.glitchY = (Math.random() - 0.5) * (2 + cycle * 1.5);
-            ts.timer = 0.02 + Math.random() * 0.06;
+            ts.glitchX = (Math.random() - 0.5) * 2;
+            ts.glitchY = (Math.random() - 0.5) * 1.5;
+            ts.timer = 0.1 + Math.random() * 0.15;
           }
           const dx = ts.x + ts.glitchX, dy = ts.y + ts.glitchY;
           const fs = ts.size;
           ctx.save();
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.font = `bold ${fs}px 'Neuropol', monospace`;
+          ctx.font = `${fs}px 'Neuropol', monospace`;
           ctx.letterSpacing = '2px';
           // Dark shadow behind for contrast
           ctx.globalAlpha = a * 0.6;
