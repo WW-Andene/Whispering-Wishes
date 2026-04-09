@@ -558,11 +558,11 @@ const BANNER_THEMES = {
 
   // ⏰ RADIANCE (Zani): glitching digital time racing → ornate clock at 6:30 → nebula detonation
   radiance: (w, h) => {
-    // Lazy-load Neuropol font for digital clock numbers
-    if (!document.getElementById('ww-font-neuropol')) {
+    // Lazy-load CC Temporal Shift Compressed Bold for digital clock numbers
+    if (!document.getElementById('ww-font-temporal')) {
       const style = document.createElement('style');
-      style.id = 'ww-font-neuropol';
-      style.textContent = `@font-face { font-family: 'Neuropol'; src: url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff2') format('woff2'), url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff') format('woff'); font-display: swap; }`;
+      style.id = 'ww-font-temporal';
+      style.textContent = `@font-face { font-family: 'Temporal Shift'; src: url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff2') format('woff2'), url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff') format('woff'); font-display: swap; }`;
       document.head.appendChild(style);
     }
     const cx = w * 0.5, cy = h * 0.45;
@@ -633,7 +633,7 @@ const BANNER_THEMES = {
           const fs = ts.size;
           ctx.save();
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.font = `${fs}px 'Neuropol', monospace`;
+          ctx.font = `${fs}px 'Temporal Shift', monospace`;
           ctx.letterSpacing = '2px';
           // Dark shadow behind for contrast
           ctx.globalAlpha = a * 0.6;
