@@ -150,7 +150,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <img
             src={imgUrl}
             alt={item.name}
-            className="w-full h-full object-cover object-top"
+            className="w-full h-full object-cover object-top breath-zoom"
             style={{
               opacity: pictureOpacity,
               maskImage: maskGradient,
