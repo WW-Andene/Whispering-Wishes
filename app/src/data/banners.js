@@ -12,9 +12,9 @@ const CURRENT_BANNERS = {
   // Apr 9 is CEST (UTC+2). Banner: Thu, 09 Apr 2026 10:00 CEST - Wed, 29 Apr 2026 11:59 CEST
   startDate: '2026-04-09T08:00:00Z', // Apr 09, 10:00 CEST (UTC+2) = 08:00 UTC
   endDate: '2026-04-29T09:59:00Z',   // Apr 29, 11:59 CEST (UTC+2) = 09:59 UTC
-  characterBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg', // placeholder — user will update
-  weaponBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
-  eventBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
+  characterBannerImage: 'https://i.ibb.co/q3HW3sGP/Lynae.jpg',
+  weaponBannerImage: 'https://i.ibb.co/Q3Yht20g/Spectrum-Blaster.jpg',
+  eventBannerImage: 'https://i.ibb.co/q3HW3sGP/Lynae.jpg',
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
   endstateMatrixImage: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg',
   pioneerPodcastImage: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png',

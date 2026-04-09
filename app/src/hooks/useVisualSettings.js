@@ -37,7 +37,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   theme: 'default',
   headerBg: null,
   navBg: null,
-  appBg: { url: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg', position: 'center center' },
+  appBg: { url: 'https://i.ibb.co/7J4nf7jT/3-2-Resolution-to-Illuminate-the-Shadows.webp', position: '52% 50%' },
   dyslexicFont: false,
   colorBlindMode: false,
 });
