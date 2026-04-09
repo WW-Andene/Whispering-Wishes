@@ -7,13 +7,12 @@
 
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
-  version: '3.2', phase: 1, // Game version (not app version)
-  // Times from wuwatracker.com (Europe CET/CEST reference, converted to UTC)
-  // Mar 19 is CET (UTC+1) — DST transition is Mar 29. Apr dates are CEST (UTC+2).
-  // Banner: Wed, 19 Mar 2026 10:00 CET - Thu, 09 Apr 2026 11:59 CEST
-  startDate: '2026-03-19T09:00:00Z', // Mar 19, 10:00 CET (UTC+1) = 09:00 UTC
-  endDate: '2026-04-09T09:59:00Z',   // Apr 09, 11:59 CEST (UTC+2) = 09:59 UTC
-  characterBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
+  version: '3.2', phase: 2, // Game version (not app version)
+  // Times from Fandom wiki (Server Time reference, converted to UTC)
+  // Apr 9 is CEST (UTC+2). Banner: Thu, 09 Apr 2026 10:00 CEST - Wed, 29 Apr 2026 11:59 CEST
+  startDate: '2026-04-09T08:00:00Z', // Apr 09, 10:00 CEST (UTC+2) = 08:00 UTC
+  endDate: '2026-04-29T09:59:00Z',   // Apr 29, 11:59 CEST (UTC+2) = 09:59 UTC
+  characterBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg', // placeholder — user will update
   weaponBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   eventBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
@@ -27,19 +26,21 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'sigrika', name: 'Sigrika', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/KxqVsJPs/HA8o-Hi-Ybs-AMv-Uf-J.jpg', imagePosition: 'center 15%' },
-    { id: 'qiuyuan', name: 'Qiuyuan', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/27WC0nVY/G0-Ec-Fat-W4-AAubh-M.jpg', imagePosition: 'center 15%' },
+    { id: 'lynae', name: 'Lynae', title: 'Undefined Spectrum', element: 'Glacio', weaponType: 'Pistols', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp', imagePosition: 'center 15%' },
+    { id: 'zani', name: 'Zani', title: 'Between Light and Shadow', element: 'Spectro', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp', imagePosition: 'center 15%' },
+    { id: 'phoebe', name: 'Phoebe', title: 'With Hushed Whispers', element: 'Spectro', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/6SdsQ7M/Phoebe-Full-Sprite.webp', imagePosition: 'center 15%' },
   ],
   weapons: [
-    { id: 'solsworn-ciphers', name: 'Solsworn Ciphers', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Sigrika', element: 'Aero', isNew: true, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/8LYrgYdN/e7a3b-17738194413502-1920.jpg' },
-    { id: 'emerald-sentence', name: 'Emerald Sentence', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Qiuyuan', element: 'Aero', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/9HyYC5vt/Absolute-Pulsation-Emerald-Sentence-2026-03-19.webp' },
+    { id: 'spectrum-blaster', name: 'Spectrum Blaster', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lynae', element: 'Glacio', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/qLC341Sv/Spectrum-Blaster.webp' },
+    { id: 'blazing-justice', name: 'Blazing Justice', title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Zani', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/pjbhYHP4/Blazing-Justice.webp' },
+    { id: 'luminous-hymn', name: 'Luminous Hymn', title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Phoebe', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/prdDZjKg/Luminous-Hymn.png' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
   // Standard Weapon Banner (Utterance of Marvels)
   standardWeapons: [
     { name: 'Verdant Summit', type: 'Broadblade' },
-    { name: 'Lustrous Razor', type: 'Broadblade' }, // P9-FIX: Standard 5★ per WEAPON_DATA — was missing from banner list
+    { name: 'Lustrous Razor', type: 'Broadblade' },
     { name: 'Emerald of Genesis', type: 'Sword' },
     { name: 'Static Mist', type: 'Pistols' },
     { name: 'Abyss Surges', type: 'Gauntlets' },
