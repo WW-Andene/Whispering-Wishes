@@ -726,7 +726,7 @@ const BANNER_THEMES = {
       const clockVisible = cycle >= 8.0 && cycle < 10.7;
       if (clockVisible) {
         const cT = cycle - 8.0;
-        const bIn = Math.min(1, cT / 0.25); // 2x faster scale-in
+        const bIn = Math.min(1, cT / 0.12); // near-instant
         const cFade = cycle >= 10.5 ? Math.max(0, 1 - (cycle - 10.5) / 0.2) : 1;
         const a = bIn * cFade * 0.9;
         const r = clockR * bIn;
