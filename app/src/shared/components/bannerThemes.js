@@ -849,37 +849,28 @@ const BANNER_THEMES = {
           ctx.lineTo(0, d2Y + d2H);
           ctx.lineTo(-d2W, d2Y);
           ctx.closePath(); ctx.fill();
-          // Two teardrop wings pointing flat LEFT and RIGHT from small diamond
-          // Right wing — fat teardrop pointing right
-          const wY = d2Y; // same height as small diamond center
-          const wLen = hw * 2.2; // how far it extends sideways
+          // Scroll/volute curls — spiral outward then curl back in like violins
+          const wY = d2Y + d2H * 0.5;
+          const sc = hw * 1.8; // scroll scale
+          // Right scroll — S-curve going right, spiraling inward at the end
           ctx.beginPath();
-          ctx.moveTo(d2W * 0.5, wY); // start from small diamond edge
-          ctx.bezierCurveTo(
-            d2W + wLen * 0.4, wY - hw * 0.8,  // top curve
-            d2W + wLen, wY - hw * 0.2,         // tip area
-            d2W + wLen * 0.85, wY              // rightmost point (tip)
-          );
-          ctx.bezierCurveTo(
-            d2W + wLen, wY + hw * 0.2,         // bottom of tip
-            d2W + wLen * 0.4, wY + hw * 0.8,   // bottom curve
-            d2W * 0.5, wY                       // back to start
-          );
-          ctx.fill();
-          // Left wing — mirror
+          ctx.moveTo(hw * 0.1, wY);
+          // Sweep outward and upward
+          ctx.bezierCurveTo(sc * 0.5, wY - sc * 0.7, sc * 1.2, wY - sc * 0.8, sc * 1.3, wY - sc * 0.3);
+          // Curl back inward — the spiral tip
+          ctx.bezierCurveTo(sc * 1.35, wY + sc * 0.1, sc * 1.0, wY + sc * 0.3, sc * 0.7, wY + sc * 0.15);
+          ctx.bezierCurveTo(sc * 0.5, wY + sc * 0.05, sc * 0.6, wY - sc * 0.15, sc * 0.8, wY - sc * 0.1);
+          // Thin return stroke back to shaft
+          ctx.bezierCurveTo(sc * 0.6, wY + sc * 0.5, sc * 0.2, wY + sc * 0.4, hw * 0.1, wY + hw * 0.3);
+          ctx.closePath(); ctx.fill();
+          // Left scroll — mirror
           ctx.beginPath();
-          ctx.moveTo(-d2W * 0.5, wY);
-          ctx.bezierCurveTo(
-            -d2W - wLen * 0.4, wY - hw * 0.8,
-            -d2W - wLen, wY - hw * 0.2,
-            -d2W - wLen * 0.85, wY
-          );
-          ctx.bezierCurveTo(
-            -d2W - wLen, wY + hw * 0.2,
-            -d2W - wLen * 0.4, wY + hw * 0.8,
-            -d2W * 0.5, wY
-          );
-          ctx.fill();
+          ctx.moveTo(-hw * 0.1, wY);
+          ctx.bezierCurveTo(-sc * 0.5, wY - sc * 0.7, -sc * 1.2, wY - sc * 0.8, -sc * 1.3, wY - sc * 0.3);
+          ctx.bezierCurveTo(-sc * 1.35, wY + sc * 0.1, -sc * 1.0, wY + sc * 0.3, -sc * 0.7, wY + sc * 0.15);
+          ctx.bezierCurveTo(-sc * 0.5, wY + sc * 0.05, -sc * 0.6, wY - sc * 0.15, -sc * 0.8, wY - sc * 0.1);
+          ctx.bezierCurveTo(-sc * 0.6, wY + sc * 0.5, -sc * 0.2, wY + sc * 0.4, -hw * 0.1, wY + hw * 0.3);
+          ctx.closePath(); ctx.fill();
           // Counterweight circle
           ctx.beginPath(); ctx.arc(0, len * 0.06, hw * 0.35, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
