@@ -725,10 +725,14 @@ const BANNER_THEMES = {
         drawGear(cx + r * 0.15, cy - r * 0.35, r * 0.18, 10, t * 0.45, a * 0.7);
         // Tiny gear (bottom left)
         drawGear(cx - r * 0.4, cy + r * 0.3, r * 0.12, 8, -t * 0.6, a * 0.6);
-        // Outer ring — thick, bright, strong glow
+        // Outer ring — double: thick + slim
         ctx.save(); ctx.globalAlpha = a * 0.9;
-        ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.shadowColor = 'rgba(255,210,100,0.8)'; ctx.shadowBlur = 30; ctx.lineWidth = 5;
+        ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.shadowColor = 'rgba(255,210,100,0.8)'; ctx.shadowBlur = 30; ctx.lineWidth = 6;
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        ctx.save(); ctx.globalAlpha = a * 0.7;
+        ctx.strokeStyle = 'rgba(255,225,140,0.6)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 10; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.94, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
         // Inner ring
         ctx.save(); ctx.globalAlpha = a * 0.4;
@@ -749,28 +753,45 @@ const BANNER_THEMES = {
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
-        // Minute hand — ornate with diamond tip
-        ctx.save(); ctx.globalAlpha = a * 1.5;
-        ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.strokeStyle = 'rgba(255,230,150,0.8)';
-        ctx.shadowColor = 'rgba(255,230,100,1)'; ctx.shadowBlur = 20; ctx.lineWidth = 1;
-        const mLen = r * 0.85, mTip = minA;
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(mTip) * mLen, cy + Math.sin(mTip) * mLen); // tip
-        ctx.lineTo(cx + Math.cos(mTip + 0.04) * mLen * 0.15, cy + Math.sin(mTip + 0.04) * mLen * 0.15);
-        ctx.lineTo(cx + Math.cos(mTip - 0.04) * mLen * 0.15, cy + Math.sin(mTip - 0.04) * mLen * 0.15);
-        ctx.closePath(); ctx.fill(); ctx.stroke();
-        ctx.restore();
-        // Hour hand — wider
-        ctx.save(); ctx.globalAlpha = a * 1.4;
-        ctx.fillStyle = 'rgba(255,240,180,1)'; ctx.strokeStyle = 'rgba(255,220,130,0.8)';
-        ctx.shadowColor = 'rgba(255,210,80,0.9)'; ctx.shadowBlur = 18; ctx.lineWidth = 1;
-        const hLen = r * 0.52, hTip = hourA;
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(hTip) * hLen, cy + Math.sin(hTip) * hLen);
-        ctx.lineTo(cx + Math.cos(hTip + 0.06) * hLen * 0.15, cy + Math.sin(hTip + 0.06) * hLen * 0.15);
-        ctx.lineTo(cx + Math.cos(hTip - 0.06) * hLen * 0.15, cy + Math.sin(hTip - 0.06) * hLen * 0.15);
-        ctx.closePath(); ctx.fill(); ctx.stroke();
-        ctx.restore();
+        // Helper: draw fleur-de-lis clock hand
+        const drawHand = (angle, len, handWidth, alpha) => {
+          ctx.save(); ctx.globalAlpha = alpha;
+          ctx.translate(cx, cy); ctx.rotate(angle + Math.PI / 2); // rotate so 0=up
+          ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.strokeStyle = 'rgba(255,230,150,0.8)';
+          ctx.shadowColor = 'rgba(255,230,100,1)'; ctx.shadowBlur = 20; ctx.lineWidth = 1;
+          const hw = handWidth, fl = len * 0.12; // fleur size
+          // Shaft
+          ctx.beginPath();
+          ctx.moveTo(-hw * 0.4, 0); ctx.lineTo(-hw * 0.3, -len * 0.7);
+          ctx.lineTo(hw * 0.3, -len * 0.7); ctx.lineTo(hw * 0.4, 0);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Fleur-de-lis tip: center petal
+          ctx.beginPath();
+          ctx.moveTo(0, -len); // tip point
+          ctx.quadraticCurveTo(-fl * 0.6, -len + fl * 0.5, -hw * 0.2, -len * 0.7);
+          ctx.lineTo(hw * 0.2, -len * 0.7);
+          ctx.quadraticCurveTo(fl * 0.6, -len + fl * 0.5, 0, -len);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Left petal
+          ctx.beginPath();
+          ctx.moveTo(-hw * 0.3, -len * 0.72);
+          ctx.quadraticCurveTo(-fl * 1.3, -len * 0.82, -fl * 0.9, -len * 0.65);
+          ctx.quadraticCurveTo(-fl * 0.5, -len * 0.55, -hw * 0.15, -len * 0.68);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Right petal
+          ctx.beginPath();
+          ctx.moveTo(hw * 0.3, -len * 0.72);
+          ctx.quadraticCurveTo(fl * 1.3, -len * 0.82, fl * 0.9, -len * 0.65);
+          ctx.quadraticCurveTo(fl * 0.5, -len * 0.55, hw * 0.15, -len * 0.68);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Counterweight circle at base
+          ctx.beginPath(); ctx.arc(0, len * 0.08, hw * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          ctx.restore();
+        };
+        // Minute hand — long, thin
+        drawHand(minA, r * 0.85, 4, a * 1.5);
+        // Hour hand — shorter, wider
+        drawHand(hourA, r * 0.52, 6, a * 1.4);
         // Center jewel
         ctx.save(); ctx.globalAlpha = Math.min(1, a * 2.5);
         ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 25;
