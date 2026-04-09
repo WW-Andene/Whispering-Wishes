@@ -567,17 +567,16 @@ const BANNER_THEMES = {
     const clockR = Math.min(w, h) * 0.55; // BIGGER — fills most of card
     const CYCLE = 15;
     // More gears, interlocking, varied sizes
+    // Gears fill the ENTIRE clock interior — like the reference where one gear
+    // covers the whole left half. Overlapping, massive, edge-to-edge.
     const gears = [
-      { x: 0.0, y: 0.0, r: 0.50, teeth: 24, speed: 0.12 },       // center fills most of clock
-      { x: -0.45, y: -0.15, r: 0.35, teeth: 18, speed: -0.17 },   // large left
-      { x: 0.40, y: 0.25, r: 0.32, teeth: 16, speed: 0.2 },       // large right
-      { x: 0.30, y: -0.35, r: 0.22, teeth: 12, speed: -0.3 },     // medium top-right
-      { x: -0.40, y: 0.38, r: 0.20, teeth: 12, speed: 0.32 },     // medium bottom-left
-      { x: -0.15, y: -0.48, r: 0.15, teeth: 10, speed: -0.45 },   // small top
-      { x: 0.48, y: -0.10, r: 0.13, teeth: 10, speed: 0.5 },      // small right
-      { x: -0.48, y: 0.10, r: 0.11, teeth: 8, speed: -0.55 },     // small left edge
-      { x: 0.15, y: 0.48, r: 0.12, teeth: 8, speed: 0.5 },        // small bottom
-      { x: 0.0, y: -0.50, r: 0.08, teeth: 6, speed: -0.7 },       // tiny top
+      { x: -0.25, y: -0.05, r: 0.65, teeth: 28, speed: 0.1 },     // HUGE — fills left 2/3
+      { x: 0.35, y: 0.15, r: 0.50, teeth: 22, speed: -0.14 },     // LARGE — fills right half
+      { x: 0.10, y: -0.35, r: 0.35, teeth: 16, speed: 0.22 },     // medium top
+      { x: -0.30, y: 0.40, r: 0.30, teeth: 14, speed: -0.28 },    // medium bottom-left
+      { x: 0.40, y: -0.30, r: 0.20, teeth: 10, speed: 0.4 },      // small top-right
+      { x: -0.45, y: -0.35, r: 0.15, teeth: 8, speed: -0.5 },     // small top-left
+      { x: 0.0, y: 0.45, r: 0.18, teeth: 10, speed: 0.35 },       // small bottom
     ];
     const nebulae = Array.from({ length: 20 }, () => ({
       angle: 0, dist: 0, speed: 0.3 + Math.random() * 1.5, size: 25 + Math.random() * 55,
@@ -754,46 +753,41 @@ const BANNER_THEMES = {
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
-        // Fleur-de-lis hand — proper heraldic shape
+        // Hand with fleur-de-lis tip — like the reference: narrow pointed
+        // spike with two small decorative curls at the base of the tip
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
           ctx.translate(cx, cy); ctx.rotate(angle + Math.PI / 2);
-          ctx.fillStyle = 'rgba(255,248,215,1)'; ctx.strokeStyle = 'rgba(180,160,100,0.5)';
-          ctx.shadowColor = 'rgba(255,235,120,1)'; ctx.shadowBlur = 22; ctx.lineWidth = 0.5;
-          const f = len * 0.16; // fleur scale
-          const fy = -len * 0.6; // where the fleur sits
-          // Shaft — tapered
+          ctx.fillStyle = 'rgba(255,248,215,1)';
+          ctx.shadowColor = 'rgba(255,235,120,1)'; ctx.shadowBlur = 25;
+          const ty = -len * 0.65; // where curls sit
+          // Draw as one continuous filled shape
           ctx.beginPath();
-          ctx.moveTo(-hw * 0.2, len * 0.04);
-          ctx.lineTo(-hw * 0.1, fy + f * 0.1);
-          ctx.lineTo(hw * 0.1, fy + f * 0.1);
-          ctx.lineTo(hw * 0.2, len * 0.04);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Center petal — pointed spear shape going to tip
+          // Counterweight circle base
+          ctx.arc(0, len * 0.06, hw * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          // Shaft + tip as one path
           ctx.beginPath();
-          ctx.moveTo(0, -len); // apex
-          ctx.bezierCurveTo(-f * 0.25, -len + f * 0.5, -f * 0.3, fy - f * 0.2, -hw * 0.08, fy);
-          ctx.lineTo(hw * 0.08, fy);
-          ctx.bezierCurveTo(f * 0.3, fy - f * 0.2, f * 0.25, -len + f * 0.5, 0, -len);
-          ctx.fill(); ctx.stroke();
-          // Left horn — curves up-outward then tips curl down
-          ctx.beginPath();
-          ctx.moveTo(-hw * 0.06, fy);
-          ctx.bezierCurveTo(-f * 0.4, fy - f * 0.6, -f * 1.4, fy - f * 0.9, -f * 1.3, fy - f * 0.3);
-          ctx.bezierCurveTo(-f * 1.2, fy + f * 0.2, -f * 0.7, fy + f * 0.3, -hw * 0.1, fy + f * 0.1);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Right horn — mirror
-          ctx.beginPath();
-          ctx.moveTo(hw * 0.06, fy);
-          ctx.bezierCurveTo(f * 0.4, fy - f * 0.6, f * 1.4, fy - f * 0.9, f * 1.3, fy - f * 0.3);
-          ctx.bezierCurveTo(f * 1.2, fy + f * 0.2, f * 0.7, fy + f * 0.3, hw * 0.1, fy + f * 0.1);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Counterweight drop
-          ctx.beginPath(); ctx.arc(0, len * 0.06, hw * 0.35, 0, Math.PI * 2); ctx.fill();
+          ctx.moveTo(hw * 0.22, len * 0.03); // base right
+          ctx.lineTo(hw * 0.12, ty);           // shaft narrows to curl junction
+          // Right curl — small arc outward
+          ctx.quadraticCurveTo(hw * 1.2, ty - hw * 1.0, hw * 0.8, ty - hw * 1.8);
+          ctx.quadraticCurveTo(hw * 0.5, ty - hw * 1.2, hw * 0.15, ty - hw * 0.3);
+          // Center spike to apex
+          ctx.lineTo(hw * 0.08, ty);
+          ctx.lineTo(0, -len); // TIP
+          ctx.lineTo(-hw * 0.08, ty);
+          // Left curl — mirror
+          ctx.lineTo(-hw * 0.15, ty - hw * 0.3);
+          ctx.quadraticCurveTo(-hw * 0.5, ty - hw * 1.2, -hw * 0.8, ty - hw * 1.8);
+          ctx.quadraticCurveTo(-hw * 1.2, ty - hw * 1.0, -hw * 0.12, ty);
+          ctx.lineTo(-hw * 0.22, len * 0.03); // base left
+          ctx.closePath();
+          ctx.fill();
           ctx.restore();
         };
-        drawHand(minA, r * 0.82, 6, a * 1.5);
-        drawHand(hourA, r * 0.5, 8, a * 1.4);
+        drawHand(minA, r * 0.82, 5, a * 1.5);
+        drawHand(hourA, r * 0.5, 7, a * 1.4);
         // Center jewel
         ctx.save(); ctx.globalAlpha = Math.min(1, a * 2.5);
         ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 25;
