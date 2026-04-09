@@ -90,9 +90,32 @@ const ELEMENT_COLORS = {
   Shield:  { hex: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: 'rgba(148,163,184,0.4)' },
   Physical:{ hex: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: 'rgba(148,163,184,0.4)' },
 };
-const getElementColor = (el) => ELEMENT_COLORS[el]?.hex || '#6b7280';
-const getElementBg = (el) => ELEMENT_COLORS[el]?.bg || 'rgba(107,114,128,0.15)';
-const getElementBorder = (el) => ELEMENT_COLORS[el]?.border || 'rgba(107,114,128,0.4)';
+// Wong palette — optimized for deuteranopia, protanopia, and tritanopia
+// Source: https://www.nature.com/articles/nmeth.1618
+const _cbHex = (hex) => ({ hex, bg: `${hex}26`, border: `${hex}66` }); // 15% and 40% alpha via hex
+const ELEMENT_COLORS_CB = {
+  Fusion:  _cbHex('#e69f00'), // amber (was orange — too close to Havoc/red)
+  Electro: _cbHex('#cc79a7'), // rose-mauve (was purple — OK but improved)
+  Aero:    _cbHex('#009e73'), // teal (was green — indistinguishable from red)
+  Glacio:  _cbHex('#56b4e9'), // sky blue (was cyan — improved contrast)
+  Havoc:   _cbHex('#d55e00'), // vermillion (was pink — too close to red)
+  Spectro: _cbHex('#f0e442'), // bright yellow (was gold — improved distinction)
+  Heal:    _cbHex('#009e73'), // teal
+  Support: _cbHex('#56b4e9'), // sky blue
+  ATK:     _cbHex('#d55e00'), // vermillion
+  Shield:  _cbHex('#94a3b8'),
+  Physical:_cbHex('#94a3b8'),
+};
+// Element shape labels — shown alongside name in CB mode (§E10-CB-F3 spec)
+const ELEMENT_SHAPES = {
+  Fusion: '🔥', Electro: '⚡', Aero: '🌀', Glacio: '❄', Havoc: '💀', Spectro: '✦',
+};
+const _isCB = () => typeof document !== 'undefined' && document.documentElement.classList.contains('colorblind-mode');
+const _getColors = (el) => (_isCB() ? ELEMENT_COLORS_CB[el] : ELEMENT_COLORS[el]) || ELEMENT_COLORS[el];
+const getElementColor = (el) => _getColors(el)?.hex || '#6b7280';
+const getElementBg = (el) => _getColors(el)?.bg || 'rgba(107,114,128,0.15)';
+const getElementBorder = (el) => _getColors(el)?.border || 'rgba(107,114,128,0.4)';
+const getElementShape = (el) => _isCB() ? (ELEMENT_SHAPES[el] || '') : '';
 // Get element color for a sonata set name
 const getSetElementColor = (setName) => {
   const setData = ECHO_SETS[setName];
@@ -125,6 +148,7 @@ export {
   getElementColor,
   getElementBg,
   getElementBorder,
+  getElementShape,
   getSetElementColor,
   getEchoSetColors,
   getBuffElementColor,

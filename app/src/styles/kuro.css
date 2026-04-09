@@ -2877,29 +2877,8 @@
       border-radius: 50%;
     }
 
-    /* Color-blind mode — ::after pseudo-elements overlay patterns ON TOP of badges.
-       Independent of inline background styles. Reacts instantly to class toggle. */
-    .colorblind-mode [data-element] {
-      position: relative;
-      outline: 2px dashed currentColor !important;
-      outline-offset: 1px;
-    }
-    .colorblind-mode [data-element]::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
-      opacity: 0.5;
-      z-index: 1;
-    }
-    .colorblind-mode [data-element="Fusion"]::after   { background: repeating-linear-gradient(45deg, transparent, transparent 2px, #fff 2px, #fff 4px); }
-    .colorblind-mode [data-element="Electro"]::after  { background: repeating-linear-gradient(-45deg, transparent, transparent 2px, #fff 2px, #fff 4px); }
-    .colorblind-mode [data-element="Aero"]::after     { background: repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px); }
-    .colorblind-mode [data-element="Glacio"]::after   { background: repeating-linear-gradient(90deg, transparent, transparent 2px, #fff 2px, #fff 4px); }
-    .colorblind-mode [data-element="Havoc"]::after    { background: radial-gradient(circle, #fff 1.5px, transparent 1.5px); background-size: 6px 6px; }
-    .colorblind-mode [data-element="Spectro"]::after  { background: repeating-linear-gradient(135deg, transparent, transparent 2px, #fff 2px, #fff 4px); }
-    .colorblind-mode [data-element] > * { position: relative; z-index: 2; }
+    /* Color-blind mode — palette swap handled by getElementColor/Bg/Border in helpers.js.
+       Re-render triggered by key change on <main> in App.jsx. */
 
     /* Header icon — 4-branch star emanation */
     @keyframes header-star-emanate {

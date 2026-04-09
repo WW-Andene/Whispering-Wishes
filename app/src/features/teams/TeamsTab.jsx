@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -473,9 +473,9 @@ function TeamsTab({
                           {teamSlots.filter(s => s).map((name, i) => {
                             const d = CHARACTER_DATA[name];
                             return d ? (
-                              <div key={i} className="kuro-badge font-medium" data-element={d.element}
+                              <div key={i} className="kuro-badge font-medium"
                                 style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                {d.element}
+                                {getElementShape(d.element)}{getElementShape(d.element) ? ' ' : ''}{d.element}
                               </div>
                             ) : null;
                           })}
