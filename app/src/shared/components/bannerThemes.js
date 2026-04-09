@@ -595,7 +595,7 @@ const BANNER_THEMES = {
       y: Math.random() * h * 0.85 + h * 0.075,
       min: Math.floor(Math.random() * 60),
       glitchX: 0, glitchY: 0, timer: Math.random() * 0.1,
-      size: 14 + Math.random() * 8,
+      size: 20 + Math.random() * 12,
       start: i * SLOT_DUR,
     }));
     return (ctx, t) => {
@@ -672,75 +672,109 @@ const BANNER_THEMES = {
           }
         }
       }
-      // ── PHASE 2 (8–10.5s): ORNATE CLOCK — ARMS SPINNING THEN STOPPING ──
+      // ── PHASE 2 (8–10.5s): MASSIVE CLOCK WITH FILLED GEARS ──
       const clockVisible = cycle >= 8.0 && cycle < 10.7;
       if (clockVisible) {
-        const cT = cycle - 8.0; // 0 to 2.5
-        const bIn = Math.min(1, cT / 0.4);
+        const cT = cycle - 8.0;
+        const bIn = Math.min(1, cT / 0.5);
         const cFade = cycle >= 10.5 ? Math.max(0, 1 - (cycle - 10.5) / 0.2) : 1;
-        const a = bIn * cFade * 0.55; // boosted base alpha
+        const a = bIn * cFade * 0.6;
         const r = clockR * bIn;
-        // Dark vignette behind clock for contrast
-        ctx.save(); ctx.globalAlpha = a * 0.4;
-        const vig = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r * 1.3);
-        vig.addColorStop(0, 'rgba(0,0,0,0.6)'); vig.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = vig; ctx.beginPath(); ctx.arc(cx, cy, r * 1.3, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-        // Outer ring — thick, double glow pass
-        ctx.save(); ctx.globalAlpha = a;
-        ctx.strokeStyle = 'rgba(255,225,130,0.8)'; ctx.shadowColor = 'rgba(255,200,80,0.7)'; ctx.shadowBlur = 35; ctx.lineWidth = 4;
+        // Light bloom from center-right (like the reference)
+        ctx.save(); ctx.globalAlpha = a * 0.5;
+        const bloom = ctx.createRadialGradient(cx + r * 0.3, cy, 0, cx + r * 0.3, cy, r * 1.2);
+        bloom.addColorStop(0, 'rgba(255,240,200,0.6)');
+        bloom.addColorStop(0.4, 'rgba(255,210,130,0.15)');
+        bloom.addColorStop(1, 'rgba(255,180,80,0)');
+        ctx.fillStyle = bloom; ctx.beginPath(); ctx.arc(cx + r * 0.3, cy, r * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        // FILLED GEARS — large, solid, visible like reference
+        const drawGear = (gx, gy, gr, teeth, rot, alpha) => {
+          ctx.save(); ctx.globalAlpha = alpha; ctx.translate(gx, gy); ctx.rotate(rot);
+          // Filled gear body
+          ctx.fillStyle = 'rgba(200,180,140,0.35)';
+          ctx.strokeStyle = 'rgba(255,230,170,0.5)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          for (let i = 0; i < teeth; i++) {
+            const ang = (Math.PI * 2 / teeth) * i;
+            const tH = gr * 0.18;
+            const iR = gr * 0.82, oR = gr + tH;
+            const ht = Math.PI / teeth * 0.55;
+            ctx.lineTo(Math.cos(ang - ht) * iR, Math.sin(ang - ht) * iR);
+            ctx.lineTo(Math.cos(ang - ht * 0.6) * oR, Math.sin(ang - ht * 0.6) * oR);
+            ctx.lineTo(Math.cos(ang + ht * 0.6) * oR, Math.sin(ang + ht * 0.6) * oR);
+            ctx.lineTo(Math.cos(ang + ht) * iR, Math.sin(ang + ht) * iR);
+          }
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          // Inner hub
+          ctx.fillStyle = 'rgba(180,160,120,0.3)';
+          ctx.beginPath(); ctx.arc(0, 0, gr * 0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // Center hole
+          ctx.fillStyle = 'rgba(30,25,20,0.5)';
+          ctx.beginPath(); ctx.arc(0, 0, gr * 0.15, 0, Math.PI * 2); ctx.fill();
+          // Spokes
+          ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = 1;
+          for (let s = 0; s < 4; s++) { const sa = (Math.PI / 2) * s; ctx.beginPath(); ctx.moveTo(Math.cos(sa) * gr * 0.18, Math.sin(sa) * gr * 0.18); ctx.lineTo(Math.cos(sa) * gr * 0.42, Math.sin(sa) * gr * 0.42); ctx.stroke(); }
+          ctx.restore();
+        };
+        // Main large gear (left-center, like reference)
+        drawGear(cx - r * 0.25, cy - r * 0.1, r * 0.45, 16, t * 0.2, a * 0.7);
+        // Medium gear (interlocking right)
+        drawGear(cx + r * 0.3, cy + r * 0.2, r * 0.3, 12, -t * 0.28, a * 0.6);
+        // Small gear (top right)
+        drawGear(cx + r * 0.15, cy - r * 0.35, r * 0.18, 10, t * 0.45, a * 0.5);
+        // Tiny gear (bottom left)
+        drawGear(cx - r * 0.4, cy + r * 0.3, r * 0.12, 8, -t * 0.6, a * 0.4);
+        // Outer ring — thick, bright, strong glow
+        ctx.save(); ctx.globalAlpha = a * 0.9;
+        ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.shadowColor = 'rgba(255,210,100,0.8)'; ctx.shadowBlur = 30; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-        ctx.shadowBlur = 60; ctx.globalAlpha = a * 0.3; ctx.stroke(); // bloom pass
         ctx.restore();
         // Inner ring
-        ctx.save(); ctx.globalAlpha = a * 0.6;
-        ctx.strokeStyle = 'rgba(255,210,100,0.5)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 15; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-        // 60 ticks — boosted contrast
-        for (let i = 0; i < 60; i++) {
-          const ang = (Math.PI * 2 / 60) * i - Math.PI / 2; const maj = i % 5 === 0;
-          ctx.save(); ctx.globalAlpha = a * (maj ? 1.5 : 0.5);
-          ctx.strokeStyle = maj ? 'rgba(255,240,180,1)' : 'rgba(255,220,140,0.8)';
-          ctx.shadowColor = 'rgba(255,200,80,0.6)'; ctx.shadowBlur = maj ? 10 : 3;
-          ctx.lineWidth = maj ? 3 : 0.8;
-          ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang) * r * (maj ? 0.73 : 0.85), cy + Math.sin(ang) * r * (maj ? 0.73 : 0.85));
-          ctx.lineTo(cx + Math.cos(ang) * r * 0.93, cy + Math.sin(ang) * r * 0.93); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.globalAlpha = a * 0.4;
+        ctx.strokeStyle = 'rgba(255,220,140,0.5)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.85, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        // 12 major tick marks only (clean like reference)
+        for (let i = 0; i < 12; i++) {
+          const ang = (Math.PI * 2 / 12) * i - Math.PI / 2;
+          ctx.save(); ctx.globalAlpha = a * 1.2;
+          ctx.strokeStyle = 'rgba(255,240,180,1)'; ctx.shadowColor = 'rgba(255,220,100,0.6)'; ctx.shadowBlur = 8;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang) * r * 0.78, cy + Math.sin(ang) * r * 0.78);
+          ctx.lineTo(cx + Math.cos(ang) * r * 0.92, cy + Math.sin(ang) * r * 0.92); ctx.stroke(); ctx.restore();
         }
-        // Gears — boosted alpha, glow
-        for (const g of gears) {
-          const gx = cx + g.x * r, gy = cy + g.y * r, gr = g.r * r;
-          ctx.save(); ctx.globalAlpha = a * 0.35;
-          ctx.strokeStyle = 'rgba(255,225,150,0.7)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 8;
-          ctx.lineWidth = 1.5; ctx.translate(gx, gy); ctx.rotate(t * g.speed);
-          ctx.beginPath(); for (let i = 0; i < g.teeth; i++) { const ang = (Math.PI * 2 / g.teeth) * i; const tH = gr * 0.15; const iR = gr * 0.85, oR = gr + tH; const ht = Math.PI / g.teeth * 0.6; ctx.lineTo(Math.cos(ang - ht) * iR, Math.sin(ang - ht) * iR); ctx.lineTo(Math.cos(ang - ht * 0.7) * oR, Math.sin(ang - ht * 0.7) * oR); ctx.lineTo(Math.cos(ang + ht * 0.7) * oR, Math.sin(ang + ht * 0.7) * oR); ctx.lineTo(Math.cos(ang + ht) * iR, Math.sin(ang + ht) * iR); } ctx.closePath(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.4, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-        }
-        // Hands — spin fast, decelerate to 6:30
+        // Hands — spinning, decelerating
         const decel = Math.min(1, cT / 2.0);
         const easeOut = 1 - Math.pow(1 - decel, 3);
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
-        // Minute hand — double stroke for glow
-        ctx.save(); ctx.globalAlpha = a * 1.8;
-        ctx.strokeStyle = 'rgba(255,248,210,1)'; ctx.shadowColor = 'rgba(255,230,100,1)'; ctx.shadowBlur = 25;
-        ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(minA) * r * 0.85, cy + Math.sin(minA) * r * 0.85); ctx.stroke();
-        ctx.shadowBlur = 50; ctx.globalAlpha = a * 0.5; ctx.stroke(); // bloom
+        // Minute hand — ornate with diamond tip
+        ctx.save(); ctx.globalAlpha = a * 1.5;
+        ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.strokeStyle = 'rgba(255,230,150,0.8)';
+        ctx.shadowColor = 'rgba(255,230,100,1)'; ctx.shadowBlur = 20; ctx.lineWidth = 1;
+        const mLen = r * 0.85, mTip = minA;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(mTip) * mLen, cy + Math.sin(mTip) * mLen); // tip
+        ctx.lineTo(cx + Math.cos(mTip + 0.04) * mLen * 0.15, cy + Math.sin(mTip + 0.04) * mLen * 0.15);
+        ctx.lineTo(cx + Math.cos(mTip - 0.04) * mLen * 0.15, cy + Math.sin(mTip - 0.04) * mLen * 0.15);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.restore();
-        // Hour hand
-        ctx.save(); ctx.globalAlpha = a * 1.6;
-        ctx.strokeStyle = 'rgba(255,240,180,1)'; ctx.shadowColor = 'rgba(255,210,80,0.9)'; ctx.shadowBlur = 20;
-        ctx.lineWidth = 4; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(hourA) * r * 0.52, cy + Math.sin(hourA) * r * 0.52); ctx.stroke();
-        ctx.shadowBlur = 45; ctx.globalAlpha = a * 0.4; ctx.stroke(); // bloom
+        // Hour hand — wider
+        ctx.save(); ctx.globalAlpha = a * 1.4;
+        ctx.fillStyle = 'rgba(255,240,180,1)'; ctx.strokeStyle = 'rgba(255,220,130,0.8)';
+        ctx.shadowColor = 'rgba(255,210,80,0.9)'; ctx.shadowBlur = 18; ctx.lineWidth = 1;
+        const hLen = r * 0.52, hTip = hourA;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(hTip) * hLen, cy + Math.sin(hTip) * hLen);
+        ctx.lineTo(cx + Math.cos(hTip + 0.06) * hLen * 0.15, cy + Math.sin(hTip + 0.06) * hLen * 0.15);
+        ctx.lineTo(cx + Math.cos(hTip - 0.06) * hLen * 0.15, cy + Math.sin(hTip - 0.06) * hLen * 0.15);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.restore();
-        // Center ornament — bright jewel
-        for (let ri = 0; ri < 3; ri++) { ctx.save(); ctx.globalAlpha = a * (1.8 - ri * 0.4); ctx.strokeStyle = 'rgba(255,235,160,0.9)'; ctx.shadowColor = 'rgba(255,210,80,0.5)'; ctx.shadowBlur = 10; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(cx, cy, 4 + ri * 5, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-        ctx.save(); ctx.globalAlpha = Math.min(1, a * 3);
-        ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 30;
-        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.shadowBlur = 60; ctx.globalAlpha = a * 0.6; ctx.fill(); // bloom
-        ctx.restore();
+        // Center jewel
+        ctx.save(); ctx.globalAlpha = Math.min(1, a * 2.5);
+        ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 25;
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
       // ── PHASE 3 (10.5s): DETONATION FLASH — very visible ──
       if (cycle >= 10.5 && cycle < 11.0) {
