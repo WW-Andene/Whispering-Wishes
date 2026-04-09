@@ -560,10 +560,10 @@ const BANNER_THEMES = {
   radiance: (w, h) => {
     // Lazy-load Neuropol font for digital clock numbers
     if (!document.getElementById('ww-font-neuropol')) {
-      const link = document.createElement('link');
-      link.id = 'ww-font-neuropol'; link.rel = 'stylesheet';
-      link.href = 'https://fonts.cdnfonts.com/css/neuropol';
-      document.head.appendChild(link);
+      const style = document.createElement('style');
+      style.id = 'ww-font-neuropol';
+      style.textContent = `@font-face { font-family: 'Neuropol'; src: url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff2') format('woff2'), url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff') format('woff'); font-display: swap; }`;
+      document.head.appendChild(style);
     }
     const cx = w * 0.5, cy = h * 0.45;
     const clockR = Math.min(w, h) * 0.44;
