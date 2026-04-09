@@ -558,11 +558,11 @@ const BANNER_THEMES = {
 
   // ⏰ RADIANCE (Zani): glitching digital time racing → ornate clock at 6:30 → nebula detonation
   radiance: (w, h) => {
-    // Lazy-load Orbitron font for digital clock numbers
-    if (!document.getElementById('ww-font-orbitron')) {
+    // Lazy-load Neuropol font for digital clock numbers
+    if (!document.getElementById('ww-font-neuropol')) {
       const link = document.createElement('link');
-      link.id = 'ww-font-orbitron'; link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap';
+      link.id = 'ww-font-neuropol'; link.rel = 'stylesheet';
+      link.href = 'https://fonts.cdnfonts.com/css/neuropol';
       document.head.appendChild(link);
     }
     const cx = w * 0.5, cy = h * 0.45;
@@ -631,7 +631,7 @@ const BANNER_THEMES = {
           const fs = ts.size;
           ctx.save();
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.font = `900 ${fs}px 'Orbitron', monospace`;
+          ctx.font = `bold ${fs}px 'Neuropol', monospace`;
           ctx.letterSpacing = '2px';
           // Dark shadow behind for contrast
           ctx.globalAlpha = a * 0.6;
