@@ -626,9 +626,21 @@ const BANNER_THEMES = {
       size: sizes[i] || 22,
       start: i * SLOT_DUR,
     }));
+    let lastCycleId = -1;
     return (ctx, t) => {
       const cycle = t % CYCLE;
       const cycleId = Math.floor(t / CYCLE);
+      // Re-randomize timestamp positions each cycle
+      if (cycleId !== lastCycleId) {
+        lastCycleId = cycleId;
+        for (let i = 0; i < timestamps.length; i++) {
+          const ts = timestamps[i];
+          ts.x = (i % 2 === 0 ? 0.1 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35) * w;
+          ts.y = 0.08 * h + (i / COUNT) * h * 0.75 + Math.random() * h * 0.1;
+          ts.min = Math.floor(Math.random() * 60);
+          ts.glitchX = 0; ts.glitchY = 0;
+        }
+      }
       // ── PHASE 1→3: TIMESTAMPS (appear sequentially, freeze, erased by explosion) ──
       if (cycle < 11.0) {
         for (const ts of timestamps) {
