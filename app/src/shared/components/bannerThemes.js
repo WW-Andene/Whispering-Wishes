@@ -564,7 +564,7 @@ const BANNER_THEMES = {
       document.head.appendChild(s);
     }
     const cx = w * 0.5, cy = h * 0.48;
-    const clockR = Math.min(w, h) * 0.55; // BIGGER — fills most of card
+    const clockR = Math.min(w, h) * 0.82; // 50% bigger — extends beyond card edges
     const CYCLE = 15;
     // More gears, interlocking, varied sizes
     // Gears with mechanically correct rotation:
