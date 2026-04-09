@@ -816,7 +816,7 @@ const BANNER_THEMES = {
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
-        // Hand: shaft + large diamond tip + smaller diamond below + comma petals
+        // Hand: diamond tip + smaller diamond + two flat teardrop wings
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
           ctx.translate(cx, cy); ctx.rotate(angle + Math.PI / 2);
@@ -825,57 +825,59 @@ const BANNER_THEMES = {
           // Shaft — tapered
           ctx.beginPath();
           ctx.moveTo(-hw * 0.22, len * 0.04);
-          ctx.lineTo(-hw * 0.1, -len * 0.58);
-          ctx.lineTo(hw * 0.1, -len * 0.58);
+          ctx.lineTo(-hw * 0.08, -len * 0.55);
+          ctx.lineTo(hw * 0.08, -len * 0.55);
           ctx.lineTo(hw * 0.22, len * 0.04);
           ctx.closePath(); ctx.fill();
           // Large diamond at tip
-          const dY = -len * 0.88; // diamond center
-          const dH = len * 0.12;  // diamond half-height
-          const dW = hw * 0.7;    // diamond half-width
+          const dY = -len * 0.85;
+          const dH = len * 0.15;
+          const dW = hw * 0.8;
           ctx.beginPath();
-          ctx.moveTo(0, dY - dH);     // top point
-          ctx.lineTo(dW, dY);          // right
-          ctx.lineTo(0, dY + dH);      // bottom
-          ctx.lineTo(-dW, dY);         // left
+          ctx.moveTo(0, dY - dH);
+          ctx.lineTo(dW, dY);
+          ctx.lineTo(0, dY + dH);
+          ctx.lineTo(-dW, dY);
           ctx.closePath(); ctx.fill();
-          // Smaller diamond just below
-          const d2Y = -len * 0.62;
-          const d2H = len * 0.06;
-          const d2W = hw * 0.45;
+          // Smaller diamond below
+          const d2Y = -len * 0.58;
+          const d2H = len * 0.07;
+          const d2W = hw * 0.5;
           ctx.beginPath();
           ctx.moveTo(0, d2Y - d2H);
           ctx.lineTo(d2W, d2Y);
           ctx.lineTo(0, d2Y + d2H);
           ctx.lineTo(-d2W, d2Y);
           ctx.closePath(); ctx.fill();
-          // Comma petals curling outward from small diamond sides
-          // Right comma — teardrop curling right and down
+          // Two teardrop wings pointing flat LEFT and RIGHT from small diamond
+          // Right wing — fat teardrop pointing right
+          const wY = d2Y; // same height as small diamond center
+          const wLen = hw * 2.2; // how far it extends sideways
           ctx.beginPath();
-          ctx.moveTo(d2W * 0.6, d2Y - d2H * 0.3);
+          ctx.moveTo(d2W * 0.5, wY); // start from small diamond edge
           ctx.bezierCurveTo(
-            d2W + hw * 1.0, d2Y - d2H * 2.0,  // curve up-outward
-            d2W + hw * 1.8, d2Y + d2H * 0.5,   // far out
-            d2W + hw * 0.4, d2Y + d2H * 2.5     // curl back down
+            d2W + wLen * 0.4, wY - hw * 0.8,  // top curve
+            d2W + wLen, wY - hw * 0.2,         // tip area
+            d2W + wLen * 0.85, wY              // rightmost point (tip)
           );
           ctx.bezierCurveTo(
-            d2W * 0.3, d2Y + d2H * 1.5,
-            d2W * 0.4, d2Y + d2H * 0.3,
-            d2W * 0.6, d2Y - d2H * 0.3
+            d2W + wLen, wY + hw * 0.2,         // bottom of tip
+            d2W + wLen * 0.4, wY + hw * 0.8,   // bottom curve
+            d2W * 0.5, wY                       // back to start
           );
           ctx.fill();
-          // Left comma — mirror
+          // Left wing — mirror
           ctx.beginPath();
-          ctx.moveTo(-d2W * 0.6, d2Y - d2H * 0.3);
+          ctx.moveTo(-d2W * 0.5, wY);
           ctx.bezierCurveTo(
-            -d2W - hw * 1.0, d2Y - d2H * 2.0,
-            -d2W - hw * 1.8, d2Y + d2H * 0.5,
-            -d2W - hw * 0.4, d2Y + d2H * 2.5
+            -d2W - wLen * 0.4, wY - hw * 0.8,
+            -d2W - wLen, wY - hw * 0.2,
+            -d2W - wLen * 0.85, wY
           );
           ctx.bezierCurveTo(
-            -d2W * 0.3, d2Y + d2H * 1.5,
-            -d2W * 0.4, d2Y + d2H * 0.3,
-            -d2W * 0.6, d2Y - d2H * 0.3
+            -d2W - wLen, wY + hw * 0.2,
+            -d2W - wLen * 0.4, wY + hw * 0.8,
+            -d2W * 0.5, wY
           );
           ctx.fill();
           // Counterweight circle
