@@ -1016,13 +1016,17 @@ function PlannerTab({
             {/* Resonator selector */}
             <div>
               <label className="kuro-label">Add Resonator</label>
-              <select className="kuro-input w-full" value="" onChange={e => { if (!e.target.value) return; setFarmTargetsState(prev => [...prev, { name: e.target.value, ascension: true, skills: true, weapon: false }]); }} aria-label="Select Resonator to farm">
-                <option value="">Select Resonator…</option>
-                {[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS].filter(n => !farmTargetsState.some(t => t.name === n)).map(n => {
-                  const d = CHARACTER_DATA[n];
-                  return <option key={n} value={n}>{n}{d ? ` — ${d.element} ${d.role}` : ''}</option>;
-                })}
-              </select>
+              <KuroSelect
+                value=""
+                onChange={v => { if (!v) return; setFarmTargetsState(prev => [...prev, { name: v, ascension: true, skills: true, weapon: false }]); }}
+                options={[
+                  { value: '', label: 'Select Resonator…' },
+                  ...[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS]
+                    .filter(n => !farmTargetsState.some(t => t.name === n))
+                    .map(n => { const d = CHARACTER_DATA[n]; return { value: n, label: `${n}${d ? ` — ${d.element} ${d.role}` : ''}` }; })
+                ]}
+                ariaLabel="Select Resonator to farm"
+              />
             </div>
 
             {/* Farming targets */}
