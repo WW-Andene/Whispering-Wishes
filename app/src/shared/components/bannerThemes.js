@@ -556,189 +556,93 @@ const BANNER_THEMES = {
     };
   },
 
-  // ⏰ RADIANCE (Zani): massive clock appears 2s, ticks to 12, detonates into nebula brume
+  // ⏰ RADIANCE (Zani): glitching digital time racing → ornate clock at 6:30 → nebula detonation
   radiance: (w, h) => {
     const cx = w * 0.5, cy = h * 0.45;
-    const clockR = Math.min(w, h) * 0.42; // BIG — fills most of the card
-    const CYCLE = 8; // 0-2s clock builds+ticks, 2s BOOM, 2-8s nebula lingers
-    // Nebula clouds — large soft glowing patches that expand outward
-    const nebulae = Array.from({ length: 18 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      dist: 0, speed: 0.4 + Math.random() * 1.2,
-      size: 30 + Math.random() * 60,
-      alpha: 0, maxAlpha: 0.06 + Math.random() * 0.08,
-      color: ['255,200,80', '255,150,50', '255,100,30', '255,230,140', '200,160,80'][Math.floor(Math.random() * 5)],
-      drift: (Math.random() - 0.5) * 0.3,
+    const clockR = Math.min(w, h) * 0.44;
+    const CYCLE = 13;
+    const digitSlots = Array.from({ length: 5 }, () => ({ glitchX: 0, glitchY: 0, timer: 0 }));
+    const gears = [
+      { x: -0.22, y: -0.18, r: 0.18, teeth: 12, speed: 0.3 },
+      { x: 0.25, y: 0.15, r: 0.14, teeth: 10, speed: -0.4 },
+      { x: -0.12, y: 0.22, r: 0.10, teeth: 8, speed: 0.6 },
+      { x: 0.18, y: -0.25, r: 0.08, teeth: 8, speed: -0.5 },
+    ];
+    const nebulae = Array.from({ length: 20 }, () => ({
+      angle: 0, dist: 0, speed: 0.3 + Math.random() * 1.5, size: 25 + Math.random() * 55,
+      maxAlpha: 0.05 + Math.random() * 0.07, drift: (Math.random() - 0.5) * 0.4,
+      color: ['255,210,90','255,170,60','255,130,40','255,240,160','220,180,80'][Math.floor(Math.random()*5)],
       active: false,
     }));
-    // Gloom wisps — thin veils that drift after explosion
-    const wisps = Array.from({ length: 10 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      dist: 0, speed: 0.6 + Math.random() * 1.5,
-      len: 20 + Math.random() * 50, width: 8 + Math.random() * 20,
-      alpha: 0, maxAlpha: 0.04 + Math.random() * 0.05,
-      rot: Math.random() * Math.PI, rotV: (Math.random() - 0.5) * 0.01,
-      active: false,
+    const wisps = Array.from({ length: 8 }, () => ({
+      angle: 0, dist: 0, speed: 0.4 + Math.random() * 1.2, len: 25 + Math.random() * 45,
+      width: 10 + Math.random() * 18, maxAlpha: 0.03 + Math.random() * 0.04,
+      rot: 0, rotV: (Math.random() - 0.5) * 0.015, active: false,
     }));
     let lastBoom = -1;
     return (ctx, t) => {
       const cycle = t % CYCLE;
       const cycleId = Math.floor(t / CYCLE);
-      const building = cycle < 1.6;  // clock assembles
-      const ticking = cycle >= 1.6 && cycle < 2.0; // hand snaps to 12
-      const boom = cycle >= 2.0 && cycle < 2.15; // detonation flash
-      const nebPhase = cycle >= 2.0; // nebula expands
-      const clockVisible = cycle < 2.3;
-      // Trigger explosion particles
-      if (cycleId !== lastBoom && cycle >= 2.0) {
-        lastBoom = cycleId;
-        for (const n of nebulae) { n.dist = 0; n.alpha = n.maxAlpha; n.active = true; n.angle = Math.random() * Math.PI * 2; }
-        for (const ws of wisps) { ws.dist = 0; ws.alpha = ws.maxAlpha; ws.active = true; ws.angle = Math.random() * Math.PI * 2; ws.rot = Math.random() * Math.PI; }
+      // ── PHASE 1 (0–6.5s): GLITCHING DIGITAL TIME ──
+      if (cycle < 6.5) {
+        const spd = 1 + cycle * 8;
+        let dM = Math.floor((cycle * spd) % 60), dH = Math.floor((cycle * spd / 60) % 24);
+        if (cycle > 5.5) { const b = (cycle - 5.5) / 1.0; dH = Math.round(dH*(1-b)+6*b); dM = Math.round(dM*(1-b)+30*b); }
+        const timeStr = `${String(dH).padStart(2,'0')}:${String(dM).padStart(2,'0')}`;
+        const fs = Math.min(w * 0.12, 42);
+        for (const ds of digitSlots) { ds.timer -= 0.016; if (ds.timer <= 0) { ds.glitchX = (Math.random()-0.5)*(4+cycle*1.5); ds.glitchY = (Math.random()-0.5)*(2+cycle); ds.timer = 0.03+Math.random()*0.08; } }
+        const alpha = cycle < 0.3 ? cycle/0.3 : cycle > 6 ? (6.5-cycle)/0.5 : 1;
+        ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `bold ${fs}px monospace`;
+        for (let i = 0; i < timeStr.length; i++) {
+          const ds = digitSlots[i]; const chX = cx + (i-2)*fs*0.55 + ds.glitchX, chY = cy + ds.glitchY;
+          const split = cycle > 3 ? (cycle-3)*0.5 : 0;
+          if (split > 0.5) { ctx.globalAlpha = alpha*0.3; ctx.fillStyle = 'rgba(255,80,80,0.8)'; ctx.fillText(timeStr[i], chX-split, chY); ctx.fillStyle = 'rgba(80,180,255,0.8)'; ctx.fillText(timeStr[i], chX+split, chY); }
+          ctx.globalAlpha = alpha*0.5; ctx.fillStyle = 'rgba(255,230,150,1)'; ctx.shadowColor = 'rgba(255,200,80,0.8)'; ctx.shadowBlur = 15; ctx.fillText(timeStr[i], chX, chY);
+        }
+        ctx.restore();
+        if (cycle > 2) { for (let s = 0; s < Math.floor(1+(cycle-2)*0.8); s++) { const sy = cy-fs+Math.random()*fs*2; ctx.save(); ctx.globalAlpha = 0.08+Math.random()*0.06; ctx.fillStyle = 'rgba(255,220,120,0.5)'; ctx.fillRect(cx-w*0.3, sy, w*0.6, 1); ctx.restore(); } }
       }
-      // ── CLOCK PHASE ──
+      // ── PHASE 2 (6.5–9s): ORNATE CLOCK FACE WITH GEARS ──
+      const clockVisible = cycle >= 6.5 && cycle < 9.2;
       if (clockVisible) {
-        // Build-in: ring scales up from 0
-        const buildScale = building ? Math.min(1, cycle / 0.6) : 1;
-        const clockFade = cycle > 2.0 ? Math.max(0, 1 - (cycle - 2.0) / 0.3) : 1;
-        const r = clockR * buildScale;
-        const baseAlpha = 0.35 * clockFade;
-        // Outer ring — thick, glowing
-        ctx.save();
-        ctx.globalAlpha = baseAlpha;
-        ctx.strokeStyle = 'rgba(255,220,120,0.6)';
-        ctx.shadowColor = 'rgba(255,200,80,0.6)';
-        ctx.shadowBlur = 25;
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-        ctx.restore();
-        // Inner ring
-        ctx.save();
-        ctx.globalAlpha = baseAlpha * 0.5;
-        ctx.strokeStyle = 'rgba(255,210,100,0.4)';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2); ctx.stroke();
-        ctx.restore();
-        // 12 tick marks — appear sequentially during build
-        for (let i = 0; i < 12; i++) {
-          const tickAppear = (i / 12) * 1.4; // stagger over 1.4s
-          if (cycle < tickAppear) continue;
-          const a = (Math.PI * 2 / 12) * i - Math.PI / 2;
-          const major = i % 3 === 0;
-          const inner = r * (major ? 0.78 : 0.86);
-          const outer = r * 0.96;
-          ctx.save();
-          ctx.globalAlpha = baseAlpha * (major ? 1.3 : 0.6);
-          ctx.strokeStyle = 'rgba(255,230,150,1)';
-          ctx.shadowColor = 'rgba(255,200,80,0.5)';
-          ctx.shadowBlur = major ? 10 : 4;
-          ctx.lineWidth = major ? 3 : 1.2;
-          ctx.beginPath();
-          ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
-          ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
-          ctx.stroke();
-          ctx.restore();
+        const cT = cycle - 6.5; const bIn = Math.min(1, cT/0.4);
+        const cFade = cycle >= 9.0 ? Math.max(0, 1-(cycle-9.0)/0.15) : 1;
+        const a = bIn * cFade * 0.35; const r = clockR * bIn;
+        // Rings
+        ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = 'rgba(255,220,120,0.6)'; ctx.shadowColor = 'rgba(255,200,80,0.5)'; ctx.shadowBlur = 25; ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+        ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, r*0.82, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+        // 60 ticks
+        for (let i = 0; i < 60; i++) { const ang = (Math.PI*2/60)*i - Math.PI/2; const maj = i%5===0; ctx.save(); ctx.globalAlpha = a*(maj?1.2:0.4); ctx.strokeStyle = 'rgba(255,230,150,0.9)'; ctx.lineWidth = maj?2.5:0.6; ctx.beginPath(); ctx.moveTo(cx+Math.cos(ang)*r*(maj?0.75:0.85), cy+Math.sin(ang)*r*(maj?0.75:0.85)); ctx.lineTo(cx+Math.cos(ang)*r*0.92, cy+Math.sin(ang)*r*0.92); ctx.stroke(); ctx.restore(); }
+        // Gears
+        for (const g of gears) {
+          const gx = cx+g.x*r, gy = cy+g.y*r, gr = g.r*r;
+          ctx.save(); ctx.globalAlpha = a*0.25; ctx.strokeStyle = 'rgba(255,220,140,0.6)'; ctx.lineWidth = 1.5; ctx.translate(gx, gy); ctx.rotate(t*g.speed);
+          ctx.beginPath(); for (let i = 0; i < g.teeth; i++) { const ang = (Math.PI*2/g.teeth)*i; const tH = gr*0.15; const iR = gr*0.85, oR = gr+tH; const ht = Math.PI/g.teeth*0.6; ctx.lineTo(Math.cos(ang-ht)*iR, Math.sin(ang-ht)*iR); ctx.lineTo(Math.cos(ang-ht*0.7)*oR, Math.sin(ang-ht*0.7)*oR); ctx.lineTo(Math.cos(ang+ht*0.7)*oR, Math.sin(ang+ht*0.7)*oR); ctx.lineTo(Math.cos(ang+ht)*iR, Math.sin(ang+ht)*iR); } ctx.closePath(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, gr*0.4, 0, Math.PI*2); ctx.stroke(); ctx.restore();
         }
-        // Roman numeral dots at 12, 3, 6, 9
-        for (let i = 0; i < 4; i++) {
-          const a = (Math.PI / 2) * i - Math.PI / 2;
-          ctx.save();
-          ctx.globalAlpha = baseAlpha * 0.8;
-          ctx.fillStyle = 'rgba(255,240,180,1)';
-          ctx.shadowColor = 'rgba(255,220,100,0.6)';
-          ctx.shadowBlur = 8;
-          ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r * 0.68, cy + Math.sin(a) * r * 0.68, 2, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
-        }
-        // Minute hand — erratic fast spin, then snaps to 12
-        const minAngle = ticking
-          ? -Math.PI / 2 // snap to 12
-          : ((cycle * 2.5 + Math.sin(cycle * 7) * 0.5) % (Math.PI * 2)) - Math.PI / 2; // erratic
-        ctx.save();
-        ctx.globalAlpha = baseAlpha * 1.4;
-        ctx.strokeStyle = 'rgba(255,245,200,1)';
-        ctx.shadowColor = 'rgba(255,230,120,0.9)';
-        ctx.shadowBlur = 15;
-        ctx.lineWidth = 2; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(minAngle) * r * 0.88, cy + Math.sin(minAngle) * r * 0.88);
-        ctx.stroke(); ctx.restore();
-        // Hour hand — slower erratic, snaps to 12
-        const hourAngle = ticking
-          ? -Math.PI / 2
-          : ((cycle * 0.8 + Math.sin(cycle * 4 + 2) * 0.3) % (Math.PI * 2)) - Math.PI / 2;
-        ctx.save();
-        ctx.globalAlpha = baseAlpha * 1.3;
-        ctx.strokeStyle = 'rgba(255,235,170,1)';
-        ctx.shadowColor = 'rgba(255,210,80,0.7)';
-        ctx.shadowBlur = 12;
-        ctx.lineWidth = 3.5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(hourAngle) * r * 0.55, cy + Math.sin(hourAngle) * r * 0.55);
-        ctx.stroke(); ctx.restore();
-        // Center
-        ctx.save();
-        ctx.globalAlpha = baseAlpha * 1.6;
-        ctx.fillStyle = 'rgba(255,245,200,1)';
-        ctx.shadowColor = 'rgba(255,230,120,1)';
-        ctx.shadowBlur = 18;
-        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
+        // Hands at 6:30
+        const minA = Math.PI, hourA = Math.PI + Math.PI/12;
+        ctx.save(); ctx.globalAlpha = a*1.5; ctx.strokeStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,0.9)'; ctx.shadowBlur = 18; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+Math.cos(minA)*r*0.85, cy+Math.sin(minA)*r*0.85); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.globalAlpha = a*1.4; ctx.strokeStyle = 'rgba(255,235,170,1)'; ctx.shadowColor = 'rgba(255,210,80,0.7)'; ctx.shadowBlur = 14; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+Math.cos(hourA)*r*0.52, cy+Math.sin(hourA)*r*0.52); ctx.stroke(); ctx.restore();
+        // Center ornament
+        for (let ri = 0; ri < 3; ri++) { ctx.save(); ctx.globalAlpha = a*(1.5-ri*0.4); ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, 4+ri*4, 0, Math.PI*2); ctx.stroke(); ctx.restore(); }
+        ctx.save(); ctx.globalAlpha = a*2; ctx.fillStyle = 'rgba(255,240,180,1)'; ctx.shadowColor = 'rgba(255,220,100,1)'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI*2); ctx.fill(); ctx.restore();
+        // "06:30" readout
+        ctx.save(); ctx.globalAlpha = a*0.8; ctx.fillStyle = 'rgba(255,230,150,0.9)'; ctx.shadowColor = 'rgba(255,200,80,0.6)'; ctx.shadowBlur = 8; ctx.font = `bold ${Math.min(w*0.06,20)}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('06:30', cx, cy+r*0.35); ctx.restore();
       }
-      // ── DETONATION FLASH ──
-      if (boom) {
-        const boomT = (cycle - 2.0) / 0.15;
-        ctx.save();
-        ctx.globalAlpha = 0.25 * (1 - boomT);
-        const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, clockR * 2);
-        fg.addColorStop(0, 'rgba(255,250,220,0.9)');
-        fg.addColorStop(0.3, 'rgba(255,220,120,0.5)');
-        fg.addColorStop(1, 'rgba(255,180,50,0)');
-        ctx.fillStyle = fg;
-        ctx.beginPath(); ctx.arc(cx, cy, clockR * 2, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
+      // ── PHASE 3 (9–9.2s): DETONATION FLASH ──
+      if (cycle >= 9.0 && cycle < 9.2) {
+        const bT = (cycle-9.0)/0.2; ctx.save(); ctx.globalAlpha = 0.3*(1-bT);
+        const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, clockR*2.2); fg.addColorStop(0, 'rgba(255,250,220,0.9)'); fg.addColorStop(0.25, 'rgba(255,220,120,0.5)'); fg.addColorStop(1, 'rgba(255,180,50,0)');
+        ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(cx, cy, clockR*2.2, 0, Math.PI*2); ctx.fill(); ctx.restore();
       }
-      // ── NEBULA / BRUME PHASE ──
-      if (nebPhase) {
-        const nebT = cycle - 2.0;
-        // Expanding nebula clouds
-        for (const n of nebulae) {
-          if (!n.active) continue;
-          n.dist += n.speed * 0.7;
-          n.angle += n.drift * 0.016;
-          const x = cx + Math.cos(n.angle) * n.dist;
-          const y = cy + Math.sin(n.angle) * n.dist;
-          const expandSize = n.size * (0.5 + nebT * 0.4);
-          const fade = Math.max(0, n.maxAlpha * (1 - nebT / 5.5));
-          if (fade < 0.003) { n.active = false; continue; }
-          ctx.save();
-          ctx.globalAlpha = fade;
-          const g = ctx.createRadialGradient(x, y, 0, x, y, expandSize);
-          g.addColorStop(0, `rgba(${n.color},0.5)`);
-          g.addColorStop(0.4, `rgba(${n.color},0.2)`);
-          g.addColorStop(1, `rgba(${n.color},0)`);
-          ctx.fillStyle = g;
-          ctx.beginPath(); ctx.arc(x, y, expandSize, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
-        }
-        // Gloom wisps — translucent veil arcs drifting
-        for (const ws of wisps) {
-          if (!ws.active) continue;
-          ws.dist += ws.speed * 0.5;
-          ws.rot += ws.rotV;
-          ws.angle += ws.drift * 0.016;
-          const x = cx + Math.cos(ws.angle) * ws.dist;
-          const y = cy + Math.sin(ws.angle) * ws.dist;
-          const fade = Math.max(0, ws.maxAlpha * (1 - nebT / 5));
-          if (fade < 0.002) { ws.active = false; continue; }
-          ctx.save();
-          ctx.globalAlpha = fade;
-          ctx.translate(x, y); ctx.rotate(ws.rot);
-          ctx.fillStyle = 'rgba(255,220,130,0.3)';
-          ctx.beginPath();
-          ctx.ellipse(0, 0, ws.len * (0.8 + nebT * 0.15), ws.width * (0.6 + nebT * 0.1), 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
+      if (cycleId !== lastBoom && cycle >= 9.0) { lastBoom = cycleId; for (const n of nebulae) { n.dist = 0; n.active = true; n.angle = Math.random()*Math.PI*2; } for (const ws of wisps) { ws.dist = 0; ws.active = true; ws.angle = Math.random()*Math.PI*2; ws.rot = Math.random()*Math.PI; } }
+      // ── PHASE 4 (9–13s): NEBULA BRUME ──
+      if (cycle >= 9.0) {
+        const nT = cycle - 9.0;
+        for (const n of nebulae) { if (!n.active) continue; n.dist += n.speed*0.7; n.angle += n.drift*0.016; const x = cx+Math.cos(n.angle)*n.dist, y = cy+Math.sin(n.angle)*n.dist; const eS = n.size*(0.5+nT*0.35); const fd = Math.max(0, n.maxAlpha*(1-nT/3.5)); if (fd < 0.002) { n.active = false; continue; } ctx.save(); ctx.globalAlpha = fd; const g = ctx.createRadialGradient(x,y,0,x,y,eS); g.addColorStop(0, `rgba(${n.color},0.5)`); g.addColorStop(0.4, `rgba(${n.color},0.15)`); g.addColorStop(1, `rgba(${n.color},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x,y,eS,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+        for (const ws of wisps) { if (!ws.active) continue; ws.dist += ws.speed*0.5; ws.rot += ws.rotV; const x = cx+Math.cos(ws.angle)*ws.dist, y = cy+Math.sin(ws.angle)*ws.dist; const fd = Math.max(0, ws.maxAlpha*(1-nT/3.5)); if (fd < 0.002) { ws.active = false; continue; } ctx.save(); ctx.globalAlpha = fd; ctx.translate(x,y); ctx.rotate(ws.rot); ctx.fillStyle = 'rgba(255,220,130,0.25)'; ctx.beginPath(); ctx.ellipse(0,0,ws.len*(0.8+nT*0.12),ws.width*(0.6+nT*0.08),0,0,Math.PI*2); ctx.fill(); ctx.restore(); }
       }
     };
   },
