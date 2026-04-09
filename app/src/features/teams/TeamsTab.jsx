@@ -473,8 +473,8 @@ function TeamsTab({
                           {teamSlots.filter(s => s).map((name, i) => {
                             const d = CHARACTER_DATA[name];
                             return d ? (
-                              <div key={i} className="kuro-badge font-medium" data-element={d.element}
-                                style={{ color: getElementColor(d.element), backgroundColor: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
+                              <div key={i} className="kuro-badge font-medium"
+                                style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
                                 {d.element}
                               </div>
                             ) : null;

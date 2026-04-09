@@ -91,7 +91,21 @@ const ELEMENT_COLORS = {
   Physical:{ hex: '#94a3b8', bg: 'rgba(148,163,184,0.15)', border: 'rgba(148,163,184,0.4)' },
 };
 const getElementColor = (el) => ELEMENT_COLORS[el]?.hex || '#6b7280';
-const getElementBg = (el) => ELEMENT_COLORS[el]?.bg || 'rgba(107,114,128,0.15)';
+// Color-blind patterns per element — distinct stripe angles/shapes for non-color identification
+const CB_PATTERNS = {
+  Fusion:  'repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,0.35) 3px,rgba(255,255,255,0.35) 5px)',
+  Electro: 'repeating-linear-gradient(-45deg,transparent,transparent 3px,rgba(255,255,255,0.35) 3px,rgba(255,255,255,0.35) 5px)',
+  Aero:    'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.3) 3px,rgba(255,255,255,0.3) 5px)',
+  Glacio:  'repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(255,255,255,0.3) 3px,rgba(255,255,255,0.3) 5px)',
+  Havoc:   'radial-gradient(circle,rgba(255,255,255,0.35) 1.5px,transparent 1.5px)',
+  Spectro: 'repeating-linear-gradient(135deg,transparent,transparent 2px,rgba(255,255,255,0.3) 2px,rgba(255,255,255,0.3) 4px)',
+};
+const _isCB = () => document.documentElement.classList.contains('colorblind-mode');
+const getElementBg = (el) => {
+  const base = ELEMENT_COLORS[el]?.bg || 'rgba(107,114,128,0.15)';
+  if (_isCB() && CB_PATTERNS[el]) return `${CB_PATTERNS[el]},linear-gradient(${base},${base})`;
+  return base;
+};
 const getElementBorder = (el) => ELEMENT_COLORS[el]?.border || 'rgba(107,114,128,0.4)';
 // Get element color for a sonata set name
 const getSetElementColor = (setName) => {

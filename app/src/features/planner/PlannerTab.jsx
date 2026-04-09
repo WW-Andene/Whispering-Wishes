@@ -11,9 +11,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Hammer, Minus, Plus, X } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Hammer, Minus, Plus, Search, Star, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
-import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES } from '../../data/banners.js';
+import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { generateUniqueId, getElementColor } from '../../utils/helpers.js';
 import { CHARACTER_DATA, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
@@ -644,6 +646,8 @@ function PlannerTab({
   const [farmTargetsState, setFarmTargetsState] = useState(() => {
     try { const v = localStorage.getItem('ww-farm-targets'); return v ? JSON.parse(v) : []; } catch { return []; }
   });
+  const [farmPickerOpen, setFarmPickerOpen] = useState(false);
+  const [farmSearch, setFarmSearch] = useState('');
   useEffect(() => {
     try { localStorage.setItem('ww-farm-targets', JSON.stringify(farmTargetsState)); } catch {}
   }, [farmTargetsState]);
@@ -1013,21 +1017,52 @@ function PlannerTab({
         </div>
         {!collapsed.farm && (
           <CardBody className="space-y-3">
-            {/* Resonator selector */}
-            <div>
-              <label className="kuro-label">Add Resonator</label>
-              <KuroSelect
-                value=""
-                onChange={v => { if (!v) return; setFarmTargetsState(prev => [...prev, { name: v, ascension: true, skills: true, weapon: false }]); }}
-                options={[
-                  { value: '', label: 'Select Resonator…' },
-                  ...[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS]
-                    .filter(n => !farmTargetsState.some(t => t.name === n))
-                    .map(n => { const d = CHARACTER_DATA[n]; return { value: n, label: `${n}${d ? ` — ${d.element} ${d.role}` : ''}` }; })
-                ]}
-                ariaLabel="Select Resonator to farm"
-              />
-            </div>
+            {/* Add Resonator button */}
+            <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '10px' }}>
+              <Plus size={14} className="inline mr-1.5" />Add Resonator
+            </button>
+
+            {/* Resonator picker modal */}
+            {farmPickerOpen && (
+              <FocusTrapModal isOpen onClose={() => setFarmPickerOpen(false)} className="" onClick={() => setFarmPickerOpen(false)} centered>
+                <div className="kuro-card w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
+                    <h3 className="text-white text-xl font-semibold">Select Resonator</h3>
+                    <button onClick={() => setFarmPickerOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
+                  </div>
+                  <div className="p-3 border-b border-[var(--border-subtle)]">
+                    <div className="relative">
+                      <input type="text" value={farmSearch} onChange={e => setFarmSearch(e.target.value)} placeholder="Search resonators…" className="kuro-input w-full pl-8 text-base" aria-label="Search resonators" autoFocus />
+                      <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                      {[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS]
+                        .filter(n => !farmTargetsState.some(t => t.name === n))
+                        .filter(n => !farmSearch || n.toLowerCase().includes(farmSearch.toLowerCase()))
+                        .map(name => {
+                          const cd = CHARACTER_DATA[name];
+                          const img = DEFAULT_COLLECTION_IMAGES[name] || '';
+                          const rarity5 = cd?.rarity === 5;
+                          return (
+                            <button key={name} onClick={() => { setFarmTargetsState(prev => [...prev, { name, ascension: true, skills: true, weapon: false }]); setFarmPickerOpen(false); }}
+                              className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 ${rarity5 ? 'border bg-yellow-500/10 border-yellow-500/30' : 'border bg-purple-500/10 border-purple-500/30'}`}
+                              style={{ height: '90px', contain: 'paint' }}>
+                              {img && <img src={img} alt={name} className="absolute inset-0 w-full h-full object-contain pointer-events-none" loading="lazy" onError={hideOnError} />}
+                              <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
+                              <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{cd?.element?.[0]}</div>
+                              <div className="absolute top-1 right-1"><Star size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" /></div>
+                              {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span></div>}
+                              <div className="absolute bottom-0 inset-x-0 p-1 z-10"><div className="text-white text-2xs font-medium truncate text-center leading-tight">{name}</div></div>
+                            </button>
+                          );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </FocusTrapModal>
+            )}
 
             {/* Farming targets */}
             {farmTargetsState.map((t, i) => {
@@ -1052,7 +1087,7 @@ function PlannerTab({
             {farmTargetsState.length > 0 && (() => {
               const mats = {};
               let totalShell = 0;
-              const addMat = (name, qty, img) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: img || MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
+              const addMat = (name, qty) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
               farmTargetsState.forEach(t => {
                 const d = CHARACTER_DATA[t.name];
                 if (!d) return;
@@ -1093,12 +1128,12 @@ function PlannerTab({
                       <span className="text-yellow-400 font-bold text-lg kuro-number">{totalShell.toLocaleString('en-US')}</span>
                     </div>
                   </div>
-                  {/* Material grid */}
+                  {/* Material grid — sub-card style */}
                   <div className="kuro-label">Materials Required</div>
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-2">
                     {matList.map(([name, { qty, img }]) => (
-                      <div key={name} className="kuro-stat flex items-center gap-2 p-2" style={{ textAlign: 'left' }}>
-                        {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={e => { e.target.style.display = 'none'; }} />}
+                      <div key={name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                        {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={hideOnError} />}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
                         </div>
@@ -1115,7 +1150,7 @@ function PlannerTab({
               <div className="kuro-empty-state text-center py-6">
                 <Hammer size={28} className="mx-auto mb-2 opacity-40" />
                 <div style={{ color: 'var(--text-muted)' }}>Awaiting farming directives</div>
-                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>Select Resonators above to compute material requirements for Ascension, Forte, and Weapon upgrades</p>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>Select Resonators to compute material requirements for Ascension, Forte, and Weapon upgrades</p>
               </div>
             )}
           </CardBody>
