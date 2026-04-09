@@ -629,34 +629,38 @@ const BANNER_THEMES = {
     return (ctx, t) => {
       const cycle = t % CYCLE;
       const cycleId = Math.floor(t / CYCLE);
-      // ── PHASE 1 (0–8s): SEQUENTIAL GLITCHING TIMESTAMPS ──
-      if (cycle < 8.0) {
+      // ── PHASE 1→3: TIMESTAMPS (appear sequentially, freeze, erased by explosion) ──
+      if (cycle < 11.0) {
         for (const ts of timestamps) {
-          // Each timestamp overlaps with neighbors — visible for 130% of slot
           const localT = cycle - ts.start;
-          const visibleDur = SLOT_DUR * 1.3; // 30% overlap
-          if (localT < 0 || localT > visibleDur) continue;
-          // Fade in 15%, hold, fade out 25%
-          const fadeIn = 0.15 * visibleDur, fadeOut = 0.25 * visibleDur;
-          const a = localT < fadeIn ? localT / fadeIn
-            : localT > visibleDur - fadeOut ? (visibleDur - localT) / fadeOut
-            : 1;
-          // Time: each slot shows its portion of the 23:00→06:30 journey
-          const progress = ts.start / 8.0; // fixed per slot — each shows one hour
+          if (localT < 0) continue; // not spawned yet
+          // Fade in during slot, then STAY (no fade out)
+          const fadeIn = 0.15 * SLOT_DUR * 1.3;
+          let a = localT < fadeIn ? localT / fadeIn : 1;
+          // During clock phase (8-10.5): freeze, stop glitching
+          const frozen = cycle >= 8.0;
+          // Erased by explosion (10.5-11): fast fade out
+          if (cycle >= 10.5) a *= Math.max(0, 1 - (cycle - 10.5) / 0.4);
+          if (a < 0.01) continue;
+          // Time: freeze at final value once slot ends
+          const slotEnd = ts.start + SLOT_DUR;
+          const activeT = Math.min(localT, SLOT_DUR);
+          const progress = ts.start / 8.0;
           const startMin = 23 * 60;
-          const totalForward = 450; // 23:00 to 06:30
-          // Minutes tick slowly within each slot
-          const slotMin = Math.floor(localT * 8); // ~8 minutes per second of real time
+          const totalForward = 450;
+          const slotMin = Math.floor(activeT * 8);
           const currentMin = (startMin + Math.floor(progress * totalForward) + slotMin) % 1440;
           const h2 = Math.floor(currentMin / 60);
           const m2 = currentMin % 60;
           const str = `${String(h2).padStart(2, '0')}:${String(m2).padStart(2, '0')}`;
-          // Subtle position drift
-          ts.timer -= 0.016;
-          if (ts.timer <= 0) {
-            ts.glitchX = (Math.random() - 0.5) * 2;
-            ts.glitchY = (Math.random() - 0.5) * 1.5;
-            ts.timer = 0.1 + Math.random() * 0.15;
+          // Glitch only while not frozen
+          if (!frozen) {
+            ts.timer -= 0.016;
+            if (ts.timer <= 0) {
+              ts.glitchX = (Math.random() - 0.5) * 2;
+              ts.glitchY = (Math.random() - 0.5) * 1.5;
+              ts.timer = 0.1 + Math.random() * 0.15;
+            }
           }
           const dx = ts.x + ts.glitchX, dy = ts.y + ts.glitchY;
           const fs = ts.size;
@@ -693,8 +697,8 @@ const BANNER_THEMES = {
           ctx.fillText(str, dx, dy);
           ctx.restore();
         }
-        // Scanlines
-        if (cycle > 1.5) {
+        // Scanlines — only during active glitch phase, not when frozen
+        if (cycle > 1.5 && cycle < 8.0) {
           const count = Math.floor(2 + (cycle - 1.5) * 1.2);
           for (let s = 0; s < count; s++) {
             const sy = Math.random() * h;
