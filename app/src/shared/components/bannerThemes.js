@@ -580,16 +580,16 @@ const BANNER_THEMES = {
       rot: 0, rotV: (Math.random() - 0.5) * 0.015, active: false,
     }));
     let lastBoom = -1;
-    // Scattered timestamp instances — appear/disappear sequentially
-    const COUNT = 8;
-    const SLOT_DUR = 6.5 / COUNT; // each gets ~0.8s of the 6.5s phase
+    // Scattered timestamp instances — sequential, slower, more spread
+    const COUNT = 6;
+    const SLOT_DUR = 6.5 / COUNT; // ~1.08s each — slower apparition
     const timestamps = Array.from({ length: COUNT }, (_, i) => ({
-      x: Math.random() * w * 0.7 + w * 0.15,
-      y: Math.random() * h * 0.7 + h * 0.15,
+      x: Math.random() * w * 0.9 + w * 0.05, // full spread
+      y: Math.random() * h * 0.85 + h * 0.075,
       min: Math.floor(Math.random() * 60),
       glitchX: 0, glitchY: 0, timer: Math.random() * 0.1,
-      size: 12 + Math.random() * 10,
-      start: i * SLOT_DUR, // when this one appears
+      size: 14 + Math.random() * 8,
+      start: i * SLOT_DUR,
     }));
     return (ctx, t) => {
       const cycle = t % CYCLE;
@@ -621,33 +621,45 @@ const BANNER_THEMES = {
             ts.timer = 0.02 + Math.random() * 0.06;
           }
           const dx = ts.x + ts.glitchX, dy = ts.y + ts.glitchY;
-          // a is already computed above from fade in/out
           const fs = ts.size;
           ctx.save();
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.font = `900 ${fs}px 'Rajdhani', monospace`;
-          ctx.letterSpacing = '2px';
-          // Dark shadow behind for contrast
-          ctx.globalAlpha = a * 0.6;
-          ctx.fillStyle = 'rgba(0,0,0,0.8)';
+          // Thin, tall, spaced — stencil/mechanical look
+          ctx.font = `200 ${fs}px 'Rajdhani', 'Courier New', monospace`;
+          ctx.letterSpacing = `${fs * 0.25}px`;
+          // Heavy dark backdrop glow for contrast
+          ctx.globalAlpha = a * 0.7;
+          ctx.fillStyle = 'rgba(0,0,0,0.9)';
+          ctx.shadowColor = 'rgba(0,0,0,0.8)';
+          ctx.shadowBlur = 15;
           ctx.fillText(str, dx + 1, dy + 1);
-          // RGB split
-          const split = cycle > 2.5 ? (cycle - 2.5) * 0.6 : 0;
-          if (split > 0.3) {
-            ctx.globalAlpha = a * 0.35;
-            ctx.fillStyle = 'rgba(255,60,60,0.9)';
-            ctx.fillText(str, dx - split, dy);
-            ctx.fillStyle = 'rgba(60,160,255,0.9)';
-            ctx.fillText(str, dx + split, dy);
+          ctx.fillText(str, dx - 1, dy - 1);
+          // RGB chromatic split — staggered
+          const split = (ts.start / 6.5) * 2.5 + localT * 0.8;
+          if (split > 0.4) {
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = a * 0.3;
+            ctx.fillStyle = 'rgba(255,50,50,0.9)';
+            ctx.fillText(str, dx - split * 0.7, dy - split * 0.2);
+            ctx.fillStyle = 'rgba(50,140,255,0.9)';
+            ctx.fillText(str, dx + split * 0.5, dy + split * 0.3);
           }
-          // Main text — outlined + filled for punch
-          ctx.globalAlpha = a * 0.9;
-          ctx.strokeStyle = 'rgba(255,200,80,0.6)';
-          ctx.lineWidth = 1.5;
+          // Outer stroke — thin golden outline
+          ctx.globalAlpha = a * 0.6;
+          ctx.strokeStyle = 'rgba(255,210,100,0.7)';
+          ctx.lineWidth = 0.8;
+          ctx.shadowColor = 'rgba(255,200,80,0.9)';
+          ctx.shadowBlur = 25;
           ctx.strokeText(str, dx, dy);
-          ctx.fillStyle = 'rgba(255,235,170,1)';
-          ctx.shadowColor = 'rgba(255,200,80,1)';
-          ctx.shadowBlur = 20;
+          // Main fill — bright white-gold with heavy glow
+          ctx.globalAlpha = a;
+          ctx.fillStyle = 'rgba(255,245,210,1)';
+          ctx.shadowColor = 'rgba(255,210,80,1)';
+          ctx.shadowBlur = 30;
+          ctx.fillText(str, dx, dy);
+          // Second glow pass for bloom
+          ctx.globalAlpha = a * 0.4;
+          ctx.shadowBlur = 50;
           ctx.fillText(str, dx, dy);
           ctx.restore();
         }
@@ -670,43 +682,80 @@ const BANNER_THEMES = {
         const cT = cycle - 6.5; // 0 to 2.5
         const bIn = Math.min(1, cT / 0.4);
         const cFade = cycle >= 9.0 ? Math.max(0, 1 - (cycle - 9.0) / 0.15) : 1;
-        const a = bIn * cFade * 0.35;
+        const a = bIn * cFade * 0.55; // boosted base alpha
         const r = clockR * bIn;
-        // Rings
-        ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = 'rgba(255,220,120,0.6)'; ctx.shadowColor = 'rgba(255,200,80,0.5)'; ctx.shadowBlur = 25; ctx.lineWidth = 3.5;
+        // Dark vignette behind clock for contrast
+        ctx.save(); ctx.globalAlpha = a * 0.4;
+        const vig = ctx.createRadialGradient(cx, cy, r * 0.3, cx, cy, r * 1.3);
+        vig.addColorStop(0, 'rgba(0,0,0,0.6)'); vig.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = vig; ctx.beginPath(); ctx.arc(cx, cy, r * 1.3, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        // Outer ring — thick, double glow pass
+        ctx.save(); ctx.globalAlpha = a;
+        ctx.strokeStyle = 'rgba(255,225,130,0.8)'; ctx.shadowColor = 'rgba(255,200,80,0.7)'; ctx.shadowBlur = 35; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-        ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-        // 60 ticks
-        for (let i = 0; i < 60; i++) { const ang = (Math.PI * 2 / 60) * i - Math.PI / 2; const maj = i % 5 === 0; ctx.save(); ctx.globalAlpha = a * (maj ? 1.2 : 0.4); ctx.strokeStyle = 'rgba(255,230,150,0.9)'; ctx.lineWidth = maj ? 2.5 : 0.6; ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang) * r * (maj ? 0.75 : 0.85), cy + Math.sin(ang) * r * (maj ? 0.75 : 0.85)); ctx.lineTo(cx + Math.cos(ang) * r * 0.92, cy + Math.sin(ang) * r * 0.92); ctx.stroke(); ctx.restore(); }
-        // Gears — always rotating
+        ctx.shadowBlur = 60; ctx.globalAlpha = a * 0.3; ctx.stroke(); // bloom pass
+        ctx.restore();
+        // Inner ring
+        ctx.save(); ctx.globalAlpha = a * 0.6;
+        ctx.strokeStyle = 'rgba(255,210,100,0.5)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 15; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        // 60 ticks — boosted contrast
+        for (let i = 0; i < 60; i++) {
+          const ang = (Math.PI * 2 / 60) * i - Math.PI / 2; const maj = i % 5 === 0;
+          ctx.save(); ctx.globalAlpha = a * (maj ? 1.5 : 0.5);
+          ctx.strokeStyle = maj ? 'rgba(255,240,180,1)' : 'rgba(255,220,140,0.8)';
+          ctx.shadowColor = 'rgba(255,200,80,0.6)'; ctx.shadowBlur = maj ? 10 : 3;
+          ctx.lineWidth = maj ? 3 : 0.8;
+          ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang) * r * (maj ? 0.73 : 0.85), cy + Math.sin(ang) * r * (maj ? 0.73 : 0.85));
+          ctx.lineTo(cx + Math.cos(ang) * r * 0.93, cy + Math.sin(ang) * r * 0.93); ctx.stroke(); ctx.restore();
+        }
+        // Gears — boosted alpha, glow
         for (const g of gears) {
           const gx = cx + g.x * r, gy = cy + g.y * r, gr = g.r * r;
-          ctx.save(); ctx.globalAlpha = a * 0.25; ctx.strokeStyle = 'rgba(255,220,140,0.6)'; ctx.lineWidth = 1.5; ctx.translate(gx, gy); ctx.rotate(t * g.speed);
+          ctx.save(); ctx.globalAlpha = a * 0.35;
+          ctx.strokeStyle = 'rgba(255,225,150,0.7)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 8;
+          ctx.lineWidth = 1.5; ctx.translate(gx, gy); ctx.rotate(t * g.speed);
           ctx.beginPath(); for (let i = 0; i < g.teeth; i++) { const ang = (Math.PI * 2 / g.teeth) * i; const tH = gr * 0.15; const iR = gr * 0.85, oR = gr + tH; const ht = Math.PI / g.teeth * 0.6; ctx.lineTo(Math.cos(ang - ht) * iR, Math.sin(ang - ht) * iR); ctx.lineTo(Math.cos(ang - ht * 0.7) * oR, Math.sin(ang - ht * 0.7) * oR); ctx.lineTo(Math.cos(ang + ht * 0.7) * oR, Math.sin(ang + ht * 0.7) * oR); ctx.lineTo(Math.cos(ang + ht) * iR, Math.sin(ang + ht) * iR); } ctx.closePath(); ctx.stroke();
           ctx.beginPath(); ctx.arc(0, 0, gr * 0.4, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
         }
-        // Hands — spin fast at first, decelerate to 6:30
-        // Minute target: π (6 o'clock). Hour target: π + π/12 (just past 6)
-        const decel = Math.min(1, cT / 2.0); // 0→1 over 2 seconds (ease-out)
-        const easeOut = 1 - Math.pow(1 - decel, 3); // cubic ease-out
-        const spinOffset = (1 - easeOut) * Math.PI * 8; // 4 full rotations decelerating to 0
-        const minA = Math.PI + spinOffset * 1.6;  // minute spins faster
-        const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5; // hour spins slower
-        // Minute hand
-        ctx.save(); ctx.globalAlpha = a * 1.5; ctx.strokeStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,0.9)'; ctx.shadowBlur = 18; ctx.lineWidth = 2; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(minA) * r * 0.85, cy + Math.sin(minA) * r * 0.85); ctx.stroke(); ctx.restore();
+        // Hands — spin fast, decelerate to 6:30
+        const decel = Math.min(1, cT / 2.0);
+        const easeOut = 1 - Math.pow(1 - decel, 3);
+        const spinOffset = (1 - easeOut) * Math.PI * 8;
+        const minA = Math.PI + spinOffset * 1.6;
+        const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
+        // Minute hand — double stroke for glow
+        ctx.save(); ctx.globalAlpha = a * 1.8;
+        ctx.strokeStyle = 'rgba(255,248,210,1)'; ctx.shadowColor = 'rgba(255,230,100,1)'; ctx.shadowBlur = 25;
+        ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(minA) * r * 0.85, cy + Math.sin(minA) * r * 0.85); ctx.stroke();
+        ctx.shadowBlur = 50; ctx.globalAlpha = a * 0.5; ctx.stroke(); // bloom
+        ctx.restore();
         // Hour hand
-        ctx.save(); ctx.globalAlpha = a * 1.4; ctx.strokeStyle = 'rgba(255,235,170,1)'; ctx.shadowColor = 'rgba(255,210,80,0.7)'; ctx.shadowBlur = 14; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(hourA) * r * 0.52, cy + Math.sin(hourA) * r * 0.52); ctx.stroke(); ctx.restore();
-        // Center ornament
-        for (let ri = 0; ri < 3; ri++) { ctx.save(); ctx.globalAlpha = a * (1.5 - ri * 0.4); ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, 4 + ri * 4, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-        ctx.save(); ctx.globalAlpha = a * 2; ctx.fillStyle = 'rgba(255,240,180,1)'; ctx.shadowColor = 'rgba(255,220,100,1)'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-        // "06:30" readout — only after hands settle
+        ctx.save(); ctx.globalAlpha = a * 1.6;
+        ctx.strokeStyle = 'rgba(255,240,180,1)'; ctx.shadowColor = 'rgba(255,210,80,0.9)'; ctx.shadowBlur = 20;
+        ctx.lineWidth = 4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(hourA) * r * 0.52, cy + Math.sin(hourA) * r * 0.52); ctx.stroke();
+        ctx.shadowBlur = 45; ctx.globalAlpha = a * 0.4; ctx.stroke(); // bloom
+        ctx.restore();
+        // Center ornament — bright jewel
+        for (let ri = 0; ri < 3; ri++) { ctx.save(); ctx.globalAlpha = a * (1.8 - ri * 0.4); ctx.strokeStyle = 'rgba(255,235,160,0.9)'; ctx.shadowColor = 'rgba(255,210,80,0.5)'; ctx.shadowBlur = 10; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(cx, cy, 4 + ri * 5, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+        ctx.save(); ctx.globalAlpha = Math.min(1, a * 3);
+        ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 30;
+        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 60; ctx.globalAlpha = a * 0.6; ctx.fill(); // bloom
+        ctx.restore();
+        // "06:30" — after hands settle
         if (easeOut > 0.85) {
           const readoutA = (easeOut - 0.85) / 0.15;
-          ctx.save(); ctx.globalAlpha = a * readoutA * 0.9; ctx.fillStyle = 'rgba(255,230,150,0.9)'; ctx.shadowColor = 'rgba(255,200,80,0.8)'; ctx.shadowBlur = 12;
-          ctx.font = `bold ${Math.min(w * 0.06, 20)}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText('06:30', cx, cy + r * 0.35); ctx.restore();
+          ctx.save();
+          ctx.globalAlpha = a * readoutA * 0.5; ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 0;
+          ctx.font = `200 ${Math.min(w * 0.06, 20)}px 'Rajdhani', monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('06:30', cx + 1, cy + r * 0.35 + 1);
+          ctx.globalAlpha = a * readoutA;
+          ctx.fillStyle = 'rgba(255,240,190,1)'; ctx.shadowColor = 'rgba(255,210,80,1)'; ctx.shadowBlur = 20;
+          ctx.fillText('06:30', cx, cy + r * 0.35);
+          ctx.restore();
         }
       }
       // ── PHASE 3 (9–9.2s): DETONATION FLASH ──
