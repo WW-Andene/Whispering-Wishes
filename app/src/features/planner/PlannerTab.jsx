@@ -16,7 +16,7 @@ import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESON
 import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { generateUniqueId, getElementColor } from '../../utils/helpers.js';
+import { generateUniqueId, getElementColor, getElementShape } from '../../utils/helpers.js';
 import { CHARACTER_DATA, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -1051,7 +1051,7 @@ function PlannerTab({
                               style={{ height: '90px', contain: 'paint' }}>
                               {img && <img src={img} alt={name} className="absolute inset-0 w-full h-full object-contain pointer-events-none" loading="lazy" onError={hideOnError} />}
                               <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
-                              <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{cd?.element?.[0]}</div>
+                              <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{getElementShape(cd?.element) || cd?.element?.[0]}</div>
                               <div className="absolute top-1 right-1"><Star size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" /></div>
                               {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span></div>}
                               <div className="absolute bottom-0 inset-x-0 p-1 z-10"><div className="text-white text-2xs font-medium truncate text-center leading-tight">{name}</div></div>
