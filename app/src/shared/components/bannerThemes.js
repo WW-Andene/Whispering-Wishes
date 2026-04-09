@@ -6,6 +6,9 @@
 const CHARACTER_THEME_MAP = {
   Sigrika: 'sparkle',    // warm, magical, golden sparkles at feet, starry sky
   Qiuyuan: 'qiuyuan',    // dark forest, moon, crows, brume, swirling leaves
+  Lynae: 'prismatic',     // rainbow-shifting light rays, prismatic sparkles
+  Zani: 'radiance',       // golden-white burning light, clock-like geometry
+  Phoebe: 'luminous',     // soft holy light rays, ethereal white-gold halos
   Aemeath: 'frost',      // ice crystals, cold blue digital structures
   'Luuk Herssen': 'feathers', // white doves, bright nature, airy
   Chisa: 'energy',       // urban, red energy lines, industrial
@@ -451,6 +454,187 @@ const BANNER_THEMES = {
         ctx.shadowColor = 'rgba(100,240,140,0.9)';
         ctx.shadowBlur = 14;
         ctx.beginPath(); ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🌈 PRISMATIC (Lynae): rainbow-shifting light beams + colorful prismatic sparkles
+  prismatic: (w, h) => {
+    const COLORS = ['255,80,80', '255,160,40', '255,230,60', '80,230,120', '80,180,255', '180,100,255'];
+    const beams = Array.from({ length: 5 }, (_, i) => ({
+      x: w * 0.2 + (i / 4) * w * 0.6, angle: -0.3 + Math.random() * 0.6,
+      width: 12 + Math.random() * 20, phase: Math.random() * Math.PI * 2,
+      speed: 0.15 + Math.random() * 0.2, colorIdx: i % COLORS.length,
+    }));
+    const sparkles = Array.from({ length: 20 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      size: 1.5 + Math.random() * 2.5, phase: Math.random() * Math.PI * 2,
+      speed: 0.6 + Math.random() * 1.2, colorIdx: Math.floor(Math.random() * COLORS.length),
+    }));
+    return (ctx, t) => {
+      for (const b of beams) {
+        const shift = Math.floor((t * 0.3 + b.colorIdx) % COLORS.length);
+        const a = 0.04 + Math.sin(t * b.speed + b.phase) * 0.03;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.translate(b.x, 0); ctx.rotate(b.angle);
+        const g = ctx.createLinearGradient(0, 0, 0, h * 1.2);
+        g.addColorStop(0, `rgba(${COLORS[shift]},0)`);
+        g.addColorStop(0.3, `rgba(${COLORS[shift]},0.5)`);
+        g.addColorStop(0.7, `rgba(${COLORS[(shift + 1) % COLORS.length]},0.3)`);
+        g.addColorStop(1, `rgba(${COLORS[(shift + 2) % COLORS.length]},0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(-b.width / 2, 0, b.width, h * 1.2);
+        ctx.restore();
+      }
+      for (const s of sparkles) {
+        const tw = Math.sin(t * s.speed + s.phase);
+        const a = Math.max(0, tw) * 0.9;
+        if (a < 0.05) continue;
+        const ci = Math.floor((t * 0.5 + s.colorIdx) % COLORS.length);
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = `rgba(${COLORS[ci]},1)`;
+        ctx.shadowColor = `rgba(${COLORS[ci]},0.8)`;
+        ctx.shadowBlur = 10;
+        const sz = s.size * (0.5 + tw * 0.5);
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y - sz * 1.8); ctx.lineTo(s.x + sz * 0.3, s.y - sz * 0.3);
+        ctx.lineTo(s.x + sz * 1.8, s.y); ctx.lineTo(s.x + sz * 0.3, s.y + sz * 0.3);
+        ctx.lineTo(s.x, s.y + sz * 1.8); ctx.lineTo(s.x - sz * 0.3, s.y + sz * 0.3);
+        ctx.lineTo(s.x - sz * 1.8, s.y); ctx.lineTo(s.x - sz * 0.3, s.y - sz * 0.3);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // ☀️ RADIANCE (Zani): golden-white burning radiance + clock-like rotating arcs
+  radiance: (w, h) => {
+    const cx = w * 0.5, cy = h * 0.4;
+    const arcs = Array.from({ length: 4 }, (_, i) => ({
+      radius: 30 + i * 22, speed: (0.08 + i * 0.03) * (i % 2 ? -1 : 1),
+      width: 1 + i * 0.3, alpha: 0.15 - i * 0.02,
+    }));
+    const rays = Array.from({ length: 8 }, (_, i) => ({
+      angle: (Math.PI * 2 / 8) * i, phase: Math.random() * Math.PI * 2,
+      speed: 0.3 + Math.random() * 0.4,
+    }));
+    const motes = Array.from({ length: 16 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      vy: -0.1 - Math.random() * 0.2, phase: Math.random() * Math.PI * 2,
+      size: 1 + Math.random() * 1.8, alpha: 0.4 + Math.random() * 0.4,
+    }));
+    return (ctx, t) => {
+      // Central glow pulse
+      const gp = 0.08 + Math.sin(t * 0.2) * 0.04;
+      ctx.save();
+      ctx.globalAlpha = gp;
+      const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 100);
+      cg.addColorStop(0, 'rgba(255,230,150,0.6)');
+      cg.addColorStop(0.5, 'rgba(255,200,80,0.2)');
+      cg.addColorStop(1, 'rgba(255,180,50,0)');
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.arc(cx, cy, 100, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      // Rotating arcs
+      for (const a of arcs) {
+        ctx.save();
+        ctx.globalAlpha = a.alpha;
+        ctx.strokeStyle = 'rgba(255,220,120,0.8)';
+        ctx.lineWidth = a.width;
+        ctx.translate(cx, cy); ctx.rotate(t * a.speed);
+        ctx.beginPath(); ctx.arc(0, 0, a.radius, 0, Math.PI * 0.6); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, a.radius, Math.PI, Math.PI * 1.6); ctx.stroke();
+        ctx.restore();
+      }
+      // Light rays
+      for (const r of rays) {
+        const a = 0.06 + Math.sin(t * r.speed + r.phase) * 0.04;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.translate(cx, cy); ctx.rotate(r.angle + t * 0.02);
+        const rg = ctx.createLinearGradient(0, 0, 0, -h * 0.5);
+        rg.addColorStop(0, 'rgba(255,230,150,0.5)');
+        rg.addColorStop(1, 'rgba(255,200,80,0)');
+        ctx.fillStyle = rg;
+        ctx.fillRect(-2, 0, 4, -h * 0.5);
+        ctx.restore();
+      }
+      // Rising motes
+      for (const m of motes) {
+        m.y += m.vy; m.x += Math.sin(t * 0.4 + m.phase) * 0.15;
+        if (m.y < -5) { m.y = h + 5; m.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = m.alpha * (0.5 + Math.sin(t + m.phase) * 0.5);
+        ctx.fillStyle = 'rgba(255,235,170,1)';
+        ctx.shadowColor = 'rgba(255,220,100,0.7)';
+        ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🕊️ LUMINOUS (Phoebe): descending holy light rays + soft halos + gentle motes
+  luminous: (w, h) => {
+    const lightRays = Array.from({ length: 6 }, (_, i) => ({
+      x: w * 0.1 + (i / 5) * w * 0.8, width: 15 + Math.random() * 25,
+      phase: Math.random() * Math.PI * 2, speed: 0.12 + Math.random() * 0.15,
+      tilt: (Math.random() - 0.5) * 0.15,
+    }));
+    const halos = Array.from({ length: 3 }, () => ({
+      x: w * 0.2 + Math.random() * w * 0.6, y: h * 0.15 + Math.random() * h * 0.4,
+      radius: 20 + Math.random() * 30, phase: Math.random() * Math.PI * 2,
+      speed: 0.15 + Math.random() * 0.2,
+    }));
+    const motes = Array.from({ length: 14 }, () => ({
+      x: Math.random() * w, y: -5 - Math.random() * h * 0.3,
+      vy: 0.08 + Math.random() * 0.15, phase: Math.random() * Math.PI * 2,
+      size: 1 + Math.random() * 1.5, alpha: 0.3 + Math.random() * 0.35,
+      swayAmp: 5 + Math.random() * 10, swaySpeed: 0.2 + Math.random() * 0.3,
+    }));
+    return (ctx, t) => {
+      // Descending light rays
+      for (const r of lightRays) {
+        const a = 0.035 + Math.sin(t * r.speed + r.phase) * 0.025;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.translate(r.x, 0); ctx.rotate(r.tilt);
+        const g = ctx.createLinearGradient(0, 0, 0, h);
+        g.addColorStop(0, 'rgba(255,250,230,0.6)');
+        g.addColorStop(0.4, 'rgba(255,240,200,0.25)');
+        g.addColorStop(1, 'rgba(255,230,180,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(-r.width / 2, 0, r.width, h);
+        ctx.restore();
+      }
+      // Soft halos
+      for (const hl of halos) {
+        const a = 0.08 + Math.sin(t * hl.speed + hl.phase) * 0.05;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.strokeStyle = 'rgba(255,245,220,0.6)';
+        ctx.lineWidth = 1.2;
+        ctx.shadowColor = 'rgba(255,240,200,0.4)';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(hl.x, hl.y, hl.radius + Math.sin(t * 0.3 + hl.phase) * 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // Gentle descending motes
+      for (const m of motes) {
+        m.y += m.vy;
+        m.x += Math.sin(t * m.swaySpeed + m.phase) * m.swayAmp * 0.01;
+        if (m.y > h + 5) { m.y = -5; m.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = m.alpha * (0.5 + Math.sin(t * 0.6 + m.phase) * 0.5);
+        ctx.fillStyle = 'rgba(255,248,230,1)';
+        ctx.shadowColor = 'rgba(255,240,200,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
     };
