@@ -597,16 +597,17 @@ const BANNER_THEMES = {
         const fadeGlobal = cycle < 0.3 ? cycle / 0.3 : cycle > 6 ? (6.5 - cycle) / 0.5 : 1;
         for (const ts of timestamps) {
           if (cycle < ts.spawnDelay) continue;
-          // Each timestamp cycles through random hours, converging to 06:30
+          // Time progresses 23:00 → 00:00 → ... → 06:30 (night to dawn)
           const localT = cycle - ts.spawnDelay;
-          const speed = 2 + localT * 5;
-          let h2 = Math.floor((localT * speed + ts.hour * 60) / 60 % 24);
-          let m2 = Math.floor((localT * speed + ts.min) % 60);
-          if (cycle > 5.0) {
-            const blend = Math.min(1, (cycle - 5.0) / 1.5);
-            h2 = Math.round(h2 * (1 - blend) + 6 * blend);
-            m2 = Math.round(m2 * (1 - blend) + 30 * blend);
-          }
+          const progress = Math.min(1, localT / 5.5); // 0→1 over 5.5s
+          // 23:00 = minute 1380, 06:30 = minute 390. Forward through midnight = 1380→1830 (mod 1440→390)
+          const startMin = 23 * 60 + ts.min; // each starts at 23:XX
+          const endMin = 6 * 60 + 30; // 06:30
+          // Total minutes forward: from 23:00 to 06:30 = 7.5 hours = 450 min
+          const totalForward = 450;
+          const currentMin = (startMin + Math.floor(progress * totalForward)) % 1440;
+          const h2 = Math.floor(currentMin / 60);
+          const m2 = currentMin % 60;
           const str = `${String(h2).padStart(2, '0')}:${String(m2).padStart(2, '0')}`;
           // Per-timestamp glitch
           ts.timer -= 0.016;
