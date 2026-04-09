@@ -556,132 +556,187 @@ const BANNER_THEMES = {
     };
   },
 
-  // ⏰ RADIANCE (Zani): big clock of light, arms rotate, stop, explode into particles
+  // ⏰ RADIANCE (Zani): massive clock appears 2s, ticks to 12, detonates into nebula brume
   radiance: (w, h) => {
-    const cx = w * 0.5, cy = h * 0.42;
-    const clockR = Math.min(w, h) * 0.28;
-    // Cycle: 0-6s arms spin, 6-6.3s pause, 6.3-8s explode, 8-9s fade, 9+ reset
-    const CYCLE = 9;
-    // Explosion particles — pre-allocated, reset each cycle
-    const particles = Array.from({ length: 40 }, () => ({
-      angle: 0, speed: 0, size: 0, x: 0, y: 0, alpha: 0, active: false,
-      color: Math.random() > 0.5 ? '255,220,100' : '255,170,50',
+    const cx = w * 0.5, cy = h * 0.45;
+    const clockR = Math.min(w, h) * 0.42; // BIG — fills most of the card
+    const CYCLE = 8; // 0-2s clock builds+ticks, 2s BOOM, 2-8s nebula lingers
+    // Nebula clouds — large soft glowing patches that expand outward
+    const nebulae = Array.from({ length: 18 }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      dist: 0, speed: 0.4 + Math.random() * 1.2,
+      size: 30 + Math.random() * 60,
+      alpha: 0, maxAlpha: 0.06 + Math.random() * 0.08,
+      color: ['255,200,80', '255,150,50', '255,100,30', '255,230,140', '200,160,80'][Math.floor(Math.random() * 5)],
+      drift: (Math.random() - 0.5) * 0.3,
+      active: false,
     }));
-    let lastCycleId = -1;
+    // Gloom wisps — thin veils that drift after explosion
+    const wisps = Array.from({ length: 10 }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      dist: 0, speed: 0.6 + Math.random() * 1.5,
+      len: 20 + Math.random() * 50, width: 8 + Math.random() * 20,
+      alpha: 0, maxAlpha: 0.04 + Math.random() * 0.05,
+      rot: Math.random() * Math.PI, rotV: (Math.random() - 0.5) * 0.01,
+      active: false,
+    }));
+    let lastBoom = -1;
     return (ctx, t) => {
       const cycle = t % CYCLE;
       const cycleId = Math.floor(t / CYCLE);
-      // Phase detection
-      const spinning = cycle < 6;
-      const paused = cycle >= 6 && cycle < 6.3;
-      const exploding = cycle >= 6.3 && cycle < 8;
-      const fading = cycle >= 8;
-      // Clock opacity: fade in at start, hold, flash bright at explosion, fade out
-      const clockAlpha = spinning ? Math.min(1, cycle / 0.5) * 0.3
-        : paused ? 0.45
-        : exploding ? 0.3 * Math.max(0, 1 - (cycle - 6.3) / 0.8)
-        : 0;
-      // Spawn explosion particles at moment of detonation
-      if (cycleId !== lastCycleId && exploding) {
-        lastCycleId = cycleId;
-        for (const p of particles) {
-          p.angle = Math.random() * Math.PI * 2;
-          p.speed = 1.5 + Math.random() * 4;
-          p.size = 1.5 + Math.random() * 3;
-          p.x = cx; p.y = cy;
-          p.alpha = 0.6 + Math.random() * 0.4;
-          p.active = true;
-        }
+      const building = cycle < 1.6;  // clock assembles
+      const ticking = cycle >= 1.6 && cycle < 2.0; // hand snaps to 12
+      const boom = cycle >= 2.0 && cycle < 2.15; // detonation flash
+      const nebPhase = cycle >= 2.0; // nebula expands
+      const clockVisible = cycle < 2.3;
+      // Trigger explosion particles
+      if (cycleId !== lastBoom && cycle >= 2.0) {
+        lastBoom = cycleId;
+        for (const n of nebulae) { n.dist = 0; n.alpha = n.maxAlpha; n.active = true; n.angle = Math.random() * Math.PI * 2; }
+        for (const ws of wisps) { ws.dist = 0; ws.alpha = ws.maxAlpha; ws.active = true; ws.angle = Math.random() * Math.PI * 2; ws.rot = Math.random() * Math.PI; }
       }
-      if (clockAlpha > 0.01) {
-        // Clock ring — big circle of light
+      // ── CLOCK PHASE ──
+      if (clockVisible) {
+        // Build-in: ring scales up from 0
+        const buildScale = building ? Math.min(1, cycle / 0.6) : 1;
+        const clockFade = cycle > 2.0 ? Math.max(0, 1 - (cycle - 2.0) / 0.3) : 1;
+        const r = clockR * buildScale;
+        const baseAlpha = 0.35 * clockFade;
+        // Outer ring — thick, glowing
         ctx.save();
-        ctx.globalAlpha = clockAlpha;
-        ctx.strokeStyle = 'rgba(255,220,120,0.7)';
-        ctx.shadowColor = 'rgba(255,200,80,0.5)';
-        ctx.shadowBlur = 15;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(cx, cy, clockR, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = baseAlpha;
+        ctx.strokeStyle = 'rgba(255,220,120,0.6)';
+        ctx.shadowColor = 'rgba(255,200,80,0.6)';
+        ctx.shadowBlur = 25;
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
         ctx.restore();
-        // 12 tick marks
+        // Inner ring
+        ctx.save();
+        ctx.globalAlpha = baseAlpha * 0.5;
+        ctx.strokeStyle = 'rgba(255,210,100,0.4)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        // 12 tick marks — appear sequentially during build
         for (let i = 0; i < 12; i++) {
+          const tickAppear = (i / 12) * 1.4; // stagger over 1.4s
+          if (cycle < tickAppear) continue;
           const a = (Math.PI * 2 / 12) * i - Math.PI / 2;
-          const isMajor = i % 3 === 0;
-          const inner = clockR * (isMajor ? 0.82 : 0.88);
-          const outer = clockR * 0.96;
+          const major = i % 3 === 0;
+          const inner = r * (major ? 0.78 : 0.86);
+          const outer = r * 0.96;
           ctx.save();
-          ctx.globalAlpha = clockAlpha * (isMajor ? 1.2 : 0.7);
-          ctx.strokeStyle = 'rgba(255,220,120,0.9)';
-          ctx.lineWidth = isMajor ? 2.5 : 1;
+          ctx.globalAlpha = baseAlpha * (major ? 1.3 : 0.6);
+          ctx.strokeStyle = 'rgba(255,230,150,1)';
+          ctx.shadowColor = 'rgba(255,200,80,0.5)';
+          ctx.shadowBlur = major ? 10 : 4;
+          ctx.lineWidth = major ? 3 : 1.2;
           ctx.beginPath();
           ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
           ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
           ctx.stroke();
           ctx.restore();
         }
-        // Arms — spin during spinning phase, freeze during pause
-        const armSpeed = spinning ? cycle : 6; // freeze at cycle=6 position
-        const hourA = (armSpeed * 0.15) % (Math.PI * 2) - Math.PI / 2;
-        const minA = (armSpeed * 0.6) % (Math.PI * 2) - Math.PI / 2;
-        // Minute hand — long, thin
-        ctx.save();
-        ctx.globalAlpha = clockAlpha * 1.2;
-        ctx.strokeStyle = 'rgba(255,240,180,1)';
-        ctx.shadowColor = 'rgba(255,220,100,0.8)';
-        ctx.shadowBlur = 12;
-        ctx.lineWidth = 1.5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(minA) * clockR * 0.85, cy + Math.sin(minA) * clockR * 0.85);
-        ctx.stroke(); ctx.restore();
-        // Hour hand — shorter, thicker
-        ctx.save();
-        ctx.globalAlpha = clockAlpha * 1.2;
-        ctx.strokeStyle = 'rgba(255,230,150,1)';
-        ctx.shadowColor = 'rgba(255,200,80,0.6)';
-        ctx.shadowBlur = 10;
-        ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(hourA) * clockR * 0.55, cy + Math.sin(hourA) * clockR * 0.55);
-        ctx.stroke(); ctx.restore();
-        // Center jewel
-        ctx.save();
-        ctx.globalAlpha = clockAlpha * 1.5;
-        ctx.fillStyle = 'rgba(255,240,180,1)';
-        ctx.shadowColor = 'rgba(255,220,100,0.9)';
-        ctx.shadowBlur = 12;
-        ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-        // Flash at explosion moment
-        if (paused || (exploding && cycle < 6.6)) {
-          const flash = paused ? 0.06 : 0.15 * (1 - (cycle - 6.3) / 0.3);
+        // Roman numeral dots at 12, 3, 6, 9
+        for (let i = 0; i < 4; i++) {
+          const a = (Math.PI / 2) * i - Math.PI / 2;
           ctx.save();
-          ctx.globalAlpha = flash;
-          const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, clockR * 1.5);
-          fg.addColorStop(0, 'rgba(255,240,200,0.8)');
-          fg.addColorStop(0.5, 'rgba(255,200,80,0.3)');
-          fg.addColorStop(1, 'rgba(255,180,50,0)');
-          ctx.fillStyle = fg;
-          ctx.beginPath(); ctx.arc(cx, cy, clockR * 1.5, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = baseAlpha * 0.8;
+          ctx.fillStyle = 'rgba(255,240,180,1)';
+          ctx.shadowColor = 'rgba(255,220,100,0.6)';
+          ctx.shadowBlur = 8;
+          ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r * 0.68, cy + Math.sin(a) * r * 0.68, 2, 0, Math.PI * 2); ctx.fill();
           ctx.restore();
         }
+        // Minute hand — erratic fast spin, then snaps to 12
+        const minAngle = ticking
+          ? -Math.PI / 2 // snap to 12
+          : ((cycle * 2.5 + Math.sin(cycle * 7) * 0.5) % (Math.PI * 2)) - Math.PI / 2; // erratic
+        ctx.save();
+        ctx.globalAlpha = baseAlpha * 1.4;
+        ctx.strokeStyle = 'rgba(255,245,200,1)';
+        ctx.shadowColor = 'rgba(255,230,120,0.9)';
+        ctx.shadowBlur = 15;
+        ctx.lineWidth = 2; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(minAngle) * r * 0.88, cy + Math.sin(minAngle) * r * 0.88);
+        ctx.stroke(); ctx.restore();
+        // Hour hand — slower erratic, snaps to 12
+        const hourAngle = ticking
+          ? -Math.PI / 2
+          : ((cycle * 0.8 + Math.sin(cycle * 4 + 2) * 0.3) % (Math.PI * 2)) - Math.PI / 2;
+        ctx.save();
+        ctx.globalAlpha = baseAlpha * 1.3;
+        ctx.strokeStyle = 'rgba(255,235,170,1)';
+        ctx.shadowColor = 'rgba(255,210,80,0.7)';
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(hourAngle) * r * 0.55, cy + Math.sin(hourAngle) * r * 0.55);
+        ctx.stroke(); ctx.restore();
+        // Center
+        ctx.save();
+        ctx.globalAlpha = baseAlpha * 1.6;
+        ctx.fillStyle = 'rgba(255,245,200,1)';
+        ctx.shadowColor = 'rgba(255,230,120,1)';
+        ctx.shadowBlur = 18;
+        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
       }
-      // Explosion particles flying outward
-      if (exploding || fading) {
-        const explodeT = cycle - 6.3;
-        for (const p of particles) {
-          if (!p.active) continue;
-          p.x = cx + Math.cos(p.angle) * p.speed * explodeT * 40;
-          p.y = cy + Math.sin(p.angle) * p.speed * explodeT * 40;
-          const fadeOut = fading ? Math.max(0, 1 - (cycle - 8)) : 1;
-          const a = p.alpha * fadeOut * (1 - explodeT / 2.5);
-          if (a < 0.01) { p.active = false; continue; }
+      // ── DETONATION FLASH ──
+      if (boom) {
+        const boomT = (cycle - 2.0) / 0.15;
+        ctx.save();
+        ctx.globalAlpha = 0.25 * (1 - boomT);
+        const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, clockR * 2);
+        fg.addColorStop(0, 'rgba(255,250,220,0.9)');
+        fg.addColorStop(0.3, 'rgba(255,220,120,0.5)');
+        fg.addColorStop(1, 'rgba(255,180,50,0)');
+        ctx.fillStyle = fg;
+        ctx.beginPath(); ctx.arc(cx, cy, clockR * 2, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // ── NEBULA / BRUME PHASE ──
+      if (nebPhase) {
+        const nebT = cycle - 2.0;
+        // Expanding nebula clouds
+        for (const n of nebulae) {
+          if (!n.active) continue;
+          n.dist += n.speed * 0.7;
+          n.angle += n.drift * 0.016;
+          const x = cx + Math.cos(n.angle) * n.dist;
+          const y = cy + Math.sin(n.angle) * n.dist;
+          const expandSize = n.size * (0.5 + nebT * 0.4);
+          const fade = Math.max(0, n.maxAlpha * (1 - nebT / 5.5));
+          if (fade < 0.003) { n.active = false; continue; }
           ctx.save();
-          ctx.globalAlpha = a;
-          ctx.fillStyle = `rgba(${p.color},1)`;
-          ctx.shadowColor = `rgba(${p.color},0.8)`;
-          ctx.shadowBlur = 10;
-          const sz = p.size * (1 - explodeT / 3);
-          ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(0.5, sz), 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = fade;
+          const g = ctx.createRadialGradient(x, y, 0, x, y, expandSize);
+          g.addColorStop(0, `rgba(${n.color},0.5)`);
+          g.addColorStop(0.4, `rgba(${n.color},0.2)`);
+          g.addColorStop(1, `rgba(${n.color},0)`);
+          ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(x, y, expandSize, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+        // Gloom wisps — translucent veil arcs drifting
+        for (const ws of wisps) {
+          if (!ws.active) continue;
+          ws.dist += ws.speed * 0.5;
+          ws.rot += ws.rotV;
+          ws.angle += ws.drift * 0.016;
+          const x = cx + Math.cos(ws.angle) * ws.dist;
+          const y = cy + Math.sin(ws.angle) * ws.dist;
+          const fade = Math.max(0, ws.maxAlpha * (1 - nebT / 5));
+          if (fade < 0.002) { ws.active = false; continue; }
+          ctx.save();
+          ctx.globalAlpha = fade;
+          ctx.translate(x, y); ctx.rotate(ws.rot);
+          ctx.fillStyle = 'rgba(255,220,130,0.3)';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, ws.len * (0.8 + nebT * 0.15), ws.width * (0.6 + nebT * 0.1), 0, 0, Math.PI * 2);
+          ctx.fill();
           ctx.restore();
         }
       }
