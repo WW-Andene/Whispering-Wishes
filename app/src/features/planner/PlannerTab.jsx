@@ -1006,102 +1006,114 @@ function PlannerTab({
       {/* ── 8. Material Farming Planner ──────────────────────────────────── */}
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('farm')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('farm'); } }} aria-expanded={!collapsed.farm}>
-          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.farm ? '' : 'rotate-180'}`} />}><Hammer size={14} className="inline mr-1.5 -mt-0.5 text-orange-400" />Farming Planner</CardHeader>
+          <CardHeader action={<>
+            {farmTargetsState.length > 0 && <span className="text-orange-400 text-sm">{farmTargetsState.length} target{farmTargetsState.length > 1 ? 's' : ''}</span>}
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.farm ? '' : 'rotate-180'}`} />
+          </>}><Hammer size={14} className="inline mr-1.5 -mt-0.5 text-orange-400" />Farming Planner</CardHeader>
         </div>
         {!collapsed.farm && (
           <CardBody className="space-y-3">
-            {(() => {
-              const [farmTargets, setFarmTargets] = [farmTargetsState, setFarmTargetsState];
-              const allChars = [...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS];
-              // Compute total materials needed
+            {/* Resonator selector */}
+            <div>
+              <label className="kuro-label">Add Resonator</label>
+              <select className="kuro-input w-full" value="" onChange={e => { if (!e.target.value) return; setFarmTargetsState(prev => [...prev, { name: e.target.value, ascension: true, skills: true, weapon: false }]); }} aria-label="Select Resonator to farm">
+                <option value="">Select Resonator…</option>
+                {[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS].filter(n => !farmTargetsState.some(t => t.name === n)).map(n => {
+                  const d = CHARACTER_DATA[n];
+                  return <option key={n} value={n}>{n}{d ? ` — ${d.element} ${d.role}` : ''}</option>;
+                })}
+              </select>
+            </div>
+
+            {/* Farming targets */}
+            {farmTargetsState.map((t, i) => {
+              const d = CHARACTER_DATA[t.name];
+              const elColor = d ? getElementColor(d.element) : '#9ca3af';
+              return (
+                <div key={t.name} className="p-2.5 rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-semibold text-base flex-1" style={{ color: elColor }}>{t.name}</span>
+                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {[['ascension', 'Ascension'], ['skills', 'Forte'], ['weapon', 'Weapon']].map(([key, label]) => (
+                      <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '6px 8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Material summary */}
+            {farmTargetsState.length > 0 && (() => {
               const mats = {};
-              const addMat = (name, qty, img) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img }; mats[name].qty += qty; };
-              farmTargets.forEach(t => {
+              let totalShell = 0;
+              const addMat = (name, qty, img) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: img || MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
+              farmTargetsState.forEach(t => {
                 const d = CHARACTER_DATA[t.name];
                 if (!d) return;
                 if (t.ascension) {
-                  addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss, MATERIAL_IMAGES?.[d.ascension?.boss]);
+                  addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
                   const ct = COMMON_MAT_TIERS[d.ascension?.common];
                   if (ct) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT3); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT4); }
-                  addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty, MATERIAL_IMAGES?.[d.ascension?.specialty]);
+                  addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
+                  totalShell += RESONATOR_ASCENSION_COSTS.shell;
                 }
                 if (t.skills) {
                   const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
-                  if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3, MATERIAL_IMAGES?.[ft[0]]); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4, MATERIAL_IMAGES?.[ft[1]]); }
+                  if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4); }
                   const ct = COMMON_MAT_TIERS[d.ascension?.common];
                   if (ct) { addMat(ct[0], SKILL_UPGRADE_COSTS.commonT3); addMat(ct[1], SKILL_UPGRADE_COSTS.commonT4); }
-                  addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop, MATERIAL_IMAGES?.[d.skillMaterials?.weeklyDrop]);
+                  addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
+                  totalShell += SKILL_UPGRADE_COSTS.shell;
                 }
                 if (t.weapon && d.bestWeapon) {
                   const w = WEAPON_DATA?.[d.bestWeapon];
                   if (w?.ascensionMaterials) {
                     const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
                     const ft = FORGERY_MAT_TIERS[w.ascensionMaterials.forgery];
-                    if (ft) { addMat(ft[0], costs.forgeryT3, MATERIAL_IMAGES?.[ft[0]]); addMat(ft[1], costs.forgeryT4, MATERIAL_IMAGES?.[ft[1]]); }
+                    if (ft) { addMat(ft[0], costs.forgeryT3); addMat(ft[1], costs.forgeryT4); }
                     const ct = COMMON_MAT_TIERS[w.ascensionMaterials.common];
                     if (ct) { addMat(ct[0], costs.commonT3); addMat(ct[1], costs.commonT4); }
+                    totalShell += costs.shell;
                   }
                 }
               });
               const matList = Object.entries(mats).sort((a, b) => b[1].qty - a[1].qty);
               return (
                 <>
-                  {/* Add character */}
-                  <div>
-                    <label className="kuro-label">Add Resonator to farm</label>
-                    <select className="kuro-input w-full" value="" onChange={e => { if (!e.target.value) return; setFarmTargets(prev => [...prev, { name: e.target.value, ascension: true, skills: true, weapon: false }]); }} aria-label="Select resonator to farm">
-                      <option value="">Select Resonator...</option>
-                      {allChars.filter(n => !farmTargets.some(t => t.name === n)).map(n => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
+                  {/* Shell Credit total */}
+                  <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-yellow-400 text-base font-medium">Shell Credit</span>
+                      <span className="text-yellow-400 font-bold text-lg kuro-number">{totalShell.toLocaleString('en-US')}</span>
+                    </div>
                   </div>
-                  {/* Target list */}
-                  {farmTargets.length > 0 && (
-                    <div className="space-y-1.5">
-                      {farmTargets.map((t, i) => {
-                        const d = CHARACTER_DATA[t.name];
-                        return (
-                          <div key={t.name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-subtle)' }}>
-                            <span className="font-medium text-sm flex-1" style={{ color: d ? getElementColor(d.element) : 'var(--text-heading)' }}>{t.name}</span>
-                            <div className="flex gap-1">
-                              {[['ascension', 'Asc'], ['skills', 'Skills'], ['weapon', 'Weap']].map(([key, label]) => (
-                                <button key={key} onClick={() => setFarmTargets(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-badge text-2xs cursor-pointer ${t[key] ? 'kuro-badge-emerald' : 'kuro-badge-neutral'}`}>{label}</button>
-                              ))}
-                            </div>
-                            <button onClick={() => setFarmTargets(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {/* Material summary */}
-                  {matList.length > 0 && (
-                    <div>
-                      <div className="kuro-label">Total Materials Needed</div>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {matList.map(([name, { qty, img }]) => (
-                          <div key={name} className="flex items-center gap-2 p-1.5 rounded-lg" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-subtle)' }}>
-                            {img && <img src={img} alt="" className="w-6 h-6 rounded" onError={e => { e.target.style.display = 'none'; }} />}
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
-                            </div>
-                            <span className="text-orange-400 font-bold kuro-number text-sm">{qty}</span>
-                          </div>
-                        ))}
+                  {/* Material grid */}
+                  <div className="kuro-label">Materials Required</div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {matList.map(([name, { qty, img }]) => (
+                      <div key={name} className="kuro-stat flex items-center gap-2 p-2" style={{ textAlign: 'left' }}>
+                        {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={e => { e.target.style.display = 'none'; }} />}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                        </div>
+                        <span className="text-orange-400 font-bold kuro-number text-base flex-shrink-0">×{qty}</span>
                       </div>
-                    </div>
-                  )}
-                  {farmTargets.length === 0 && (
-                    <div className="text-center py-4">
-                      <Hammer size={24} className="mx-auto mb-2 text-gray-600" />
-                      <div className="text-gray-400 text-sm">Select Resonators to plan your material farming</div>
-                      <p className="text-gray-600 text-sm mt-1">Toggle Ascension, Skills, and Weapon to customize needs</p>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </>
               );
             })()}
+
+            {/* Empty state */}
+            {farmTargetsState.length === 0 && (
+              <div className="kuro-empty-state text-center py-6">
+                <Hammer size={28} className="mx-auto mb-2 opacity-40" />
+                <div style={{ color: 'var(--text-muted)' }}>Awaiting farming directives</div>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>Select Resonators above to compute material requirements for Ascension, Forte, and Weapon upgrades</p>
+              </div>
+            )}
           </CardBody>
         )}
       </Card>

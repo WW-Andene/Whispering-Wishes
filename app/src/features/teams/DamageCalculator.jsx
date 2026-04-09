@@ -1185,7 +1185,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       <div className="flex items-center flex-wrap gap-1 mt-1">
                         <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{m.d.role}</span>
                         <span className="kuro-badge font-medium" data-element={m.d.element}
-                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                          style={{ color: getElementColor(m.d.element), backgroundColor: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element}
                         </span>
                         <span className="text-sm text-gray-500">{m.d.weapon}</span>
@@ -1469,7 +1469,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       <div className="kuro-label">Damage Focus</div>
                       <div className="flex flex-wrap gap-1">
                         <span className="kuro-badge font-medium" data-element={m.d.element}
-                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                          style={{ color: getElementColor(m.d.element), backgroundColor: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element} DMG
                         </span>
                         {(m.d.dmgFocus || []).map((df, di) => (
@@ -1513,7 +1513,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <span className="kuro-badge kuro-badge-cyan">CR {cr.toFixed(1)}%</span>
                         <span className="kuro-badge kuro-badge-cyan">CD {cd.toFixed(1)}%</span>
                         <span className="kuro-badge font-medium" data-element={m.d.element}
-                          style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
+                          style={{ color: getElementColor(m.d.element), backgroundColor: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {m.d.element} +{elemDmg.toFixed(0)}%
                         </span>
                         {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">Skill +{skillDmg.toFixed(0)}%</span>}
