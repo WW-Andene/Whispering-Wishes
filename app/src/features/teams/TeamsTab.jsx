@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
+import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -482,61 +482,6 @@ function TeamsTab({
                         </div>
                       )}
 
-                      {/* Team Synergy Tips */}
-                      {(() => {
-                        const filled = teamSlots.filter(s => s);
-                        if (filled.length < 2) return null;
-                        const STAT_LABELS = {
-                          atkPct: 'ATK%', elemDmg: 'Elem DMG', skillDmg: 'Skill DMG', basicDmg: 'Basic DMG',
-                          heavyDmg: 'Heavy DMG', libDmg: 'Lib DMG', echoDmg: 'Echo DMG', deepen: 'Deepen',
-                          resShred: 'RES Shred', defShred: 'DEF Shred', critRate: 'Crit Rate', critDmg: 'Crit DMG',
-                          allDmg: 'All DMG',
-                        };
-                        const tips = [];
-                        // Outro & Lib buffs from supports/sub-DPS
-                        filled.forEach(name => {
-                          const bt = CHAR_BUFF_TABLE[name];
-                          if (!bt) return;
-                          bt.outroBuffs?.forEach(b => {
-                            if (b.target === 'next' && filled.length > 1) {
-                              tips.push({ char: name, text: `${name} outro: +${b.value}% ${STAT_LABELS[b.stat] || b.stat} to next`, element: CHARACTER_DATA[name]?.element });
-                            }
-                          });
-                          bt.libBuffs?.forEach(b => {
-                            if (b.target === 'team') {
-                              tips.push({ char: name, text: `${name} lib: +${b.value}% ${STAT_LABELS[b.stat] || b.stat} (team)`, element: CHARACTER_DATA[name]?.element });
-                            }
-                          });
-                          bt.debuffs?.forEach(b => {
-                            if (b.stat === 'defShred' || b.stat === 'resShred') {
-                              tips.push({ char: name, text: `${name}: ${b.value}% ${STAT_LABELS[b.stat]}`, element: CHARACTER_DATA[name]?.element });
-                            }
-                          });
-                        });
-                        // Element Resonance (2+ same element)
-                        const elemCounts = {};
-                        filled.forEach(name => { const el = CHARACTER_DATA[name]?.element; if (el) elemCounts[el] = (elemCounts[el] || 0) + 1; });
-                        Object.entries(elemCounts).forEach(([el, count]) => {
-                          if (count >= 2) tips.push({ text: `Element Resonance: ${count}x ${el} (+10% ${el} DMG)`, element: el });
-                        });
-                        if (tips.length === 0) return null;
-                        const shown = tips.slice(0, 4);
-                        return (
-                          <div className="mt-2">
-                            <div className="flex items-center gap-1 mb-1">
-                              <Zap size={11} className="text-yellow-400" />
-                              <span className="text-2xs font-semibold text-yellow-400/80 uppercase tracking-wider">Synergy</span>
-                            </div>
-                            <div className="space-y-0.5">
-                              {shown.map((tip, i) => (
-                                <div key={i} className="kuro-stat text-2xs" style={{ color: tip.element ? getElementColor(tip.element) : '#9ca3af' }}>
-                                  {tip.text}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })()}
                     </CardBody>
                   </Card>
 
