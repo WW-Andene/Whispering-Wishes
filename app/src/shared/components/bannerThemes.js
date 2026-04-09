@@ -713,7 +713,7 @@ const BANNER_THEMES = {
         // Draw gear with filled body, teeth, hub, spokes, center hole
         const drawGear = (gx, gy, gr, teeth, rot, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha; ctx.translate(gx, gy); ctx.rotate(rot);
-          const tH = gr * 0.2, iR = gr * 0.8, oR = gr + tH;
+          const tH = gr * 0.08, iR = gr * 0.92, oR = gr + tH;
           // Gear body + teeth
           ctx.fillStyle = 'rgba(215,195,155,0.5)';
           ctx.strokeStyle = 'rgba(255,235,180,0.65)';
@@ -749,9 +749,13 @@ const BANNER_THEMES = {
           ctx.stroke();
           ctx.restore();
         };
-        // Render all gears
+        // Render gears — spin fast on appear, decelerate before explosion
+        // cT goes 0→2.5. Speed multiplier: starts at 5x, eases to 0.3x
+        const gearSpeedMult = 0.3 + 4.7 * Math.pow(1 - Math.min(1, cT / 2.2), 2);
         for (const g of gears) {
-          drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, t * g.speed, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
+          // Accumulate rotation based on deceleration (integrate speed over time)
+          const rot = g.speed * cT * gearSpeedMult * 3;
+          drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, rot, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
         }
         // Outer ring — double: thick + slim
         ctx.save(); ctx.globalAlpha = a * 0.9;
