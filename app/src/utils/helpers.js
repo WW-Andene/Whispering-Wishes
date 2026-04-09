@@ -107,8 +107,9 @@ const ELEMENT_COLORS_CB = {
   Physical:_cbHex('#94a3b8'),
 };
 // Element shape labels — shown alongside name in CB mode (§E10-CB-F3 spec)
+// Plain text symbols only — no emoji
 const ELEMENT_SHAPES = {
-  Fusion: '🔥', Electro: '⚡', Aero: '🌀', Glacio: '❄', Havoc: '💀', Spectro: '✦',
+  Fusion: '△', Electro: '◇', Aero: '○', Glacio: '□', Havoc: '✕', Spectro: '☆',
 };
 const _isCB = () => typeof document !== 'undefined' && document.documentElement.classList.contains('colorblind-mode');
 const _getColors = (el) => (_isCB() ? ELEMENT_COLORS_CB[el] : ELEMENT_COLORS[el]) || ELEMENT_COLORS[el];
