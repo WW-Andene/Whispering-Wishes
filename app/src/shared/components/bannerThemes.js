@@ -567,17 +567,36 @@ const BANNER_THEMES = {
     const clockR = Math.min(w, h) * 0.55; // BIGGER — fills most of card
     const CYCLE = 15;
     // More gears, interlocking, varied sizes
-    // Gears fill the ENTIRE clock interior — like the reference where one gear
-    // covers the whole left half. Overlapping, massive, edge-to-edge.
-    const gears = [
-      { x: -0.25, y: -0.05, r: 0.65, teeth: 28, speed: 0.1 },     // HUGE — fills left 2/3
-      { x: 0.35, y: 0.15, r: 0.50, teeth: 22, speed: -0.14 },     // LARGE — fills right half
-      { x: 0.10, y: -0.35, r: 0.35, teeth: 16, speed: 0.22 },     // medium top
-      { x: -0.30, y: 0.40, r: 0.30, teeth: 14, speed: -0.28 },    // medium bottom-left
-      { x: 0.40, y: -0.30, r: 0.20, teeth: 10, speed: 0.4 },      // small top-right
-      { x: -0.45, y: -0.35, r: 0.15, teeth: 8, speed: -0.5 },     // small top-left
-      { x: 0.0, y: 0.45, r: 0.18, teeth: 10, speed: 0.35 },       // small bottom
+    // Gears with mechanically correct rotation:
+    // When two gears mesh, speed ratio = teeth_driver / teeth_driven, direction flips.
+    // Gear 0 is the driver. Each subsequent gear meshes with a neighbor.
+    const BASE_SPEED = 0.1; // gear 0 rotation speed
+    const gearDefs = [
+      { x: -0.25, y: -0.05, r: 0.65, teeth: 28 },     // [0] HUGE driver
+      { x: 0.35, y: 0.15, r: 0.50, teeth: 22 },        // [1] meshes with 0
+      { x: 0.10, y: -0.35, r: 0.35, teeth: 16 },       // [2] meshes with 0
+      { x: -0.30, y: 0.40, r: 0.30, teeth: 14 },       // [3] meshes with 0
+      { x: 0.40, y: -0.30, r: 0.20, teeth: 10 },       // [4] meshes with 2
+      { x: -0.45, y: -0.35, r: 0.15, teeth: 8 },       // [5] meshes with 0
+      { x: 0.0, y: 0.45, r: 0.18, teeth: 10 },         // [6] meshes with 3
     ];
+    // meshes: [gearIndex] = index of gear it meshes with
+    const meshes = [-1, 0, 0, 0, 2, 0, 3];
+    // Compute speeds: driver gear speed * (driver teeth / this teeth) * -1 per link
+    const gearSpeeds = gearDefs.map((_, i) => {
+      if (i === 0) return BASE_SPEED;
+      let speed = BASE_SPEED;
+      let cur = i;
+      let flips = 0;
+      while (meshes[cur] >= 0) {
+        const parent = meshes[cur];
+        speed *= gearDefs[parent].teeth / gearDefs[cur].teeth;
+        flips++;
+        cur = parent;
+      }
+      return speed * (flips % 2 === 1 ? -1 : 1);
+    });
+    const gears = gearDefs.map((g, i) => ({ ...g, speed: gearSpeeds[i] }));
     const nebulae = Array.from({ length: 20 }, () => ({
       angle: 0, dist: 0, speed: 0.3 + Math.random() * 1.5, size: 25 + Math.random() * 55,
       maxAlpha: 0.05 + Math.random() * 0.07, drift: (Math.random() - 0.5) * 0.4,
