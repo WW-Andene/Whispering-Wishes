@@ -480,15 +480,13 @@ const BANNER_THEMES = {
     };
 
     // ── Multi-layered swoosh strokes: each is 2-3 overlapping colors ──
-    const makeStroke = () => {
-      // Pick 2-3 colors for layered effect
+    const initStroke = (startT) => {
       const layers = 2 + Math.floor(Math.random() * 2); // 2 or 3
       const cis = [];
       while (cis.length < layers) {
         const c = Math.floor(Math.random() * PAINT.length);
         if (!cis.includes(c)) cis.push(c);
       }
-      // Big sweeping arc — can span most of the card
       const sx = (Math.random() - 0.3) * w;
       const sy = Math.random() * h;
       const sweep = (0.5 + Math.random() * 0.8) * w * (Math.random() > 0.5 ? 1 : -1);
@@ -502,20 +500,20 @@ const BANNER_THEMES = {
         ex: sx + sweep, ey: sy + rise,
         cis,
         baseWidth: 8 + Math.random() * 20,
-        delay: Math.random() * CYCLE,
-        drawDur: 0.08 + Math.random() * 0.12,  // very fast: 80-200ms
+        born: startT,
+        drawDur: 0.1 + Math.random() * 0.15,   // fast: 100-250ms
         fadeDur: 1.8 + Math.random() * 2.5,
         alpha: 0.3 + Math.random() * 0.25,
+        dead: false,
       };
     };
-    const strokes = Array.from({ length: 10 }, makeStroke);
+    // Stagger initial spawns across 0-4s
+    const strokes = Array.from({ length: 10 }, (_, i) => initStroke(-4 + i * 0.4));
 
-    // ── Splashes: burst of droplets at stroke endpoints ──
-    const makeSplash = () => {
+    // ── Splashes: burst of droplets ──
+    const initSplash = (startT) => {
       const ci = Math.floor(Math.random() * PAINT.length);
       const ci2 = (ci + 1 + Math.floor(Math.random() * (PAINT.length - 1))) % PAINT.length;
-      const cx = Math.random() * w;
-      const cy = Math.random() * h;
       const count = 8 + Math.floor(Math.random() * 10);
       const drops = Array.from({ length: count }, () => ({
         angle: Math.random() * Math.PI * 2,
@@ -524,16 +522,17 @@ const BANNER_THEMES = {
         ci: Math.random() > 0.5 ? ci : ci2,
       }));
       return {
-        cx, cy, ci, drops,
-        delay: Math.random() * CYCLE,
+        cx: Math.random() * w, cy: Math.random() * h, ci, drops,
+        born: startT,
         popDur: 0.06,
         holdDur: 1.2 + Math.random() * 1.5,
         fadeDur: 0.8 + Math.random() * 1,
         alpha: 0.35 + Math.random() * 0.25,
         blobR: 3 + Math.random() * 6,
+        dead: false,
       };
     };
-    const splashes = Array.from({ length: 7 }, makeSplash);
+    const splashes = Array.from({ length: 7 }, (_, i) => initSplash(-3 + i * 0.5));
 
     // ── Drips: slow paint running down ──
     const makeDrip = () => ({
@@ -572,29 +571,29 @@ const BANNER_THEMES = {
       }
 
       // ── Multi-layered swoosh strokes ──
-      for (const s of strokes) {
-        const elapsed = (t - s.delay + CYCLE * 100) % CYCLE;
+      for (let si = 0; si < strokes.length; si++) {
+        const s = strokes[si];
+        const age = t - s.born;
         const totalLife = s.drawDur + s.fadeDur;
-        if (elapsed > totalLife) {
-          if (elapsed > totalLife + 0.3) {
-            Object.assign(s, makeStroke());
-            s.delay = t + 0.3 + Math.random() * 1.5;
-          }
+
+        // Respawn when dead
+        if (age > totalLife) {
+          strokes[si] = initStroke(t + 0.2 + Math.random() * 1.5);
           continue;
         }
+        if (age < 0) continue; // not born yet
 
-        // Instant swoosh: cubic ease-out for very fast draw
-        const rawP = Math.min(1, elapsed / s.drawDur);
-        const drawP = 1 - Math.pow(1 - rawP, 3); // fast start, snaps to end
-        const fadeP = elapsed > s.drawDur ? (elapsed - s.drawDur) / s.fadeDur : 0;
-        const fadeAlpha = 1 - fadeP * fadeP; // quadratic fade
+        // Instant swoosh: cubic ease-out
+        const rawP = Math.min(1, age / s.drawDur);
+        const drawP = 1 - Math.pow(1 - rawP, 3);
+        const fadeP = age > s.drawDur ? (age - s.drawDur) / s.fadeDur : 0;
+        const fadeAlpha = 1 - fadeP * fadeP;
         if (fadeAlpha < 0.01) continue;
 
-        // Draw each color layer with slight offset for multi-color effect
+        // Draw each color layer with perpendicular offset
         const SEG = 40;
         for (let L = s.cis.length - 1; L >= 0; L--) {
           const ci = s.cis[L];
-          // Each layer offset perpendicular to the stroke direction
           const offsetMag = (L - (s.cis.length - 1) / 2) * (s.baseWidth * 0.4);
 
           ctx.save();
@@ -613,17 +612,16 @@ const BANNER_THEMES = {
             const p = i / SEG;
             const x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
             const y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
-            // Perpendicular offset: approximate tangent
+            // Perpendicular offset via tangent approximation
             const pp = Math.min(1, p + 0.01);
             const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - x;
             const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - y;
             const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
             const nx = -ty / tLen, ny = tx / tLen;
-            const ox = x + nx * offsetMag;
-            const oy = y + ny * offsetMag;
-            if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
+            if (i === 0) ctx.moveTo(x + nx * offsetMag, y + ny * offsetMag);
+            else ctx.lineTo(x + nx * offsetMag, y + ny * offsetMag);
           }
-          // Brush pressure: thick center, sharp taper at edges
+          // Brush pressure: thick center, taper at edges
           const pressure = 0.3 + 0.7 * Math.sin(drawP * Math.PI);
           ctx.lineWidth = s.baseWidth * pressure * (L === 0 ? 1 : 0.65);
           ctx.stroke();
@@ -632,33 +630,32 @@ const BANNER_THEMES = {
       }
 
       // ── Splashes ──
-      for (const sp of splashes) {
-        const elapsed = (t - sp.delay + CYCLE * 100) % CYCLE;
+      for (let si = 0; si < splashes.length; si++) {
+        const sp = splashes[si];
+        const age = t - sp.born;
         const totalLife = sp.popDur + sp.holdDur + sp.fadeDur;
-        if (elapsed > totalLife) {
-          if (elapsed > totalLife + 0.5) {
-            Object.assign(sp, makeSplash());
-            sp.delay = t + Math.random() * 2;
-          }
+
+        if (age > totalLife) {
+          splashes[si] = initSplash(t + 0.5 + Math.random() * 2);
           continue;
         }
-        const popP = Math.min(1, elapsed / sp.popDur);
-        const spread = 1 - Math.pow(1 - popP, 4); // snappy pop
-        const fadeP = elapsed > sp.popDur + sp.holdDur
-          ? (elapsed - sp.popDur - sp.holdDur) / sp.fadeDur : 0;
+        if (age < 0) continue;
+
+        const popP = Math.min(1, age / sp.popDur);
+        const spread = 1 - Math.pow(1 - popP, 4);
+        const fadeP = age > sp.popDur + sp.holdDur
+          ? (age - sp.popDur - sp.holdDur) / sp.fadeDur : 0;
         const alpha = sp.alpha * (1 - fadeP * fadeP);
         if (alpha < 0.01) continue;
 
         ctx.save();
         ctx.globalAlpha = alpha;
-        // Central blob
         ctx.fillStyle = `rgba(${PAINT[sp.ci]},1)`;
         ctx.shadowColor = `rgba(${PAINT[sp.ci]},0.6)`;
         ctx.shadowBlur = 10;
         ctx.beginPath();
         ctx.arc(sp.cx, sp.cy, sp.blobR * spread, 0, Math.PI * 2);
         ctx.fill();
-        // Droplets — each may be a different color
         for (const d of sp.drops) {
           ctx.fillStyle = `rgba(${PAINT[d.ci]},1)`;
           ctx.shadowColor = `rgba(${PAINT[d.ci]},0.5)`;
