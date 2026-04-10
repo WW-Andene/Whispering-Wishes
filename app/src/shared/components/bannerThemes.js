@@ -479,9 +479,9 @@ const BANNER_THEMES = {
       return u * u * u * a + 3 * u * u * p * b + 3 * u * p * p * c + p * p * p * d;
     };
 
-    // ── Multi-layered swoosh strokes: each is 2-3 overlapping colors ──
+    // ── Multi-color liquid swoosh strokes ──
     const initStroke = (startT) => {
-      const layers = 2 + Math.floor(Math.random() * 2); // 2 or 3
+      const layers = 2 + Math.floor(Math.random() * 2);
       const cis = [];
       while (cis.length < layers) {
         const c = Math.floor(Math.random() * PAINT.length);
@@ -491,6 +491,18 @@ const BANNER_THEMES = {
       const sy = Math.random() * h;
       const sweep = (0.5 + Math.random() * 0.8) * w * (Math.random() > 0.5 ? 1 : -1);
       const rise = (Math.random() - 0.5) * h * 1.2;
+      // Per-stroke wobble seeds for organic edges
+      const wobbleA = Array.from({ length: 6 }, () => 0.5 + Math.random() * 1.5);
+      const wobbleF = Array.from({ length: 6 }, () => 2 + Math.random() * 5);
+      const wobbleP = Array.from({ length: 6 }, () => Math.random() * Math.PI * 2);
+      // Splatter droplets flung off the tip
+      const splatCount = 3 + Math.floor(Math.random() * 5);
+      const splats = Array.from({ length: splatCount }, () => ({
+        ang: (Math.random() - 0.5) * 1.2, // relative to stroke direction
+        dist: 5 + Math.random() * 30,
+        r: 1 + Math.random() * 3.5,
+        ci: cis[Math.floor(Math.random() * cis.length)],
+      }));
       return {
         sx, sy,
         cp1x: sx + sweep * 0.25 + (Math.random() - 0.5) * 60,
@@ -498,16 +510,14 @@ const BANNER_THEMES = {
         cp2x: sx + sweep * 0.65 + (Math.random() - 0.5) * 60,
         cp2y: sy + rise * 0.75 + (Math.random() - 0.5) * 50,
         ex: sx + sweep, ey: sy + rise,
-        cis,
-        baseWidth: 8 + Math.random() * 20,
+        cis, splats, wobbleA, wobbleF, wobbleP,
+        baseWidth: 10 + Math.random() * 22,
         born: startT,
-        drawDur: 0.1 + Math.random() * 0.15,   // fast: 100-250ms
+        drawDur: 0.1 + Math.random() * 0.15,
         fadeDur: 1.8 + Math.random() * 2.5,
         alpha: 0.3 + Math.random() * 0.25,
-        dead: false,
       };
     };
-    // Stagger initial spawns across 0-4s
     const strokes = Array.from({ length: 10 }, (_, i) => initStroke(-4 + i * 0.4));
 
     // ── Splashes: burst of droplets ──
@@ -570,7 +580,7 @@ const BANNER_THEMES = {
         ctx.restore();
       }
 
-      // ── Multi-color swoosh strokes (colors flow WITHIN one stroke) ──
+      // ── Liquid multi-color swoosh strokes ──
       for (let si = 0; si < strokes.length; si++) {
         const s = strokes[si];
         const age = t - s.born;
@@ -588,10 +598,10 @@ const BANNER_THEMES = {
         const fadeAlpha = 1 - fadeP * fadeP;
         if (fadeAlpha < 0.01) continue;
 
-        // Build ribbon: compute spine points + normals up to drawP
+        // Build spine with organic wobbly width
         const SEG = 50;
         const endSeg = Math.max(1, Math.floor(drawP * SEG));
-        const pts = []; // {x, y, nx, ny, halfW}
+        const pts = [];
         for (let i = 0; i <= endSeg; i++) {
           const p = i / SEG;
           const x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
@@ -600,57 +610,116 @@ const BANNER_THEMES = {
           const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - x;
           const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - y;
           const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
-          // Pressure: swell in center, taper at both ends
+          const nx = -ty / tLen, ny = tx / tLen;
           const along = i / endSeg;
           const pressure = Math.sin(along * Math.PI);
-          const halfW = s.baseWidth * 0.5 * (0.15 + 0.85 * pressure);
-          pts.push({ x, y, nx: -ty / tLen, ny: tx / tLen, halfW });
+          // Organic wobble on each edge — different frequencies per side
+          let wobTop = 0, wobBot = 0;
+          for (let k = 0; k < 3; k++) {
+            wobTop += Math.sin(p * s.wobbleF[k] * Math.PI * 2 + s.wobbleP[k]) * s.wobbleA[k];
+            wobBot += Math.sin(p * s.wobbleF[k + 3] * Math.PI * 2 + s.wobbleP[k + 3]) * s.wobbleA[k + 3];
+          }
+          const baseHW = s.baseWidth * 0.5 * (0.12 + 0.88 * pressure);
+          pts.push({ x, y, nx, ny, hwTop: baseHW + wobTop, hwBot: baseHW + wobBot });
         }
         if (pts.length < 2) continue;
 
-        // Draw ribbon as filled polygon with multi-color gradient along length
         ctx.save();
         ctx.globalAlpha = s.alpha * fadeAlpha;
 
-        // Gradient along the stroke direction (start → end)
-        const g = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[pts.length - 1].x, pts[pts.length - 1].y);
+        // Multi-color gradient along the stroke
+        const last = pts[pts.length - 1];
+        const g = ctx.createLinearGradient(pts[0].x, pts[0].y, last.x, last.y);
         const nc = s.cis.length;
         for (let c = 0; c < nc; c++) {
           const stop = c / (nc - 1 || 1);
-          g.addColorStop(Math.max(0, stop - 0.05), `rgba(${PAINT[s.cis[c]]},1)`);
-          g.addColorStop(Math.min(1, stop + 0.05), `rgba(${PAINT[s.cis[c]]},1)`);
+          g.addColorStop(Math.max(0, stop - 0.08), `rgba(${PAINT[s.cis[c]]},1)`);
+          g.addColorStop(Math.min(1, stop + 0.08), `rgba(${PAINT[s.cis[c]]},1)`);
         }
         ctx.fillStyle = g;
         ctx.shadowColor = `rgba(${PAINT[s.cis[0]]},0.6)`;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
 
-        // Build closed polygon: top edge forward, bottom edge backward
+        // Filled ribbon with wobbly edges
         ctx.beginPath();
-        ctx.moveTo(pts[0].x + pts[0].nx * pts[0].halfW, pts[0].y + pts[0].ny * pts[0].halfW);
+        // Top edge (forward)
+        ctx.moveTo(pts[0].x + pts[0].nx * pts[0].hwTop, pts[0].y + pts[0].ny * pts[0].hwTop);
         for (let i = 1; i < pts.length; i++) {
-          ctx.lineTo(pts[i].x + pts[i].nx * pts[i].halfW, pts[i].y + pts[i].ny * pts[i].halfW);
+          // Use quadratic curves between every 2 points for smooth wobble
+          if (i % 2 === 1 && i + 1 < pts.length) {
+            const n = pts[i + 1];
+            ctx.quadraticCurveTo(
+              pts[i].x + pts[i].nx * pts[i].hwTop, pts[i].y + pts[i].ny * pts[i].hwTop,
+              n.x + n.nx * n.hwTop, n.y + n.ny * n.hwTop
+            );
+            i++;
+          } else {
+            ctx.lineTo(pts[i].x + pts[i].nx * pts[i].hwTop, pts[i].y + pts[i].ny * pts[i].hwTop);
+          }
         }
+        // Bottom edge (backward)
         for (let i = pts.length - 1; i >= 0; i--) {
-          ctx.lineTo(pts[i].x - pts[i].nx * pts[i].halfW, pts[i].y - pts[i].ny * pts[i].halfW);
+          if (i % 2 === 1 && i - 1 >= 0) {
+            const n = pts[i - 1];
+            ctx.quadraticCurveTo(
+              pts[i].x - pts[i].nx * pts[i].hwBot, pts[i].y - pts[i].ny * pts[i].hwBot,
+              n.x - n.nx * n.hwBot, n.y - n.ny * n.hwBot
+            );
+            i--;
+          } else {
+            ctx.lineTo(pts[i].x - pts[i].nx * pts[i].hwBot, pts[i].y - pts[i].ny * pts[i].hwBot);
+          }
         }
         ctx.closePath();
         ctx.fill();
 
-        // Bright inner core (narrower, white-ish glow)
-        ctx.globalAlpha = s.alpha * fadeAlpha * 0.4;
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        // Wet sheen: bright inner core offset slightly
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.35;
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
         ctx.shadowBlur = 0;
         ctx.beginPath();
-        const core = 0.25;
-        ctx.moveTo(pts[0].x + pts[0].nx * pts[0].halfW * core, pts[0].y + pts[0].ny * pts[0].halfW * core);
-        for (let i = 1; i < pts.length; i++) {
-          ctx.lineTo(pts[i].x + pts[i].nx * pts[i].halfW * core, pts[i].y + pts[i].ny * pts[i].halfW * core);
+        const coreR = 0.2;
+        for (let i = 0; i < pts.length; i++) {
+          const ox = pts[i].x + pts[i].nx * pts[i].hwTop * coreR * 0.6;
+          const oy = pts[i].y + pts[i].ny * pts[i].hwTop * coreR * 0.6;
+          if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
         }
         for (let i = pts.length - 1; i >= 0; i--) {
-          ctx.lineTo(pts[i].x - pts[i].nx * pts[i].halfW * core, pts[i].y - pts[i].ny * pts[i].halfW * core);
+          const ox = pts[i].x - pts[i].nx * pts[i].hwBot * coreR * 0.3;
+          const oy = pts[i].y - pts[i].ny * pts[i].hwBot * coreR * 0.3;
+          ctx.lineTo(ox, oy);
         }
         ctx.closePath();
         ctx.fill();
+
+        // Splatter droplets flung off the stroke tip
+        if (drawP > 0.5) {
+          const tipIdx = pts.length - 1;
+          const tip = pts[tipIdx];
+          // Tangent at tip for fling direction
+          const prev = pts[Math.max(0, tipIdx - 2)];
+          const dirX = tip.x - prev.x, dirY = tip.y - prev.y;
+          const dirLen = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+          const tdx = dirX / dirLen, tdy = dirY / dirLen;
+          const splatAlpha = s.alpha * fadeAlpha * Math.min(1, (drawP - 0.5) * 4);
+
+          for (const sp of s.splats) {
+            const cosA = Math.cos(sp.ang), sinA = Math.sin(sp.ang);
+            const fx = tdx * cosA - tdy * sinA;
+            const fy = tdx * sinA + tdy * cosA;
+            const dx = tip.x + fx * sp.dist;
+            const dy = tip.y + fy * sp.dist;
+            ctx.save();
+            ctx.globalAlpha = splatAlpha;
+            ctx.fillStyle = `rgba(${PAINT[sp.ci]},1)`;
+            ctx.shadowColor = `rgba(${PAINT[sp.ci]},0.5)`;
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.arc(dx, dy, sp.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
 
         ctx.restore();
       }
