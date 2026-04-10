@@ -539,24 +539,25 @@ const BANNER_THEMES = {
       const curv = (Math.random() - 0.5) * 180;
       const baseW = 22 + Math.random() * 38;
 
-      // Width profile: pointed → swell → neck → swell → pointed
-      const N = 18;
+      // Width profile: aggressive variation — big swells + thin necks + random spikes
+      const N = 24;
       const widths = Array.from({length: N+1}, (_, i) => {
         const t = i / N;
-        const e = t < 0.12 ? t/0.12 : t > 0.88 ? (1-t)/0.12 : 1;
+        const e = t < 0.1 ? t/0.1 : t > 0.9 ? (1-t)/0.1 : 1;
         const taper = e * e * (3 - 2*e);
-        // Stronger organic variation: deeper necks, bigger swells
-        const vary = 0.6 + 0.7 * Math.sin(t * Math.PI * 3 + idx * 2.1);
-        // Extra high-frequency noise on the width itself
-        const wNoise = 0.85 + Math.random() * 0.3;
-        return taper * vary * wNoise;
+        // Multi-frequency variation: low freq swell + high freq jaggedness
+        const lo = 0.5 + 0.6 * Math.sin(t * Math.PI * 2.5 + idx * 2.1);
+        const hi = 0.85 + 0.3 * Math.sin(t * Math.PI * 7 + idx * 4.3);
+        const spike = Math.random() > 0.8 ? 1.3 + Math.random() * 0.5 : 1; // random spikes
+        const wNoise = 0.7 + Math.random() * 0.6;
+        return taper * lo * hi * spike * wNoise;
       });
 
-      // Per-point noise for organic edges — much stronger
+      // Per-point noise for organic edges — very strong + directional
       const noise = Array.from({length: N+1}, () => ({
-        ox: (Math.random()-0.5) * baseW * 0.7,
-        oy: (Math.random()-0.5) * baseW * 0.6,
-        wMul: 0.6 + Math.random() * 0.8, // per-point width jitter
+        ox: (Math.random()-0.5) * baseW * 1.0,
+        oy: (Math.random()-0.5) * baseW * 0.8,
+        wMul: 0.4 + Math.random() * 1.2, // extreme per-point width jitter
       }));
 
       // Splatter dots — more of them, spread wider
@@ -647,7 +648,7 @@ const BANNER_THEMES = {
       let ct = t - cycleStart;
       if (ct > CYCLE) { cycleStart = t; ct = 0; splashes = initAll(); debris = initDebris(); }
 
-      const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.5;
+      const APPEAR_END = 3.0, SUCK_END = 5.5, EXPLODE_T = 5.5;
 
       // Ambient dots
       for (const d of ambDots) {
@@ -661,7 +662,7 @@ const BANNER_THEMES = {
       }
 
       // ── Liquid paint splashes ──
-      if (ct < SUCK_END + 1) {
+      if (ct < EXPLODE_T + 0.3) {
         for (const s of splashes) {
           const age = ct - s.delay;
           if (age < 0) continue;
@@ -671,7 +672,8 @@ const BANNER_THEMES = {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
             suckP = suckP * suckP * suckP;
           }
-          const alpha = ct > SUCK_END ? Math.max(0, 1-(ct-SUCK_END)/0.8) : 0.92;
+          // Stay visible through entire suck, vanish at explosion
+          const alpha = ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.3) : 0.92;
           if (alpha < 0.01) continue;
 
           const spine = buildSpine(s, drawP, suckP);
