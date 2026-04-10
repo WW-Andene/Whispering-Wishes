@@ -459,194 +459,188 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): sharp paint slashes → converge → explode
+  // 🎨 PRISMATIC (Lynae): thick liquid paint splashes → converge → explode
   prismatic: (w, h) => {
-    // Palette from Lynae's banner art: cyan, magenta, acid green, violet, pink
     const PAINT = [
-      [0,220,210],    // teal/cyan
-      [230,50,180],   // hot magenta
+      [0,220,210],    // teal
+      [230,50,180],   // magenta
       [120,255,60],   // acid green
       [160,40,255],   // violet
       [255,70,150],   // pink
-      [0,180,255],    // outlaw blue
-      [200,255,80],   // neon yellow-green
+      [0,180,255],    // blue
     ];
-    const rgb = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-    const bz = (a, b, c, d, p) => { const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d; };
+    const rgb = (c,a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    const mix = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
+    const bz = (a,b,c,d,p) => {const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d;};
 
     const CYCLE = 9;
-    const cx = w * 0.45, cy = h * 0.5;
+    const ccx = w * 0.45, ccy = h * 0.5;
 
-    // Sharp paint slash — drawn as a thick bezier stroke with round caps
-    const initSlash = (idx) => {
+    // Each splash = a bezier path drawn as layered thick strokes
+    const initSplash = (idx) => {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
-      // Can start/end anywhere, including off-screen
-      const sx = -w * 0.3 + Math.random() * w * 1.6;
-      const sy = -h * 0.2 + Math.random() * h * 1.4;
+      const dark = PAINT[ci];
+      const mid = mix(PAINT[ci], PAINT[ci2], 0.5);
+      const lite = mix(PAINT[ci2], [255,255,255], 0.35);
+
+      const sx = -w*0.2 + Math.random() * w * 1.4;
+      const sy = -h*0.15 + Math.random() * h * 1.3;
       const ang = Math.random() * Math.PI * 2;
-      const len = 80 + Math.random() * 200;
+      const len = 70 + Math.random() * 160;
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
-      const perpAng = ang + Math.PI * 0.5;
-      const curve = (Math.random() - 0.5) * 120;
+      const perp = ang + Math.PI * 0.5;
+      const curv = (Math.random() - 0.5) * 130;
+
+      // Thick width — like actual paint
+      const baseW = 20 + Math.random() * 35;
+
+      // Scattered droplets
+      const drops = Array.from({length: 5 + Math.floor(Math.random()*7)}, () => ({
+        t: Math.random(),
+        ox: (Math.random()-0.5) * 50,
+        oy: (Math.random()-0.5) * 40,
+        r: 1.5 + Math.random() * 4.5,
+        ci: Math.random()>0.5 ? ci : ci2,
+      }));
 
       return {
         sx, sy, ex, ey,
-        cp1x: sx + (ex-sx)*0.3 + Math.cos(perpAng)*curve,
-        cp1y: sy + (ey-sy)*0.3 + Math.sin(perpAng)*curve,
-        cp2x: sx + (ex-sx)*0.7 + Math.cos(perpAng)*curve*0.4,
-        cp2y: sy + (ey-sy)*0.7 + Math.sin(perpAng)*curve*0.4,
-        col: PAINT[ci], col2: PAINT[ci2],
-        lineW: 3 + Math.random() * 12, // thin to medium — not fat
-        delay: idx * 0.5 + Math.random() * 0.3,
-        // Scattered spray dots near the slash
-        dots: Array.from({ length: 4 + Math.floor(Math.random()*6) }, () => ({
-          t: Math.random(),
-          ox: (Math.random()-0.5) * 35,
-          oy: (Math.random()-0.5) * 30,
-          r: 0.8 + Math.random() * 2.5,
-          ci: Math.random() > 0.5 ? ci : ci2,
-        })),
+        cp1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
+        cp1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
+        cp2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
+        cp2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
+        dark, mid, lite, baseW, drops,
+        delay: idx * 0.6 + Math.random() * 0.3,
       };
     };
 
-    const initAll = () => {
-      const n = 4 + Math.floor(Math.random() * 3); // 4-6 slashes
-      return Array.from({ length: n }, (_, i) => initSlash(i));
-    };
-
-    const initDebris = () => Array.from({ length: 40 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      speed: 25 + Math.random() * 110,
-      r: 1 + Math.random() * 5,
-      ci: Math.floor(Math.random() * PAINT.length),
-      drag: 0.93 + Math.random() * 0.04,
+    const initAll = () => Array.from({length: 3 + Math.floor(Math.random()*2)}, (_,i) => initSplash(i));
+    const initDebris = () => Array.from({length: 40}, () => ({
+      angle: Math.random()*Math.PI*2, speed: 25+Math.random()*110,
+      r: 1.5+Math.random()*5, ci: Math.floor(Math.random()*PAINT.length),
+      drag: 0.93+Math.random()*0.04,
     }));
 
-    let slashes = initAll();
+    let splashes = initAll();
     let debris = initDebris();
     let cycleStart = -CYCLE;
 
-    // Ambient spray dots
-    const dots = Array.from({ length: 20 }, () => ({
+    // Ambient dots
+    const ambDots = Array.from({length: 15}, () => ({
       x: Math.random()*w, y: Math.random()*h,
-      r: 1 + Math.random()*2.5,
-      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.2,
-      ci: Math.floor(Math.random()*PAINT.length),
-      phase: Math.random()*Math.PI*2,
+      r: 1+Math.random()*2.5, vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.2,
+      ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
+
+    // Draw a tapered bezier stroke: multiple segments with varying width
+    const drawTaperedStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, maxW, color, alpha) => {
+      const SEG = 20;
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = rgb(color, 1);
+      ctx.globalAlpha = alpha;
+
+      for (let i = 0; i < SEG; i++) {
+        const t0 = i / SEG;
+        const t1 = (i + 1) / SEG;
+        const x0 = bz(sx,c1x,c2x,ex,t0), y0 = bz(sy,c1y,c2y,ey,t0);
+        const x1 = bz(sx,c1x,c2x,ex,t1), y1 = bz(sy,c1y,c2y,ey,t1);
+        // Taper: sin curve = pointed ends, fat middle
+        const tMid = (t0 + t1) * 0.5;
+        const envelope = Math.pow(Math.sin(tMid * Math.PI), 0.55);
+        ctx.lineWidth = maxW * envelope + 1;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+      ctx.restore();
+    };
 
     return (ctx, t) => {
       let ct = t - cycleStart;
-      if (ct > CYCLE) { cycleStart = t; ct = 0; slashes = initAll(); debris = initDebris(); }
+      if (ct > CYCLE) { cycleStart = t; ct = 0; splashes = initAll(); debris = initDebris(); }
 
       const APPEAR_END = 3.0;
       const SUCK_END = 5.0;
       const EXPLODE_T = 5.5;
 
       // ── Ambient dots ──
-      for (const d of dots) {
+      for (const d of ambDots) {
         d.x += d.vx; d.y += d.vy;
         if (d.x < -5) d.x = w+5; if (d.x > w+5) d.x = -5;
         if (d.y < -5) d.y = h+5; if (d.y > h+5) d.y = -5;
         ctx.save();
-        ctx.globalAlpha = 0.3 + 0.2*Math.sin(t*1.5+d.phase);
-        ctx.fillStyle = rgb(PAINT[d.ci], 1);
-        ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.3+0.2*Math.sin(t*1.5+d.phase);
+        ctx.fillStyle = rgb(PAINT[d.ci],1);
+        ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
         ctx.restore();
       }
 
-      // ── Paint slashes ──
+      // ── Liquid paint splashes ──
       if (ct < SUCK_END + 1) {
-        for (const s of slashes) {
+        for (const s of splashes) {
           const age = ct - s.delay;
           if (age < 0) continue;
 
-          // Draw progress: snap in fast (0.12s) then stay
-          const drawP = Math.min(1, age / 0.12);
-          const eased = 1 - Math.pow(1 - drawP, 3);
-
-          // Suck toward center
+          const drawP = Math.min(1, age / 0.15);
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
             suckP = suckP * suckP * suckP;
           }
-          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 0.8) : 0.92;
+          const alpha = ct > SUCK_END ? Math.max(0, 1-(ct-SUCK_END)/0.8) : 0.92;
           if (alpha < 0.01) continue;
 
-          // Compute start/end pulled toward center during suck
+          // Pull all points toward center during suck
           const pull = suckP;
-          const asx = s.sx + (cx - s.sx) * pull;
-          const asy = s.sy + (cy - s.sy) * pull;
-          const aex = s.sx + (s.ex - s.sx) * eased + (cx - (s.sx + (s.ex-s.sx)*eased)) * pull;
-          const aey = s.sy + (s.ey - s.sy) * eased + (cy - (s.sy + (s.ey-s.sy)*eased)) * pull;
-          const ac1x = s.cp1x + (cx - s.cp1x) * pull;
-          const ac1y = s.cp1y + (cy - s.cp1y) * pull;
-          const ac2x = s.cp2x + (cx - s.cp2x) * pull;
-          const ac2y = s.cp2y + (cy - s.cp2y) * pull;
+          const asx = s.sx+(ccx-s.sx)*pull, asy = s.sy+(ccy-s.sy)*pull;
+          const aex = s.sx+(s.ex-s.sx)*drawP+(ccx-(s.sx+(s.ex-s.sx)*drawP))*pull;
+          const aey = s.sy+(s.ey-s.sy)*drawP+(ccy-(s.sy+(s.ey-s.sy)*drawP))*pull;
+          const ac1x = s.cp1x+(ccx-s.cp1x)*pull, ac1y = s.cp1y+(ccy-s.cp1y)*pull;
+          const ac2x = s.cp2x+(ccx-s.cp2x)*pull, ac2y = s.cp2y+(ccy-s.cp2y)*pull;
+          const bw = s.baseW * (1 - suckP*0.7);
 
-          // Width narrows during suck
-          const lw = s.lineW * (1 - suckP * 0.8);
+          // Layer 1: wide dark shadow/depth stroke
+          drawTaperedStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw*1.15, s.dark, alpha*0.7);
+          // Layer 2: main body mid-tone
+          drawTaperedStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw, s.mid, alpha*0.9);
+          // Layer 3: narrow bright highlight (offset slightly)
+          drawTaperedStroke(ctx, asx+1.5,asy-1,ac1x+1.5,ac1y-1,ac2x+1.5,ac2y-1,aex+1.5,aey-1, bw*0.4, s.lite, alpha*0.5);
 
-          ctx.save();
-          ctx.globalAlpha = alpha;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.lineWidth = lw;
-
-          // Main stroke
-          ctx.strokeStyle = rgb(s.col, 1);
-          ctx.shadowColor = rgb(s.col, 0.5);
-          ctx.shadowBlur = lw * 1.5;
-          ctx.beginPath();
-          ctx.moveTo(asx, asy);
-          ctx.bezierCurveTo(ac1x, ac1y, ac2x, ac2y, aex, aey);
-          ctx.stroke();
-
-          // Second color overlay — thinner, offset slightly
-          ctx.globalAlpha = alpha * 0.6;
-          ctx.lineWidth = lw * 0.5;
-          ctx.strokeStyle = rgb(s.col2, 1);
-          ctx.shadowColor = rgb(s.col2, 0.4);
-          ctx.shadowBlur = lw;
-          ctx.beginPath();
-          ctx.moveTo(asx + 2, asy + 1);
-          ctx.bezierCurveTo(ac1x + 2, ac1y + 1, ac2x + 2, ac2y + 1, aex + 2, aey + 1);
-          ctx.stroke();
-
-          // Spray dots scattered around the slash
-          ctx.shadowBlur = 2;
-          for (const dot of s.dots) {
-            if (dot.t > eased) continue;
-            let dx = bz(asx, ac1x, ac2x, aex, dot.t) + dot.ox * (1 - suckP*0.7);
-            let dy = bz(asy, ac1y, ac2y, aey, dot.t) + dot.oy * (1 - suckP*0.7);
-            ctx.globalAlpha = alpha * 0.8;
-            ctx.fillStyle = rgb(PAINT[dot.ci], 1);
-            ctx.beginPath(); ctx.arc(dx, dy, dot.r, 0, Math.PI*2); ctx.fill();
+          // Droplets
+          for (const dr of s.drops) {
+            if (dr.t > drawP) continue;
+            let dx = bz(asx,ac1x,ac2x,aex,dr.t) + dr.ox*(1-suckP*0.7);
+            let dy = bz(asy,ac1y,ac2y,aey,dr.t) + dr.oy*(1-suckP*0.7);
+            ctx.save();
+            ctx.globalAlpha = alpha*0.85;
+            ctx.fillStyle = rgb(PAINT[dr.ci],1);
+            ctx.shadowColor = rgb(PAINT[dr.ci],0.3);
+            ctx.shadowBlur = 3;
+            ctx.beginPath(); ctx.arc(dx,dy,dr.r*(1-suckP*0.4),0,Math.PI*2); ctx.fill();
+            ctx.restore();
           }
-
-          ctx.restore();
         }
       }
 
       // ── Mix swirl ──
-      if (ct > APPEAR_END + 1.5 && ct < EXPLODE_T + 0.4) {
-        const mP = Math.min(1, (ct - APPEAR_END - 1.5) / 1.5);
-        const mA = ct < EXPLODE_T ? mP * 0.5 : Math.max(0, 0.5 - (ct-EXPLODE_T)*2.5);
+      if (ct > APPEAR_END+1.5 && ct < EXPLODE_T+0.4) {
+        const mP = Math.min(1,(ct-APPEAR_END-1.5)/1.5);
+        const mA = ct<EXPLODE_T ? mP*0.5 : Math.max(0,0.5-(ct-EXPLODE_T)*2.5);
         if (mA > 0.01) {
-          const sw = ct * 6, mr = 8 + mP * 18;
-          for (let i = 0; i < 5; i++) {
-            const a = sw + i*Math.PI*0.4;
-            const px = cx + Math.cos(a) * mr * (0.3 + i*0.14);
-            const py = cy + Math.sin(a) * mr * (0.3 + i*0.14);
-            ctx.save(); ctx.globalAlpha = mA;
-            const g = ctx.createRadialGradient(px, py, 0, px, py, mr*0.35);
-            g.addColorStop(0, rgb(PAINT[(i*2)%7], 0.8));
-            g.addColorStop(1, rgb(PAINT[(i*2)%7], 0));
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(px, py, mr*0.35, 0, Math.PI*2); ctx.fill();
+          const sw=ct*6, mr=8+mP*18;
+          for (let i=0;i<5;i++){
+            const a=sw+i*Math.PI*0.4;
+            const px=ccx+Math.cos(a)*mr*(0.3+i*0.14);
+            const py=ccy+Math.sin(a)*mr*(0.3+i*0.14);
+            ctx.save(); ctx.globalAlpha=mA;
+            const g=ctx.createRadialGradient(px,py,0,px,py,mr*0.35);
+            g.addColorStop(0,rgb(PAINT[i%6],0.8)); g.addColorStop(1,rgb(PAINT[i%6],0));
+            ctx.fillStyle=g;
+            ctx.beginPath(); ctx.arc(px,py,mr*0.35,0,Math.PI*2); ctx.fill();
             ctx.restore();
           }
         }
@@ -654,33 +648,29 @@ const BANNER_THEMES = {
 
       // ── Explosion ──
       if (ct > EXPLODE_T) {
-        const ea = ct - EXPLODE_T;
-        if (ea < 0.12) {
-          ctx.save(); ctx.globalAlpha = 0.4 * (1 - ea/0.12);
-          const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w,h)*0.35);
-          fg.addColorStop(0, 'rgba(255,255,255,0.9)');
-          fg.addColorStop(1, 'rgba(255,255,255,0)');
-          ctx.fillStyle = fg;
-          ctx.beginPath(); ctx.arc(cx, cy, Math.max(w,h)*0.35, 0, Math.PI*2); ctx.fill();
+        const ea=ct-EXPLODE_T;
+        if (ea<0.12){
+          ctx.save(); ctx.globalAlpha=0.4*(1-ea/0.12);
+          const fg=ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,Math.max(w,h)*0.35);
+          fg.addColorStop(0,'rgba(255,255,255,0.9)'); fg.addColorStop(1,'rgba(255,255,255,0)');
+          ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(ccx,ccy,Math.max(w,h)*0.35,0,Math.PI*2); ctx.fill();
           ctx.restore();
         }
-        const da = ea < 0.15 ? ea/0.15 : Math.max(0, 1-(ea-0.15)/3);
-        if (da > 0.01) {
-          for (const d of debris) {
-            const dist = d.speed * ea * Math.pow(d.drag, ea*30);
-            const dx = cx + Math.cos(d.angle)*dist;
-            const dy = cy + Math.sin(d.angle)*dist + ea*ea*10;
-            ctx.save(); ctx.globalAlpha = da * 0.95;
-            ctx.fillStyle = rgb(PAINT[d.ci], 1);
-            ctx.shadowColor = rgb(PAINT[d.ci], 0.4);
-            ctx.shadowBlur = 3;
-            ctx.beginPath(); ctx.arc(dx, dy, d.r, 0, Math.PI*2); ctx.fill();
+        const da=ea<0.15?ea/0.15:Math.max(0,1-(ea-0.15)/3);
+        if (da>0.01){
+          for (const d of debris){
+            const dist=d.speed*ea*Math.pow(d.drag,ea*30);
+            const dx=ccx+Math.cos(d.angle)*dist, dy=ccy+Math.sin(d.angle)*dist+ea*ea*10;
+            ctx.save(); ctx.globalAlpha=da*0.95;
+            ctx.fillStyle=rgb(PAINT[d.ci],1); ctx.shadowColor=rgb(PAINT[d.ci],0.4); ctx.shadowBlur=3;
+            ctx.beginPath(); ctx.arc(dx,dy,d.r,0,Math.PI*2); ctx.fill();
             ctx.restore();
           }
         }
       }
     };
   },
+
 
   // ⏰ RADIANCE (Zani): glitching timestamps → massive ornate clock with gears → explosion
   radiance: (w, h) => {
