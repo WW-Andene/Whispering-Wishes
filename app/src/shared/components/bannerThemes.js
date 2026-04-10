@@ -496,6 +496,22 @@ const BANNER_THEMES = {
       // Thick width — like actual paint
       const baseW = 20 + Math.random() * 35;
 
+      // Pre-computed noise per segment for organic edges (deterministic, no flicker)
+      const SEG = 24;
+      const noise = Array.from({length: SEG + 1}, () => ({
+        ox: (Math.random() - 0.5) * baseW * 0.4,  // position jitter perpendicular
+        oy: (Math.random() - 0.5) * baseW * 0.3,
+        wMul: 0.7 + Math.random() * 0.6,           // width variation (0.7-1.3x)
+      }));
+
+      // Edge splatter — tiny dots sprayed along the edges
+      const splatter = Array.from({length: 10 + Math.floor(Math.random()*12)}, () => ({
+        t: Math.random(),
+        side: Math.random() > 0.5 ? 1 : -1,
+        dist: 0.5 + Math.random() * 0.6, // as fraction of local width
+        r: 0.5 + Math.random() * 2.5,
+      }));
+
       // Scattered droplets
       const drops = Array.from({length: 5 + Math.floor(Math.random()*7)}, () => ({
         t: Math.random(),
@@ -511,7 +527,7 @@ const BANNER_THEMES = {
         cp1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
         cp2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         cp2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
-        dark, mid, lite, baseW, drops,
+        dark, mid, lite, baseW, drops, noise, splatter, SEG,
         delay: idx * 0.6 + Math.random() * 0.3,
       };
     };
@@ -534,23 +550,28 @@ const BANNER_THEMES = {
       ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
 
-    // Draw a tapered bezier stroke: multiple segments with varying width
-    const drawTaperedStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, maxW, color, alpha) => {
-      const SEG = 20;
+    // Draw a tapered noisy bezier stroke with organic edges
+    const drawNoisyStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, maxW, color, alpha, noise, nSeg) => {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.strokeStyle = rgb(color, 1);
       ctx.globalAlpha = alpha;
 
-      for (let i = 0; i < SEG; i++) {
-        const t0 = i / SEG;
-        const t1 = (i + 1) / SEG;
-        const x0 = bz(sx,c1x,c2x,ex,t0), y0 = bz(sy,c1y,c2y,ey,t0);
-        const x1 = bz(sx,c1x,c2x,ex,t1), y1 = bz(sy,c1y,c2y,ey,t1);
-        // Taper: sin curve = pointed ends, fat middle
+      for (let i = 0; i < nSeg; i++) {
+        const t0 = i / nSeg;
+        const t1 = (i + 1) / nSeg;
+        const n0 = noise[i], n1 = noise[i + 1];
+        // Base positions on bezier
+        let x0 = bz(sx,c1x,c2x,ex,t0), y0 = bz(sy,c1y,c2y,ey,t0);
+        let x1 = bz(sx,c1x,c2x,ex,t1), y1 = bz(sy,c1y,c2y,ey,t1);
+        // Add noise offset (perpendicular jitter)
+        x0 += n0.ox; y0 += n0.oy;
+        x1 += n1.ox; y1 += n1.oy;
+        // Taper with noise on width
         const tMid = (t0 + t1) * 0.5;
         const envelope = Math.pow(Math.sin(tMid * Math.PI), 0.55);
-        ctx.lineWidth = maxW * envelope + 1;
+        const noiseMul = (n0.wMul + n1.wMul) * 0.5;
+        ctx.lineWidth = Math.max(1, maxW * envelope * noiseMul);
         ctx.beginPath();
         ctx.moveTo(x0, y0);
         ctx.lineTo(x1, y1);
@@ -603,12 +624,34 @@ const BANNER_THEMES = {
           const ac2x = s.cp2x+(ccx-s.cp2x)*pull, ac2y = s.cp2y+(ccy-s.cp2y)*pull;
           const bw = s.baseW * (1 - suckP*0.7);
 
-          // Layer 1: wide dark shadow/depth stroke
-          drawTaperedStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw*1.15, s.dark, alpha*0.7);
-          // Layer 2: main body mid-tone
-          drawTaperedStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw, s.mid, alpha*0.9);
-          // Layer 3: narrow bright highlight (offset slightly)
-          drawTaperedStroke(ctx, asx+1.5,asy-1,ac1x+1.5,ac1y-1,ac2x+1.5,ac2y-1,aex+1.5,aey-1, bw*0.4, s.lite, alpha*0.5);
+          // Layer 1: wide dark shadow/depth
+          drawNoisyStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw*1.15, s.dark, alpha*0.7, s.noise, s.SEG);
+          // Layer 2: main body
+          drawNoisyStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw, s.mid, alpha*0.9, s.noise, s.SEG);
+          // Layer 3: bright highlight (offset)
+          drawNoisyStroke(ctx, asx+1.5,asy-1,ac1x+1.5,ac1y-1,ac2x+1.5,ac2y-1,aex+1.5,aey-1, bw*0.4, s.lite, alpha*0.5, s.noise, s.SEG);
+
+          // Edge splatter along the stroke
+          ctx.save();
+          for (const sp of s.splatter) {
+            if (sp.t > drawP) continue;
+            const bx = bz(asx,ac1x,ac2x,aex,sp.t);
+            const by = bz(asy,ac1y,ac2y,aey,sp.t);
+            const tEnv = Math.pow(Math.sin(sp.t * Math.PI), 0.55);
+            const localW = bw * tEnv;
+            // Tangent perpendicular for offset direction
+            const tp = Math.min(1, sp.t + 0.02);
+            const tx = bz(asx,ac1x,ac2x,aex,tp) - bx;
+            const ty = bz(asy,ac1y,ac2y,aey,tp) - by;
+            const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+            const nx = -ty/tl * sp.side, ny = tx/tl * sp.side;
+            const dx = bx + nx * localW * sp.dist;
+            const dy = by + ny * localW * sp.dist;
+            ctx.globalAlpha = alpha * 0.7;
+            ctx.fillStyle = rgb(s.mid, 1);
+            ctx.beginPath(); ctx.arc(dx, dy, sp.r * (1-suckP*0.5), 0, Math.PI*2); ctx.fill();
+          }
+          ctx.restore();
 
           // Droplets
           for (const dr of s.drops) {
