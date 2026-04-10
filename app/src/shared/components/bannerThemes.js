@@ -459,98 +459,252 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): graffiti paint drips, neon glow tubes, pixel blocks, spray mist
+  // 🎨 PRISMATIC (Lynae): swooshing paint strokes, splashes, dripping color
   prismatic: (w, h) => {
-    const NEON = ['255,50,80', '255,140,0', '240,220,0', '0,230,120', '0,160,255', '200,60,255'];
-    // Paint drips — streaks running down from random points
-    const drips = Array.from({ length: 10 }, () => ({
-      x: Math.random() * w, y: -Math.random() * h * 0.5,
-      speed: 0.3 + Math.random() * 0.5, width: 2 + Math.random() * 4,
-      len: 20 + Math.random() * 60, ci: Math.floor(Math.random() * NEON.length),
-      alpha: 0.3 + Math.random() * 0.35,
-    }));
-    // Pixel blocks — small squares appearing/dissolving like a glitchy screen
-    const pixels = Array.from({ length: 25 }, () => ({
+    const PAINT = [
+      '255,45,85',   // hot pink
+      '255,130,0',   // orange
+      '250,220,20',  // yellow
+      '0,210,120',   // green
+      '30,150,255',  // blue
+      '180,50,255',  // violet
+      '0,220,220',   // cyan
+      '255,80,180',  // magenta
+    ];
+    const STROKE_CYCLE = 12; // full cycle duration
+
+    // ── Brush strokes: curved swooshes that paint themselves across the canvas ──
+    const makeStroke = () => {
+      const ci = Math.floor(Math.random() * PAINT.length);
+      const startX = Math.random() * w;
+      const startY = Math.random() * h;
+      // Bezier control points for a sweeping arc
+      const sweep = (Math.random() - 0.5) * w * 0.9;
+      const rise = (Math.random() - 0.5) * h * 0.7;
+      const cp1x = startX + sweep * 0.3 + (Math.random() - 0.5) * 40;
+      const cp1y = startY + rise * 0.3 + (Math.random() - 0.5) * 30;
+      const cp2x = startX + sweep * 0.7 + (Math.random() - 0.5) * 40;
+      const cp2y = startY + rise * 0.7 + (Math.random() - 0.5) * 30;
+      const endX = startX + sweep;
+      const endY = startY + rise;
+      return {
+        sx: startX, sy: startY, cp1x, cp1y, cp2x, cp2y, ex: endX, ey: endY,
+        ci, maxWidth: 4 + Math.random() * 14, // brush thickness varies
+        delay: Math.random() * STROKE_CYCLE,   // staggered start
+        drawDur: 0.5 + Math.random() * 0.8,   // how long to paint
+        fadeDur: 2.5 + Math.random() * 2,      // how long it lingers
+        alpha: 0.25 + Math.random() * 0.3,
+      };
+    };
+    const strokes = Array.from({ length: 8 }, makeStroke);
+
+    // ── Splashes: radial bursts of droplets at random positions ──
+    const makeSplash = () => {
+      const ci = Math.floor(Math.random() * PAINT.length);
+      const cx = Math.random() * w;
+      const cy = Math.random() * h;
+      const count = 6 + Math.floor(Math.random() * 8);
+      const drops = Array.from({ length: count }, () => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 8 + Math.random() * 45;
+        const size = 1.5 + Math.random() * 4;
+        return { angle, dist, size };
+      });
+      return {
+        cx, cy, ci, drops,
+        delay: Math.random() * STROKE_CYCLE,
+        popDur: 0.15,      // burst out
+        holdDur: 1.5 + Math.random() * 2,
+        fadeDur: 1.0 + Math.random() * 1,
+        alpha: 0.35 + Math.random() * 0.25,
+        splashR: 3 + Math.random() * 5, // central blob
+      };
+    };
+    const splashes = Array.from({ length: 6 }, makeSplash);
+
+    // ── Drips: slow paint running down from splash/stroke areas ──
+    const makeDrip = () => ({
+      x: Math.random() * w,
+      y: -10 - Math.random() * h * 0.3,
+      speed: 0.15 + Math.random() * 0.35,
+      width: 1.5 + Math.random() * 3,
+      len: 15 + Math.random() * 50,
+      ci: Math.floor(Math.random() * PAINT.length),
+      alpha: 0.15 + Math.random() * 0.2,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleAmp: 0.3 + Math.random() * 0.6,
+    });
+    const drips = Array.from({ length: 12 }, makeDrip);
+
+    // ── Spray mist: soft airbrush clouds ──
+    const mists = Array.from({ length: 4 }, () => ({
       x: Math.random() * w, y: Math.random() * h,
-      size: 3 + Math.random() * 6, phase: Math.random() * 10,
-      lifeSpeed: 1.5 + Math.random() * 3, ci: Math.floor(Math.random() * NEON.length),
-    }));
-    // Neon tube segments — lines that "draw" themselves across the canvas
-    const tubes = Array.from({ length: 4 }, () => ({
-      x1: Math.random() * w, y1: Math.random() * h,
-      angle: Math.random() * Math.PI * 2, len: 40 + Math.random() * 80,
-      progress: Math.random(), speed: 0.3 + Math.random() * 0.4,
-      ci: Math.floor(Math.random() * NEON.length), phase: Math.random() * 10,
-    }));
-    // Spray mist — fuzzy cloud drifting
-    const sprays = Array.from({ length: 5 }, () => ({
-      x: Math.random() * w, y: h * 0.3 + Math.random() * h * 0.5,
-      size: 25 + Math.random() * 40, vx: (Math.random() - 0.5) * 0.3,
-      ci: Math.floor(Math.random() * NEON.length), alpha: 0.04 + Math.random() * 0.04,
+      r: 30 + Math.random() * 50,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.1,
+      ci: Math.floor(Math.random() * PAINT.length),
+      alpha: 0.03 + Math.random() * 0.03,
       phase: Math.random() * Math.PI * 2,
     }));
+
+    // Helper: evaluate cubic bezier at parameter t (0-1)
+    const bezAt = (a, b, c, d, t) => {
+      const u = 1 - t;
+      return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d;
+    };
+
     return (ctx, t) => {
-      // Spray mist clouds
-      for (const s of sprays) {
-        s.x += s.vx; if (s.x < -s.size) s.x = w + s.size; if (s.x > w + s.size) s.x = -s.size;
+      // ── Mist background ──
+      for (const m of mists) {
+        m.x += m.vx; m.y += m.vy;
+        if (m.x < -m.r) m.x = w + m.r;
+        if (m.x > w + m.r) m.x = -m.r;
+        if (m.y < -m.r) m.y = h + m.r;
+        if (m.y > h + m.r) m.y = -m.r;
+        const a = m.alpha * (0.6 + Math.sin(t * 0.4 + m.phase) * 0.4);
         ctx.save();
-        ctx.globalAlpha = s.alpha * (0.7 + Math.sin(t * 0.3 + s.phase) * 0.3);
-        const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size);
-        g.addColorStop(0, `rgba(${NEON[s.ci]},0.4)`);
-        g.addColorStop(1, `rgba(${NEON[s.ci]},0)`);
+        ctx.globalAlpha = a;
+        const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r);
+        g.addColorStop(0, `rgba(${PAINT[m.ci]},0.5)`);
+        g.addColorStop(1, `rgba(${PAINT[m.ci]},0)`);
         ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
-      // Paint drips running down
+
+      // ── Brush strokes ──
+      for (const s of strokes) {
+        const elapsed = (t - s.delay + STROKE_CYCLE * 10) % STROKE_CYCLE;
+        const totalLife = s.drawDur + s.fadeDur;
+        if (elapsed > totalLife) {
+          // Reset this stroke
+          if (elapsed > totalLife + 0.5) {
+            const ns = makeStroke();
+            Object.assign(s, ns);
+            s.delay = t + Math.random() * 2;
+          }
+          continue;
+        }
+
+        const drawProgress = Math.min(1, elapsed / s.drawDur);
+        const fadeProgress = elapsed > s.drawDur ? (elapsed - s.drawDur) / s.fadeDur : 0;
+        const alpha = s.alpha * (1 - fadeProgress);
+        if (alpha < 0.01) continue;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = `rgba(${PAINT[s.ci]},1)`;
+        ctx.shadowColor = `rgba(${PAINT[s.ci]},0.6)`;
+        ctx.shadowBlur = 10;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Draw the stroke progressively using small segments
+        const steps = Math.floor(drawProgress * 30);
+        if (steps < 1) { ctx.restore(); continue; }
+
+        ctx.beginPath();
+        ctx.moveTo(s.sx, s.sy);
+        for (let i = 1; i <= steps; i++) {
+          const p = (i / 30) * drawProgress;
+          const x = bezAt(s.sx, s.cp1x, s.cp2x, s.ex, p);
+          const y = bezAt(s.sy, s.cp1y, s.cp2y, s.ey, p);
+          ctx.lineTo(x, y);
+        }
+        // Brush pressure: thick in middle, thin at edges
+        const midT = drawProgress * 0.5;
+        const pressure = 0.4 + 0.6 * Math.sin(midT * Math.PI);
+        ctx.lineWidth = s.maxWidth * pressure;
+        ctx.stroke();
+
+        // Paint blob at the brush tip
+        if (drawProgress < 0.98) {
+          const tipX = bezAt(s.sx, s.cp1x, s.cp2x, s.ex, drawProgress);
+          const tipY = bezAt(s.sy, s.cp1y, s.cp2y, s.ey, drawProgress);
+          ctx.fillStyle = `rgba(${PAINT[s.ci]},0.8)`;
+          ctx.beginPath();
+          ctx.arc(tipX, tipY, s.maxWidth * 0.5 * pressure, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // ── Splashes ──
+      for (const sp of splashes) {
+        const elapsed = (t - sp.delay + STROKE_CYCLE * 10) % STROKE_CYCLE;
+        const totalLife = sp.popDur + sp.holdDur + sp.fadeDur;
+        if (elapsed > totalLife) {
+          if (elapsed > totalLife + 1) {
+            const ns = makeSplash();
+            Object.assign(sp, ns);
+            sp.delay = t + Math.random() * 3;
+          }
+          continue;
+        }
+
+        const popP = Math.min(1, elapsed / sp.popDur);
+        const fadeP = elapsed > sp.popDur + sp.holdDur
+          ? (elapsed - sp.popDur - sp.holdDur) / sp.fadeDur : 0;
+        // Elastic pop-out easing
+        const elastic = popP < 1
+          ? 1 - Math.pow(1 - popP, 3) * Math.cos(popP * Math.PI * 2) * 0.3 - (1 - popP) * 0.7
+          : 1;
+        const spread = Math.min(1, elastic);
+        const alpha = sp.alpha * (1 - fadeP);
+        if (alpha < 0.01) continue;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = `rgba(${PAINT[sp.ci]},1)`;
+        ctx.shadowColor = `rgba(${PAINT[sp.ci]},0.5)`;
+        ctx.shadowBlur = 8;
+
+        // Central blob
+        ctx.beginPath();
+        ctx.arc(sp.cx, sp.cy, sp.splashR * spread, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Scattered droplets
+        for (const d of sp.drops) {
+          const dx = sp.cx + Math.cos(d.angle) * d.dist * spread;
+          const dy = sp.cy + Math.sin(d.angle) * d.dist * spread;
+          ctx.beginPath();
+          ctx.arc(dx, dy, d.size * spread, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // ── Drips ──
       for (const d of drips) {
         d.y += d.speed;
-        if (d.y > h + d.len) { d.y = -d.len - Math.random() * h * 0.3; d.x = Math.random() * w; d.ci = Math.floor(Math.random() * NEON.length); }
+        d.wobble += 0.02;
+        if (d.y > h + d.len + 10) {
+          Object.assign(d, makeDrip());
+          d.y = -d.len - Math.random() * h * 0.2;
+        }
+        const wx = Math.sin(d.wobble) * d.wobbleAmp;
         ctx.save();
         ctx.globalAlpha = d.alpha;
-        const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.len);
-        g.addColorStop(0, `rgba(${NEON[d.ci]},0)`);
-        g.addColorStop(0.3, `rgba(${NEON[d.ci]},0.9)`);
-        g.addColorStop(1, `rgba(${NEON[d.ci]},0.6)`);
+        // Tapered drip shape using bezier
+        const top = d.y;
+        const bot = d.y + d.len;
+        const g = ctx.createLinearGradient(d.x, top, d.x, bot);
+        g.addColorStop(0, `rgba(${PAINT[d.ci]},0.1)`);
+        g.addColorStop(0.2, `rgba(${PAINT[d.ci]},0.8)`);
+        g.addColorStop(0.8, `rgba(${PAINT[d.ci]},0.9)`);
+        g.addColorStop(1, `rgba(${PAINT[d.ci]},0.5)`);
         ctx.fillStyle = g;
-        ctx.shadowColor = `rgba(${NEON[d.ci]},0.6)`;
-        ctx.shadowBlur = 6;
-        // Drip shape: thin rect + round blob at bottom
-        ctx.fillRect(d.x - d.width / 2, d.y, d.width, d.len * 0.85);
-        ctx.beginPath(); ctx.arc(d.x, d.y + d.len, d.width * 0.8, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
-      }
-      // Pixel blocks — flash in/out
-      for (const p of pixels) {
-        p.phase += 0.016 * p.lifeSpeed;
-        const cycle = p.phase % 4;
-        const a = cycle < 0.4 ? cycle / 0.4 : cycle < 1.2 ? 1 : cycle < 1.6 ? (1.6 - cycle) / 0.4 : 0;
-        if (a < 0.02) { if (cycle > 3.5) { p.x = Math.random() * w; p.y = Math.random() * h; p.ci = Math.floor(Math.random() * NEON.length); } continue; }
-        ctx.save();
-        ctx.globalAlpha = a * 0.7;
-        ctx.fillStyle = `rgba(${NEON[p.ci]},1)`;
-        ctx.shadowColor = `rgba(${NEON[p.ci]},0.8)`;
-        ctx.shadowBlur = 8;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-        ctx.restore();
-      }
-      // Neon tube lines drawing themselves
-      for (const tb of tubes) {
-        tb.phase += 0.016 * tb.speed;
-        const cycle = tb.phase % 5;
-        const prog = Math.min(1, cycle / 1.5);
-        const fade = cycle > 3 ? (5 - cycle) / 2 : 1;
-        if (fade < 0.02) { if (cycle > 4.8) { tb.x1 = Math.random() * w; tb.y1 = Math.random() * h; tb.angle = Math.random() * Math.PI * 2; tb.ci = Math.floor(Math.random() * NEON.length); } continue; }
-        const x2 = tb.x1 + Math.cos(tb.angle) * tb.len * prog;
-        const y2 = tb.y1 + Math.sin(tb.angle) * tb.len * prog;
-        ctx.save();
-        ctx.globalAlpha = fade * 0.55;
-        ctx.strokeStyle = `rgba(${NEON[tb.ci]},1)`;
-        ctx.shadowColor = `rgba(${NEON[tb.ci]},0.9)`;
-        ctx.shadowBlur = 12;
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(tb.x1, tb.y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.shadowColor = `rgba(${PAINT[d.ci]},0.4)`;
+        ctx.shadowBlur = 4;
+        // Tapered body
+        ctx.beginPath();
+        ctx.moveTo(d.x - d.width * 0.3 + wx, top);
+        ctx.lineTo(d.x + d.width * 0.3 + wx, top);
+        ctx.quadraticCurveTo(d.x + d.width * 0.5 + wx, (top + bot) * 0.5, d.x + d.width * 0.15 + wx, bot - d.width);
+        ctx.arc(d.x + wx, bot - d.width, d.width * 0.6, 0, Math.PI, false); // round bottom
+        ctx.quadraticCurveTo(d.x - d.width * 0.5 + wx, (top + bot) * 0.5, d.x - d.width * 0.3 + wx, top);
+        ctx.fill();
         ctx.restore();
       }
     };
