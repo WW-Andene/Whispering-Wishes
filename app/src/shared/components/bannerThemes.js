@@ -790,9 +790,9 @@ const BANNER_THEMES = {
           ctx.stroke();
           ctx.restore();
         };
-        // Render gears — spin fast on appear, decelerate before explosion
-        // cT goes 0→2.5. Speed multiplier: starts at 5x, eases to 0.3x
-        const gearT = stopped ? 1.5 : cT; // freeze rotation at 1.5s
+        // Render gears — full speed then dead stop at 1.5s
+        const stopped = cT >= 1.5;
+        const gearT = stopped ? 1.5 : cT;
         for (const g of gears) {
           const rot = g.speed * gearT * 5;
           drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, rot, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
@@ -826,7 +826,6 @@ const BANNER_THEMES = {
         }
         ctx.restore();
         // Hands — full constant speed, then instant dead stop at 1.5s
-        const stopped = cT >= 1.5;
         const spinOffset = stopped ? 0 : cT * Math.PI * 6;
         const minA = Math.PI + (stopped ? 0 : spinOffset * 1.6);
         const hourA = (Math.PI + Math.PI / 12) + (stopped ? 0 : spinOffset * 0.5);
