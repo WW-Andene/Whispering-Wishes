@@ -622,77 +622,58 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Draw a thick brush stroke with internal texture + rough edges + splatter
+    // Brush stroke: thick body + 6 medium bristle marks + heavy splatter
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, strokeData) => {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-
-      // Layer 1: Main thick body
-      ctx.globalAlpha = alpha * 0.85;
       ctx.strokeStyle = rgb(color, 1);
+
+      // Main thick body
+      ctx.globalAlpha = alpha * 0.9;
       ctx.lineWidth = baseW;
-      ctx.shadowColor = rgb(color, 0.25);
-      ctx.shadowBlur = baseW * 0.3;
+      ctx.shadowColor = rgb(color, 0.2);
+      ctx.shadowBlur = baseW * 0.25;
       ctx.beginPath();
       ctx.moveTo(p1[0], p1[1]);
       ctx.bezierCurveTo(p2[0], p2[1], p3[0], p3[1], p4[0], p4[1]);
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // Layer 2: 4-5 offset strokes for internal texture (pre-computed offsets)
-      for (let i = 0; i < strokeData.bristles.length && i < 5; i++) {
+      // 6 medium bristle marks — thick enough to be visible, not thin scribbles
+      for (let i = 0; i < 6 && i < strokeData.bristles.length; i++) {
         const b = strokeData.bristles[i];
-        const off = b.offset * baseW * 0.35;
-        ctx.globalAlpha = alpha * (0.4 + b.opacity * 0.3);
-        ctx.lineWidth = baseW * (0.15 + b.lw * 0.1);
-        ctx.strokeStyle = rgb(color, 0.9);
+        const off = b.offset * baseW * 0.45;
+        ctx.globalAlpha = alpha * 0.7;
+        ctx.lineWidth = 3 + b.lw * 2; // 3-7px — visible but not dominant
         ctx.beginPath();
-        ctx.moveTo(p1[0] + off, p1[1] + b.jitters[0] * 2);
+        ctx.moveTo(p1[0] + off, p1[1] + b.jitters[0] * 3);
         ctx.bezierCurveTo(
-          p2[0] + off * 0.8, p2[1] + b.jitters[1] * 2,
-          p3[0] + off * 0.6, p3[1] + b.jitters[2] * 2,
-          p4[0] + off * 0.3, p4[1] + b.jitters[3] * 2
+          p2[0] + off * 0.7 + b.jitters[1] * 4, p2[1] + b.jitters[2] * 4,
+          p3[0] + off * 0.4 + b.jitters[3] * 4, p3[1] + b.jitters[4] * 4,
+          p4[0] + off * 0.2 + b.jitters[5] * 3, p4[1] + b.jitters[6] * 3
         );
         ctx.stroke();
       }
 
-      // Layer 3: Rough edge strokes (thinner, at the borders)
-      for (let i = 0; i < 3; i++) {
-        const b = strokeData.bristles[5 + i] || strokeData.bristles[i];
-        const side = i === 0 ? 1 : i === 1 ? -1 : 0.5;
-        const edgeOff = side * baseW * 0.5;
-        ctx.globalAlpha = alpha * 0.5;
-        ctx.lineWidth = baseW * 0.12;
-        ctx.strokeStyle = rgb(color, 0.7);
-        ctx.beginPath();
-        ctx.moveTo(p1[0] + edgeOff + b.jitters[0] * 3, p1[1] + b.jitters[1] * 3);
-        ctx.bezierCurveTo(
-          p2[0] + edgeOff + b.jitters[2] * 4, p2[1] + b.jitters[3] * 4,
-          p3[0] + edgeOff + b.jitters[4] * 4, p3[1] + b.jitters[5] * 4,
-          p4[0] + edgeOff * 0.5 + b.jitters[6] * 3, p4[1] + b.jitters[7] * 3
-        );
-        ctx.stroke();
-      }
-
-      // Splatter dots — pre-computed
+      // Heavy splatter — lots of dots, varied sizes
       ctx.fillStyle = rgb(color, 1);
       for (const sp of strokeData.splatters) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sp.t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],sp.t);
         ctx.globalAlpha = alpha * sp.a;
         ctx.beginPath();
-        ctx.arc(x + sp.ox * baseW, y + sp.oy * baseW, sp.r, 0, Math.PI * 2);
+        ctx.arc(x + sp.ox * baseW * 1.2, y + sp.oy * baseW * 1.2, sp.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Thin streaks — pre-computed
+      // Streaks flung off edges
       for (const sk of strokeData.streaks) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sk.t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],sk.t);
-        ctx.globalAlpha = alpha * 0.6;
-        ctx.lineWidth = sk.lw;
-        ctx.strokeStyle = rgb(color, 0.8);
+        ctx.globalAlpha = alpha * 0.7;
+        ctx.lineWidth = 1 + sk.lw;
+        ctx.strokeStyle = rgb(color, 0.9);
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x + sk.ext * sk.side + sk.ox, y + sk.ext * 0.3 + sk.oy);
