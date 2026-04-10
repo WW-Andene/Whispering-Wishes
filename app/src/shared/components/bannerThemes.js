@@ -555,7 +555,7 @@ const BANNER_THEMES = {
       vx: (Math.random() - 0.5) * 0.5,
       vy: (Math.random() - 0.5) * 0.4,
       ci: Math.floor(Math.random() * PAINT.length),
-      alpha: 0.12 + Math.random() * 0.18,
+      alpha: 0.4 + Math.random() * 0.3,
       phase: Math.random() * Math.PI * 2,
     }));
 
@@ -627,7 +627,7 @@ const BANNER_THEMES = {
             suckP = suckP * suckP * suckP;
           }
 
-          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 1.0) : 0.4;
+          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 1.0) : 0.9;
           if (alpha < 0.01) continue;
 
           // Build thick spine with wobble + width profile
@@ -702,7 +702,7 @@ const BANNER_THEMES = {
 
           // Tendrils
           if (suckP < 0.8) {
-            ctx.globalAlpha = alpha * 0.8 * (1 - suckP);
+            ctx.globalAlpha = alpha * (1 - suckP);
             for (const ten of s.tendrils) {
               if (ten.at > drawP) continue;
               const si2 = Math.floor(ten.at * (spine.length - 1));
@@ -740,7 +740,7 @@ const BANNER_THEMES = {
             // During suck, droplets also pull toward center
             dpx += (cx - dpx) * suckP * 0.5;
             dpy += (cy - dpy) * suckP * 0.5;
-            ctx.globalAlpha = alpha * 0.7;
+            ctx.globalAlpha = alpha * 0.9;
             ctx.fillStyle = rgb(PAINT[dr.ci], 1);
             ctx.shadowColor = rgb(PAINT[dr.ci], 0.4);
             ctx.beginPath(); ctx.arc(dpx, dpy, dr.r * (1 - suckP * 0.5), 0, Math.PI * 2); ctx.fill();
@@ -807,7 +807,7 @@ const BANNER_THEMES = {
             const dx = cx + Math.cos(d.angle) * dist;
             const dy = cy + Math.sin(d.angle) * dist + explodeAge * explodeAge * 15; // gravity
             ctx.save();
-            ctx.globalAlpha = debrisAlpha * 0.7;
+            ctx.globalAlpha = debrisAlpha * 0.95;
             const c = PAINT[d.ci];
             ctx.fillStyle = rgb(c, 1);
             ctx.shadowColor = rgb(c, 0.5);
