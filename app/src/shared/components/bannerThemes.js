@@ -469,36 +469,41 @@ const BANNER_THEMES = {
     const bright = (c) => [Math.min(255, c[0] + 90), Math.min(255, c[1] + 90), Math.min(255, c[2] + 90)];
     const bz = (a, b, c, d, p) => { const u = 1 - p; return u*u*u*a + 3*u*u*p*b + 3*u*p*p*c + p*p*p*d; };
 
-    const CYCLE = 6.5; // seconds per full cycle
-    // Phases: 0→2.5s streams fly in, 2.5→3.3s suck to center, 3.3→3.6s mix, 3.6→4.8s explode, 4.8→6.5s settle
+    const CYCLE = 9; // seconds per full cycle
+    // Phase 0: 0→3s random swooshes appear, Phase 1: 3→5s swooshes get sucked to center,
+    // Phase 2: 5→5.5s mix swirl, Phase 3: 5.5→6.8s explode, Phase 4: 6.8→9s settle+floaters
     const cx = w * 0.45, cy = h * 0.5; // convergence point
 
-    // 3 streams, each from a different edge
-    const initStreams = () => {
-      const streams = [];
-      for (let i = 0; i < 3; i++) {
-        const ci = (i * 3) % PAINT.length;
-        const ci2 = (ci + 2) % PAINT.length;
-        const angle = (i / 3) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
-        const dist = Math.max(w, h) * 0.7;
-        const sx = cx + Math.cos(angle) * dist;
-        const sy = cy + Math.sin(angle) * dist;
-        // Curved path toward center
-        const cpOff = 60 + Math.random() * 80;
-        const perpAng = angle + Math.PI * 0.5;
-        streams.push({
-          sx, sy,
-          cp1x: sx + (cx - sx) * 0.3 + Math.cos(perpAng) * cpOff,
-          cp1y: sy + (cy - sy) * 0.3 + Math.sin(perpAng) * cpOff,
-          cp2x: sx + (cx - sx) * 0.7 + Math.cos(perpAng) * cpOff * 0.5,
-          cp2y: sy + (cy - sy) * 0.7 + Math.sin(perpAng) * cpOff * 0.5,
+    // 3-4 random swooshes that appear across the canvas then get pulled in
+    const initSwooshes = () => {
+      const count = 3 + Math.floor(Math.random() * 2);
+      return Array.from({ length: count }, (_, i) => {
+        const ci = (i * 2) % PAINT.length;
+        const ci2 = (ci + 3) % PAINT.length;
+        // Random position and direction across the card
+        const sx = Math.random() * w;
+        const sy = Math.random() * h;
+        const ang = Math.random() * Math.PI * 2;
+        const len = 80 + Math.random() * 150;
+        const ex = sx + Math.cos(ang) * len;
+        const ey = sy + Math.sin(ang) * len;
+        // Curved control points
+        const perpAng = ang + Math.PI * 0.5;
+        const curve = (Math.random() - 0.5) * 100;
+        return {
+          sx, sy, ex, ey,
+          cp1x: sx + (ex - sx) * 0.3 + Math.cos(perpAng) * curve,
+          cp1y: sy + (ey - sy) * 0.3 + Math.sin(perpAng) * curve,
+          cp2x: sx + (ex - sx) * 0.7 + Math.cos(perpAng) * curve * 0.5,
+          cp2y: sy + (ey - sy) * 0.7 + Math.sin(perpAng) * curve * 0.5,
           col: PAINT[ci], col2: PAINT[ci2],
-          maxW: 18 + Math.random() * 25,
-          // Width control: pointed start → swell → taper to center
-          wProfile: [0, 0.3 + Math.random() * 0.3, 0.8 + Math.random() * 0.2, 0.6, 0.2],
-        });
-      }
-      return streams;
+          maxW: 18 + Math.random() * 28,
+          delay: i * 0.6 + Math.random() * 0.4, // staggered appearance
+          drawDur: 0.15 + Math.random() * 0.15, // fast snap
+          // Width: pointed → swell → peak → taper → pointed
+          wProfile: [0, 0.4 + Math.random() * 0.3, 0.9 + Math.random() * 0.1, 0.5 + Math.random() * 0.2, 0],
+        };
+      });
     };
 
     // Explosion debris
@@ -513,7 +518,7 @@ const BANNER_THEMES = {
       };
     });
 
-    let streams = initStreams();
+    let swooshes = initSwooshes();
     let debris = initDebris();
     let cycleStart = -CYCLE; // start immediately
 
@@ -551,7 +556,7 @@ const BANNER_THEMES = {
       if (ct > CYCLE) {
         cycleStart = t;
         ct = 0;
-        streams = initStreams();
+        swooshes = initSwooshes();
         debris = initDebris();
       }
 
@@ -576,79 +581,68 @@ const BANNER_THEMES = {
       }
 
       // Phase boundaries
-      const STREAM_END = 2.5;
-      const SUCK_END = 3.3;
-      const MIX_END = 3.6;
-      const EXPLODE_END = 4.8;
+      const SWOOSH_END = 3.0;  // random swooshes appear 0→3s
+      const SUCK_END = 5.0;    // get sucked to center 3→5s
+      const MIX_END = 5.5;     // mix swirl 5→5.5s
+      const EXPLODE_T = 5.5;   // explosion starts
 
-      // ── Phase 1+2: Streams fly in and get sucked to center ──
+      // ── Phase 0+1: Swooshes appear then get sucked to center ──
       if (ct < SUCK_END + 1.5) {
-        for (const s of streams) {
-          // How far along the stream has drawn (0→1)
-          let drawP;
-          if (ct < STREAM_END) {
-            // Fly in: ease-out
-            const raw = ct / STREAM_END;
-            drawP = 1 - Math.pow(1 - raw, 2.5);
-          } else {
-            drawP = 1;
-          }
+        for (const s of swooshes) {
+          // Has this swoosh appeared yet?
+          const swooshAge = ct - s.delay;
+          if (swooshAge < 0) continue;
 
-          // During suck phase, the stream contracts toward the center
+          // Draw progress (instant snap)
+          const drawP = Math.min(1, swooshAge / s.drawDur);
+          const drawEased = 1 - Math.pow(1 - drawP, 3);
+
+          // Suck progress: after SWOOSH_END, pull toward center
           let suckP = 0;
-          if (ct > STREAM_END) {
-            suckP = Math.min(1, (ct - STREAM_END) / (SUCK_END - STREAM_END));
-            suckP = suckP * suckP; // ease-in (accelerates)
+          if (ct > SWOOSH_END) {
+            suckP = Math.min(1, (ct - SWOOSH_END) / (SUCK_END - SWOOSH_END));
+            suckP = suckP * suckP * suckP; // ease-in (accelerates hard)
           }
 
-          // Fade out during suck
-          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 1.5) : 0.4;
+          // Fade out as fully sucked
+          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 1.0) : 0.4;
           if (alpha < 0.01) continue;
 
-          // Build spine points
+          // Build spine — during suck, all points pull toward cx,cy
           const N = 12;
-          const startP = suckP * 0.8; // front of stream gets sucked first
-          const endP2 = Math.min(1, drawP);
-          if (endP2 <= startP + 0.05) continue;
-
           const spine = [];
           for (let i = 0; i <= N; i++) {
             const frac = i / N;
-            const p = startP + (endP2 - startP) * frac;
-            const x = bz(s.sx, s.cp1x, s.cp2x, cx, p);
-            const y = bz(s.sy, s.cp1y, s.cp2y, cy, p);
+            const p = frac * drawEased;
+            let x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
+            let y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
 
-            // During suck, pull points toward center
-            const suckPull = suckP * frac * 0.5;
-            const px = x + (cx - x) * suckPull;
-            const py = y + (cy - y) * suckPull;
+            // Pull toward center during suck
+            x += (cx - x) * suckP;
+            y += (cy - y) * suckP;
 
-            // Tangent for normal
+            // Tangent
             const pp = Math.min(1, p + 0.03);
-            const tx = bz(s.sx, s.cp1x, s.cp2x, cx, pp) - bz(s.sx, s.cp1x, s.cp2x, cx, p);
-            const ty = bz(s.sy, s.cp1y, s.cp2y, cy, pp) - bz(s.sy, s.cp1y, s.cp2y, cy, p);
+            const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
+            const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
             const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
             const nx = -ty / tLen, ny = tx / tLen;
 
-            // Width: interpolate profile, pointed at both ends
+            // Width profile: pointed at both ends
             const wIdx = frac * (s.wProfile.length - 1);
             const wi = Math.min(s.wProfile.length - 2, Math.floor(wIdx));
             const wf = wIdx - wi;
             const wMul = s.wProfile[wi] * (1 - wf) + s.wProfile[wi + 1] * wf;
-            // During suck, compress width
-            const hw = s.maxW * wMul * (1 - suckP * 0.6);
+            const hw = s.maxW * wMul * (1 - suckP * 0.7);
 
-            spine.push({ x: px, y: py, nx, ny, hw: Math.max(0.5, hw) });
+            spine.push({ x, y, nx, ny, hw: Math.max(0.3, hw) });
           }
 
-          // Compute edge points
           const topPts = spine.map(sp => ({ x: sp.x + sp.nx * sp.hw, y: sp.y + sp.ny * sp.hw }));
           const botPts = spine.map(sp => ({ x: sp.x - sp.nx * sp.hw, y: sp.y - sp.ny * sp.hw }));
 
           ctx.save();
           ctx.globalAlpha = alpha;
-
-          // Gradient fill
           const grad = ctx.createLinearGradient(spine[0].x, spine[0].y, spine[spine.length-1].x, spine[spine.length-1].y);
           grad.addColorStop(0, rgb(s.col, 1));
           grad.addColorStop(0.5, rgb(s.col2, 1));
@@ -657,67 +651,60 @@ const BANNER_THEMES = {
           ctx.shadowColor = rgb(s.col, 0.4);
           ctx.shadowBlur = 12;
 
-          // Draw smooth body
+          // Smooth body
           ctx.beginPath();
           smoothEdge(ctx, topPts);
-          // Smooth tip connection
-          const lt = topPts[topPts.length - 1], lb = botPts[botPts.length - 1];
           const ls = spine[spine.length - 1];
-          ctx.quadraticCurveTo(ls.x, ls.y, lb.x, lb.y);
+          ctx.quadraticCurveTo(ls.x, ls.y, botPts[botPts.length - 1].x, botPts[botPts.length - 1].y);
           smoothEdge(ctx, botPts.slice().reverse());
-          // Pointed tail connection
-          const ft = topPts[0], fb = botPts[0];
-          const fs = spine[0];
-          ctx.quadraticCurveTo(fs.x, fs.y, ft.x, ft.y);
+          ctx.quadraticCurveTo(spine[0].x, spine[0].y, topPts[0].x, topPts[0].y);
           ctx.closePath();
           ctx.fill();
 
-          // Glossy highlight
-          ctx.globalAlpha = alpha * 0.4;
+          // Highlight
+          ctx.globalAlpha = alpha * 0.35;
           ctx.shadowBlur = 0;
           ctx.fillStyle = rgb(bright(s.col), 0.5);
           const hiPts = spine.map(sp => ({ x: sp.x + sp.nx * sp.hw * 0.55, y: sp.y + sp.ny * sp.hw * 0.55 }));
-          const hiBot2 = spine.map(sp => ({ x: sp.x + sp.nx * sp.hw * 0.05, y: sp.y + sp.ny * sp.hw * 0.05 }));
+          const hiBot = spine.map(sp => ({ x: sp.x + sp.nx * sp.hw * 0.05, y: sp.y + sp.ny * sp.hw * 0.05 }));
           ctx.beginPath();
           smoothEdge(ctx, hiPts);
-          smoothEdge(ctx, hiBot2.slice().reverse());
+          smoothEdge(ctx, hiBot.slice().reverse());
           ctx.closePath();
           ctx.fill();
-
           ctx.restore();
         }
       }
 
-      // ── Phase 3: Mix swirl at center ──
-      if (ct > STREAM_END && ct < EXPLODE_END) {
-        const mixP = Math.min(1, (ct - STREAM_END) / (MIX_END - STREAM_END));
-        const mixAlpha = mixP < 1 ? mixP * 0.5 : Math.max(0, 0.5 - (ct - MIX_END) * 1.5);
+      // ── Phase 2: Mix swirl at center ──
+      if (ct > SWOOSH_END + 1.5 && ct < EXPLODE_T + 0.5) {
+        const mixStart = SWOOSH_END + 1.5;
+        const mixP = Math.min(1, (ct - mixStart) / (MIX_END - mixStart));
+        const mixAlpha = ct < MIX_END ? mixP * 0.5 : Math.max(0, 0.5 - (ct - MIX_END) * 2);
         if (mixAlpha > 0.01) {
-          const swirl = ct * 4;
-          const mr = 15 + mixP * 20 - (ct > MIX_END ? (ct - MIX_END) * 60 : 0);
-          if (mr > 2) {
-            for (let i = 0; i < 5; i++) {
-              const a = swirl + i * Math.PI * 0.4;
-              const r2 = mr * (0.5 + i * 0.15);
-              const px = cx + Math.cos(a) * r2;
-              const py = cy + Math.sin(a) * r2;
-              const ci = (i * 2) % PAINT.length;
-              ctx.save();
-              ctx.globalAlpha = mixAlpha;
-              const g = ctx.createRadialGradient(px, py, 0, px, py, mr * 0.6);
-              g.addColorStop(0, rgb(PAINT[ci], 0.7));
-              g.addColorStop(1, rgb(PAINT[ci], 0));
-              ctx.fillStyle = g;
-              ctx.beginPath(); ctx.arc(px, py, mr * 0.6, 0, Math.PI * 2); ctx.fill();
-              ctx.restore();
-            }
+          const swirl = ct * 5;
+          const mr = 12 + mixP * 25;
+          for (let i = 0; i < 5; i++) {
+            const a = swirl + i * Math.PI * 0.4;
+            const r2 = mr * (0.4 + i * 0.15);
+            const px2 = cx + Math.cos(a) * r2;
+            const py2 = cy + Math.sin(a) * r2;
+            const ci2 = (i * 2) % PAINT.length;
+            ctx.save();
+            ctx.globalAlpha = mixAlpha;
+            const g = ctx.createRadialGradient(px2, py2, 0, px2, py2, mr * 0.5);
+            g.addColorStop(0, rgb(PAINT[ci2], 0.7));
+            g.addColorStop(1, rgb(PAINT[ci2], 0));
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(px2, py2, mr * 0.5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
           }
         }
       }
 
-      // ── Phase 4: Explosion ──
-      if (ct > MIX_END) {
-        const explodeAge = ct - MIX_END;
+      // ── Phase 3: Explosion ──
+      if (ct > EXPLODE_T) {
+        const explodeAge = ct - EXPLODE_T;
 
         // Flash
         if (explodeAge < 0.15) {
