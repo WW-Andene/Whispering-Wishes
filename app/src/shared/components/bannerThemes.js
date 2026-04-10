@@ -478,16 +478,15 @@ const BANNER_THEMES = {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
       const ci3 = (ci + 4) % PAINT.length;
-      // Keep strokes mostly within the card
-      const margin = 15;
-      const sx = margin + Math.random() * (w - margin * 2);
-      const sy = margin + Math.random() * (h - margin * 2);
+      // Start inside card, end can extend off-screen
+      const sx = 30 + Math.random() * (w - 60);
+      const sy = 30 + Math.random() * (h - 60);
       const ang = Math.random() * Math.PI * 2;
-      const len = 150 + Math.random() * 200;
+      const len = 250 + Math.random() * 300;
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 140;
+      const curv = (Math.random() - 0.5) * 180;
 
       // Noise offsets for the 3 sub-strands (deterministic per stroke)
       const strandNoise = Array.from({length: 3}, () => ({
@@ -515,10 +514,10 @@ const BANNER_THEMES = {
         c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
         cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
-        baseW: 16 + Math.random() * 24,
+        baseW: 24 + Math.random() * 32,
         strandNoise, widthNoise, drops, SEG,
         twistFreq: 1.5 + Math.random() * 2,
-        delay: idx * 0.9 + Math.random() * 0.1,
+        delay: idx * 1.0,
       };
     };
 
@@ -596,10 +595,10 @@ const BANNER_THEMES = {
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, wNoise, seg) => {
       ctx.save();
       ctx.strokeStyle = rgb(color, 1);
-      ctx.lineCap = 'round';
+      ctx.lineCap = 'butt';
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = rgb(color, 0.4);
-      ctx.shadowBlur = 6;
+      ctx.shadowColor = rgb(color, 0.35);
+      ctx.shadowBlur = baseW * 0.5;
 
       for (let i = 0; i < seg; i++) {
         const t0 = i / seg, t1 = (i+1) / seg;
@@ -608,9 +607,9 @@ const BANNER_THEMES = {
         const x1 = bz(p1[0],p2[0],p3[0],p4[0],t1);
         const y1 = bz(p1[1],p2[1],p3[1],p4[1],t1);
         const tMid = (t0+t1)*0.5;
-        // Taper + noise
-        const taper = Math.pow(Math.sin(tMid * Math.PI), 0.5);
-        ctx.lineWidth = Math.max(0.5, baseW * taper * wNoise[i]);
+        // Sharp taper: flat middle, quick fade at tips
+        const taper = Math.min(1, Math.min(tMid * 5, (1 - tMid) * 5));
+        ctx.lineWidth = Math.max(0.3, baseW * taper * wNoise[i]);
         ctx.beginPath();
         ctx.moveTo(x0, y0);
         ctx.lineTo(x1, y1);
@@ -639,15 +638,15 @@ const BANNER_THEMES = {
         for (const s of strokes) {
           const age = ct - s.delay;
           if (age < 0) continue;
-          // Phase 0: fade in 50ms, hold 0.5s, fade out 0.3s
-          // Phase 1 (suck): all reappear at full alpha
+          // Phase 0: pop in, hold 0.6s, fade out 0.3s — gone before next
+          // Phase 1 (suck): all reappear
           let strokeAlpha;
           if (ct < APPEAR_END) {
-            if (age < 0.05) strokeAlpha = age / 0.05;
-            else if (age < 0.55) strokeAlpha = 1;
-            else strokeAlpha = Math.max(0, 1 - (age - 0.55) / 0.3);
+            if (age < 0.03) strokeAlpha = age / 0.03;
+            else if (age < 0.6) strokeAlpha = 1;
+            else strokeAlpha = Math.max(0, 1 - (age - 0.6) / 0.3);
           } else {
-            strokeAlpha = 1; // all visible during suck
+            strokeAlpha = 1;
           }
           let suckP = 0;
           if (ct > APPEAR_END) {
