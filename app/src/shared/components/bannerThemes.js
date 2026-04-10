@@ -459,7 +459,7 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): paint strokes → spiral suck to point → explode
+  // 🎨 PRISMATIC (Lynae): textured paint strokes → suck → explode
   prismatic: (w, h) => {
     const PAINT = [
       [0,210,200], [220,40,170], [100,245,50],
@@ -468,6 +468,29 @@ const BANNER_THEMES = {
     const rgb = (c,a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
     const lerpc = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
     const bz = (a,b,c,d,p) => {const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d;};
+
+    // Generate brush grunge texture on offscreen canvas (once)
+    const texSize = 128;
+    const texCanvas = document.createElement('canvas');
+    texCanvas.width = texSize; texCanvas.height = texSize;
+    const texCtx = texCanvas.getContext('2d');
+    const texData = texCtx.createImageData(texSize, texSize);
+    const td = texData.data;
+    for (let y = 0; y < texSize; y++) {
+      for (let x = 0; x < texSize; x++) {
+        const i = (y * texSize + x) * 4;
+        // Horizontal streaking: pixels in same row tend to be similar
+        const rowSeed = (y * 7 + 13) & 0xFF;
+        const noise = Math.random();
+        // Mix of random noise + horizontal streaks
+        const streak = ((rowSeed + x * 3) & 0xFF) / 255;
+        const val = noise * 0.5 + streak * 0.5;
+        // Most pixels opaque, some gaps for texture
+        const alpha = val > 0.25 ? 255 : val > 0.12 ? Math.floor(val * 4 * 255) : 0;
+        td[i] = 255; td[i+1] = 255; td[i+2] = 255; td[i+3] = alpha;
+      }
+    }
+    texCtx.putImageData(texData, 0, 0);
 
     const CYCLE = 9;
     const ccx = w * 0.45, ccy = h * 0.5;
@@ -662,47 +685,40 @@ const BANNER_THEMES = {
         botEdge.push([x - nx * (hw + nBot), y - ny * (hw + nBot)]);
       }
 
-      // Fill the solid shape
+      // Build the closed outline path (reused for both fills)
+      const buildPath = () => {
+        ctx.beginPath();
+        ctx.moveTo(topEdge[0][0], topEdge[0][1]);
+        for (let i = 1; i < topEdge.length; i++) ctx.lineTo(topEdge[i][0], topEdge[i][1]);
+        ctx.lineTo(botEdge[botEdge.length-1][0], botEdge[botEdge.length-1][1]);
+        for (let i = botEdge.length - 2; i >= 0; i--) ctx.lineTo(botEdge[i][0], botEdge[i][1]);
+        ctx.closePath();
+      };
+
+      // Layer 1: Solid color fill
       ctx.globalAlpha = alpha;
       ctx.fillStyle = rgb(color, 1);
       ctx.shadowColor = rgb(color, 0.15);
       ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.moveTo(topEdge[0][0], topEdge[0][1]);
-      for (let i = 1; i < topEdge.length; i++) ctx.lineTo(topEdge[i][0], topEdge[i][1]);
-      // Connect top to bottom at the head end
-      ctx.lineTo(botEdge[botEdge.length-1][0], botEdge[botEdge.length-1][1]);
-      for (let i = botEdge.length - 2; i >= 0; i--) ctx.lineTo(botEdge[i][0], botEdge[i][1]);
-      ctx.closePath();
+      buildPath();
       ctx.fill();
 
-      // Bristle texture: erase thin streaks through the solid fill
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.lineCap = 'round';
-      for (const gs of sd.gapStreaks) {
-        ctx.globalAlpha = 0.4 + gs.lw * 0.3; // partial erase = semi-transparent gaps
-        ctx.lineWidth = gs.lw;
-        ctx.beginPath();
-        const si = Math.floor(gs.startT * N);
-        const ei = Math.floor(gs.endT * N);
-        for (let i = si; i <= ei && i <= N; i++) {
-          const t = i / N;
-          const x = bz(p1[0],p2[0],p3[0],p4[0],t);
-          const y = bz(p1[1],p2[1],p3[1],p4[1],t);
-          const dt2 = 0.015;
-          const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt2)) - x;
-          const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt2)) - y;
-          const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-          const nx = -ty/tl, ny = tx/tl;
-          const widthCurve = Math.pow(t, 0.4) * (0.7 + 0.3 * Math.sin(t * Math.PI));
-          const hw = baseW * widthCurve;
-          const drift = gs.offset + gs.drift * t;
-          const px = x + nx * hw * drift;
-          const py = y + ny * hw * drift;
-          if (i === si) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
+      // Layer 2: Grunge texture overlay (pattern fill clipped to same shape)
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = alpha * 0.5;
+      // Tint the white texture to the stroke color
+      const tintCanvas = document.createElement('canvas');
+      tintCanvas.width = texSize; tintCanvas.height = texSize;
+      const tCtx = tintCanvas.getContext('2d');
+      tCtx.fillStyle = rgb(color, 1);
+      tCtx.fillRect(0, 0, texSize, texSize);
+      tCtx.globalCompositeOperation = 'destination-in';
+      tCtx.drawImage(texCanvas, 0, 0);
+      const pattern = ctx.createPattern(tintCanvas, 'repeat');
+      ctx.fillStyle = pattern;
+      ctx.globalCompositeOperation = 'source-atop';
+      buildPath();
+      ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
 
       // Thin trailing lines behind the tail
