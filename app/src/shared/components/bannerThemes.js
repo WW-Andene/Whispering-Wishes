@@ -646,7 +646,7 @@ const BANNER_THEMES = {
       let ct = t - cycleStart;
       if (ct > CYCLE) { cycleStart = t; ct = 0; splashes = initAll(); debris = initDebris(); }
 
-      const APPEAR_END = 3.0, SUCK_END = 5.5, EXPLODE_T = 5.5;
+      const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.8;
 
       // Ambient dots
       for (const d of ambDots) {
