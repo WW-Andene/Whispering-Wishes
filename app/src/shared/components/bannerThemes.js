@@ -492,12 +492,17 @@ const BANNER_THEMES = {
       }
     };
 
-    // Draw a filled fluid shape, optionally offset perpendicular to spine
-    const drawFluidShape = (ctx, spine, widthScale, color, alpha, offset) => {
+    // Draw a filled fluid shape with per-point offset for twisting
+    const drawFluidShape = (ctx, spine, widthScale, color, alpha, offsetFn) => {
       if (spine.length < 3) return;
-      const off = offset || 0;
-      const top = spine.map(s => [s.x + s.nx * (s.hw * widthScale + off), s.y + s.ny * (s.hw * widthScale + off)]);
-      const bot = spine.map(s => [s.x + s.nx * (off - s.hw * widthScale), s.y + s.ny * (off - s.hw * widthScale)]);
+      const top = spine.map((s, i) => {
+        const off = typeof offsetFn === 'function' ? offsetFn(i, spine.length) : (offsetFn || 0);
+        return [s.x + s.nx * (s.hw * widthScale + off), s.y + s.ny * (s.hw * widthScale + off)];
+      });
+      const bot = spine.map((s, i) => {
+        const off = typeof offsetFn === 'function' ? offsetFn(i, spine.length) : (offsetFn || 0);
+        return [s.x + s.nx * (off - s.hw * widthScale), s.y + s.ny * (off - s.hw * widthScale)];
+      });
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle = rgb(color, 1);
@@ -572,6 +577,7 @@ const BANNER_THEMES = {
         cp2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         cp2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
         colA, colB, colC, colShadow, colEdge, baseW, widths, noise, splatter, drops, N,
+        twistFreq: 1.5 + Math.random() * 2, // how many twists along the path
         delay: idx * 0.6 + Math.random() * 0.3,
       };
     };
@@ -652,17 +658,32 @@ const BANNER_THEMES = {
           ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
           ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
 
-          // 3 parallel color strands offset perpendicular
-          const gap = spine[0].hw * 0.7; // spacing between strands
-          drawFluidShape(ctx, spine, 0.38, s.colA, alpha * 0.92, gap);     // strand 1: top side
-          drawFluidShape(ctx, spine, 0.38, s.colB, alpha * 0.92, 0);       // strand 2: center
-          drawFluidShape(ctx, spine, 0.38, s.colC, alpha * 0.92, -gap);    // strand 3: bottom side
+          // 3 twisting color strands — each sine-offset with 120° phase shift
+          const gap = spine[0].hw * 0.75;
+          const twist = (phase) => (i, len) => {
+            const t = i / (len - 1);
+            return Math.sin(t * Math.PI * 2 * s.twistFreq + phase) * gap;
+          };
+          // Draw back-to-front based on twist position at midpoint for correct overlap
+          const strands = [
+            { col: s.colA, phase: 0 },
+            { col: s.colB, phase: Math.PI * 2 / 3 },
+            { col: s.colC, phase: Math.PI * 4 / 3 },
+          ];
+          // Sort by z-order at midpoint (sine value at t=0.5)
+          const mid = Math.floor(spine.length / 2);
+          strands.sort((a, b) => {
+            const za = Math.sin(0.5 * Math.PI * 2 * s.twistFreq + a.phase);
+            const zb = Math.sin(0.5 * Math.PI * 2 * s.twistFreq + b.phase);
+            return za - zb; // draw furthest-back first
+          });
+          for (const st of strands) {
+            drawFluidShape(ctx, spine, 0.35, st.col, alpha * 0.92, twist(st.phase));
+          }
 
-          // Bright edge highlight along top strand
-          drawFluidShape(ctx, spine, 0.12, s.colEdge, alpha * 0.5, gap * 1.1);
-          // Thin dark line between strands for separation
-          drawFluidShape(ctx, spine, 0.06, s.colShadow, alpha * 0.3, gap * 0.5);
-          drawFluidShape(ctx, spine, 0.06, s.colShadow, alpha * 0.3, -gap * 0.5);
+          // Bright edge highlight follows the front strand
+          const frontPhase = strands[2].phase;
+          drawFluidShape(ctx, spine, 0.1, s.colEdge, alpha * 0.45, twist(frontPhase));
 
           // Edge splatter
           ctx.save();
