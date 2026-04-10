@@ -22,11 +22,18 @@ That instinct never left.
 | Total commits (all branches) | 2,998 |
 | Main branch commits | 2,830 |
 | Lifespan | 70 days (Jan 31 - Apr 10, 2026) |
+| Average velocity | 41.6 commits/day |
 | Source files | 93 JS/JSX/CSS |
 | Lines of code | 32,585 |
-| Reverts | 211 |
-| Peak day | Mar 23: **345 commits** |
+| Lines added (lifetime) | 358,676 |
+| Lines deleted (lifetime) | 178,729 |
+| Code churn | 49.8% — half of all code written was later deleted |
+| Reverts | 211 (7.7% of all commits) |
+| Peak day | Mar 23: **345 commits** (1 every 2.5 minutes) |
 | Peak week (W13) | **1,419 commits** |
+| Active hours | 22:00 - 01:00 UTC (night owl) |
+| Quietest hour | 13:00 UTC (53 commits total) |
+| Longest silence | Mar 1-14 (14 days — then 85-commit return) |
 
 ---
 
@@ -55,18 +62,34 @@ The app grew organs. Team Builder appeared (Feb 21). Damage Calculator with 3-la
 
 The echo background removal saga: 28 commits trying rembg, HuggingFace API, CSS blend modes, canvas chroma-key, pixel-level erasure with adjustable tolerance/brightness/spread — before finally giving up and swapping to pre-cut transparent PNGs. The app tried 6 different technical approaches to solve one visual problem.
 
+The API reverse-engineering day (Apr 1): 60+ commits cracking Kuro's gacha history pagination. Every plausible strategy attempted — endTime cursors, resourceId landmarks, monthly jumps, dedup fingerprinting, snake_case vs camelCase params, multi-host fallback, cardPoolId inclusion/exclusion — before reaching a stable solution.
+
+A notable 14-day silence falls between Mar 1-14. No commits. Then: an 85-commit explosion on the return. The app rests, then erupts.
+
 Key DNA trait: **Exhaustive iteration.** Every approach explored, every parameter tuned, before moving on.
 
-### Era IV — The 3D Odyssey (Mar 23 - Mar 31)
-**~650 commits. The week that broke physics.**
+### Era IV — The 3D Odyssey (Mar 21 - Mar 31)
+**~1,700 commits. The week that broke physics.**
 
-Week 13: 1,419 commits. 345 in a single day. The app attempted 3D WebGL backgrounds. Swords planted in scorched earth. Canvas 2D perspective projection. Then actual Three.js 3D geometry. Blade fractures with zigzag cuts, shattered pieces floating apart. Cherry blossom petals. Fireflies. Embers. Lanterns. Snow. Rain. Meteors. Starfields. Constellations.
+Week 13: 1,419 commits. 345 in a single day (Mar 23). The daily breakdown tells the story:
+
+```
+Mar 21 .... 239 commits    Kuro design rollout + luck badge (20 revert cycles)
+Mar 23 .... 345 commits    Staircase scene: trapezoids, FBM noise, lightning arcs
+Mar 24 .... 171 commits    Sword battlefield: perspective, 500+ swords, density zones
+Mar 25 .... 303 commits    Cloud systems: curl noise, fBm fractal shapes, orbit motion
+Mar 26-27 .. 152 commits   Ground mesh, electricity, sword fractures, god rays
+Mar 28 .... 239 commits    Banner cloth with wind simulation, griffin emblem
+Mar 29 .... 209 commits    Rotation timeline, DPS tiers, echo selector, vitest
+```
 
 The sword field alone went through: silhouettes → row-based spacing → ground-plan projection → actual 3D rotation → diamond profiles → lens distortion → bowl curves → teardrop clearings → camera repositioning → hash-based distribution → gradual clearings. Every single parameter explored. Camera height. Spawn distance. Tilt range. Fog density. Ground color.
 
-Then there were the blade fractures: cracks following diagonal shape, destination-out erasing, zigzag pieces with black outlines, multiple break pieces with varied steepness, angular cuts, inward shards, spacing filters. 30+ commits on how a sword breaks.
+The blade fractures: cracks following diagonal shape, destination-out erasing, zigzag pieces with black outlines, multiple break pieces with varied steepness, angular cuts, inward shards, spacing filters. 30+ commits on how a sword breaks.
 
-211 reverts across the project. Many from this era. Apply → revert → reapply → revert → try differently.
+The developer treated git commits like save states in a creative exploration process — seed-shuffling scene layouts ("seed 91682", "seed 27354", "seed 63017") and committing each as a named snapshot. This is generative art versioning, not software development.
+
+177 commits in this window contain "seed/shuffle/hash/noise/perlin/fbm/particle/lightning/electric/arc/fractal".
 
 Key DNA trait: **Relentless visual ambition.** No compromise on atmosphere, even at absurd iteration cost.
 
@@ -119,12 +142,16 @@ Color-blind mode took 6 failed approaches before the Wong palette + forced React
 | Pattern | Evidence |
 |---|---|
 | **"Just one more tweak"** | 41 gradient commits on Day 1. 345 commits on Mar 23. |
-| **Apply-Revert-Reapply** | 211 reverts. Holo shimmer moved 6 times. Swords rewritten 8 times. |
+| **Apply-Revert-Reapply** | 211 reverts. Holo shimmer moved 6 times. Swords rewritten 8 times. Luck badge: 20 revert cycles in one session. |
 | **Naming things is hard** | 28 "Update App.jsx" commits. Then suddenly `fix:`, `feat:`, `style:`. |
 | **Visual > Functional** | Banner art gradient tuned before localStorage was added. |
 | **Exhaust all options** | Echo BG: rembg → HuggingFace → CSS blend → canvas chroma-key → pixel eraser → transparent PNGs. |
 | **Deep obsession spirals** | 3D sword field: projection → silhouettes → 3D geometry → blade fractures → zigzag cuts → floating shards → lightning arcs. |
 | **Respect the source** | Wiki API verification. Correct gacha math. Mechanically accurate gear meshing. |
+| **Generative art mentality** | Scene layouts saved by hash seed ("seed 91682"). Git as creative sketchbook. |
+| **Night owl** | Peak hours 22:00-01:00 UTC. Quietest at 13:00. The app was built in the dark. |
+| **Burst-then-silence** | 14 days of nothing (Mar 1-14), then 85 commits on the return. The muse is not steady — it storms. |
+| **LOC-conscious maturity** | Early: "Update App.jsx". Late: "Phase E — extract 6 hooks (1820→1460 LOC)". The developer learned to measure. |
 
 ---
 
@@ -146,10 +173,25 @@ If Whispering Wishes could speak, it would say:
 Era I  (Monolith)        Jan 31 - Feb 14    ~110 commits    "Update App.jsx"
 Era II (Audits)          Feb 15 - Feb 27    ~250 commits    "audit:", "fix:"
 Era III (Features)       Feb 21 - Mar 22    ~400 commits    Teams, Calc, Cloud, Calendar
-Era IV (3D Odyssey)      Mar 23 - Mar 31   ~1500 commits    Swords, petals, shattering
+     [14-day silence]    Mar 01 - Mar 14        0 commits    ...
+Era IV (3D Odyssey)      Mar 21 - Mar 31   ~1700 commits    Swords, petals, shattering
 Era V  (Design System)   Mar 28 - Apr 8     ~450 commits    Kuro tokens, standardization
 Era VI (Architecture)    Apr 5 - Apr 10     ~120 commits    Split, extract, decompose
 ```
+
+### Commit Prefix Distribution (conventional format)
+
+```
+fix:      341  ██████████████████████████████████  (12.0%)
+feat:      87  █████████                           (3.1%)
+refactor:  32  ████                                (1.1%)
+style:     26  ███                                 (0.9%)
+chore:     13  ██                                  (0.5%)
+revert:     9  █                                   (0.3%)
+```
+
+The remaining ~82% of commits predate conventional prefixes or use free-form messages.
+The fix:feat ratio is **4:1** — the app spends four times as much effort perfecting as building.
 
 ---
 
@@ -190,5 +232,34 @@ Echo Background ...............  28   (1.0%)   ██
 
 ---
 
+## The Busiest 5 Days
+
+| Date | Commits | What happened |
+|---|---|---|
+| Mar 23 | 345 | Staircase scene: trapezoid geometry, 6-octave FBM noise, floating shards, lightning |
+| Mar 25 | 303 | Cloud systems: curl noise, fBm fractals, seed shuffling, swords removed twice |
+| Mar 21 | 239 | Kuro design system deployed across all 8 tabs + 86 echo data corrections |
+| Mar 28 | 239 | Ground terrain mesh, banner cloth with wind physics, griffin emblem |
+| Mar 29 | 209 | Rotation timeline, DPS tiers, OpenDyslexic font, team export, vitest tests |
+
+These 5 days account for **1,335 commits (47% of all main branch history)**.
+
+---
+
+## Branches (the parallel timelines)
+
+| Branch | Commits ahead of main | Purpose |
+|---|---|---|
+| `claude/test-ngrok-endpoint-egC2g` | 125 | Zani clock theme, color-blind mode, farming planner, banner v3.2 |
+| `claude/fix-team-tab-data-R3H8c` | 50 | Font scale experiments (32 commits of Major Second / +1px / +2px cycling) |
+| `claude/add-header-icon-JD8O5` | 32 | Font/typography iteration (subset of above) |
+| `feature/team-damage-card` | 0 | Merged — DPS comparison card |
+| `claude/ux-audit-fixes` | 0 | Merged — font standardization |
+
+30 branches total. Most are `claude/*` — AI-assisted development sessions.
+
+---
+
 *Generated from 2,998 commits across 70 days of development.*
+*Lines written: 358,676. Lines deleted: 178,729. Net: 32,585 surviving.*
 *This is not documentation. This is a mirror.*
