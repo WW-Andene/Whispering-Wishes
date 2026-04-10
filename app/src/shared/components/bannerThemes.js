@@ -469,8 +469,8 @@ const BANNER_THEMES = {
     const bright = (c) => [Math.min(255, c[0] + 90), Math.min(255, c[1] + 90), Math.min(255, c[2] + 90)];
     const bz = (a, b, c, d, p) => { const u = 1 - p; return u*u*u*a + 3*u*u*p*b + 3*u*p*p*c + p*p*p*d; };
 
-    const CYCLE = 8; // seconds per full cycle
-    // Phases: 0→3s streams fly in, 3→4s suck to center, 4→4.3s mix, 4.3→5.5s explode, 5.5→8s settle
+    const CYCLE = 6.5; // seconds per full cycle
+    // Phases: 0→2.5s streams fly in, 2.5→3.3s suck to center, 3.3→3.6s mix, 3.6→4.8s explode, 4.8→6.5s settle
     const cx = w * 0.45, cy = h * 0.5; // convergence point
 
     // 3 streams, each from a different edge
@@ -517,6 +517,17 @@ const BANNER_THEMES = {
     let debris = initDebris();
     let cycleStart = -CYCLE; // start immediately
 
+    // Ambient floating droplets — always visible, provide life between cycles
+    const floaters = Array.from({ length: 20 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: 1.5 + Math.random() * 3.5,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.4,
+      ci: Math.floor(Math.random() * PAINT.length),
+      alpha: 0.12 + Math.random() * 0.18,
+      phase: Math.random() * Math.PI * 2,
+    }));
+
     // Catmull-Rom smooth path helper
     const smoothEdge = (ctx, pts, close) => {
       if (pts.length < 2) return;
@@ -544,11 +555,31 @@ const BANNER_THEMES = {
         debris = initDebris();
       }
 
+      // ── Ambient floaters (always visible) ──
+      for (const f of floaters) {
+        f.x += f.vx; f.y += f.vy;
+        if (f.x < -10) f.x = w + 10; if (f.x > w + 10) f.x = -10;
+        if (f.y < -10) f.y = h + 10; if (f.y > h + 10) f.y = -10;
+        const pulse = 0.5 + 0.5 * Math.sin(t * 1.5 + f.phase);
+        ctx.save();
+        ctx.globalAlpha = f.alpha * pulse;
+        const c = PAINT[f.ci];
+        ctx.fillStyle = rgb(c, 1);
+        ctx.shadowColor = rgb(c, 0.5);
+        ctx.shadowBlur = 6;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+        // Glossy dot
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.arc(f.x - f.r * 0.2, f.y - f.r * 0.2, f.r * 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
       // Phase boundaries
-      const STREAM_END = 3.0;
-      const SUCK_END = 4.0;
-      const MIX_END = 4.3;
-      const EXPLODE_END = 5.5;
+      const STREAM_END = 2.5;
+      const SUCK_END = 3.3;
+      const MIX_END = 3.6;
+      const EXPLODE_END = 4.8;
 
       // ── Phase 1+2: Streams fly in and get sucked to center ──
       if (ct < SUCK_END + 1.5) {
