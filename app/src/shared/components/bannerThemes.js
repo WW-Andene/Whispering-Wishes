@@ -725,73 +725,54 @@ const BANNER_THEMES = {
         }
       }
       // ── PHASE 2 (8–9.5s): MASSIVE CLOCK WITH FILLED GEARS ──
+      // Draw gear — shared between clock and explosion mini gears
+      const drawGear = (gx, gy, gr, teeth, rot, alpha) => {
+        ctx.save(); ctx.globalAlpha = alpha; ctx.translate(gx, gy); ctx.rotate(rot);
+        const tH = gr * 0.08, iR = gr * 0.92, oR = gr + tH;
+        ctx.fillStyle = 'rgba(215,195,155,0.5)';
+        ctx.strokeStyle = 'rgba(255,235,180,0.65)'; ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        for (let i = 0; i < teeth; i++) {
+          const a2 = (Math.PI * 2 / teeth) * i;
+          const ht = Math.PI / teeth * 0.5;
+          ctx.lineTo(Math.cos(a2 - ht) * iR, Math.sin(a2 - ht) * iR);
+          ctx.lineTo(Math.cos(a2 - ht * 0.55) * oR, Math.sin(a2 - ht * 0.55) * oR);
+          ctx.lineTo(Math.cos(a2 + ht * 0.55) * oR, Math.sin(a2 + ht * 0.55) * oR);
+          ctx.lineTo(Math.cos(a2 + ht) * iR, Math.sin(a2 + ht) * iR);
+        }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(200,180,140,0.45)';
+        ctx.beginPath(); ctx.arc(0, 0, gr * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        const irR2 = gr * 0.6;
+        ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(0, 0, irR2, 0, Math.PI * 2); ctx.stroke();
+        if (gr > 8) { // thorns + spokes only on larger gears
+          const thN = Math.max(10, Math.floor(teeth * 1.2));
+          ctx.fillStyle = 'rgba(235,215,170,0.7)'; ctx.strokeStyle = 'rgba(255,235,180,0.5)'; ctx.lineWidth = 0.5;
+          for (let th = 0; th < thN; th++) { const ta = (Math.PI * 2 / thN) * th; const thH2 = gr * 0.1; const thW = Math.PI / thN * 0.4; ctx.beginPath(); ctx.moveTo(Math.cos(ta - thW) * irR2, Math.sin(ta - thW) * irR2); ctx.lineTo(Math.cos(ta) * (irR2 - thH2), Math.sin(ta) * (irR2 - thH2)); ctx.lineTo(Math.cos(ta + thW) * irR2, Math.sin(ta + thW) * irR2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+          const spkN = teeth >= 12 ? 6 : 4;
+          ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = Math.max(1, gr * 0.02);
+          for (let s = 0; s < spkN; s++) { const sa = (Math.PI * 2 / spkN) * s; ctx.beginPath(); ctx.moveTo(Math.cos(sa) * gr * 0.16, Math.sin(sa) * gr * 0.16); ctx.lineTo(Math.cos(sa) * gr * 0.4, Math.sin(sa) * gr * 0.4); ctx.stroke(); }
+        }
+        ctx.fillStyle = 'rgba(20,18,15,0.5)';
+        ctx.beginPath(); ctx.arc(0, 0, gr * 0.12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.restore();
+      };
       const clockVisible = cycle >= 8.0 && cycle < 9.7;
       if (clockVisible) {
         const cT = cycle - 8.0;
-        const bIn = Math.min(1, cT / 0.12); // near-instant
+        const bIn = Math.min(1, cT / 0.12);
         const cFade = cycle >= 9.5 ? Math.max(0, 1 - (cycle - 9.5) / 0.2) : 1;
         const a = bIn * cFade * 0.9;
         const r = clockR * bIn;
-        // Light bloom from center-right (like the reference)
+        // Light bloom
         ctx.save(); ctx.globalAlpha = a * 0.5;
         const bloom = ctx.createRadialGradient(cx + r * 0.3, cy, 0, cx + r * 0.3, cy, r * 1.2);
         bloom.addColorStop(0, 'rgba(255,240,200,0.6)');
         bloom.addColorStop(0.4, 'rgba(255,210,130,0.15)');
         bloom.addColorStop(1, 'rgba(255,180,80,0)');
         ctx.fillStyle = bloom; ctx.beginPath(); ctx.arc(cx + r * 0.3, cy, r * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-        // Draw gear with filled body, teeth, hub, spokes, center hole
-        const drawGear = (gx, gy, gr, teeth, rot, alpha) => {
-          ctx.save(); ctx.globalAlpha = alpha; ctx.translate(gx, gy); ctx.rotate(rot);
-          const tH = gr * 0.08, iR = gr * 0.92, oR = gr + tH;
-          // Gear body + teeth
-          ctx.fillStyle = 'rgba(215,195,155,0.5)';
-          ctx.strokeStyle = 'rgba(255,235,180,0.65)';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          for (let i = 0; i < teeth; i++) {
-            const a2 = (Math.PI * 2 / teeth) * i;
-            const ht = Math.PI / teeth * 0.5;
-            ctx.lineTo(Math.cos(a2 - ht) * iR, Math.sin(a2 - ht) * iR);
-            ctx.lineTo(Math.cos(a2 - ht * 0.55) * oR, Math.sin(a2 - ht * 0.55) * oR);
-            ctx.lineTo(Math.cos(a2 + ht * 0.55) * oR, Math.sin(a2 + ht * 0.55) * oR);
-            ctx.lineTo(Math.cos(a2 + ht) * iR, Math.sin(a2 + ht) * iR);
-          }
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Hub ring
-          ctx.fillStyle = 'rgba(200,180,140,0.45)';
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          // Inner ring with inverted thorns pointing inward
-          const irR = gr * 0.6;
-          ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8;
-          ctx.beginPath(); ctx.arc(0, 0, irR, 0, Math.PI * 2); ctx.stroke();
-          const thornCount = Math.max(10, Math.floor(teeth * 1.2));
-          ctx.fillStyle = 'rgba(235,215,170,0.7)';
-          ctx.strokeStyle = 'rgba(255,235,180,0.5)'; ctx.lineWidth = 0.5;
-          for (let th = 0; th < thornCount; th++) {
-            const ta = (Math.PI * 2 / thornCount) * th;
-            const thH = gr * 0.1;
-            const thW = Math.PI / thornCount * 0.4;
-            ctx.beginPath();
-            ctx.moveTo(Math.cos(ta - thW) * irR, Math.sin(ta - thW) * irR);
-            ctx.lineTo(Math.cos(ta) * (irR - thH), Math.sin(ta) * (irR - thH));
-            ctx.lineTo(Math.cos(ta + thW) * irR, Math.sin(ta + thW) * irR);
-            ctx.closePath(); ctx.fill(); ctx.stroke();
-          }
-          // Spokes (6 for larger gears, 4 for smaller)
-          const spokeCount = teeth >= 12 ? 6 : 4;
-          ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = Math.max(1, gr * 0.02);
-          for (let s = 0; s < spokeCount; s++) {
-            const sa = (Math.PI * 2 / spokeCount) * s;
-            ctx.beginPath(); ctx.moveTo(Math.cos(sa) * gr * 0.16, Math.sin(sa) * gr * 0.16);
-            ctx.lineTo(Math.cos(sa) * gr * 0.4, Math.sin(sa) * gr * 0.4); ctx.stroke();
-          }
-          // Center hole
-          ctx.fillStyle = 'rgba(20,18,15,0.5)';
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.12, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8;
-          ctx.stroke();
-          ctx.restore();
-        };
         // Gears + hands: full speed until hands cross 6:30, then everything freezes
         const stopped = handFrozenAt >= 0;
         const gearT = stopped ? handFrozenAt : cT;
@@ -936,36 +917,14 @@ const BANNER_THEMES = {
       // ── PHASE 4 (9.5–15s): SHARDS + MINI GEARS + NEBULA ──
       if (cycle >= 9.5) {
         const nT = cycle - 9.5;
-        // Mini gears flying across the full screen
+        // Mini gears flying across the full screen — use same drawGear as clock
         for (const mg of miniGears) {
           if (!mg.active) continue;
           mg.x += mg.vx; mg.y += mg.vy; mg.rot += mg.rotV;
-          mg.vx *= 0.995; mg.vy *= 0.995; // minimal drag — fly far
+          mg.vx *= 0.995; mg.vy *= 0.995;
           const fade = Math.max(0, 1 - nT / 4.2);
           if (fade < 0.01) { mg.active = false; continue; }
-          ctx.save(); ctx.globalAlpha = fade * 0.8;
-          ctx.translate(mg.x, mg.y); ctx.rotate(mg.rot);
-          ctx.fillStyle = 'rgba(210,190,150,0.5)';
-          ctx.strokeStyle = 'rgba(255,235,180,0.8)'; ctx.lineWidth = 1.2;
-          ctx.shadowColor = 'rgba(255,220,100,0.5)'; ctx.shadowBlur = 6;
-          const gr = mg.size, teeth = mg.teeth;
-          ctx.beginPath();
-          for (let i = 0; i < teeth; i++) {
-            const a2 = (Math.PI * 2 / teeth) * i, ht = Math.PI / teeth * 0.5;
-            ctx.lineTo(Math.cos(a2 - ht) * gr * 0.92, Math.sin(a2 - ht) * gr * 0.92);
-            ctx.lineTo(Math.cos(a2 - ht * 0.5) * gr, Math.sin(a2 - ht * 0.5) * gr);
-            ctx.lineTo(Math.cos(a2 + ht * 0.5) * gr, Math.sin(a2 + ht * 0.5) * gr);
-            ctx.lineTo(Math.cos(a2 + ht) * gr * 0.92, Math.sin(a2 + ht) * gr * 0.92);
-          }
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          // Hub ring — hollow, not filled
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.38, 0, Math.PI * 2); ctx.stroke();
-          // Center hole
-          ctx.fillStyle = 'rgba(0,0,0,0.3)';
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.15, 0, Math.PI * 2); ctx.fill();
-          ctx.strokeStyle = 'rgba(255,235,180,0.6)';
-          ctx.stroke();
-          ctx.restore();
+          drawGear(mg.x, mg.y, mg.size, mg.teeth, mg.rot, fade * 0.8);
         }
         // Nebula clouds
         for (const n of nebulae) { if (!n.active) continue; n.dist += n.speed * 0.7; n.angle += n.drift * 0.016; const x = cx + Math.cos(n.angle) * n.dist, y = cy + Math.sin(n.angle) * n.dist; const eS = n.size * (0.5 + nT * 0.35); const fd = Math.max(0, n.maxAlpha * (1 - nT / 3.5)); if (fd < 0.002) { n.active = false; continue; } ctx.save(); ctx.globalAlpha = fd; const g = ctx.createRadialGradient(x, y, 0, x, y, eS); g.addColorStop(0, `rgba(${n.color},0.5)`); g.addColorStop(0.4, `rgba(${n.color},0.15)`); g.addColorStop(1, `rgba(${n.color},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, eS, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
