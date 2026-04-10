@@ -500,6 +500,36 @@ const BANNER_THEMES = {
       const SEG = 20;
       const widthNoise = Array.from({length: SEG}, () => 0.5 + Math.random() * 1.0);
 
+      // Pre-compute bristle data (deterministic — no random in draw loop)
+      const SPINE_N = 30;
+      const bristleCount = 20 + Math.floor(Math.random() * 6);
+      const bristles = Array.from({length: bristleCount}, () => {
+        const offset = (Math.random() - 0.5) * 2; // -1 to +1 across width
+        const startI = Math.floor(Math.random() * 0.15 * SPINE_N);
+        const endI = SPINE_N - Math.floor(Math.random() * 0.2 * SPINE_N);
+        const lw = 0.5 + Math.random() * 1.8;
+        const opacity = 0.7 + Math.random() * 0.3;
+        // Pre-compute jitter + gaps for each spine sample
+        const jitters = Array.from({length: SPINE_N + 1}, () => (Math.random() - 0.5) * 2);
+        const gaps = Array.from({length: SPINE_N + 1}, () => Math.random() < 0.06);
+        return { offset, startI, endI, lw, opacity, jitters, gaps };
+      });
+      // Pre-compute splatter
+      const splatters = Array.from({length: 15 + Math.floor(Math.random() * 15)}, () => ({
+        t: 0.3 + Math.random() * 0.7,
+        ox: (Math.random() - 0.5) * 2.8,
+        oy: (Math.random() - 0.5) * 2,
+        r: 0.5 + Math.random() * 3,
+        a: 0.5 + Math.random() * 0.5,
+      }));
+      // Pre-compute thin streaks
+      const streaks = Array.from({length: 5}, () => ({
+        t: Math.random(), ext: 10 + Math.random() * 30,
+        side: Math.random() > 0.5 ? 1 : -1,
+        ox: (Math.random() - 0.5) * 10, oy: (Math.random() - 0.5) * 10,
+        lw: 0.5 + Math.random(),
+      }));
+
       // Splatter dots
       const drops = Array.from({length: 6+Math.floor(Math.random()*8)}, () => ({
         t: Math.random(), ox: (Math.random()-0.5)*45, oy: (Math.random()-0.5)*35,
@@ -515,7 +545,8 @@ const BANNER_THEMES = {
         c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
         cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
         baseW: 24 + Math.random() * 32,
-        strandNoise, widthNoise, drops, SEG,
+        strandNoise, widthNoise, drops, SEG, SPINE_N,
+        bristles, splatters, streaks,
         twistFreq: 1.5 + Math.random() * 2,
         delay: idx * 1.0,
       };
@@ -591,85 +622,72 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Draw a bristle brush stroke: many thin parallel lines + splatter
-    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, wNoise, seg) => {
+    // Draw a bristle brush stroke using PRE-COMPUTED data (zero Math.random)
+    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, strokeData) => {
       ctx.save();
-      ctx.globalAlpha = alpha;
       const c = color;
+      const N = strokeData.SPINE_N;
 
-      // Compute spine normals at sample points
-      const SAMPLES = 30;
+      // Compute spine (positions depend on suck, so computed per frame — but no random)
       const spine = [];
-      for (let i = 0; i <= SAMPLES; i++) {
-        const t = i / SAMPLES;
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
         const x = bz(p1[0],p2[0],p3[0],p4[0],t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],t);
         const dt = 0.01;
         const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt)) - x;
         const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt)) - y;
         const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        // Width taper: thin tail → fat body → splattered head
         const taper = Math.pow(Math.sin(t * Math.PI), 0.4) * (0.6 + t * 0.4);
         spine.push({ x, y, nx: -ty/tl, ny: tx/tl, w: baseW * taper });
       }
 
-      // Draw 18-25 bristle lines, each slightly offset perpendicular
-      const bristleCount = 18 + Math.floor(Math.random() * 8);
+      // Bristle lines — all data pre-computed
       ctx.lineCap = 'round';
-      for (let b = 0; b < bristleCount; b++) {
-        const offset = (b / (bristleCount - 1) - 0.5) * 2; // -1 to +1
-        // Each bristle starts/ends at slightly different t for rough edges
-        const startT = Math.max(0, Math.floor((Math.random() * 0.15) * SAMPLES));
-        const endT = Math.min(SAMPLES, SAMPLES - Math.floor(Math.random() * 0.2 * SAMPLES));
-        // Bristle thickness varies
-        ctx.lineWidth = 0.5 + Math.random() * 1.8;
-        ctx.strokeStyle = rgb(c, 0.7 + Math.random() * 0.3);
-
+      for (const b of strokeData.bristles) {
+        ctx.lineWidth = b.lw;
+        ctx.strokeStyle = rgb(c, b.opacity);
+        ctx.globalAlpha = alpha;
         ctx.beginPath();
         let started = false;
-        for (let i = startT; i <= endT; i++) {
-          const sp = spine[i];
-          const off = offset * sp.w + (Math.random() - 0.5) * 2; // jitter
-          const px = sp.x + sp.nx * off;
-          const py = sp.y + sp.ny * off;
-          // Random gaps in bristle for texture
-          if (Math.random() < 0.06) {
+        for (let i = b.startI; i <= b.endI && i <= N; i++) {
+          if (b.gaps[i]) {
             if (started) { ctx.stroke(); ctx.beginPath(); started = false; }
             continue;
           }
+          const sp = spine[i];
+          const off = b.offset * sp.w + b.jitters[i];
+          const px = sp.x + sp.nx * off;
+          const py = sp.y + sp.ny * off;
           if (!started) { ctx.moveTo(px, py); started = true; }
           else ctx.lineTo(px, py);
         }
         if (started) ctx.stroke();
       }
 
-      // Splatter dots — concentrated at the thick end (high t)
-      const splatCount = 15 + Math.floor(Math.random() * 15);
+      // Splatter — pre-computed positions
       ctx.fillStyle = rgb(c, 1);
-      for (let i = 0; i < splatCount; i++) {
-        const t = 0.3 + Math.random() * 0.7; // bias toward thick end
-        const sp = spine[Math.min(Math.floor(t * SAMPLES), SAMPLES)];
-        const spread = sp.w * 1.4;
-        const dx = sp.x + (Math.random() - 0.5) * spread * 2 + sp.nx * (Math.random() - 0.5) * spread;
-        const dy = sp.y + (Math.random() - 0.5) * spread * 1.5 + sp.ny * (Math.random() - 0.5) * spread;
-        const r = 0.5 + Math.random() * 3;
-        ctx.globalAlpha = alpha * (0.5 + Math.random() * 0.5);
-        ctx.beginPath(); ctx.arc(dx, dy, r, 0, Math.PI * 2); ctx.fill();
+      for (const sp of strokeData.splatters) {
+        const si = Math.min(Math.floor(sp.t * N), N);
+        const pt = spine[si];
+        const spread = pt.w * 1.4;
+        ctx.globalAlpha = alpha * sp.a;
+        ctx.beginPath();
+        ctx.arc(pt.x + sp.ox * spread, pt.y + sp.oy * spread, sp.r, 0, Math.PI * 2);
+        ctx.fill();
       }
 
-      // Thin streaks extending beyond the main body
-      ctx.globalAlpha = alpha * 0.6;
-      ctx.lineWidth = 0.5 + Math.random();
-      ctx.strokeStyle = rgb(c, 0.8);
-      for (let i = 0; i < 5; i++) {
-        const t0 = Math.random();
-        const sp = spine[Math.floor(t0 * SAMPLES)];
-        const ext = 10 + Math.random() * 30;
-        const ang = Math.atan2(sp.ny, sp.nx) * (Math.random() > 0.5 ? 1 : -1);
+      // Streaks — pre-computed
+      for (const sk of strokeData.streaks) {
+        const si = Math.floor(sk.t * N);
+        const pt = spine[Math.min(si, N)];
+        const ang = Math.atan2(pt.ny, pt.nx) * sk.side;
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.lineWidth = sk.lw;
+        ctx.strokeStyle = rgb(c, 0.8);
         ctx.beginPath();
-        ctx.moveTo(sp.x, sp.y);
-        ctx.lineTo(sp.x + Math.cos(ang) * ext + (Math.random()-0.5)*10,
-                   sp.y + Math.sin(ang) * ext + (Math.random()-0.5)*10);
+        ctx.moveTo(pt.x, pt.y);
+        ctx.lineTo(pt.x + Math.cos(ang) * sk.ext + sk.ox, pt.y + Math.sin(ang) * sk.ext + sk.oy);
         ctx.stroke();
       }
 
@@ -738,7 +756,7 @@ const BANNER_THEMES = {
             const p3 = [c2x2 + sn.ox3 + t2, c2y2 + sn.oy3];
             const p4 = [ex3 + sn.ox4 + t3, ey3 + sn.oy4];
 
-            drawStroke(ctx, p1, p2, p3, p4, bw * 0.7, s.cols[si], alpha * 0.9, s.widthNoise, s.SEG);
+            drawStroke(ctx, p1, p2, p3, p4, bw * 0.7, s.cols[si], alpha * 0.9, s);
           }
 
           // Droplets
@@ -784,7 +802,7 @@ const BANNER_THEMES = {
             const p2 = [c1x2+sn.ox2+tw(0.33), c1y2+sn.oy2];
             const p3 = [c2x2+sn.ox3+tw(0.66), c2y2+sn.oy3];
             const p4 = [ex3+sn.ox4+tw(1), ey3+sn.oy4];
-            drawStroke(ctx, p1, p2, p3, p4, bw*0.7, s.cols[si2], alpha*0.9, s.widthNoise, s.SEG);
+            drawStroke(ctx, p1, p2, p3, p4, bw*0.7, s.cols[si2], alpha*0.9, s);
           }
         }
       }
