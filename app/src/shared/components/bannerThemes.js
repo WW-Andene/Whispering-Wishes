@@ -617,17 +617,15 @@ const BANNER_THEMES = {
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
           const angle = Math.atan2(dy, dx);
 
-          // Points closer to tip (higher frac) get sucked faster — like water flowing
-          const pointPull = suckP * (0.3 + frac * 0.7);
-          // Cubic ease — slow start, accelerates hard
-          const pull = pointPull * pointPull;
+          // Tip gets sucked first, base trails behind
+          const pull = Math.min(1, suckP * (0.4 + frac * 0.6));
 
-          // Spiral: rotate around center as being pulled in
-          const spiral = pull * Math.PI * 1.5; // 3/4 turn at full suck
+          // Spiral toward center
+          const spiral = pull * Math.PI * 1.5;
           const newAngle = angle + spiral;
 
-          // Shrink distance toward center
-          const newDist = dist * (1 - pull * 0.92);
+          // Fully reach center at pull=1
+          const newDist = dist * (1 - pull);
 
           x = ccx + Math.cos(newAngle) * newDist;
           y = ccy + Math.sin(newAngle) * newDist;
@@ -670,7 +668,7 @@ const BANNER_THEMES = {
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
-            suckP = suckP * suckP * suckP;
+            suckP = suckP * suckP; // quadratic ease-in (was cubic — too slow)
           }
           // Stay visible through entire suck, vanish at explosion
           const alpha = ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.3) : 0.92;
