@@ -591,28 +591,50 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Draw a single noisy tapered bezier stroke
+    // Draw a flowing, veil-like bezier stroke with sine displacement
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, wNoise, seg) => {
       ctx.save();
       ctx.strokeStyle = rgb(color, 1);
-      ctx.lineCap = 'butt';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = rgb(color, 0.35);
-      ctx.shadowBlur = baseW * 0.5;
+      ctx.shadowColor = rgb(color, 0.3);
+      ctx.shadowBlur = baseW * 0.4;
 
-      for (let i = 0; i < seg; i++) {
-        const t0 = i / seg, t1 = (i+1) / seg;
-        const x0 = bz(p1[0],p2[0],p3[0],p4[0],t0);
-        const y0 = bz(p1[1],p2[1],p3[1],p4[1],t0);
-        const x1 = bz(p1[0],p2[0],p3[0],p4[0],t1);
-        const y1 = bz(p1[1],p2[1],p3[1],p4[1],t1);
-        const tMid = (t0+t1)*0.5;
-        // Sharp taper: flat middle, quick fade at tips
-        const taper = Math.min(1, Math.min(tMid * 5, (1 - tMid) * 5));
-        ctx.lineWidth = Math.max(0.3, baseW * taper * wNoise[i]);
+      // Pre-compute all points with sine wave displacement perpendicular to path
+      const pts = [];
+      for (let i = 0; i <= seg; i++) {
+        const t = i / seg;
+        const x = bz(p1[0],p2[0],p3[0],p4[0],t);
+        const y = bz(p1[1],p2[1],p3[1],p4[1],t);
+        // Tangent for perpendicular
+        const dt = 0.01;
+        const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt)) - x;
+        const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt)) - y;
+        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+        const nx = -ty/tl, ny = tx/tl;
+        // Veil wave: sine displacement perpendicular to path
+        const wave = Math.sin(t * Math.PI * 3.5) * baseW * 0.6;
+        const taper = Math.pow(Math.sin(t * Math.PI), 0.7);
+        pts.push({
+          x: x + nx * wave, y: y + ny * wave,
+          w: Math.max(0.3, baseW * taper * (wNoise[Math.min(i, seg-1)] || 1)),
+        });
+      }
+
+      // Draw as one smooth path using quadratic curves
+      for (let i = 0; i < pts.length - 1; i++) {
+        ctx.lineWidth = (pts[i].w + pts[i+1].w) * 0.5;
         ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
+        ctx.moveTo(pts[i].x, pts[i].y);
+        if (i + 2 < pts.length) {
+          // Smooth curve through midpoint to next
+          const mx = (pts[i+1].x + pts[i+2].x) * 0.5;
+          const my = (pts[i+1].y + pts[i+2].y) * 0.5;
+          ctx.quadraticCurveTo(pts[i+1].x, pts[i+1].y, mx, my);
+        } else {
+          ctx.quadraticCurveTo(pts[i+1].x, pts[i+1].y, pts[i+1].x, pts[i+1].y);
+        }
         ctx.stroke();
       }
       ctx.restore();
