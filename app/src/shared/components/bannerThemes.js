@@ -459,135 +459,136 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): fast aggressive paint swooshes, multi-layered color splashes
+  // 🎨 PRISMATIC (Lynae): liquid paint splashes — thick glossy flowing masses
   prismatic: (w, h) => {
     const PAINT = [
-      '255,45,120',  // hot pink / magenta
-      '255,140,0',   // apollo orange
-      '250,230,20',  // hazard yellow
-      '0,220,100',   // acid green
-      '30,180,255',  // outlaw blue
-      '180,50,255',  // violet
-      '0,230,230',   // cyan
-      '255,80,200',  // neon pink
+      [255,45,120],   // hot pink
+      [255,140,0],    // apollo orange
+      [250,230,20],   // hazard yellow
+      [0,220,100],    // acid green
+      [30,180,255],   // outlaw blue
+      [180,50,255],   // violet
+      [0,230,230],    // cyan
+      [255,80,200],   // neon pink
     ];
-    const CYCLE = 10;
+    const rgb = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    // Brighter version for highlights
+    const bright = (c) => [Math.min(255, c[0] + 80), Math.min(255, c[1] + 80), Math.min(255, c[2] + 80)];
+    // Darker version for depth
+    const dark = (c) => [c[0] * 0.5 | 0, c[1] * 0.5 | 0, c[2] * 0.5 | 0];
 
-    // Helper: cubic bezier at parameter p (0-1)
+    // Cubic bezier helper
     const bz = (a, b, c, d, p) => {
       const u = 1 - p;
       return u * u * u * a + 3 * u * u * p * b + 3 * u * p * p * c + p * p * p * d;
     };
 
-    // ── Multi-color liquid swoosh strokes ──
-    const initStroke = (startT) => {
-      const layers = 2 + Math.floor(Math.random() * 2);
-      const cis = [];
-      while (cis.length < layers) {
-        const c = Math.floor(Math.random() * PAINT.length);
-        if (!cis.includes(c)) cis.push(c);
-      }
-      const sx = (Math.random() - 0.3) * w;
-      const sy = Math.random() * h;
-      const sweep = (0.5 + Math.random() * 0.8) * w * (Math.random() > 0.5 ? 1 : -1);
-      const rise = (Math.random() - 0.5) * h * 1.2;
-      // Per-stroke wobble seeds for organic edges
-      const wobbleA = Array.from({ length: 6 }, () => 0.5 + Math.random() * 1.5);
-      const wobbleF = Array.from({ length: 6 }, () => 2 + Math.random() * 5);
-      const wobbleP = Array.from({ length: 6 }, () => Math.random() * Math.PI * 2);
-      // Splatter droplets flung off the tip
-      const splatCount = 3 + Math.floor(Math.random() * 5);
-      const splats = Array.from({ length: splatCount }, () => ({
-        ang: (Math.random() - 0.5) * 1.2, // relative to stroke direction
-        dist: 5 + Math.random() * 30,
-        r: 1 + Math.random() * 3.5,
-        ci: cis[Math.floor(Math.random() * cis.length)],
-      }));
-      return {
-        sx, sy,
-        cp1x: sx + sweep * 0.25 + (Math.random() - 0.5) * 60,
-        cp1y: sy + rise * 0.2 + (Math.random() - 0.5) * 50,
-        cp2x: sx + sweep * 0.65 + (Math.random() - 0.5) * 60,
-        cp2y: sy + rise * 0.75 + (Math.random() - 0.5) * 50,
-        ex: sx + sweep, ey: sy + rise,
-        cis, splats, wobbleA, wobbleF, wobbleP,
-        baseWidth: 10 + Math.random() * 22,
-        born: startT,
-        drawDur: 0.1 + Math.random() * 0.15,
-        fadeDur: 1.8 + Math.random() * 2.5,
-        alpha: 0.3 + Math.random() * 0.25,
-      };
-    };
-    const strokes = Array.from({ length: 10 }, (_, i) => initStroke(-4 + i * 0.4));
-
-    // ── Splashes: burst of droplets ──
+    // ── Liquid splash: thick flowing mass with tendrils + droplets ──
     const initSplash = (startT) => {
       const ci = Math.floor(Math.random() * PAINT.length);
       const ci2 = (ci + 1 + Math.floor(Math.random() * (PAINT.length - 1))) % PAINT.length;
-      const count = 8 + Math.floor(Math.random() * 10);
-      const drops = Array.from({ length: count }, () => ({
-        angle: Math.random() * Math.PI * 2,
-        dist: 10 + Math.random() * 55,
-        size: 1 + Math.random() * 4,
+      const col = PAINT[ci], col2 = PAINT[ci2];
+
+      // Main flow spine — big sweeping bezier
+      const sx = (Math.random() - 0.2) * w;
+      const sy = Math.random() * h;
+      const sweep = (0.4 + Math.random() * 0.7) * w * (Math.random() > 0.5 ? 1 : -1);
+      const rise = (Math.random() - 0.5) * h * 1.0;
+
+      // Width profile: dramatic variation (wide sheets pinching to thin necks)
+      // 4-6 control widths along the spine
+      const wPts = 4 + Math.floor(Math.random() * 3);
+      const widths = Array.from({ length: wPts }, (_, i) => {
+        const base = 15 + Math.random() * 45; // 15-60px half-width
+        // Make some dramatically wide (bulges) and some thin (necks)
+        return i % 2 === 0 ? base * (1.2 + Math.random() * 0.8) : base * (0.2 + Math.random() * 0.3);
+      });
+      // Ensure first and last are tapered
+      widths[0] *= 0.3;
+      widths[widths.length - 1] *= 0.4;
+
+      // Edge wobble: low-freq organic undulation
+      const wobbles = Array.from({ length: 8 }, () => ({
+        freq: 1 + Math.random() * 3,
+        amp: 3 + Math.random() * 10,
+        phase: Math.random() * Math.PI * 2,
+      }));
+
+      // Tendrils branching off at random spine positions
+      const tendrilCount = 2 + Math.floor(Math.random() * 3);
+      const tendrils = Array.from({ length: tendrilCount }, () => {
+        const at = 0.2 + Math.random() * 0.6; // where on spine (0-1)
+        const ang = (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 1.2);
+        const len = 20 + Math.random() * 50;
+        const thick = 3 + Math.random() * 8;
+        const endBlob = 2 + Math.random() * 5; // blob at tip
+        return { at, ang, len, thick, endBlob, ci: Math.random() > 0.5 ? ci : ci2 };
+      });
+
+      // Flying droplets
+      const dropCount = 8 + Math.floor(Math.random() * 12);
+      const drops = Array.from({ length: dropCount }, () => ({
+        at: Math.random(), // near which spine point
+        offAng: (Math.random() - 0.5) * Math.PI,
+        dist: 15 + Math.random() * 60,
+        r: 1 + Math.random() * 4.5,
         ci: Math.random() > 0.5 ? ci : ci2,
       }));
+
       return {
-        cx: Math.random() * w, cy: Math.random() * h, ci, drops,
+        sx, sy,
+        cp1x: sx + sweep * 0.3 + (Math.random() - 0.5) * 50,
+        cp1y: sy + rise * 0.25 + (Math.random() - 0.5) * 40,
+        cp2x: sx + sweep * 0.7 + (Math.random() - 0.5) * 50,
+        cp2y: sy + rise * 0.8 + (Math.random() - 0.5) * 40,
+        ex: sx + sweep, ey: sy + rise,
+        col, col2, ci, ci2,
+        widths, wPts, wobbles, tendrils, drops,
         born: startT,
-        popDur: 0.06,
-        holdDur: 1.2 + Math.random() * 1.5,
-        fadeDur: 0.8 + Math.random() * 1,
-        alpha: 0.35 + Math.random() * 0.25,
-        blobR: 3 + Math.random() * 6,
-        dead: false,
+        drawDur: 0.12 + Math.random() * 0.13, // fast snap
+        fadeDur: 2.0 + Math.random() * 2.5,
+        alpha: 0.35 + Math.random() * 0.2,
       };
     };
-    const splashes = Array.from({ length: 7 }, (_, i) => initSplash(-3 + i * 0.5));
 
-    // ── Drips: slow paint running down ──
-    const makeDrip = () => ({
-      x: Math.random() * w,
-      y: -10 - Math.random() * h * 0.3,
-      speed: 0.15 + Math.random() * 0.3,
-      width: 1.5 + Math.random() * 2.5,
-      len: 15 + Math.random() * 45,
-      ci: Math.floor(Math.random() * PAINT.length),
-      alpha: 0.12 + Math.random() * 0.18,
-    });
-    const drips = Array.from({ length: 10 }, makeDrip);
+    const splashes = Array.from({ length: 6 }, (_, i) => initSplash(-5 + i * 0.8));
 
-    // ── Mist: soft color clouds ──
-    const mists = Array.from({ length: 3 }, () => ({
+    // Small persistent floating droplets for atmosphere
+    const floaters = Array.from({ length: 15 }, () => ({
       x: Math.random() * w, y: Math.random() * h,
-      r: 35 + Math.random() * 55, vx: (Math.random() - 0.5) * 0.2,
+      r: 1 + Math.random() * 3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -0.1 - Math.random() * 0.3,
       ci: Math.floor(Math.random() * PAINT.length),
-      alpha: 0.025 + Math.random() * 0.025, phase: Math.random() * Math.PI * 2,
+      alpha: 0.1 + Math.random() * 0.15,
+      phase: Math.random() * Math.PI * 2,
     }));
 
     return (ctx, t) => {
-      // ── Mist ──
-      for (const m of mists) {
-        m.x += m.vx;
-        if (m.x < -m.r) m.x = w + m.r;
-        if (m.x > w + m.r) m.x = -m.r;
+      // ── Floating ambient droplets ──
+      for (const f of floaters) {
+        f.x += f.vx; f.y += f.vy;
+        if (f.y < -10) { f.y = h + 10; f.x = Math.random() * w; }
+        if (f.x < -10) f.x = w + 10;
+        if (f.x > w + 10) f.x = -10;
         ctx.save();
-        ctx.globalAlpha = m.alpha * (0.6 + Math.sin(t * 0.3 + m.phase) * 0.4);
-        const g = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r);
-        g.addColorStop(0, `rgba(${PAINT[m.ci]},0.45)`);
-        g.addColorStop(1, `rgba(${PAINT[m.ci]},0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = f.alpha * (0.5 + 0.5 * Math.sin(t * 2 + f.phase));
+        const c = PAINT[f.ci];
+        ctx.fillStyle = rgb(c, 1);
+        ctx.shadowColor = rgb(c, 0.5);
+        ctx.shadowBlur = 4;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
 
-      // ── Liquid multi-color swoosh strokes ──
-      for (let si = 0; si < strokes.length; si++) {
-        const s = strokes[si];
+      // ── Liquid splash masses ──
+      for (let si = 0; si < splashes.length; si++) {
+        const s = splashes[si];
         const age = t - s.born;
         const totalLife = s.drawDur + s.fadeDur;
 
         if (age > totalLife) {
-          strokes[si] = initStroke(t + 0.2 + Math.random() * 1.5);
+          splashes[si] = initSplash(t + 0.3 + Math.random() * 1.5);
           continue;
         }
         if (age < 0) continue;
@@ -598,194 +599,198 @@ const BANNER_THEMES = {
         const fadeAlpha = 1 - fadeP * fadeP;
         if (fadeAlpha < 0.01) continue;
 
-        // Build spine with organic wobbly width
-        const SEG = 50;
-        const endSeg = Math.max(1, Math.floor(drawP * SEG));
-        const pts = [];
+        // ── Build spine points with width profile ──
+        const SEG = 60;
+        const endSeg = Math.max(2, Math.floor(drawP * SEG));
+        const spine = [];
         for (let i = 0; i <= endSeg; i++) {
           const p = i / SEG;
           const x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
           const y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
-          const pp = Math.min(1, p + 0.02);
+          const pp = Math.min(1, p + 0.015);
           const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - x;
           const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - y;
           const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
           const nx = -ty / tLen, ny = tx / tLen;
-          const along = i / endSeg;
-          const pressure = Math.sin(along * Math.PI);
-          // Organic wobble on each edge — different frequencies per side
-          let wobTop = 0, wobBot = 0;
-          for (let k = 0; k < 3; k++) {
-            wobTop += Math.sin(p * s.wobbleF[k] * Math.PI * 2 + s.wobbleP[k]) * s.wobbleA[k];
-            wobBot += Math.sin(p * s.wobbleF[k + 3] * Math.PI * 2 + s.wobbleP[k + 3]) * s.wobbleA[k + 3];
-          }
-          const baseHW = s.baseWidth * 0.5 * (0.12 + 0.88 * pressure);
-          pts.push({ x, y, nx, ny, hwTop: baseHW + wobTop, hwBot: baseHW + wobBot });
-        }
-        if (pts.length < 2) continue;
 
+          // Interpolate width from control points
+          const wp = p * (s.wPts - 1);
+          const wi = Math.min(s.wPts - 2, Math.floor(wp));
+          const wf = wp - wi;
+          const baseW = s.widths[wi] * (1 - wf) + s.widths[wi + 1] * wf;
+
+          // Organic wobble
+          let wob = 0;
+          for (let k = 0; k < 4; k++) {
+            const wb = s.wobbles[k];
+            wob += Math.sin(p * wb.freq * Math.PI * 2 + wb.phase) * wb.amp;
+          }
+          let wob2 = 0;
+          for (let k = 4; k < 8; k++) {
+            const wb = s.wobbles[k];
+            wob2 += Math.sin(p * wb.freq * Math.PI * 2 + wb.phase) * wb.amp;
+          }
+
+          spine.push({
+            x, y, nx, ny, p,
+            hwTop: Math.max(1, baseW + wob),
+            hwBot: Math.max(1, baseW + wob2),
+          });
+        }
+        if (spine.length < 3) continue;
+
+        // ── Draw main body as filled shape ──
         ctx.save();
         ctx.globalAlpha = s.alpha * fadeAlpha;
 
-        // Multi-color gradient along the stroke
-        const last = pts[pts.length - 1];
-        const g = ctx.createLinearGradient(pts[0].x, pts[0].y, last.x, last.y);
-        const nc = s.cis.length;
-        for (let c = 0; c < nc; c++) {
-          const stop = c / (nc - 1 || 1);
-          g.addColorStop(Math.max(0, stop - 0.08), `rgba(${PAINT[s.cis[c]]},1)`);
-          g.addColorStop(Math.min(1, stop + 0.08), `rgba(${PAINT[s.cis[c]]},1)`);
-        }
-        ctx.fillStyle = g;
-        ctx.shadowColor = `rgba(${PAINT[s.cis[0]]},0.6)`;
-        ctx.shadowBlur = 14;
+        // Color gradient along length
+        const first = spine[0], last = spine[spine.length - 1];
+        const grad = ctx.createLinearGradient(first.x, first.y, last.x, last.y);
+        grad.addColorStop(0, rgb(s.col, 1));
+        grad.addColorStop(0.5, rgb(s.col2, 1));
+        grad.addColorStop(1, rgb(s.col, 0.9));
 
-        // Filled ribbon with wobbly edges
+        ctx.fillStyle = grad;
+        ctx.shadowColor = rgb(s.col, 0.5);
+        ctx.shadowBlur = 16;
+
+        // Build organic closed shape with bezier curves
         ctx.beginPath();
         // Top edge (forward)
-        ctx.moveTo(pts[0].x + pts[0].nx * pts[0].hwTop, pts[0].y + pts[0].ny * pts[0].hwTop);
-        for (let i = 1; i < pts.length; i++) {
-          // Use quadratic curves between every 2 points for smooth wobble
-          if (i % 2 === 1 && i + 1 < pts.length) {
-            const n = pts[i + 1];
-            ctx.quadraticCurveTo(
-              pts[i].x + pts[i].nx * pts[i].hwTop, pts[i].y + pts[i].ny * pts[i].hwTop,
-              n.x + n.nx * n.hwTop, n.y + n.ny * n.hwTop
-            );
-            i++;
-          } else {
-            ctx.lineTo(pts[i].x + pts[i].nx * pts[i].hwTop, pts[i].y + pts[i].ny * pts[i].hwTop);
-          }
+        let px = first.x + first.nx * first.hwTop;
+        let py = first.y + first.ny * first.hwTop;
+        ctx.moveTo(px, py);
+        for (let i = 2; i < spine.length; i += 2) {
+          const cp = spine[Math.min(i - 1, spine.length - 1)];
+          const pt = spine[Math.min(i, spine.length - 1)];
+          ctx.quadraticCurveTo(
+            cp.x + cp.nx * cp.hwTop, cp.y + cp.ny * cp.hwTop,
+            pt.x + pt.nx * pt.hwTop, pt.y + pt.ny * pt.hwTop
+          );
         }
+        // Rounded tip
+        const tip = spine[spine.length - 1];
+        ctx.quadraticCurveTo(
+          tip.x + tip.nx * 2, tip.y + tip.ny * 2,
+          tip.x - tip.nx * tip.hwBot, tip.y - tip.ny * tip.hwBot
+        );
         // Bottom edge (backward)
-        for (let i = pts.length - 1; i >= 0; i--) {
-          if (i % 2 === 1 && i - 1 >= 0) {
-            const n = pts[i - 1];
-            ctx.quadraticCurveTo(
-              pts[i].x - pts[i].nx * pts[i].hwBot, pts[i].y - pts[i].ny * pts[i].hwBot,
-              n.x - n.nx * n.hwBot, n.y - n.ny * n.hwBot
-            );
-            i--;
-          } else {
-            ctx.lineTo(pts[i].x - pts[i].nx * pts[i].hwBot, pts[i].y - pts[i].ny * pts[i].hwBot);
-          }
+        for (let i = spine.length - 3; i >= 0; i -= 2) {
+          const cp = spine[Math.max(i + 1, 0)];
+          const pt = spine[Math.max(i, 0)];
+          ctx.quadraticCurveTo(
+            cp.x - cp.nx * cp.hwBot, cp.y - cp.ny * cp.hwBot,
+            pt.x - pt.nx * pt.hwBot, pt.y - pt.ny * pt.hwBot
+          );
         }
         ctx.closePath();
         ctx.fill();
 
-        // Wet sheen: bright inner core offset slightly
-        ctx.globalAlpha = s.alpha * fadeAlpha * 0.35;
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        // ── Glossy highlight (shifted toward one edge) ──
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.45;
+        const hiGrad = ctx.createLinearGradient(first.x, first.y, last.x, last.y);
+        hiGrad.addColorStop(0, rgb(bright(s.col), 0.7));
+        hiGrad.addColorStop(0.4, 'rgba(255,255,255,0.5)');
+        hiGrad.addColorStop(0.6, 'rgba(255,255,255,0.3)');
+        hiGrad.addColorStop(1, rgb(bright(s.col2), 0.4));
+        ctx.fillStyle = hiGrad;
         ctx.shadowBlur = 0;
+
+        // Narrower highlight ribbon on top edge
         ctx.beginPath();
-        const coreR = 0.2;
-        for (let i = 0; i < pts.length; i++) {
-          const ox = pts[i].x + pts[i].nx * pts[i].hwTop * coreR * 0.6;
-          const oy = pts[i].y + pts[i].ny * pts[i].hwTop * coreR * 0.6;
+        const hiShift = 0.6; // stay near top edge
+        for (let i = 0; i < spine.length; i++) {
+          const sp = spine[i];
+          const ox = sp.x + sp.nx * sp.hwTop * hiShift;
+          const oy = sp.y + sp.ny * sp.hwTop * hiShift;
           if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
         }
-        for (let i = pts.length - 1; i >= 0; i--) {
-          const ox = pts[i].x - pts[i].nx * pts[i].hwBot * coreR * 0.3;
-          const oy = pts[i].y - pts[i].ny * pts[i].hwBot * coreR * 0.3;
+        for (let i = spine.length - 1; i >= 0; i--) {
+          const sp = spine[i];
+          const ox = sp.x + sp.nx * sp.hwTop * 0.15;
+          const oy = sp.y + sp.ny * sp.hwTop * 0.15;
           ctx.lineTo(ox, oy);
         }
         ctx.closePath();
         ctx.fill();
 
-        // Splatter droplets flung off the stroke tip
-        if (drawP > 0.5) {
-          const tipIdx = pts.length - 1;
-          const tip = pts[tipIdx];
-          // Tangent at tip for fling direction
-          const prev = pts[Math.max(0, tipIdx - 2)];
-          const dirX = tip.x - prev.x, dirY = tip.y - prev.y;
-          const dirLen = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
-          const tdx = dirX / dirLen, tdy = dirY / dirLen;
-          const splatAlpha = s.alpha * fadeAlpha * Math.min(1, (drawP - 0.5) * 4);
+        // ── Dark edge for depth (bottom side) ──
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.3;
+        ctx.fillStyle = rgb(dark(s.col), 0.6);
+        ctx.beginPath();
+        for (let i = 0; i < spine.length; i++) {
+          const sp = spine[i];
+          const ox = sp.x - sp.nx * sp.hwBot * 0.5;
+          const oy = sp.y - sp.ny * sp.hwBot * 0.5;
+          if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
+        }
+        for (let i = spine.length - 1; i >= 0; i--) {
+          const sp = spine[i];
+          ctx.lineTo(sp.x - sp.nx * sp.hwBot, sp.y - sp.ny * sp.hwBot);
+        }
+        ctx.closePath();
+        ctx.fill();
 
-          for (const sp of s.splats) {
-            const cosA = Math.cos(sp.ang), sinA = Math.sin(sp.ang);
-            const fx = tdx * cosA - tdy * sinA;
-            const fy = tdx * sinA + tdy * cosA;
-            const dx = tip.x + fx * sp.dist;
-            const dy = tip.y + fy * sp.dist;
-            ctx.save();
-            ctx.globalAlpha = splatAlpha;
-            ctx.fillStyle = `rgba(${PAINT[sp.ci]},1)`;
-            ctx.shadowColor = `rgba(${PAINT[sp.ci]},0.5)`;
-            ctx.shadowBlur = 4;
+        // ── Tendrils branching off ──
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.9;
+        for (const ten of s.tendrils) {
+          if (ten.at > drawP) continue;
+          const si2 = Math.floor(ten.at * (spine.length - 1));
+          const base = spine[Math.min(si2, spine.length - 1)];
+          // Direction: perpendicular + angled
+          const ca = Math.cos(ten.ang), sa = Math.sin(ten.ang);
+          const dx = base.nx * ca - base.ny * sa;
+          const dy = base.nx * sa + base.ny * ca;
+          const ex = base.x + dx * ten.len;
+          const ey = base.y + dy * ten.len;
+          const mx = base.x + dx * ten.len * 0.5 + (Math.random() - 0.5) * 10;
+          const my = base.y + dy * ten.len * 0.5 + (Math.random() - 0.5) * 10;
+
+          ctx.fillStyle = rgb(PAINT[ten.ci], 1);
+          ctx.shadowColor = rgb(PAINT[ten.ci], 0.4);
+          ctx.shadowBlur = 6;
+
+          // Tapered tendril as filled bezier shape
+          ctx.beginPath();
+          ctx.moveTo(base.x + base.nx * ten.thick, base.y + base.ny * ten.thick);
+          ctx.quadraticCurveTo(mx + dy * 2, my - dx * 2, ex, ey);
+          ctx.quadraticCurveTo(mx - dy * 2, my + dx * 2, base.x - base.nx * ten.thick, base.y - base.ny * ten.thick);
+          ctx.closePath();
+          ctx.fill();
+
+          // Blob at tendril tip
+          ctx.beginPath();
+          ctx.arc(ex, ey, ten.endBlob, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // ── Flying droplets ──
+        ctx.shadowBlur = 3;
+        for (const dr of s.drops) {
+          if (dr.at > drawP) continue;
+          const si2 = Math.floor(dr.at * (spine.length - 1));
+          const base = spine[Math.min(si2, spine.length - 1)];
+          const ca = Math.cos(dr.offAng), sa = Math.sin(dr.offAng);
+          const dx = base.nx * ca - base.ny * sa;
+          const dy = base.nx * sa + base.ny * ca;
+          const px2 = base.x + dx * dr.dist;
+          const py2 = base.y + dy * dr.dist;
+          const c = PAINT[dr.ci];
+          ctx.globalAlpha = s.alpha * fadeAlpha * 0.8;
+          ctx.fillStyle = rgb(c, 1);
+          ctx.shadowColor = rgb(c, 0.4);
+          ctx.beginPath(); ctx.arc(px2, py2, dr.r, 0, Math.PI * 2); ctx.fill();
+          // Tiny highlight on droplet
+          if (dr.r > 2) {
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.shadowBlur = 0;
             ctx.beginPath();
-            ctx.arc(dx, dy, sp.r, 0, Math.PI * 2);
+            ctx.arc(px2 - dr.r * 0.25, py2 - dr.r * 0.25, dr.r * 0.35, 0, Math.PI * 2);
             ctx.fill();
-            ctx.restore();
+            ctx.shadowBlur = 3;
           }
         }
 
-        ctx.restore();
-      }
-
-      // ── Splashes ──
-      for (let si = 0; si < splashes.length; si++) {
-        const sp = splashes[si];
-        const age = t - sp.born;
-        const totalLife = sp.popDur + sp.holdDur + sp.fadeDur;
-
-        if (age > totalLife) {
-          splashes[si] = initSplash(t + 0.5 + Math.random() * 2);
-          continue;
-        }
-        if (age < 0) continue;
-
-        const popP = Math.min(1, age / sp.popDur);
-        const spread = 1 - Math.pow(1 - popP, 4);
-        const fadeP = age > sp.popDur + sp.holdDur
-          ? (age - sp.popDur - sp.holdDur) / sp.fadeDur : 0;
-        const alpha = sp.alpha * (1 - fadeP * fadeP);
-        if (alpha < 0.01) continue;
-
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = `rgba(${PAINT[sp.ci]},1)`;
-        ctx.shadowColor = `rgba(${PAINT[sp.ci]},0.6)`;
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(sp.cx, sp.cy, sp.blobR * spread, 0, Math.PI * 2);
-        ctx.fill();
-        for (const d of sp.drops) {
-          ctx.fillStyle = `rgba(${PAINT[d.ci]},1)`;
-          ctx.shadowColor = `rgba(${PAINT[d.ci]},0.5)`;
-          const dx = sp.cx + Math.cos(d.angle) * d.dist * spread;
-          const dy = sp.cy + Math.sin(d.angle) * d.dist * spread;
-          ctx.beginPath();
-          ctx.arc(dx, dy, d.size * spread, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-
-      // ── Drips ──
-      for (const d of drips) {
-        d.y += d.speed;
-        if (d.y > h + d.len + 10) {
-          Object.assign(d, makeDrip());
-          d.y = -d.len - Math.random() * h * 0.2;
-        }
-        ctx.save();
-        ctx.globalAlpha = d.alpha;
-        const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.len);
-        g.addColorStop(0, `rgba(${PAINT[d.ci]},0)`);
-        g.addColorStop(0.25, `rgba(${PAINT[d.ci]},0.9)`);
-        g.addColorStop(1, `rgba(${PAINT[d.ci]},0.5)`);
-        ctx.fillStyle = g;
-        ctx.shadowColor = `rgba(${PAINT[d.ci]},0.4)`;
-        ctx.shadowBlur = 4;
-        // Tapered drip: thin top, round bottom
-        ctx.beginPath();
-        ctx.moveTo(d.x - d.width * 0.2, d.y);
-        ctx.lineTo(d.x + d.width * 0.2, d.y);
-        ctx.quadraticCurveTo(d.x + d.width * 0.5, d.y + d.len * 0.6, d.x, d.y + d.len);
-        ctx.quadraticCurveTo(d.x - d.width * 0.5, d.y + d.len * 0.6, d.x - d.width * 0.2, d.y);
-        ctx.fill();
         ctx.restore();
       }
     };
