@@ -622,72 +622,47 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Draw a bristle brush stroke using PRE-COMPUTED data (zero Math.random)
+    // Draw one thick solid brush stroke + splatter (like the reference)
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, strokeData) => {
       ctx.save();
-      const c = color;
-      const N = strokeData.SPINE_N;
+      ctx.globalAlpha = alpha;
 
-      // Compute spine (positions depend on suck, so computed per frame — but no random)
-      const spine = [];
-      for (let i = 0; i <= N; i++) {
-        const t = i / N;
+      // One thick bezier stroke — solid filled, round ends
+      ctx.strokeStyle = rgb(color, 1);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = baseW;
+      ctx.shadowColor = rgb(color, 0.3);
+      ctx.shadowBlur = baseW * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(p1[0], p1[1]);
+      ctx.bezierCurveTo(p2[0], p2[1], p3[0], p3[1], p4[0], p4[1]);
+      ctx.stroke();
+
+      // Splatter dots around the stroke — pre-computed
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = rgb(color, 1);
+      const N = strokeData.SPINE_N;
+      for (const sp of strokeData.splatters) {
+        const t = sp.t;
         const x = bz(p1[0],p2[0],p3[0],p4[0],t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],t);
-        const dt = 0.01;
-        const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt)) - x;
-        const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt)) - y;
-        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        const taper = Math.pow(Math.sin(t * Math.PI), 0.4) * (0.6 + t * 0.4);
-        spine.push({ x, y, nx: -ty/tl, ny: tx/tl, w: baseW * taper });
-      }
-
-      // Bristle lines — all data pre-computed
-      ctx.lineCap = 'round';
-      for (const b of strokeData.bristles) {
-        ctx.lineWidth = b.lw;
-        ctx.strokeStyle = rgb(c, b.opacity);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        let started = false;
-        for (let i = b.startI; i <= b.endI && i <= N; i++) {
-          if (b.gaps[i]) {
-            if (started) { ctx.stroke(); ctx.beginPath(); started = false; }
-            continue;
-          }
-          const sp = spine[i];
-          const off = b.offset * sp.w + b.jitters[i];
-          const px = sp.x + sp.nx * off;
-          const py = sp.y + sp.ny * off;
-          if (!started) { ctx.moveTo(px, py); started = true; }
-          else ctx.lineTo(px, py);
-        }
-        if (started) ctx.stroke();
-      }
-
-      // Splatter — pre-computed positions
-      ctx.fillStyle = rgb(c, 1);
-      for (const sp of strokeData.splatters) {
-        const si = Math.min(Math.floor(sp.t * N), N);
-        const pt = spine[si];
-        const spread = pt.w * 1.4;
         ctx.globalAlpha = alpha * sp.a;
         ctx.beginPath();
-        ctx.arc(pt.x + sp.ox * spread, pt.y + sp.oy * spread, sp.r, 0, Math.PI * 2);
+        ctx.arc(x + sp.ox * baseW, y + sp.oy * baseW, sp.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Streaks — pre-computed
+      // Thin streaks — pre-computed
       for (const sk of strokeData.streaks) {
-        const si = Math.floor(sk.t * N);
-        const pt = spine[Math.min(si, N)];
-        const ang = Math.atan2(pt.ny, pt.nx) * sk.side;
+        const x = bz(p1[0],p2[0],p3[0],p4[0],sk.t);
+        const y = bz(p1[1],p2[1],p3[1],p4[1],sk.t);
         ctx.globalAlpha = alpha * 0.6;
         ctx.lineWidth = sk.lw;
-        ctx.strokeStyle = rgb(c, 0.8);
+        ctx.strokeStyle = rgb(color, 0.8);
         ctx.beginPath();
-        ctx.moveTo(pt.x, pt.y);
-        ctx.lineTo(pt.x + Math.cos(ang) * sk.ext + sk.ox, pt.y + Math.sin(ang) * sk.ext + sk.oy);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + sk.ext * sk.side + sk.ox, y + sk.ext * 0.3 + sk.oy);
         ctx.stroke();
       }
 
