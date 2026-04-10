@@ -829,7 +829,7 @@ const BANNER_THEMES = {
         ctx.restore();
         // Hands — spin fast, lock exactly at 6:30 when they pass through it
         const minSpeed = Math.PI * 20; // much faster spin
-        if (handFrozenAt < 0 && cT > 0.5) {
+        if (handFrozenAt < 0 && cT > 0.6) {
           const minRaw = cT * minSpeed;
           const minMod = ((minRaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
           if (minMod < 0.3 || minMod > Math.PI * 2 - 0.3) {
