@@ -500,6 +500,16 @@ const BANNER_THEMES = {
       const SEG = 20;
       const widthNoise = Array.from({length: SEG}, () => 0.5 + Math.random() * 1.0);
 
+      // Pre-compute bristle gap streaks (erased through the solid fill for texture)
+      const gapStreaks = Array.from({length: 8 + Math.floor(Math.random() * 6)}, () => {
+        const offset = (Math.random() - 0.5) * 1.6; // position across width (-0.8 to 0.8)
+        const startT = Math.random() * 0.3;          // where streak starts along path
+        const endT = 0.5 + Math.random() * 0.5;      // where it ends
+        const lw = 0.3 + Math.random() * 1.2;        // thin gap
+        const drift = (Math.random() - 0.5) * 0.3;   // slight drift across width
+        return { offset, startT, endT, lw, drift };
+      });
+
       // Pre-compute bristle data (deterministic — no random in draw loop)
       const SPINE_N = 30;
       const bristleCount = 20 + Math.floor(Math.random() * 6);
@@ -546,7 +556,7 @@ const BANNER_THEMES = {
         cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
         baseW: 24 + Math.random() * 32,
         strandNoise, widthNoise, drops, SEG, SPINE_N,
-        bristles, splatters, streaks,
+        bristles, splatters, streaks, gapStreaks,
         twistFreq: 1.5 + Math.random() * 2,
         delay: idx * 1.0,
       };
@@ -665,6 +675,35 @@ const BANNER_THEMES = {
       for (let i = botEdge.length - 2; i >= 0; i--) ctx.lineTo(botEdge[i][0], botEdge[i][1]);
       ctx.closePath();
       ctx.fill();
+
+      // Bristle texture: erase thin streaks through the solid fill
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineCap = 'round';
+      for (const gs of sd.gapStreaks) {
+        ctx.globalAlpha = 0.4 + gs.lw * 0.3; // partial erase = semi-transparent gaps
+        ctx.lineWidth = gs.lw;
+        ctx.beginPath();
+        const si = Math.floor(gs.startT * N);
+        const ei = Math.floor(gs.endT * N);
+        for (let i = si; i <= ei && i <= N; i++) {
+          const t = i / N;
+          const x = bz(p1[0],p2[0],p3[0],p4[0],t);
+          const y = bz(p1[1],p2[1],p3[1],p4[1],t);
+          const dt2 = 0.015;
+          const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt2)) - x;
+          const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt2)) - y;
+          const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+          const nx = -ty/tl, ny = tx/tl;
+          const widthCurve = Math.pow(t, 0.4) * (0.7 + 0.3 * Math.sin(t * Math.PI));
+          const hw = baseW * widthCurve;
+          const drift = gs.offset + gs.drift * t;
+          const px = x + nx * hw * drift;
+          const py = y + ny * hw * drift;
+          if (i === si) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over';
 
       // Thin trailing lines behind the tail
       ctx.shadowBlur = 0;
