@@ -459,111 +459,75 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): paint strokes → spiral suck to point → explode
+  // 🎨 PRISMATIC (Lynae): paint strokes fade in/out → suck to center → explode
   prismatic: (w, h) => {
     const PAINT = [
       [0,210,200], [220,40,170], [100,245,50],
       [150,30,245], [245,60,140], [0,170,250],
     ];
     const rgb = (c,a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-    const lerpc = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
     const bz = (a,b,c,d,p) => {const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d;};
 
     const CYCLE = 9;
     const ccx = w * 0.45, ccy = h * 0.5;
-    const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.8;
+    const APPEAR_END = 3.5, SUCK_END = 5.3, EXPLODE_T = 6.0;
 
-    // Each stroke = a bezier curve defined by 4 control points
     const initStroke = (idx) => {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
       const ci3 = (ci + 4) % PAINT.length;
-      // Keep strokes mostly within the card
-      const margin = 15;
-      const sx = margin + Math.random() * (w - margin * 2);
-      const sy = margin + Math.random() * (h - margin * 2);
+      const sx = 20 + Math.random() * (w - 40);
+      const sy = 20 + Math.random() * (h - 40);
       const ang = Math.random() * Math.PI * 2;
-      const len = 150 + Math.random() * 200;
+      const len = 120 + Math.random() * 180;
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 140;
-
-      // Noise offsets for the 3 sub-strands (deterministic per stroke)
-      const strandNoise = Array.from({length: 3}, () => ({
-        ox1: (Math.random()-0.5)*12, oy1: (Math.random()-0.5)*10,
-        ox2: (Math.random()-0.5)*15, oy2: (Math.random()-0.5)*12,
-        ox3: (Math.random()-0.5)*12, oy3: (Math.random()-0.5)*10,
-        ox4: (Math.random()-0.5)*8,  oy4: (Math.random()-0.5)*8,
-      }));
-
-      // Width noise along the curve (for varying lineWidth per segment)
-      const SEG = 20;
-      const widthNoise = Array.from({length: SEG}, () => 0.5 + Math.random() * 1.0);
-
-      // Splatter dots
-      const drops = Array.from({length: 6+Math.floor(Math.random()*8)}, () => ({
-        t: Math.random(), ox: (Math.random()-0.5)*45, oy: (Math.random()-0.5)*35,
-        r: 1+Math.random()*4, ci: [ci,ci2,ci3][Math.floor(Math.random()*3)],
-      }));
-
+      const curv = (Math.random() - 0.5) * 130;
       return {
-        // Raw control points
         sx, sy, ex, ey,
         c1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
         c1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
         c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
         cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
-        baseW: 16 + Math.random() * 24,
-        strandNoise, widthNoise, drops, SEG,
+        baseW: 14 + Math.random() * 22,
         twistFreq: 1.5 + Math.random() * 2,
-        delay: idx * 0.8 + Math.random() * 0.2,
-        fadeDur: 0.4, // fade out over 0.4s before next one
+        // Strand offsets (deterministic)
+        strandOff: Array.from({length:3}, () => (Math.random()-0.5)*10),
+        delay: idx * 0.9,  // one every 0.9s
+        life: 0.7,         // visible for 0.7s then fade
       };
     };
 
-    const initAll = () => Array.from({length: 3+Math.floor(Math.random()*2)}, (_,i) => initStroke(i));
+    const initAll = () => Array.from({length: 4}, (_,i) => initStroke(i));
 
-    // Extra strokes that fly in from outside during suck phase
-    const initSuckStrokes = () => Array.from({length: 4+Math.floor(Math.random()*3)}, (_,i) => {
-      const ci = (i * 2 + 1) % PAINT.length;
-      const ci2 = (ci + 3) % PAINT.length;
-      // Start from outside the screen edges
-      const edge = Math.floor(Math.random() * 4); // 0=top 1=right 2=bottom 3=left
+    // Suck strokes from outside
+    const initSuckStrokes = () => Array.from({length: 5}, (_,i) => {
+      const edge = i % 4;
       let sx, sy;
-      if (edge === 0) { sx = Math.random() * w; sy = -60 - Math.random() * 40; }
-      else if (edge === 1) { sx = w + 60 + Math.random() * 40; sy = Math.random() * h; }
-      else if (edge === 2) { sx = Math.random() * w; sy = h + 60 + Math.random() * 40; }
-      else { sx = -60 - Math.random() * 40; sy = Math.random() * h; }
-      // Aim toward center
-      const ang = Math.atan2(ccy - sy, ccx - sx) + (Math.random() - 0.5) * 0.5;
-      const len = 100 + Math.random() * 150;
-      const ex = sx + Math.cos(ang) * len;
-      const ey = sy + Math.sin(ang) * len;
-      const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 80;
-      const SEG = 20;
+      if (edge===0) {sx=Math.random()*w; sy=-80;}
+      else if (edge===1) {sx=w+80; sy=Math.random()*h;}
+      else if (edge===2) {sx=Math.random()*w; sy=h+80;}
+      else {sx=-80; sy=Math.random()*h;}
+      const ang = Math.atan2(ccy-sy, ccx-sx) + (Math.random()-0.5)*0.4;
+      const len = 100+Math.random()*120;
+      const ci = (i*2+1)%PAINT.length;
+      const perp = ang+Math.PI*0.5;
+      const curv = (Math.random()-0.5)*60;
       return {
-        sx, sy, ex, ey,
-        c1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
-        c1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
-        c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.3,
-        c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.3,
-        cols: [PAINT[ci], PAINT[ci2], PAINT[(ci+4)%PAINT.length]],
-        baseW: 12 + Math.random() * 18,
-        strandNoise: Array.from({length:3}, () => ({
-          ox1:(Math.random()-0.5)*10,oy1:(Math.random()-0.5)*8,
-          ox2:(Math.random()-0.5)*12,oy2:(Math.random()-0.5)*10,
-          ox3:(Math.random()-0.5)*10,oy3:(Math.random()-0.5)*8,
-          ox4:(Math.random()-0.5)*6, oy4:(Math.random()-0.5)*6,
-        })),
-        widthNoise: Array.from({length:SEG}, () => 0.5+Math.random()*1.0),
-        drops: [], SEG,
-        twistFreq: 1.5+Math.random()*2,
-        enterDelay: i * 0.3 + Math.random() * 0.2, // stagger during suck
+        sx, sy, ex: sx+Math.cos(ang)*len, ey: sy+Math.sin(ang)*len,
+        c1x: sx+Math.cos(ang)*len*0.3+Math.cos(perp)*curv,
+        c1y: sy+Math.sin(ang)*len*0.3+Math.sin(perp)*curv,
+        c2x: sx+Math.cos(ang)*len*0.7+Math.cos(perp)*curv*0.3,
+        c2y: sy+Math.sin(ang)*len*0.7+Math.sin(perp)*curv*0.3,
+        cols: [PAINT[ci], PAINT[(ci+2)%6], PAINT[(ci+4)%6]],
+        baseW: 10+Math.random()*16, twistFreq: 1.5+Math.random()*2,
+        strandOff: Array.from({length:3}, () => (Math.random()-0.5)*8),
+        enterDelay: i*0.3,
       };
     });
+
     const initDebris = () => Array.from({length: 40}, () => ({
       angle: Math.random()*Math.PI*2, speed: 25+Math.random()*110,
       r: 1.5+Math.random()*5, ci: Math.floor(Math.random()*PAINT.length),
@@ -572,203 +536,162 @@ const BANNER_THEMES = {
 
     let strokes = initAll(), suckStrokes = initSuckStrokes(), debris = initDebris(), cycleStart = -CYCLE;
 
-    const ambDots = Array.from({length: 15}, () => ({
-      x: Math.random()*w, y: Math.random()*h, r: 1+Math.random()*2.5,
-      vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.2,
+    const ambDots = Array.from({length: 12}, () => ({
+      x: Math.random()*w, y: Math.random()*h, r: 1+Math.random()*2,
+      vx: (Math.random()-0.5)*0.2, vy: (Math.random()-0.5)*0.15,
       ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
 
-    // Pull a point toward center — smooth fluid physics
-    const suck = (x, y, suckP, frac) => {
-      if (suckP <= 0) return [x, y];
-      // Progressive pull: smoothstep for fluid motion
-      const raw = Math.min(1, suckP * (0.2 + frac * 0.8));
-      const pull = raw * raw * (3 - 2 * raw); // smoothstep — smooth acceleration AND deceleration
-      // Gentle spiral: increases with pull, proportional to distance
-      const dx = x - ccx, dy = y - ccy;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const angle = Math.atan2(dy, dx);
-      const spiral = pull * pull * Math.PI * 0.8; // gentle spiral, stronger near end
-      const newDist = dist * (1 - pull);
-      return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
+    // Smooth pull toward center
+    const suck = (x, y, sP, frac) => {
+      if (sP <= 0) return [x, y];
+      const dx = x-ccx, dy = y-ccy;
+      const dist = Math.sqrt(dx*dx+dy*dy) || 1;
+      const ang = Math.atan2(dy, dx);
+      const pull = Math.min(1, sP * (0.2+frac*0.8));
+      const sm = pull*pull*(3-2*pull); // smoothstep
+      const spiral = sm*sm * Math.PI * 0.8;
+      return [ccx+Math.cos(ang+spiral)*dist*(1-sm), ccy+Math.sin(ang+spiral)*dist*(1-sm)];
     };
 
-    // Draw a single noisy tapered bezier stroke
-    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, wNoise, seg) => {
+    // Draw a single bezier stroke — ONE ctx.stroke() call, no segments
+    const drawBezStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, lw, color, alpha) => {
+      if (lw < 0.3 || alpha < 0.01) return;
       ctx.save();
-      ctx.strokeStyle = rgb(color, 1);
-      ctx.lineCap = 'round';
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = rgb(color, 0.4);
-      ctx.shadowBlur = 6;
-
-      for (let i = 0; i < seg; i++) {
-        const t0 = i / seg, t1 = (i+1) / seg;
-        const x0 = bz(p1[0],p2[0],p3[0],p4[0],t0);
-        const y0 = bz(p1[1],p2[1],p3[1],p4[1],t0);
-        const x1 = bz(p1[0],p2[0],p3[0],p4[0],t1);
-        const y1 = bz(p1[1],p2[1],p3[1],p4[1],t1);
-        const tMid = (t0+t1)*0.5;
-        // Taper + noise
-        const taper = Math.pow(Math.sin(tMid * Math.PI), 0.5);
-        ctx.lineWidth = Math.max(0.5, baseW * taper * wNoise[i]);
-        ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.stroke();
-      }
+      ctx.strokeStyle = rgb(color, 1);
+      ctx.lineWidth = lw;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = rgb(color, 0.35);
+      ctx.shadowBlur = lw * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.bezierCurveTo(c1x, c1y, c2x, c2y, ex, ey);
+      ctx.stroke();
       ctx.restore();
+    };
+
+    // Draw 3 twisted strands for a stroke
+    const draw3Strands = (ctx, s, sx,sy,c1x,c1y,c2x,c2y,ex,ey, bw, alpha) => {
+      for (let i = 0; i < 3; i++) {
+        const phase = i * Math.PI * 2 / 3;
+        const offScale = bw * 0.6;
+        // Twist offset at each control point
+        const o0 = Math.sin(0 * Math.PI*2*s.twistFreq + phase) * offScale + s.strandOff[i];
+        const o1 = Math.sin(0.33*Math.PI*2*s.twistFreq + phase) * offScale + s.strandOff[i];
+        const o2 = Math.sin(0.66*Math.PI*2*s.twistFreq + phase) * offScale + s.strandOff[i];
+        const o3 = Math.sin(1 * Math.PI*2*s.twistFreq + phase) * offScale + s.strandOff[i];
+        drawBezStroke(ctx,
+          sx+o0, sy, c1x+o1, c1y, c2x+o2, c2y, ex+o3, ey,
+          bw * 0.55, s.cols[i], alpha * 0.9
+        );
+      }
     };
 
     return (ctx, t) => {
       let ct = t - cycleStart;
-      if (ct > CYCLE) { cycleStart = t; ct = 0; strokes = initAll(); suckStrokes = initSuckStrokes(); debris = initDebris(); }
+      if (ct > CYCLE) { cycleStart=t; ct=0; strokes=initAll(); suckStrokes=initSuckStrokes(); debris=initDebris(); }
 
       // Ambient dots
       for (const d of ambDots) {
-        d.x += d.vx; d.y += d.vy;
-        if (d.x<-5) d.x=w+5; if (d.x>w+5) d.x=-5;
-        if (d.y<-5) d.y=h+5; if (d.y>h+5) d.y=-5;
-        ctx.save(); ctx.globalAlpha = 0.3+0.2*Math.sin(t*1.5+d.phase);
-        ctx.fillStyle = rgb(PAINT[d.ci],1);
+        d.x+=d.vx; d.y+=d.vy;
+        if(d.x<-5)d.x=w+5; if(d.x>w+5)d.x=-5;
+        if(d.y<-5)d.y=h+5; if(d.y>h+5)d.y=-5;
+        ctx.save(); ctx.globalAlpha=0.25+0.2*Math.sin(t*1.5+d.phase);
+        ctx.fillStyle=rgb(PAINT[d.ci],1);
         ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
         ctx.restore();
       }
 
-      // ── Paint strokes ──
-      if (ct < EXPLODE_T + 0.3) {
+      // ── Phase 0: Strokes appear one by one, each fades before next ──
+      if (ct < APPEAR_END + 0.5) {
         for (const s of strokes) {
           const age = ct - s.delay;
           if (age < 0) continue;
-          // Fade in fast, hold, fade out before next stroke
-          const fadeIn = Math.min(1, age / 0.05);
-          const holdEnd = 0.8 - s.fadeDur; // hold until 0.4s, then fade
-          const fadeOut = age > holdEnd && ct < APPEAR_END
-            ? Math.max(0, 1 - (age - holdEnd) / s.fadeDur)
-            : 1;
-          let suckP = 0;
-          if (ct > APPEAR_END) {
-            suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
-            suckP = suckP * suckP;
-          }
-          // During suck phase, all strokes reappear and stay visible
-          const suckAlpha = ct >= APPEAR_END ? 1 : fadeOut;
-          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * fadeIn * suckAlpha;
-          if (alpha < 0.01) continue;
+          // Fade in 0.05s, hold for s.life, fade out 0.3s
+          let a;
+          if (age < 0.05) a = age / 0.05;
+          else if (age < s.life) a = 1;
+          else a = Math.max(0, 1 - (age - s.life) / 0.3);
+          if (a < 0.01) continue;
 
-          // Suck all 4 control points toward center
-          const [sx2,sy2] = suck(s.sx, s.sy, suckP, 0);
-          const [c1x2,c1y2] = suck(s.c1x, s.c1y, suckP, 0.33);
-          const [c2x2,c2y2] = suck(s.c2x, s.c2y, suckP, 0.66);
-          const [ex3,ey3] = suck(s.ex, s.ey, suckP, 1);
-
-          // Keep width — strokes stay opaque, only position collapses
-          const bw = s.baseW;
-
-          // Draw 3 twisted sub-strands
-          for (let si = 0; si < 3; si++) {
-            const sn = s.strandNoise[si];
-            const twistPhase = si * Math.PI * 2 / 3;
-            // Per-strand offset that twists along the path
-            const offScale = bw * 0.8 * (1 - suckP);
-            // Offset each control point perpendicular (approximated by rotating noise)
-            const twist = (frac) => Math.sin(frac * Math.PI * 2 * s.twistFreq + twistPhase) * offScale;
-            const t0 = twist(0), t1 = twist(0.33), t2 = twist(0.66), t3 = twist(1);
-
-            const p1 = [sx2 + sn.ox1 + t0, sy2 + sn.oy1];
-            const p2 = [c1x2 + sn.ox2 + t1, c1y2 + sn.oy2];
-            const p3 = [c2x2 + sn.ox3 + t2, c2y2 + sn.oy3];
-            const p4 = [ex3 + sn.ox4 + t3, ey3 + sn.oy4];
-
-            drawStroke(ctx, p1, p2, p3, p4, bw * 0.7, s.cols[si], alpha * 0.9, s.widthNoise, s.SEG);
-          }
-
-          // Droplets
-          for (const dr of s.drops) {
-            if (alpha0 < 0.5) continue; // wait for stroke to appear
-            let dx = bz(sx2,c1x2,c2x2,ex3,dr.t) + dr.ox*(1-suckP);
-            let dy = bz(sy2,c1y2,c2y2,ey3,dr.t) + dr.oy*(1-suckP);
-            const [dx2,dy2] = suck(dx, dy, suckP * 0.5, dr.t);
-            ctx.save(); ctx.globalAlpha = alpha * 0.8;
-            ctx.fillStyle = rgb(PAINT[dr.ci],1);
-            ctx.shadowColor = rgb(PAINT[dr.ci],0.3); ctx.shadowBlur = 3;
-            ctx.beginPath(); ctx.arc(dx2,dy2,dr.r*(1-suckP*0.6),0,Math.PI*2); ctx.fill();
-            ctx.restore();
-          }
+          drawBezStroke(ctx, s.sx,s.sy,s.c1x,s.c1y,s.c2x,s.c2y,s.ex,s.ey,
+            s.baseW, s.cols[0], a * 0.85);
+          // Thinner second color
+          drawBezStroke(ctx, s.sx+2,s.sy+1,s.c1x+2,s.c1y+1,s.c2x+2,s.c2y+1,s.ex+2,s.ey+1,
+            s.baseW*0.5, s.cols[1], a * 0.6);
         }
       }
 
-      // ── Extra strokes flying in from outside during suck ──
-      if (ct > APPEAR_END && ct < EXPLODE_T + 0.3) {
+      // ── Phase 1: All strokes reappear + get sucked + extra from outside ──
+      if (ct >= APPEAR_END && ct < EXPLODE_T + 0.3) {
         const suckAge = ct - APPEAR_END;
+        const sP = Math.min(1, suckAge / (SUCK_END - APPEAR_END));
+        const suckP = sP * sP;
+        const alpha = ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.15) : 0.92;
+
+        // Main strokes reappear and suck
+        for (const s of strokes) {
+          const fadeIn = Math.min(1, suckAge / 0.2);
+          const [sx2,sy2] = suck(s.sx,s.sy,suckP,0);
+          const [c1x2,c1y2] = suck(s.c1x,s.c1y,suckP,0.33);
+          const [c2x2,c2y2] = suck(s.c2x,s.c2y,suckP,0.66);
+          const [ex2,ey2] = suck(s.ex,s.ey,suckP,1);
+          draw3Strands(ctx, s, sx2,sy2,c1x2,c1y2,c2x2,c2y2,ex2,ey2, s.baseW, alpha*fadeIn);
+        }
+
+        // Extra strokes from outside
         for (const s of suckStrokes) {
-          const age = suckAge - s.enterDelay;
-          if (age < 0) continue;
-          const alpha0 = Math.min(1, age / 0.1);
-          // These strokes are always being sucked — their suckP starts at their entry
-          const sp = Math.min(1, age / (SUCK_END - APPEAR_END));
-          const sP = sp * sp;
-          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.88) * alpha0;
-          if (alpha < 0.01) continue;
-
-          const [sx2,sy2] = suck(s.sx, s.sy, sP, 0);
-          const [c1x2,c1y2] = suck(s.c1x, s.c1y, sP, 0.33);
-          const [c2x2,c2y2] = suck(s.c2x, s.c2y, sP, 0.66);
-          const [ex3,ey3] = suck(s.ex, s.ey, sP, 1);
-          const bw = s.baseW;
-
-          for (let si2 = 0; si2 < 3; si2++) {
-            const sn = s.strandNoise[si2];
-            const twP = si2 * Math.PI * 2 / 3;
-            const offS = bw * 0.8;
-            const tw = (f) => Math.sin(f * Math.PI * 2 * s.twistFreq + twP) * offS;
-            const p1 = [sx2+sn.ox1+tw(0), sy2+sn.oy1];
-            const p2 = [c1x2+sn.ox2+tw(0.33), c1y2+sn.oy2];
-            const p3 = [c2x2+sn.ox3+tw(0.66), c2y2+sn.oy3];
-            const p4 = [ex3+sn.ox4+tw(1), ey3+sn.oy4];
-            drawStroke(ctx, p1, p2, p3, p4, bw*0.7, s.cols[si2], alpha*0.9, s.widthNoise, s.SEG);
-          }
+          const age2 = suckAge - s.enterDelay;
+          if (age2 < 0) continue;
+          const localSP = Math.min(1, age2 / (SUCK_END - APPEAR_END));
+          const localSuck = localSP * localSP;
+          const fadeIn2 = Math.min(1, age2 / 0.15);
+          const [sx2,sy2] = suck(s.sx,s.sy,localSuck,0);
+          const [c1x2,c1y2] = suck(s.c1x,s.c1y,localSuck,0.33);
+          const [c2x2,c2y2] = suck(s.c2x,s.c2y,localSuck,0.66);
+          const [ex2,ey2] = suck(s.ex,s.ey,localSuck,1);
+          draw3Strands(ctx, s, sx2,sy2,c1x2,c1y2,c2x2,c2y2,ex2,ey2, s.baseW, alpha*fadeIn2);
         }
       }
 
       // ── Mix swirl ──
       if (ct > SUCK_END && ct < EXPLODE_T + 0.3) {
-        const mP = Math.min(1, (ct - SUCK_END) / (EXPLODE_T - SUCK_END));
-        const mA = mP * 0.6;
-        if (mA > 0.01) {
-          const sw = ct * 8, mr = 5 + mP * 15;
-          for (let i = 0; i < 6; i++) {
-            const a = sw + i * Math.PI / 3;
-            const px = ccx + Math.cos(a) * mr * (0.3+i*0.1);
-            const py = ccy + Math.sin(a) * mr * (0.3+i*0.1);
-            ctx.save(); ctx.globalAlpha = mA;
-            const g = ctx.createRadialGradient(px,py,0,px,py,mr*0.3);
+        const mP = Math.min(1,(ct-SUCK_END)/(EXPLODE_T-SUCK_END));
+        if (mP > 0.01) {
+          const sw=ct*8, mr=5+mP*15;
+          for (let i=0;i<6;i++){
+            const a2=sw+i*Math.PI/3;
+            ctx.save(); ctx.globalAlpha=mP*0.5;
+            const g=ctx.createRadialGradient(ccx+Math.cos(a2)*mr*0.3,ccy+Math.sin(a2)*mr*0.3,0,
+              ccx+Math.cos(a2)*mr*0.3,ccy+Math.sin(a2)*mr*0.3,mr*0.25);
             g.addColorStop(0,rgb(PAINT[i%6],0.8)); g.addColorStop(1,rgb(PAINT[i%6],0));
-            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px,py,mr*0.3,0,Math.PI*2); ctx.fill();
-            ctx.restore();
+            ctx.fillStyle=g; ctx.beginPath();
+            ctx.arc(ccx+Math.cos(a2)*mr*0.3,ccy+Math.sin(a2)*mr*0.3,mr*0.25,0,Math.PI*2);
+            ctx.fill(); ctx.restore();
           }
         }
       }
 
       // ── Explosion ──
       if (ct > EXPLODE_T) {
-        const ea = ct - EXPLODE_T;
-        if (ea < 0.12) {
-          ctx.save(); ctx.globalAlpha = 0.4*(1-ea/0.12);
-          const fg = ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,Math.max(w,h)*0.35);
+        const ea=ct-EXPLODE_T;
+        if (ea<0.12){
+          ctx.save(); ctx.globalAlpha=0.4*(1-ea/0.12);
+          const fg=ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,Math.max(w,h)*0.35);
           fg.addColorStop(0,'rgba(255,255,255,0.9)'); fg.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(ccx,ccy,Math.max(w,h)*0.35,0,Math.PI*2); ctx.fill();
-          ctx.restore();
+          ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(ccx,ccy,Math.max(w,h)*0.35,0,Math.PI*2);
+          ctx.fill(); ctx.restore();
         }
-        const da = ea<0.15 ? ea/0.15 : Math.max(0,1-(ea-0.15)/3);
-        if (da > 0.01) {
-          for (const d of debris) {
-            const dist = d.speed * ea * Math.pow(d.drag, ea*30);
-            const dx = ccx+Math.cos(d.angle)*dist, dy = ccy+Math.sin(d.angle)*dist+ea*ea*10;
-            ctx.save(); ctx.globalAlpha = da*0.95;
-            ctx.fillStyle = rgb(PAINT[d.ci],1); ctx.shadowColor = rgb(PAINT[d.ci],0.4); ctx.shadowBlur = 3;
-            ctx.beginPath(); ctx.arc(dx,dy,d.r,0,Math.PI*2); ctx.fill();
-            ctx.restore();
+        const da=ea<0.15?ea/0.15:Math.max(0,1-(ea-0.15)/3);
+        if(da>0.01){
+          for(const d of debris){
+            const dist=d.speed*ea*Math.pow(d.drag,ea*30);
+            ctx.save(); ctx.globalAlpha=da*0.95;
+            ctx.fillStyle=rgb(PAINT[d.ci],1); ctx.shadowColor=rgb(PAINT[d.ci],0.4); ctx.shadowBlur=3;
+            ctx.beginPath(); ctx.arc(ccx+Math.cos(d.angle)*dist,ccy+Math.sin(d.angle)*dist+ea*ea*10,
+              d.r,0,Math.PI*2); ctx.fill(); ctx.restore();
           }
         }
       }
