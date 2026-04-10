@@ -478,14 +478,17 @@ const BANNER_THEMES = {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
       const ci3 = (ci + 4) % PAINT.length;
-      const sx = -w*0.15 + Math.random()*w*1.3;
-      const sy = -h*0.1 + Math.random()*h*1.2;
+      // Keep strokes mostly within the card
+      const margin = 20;
+      const sx = margin + Math.random() * (w - margin * 2);
+      const sy = margin + Math.random() * (h - margin * 2);
       const ang = Math.random() * Math.PI * 2;
-      const len = 120 + Math.random() * 200;
-      const ex = sx + Math.cos(ang) * len;
-      const ey = sy + Math.sin(ang) * len;
+      const len = 80 + Math.random() * 140;
+      // Clamp end point loosely — can overshoot by 30%
+      const ex = Math.max(-w*0.3, Math.min(w*1.3, sx + Math.cos(ang) * len));
+      const ey = Math.max(-h*0.3, Math.min(h*1.3, sy + Math.sin(ang) * len));
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 160;
+      const curv = (Math.random() - 0.5) * 100;
 
       // Noise offsets for the 3 sub-strands (deterministic per stroke)
       const strandNoise = Array.from({length: 3}, () => ({
@@ -535,14 +538,17 @@ const BANNER_THEMES = {
       ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
 
-    // Pull a point toward center with spiral
+    // Pull a point toward center — smooth fluid physics
     const suck = (x, y, suckP, frac) => {
       if (suckP <= 0) return [x, y];
+      // Progressive pull: smoothstep for fluid motion
+      const raw = Math.min(1, suckP * (0.2 + frac * 0.8));
+      const pull = raw * raw * (3 - 2 * raw); // smoothstep — smooth acceleration AND deceleration
+      // Gentle spiral: increases with pull, proportional to distance
       const dx = x - ccx, dy = y - ccy;
-      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
       const angle = Math.atan2(dy, dx);
-      const pull = Math.min(1, suckP * (0.3 + frac * 0.7));
-      const spiral = pull * Math.PI * 1.5;
+      const spiral = pull * pull * Math.PI * 0.8; // gentle spiral, stronger near end
       const newDist = dist * (1 - pull);
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
