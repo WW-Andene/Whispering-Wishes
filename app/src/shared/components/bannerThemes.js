@@ -591,52 +591,88 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Draw a flowing, veil-like bezier stroke with sine displacement
+    // Draw a bristle brush stroke: many thin parallel lines + splatter
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, wNoise, seg) => {
       ctx.save();
-      ctx.strokeStyle = rgb(color, 1);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = rgb(color, 0.3);
-      ctx.shadowBlur = baseW * 0.4;
+      const c = color;
 
-      // Pre-compute all points with sine wave displacement perpendicular to path
-      const pts = [];
-      for (let i = 0; i <= seg; i++) {
-        const t = i / seg;
+      // Compute spine normals at sample points
+      const SAMPLES = 30;
+      const spine = [];
+      for (let i = 0; i <= SAMPLES; i++) {
+        const t = i / SAMPLES;
         const x = bz(p1[0],p2[0],p3[0],p4[0],t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],t);
-        // Tangent for perpendicular
         const dt = 0.01;
         const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt)) - x;
         const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt)) - y;
         const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        const nx = -ty/tl, ny = tx/tl;
-        // Veil wave: sine displacement perpendicular to path
-        const wave = Math.sin(t * Math.PI * 3.5) * baseW * 0.6;
-        const taper = Math.pow(Math.sin(t * Math.PI), 0.7);
-        pts.push({
-          x: x + nx * wave, y: y + ny * wave,
-          w: Math.max(0.3, baseW * taper * (wNoise[Math.min(i, seg-1)] || 1)),
-        });
+        // Width taper: thin tail → fat body → splattered head
+        const taper = Math.pow(Math.sin(t * Math.PI), 0.4) * (0.6 + t * 0.4);
+        spine.push({ x, y, nx: -ty/tl, ny: tx/tl, w: baseW * taper });
       }
 
-      // Draw as one smooth path using quadratic curves
-      for (let i = 0; i < pts.length - 1; i++) {
-        ctx.lineWidth = (pts[i].w + pts[i+1].w) * 0.5;
+      // Draw 18-25 bristle lines, each slightly offset perpendicular
+      const bristleCount = 18 + Math.floor(Math.random() * 8);
+      ctx.lineCap = 'round';
+      for (let b = 0; b < bristleCount; b++) {
+        const offset = (b / (bristleCount - 1) - 0.5) * 2; // -1 to +1
+        // Each bristle starts/ends at slightly different t for rough edges
+        const startT = Math.max(0, Math.floor((Math.random() * 0.15) * SAMPLES));
+        const endT = Math.min(SAMPLES, SAMPLES - Math.floor(Math.random() * 0.2 * SAMPLES));
+        // Bristle thickness varies
+        ctx.lineWidth = 0.5 + Math.random() * 1.8;
+        ctx.strokeStyle = rgb(c, 0.7 + Math.random() * 0.3);
+
         ctx.beginPath();
-        ctx.moveTo(pts[i].x, pts[i].y);
-        if (i + 2 < pts.length) {
-          // Smooth curve through midpoint to next
-          const mx = (pts[i+1].x + pts[i+2].x) * 0.5;
-          const my = (pts[i+1].y + pts[i+2].y) * 0.5;
-          ctx.quadraticCurveTo(pts[i+1].x, pts[i+1].y, mx, my);
-        } else {
-          ctx.quadraticCurveTo(pts[i+1].x, pts[i+1].y, pts[i+1].x, pts[i+1].y);
+        let started = false;
+        for (let i = startT; i <= endT; i++) {
+          const sp = spine[i];
+          const off = offset * sp.w + (Math.random() - 0.5) * 2; // jitter
+          const px = sp.x + sp.nx * off;
+          const py = sp.y + sp.ny * off;
+          // Random gaps in bristle for texture
+          if (Math.random() < 0.06) {
+            if (started) { ctx.stroke(); ctx.beginPath(); started = false; }
+            continue;
+          }
+          if (!started) { ctx.moveTo(px, py); started = true; }
+          else ctx.lineTo(px, py);
         }
+        if (started) ctx.stroke();
+      }
+
+      // Splatter dots — concentrated at the thick end (high t)
+      const splatCount = 15 + Math.floor(Math.random() * 15);
+      ctx.fillStyle = rgb(c, 1);
+      for (let i = 0; i < splatCount; i++) {
+        const t = 0.3 + Math.random() * 0.7; // bias toward thick end
+        const sp = spine[Math.min(Math.floor(t * SAMPLES), SAMPLES)];
+        const spread = sp.w * 1.4;
+        const dx = sp.x + (Math.random() - 0.5) * spread * 2 + sp.nx * (Math.random() - 0.5) * spread;
+        const dy = sp.y + (Math.random() - 0.5) * spread * 1.5 + sp.ny * (Math.random() - 0.5) * spread;
+        const r = 0.5 + Math.random() * 3;
+        ctx.globalAlpha = alpha * (0.5 + Math.random() * 0.5);
+        ctx.beginPath(); ctx.arc(dx, dy, r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Thin streaks extending beyond the main body
+      ctx.globalAlpha = alpha * 0.6;
+      ctx.lineWidth = 0.5 + Math.random();
+      ctx.strokeStyle = rgb(c, 0.8);
+      for (let i = 0; i < 5; i++) {
+        const t0 = Math.random();
+        const sp = spine[Math.floor(t0 * SAMPLES)];
+        const ext = 10 + Math.random() * 30;
+        const ang = Math.atan2(sp.ny, sp.nx) * (Math.random() > 0.5 ? 1 : -1);
+        ctx.beginPath();
+        ctx.moveTo(sp.x, sp.y);
+        ctx.lineTo(sp.x + Math.cos(ang) * ext + (Math.random()-0.5)*10,
+                   sp.y + Math.sin(ang) * ext + (Math.random()-0.5)*10);
         ctx.stroke();
       }
+
       ctx.restore();
     };
 
