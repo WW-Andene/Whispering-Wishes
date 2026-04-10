@@ -622,41 +622,50 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Brush stroke: 4 overlapping thick beziers + splatter
+    // Brush stroke: 8 fanned beziers (not parallel) + heavy splatter
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, sd) => {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = rgb(color, 1);
-      ctx.globalAlpha = alpha;
 
-      // 4 overlapping thick beziers with pre-computed offsets
-      // They overlap → solid body. Where edges don't align → natural texture
-      const layers = [
-        { w: baseW * 0.9, a: 0.95 },         // main body
-        { w: baseW * 0.65, a: 0.85 },         // inner
-        { w: baseW * 0.5, a: 0.8 },           // narrower
-        { w: baseW * 0.3, a: 0.7 },           // thin core
-      ];
-      for (let i = 0; i < layers.length && i < sd.bristles.length; i++) {
+      // 8 bezier strokes that fan out from thin tail → thick head
+      // Each has its own width, angle offset, and start/end variation
+      for (let i = 0; i < 8 && i < sd.bristles.length; i++) {
         const b = sd.bristles[i];
-        const l = layers[i];
-        const off = b.offset * baseW * 0.3;
-        ctx.globalAlpha = alpha * l.a;
-        ctx.lineWidth = l.w;
-        if (i === 0) { ctx.shadowColor = rgb(color, 0.2); ctx.shadowBlur = 8; }
-        else { ctx.shadowBlur = 0; }
+        // Fan: tight at start (p1), splayed at end (p4)
+        const fanStart = b.offset * baseW * 0.05;   // tight at tail
+        const fanEnd = b.offset * baseW * 0.55;     // wide splay at head
+        const fanMid1 = fanStart * 0.3 + fanEnd * 0.7;
+        const fanMid2 = fanStart * 0.15 + fanEnd * 0.85;
+
+        // Width: thicker strokes in center, thinner at edges
+        const edgeDist = Math.abs(b.offset);
+        const w = baseW * (0.15 + (1 - edgeDist) * 0.25) + b.lw * 2;
+
+        ctx.globalAlpha = alpha * (0.65 + (1 - edgeDist) * 0.3);
+        ctx.lineWidth = w;
+        ctx.strokeStyle = rgb(color, 1);
+        if (i === 0) { ctx.shadowColor = rgb(color, 0.2); ctx.shadowBlur = 6; }
+        else ctx.shadowBlur = 0;
+
+        // Each bristle has slight curve variation via jitter on control points
         ctx.beginPath();
-        ctx.moveTo(p1[0] + off + b.jitters[0]*2, p1[1] + b.jitters[1]*2);
+        ctx.moveTo(
+          p1[0] + fanStart + b.jitters[0] * 2,
+          p1[1] + b.jitters[1] * 2
+        );
         ctx.bezierCurveTo(
-          p2[0] + off*0.7 + b.jitters[2]*3, p2[1] + b.jitters[3]*3,
-          p3[0] + off*0.4 + b.jitters[4]*3, p3[1] + b.jitters[5]*3,
-          p4[0] + off*0.15 + b.jitters[6]*2, p4[1] + b.jitters[7]*2
+          p2[0] + fanMid1 + b.jitters[2] * 4,
+          p2[1] + b.jitters[3] * 4,
+          p3[0] + fanMid2 + b.jitters[4] * 4,
+          p3[1] + b.jitters[5] * 4,
+          p4[0] + fanEnd + b.jitters[6] * 3,
+          p4[1] + b.jitters[7] * 3
         );
         ctx.stroke();
       }
 
-      // Splatter
+      // Heavy splatter — concentrated at thick end
       ctx.fillStyle = rgb(color, 1);
       ctx.shadowBlur = 0;
       for (const sp of sd.splatters) {
@@ -664,20 +673,20 @@ const BANNER_THEMES = {
         const y = bz(p1[1],p2[1],p3[1],p4[1],sp.t);
         ctx.globalAlpha = alpha * sp.a;
         ctx.beginPath();
-        ctx.arc(x + sp.ox * baseW * 1.3, y + sp.oy * baseW * 1.3, sp.r, 0, Math.PI * 2);
+        ctx.arc(x + sp.ox * baseW * 1.5, y + sp.oy * baseW * 1.5, sp.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
       // Flung streaks
-      ctx.strokeStyle = rgb(color, 0.9);
+      ctx.strokeStyle = rgb(color, 0.85);
       for (const sk of sd.streaks) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sk.t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],sk.t);
-        ctx.globalAlpha = alpha * 0.7;
+        ctx.globalAlpha = alpha * 0.65;
         ctx.lineWidth = 1 + sk.lw;
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineTo(x + sk.ext * sk.side + sk.ox, y + sk.ext * 0.3 + sk.oy);
+        ctx.lineTo(x + sk.ext * sk.side + sk.ox, y + sk.ext * 0.4 + sk.oy);
         ctx.stroke();
       }
 
