@@ -459,202 +459,172 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): liquid paint blobs appear → suck to center → explode
+  // 🎨 PRISMATIC (Lynae): sharp paint slashes → converge → explode
   prismatic: (w, h) => {
+    // Palette from Lynae's banner art: cyan, magenta, acid green, violet, pink
     const PAINT = [
-      [255,45,120], [255,140,0], [250,230,20], [0,220,100],
-      [30,180,255], [180,50,255], [0,230,230], [255,80,200],
+      [0,220,210],    // teal/cyan
+      [230,50,180],   // hot magenta
+      [120,255,60],   // acid green
+      [160,40,255],   // violet
+      [255,70,150],   // pink
+      [0,180,255],    // outlaw blue
+      [200,255,80],   // neon yellow-green
     ];
     const rgb = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-    const bright = (c) => [Math.min(255, c[0]+90), Math.min(255, c[1]+90), Math.min(255, c[2]+90)];
     const bz = (a, b, c, d, p) => { const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d; };
 
     const CYCLE = 9;
     const cx = w * 0.45, cy = h * 0.5;
-    const pad = 15; // keep shapes inside card
 
-    // A swoosh is a bezier path with blob stamps along it
-    const initSwoosh = (idx) => {
-      const ci = (idx * 2) % PAINT.length;
-      const ci2 = (ci + 3) % PAINT.length;
-      // Keep start/end INSIDE the card with padding
-      const sx = pad + Math.random() * (w - pad * 2);
-      const sy = pad + Math.random() * (h - pad * 2);
+    // Sharp paint slash — drawn as a thick bezier stroke with round caps
+    const initSlash = (idx) => {
+      const ci = idx % PAINT.length;
+      const ci2 = (ci + 2) % PAINT.length;
+      // Can start/end anywhere, including off-screen
+      const sx = -w * 0.3 + Math.random() * w * 1.6;
+      const sy = -h * 0.2 + Math.random() * h * 1.4;
       const ang = Math.random() * Math.PI * 2;
-      const len = 60 + Math.random() * 100;
-      const ex = Math.max(pad, Math.min(w - pad, sx + Math.cos(ang) * len));
-      const ey = Math.max(pad, Math.min(h - pad, sy + Math.sin(ang) * len));
+      const len = 80 + Math.random() * 200;
+      const ex = sx + Math.cos(ang) * len;
+      const ey = sy + Math.sin(ang) * len;
       const perpAng = ang + Math.PI * 0.5;
-      const curve = (Math.random() - 0.5) * 80;
-
-      // Blob radius profile along path: 0 → swell → peak → swell → 0
-      // Creates tapered pointed ends with fat middle
-      const blobCount = 20 + Math.floor(Math.random() * 10);
-      const blobs = [];
-      for (let i = 0; i < blobCount; i++) {
-        const t = i / (blobCount - 1);
-        // Smooth taper: sin curve gives pointed ends, fat middle
-        const envelope = Math.pow(Math.sin(t * Math.PI), 0.6);
-        // Add some random variation for organic feel
-        const variation = 0.8 + Math.random() * 0.4;
-        const r = envelope * variation * (12 + Math.random() * 18);
-        blobs.push({ t, r, variation });
-      }
-
-      // Scattered droplets near the path
-      const drops = Array.from({ length: 5 + Math.floor(Math.random() * 6) }, () => ({
-        t: Math.random(),
-        offX: (Math.random() - 0.5) * 50,
-        offY: (Math.random() - 0.5) * 40,
-        r: 1.5 + Math.random() * 4,
-        ci: Math.random() > 0.5 ? ci : ci2,
-      }));
+      const curve = (Math.random() - 0.5) * 120;
 
       return {
         sx, sy, ex, ey,
-        cp1x: sx + (ex - sx) * 0.3 + Math.cos(perpAng) * curve,
-        cp1y: sy + (ey - sy) * 0.3 + Math.sin(perpAng) * curve,
-        cp2x: sx + (ex - sx) * 0.7 + Math.cos(perpAng) * curve * 0.5,
-        cp2y: sy + (ey - sy) * 0.7 + Math.sin(perpAng) * curve * 0.5,
+        cp1x: sx + (ex-sx)*0.3 + Math.cos(perpAng)*curve,
+        cp1y: sy + (ey-sy)*0.3 + Math.sin(perpAng)*curve,
+        cp2x: sx + (ex-sx)*0.7 + Math.cos(perpAng)*curve*0.4,
+        cp2y: sy + (ey-sy)*0.7 + Math.sin(perpAng)*curve*0.4,
         col: PAINT[ci], col2: PAINT[ci2],
-        blobs, drops,
-        delay: idx * 0.8 + Math.random() * 0.3,
+        lineW: 3 + Math.random() * 12, // thin to medium — not fat
+        delay: idx * 0.5 + Math.random() * 0.3,
+        // Scattered spray dots near the slash
+        dots: Array.from({ length: 4 + Math.floor(Math.random()*6) }, () => ({
+          t: Math.random(),
+          ox: (Math.random()-0.5) * 35,
+          oy: (Math.random()-0.5) * 30,
+          r: 0.8 + Math.random() * 2.5,
+          ci: Math.random() > 0.5 ? ci : ci2,
+        })),
       };
     };
 
     const initAll = () => {
-      const count = 3 + Math.floor(Math.random() * 2);
-      return Array.from({ length: count }, (_, i) => initSwoosh(i));
+      const n = 4 + Math.floor(Math.random() * 3); // 4-6 slashes
+      return Array.from({ length: n }, (_, i) => initSlash(i));
     };
 
     const initDebris = () => Array.from({ length: 40 }, () => ({
       angle: Math.random() * Math.PI * 2,
-      speed: 30 + Math.random() * 100,
-      r: 1.5 + Math.random() * 5.5,
+      speed: 25 + Math.random() * 110,
+      r: 1 + Math.random() * 5,
       ci: Math.floor(Math.random() * PAINT.length),
       drag: 0.93 + Math.random() * 0.04,
     }));
 
-    let swooshes = initAll();
+    let slashes = initAll();
     let debris = initDebris();
     let cycleStart = -CYCLE;
 
-    // Ambient floaters
-    const floaters = Array.from({ length: 18 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      r: 1.5 + Math.random() * 3,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.25,
-      ci: Math.floor(Math.random() * PAINT.length),
-      phase: Math.random() * Math.PI * 2,
+    // Ambient spray dots
+    const dots = Array.from({ length: 20 }, () => ({
+      x: Math.random()*w, y: Math.random()*h,
+      r: 1 + Math.random()*2.5,
+      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.2,
+      ci: Math.floor(Math.random()*PAINT.length),
+      phase: Math.random()*Math.PI*2,
     }));
 
     return (ctx, t) => {
       let ct = t - cycleStart;
-      if (ct > CYCLE) { cycleStart = t; ct = 0; swooshes = initAll(); debris = initDebris(); }
+      if (ct > CYCLE) { cycleStart = t; ct = 0; slashes = initAll(); debris = initDebris(); }
 
       const APPEAR_END = 3.0;
       const SUCK_END = 5.0;
       const EXPLODE_T = 5.5;
 
-      // ── Ambient floaters ──
-      for (const f of floaters) {
-        f.x += f.vx; f.y += f.vy;
-        if (f.x < -5) f.x = w + 5; if (f.x > w + 5) f.x = -5;
-        if (f.y < -5) f.y = h + 5; if (f.y > h + 5) f.y = -5;
+      // ── Ambient dots ──
+      for (const d of dots) {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < -5) d.x = w+5; if (d.x > w+5) d.x = -5;
+        if (d.y < -5) d.y = h+5; if (d.y > h+5) d.y = -5;
         ctx.save();
-        ctx.globalAlpha = 0.35 + 0.25 * Math.sin(t * 1.5 + f.phase);
-        ctx.fillStyle = rgb(PAINT[f.ci], 1);
-        ctx.shadowColor = rgb(PAINT[f.ci], 0.4);
-        ctx.shadowBlur = 5;
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.3 + 0.2*Math.sin(t*1.5+d.phase);
+        ctx.fillStyle = rgb(PAINT[d.ci], 1);
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI*2); ctx.fill();
         ctx.restore();
       }
 
-      // ── Liquid paint swooshes (blob stamps) ──
-      if (ct < SUCK_END + 1.2) {
-        for (const s of swooshes) {
+      // ── Paint slashes ──
+      if (ct < SUCK_END + 1) {
+        for (const s of slashes) {
           const age = ct - s.delay;
           if (age < 0) continue;
 
-          // Appear instantly, then stay immobile until suck
-          const appeared = age > 0.15; // snap in over 150ms
+          // Draw progress: snap in fast (0.12s) then stay
+          const drawP = Math.min(1, age / 0.12);
+          const eased = 1 - Math.pow(1 - drawP, 3);
 
+          // Suck toward center
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
-            suckP = suckP * suckP * suckP; // ease-in
+            suckP = suckP * suckP * suckP;
           }
           const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 0.8) : 0.92;
           if (alpha < 0.01) continue;
 
-          // Draw progress: instant snap (150ms), then stays at full
-          const drawP = appeared ? 1 : Math.min(1, age / 0.15);
+          // Compute start/end pulled toward center during suck
+          const pull = suckP;
+          const asx = s.sx + (cx - s.sx) * pull;
+          const asy = s.sy + (cy - s.sy) * pull;
+          const aex = s.sx + (s.ex - s.sx) * eased + (cx - (s.sx + (s.ex-s.sx)*eased)) * pull;
+          const aey = s.sy + (s.ey - s.sy) * eased + (cy - (s.sy + (s.ey-s.sy)*eased)) * pull;
+          const ac1x = s.cp1x + (cx - s.cp1x) * pull;
+          const ac1y = s.cp1y + (cy - s.cp1y) * pull;
+          const ac2x = s.cp2x + (cx - s.cp2x) * pull;
+          const ac2y = s.cp2y + (cy - s.cp2y) * pull;
+
+          // Width narrows during suck
+          const lw = s.lineW * (1 - suckP * 0.8);
 
           ctx.save();
           ctx.globalAlpha = alpha;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = lw;
 
-          // Stamp overlapping circles along the bezier path
-          // First pass: draw all blobs as solid color (creates the liquid body)
-          for (let pass = 0; pass < 2; pass++) {
-            for (let bi = 0; bi < s.blobs.length; bi++) {
-              const b = s.blobs[bi];
-              if (b.t > drawP) continue;
+          // Main stroke
+          ctx.strokeStyle = rgb(s.col, 1);
+          ctx.shadowColor = rgb(s.col, 0.5);
+          ctx.shadowBlur = lw * 1.5;
+          ctx.beginPath();
+          ctx.moveTo(asx, asy);
+          ctx.bezierCurveTo(ac1x, ac1y, ac2x, ac2y, aex, aey);
+          ctx.stroke();
 
-              // Position on bezier
-              let bx = bz(s.sx, s.cp1x, s.cp2x, s.ex, b.t);
-              let by = bz(s.sy, s.cp1y, s.cp2y, s.ey, b.t);
+          // Second color overlay — thinner, offset slightly
+          ctx.globalAlpha = alpha * 0.6;
+          ctx.lineWidth = lw * 0.5;
+          ctx.strokeStyle = rgb(s.col2, 1);
+          ctx.shadowColor = rgb(s.col2, 0.4);
+          ctx.shadowBlur = lw;
+          ctx.beginPath();
+          ctx.moveTo(asx + 2, asy + 1);
+          ctx.bezierCurveTo(ac1x + 2, ac1y + 1, ac2x + 2, ac2y + 1, aex + 2, aey + 1);
+          ctx.stroke();
 
-              // During suck, pull toward center
-              bx += (cx - bx) * suckP;
-              by += (cy - by) * suckP;
-
-              // Radius shrinks during suck
-              const r = b.r * (1 - suckP * 0.7);
-              if (r < 0.5) continue;
-
-              if (pass === 0) {
-                // Main body: solid color gradient along path
-                const colorT = b.t;
-                const cr = s.col[0] + (s.col2[0] - s.col[0]) * colorT;
-                const cg = s.col[1] + (s.col2[1] - s.col[1]) * colorT;
-                const cb = s.col[2] + (s.col2[2] - s.col[2]) * colorT;
-                ctx.fillStyle = `rgba(${cr|0},${cg|0},${cb|0},1)`;
-                ctx.shadowColor = `rgba(${cr|0},${cg|0},${cb|0},0.3)`;
-                ctx.shadowBlur = 8;
-                ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
-              } else {
-                // Highlight pass: smaller, brighter, offset up-left
-                ctx.globalAlpha = alpha * 0.35;
-                const hiC = bright(b.t < 0.5 ? s.col : s.col2);
-                ctx.fillStyle = rgb(hiC, 0.6);
-                ctx.shadowBlur = 0;
-                ctx.beginPath();
-                ctx.arc(bx - r * 0.15, by - r * 0.2, r * 0.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = alpha;
-              }
-            }
-          }
-
-          // Flying droplets
-          ctx.shadowBlur = 3;
-          for (const dr of s.drops) {
-            if (dr.t > drawP) continue;
-            let dx = bz(s.sx, s.cp1x, s.cp2x, s.ex, dr.t) + dr.offX;
-            let dy = bz(s.sy, s.cp1y, s.cp2y, s.ey, dr.t) + dr.offY;
-            dx += (cx - dx) * suckP * 0.7;
-            dy += (cy - dy) * suckP * 0.7;
-            const dr2 = dr.r * (1 - suckP * 0.5);
-            ctx.globalAlpha = alpha * 0.9;
-            ctx.fillStyle = rgb(PAINT[dr.ci], 1);
-            ctx.shadowColor = rgb(PAINT[dr.ci], 0.3);
-            ctx.beginPath(); ctx.arc(dx, dy, dr2, 0, Math.PI * 2); ctx.fill();
-            if (dr2 > 2) {
-              ctx.fillStyle = 'rgba(255,255,255,0.35)';
-              ctx.shadowBlur = 0;
-              ctx.beginPath(); ctx.arc(dx - dr2*0.2, dy - dr2*0.2, dr2*0.3, 0, Math.PI*2); ctx.fill();
-              ctx.shadowBlur = 3;
-            }
+          // Spray dots scattered around the slash
+          ctx.shadowBlur = 2;
+          for (const dot of s.dots) {
+            if (dot.t > eased) continue;
+            let dx = bz(asx, ac1x, ac2x, aex, dot.t) + dot.ox * (1 - suckP*0.7);
+            let dy = bz(asy, ac1y, ac2y, aey, dot.t) + dot.oy * (1 - suckP*0.7);
+            ctx.globalAlpha = alpha * 0.8;
+            ctx.fillStyle = rgb(PAINT[dot.ci], 1);
+            ctx.beginPath(); ctx.arc(dx, dy, dot.r, 0, Math.PI*2); ctx.fill();
           }
 
           ctx.restore();
@@ -662,21 +632,21 @@ const BANNER_THEMES = {
       }
 
       // ── Mix swirl ──
-      if (ct > APPEAR_END + 1.5 && ct < EXPLODE_T + 0.5) {
-        const mixP = Math.min(1, (ct - APPEAR_END - 1.5) / 1.5);
-        const mixA = ct < EXPLODE_T ? mixP * 0.5 : Math.max(0, 0.5 - (ct - EXPLODE_T) * 2);
-        if (mixA > 0.01) {
-          const sw = ct * 5, mr = 10 + mixP * 20;
+      if (ct > APPEAR_END + 1.5 && ct < EXPLODE_T + 0.4) {
+        const mP = Math.min(1, (ct - APPEAR_END - 1.5) / 1.5);
+        const mA = ct < EXPLODE_T ? mP * 0.5 : Math.max(0, 0.5 - (ct-EXPLODE_T)*2.5);
+        if (mA > 0.01) {
+          const sw = ct * 6, mr = 8 + mP * 18;
           for (let i = 0; i < 5; i++) {
-            const a = sw + i * Math.PI * 0.4;
-            const px = cx + Math.cos(a) * mr * (0.4 + i * 0.12);
-            const py = cy + Math.sin(a) * mr * (0.4 + i * 0.12);
-            ctx.save(); ctx.globalAlpha = mixA;
-            const g = ctx.createRadialGradient(px, py, 0, px, py, mr * 0.4);
-            g.addColorStop(0, rgb(PAINT[(i*2)%8], 0.8));
-            g.addColorStop(1, rgb(PAINT[(i*2)%8], 0));
+            const a = sw + i*Math.PI*0.4;
+            const px = cx + Math.cos(a) * mr * (0.3 + i*0.14);
+            const py = cy + Math.sin(a) * mr * (0.3 + i*0.14);
+            ctx.save(); ctx.globalAlpha = mA;
+            const g = ctx.createRadialGradient(px, py, 0, px, py, mr*0.35);
+            g.addColorStop(0, rgb(PAINT[(i*2)%7], 0.8));
+            g.addColorStop(1, rgb(PAINT[(i*2)%7], 0));
             ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(px, py, mr * 0.4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(px, py, mr*0.35, 0, Math.PI*2); ctx.fill();
             ctx.restore();
           }
         }
@@ -685,30 +655,26 @@ const BANNER_THEMES = {
       // ── Explosion ──
       if (ct > EXPLODE_T) {
         const ea = ct - EXPLODE_T;
-        if (ea < 0.15) {
-          ctx.save(); ctx.globalAlpha = 0.35 * (1 - ea / 0.15);
-          const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w,h)*0.4);
+        if (ea < 0.12) {
+          ctx.save(); ctx.globalAlpha = 0.4 * (1 - ea/0.12);
+          const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w,h)*0.35);
           fg.addColorStop(0, 'rgba(255,255,255,0.9)');
           fg.addColorStop(1, 'rgba(255,255,255,0)');
           ctx.fillStyle = fg;
-          ctx.beginPath(); ctx.arc(cx, cy, Math.max(w,h)*0.4, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx, cy, Math.max(w,h)*0.35, 0, Math.PI*2); ctx.fill();
           ctx.restore();
         }
-        const da = ea < 0.2 ? ea/0.2 : Math.max(0, 1 - (ea-0.2)/3);
+        const da = ea < 0.15 ? ea/0.15 : Math.max(0, 1-(ea-0.15)/3);
         if (da > 0.01) {
           for (const d of debris) {
-            const dist = d.speed * ea * Math.pow(d.drag, ea * 30);
-            const dx = cx + Math.cos(d.angle) * dist;
-            const dy = cy + Math.sin(d.angle) * dist + ea*ea*12;
+            const dist = d.speed * ea * Math.pow(d.drag, ea*30);
+            const dx = cx + Math.cos(d.angle)*dist;
+            const dy = cy + Math.sin(d.angle)*dist + ea*ea*10;
             ctx.save(); ctx.globalAlpha = da * 0.95;
             ctx.fillStyle = rgb(PAINT[d.ci], 1);
             ctx.shadowColor = rgb(PAINT[d.ci], 0.4);
-            ctx.shadowBlur = 4;
+            ctx.shadowBlur = 3;
             ctx.beginPath(); ctx.arc(dx, dy, d.r, 0, Math.PI*2); ctx.fill();
-            if (d.r > 2.5) {
-              ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.shadowBlur=0;
-              ctx.beginPath(); ctx.arc(dx-d.r*0.2, dy-d.r*0.2, d.r*0.3, 0, Math.PI*2); ctx.fill();
-            }
             ctx.restore();
           }
         }
