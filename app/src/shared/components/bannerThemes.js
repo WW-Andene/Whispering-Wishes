@@ -609,9 +609,9 @@ const BANNER_THEMES = {
       rot: 0, rotV: (Math.random() - 0.5) * 0.015, active: false,
     }));
     // Explosion debris — only mini gears, lots of them, fly across full screen
-    const miniGears = Array.from({ length: 25 }, () => ({
-      x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotV: (Math.random() - 0.5) * 0.2,
-      size: 2 + Math.random() * 8, teeth: 5 + Math.floor(Math.random() * 5), active: false,
+    const miniGears = Array.from({ length: 35 }, () => ({
+      x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotV: (Math.random() - 0.5) * 0.25,
+      size: 5 + Math.random() * 14, teeth: 6 + Math.floor(Math.random() * 6), active: false,
     }));
     let lastBoom = -1;
     // Timestamps — varied sizes, full spread, sequential
@@ -642,17 +642,17 @@ const BANNER_THEMES = {
         }
       }
       // ── PHASE 1→3: TIMESTAMPS (appear sequentially, freeze, erased by explosion) ──
-      if (cycle < 11.25) {
+      if (cycle < 10.0) {
         for (const ts of timestamps) {
           const localT = cycle - ts.start;
           if (localT < 0) continue; // not spawned yet
           // Fade in during slot, then STAY (no fade out)
           const fadeIn = 0.15 * SLOT_DUR * 1.3;
           let a = localT < fadeIn ? localT / fadeIn : 1;
-          // During clock phase (8-10.75): freeze, stop glitching
+          // During clock phase (8-9.5): freeze, stop glitching
           const frozen = cycle >= 8.0;
-          // Erased by explosion (10.75-11): fast fade out
-          if (cycle >= 10.75) a *= Math.max(0, 1 - (cycle - 10.75) / 0.4);
+          // Erased by explosion (9.5-11): fast fade out
+          if (cycle >= 9.5) a *= Math.max(0, 1 - (cycle - 9.5) / 0.4);
           if (a < 0.01) continue;
           // Time: keeps ticking until clock appears at 8s, then freezes
           const runTime = Math.min(cycle, 8.0) - ts.start;
@@ -722,12 +722,12 @@ const BANNER_THEMES = {
           }
         }
       }
-      // ── PHASE 2 (8–10.75s): MASSIVE CLOCK WITH FILLED GEARS ──
-      const clockVisible = cycle >= 8.0 && cycle < 10.95;
+      // ── PHASE 2 (8–9.5s): MASSIVE CLOCK WITH FILLED GEARS ──
+      const clockVisible = cycle >= 8.0 && cycle < 9.7;
       if (clockVisible) {
         const cT = cycle - 8.0;
         const bIn = Math.min(1, cT / 0.12); // near-instant
-        const cFade = cycle >= 10.75 ? Math.max(0, 1 - (cycle - 10.75) / 0.2) : 1;
+        const cFade = cycle >= 9.5 ? Math.max(0, 1 - (cycle - 9.5) / 0.2) : 1;
         const a = bIn * cFade * 0.9;
         const r = clockR * bIn;
         // Light bloom from center-right (like the reference)
@@ -826,11 +826,9 @@ const BANNER_THEMES = {
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-        // Hands — spin fast then snap to 6:30 at exactly 1.5s
-        const decel = Math.min(1, cT / 1.5);
-        // Sharp stop: fast ease-out that snaps to 0 at the end
-        const easeOut = decel >= 1 ? 1 : 1 - Math.pow(1 - decel, 4);
-        const spinOffset = (1 - easeOut) * Math.PI * 8;
+        // Hands — spin at full speed then HARD STOP at exactly 1.5s
+        const stopped = cT >= 1.5;
+        const spinOffset = stopped ? 0 : (1 - cT / 1.5) * Math.PI * 10;
         const minA = Math.PI + spinOffset * 1.6;
         const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
         // Hand: diamond tip + smaller diamond + two flat teardrop wings
@@ -895,8 +893,8 @@ const BANNER_THEMES = {
         ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 25;
         ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       }
-      // ── PHASE 3 (10.75s): SHATTER — flash + shards + mini gears ──
-      if (cycleId !== lastBoom && cycle >= 10.75) {
+      // ── PHASE 3 (9.5s): SHATTER — flash + shards + mini gears ──
+      if (cycleId !== lastBoom && cycle >= 9.5) {
         lastBoom = cycleId;
         for (const n of nebulae) { n.dist = 0; n.active = true; n.angle = Math.random() * Math.PI * 2; }
         for (const ws of wisps) { ws.dist = 0; ws.active = true; ws.angle = Math.random() * Math.PI * 2; ws.rot = Math.random() * Math.PI; }
@@ -912,8 +910,8 @@ const BANNER_THEMES = {
           mg.active = true;
         }
       }
-      if (cycle >= 10.75 && cycle < 11.25) {
-        const bT = (cycle - 10.75) / 0.5;
+      if (cycle >= 9.5 && cycle < 10.0) {
+        const bT = (cycle - 9.5) / 0.5;
         // Flash
         ctx.save(); ctx.globalAlpha = 0.7 * (1 - bT);
         const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h));
@@ -927,9 +925,9 @@ const BANNER_THEMES = {
         ctx.strokeStyle = 'rgba(255,240,180,0.8)'; ctx.lineWidth = 3; ctx.shadowColor = 'rgba(255,220,100,0.8)'; ctx.shadowBlur = 20;
         ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
       }
-      // ── PHASE 4 (10.75–15s): SHARDS + MINI GEARS + NEBULA ──
-      if (cycle >= 10.75) {
-        const nT = cycle - 10.75;
+      // ── PHASE 4 (9.5–15s): SHARDS + MINI GEARS + NEBULA ──
+      if (cycle >= 9.5) {
+        const nT = cycle - 9.5;
         // Mini gears flying across the full screen
         for (const mg of miniGears) {
           if (!mg.active) continue;
@@ -937,20 +935,22 @@ const BANNER_THEMES = {
           mg.vx *= 0.995; mg.vy *= 0.995; // minimal drag — fly far
           const fade = Math.max(0, 1 - nT / 4.2);
           if (fade < 0.01) { mg.active = false; continue; }
-          ctx.save(); ctx.globalAlpha = fade * 0.45;
+          ctx.save(); ctx.globalAlpha = fade * 0.8;
           ctx.translate(mg.x, mg.y); ctx.rotate(mg.rot);
-          ctx.strokeStyle = 'rgba(255,230,170,0.6)'; ctx.lineWidth = 0.8;
+          ctx.fillStyle = 'rgba(210,190,150,0.5)';
+          ctx.strokeStyle = 'rgba(255,235,180,0.8)'; ctx.lineWidth = 1.2;
+          ctx.shadowColor = 'rgba(255,220,100,0.5)'; ctx.shadowBlur = 6;
           const gr = mg.size, teeth = mg.teeth;
           ctx.beginPath();
           for (let i = 0; i < teeth; i++) {
             const a2 = (Math.PI * 2 / teeth) * i, ht = Math.PI / teeth * 0.5;
-            ctx.lineTo(Math.cos(a2 - ht) * gr * 0.9, Math.sin(a2 - ht) * gr * 0.9);
+            ctx.lineTo(Math.cos(a2 - ht) * gr * 0.92, Math.sin(a2 - ht) * gr * 0.92);
             ctx.lineTo(Math.cos(a2 - ht * 0.5) * gr, Math.sin(a2 - ht * 0.5) * gr);
             ctx.lineTo(Math.cos(a2 + ht * 0.5) * gr, Math.sin(a2 + ht * 0.5) * gr);
-            ctx.lineTo(Math.cos(a2 + ht) * gr * 0.9, Math.sin(a2 + ht) * gr * 0.9);
+            ctx.lineTo(Math.cos(a2 + ht) * gr * 0.92, Math.sin(a2 + ht) * gr * 0.92);
           }
-          ctx.closePath(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.3, 0, Math.PI * 2); ctx.stroke();
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, gr * 0.35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
           ctx.restore();
         }
         // Nebula clouds
