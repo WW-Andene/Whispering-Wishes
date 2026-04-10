@@ -459,76 +459,25 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): liquid paint with depth → converge → explode
+  // 🎨 PRISMATIC (Lynae): paint strokes → spiral suck to point → explode
   prismatic: (w, h) => {
     const PAINT = [
-      [0,210,200],    // teal
-      [220,40,170],   // magenta
-      [100,245,50],   // acid green
-      [150,30,245],   // violet
-      [245,60,140],   // pink
-      [0,170,250],    // blue
+      [0,210,200], [220,40,170], [100,245,50],
+      [150,30,245], [245,60,140], [0,170,250],
     ];
     const rgb = (c,a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-    const lerp = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
-    const darker = (c,f) => [c[0]*f|0, c[1]*f|0, c[2]*f|0];
-    const lighter = (c,f) => [Math.min(255,c[0]+f)|0, Math.min(255,c[1]+f)|0, Math.min(255,c[2]+f)|0];
+    const lerpc = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
     const bz = (a,b,c,d,p) => {const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d;};
 
     const CYCLE = 9;
     const ccx = w * 0.45, ccy = h * 0.5;
+    const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.8;
 
-    // Catmull-Rom spline through points
-    const catmull = (ctx, pts) => {
-      if (pts.length < 2) return;
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 0; i < pts.length - 1; i++) {
-        const p0 = pts[Math.max(0,i-1)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(pts.length-1,i+2)];
-        ctx.bezierCurveTo(
-          p1[0]+(p2[0]-p0[0])/6, p1[1]+(p2[1]-p0[1])/6,
-          p2[0]-(p3[0]-p1[0])/6, p2[1]-(p3[1]-p1[1])/6,
-          p2[0], p2[1]
-        );
-      }
-    };
-
-    // Draw a filled fluid shape with per-point offset for twisting
-    const drawFluidShape = (ctx, spine, widthScale, color, alpha, offsetFn) => {
-      if (spine.length < 3) return;
-      const top = spine.map((s, i) => {
-        const off = typeof offsetFn === 'function' ? offsetFn(i, spine.length) : (offsetFn || 0);
-        return [s.x + s.nx * (s.hw * widthScale + off), s.y + s.ny * (s.hw * widthScale + off)];
-      });
-      const bot = spine.map((s, i) => {
-        const off = typeof offsetFn === 'function' ? offsetFn(i, spine.length) : (offsetFn || 0);
-        return [s.x + s.nx * (off - s.hw * widthScale), s.y + s.ny * (off - s.hw * widthScale)];
-      });
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = rgb(color, 1);
-      ctx.beginPath();
-      catmull(ctx, top);
-      // Smooth tip connection
-      const last = spine[spine.length-1];
-      ctx.quadraticCurveTo(last.x, last.y, bot[bot.length-1][0], bot[bot.length-1][1]);
-      catmull(ctx, bot.slice().reverse());
-      const first = spine[0];
-      ctx.quadraticCurveTo(first.x, first.y, top[0][0], top[0][1]);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    };
-
-    const initSplash = (idx) => {
+    // Each stroke = a bezier curve defined by 4 control points
+    const initStroke = (idx) => {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
       const ci3 = (ci + 4) % PAINT.length;
-      const colA = PAINT[ci];                       // strand 1
-      const colB = PAINT[ci2];                      // strand 2
-      const colC = lerp(PAINT[ci3], [255,255,255], 0.25); // strand 3 (lighter)
-      const colShadow = darker(PAINT[ci], 0.35);   // drop shadow
-      const colEdge = lighter(PAINT[ci2], 60);      // bright edge highlight
-
       const sx = -w*0.15 + Math.random()*w*1.3;
       const sy = -h*0.1 + Math.random()*h*1.2;
       const ang = Math.random() * Math.PI * 2;
@@ -536,61 +485,49 @@ const BANNER_THEMES = {
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 180;
-      const baseW = 22 + Math.random() * 38;
+      const curv = (Math.random() - 0.5) * 160;
 
-      // Width profile: aggressive variation — big swells + thin necks + random spikes
-      const N = 24;
-      const widths = Array.from({length: N+1}, (_, i) => {
-        const t = i / N;
-        const e = t < 0.1 ? t/0.1 : t > 0.9 ? (1-t)/0.1 : 1;
-        const taper = e * e * (3 - 2*e);
-        // Multi-frequency variation: low freq swell + high freq jaggedness
-        const lo = 0.5 + 0.6 * Math.sin(t * Math.PI * 2.5 + idx * 2.1);
-        const hi = 0.85 + 0.3 * Math.sin(t * Math.PI * 7 + idx * 4.3);
-        const spike = Math.random() > 0.8 ? 1.3 + Math.random() * 0.5 : 1; // random spikes
-        const wNoise = 0.7 + Math.random() * 0.6;
-        return taper * lo * hi * spike * wNoise;
-      });
-
-      // Per-point noise for organic edges — very strong + directional
-      const noise = Array.from({length: N+1}, () => ({
-        ox: (Math.random()-0.5) * baseW * 1.0,
-        oy: (Math.random()-0.5) * baseW * 0.8,
-        wMul: 0.4 + Math.random() * 1.2, // extreme per-point width jitter
+      // Noise offsets for the 3 sub-strands (deterministic per stroke)
+      const strandNoise = Array.from({length: 3}, () => ({
+        ox1: (Math.random()-0.5)*12, oy1: (Math.random()-0.5)*10,
+        ox2: (Math.random()-0.5)*15, oy2: (Math.random()-0.5)*12,
+        ox3: (Math.random()-0.5)*12, oy3: (Math.random()-0.5)*10,
+        ox4: (Math.random()-0.5)*8,  oy4: (Math.random()-0.5)*8,
       }));
 
-      // Splatter dots — more of them, spread wider
-      const splatter = Array.from({length: 14+Math.floor(Math.random()*14)}, () => ({
-        t: Math.random(), side: Math.random()>0.5?1:-1,
-        dist: 0.6+Math.random()*0.5, r: 0.5+Math.random()*2.5,
-      }));
+      // Width noise along the curve (for varying lineWidth per segment)
+      const SEG = 20;
+      const widthNoise = Array.from({length: SEG}, () => 0.5 + Math.random() * 1.0);
 
-      const drops = Array.from({length: 5+Math.floor(Math.random()*6)}, () => ({
+      // Splatter dots
+      const drops = Array.from({length: 6+Math.floor(Math.random()*8)}, () => ({
         t: Math.random(), ox: (Math.random()-0.5)*45, oy: (Math.random()-0.5)*35,
-        r: 1.5+Math.random()*4, ci: Math.random()>0.5?ci:ci2,
+        r: 1+Math.random()*4, ci: [ci,ci2,ci3][Math.floor(Math.random()*3)],
       }));
 
       return {
+        // Raw control points
         sx, sy, ex, ey,
-        cp1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
-        cp1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
-        cp2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
-        cp2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
-        colA, colB, colC, colShadow, colEdge, baseW, widths, noise, splatter, drops, N,
-        twistFreq: 1.5 + Math.random() * 2, // how many twists along the path
+        c1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
+        c1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
+        c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
+        c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
+        cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
+        baseW: 10 + Math.random() * 18,
+        strandNoise, widthNoise, drops, SEG,
+        twistFreq: 1.5 + Math.random() * 2,
         delay: idx * 0.6 + Math.random() * 0.3,
       };
     };
 
-    const initAll = () => Array.from({length: 3+Math.floor(Math.random()*2)}, (_,i) => initSplash(i));
+    const initAll = () => Array.from({length: 3+Math.floor(Math.random()*2)}, (_,i) => initStroke(i));
     const initDebris = () => Array.from({length: 40}, () => ({
       angle: Math.random()*Math.PI*2, speed: 25+Math.random()*110,
       r: 1.5+Math.random()*5, ci: Math.floor(Math.random()*PAINT.length),
       drag: 0.93+Math.random()*0.04,
     }));
 
-    let splashes = initAll(), debris = initDebris(), cycleStart = -CYCLE;
+    let strokes = initAll(), debris = initDebris(), cycleStart = -CYCLE;
 
     const ambDots = Array.from({length: 15}, () => ({
       x: Math.random()*w, y: Math.random()*h, r: 1+Math.random()*2.5,
@@ -598,55 +535,48 @@ const BANNER_THEMES = {
       ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
 
-    // Build spine — suck acts like water draining: spiral pull, stretching, tip leads
-    const buildSpine = (s, drawP, suckP) => {
-      const spine = [];
-      for (let i = 0; i <= s.N; i++) {
-        const frac = i / s.N;
-        const t = frac * drawP;
-        let x = bz(s.sx, s.cp1x, s.cp2x, s.ex, t);
-        let y = bz(s.sy, s.cp1y, s.cp2y, s.ey, t);
+    // Pull a point toward center with spiral
+    const suck = (x, y, suckP, frac) => {
+      if (suckP <= 0) return [x, y];
+      const dx = x - ccx, dy = y - ccy;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const angle = Math.atan2(dy, dx);
+      const pull = Math.min(1, suckP * (0.3 + frac * 0.7));
+      const spiral = pull * Math.PI * 1.5;
+      const newDist = dist * (1 - pull);
+      return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
+    };
 
-        // Add noise
-        x += s.noise[i].ox * (1 - suckP);
-        y += s.noise[i].oy * (1 - suckP);
+    // Draw a single noisy tapered bezier stroke
+    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, wNoise, seg) => {
+      ctx.save();
+      ctx.strokeStyle = rgb(color, 1);
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = alpha;
+      ctx.shadowColor = rgb(color, 0.4);
+      ctx.shadowBlur = 6;
 
-        if (suckP > 0) {
-          // Distance to center
-          const dx = x - ccx, dy = y - ccy;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-          const angle = Math.atan2(dy, dx);
-
-          // Tip gets sucked first, base trails behind
-          const pull = Math.min(1, suckP * (0.4 + frac * 0.6));
-
-          // Spiral toward center
-          const spiral = pull * Math.PI * 1.5;
-          const newAngle = angle + spiral;
-
-          // Fully reach center at pull=1
-          const newDist = dist * (1 - pull);
-
-          x = ccx + Math.cos(newAngle) * newDist;
-          y = ccy + Math.sin(newAngle) * newDist;
-        }
-
-        const tp = Math.min(1, t + 0.03);
-        const tx = bz(s.sx,s.cp1x,s.cp2x,s.ex,tp) - bz(s.sx,s.cp1x,s.cp2x,s.ex,t);
-        const ty = bz(s.sy,s.cp1y,s.cp2y,s.ey,tp) - bz(s.sy,s.cp1y,s.cp2y,s.ey,t);
-        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        // Width collapses to zero as fully sucked
-        const hw = s.baseW * s.widths[i] * s.noise[i].wMul * (1 - suckP);
-        spine.push({ x, y, nx: -ty/tl, ny: tx/tl, hw: Math.max(0.5, hw) });
+      for (let i = 0; i < seg; i++) {
+        const t0 = i / seg, t1 = (i+1) / seg;
+        const x0 = bz(p1[0],p2[0],p3[0],p4[0],t0);
+        const y0 = bz(p1[1],p2[1],p3[1],p4[1],t0);
+        const x1 = bz(p1[0],p2[0],p3[0],p4[0],t1);
+        const y1 = bz(p1[1],p2[1],p3[1],p4[1],t1);
+        const tMid = (t0+t1)*0.5;
+        // Taper + noise
+        const taper = Math.pow(Math.sin(tMid * Math.PI), 0.5);
+        ctx.lineWidth = Math.max(0.5, baseW * taper * wNoise[i]);
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
       }
-      return spine;
+      ctx.restore();
     };
 
     return (ctx, t) => {
       let ct = t - cycleStart;
-      if (ct > CYCLE) { cycleStart = t; ct = 0; splashes = initAll(); debris = initDebris(); }
-
-      const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.8;
+      if (ct > CYCLE) { cycleStart = t; ct = 0; strokes = initAll(); debris = initDebris(); }
 
       // Ambient dots
       for (const d of ambDots) {
@@ -659,105 +589,79 @@ const BANNER_THEMES = {
         ctx.restore();
       }
 
-      // ── Liquid paint splashes ──
+      // ── Paint strokes ──
       if (ct < EXPLODE_T + 0.3) {
-        for (const s of splashes) {
+        for (const s of strokes) {
           const age = ct - s.delay;
           if (age < 0) continue;
           const drawP = Math.min(1, age / 0.15);
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
-            suckP = suckP * suckP; // quadratic ease-in (was cubic — too slow)
+            suckP = suckP * suckP;
           }
-          // Stay visible through entire suck, vanish at explosion
-          const alpha = ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.3) : 0.92;
+          const alpha = ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92;
           if (alpha < 0.01) continue;
 
-          const spine = buildSpine(s, drawP, suckP);
-          if (spine.length < 3) continue;
+          // Suck all 4 control points toward center (with frac 0→1 along curve)
+          const [sx2,sy2] = suck(s.sx, s.sy, suckP, 0);
+          const [c1x2,c1y2] = suck(s.c1x, s.c1y, suckP, 0.33);
+          const [c2x2,c2y2] = suck(s.c2x, s.c2y, suckP, 0.66);
+          const endFrac = drawP;
+          const ex2 = s.sx + (s.ex - s.sx) * endFrac;
+          const ey2 = s.sy + (s.ey - s.sy) * endFrac;
+          const [ex3,ey3] = suck(ex2, ey2, suckP, 1);
 
-          // Drop shadow behind everything
-          ctx.shadowColor = 'rgba(0,0,0,0.4)';
-          ctx.shadowBlur = 14;
-          ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 4;
-          drawFluidShape(ctx, spine, 1.05, s.colShadow, alpha * 0.4, 0);
-          ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+          // Width shrinks with suck
+          const bw = s.baseW * (1 - suckP);
 
-          // 3 twisting color strands — each sine-offset with 120° phase shift
-          const gap = spine[0].hw * 0.75;
-          const twist = (phase) => (i, len) => {
-            const t = i / (len - 1);
-            return Math.sin(t * Math.PI * 2 * s.twistFreq + phase) * gap;
-          };
-          // Draw back-to-front based on twist position at midpoint for correct overlap
-          const strands = [
-            { col: s.colA, phase: 0 },
-            { col: s.colB, phase: Math.PI * 2 / 3 },
-            { col: s.colC, phase: Math.PI * 4 / 3 },
-          ];
-          // Sort by z-order at midpoint (sine value at t=0.5)
-          const mid = Math.floor(spine.length / 2);
-          strands.sort((a, b) => {
-            const za = Math.sin(0.5 * Math.PI * 2 * s.twistFreq + a.phase);
-            const zb = Math.sin(0.5 * Math.PI * 2 * s.twistFreq + b.phase);
-            return za - zb; // draw furthest-back first
-          });
-          for (const st of strands) {
-            drawFluidShape(ctx, spine, 0.35, st.col, alpha * 0.92, twist(st.phase));
+          // Draw 3 twisted sub-strands
+          for (let si = 0; si < 3; si++) {
+            const sn = s.strandNoise[si];
+            const twistPhase = si * Math.PI * 2 / 3;
+            // Per-strand offset that twists along the path
+            const offScale = bw * 0.8 * (1 - suckP);
+            // Offset each control point perpendicular (approximated by rotating noise)
+            const twist = (frac) => Math.sin(frac * Math.PI * 2 * s.twistFreq + twistPhase) * offScale;
+            const t0 = twist(0), t1 = twist(0.33), t2 = twist(0.66), t3 = twist(1);
+
+            const p1 = [sx2 + sn.ox1 + t0, sy2 + sn.oy1];
+            const p2 = [c1x2 + sn.ox2 + t1, c1y2 + sn.oy2];
+            const p3 = [c2x2 + sn.ox3 + t2, c2y2 + sn.oy3];
+            const p4 = [ex3 + sn.ox4 + t3, ey3 + sn.oy4];
+
+            drawStroke(ctx, p1, p2, p3, p4, bw * 0.7, s.cols[si], alpha * 0.9, s.widthNoise, s.SEG);
           }
 
-          // Bright edge highlight follows the front strand
-          const frontPhase = strands[2].phase;
-          drawFluidShape(ctx, spine, 0.1, s.colEdge, alpha * 0.45, twist(frontPhase));
-
-          // Edge splatter
-          ctx.save();
-          for (const sp of s.splatter) {
-            if (sp.t > drawP) continue;
-            const si = Math.floor(sp.t * (spine.length-1));
-            const pt = spine[Math.min(si, spine.length-1)];
-            const dx = pt.x + pt.nx * pt.hw * sp.dist * sp.side * (1-suckP*0.5);
-            const dy = pt.y + pt.ny * pt.hw * sp.dist * sp.side * (1-suckP*0.5);
-            ctx.globalAlpha = alpha * 0.7;
-            ctx.fillStyle = rgb(s.colB, 1);
-            ctx.beginPath(); ctx.arc(dx, dy, sp.r*(1-suckP*0.4), 0, Math.PI*2); ctx.fill();
-          }
-          ctx.restore();
-
-          // Flying droplets
+          // Droplets
           for (const dr of s.drops) {
             if (dr.t > drawP) continue;
-            const si2 = Math.floor(dr.t * (spine.length-1));
-            const pt = spine[Math.min(si2, spine.length-1)];
-            let dx = pt.x + dr.ox*(1-suckP*0.7);
-            let dy = pt.y + dr.oy*(1-suckP*0.7);
-            ctx.save(); ctx.globalAlpha = alpha*0.85;
+            let dx = bz(sx2,c1x2,c2x2,ex3,dr.t) + dr.ox*(1-suckP);
+            let dy = bz(sy2,c1y2,c2y2,ey3,dr.t) + dr.oy*(1-suckP);
+            const [dx2,dy2] = suck(dx, dy, suckP * 0.5, dr.t);
+            ctx.save(); ctx.globalAlpha = alpha * 0.8;
             ctx.fillStyle = rgb(PAINT[dr.ci],1);
-            ctx.beginPath(); ctx.arc(dx,dy,dr.r*(1-suckP*0.4),0,Math.PI*2); ctx.fill();
-            if (dr.r > 2.5) {
-              ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.beginPath();
-              ctx.arc(dx-dr.r*0.2,dy-dr.r*0.2,dr.r*0.25,0,Math.PI*2); ctx.fill();
-            }
+            ctx.shadowColor = rgb(PAINT[dr.ci],0.3); ctx.shadowBlur = 3;
+            ctx.beginPath(); ctx.arc(dx2,dy2,dr.r*(1-suckP*0.6),0,Math.PI*2); ctx.fill();
             ctx.restore();
           }
         }
       }
 
       // ── Mix swirl ──
-      if (ct > APPEAR_END+1.5 && ct < EXPLODE_T+0.4) {
-        const mP = Math.min(1,(ct-APPEAR_END-1.5)/1.5);
-        const mA = ct<EXPLODE_T ? mP*0.5 : Math.max(0,0.5-(ct-EXPLODE_T)*2.5);
+      if (ct > SUCK_END && ct < EXPLODE_T + 0.3) {
+        const mP = Math.min(1, (ct - SUCK_END) / (EXPLODE_T - SUCK_END));
+        const mA = mP * 0.6;
         if (mA > 0.01) {
-          const sw=ct*6, mr=8+mP*18;
-          for (let i=0;i<5;i++){
-            const a=sw+i*Math.PI*0.4;
-            const px=ccx+Math.cos(a)*mr*(0.3+i*0.14), py=ccy+Math.sin(a)*mr*(0.3+i*0.14);
-            ctx.save(); ctx.globalAlpha=mA;
-            const g=ctx.createRadialGradient(px,py,0,px,py,mr*0.35);
+          const sw = ct * 8, mr = 5 + mP * 15;
+          for (let i = 0; i < 6; i++) {
+            const a = sw + i * Math.PI / 3;
+            const px = ccx + Math.cos(a) * mr * (0.3+i*0.1);
+            const py = ccy + Math.sin(a) * mr * (0.3+i*0.1);
+            ctx.save(); ctx.globalAlpha = mA;
+            const g = ctx.createRadialGradient(px,py,0,px,py,mr*0.3);
             g.addColorStop(0,rgb(PAINT[i%6],0.8)); g.addColorStop(1,rgb(PAINT[i%6],0));
-            ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,mr*0.35,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px,py,mr*0.3,0,Math.PI*2); ctx.fill();
             ctx.restore();
           }
         }
@@ -765,21 +669,21 @@ const BANNER_THEMES = {
 
       // ── Explosion ──
       if (ct > EXPLODE_T) {
-        const ea=ct-EXPLODE_T;
-        if (ea<0.12){
-          ctx.save(); ctx.globalAlpha=0.4*(1-ea/0.12);
-          const fg=ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,Math.max(w,h)*0.35);
+        const ea = ct - EXPLODE_T;
+        if (ea < 0.12) {
+          ctx.save(); ctx.globalAlpha = 0.4*(1-ea/0.12);
+          const fg = ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,Math.max(w,h)*0.35);
           fg.addColorStop(0,'rgba(255,255,255,0.9)'); fg.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.fillStyle=fg; ctx.beginPath(); ctx.arc(ccx,ccy,Math.max(w,h)*0.35,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(ccx,ccy,Math.max(w,h)*0.35,0,Math.PI*2); ctx.fill();
           ctx.restore();
         }
-        const da=ea<0.15?ea/0.15:Math.max(0,1-(ea-0.15)/3);
-        if (da>0.01){
-          for (const d of debris){
-            const dist=d.speed*ea*Math.pow(d.drag,ea*30);
-            const dx=ccx+Math.cos(d.angle)*dist, dy=ccy+Math.sin(d.angle)*dist+ea*ea*10;
-            ctx.save(); ctx.globalAlpha=da*0.95;
-            ctx.fillStyle=rgb(PAINT[d.ci],1); ctx.shadowColor=rgb(PAINT[d.ci],0.4); ctx.shadowBlur=3;
+        const da = ea<0.15 ? ea/0.15 : Math.max(0,1-(ea-0.15)/3);
+        if (da > 0.01) {
+          for (const d of debris) {
+            const dist = d.speed * ea * Math.pow(d.drag, ea*30);
+            const dx = ccx+Math.cos(d.angle)*dist, dy = ccy+Math.sin(d.angle)*dist+ea*ea*10;
+            ctx.save(); ctx.globalAlpha = da*0.95;
+            ctx.fillStyle = rgb(PAINT[d.ci],1); ctx.shadowColor = rgb(PAINT[d.ci],0.4); ctx.shadowBlur = 3;
             ctx.beginPath(); ctx.arc(dx,dy,d.r,0,Math.PI*2); ctx.fill();
             ctx.restore();
           }
