@@ -594,23 +594,21 @@ const BANNER_THEMES = {
         for (const s of strokes) {
           const age = ct - s.delay;
           if (age < 0) continue;
-          const drawP = Math.min(1, age / 0.15);
+          // Instant appear — only fade opacity, no shape interpolation
+          const alpha0 = Math.min(1, age / 0.05); // 50ms fade-in
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
             suckP = suckP * suckP;
           }
-          const alpha = ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92;
+          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * alpha0;
           if (alpha < 0.01) continue;
 
-          // Suck all 4 control points toward center (with frac 0→1 along curve)
+          // Suck all 4 control points toward center
           const [sx2,sy2] = suck(s.sx, s.sy, suckP, 0);
           const [c1x2,c1y2] = suck(s.c1x, s.c1y, suckP, 0.33);
           const [c2x2,c2y2] = suck(s.c2x, s.c2y, suckP, 0.66);
-          const endFrac = drawP;
-          const ex2 = s.sx + (s.ex - s.sx) * endFrac;
-          const ey2 = s.sy + (s.ey - s.sy) * endFrac;
-          const [ex3,ey3] = suck(ex2, ey2, suckP, 1);
+          const [ex3,ey3] = suck(s.ex, s.ey, suckP, 1);
 
           // Width shrinks with suck
           const bw = s.baseW * (1 - suckP);
@@ -635,7 +633,7 @@ const BANNER_THEMES = {
 
           // Droplets
           for (const dr of s.drops) {
-            if (dr.t > drawP) continue;
+            if (alpha0 < 0.5) continue; // wait for stroke to appear
             let dx = bz(sx2,c1x2,c2x2,ex3,dr.t) + dr.ox*(1-suckP);
             let dy = bz(sy2,c1y2,c2y2,ey3,dr.t) + dr.oy*(1-suckP);
             const [dx2,dy2] = suck(dx, dy, suckP * 0.5, dr.t);
