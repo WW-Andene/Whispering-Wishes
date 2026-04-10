@@ -685,41 +685,41 @@ const BANNER_THEMES = {
         botEdge.push([x - nx * (hw + nBot), y - ny * (hw + nBot)]);
       }
 
-      // Build the closed outline path (reused for both fills)
-      const buildPath = () => {
-        ctx.beginPath();
-        ctx.moveTo(topEdge[0][0], topEdge[0][1]);
-        for (let i = 1; i < topEdge.length; i++) ctx.lineTo(topEdge[i][0], topEdge[i][1]);
-        ctx.lineTo(botEdge[botEdge.length-1][0], botEdge[botEdge.length-1][1]);
-        for (let i = botEdge.length - 2; i >= 0; i--) ctx.lineTo(botEdge[i][0], botEdge[i][1]);
-        ctx.closePath();
+      // Build path function
+      const buildPath = (c) => {
+        c.beginPath();
+        c.moveTo(topEdge[0][0], topEdge[0][1]);
+        for (let i = 1; i < topEdge.length; i++) c.lineTo(topEdge[i][0], topEdge[i][1]);
+        c.lineTo(botEdge[botEdge.length-1][0], botEdge[botEdge.length-1][1]);
+        for (let i = botEdge.length - 2; i >= 0; i--) c.lineTo(botEdge[i][0], botEdge[i][1]);
+        c.closePath();
       };
 
-      // Layer 1: Solid color fill
+      // Render to offscreen canvas so compositing doesn't affect main canvas
+      const oc = document.createElement('canvas');
+      oc.width = ctx.canvas.width; oc.height = ctx.canvas.height;
+      const ox = oc.getContext('2d');
+      ox.scale(ctx.canvas.width / w, ctx.canvas.height / h); // match DPR
+
+      // Fill solid color
+      ox.fillStyle = rgb(color, 1);
+      buildPath(ox);
+      ox.fill();
+
+      // Erase texture gaps: use the grunge pattern with destination-out
+      ox.globalCompositeOperation = 'destination-out';
+      ox.fillStyle = ox.createPattern(texCanvas, 'repeat');
+      ox.globalAlpha = 0.35; // partial erase = subtle texture
+      buildPath(ox);
+      ox.fill();
+      ox.globalCompositeOperation = 'source-over';
+
+      // Stamp offscreen canvas onto main canvas
       ctx.globalAlpha = alpha;
-      ctx.fillStyle = rgb(color, 1);
       ctx.shadowColor = rgb(color, 0.15);
       ctx.shadowBlur = 6;
-      buildPath();
-      ctx.fill();
-
-      // Layer 2: Grunge texture overlay (pattern fill clipped to same shape)
+      ctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, w, h);
       ctx.shadowBlur = 0;
-      ctx.globalAlpha = alpha * 0.5;
-      // Tint the white texture to the stroke color
-      const tintCanvas = document.createElement('canvas');
-      tintCanvas.width = texSize; tintCanvas.height = texSize;
-      const tCtx = tintCanvas.getContext('2d');
-      tCtx.fillStyle = rgb(color, 1);
-      tCtx.fillRect(0, 0, texSize, texSize);
-      tCtx.globalCompositeOperation = 'destination-in';
-      tCtx.drawImage(texCanvas, 0, 0);
-      const pattern = ctx.createPattern(tintCanvas, 'repeat');
-      ctx.fillStyle = pattern;
-      ctx.globalCompositeOperation = 'source-atop';
-      buildPath();
-      ctx.fill();
-      ctx.globalCompositeOperation = 'source-over';
 
       // Thin trailing lines behind the tail
       ctx.shadowBlur = 0;
