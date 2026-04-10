@@ -570,63 +570,89 @@ const BANNER_THEMES = {
         ctx.restore();
       }
 
-      // ── Multi-layered swoosh strokes ──
+      // ── Multi-color swoosh strokes (colors flow WITHIN one stroke) ──
       for (let si = 0; si < strokes.length; si++) {
         const s = strokes[si];
         const age = t - s.born;
         const totalLife = s.drawDur + s.fadeDur;
 
-        // Respawn when dead
         if (age > totalLife) {
           strokes[si] = initStroke(t + 0.2 + Math.random() * 1.5);
           continue;
         }
-        if (age < 0) continue; // not born yet
+        if (age < 0) continue;
 
-        // Instant swoosh: cubic ease-out
         const rawP = Math.min(1, age / s.drawDur);
         const drawP = 1 - Math.pow(1 - rawP, 3);
         const fadeP = age > s.drawDur ? (age - s.drawDur) / s.fadeDur : 0;
         const fadeAlpha = 1 - fadeP * fadeP;
         if (fadeAlpha < 0.01) continue;
 
-        // Draw each color layer with perpendicular offset
-        const SEG = 40;
-        for (let L = s.cis.length - 1; L >= 0; L--) {
-          const ci = s.cis[L];
-          const offsetMag = (L - (s.cis.length - 1) / 2) * (s.baseWidth * 0.4);
-
-          ctx.save();
-          ctx.globalAlpha = s.alpha * fadeAlpha * (L === 0 ? 1 : 0.7);
-          ctx.strokeStyle = `rgba(${PAINT[ci]},1)`;
-          ctx.shadowColor = `rgba(${PAINT[ci]},0.7)`;
-          ctx.shadowBlur = L === 0 ? 14 : 8;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-
-          const endSeg = Math.floor(drawP * SEG);
-          if (endSeg < 1) { ctx.restore(); continue; }
-
-          ctx.beginPath();
-          for (let i = 0; i <= endSeg; i++) {
-            const p = i / SEG;
-            const x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
-            const y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
-            // Perpendicular offset via tangent approximation
-            const pp = Math.min(1, p + 0.01);
-            const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - x;
-            const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - y;
-            const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
-            const nx = -ty / tLen, ny = tx / tLen;
-            if (i === 0) ctx.moveTo(x + nx * offsetMag, y + ny * offsetMag);
-            else ctx.lineTo(x + nx * offsetMag, y + ny * offsetMag);
-          }
-          // Brush pressure: thick center, taper at edges
-          const pressure = 0.3 + 0.7 * Math.sin(drawP * Math.PI);
-          ctx.lineWidth = s.baseWidth * pressure * (L === 0 ? 1 : 0.65);
-          ctx.stroke();
-          ctx.restore();
+        // Build ribbon: compute spine points + normals up to drawP
+        const SEG = 50;
+        const endSeg = Math.max(1, Math.floor(drawP * SEG));
+        const pts = []; // {x, y, nx, ny, halfW}
+        for (let i = 0; i <= endSeg; i++) {
+          const p = i / SEG;
+          const x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
+          const y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
+          const pp = Math.min(1, p + 0.02);
+          const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - x;
+          const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - y;
+          const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
+          // Pressure: swell in center, taper at both ends
+          const along = i / endSeg;
+          const pressure = Math.sin(along * Math.PI);
+          const halfW = s.baseWidth * 0.5 * (0.15 + 0.85 * pressure);
+          pts.push({ x, y, nx: -ty / tLen, ny: tx / tLen, halfW });
         }
+        if (pts.length < 2) continue;
+
+        // Draw ribbon as filled polygon with multi-color gradient along length
+        ctx.save();
+        ctx.globalAlpha = s.alpha * fadeAlpha;
+
+        // Gradient along the stroke direction (start → end)
+        const g = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[pts.length - 1].x, pts[pts.length - 1].y);
+        const nc = s.cis.length;
+        for (let c = 0; c < nc; c++) {
+          const stop = c / (nc - 1 || 1);
+          g.addColorStop(Math.max(0, stop - 0.05), `rgba(${PAINT[s.cis[c]]},1)`);
+          g.addColorStop(Math.min(1, stop + 0.05), `rgba(${PAINT[s.cis[c]]},1)`);
+        }
+        ctx.fillStyle = g;
+        ctx.shadowColor = `rgba(${PAINT[s.cis[0]]},0.6)`;
+        ctx.shadowBlur = 12;
+
+        // Build closed polygon: top edge forward, bottom edge backward
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x + pts[0].nx * pts[0].halfW, pts[0].y + pts[0].ny * pts[0].halfW);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x + pts[i].nx * pts[i].halfW, pts[i].y + pts[i].ny * pts[i].halfW);
+        }
+        for (let i = pts.length - 1; i >= 0; i--) {
+          ctx.lineTo(pts[i].x - pts[i].nx * pts[i].halfW, pts[i].y - pts[i].ny * pts[i].halfW);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Bright inner core (narrower, white-ish glow)
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.4;
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        const core = 0.25;
+        ctx.moveTo(pts[0].x + pts[0].nx * pts[0].halfW * core, pts[0].y + pts[0].ny * pts[0].halfW * core);
+        for (let i = 1; i < pts.length; i++) {
+          ctx.lineTo(pts[i].x + pts[i].nx * pts[i].halfW * core, pts[i].y + pts[i].ny * pts[i].halfW * core);
+        }
+        for (let i = pts.length - 1; i >= 0; i--) {
+          ctx.lineTo(pts[i].x - pts[i].nx * pts[i].halfW * core, pts[i].y - pts[i].ny * pts[i].halfW * core);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
       }
 
       // ── Splashes ──
