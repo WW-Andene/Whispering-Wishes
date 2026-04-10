@@ -459,66 +459,104 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): thick liquid paint splashes → converge → explode
+  // 🎨 PRISMATIC (Lynae): liquid paint with depth → converge → explode
   prismatic: (w, h) => {
     const PAINT = [
-      [0,220,210],    // teal
-      [230,50,180],   // magenta
-      [120,255,60],   // acid green
-      [160,40,255],   // violet
-      [255,70,150],   // pink
-      [0,180,255],    // blue
+      [0,210,200],    // teal
+      [220,40,170],   // magenta
+      [100,245,50],   // acid green
+      [150,30,245],   // violet
+      [245,60,140],   // pink
+      [0,170,250],    // blue
     ];
     const rgb = (c,a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-    const mix = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
+    const lerp = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
+    const darker = (c,f) => [c[0]*f|0, c[1]*f|0, c[2]*f|0];
+    const lighter = (c,f) => [Math.min(255,c[0]+f)|0, Math.min(255,c[1]+f)|0, Math.min(255,c[2]+f)|0];
     const bz = (a,b,c,d,p) => {const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d;};
 
     const CYCLE = 9;
     const ccx = w * 0.45, ccy = h * 0.5;
 
-    // Each splash = a bezier path drawn as layered thick strokes
+    // Catmull-Rom spline through points
+    const catmull = (ctx, pts) => {
+      if (pts.length < 2) return;
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[Math.max(0,i-1)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(pts.length-1,i+2)];
+        ctx.bezierCurveTo(
+          p1[0]+(p2[0]-p0[0])/6, p1[1]+(p2[1]-p0[1])/6,
+          p2[0]-(p3[0]-p1[0])/6, p2[1]-(p3[1]-p1[1])/6,
+          p2[0], p2[1]
+        );
+      }
+    };
+
+    // Draw a filled liquid shape at a given width fraction
+    const drawFluidShape = (ctx, spine, widthScale, color, alpha) => {
+      if (spine.length < 3) return;
+      const top = spine.map(s => [s.x + s.nx * s.hw * widthScale, s.y + s.ny * s.hw * widthScale]);
+      const bot = spine.map(s => [s.x - s.nx * s.hw * widthScale, s.y - s.ny * s.hw * widthScale]);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = rgb(color, 1);
+      ctx.beginPath();
+      catmull(ctx, top);
+      // Smooth tip connection
+      const last = spine[spine.length-1];
+      ctx.quadraticCurveTo(last.x, last.y, bot[bot.length-1][0], bot[bot.length-1][1]);
+      catmull(ctx, bot.slice().reverse());
+      const first = spine[0];
+      ctx.quadraticCurveTo(first.x, first.y, top[0][0], top[0][1]);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+
     const initSplash = (idx) => {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
-      const dark = PAINT[ci];
-      const mid = mix(PAINT[ci], PAINT[ci2], 0.5);
-      const lite = mix(PAINT[ci2], [255,255,255], 0.35);
+      const colDark = darker(PAINT[ci], 0.6);
+      const colMid = lerp(PAINT[ci], PAINT[ci2], 0.4);
+      const colLite = lighter(PAINT[ci2], 100);
 
-      const sx = -w*0.2 + Math.random() * w * 1.4;
-      const sy = -h*0.15 + Math.random() * h * 1.3;
+      const sx = -w*0.2 + Math.random()*w*1.4;
+      const sy = -h*0.15 + Math.random()*h*1.3;
       const ang = Math.random() * Math.PI * 2;
-      const len = 70 + Math.random() * 160;
+      const len = 80 + Math.random() * 180;
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 130;
+      const curv = (Math.random() - 0.5) * 140;
+      const baseW = 18 + Math.random() * 30;
 
-      // Thick width — like actual paint
-      const baseW = 20 + Math.random() * 35;
+      // Width profile: pointed → swell → neck → swell → pointed
+      const N = 12;
+      const widths = Array.from({length: N+1}, (_, i) => {
+        const t = i / N;
+        // Smoothstep taper at ends
+        const e = t < 0.15 ? t/0.15 : t > 0.85 ? (1-t)/0.15 : 1;
+        const taper = e * e * (3 - 2*e);
+        // Organic variation: gentle swell/neck
+        const vary = 0.8 + 0.4 * Math.sin(t * Math.PI * 2.5 + idx * 1.7);
+        return taper * vary;
+      });
 
-      // Pre-computed noise per segment for organic edges (deterministic, no flicker)
-      const SEG = 36;
-      const noise = Array.from({length: SEG + 1}, () => ({
-        ox: (Math.random() - 0.5) * baseW * 0.35,
-        oy: (Math.random() - 0.5) * baseW * 0.25,
-        wMul: 0.75 + Math.random() * 0.5,           // width variation (0.75-1.25x)
+      // Per-point noise for organic edges
+      const noise = Array.from({length: N+1}, () => ({
+        ox: (Math.random()-0.5) * baseW * 0.25,
+        oy: (Math.random()-0.5) * baseW * 0.2,
       }));
 
-      // Edge splatter — tiny dots sprayed along the edges
-      const splatter = Array.from({length: 10 + Math.floor(Math.random()*12)}, () => ({
-        t: Math.random(),
-        side: Math.random() > 0.5 ? 1 : -1,
-        dist: 0.5 + Math.random() * 0.6, // as fraction of local width
-        r: 0.5 + Math.random() * 2.5,
+      // Splatter dots
+      const splatter = Array.from({length: 8+Math.floor(Math.random()*10)}, () => ({
+        t: Math.random(), side: Math.random()>0.5?1:-1,
+        dist: 0.6+Math.random()*0.5, r: 0.5+Math.random()*2.5,
       }));
 
-      // Scattered droplets
-      const drops = Array.from({length: 5 + Math.floor(Math.random()*7)}, () => ({
-        t: Math.random(),
-        ox: (Math.random()-0.5) * 50,
-        oy: (Math.random()-0.5) * 40,
-        r: 1.5 + Math.random() * 4.5,
-        ci: Math.random()>0.5 ? ci : ci2,
+      const drops = Array.from({length: 5+Math.floor(Math.random()*6)}, () => ({
+        t: Math.random(), ox: (Math.random()-0.5)*45, oy: (Math.random()-0.5)*35,
+        r: 1.5+Math.random()*4, ci: Math.random()>0.5?ci:ci2,
       }));
 
       return {
@@ -527,78 +565,57 @@ const BANNER_THEMES = {
         cp1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
         cp2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         cp2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
-        dark, mid, lite, baseW, drops, noise, splatter, SEG,
+        colDark, colMid, colLite, baseW, widths, noise, splatter, drops, N,
         delay: idx * 0.6 + Math.random() * 0.3,
       };
     };
 
-    const initAll = () => Array.from({length: 3 + Math.floor(Math.random()*2)}, (_,i) => initSplash(i));
+    const initAll = () => Array.from({length: 3+Math.floor(Math.random()*2)}, (_,i) => initSplash(i));
     const initDebris = () => Array.from({length: 40}, () => ({
       angle: Math.random()*Math.PI*2, speed: 25+Math.random()*110,
       r: 1.5+Math.random()*5, ci: Math.floor(Math.random()*PAINT.length),
       drag: 0.93+Math.random()*0.04,
     }));
 
-    let splashes = initAll();
-    let debris = initDebris();
-    let cycleStart = -CYCLE;
+    let splashes = initAll(), debris = initDebris(), cycleStart = -CYCLE;
 
-    // Ambient dots
     const ambDots = Array.from({length: 15}, () => ({
-      x: Math.random()*w, y: Math.random()*h,
-      r: 1+Math.random()*2.5, vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.2,
+      x: Math.random()*w, y: Math.random()*h, r: 1+Math.random()*2.5,
+      vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.2,
       ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
 
-    // Draw a tapered noisy bezier stroke with organic edges
-    const drawNoisyStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, maxW, color, alpha, noise, nSeg) => {
-      ctx.save();
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.strokeStyle = rgb(color, 1);
-      ctx.globalAlpha = alpha;
-
-      // Draw as one continuous path with varying width per chunk
-      for (let i = 0; i < nSeg; i++) {
-        const t0 = i / nSeg;
-        const t1 = (i + 1) / nSeg;
-        const n0 = noise[i], n1 = noise[i + 1];
-        // Base positions on bezier
-        let x0 = bz(sx,c1x,c2x,ex,t0), y0 = bz(sy,c1y,c2y,ey,t0);
-        let x1 = bz(sx,c1x,c2x,ex,t1), y1 = bz(sy,c1y,c2y,ey,t1);
-        // Add noise offset (perpendicular jitter)
-        x0 += n0.ox; y0 += n0.oy;
-        x1 += n1.ox; y1 += n1.oy;
-        // Taper with noise on width
-        const tMid = (t0 + t1) * 0.5;
-        // Smooth taper: smoothstep at ends, flat middle
-        const e = tMid < 0.2 ? tMid / 0.2 : tMid > 0.8 ? (1 - tMid) / 0.2 : 1;
-        const envelope = e * e * (3 - 2 * e); // smoothstep
-        const noiseMul = (n0.wMul + n1.wMul) * 0.5;
-        ctx.lineWidth = Math.max(1, maxW * envelope * noiseMul);
-        ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.stroke();
+    // Build spine for a splash at given suck progress
+    const buildSpine = (s, drawP, suckP) => {
+      const spine = [];
+      for (let i = 0; i <= s.N; i++) {
+        const t = (i / s.N) * drawP;
+        let x = bz(s.sx, s.cp1x, s.cp2x, s.ex, t);
+        let y = bz(s.sy, s.cp1y, s.cp2y, s.ey, t);
+        x += (ccx - x) * suckP + s.noise[i].ox * (1 - suckP);
+        y += (ccy - y) * suckP + s.noise[i].oy * (1 - suckP);
+        const tp = Math.min(1, t + 0.03);
+        const tx = bz(s.sx,s.cp1x,s.cp2x,s.ex,tp) - bz(s.sx,s.cp1x,s.cp2x,s.ex,t);
+        const ty = bz(s.sy,s.cp1y,s.cp2y,s.ey,tp) - bz(s.sy,s.cp1y,s.cp2y,s.ey,t);
+        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+        const hw = s.baseW * s.widths[i] * (1 - suckP * 0.7);
+        spine.push({ x, y, nx: -ty/tl, ny: tx/tl, hw: Math.max(0.5, hw) });
       }
-      ctx.restore();
+      return spine;
     };
 
     return (ctx, t) => {
       let ct = t - cycleStart;
       if (ct > CYCLE) { cycleStart = t; ct = 0; splashes = initAll(); debris = initDebris(); }
 
-      const APPEAR_END = 3.0;
-      const SUCK_END = 5.0;
-      const EXPLODE_T = 5.5;
+      const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.5;
 
-      // ── Ambient dots ──
+      // Ambient dots
       for (const d of ambDots) {
         d.x += d.vx; d.y += d.vy;
-        if (d.x < -5) d.x = w+5; if (d.x > w+5) d.x = -5;
-        if (d.y < -5) d.y = h+5; if (d.y > h+5) d.y = -5;
-        ctx.save();
-        ctx.globalAlpha = 0.3+0.2*Math.sin(t*1.5+d.phase);
+        if (d.x<-5) d.x=w+5; if (d.x>w+5) d.x=-5;
+        if (d.y<-5) d.y=h+5; if (d.y>h+5) d.y=-5;
+        ctx.save(); ctx.globalAlpha = 0.3+0.2*Math.sin(t*1.5+d.phase);
         ctx.fillStyle = rgb(PAINT[d.ci],1);
         ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
         ctx.restore();
@@ -609,7 +626,6 @@ const BANNER_THEMES = {
         for (const s of splashes) {
           const age = ct - s.delay;
           if (age < 0) continue;
-
           const drawP = Math.min(1, age / 0.15);
           let suckP = 0;
           if (ct > APPEAR_END) {
@@ -619,55 +635,46 @@ const BANNER_THEMES = {
           const alpha = ct > SUCK_END ? Math.max(0, 1-(ct-SUCK_END)/0.8) : 0.92;
           if (alpha < 0.01) continue;
 
-          // Pull all points toward center during suck
-          const pull = suckP;
-          const asx = s.sx+(ccx-s.sx)*pull, asy = s.sy+(ccy-s.sy)*pull;
-          const aex = s.sx+(s.ex-s.sx)*drawP+(ccx-(s.sx+(s.ex-s.sx)*drawP))*pull;
-          const aey = s.sy+(s.ey-s.sy)*drawP+(ccy-(s.sy+(s.ey-s.sy)*drawP))*pull;
-          const ac1x = s.cp1x+(ccx-s.cp1x)*pull, ac1y = s.cp1y+(ccy-s.cp1y)*pull;
-          const ac2x = s.cp2x+(ccx-s.cp2x)*pull, ac2y = s.cp2y+(ccy-s.cp2y)*pull;
-          const bw = s.baseW * (1 - suckP*0.7);
+          const spine = buildSpine(s, drawP, suckP);
+          if (spine.length < 3) continue;
 
-          // Layer 1: wide dark shadow/depth
-          drawNoisyStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw*1.15, s.dark, alpha*0.7, s.noise, s.SEG);
-          // Layer 2: main body
-          drawNoisyStroke(ctx, asx,asy,ac1x,ac1y,ac2x,ac2y,aex,aey, bw, s.mid, alpha*0.9, s.noise, s.SEG);
-          // Layer 3: bright highlight (offset)
-          drawNoisyStroke(ctx, asx+1.5,asy-1,ac1x+1.5,ac1y-1,ac2x+1.5,ac2y-1,aex+1.5,aey-1, bw*0.4, s.lite, alpha*0.5, s.noise, s.SEG);
+          // 3 layered fills: dark outer → mid body → bright highlight
+          // This creates the 3D depth illusion
+          ctx.shadowColor = rgb(s.colMid, 0.3);
+          ctx.shadowBlur = 10;
+          drawFluidShape(ctx, spine, 1.0, s.colDark, alpha * 0.85);   // dark outer edge
+          ctx.shadowBlur = 0;
+          drawFluidShape(ctx, spine, 0.72, s.colMid, alpha * 0.9);    // mid body
+          drawFluidShape(ctx, spine, 0.3, s.colLite, alpha * 0.45);   // bright highlight core
 
-          // Edge splatter along the stroke
+          // Edge splatter
           ctx.save();
           for (const sp of s.splatter) {
             if (sp.t > drawP) continue;
-            const bx = bz(asx,ac1x,ac2x,aex,sp.t);
-            const by = bz(asy,ac1y,ac2y,aey,sp.t);
-            const tEnv = Math.pow(Math.sin(sp.t * Math.PI), 0.55);
-            const localW = bw * tEnv;
-            // Tangent perpendicular for offset direction
-            const tp = Math.min(1, sp.t + 0.02);
-            const tx = bz(asx,ac1x,ac2x,aex,tp) - bx;
-            const ty = bz(asy,ac1y,ac2y,aey,tp) - by;
-            const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-            const nx = -ty/tl * sp.side, ny = tx/tl * sp.side;
-            const dx = bx + nx * localW * sp.dist;
-            const dy = by + ny * localW * sp.dist;
+            const si = Math.floor(sp.t * (spine.length-1));
+            const pt = spine[Math.min(si, spine.length-1)];
+            const dx = pt.x + pt.nx * pt.hw * sp.dist * sp.side * (1-suckP*0.5);
+            const dy = pt.y + pt.ny * pt.hw * sp.dist * sp.side * (1-suckP*0.5);
             ctx.globalAlpha = alpha * 0.7;
-            ctx.fillStyle = rgb(s.mid, 1);
-            ctx.beginPath(); ctx.arc(dx, dy, sp.r * (1-suckP*0.5), 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = rgb(s.colMid, 1);
+            ctx.beginPath(); ctx.arc(dx, dy, sp.r*(1-suckP*0.4), 0, Math.PI*2); ctx.fill();
           }
           ctx.restore();
 
-          // Droplets
+          // Flying droplets
           for (const dr of s.drops) {
             if (dr.t > drawP) continue;
-            let dx = bz(asx,ac1x,ac2x,aex,dr.t) + dr.ox*(1-suckP*0.7);
-            let dy = bz(asy,ac1y,ac2y,aey,dr.t) + dr.oy*(1-suckP*0.7);
-            ctx.save();
-            ctx.globalAlpha = alpha*0.85;
+            const si2 = Math.floor(dr.t * (spine.length-1));
+            const pt = spine[Math.min(si2, spine.length-1)];
+            let dx = pt.x + dr.ox*(1-suckP*0.7);
+            let dy = pt.y + dr.oy*(1-suckP*0.7);
+            ctx.save(); ctx.globalAlpha = alpha*0.85;
             ctx.fillStyle = rgb(PAINT[dr.ci],1);
-            ctx.shadowColor = rgb(PAINT[dr.ci],0.3);
-            ctx.shadowBlur = 3;
             ctx.beginPath(); ctx.arc(dx,dy,dr.r*(1-suckP*0.4),0,Math.PI*2); ctx.fill();
+            if (dr.r > 2.5) {
+              ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.beginPath();
+              ctx.arc(dx-dr.r*0.2,dy-dr.r*0.2,dr.r*0.25,0,Math.PI*2); ctx.fill();
+            }
             ctx.restore();
           }
         }
@@ -681,13 +688,11 @@ const BANNER_THEMES = {
           const sw=ct*6, mr=8+mP*18;
           for (let i=0;i<5;i++){
             const a=sw+i*Math.PI*0.4;
-            const px=ccx+Math.cos(a)*mr*(0.3+i*0.14);
-            const py=ccy+Math.sin(a)*mr*(0.3+i*0.14);
+            const px=ccx+Math.cos(a)*mr*(0.3+i*0.14), py=ccy+Math.sin(a)*mr*(0.3+i*0.14);
             ctx.save(); ctx.globalAlpha=mA;
             const g=ctx.createRadialGradient(px,py,0,px,py,mr*0.35);
             g.addColorStop(0,rgb(PAINT[i%6],0.8)); g.addColorStop(1,rgb(PAINT[i%6],0));
-            ctx.fillStyle=g;
-            ctx.beginPath(); ctx.arc(px,py,mr*0.35,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,mr*0.35,0,Math.PI*2); ctx.fill();
             ctx.restore();
           }
         }
