@@ -600,126 +600,117 @@ const BANNER_THEMES = {
         const fadeAlpha = 1 - fadeP * fadeP;
         if (fadeAlpha < 0.01) continue;
 
-        // ── Build spine points with width profile ──
-        const SEG = 60;
-        const endSeg = Math.max(2, Math.floor(drawP * SEG));
+        // ── Build sparse control points (fewer = smoother curves) ──
+        const NPTS = 16; // few points, smoothed with bezier
+        const endPt = Math.max(2, Math.floor(drawP * NPTS));
         const spine = [];
-        for (let i = 0; i <= endSeg; i++) {
-          const p = i / SEG;
+        for (let i = 0; i <= endPt; i++) {
+          const p = i / NPTS;
           const x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
           const y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
-          const pp = Math.min(1, p + 0.015);
+          const pp = Math.min(1, p + 0.02);
           const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - x;
           const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - y;
           const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
           const nx = -ty / tLen, ny = tx / tLen;
 
-          // Interpolate width from control points
+          // Width from control points
           const wp = p * (s.wPts - 1);
           const wi = Math.min(s.wPts - 2, Math.floor(wp));
           const wf = wp - wi;
           const baseW = s.widths[wi] * (1 - wf) + s.widths[wi + 1] * wf;
 
-          // Organic wobble
-          let wob = 0;
+          // Gentle wobble clamped to ±30%
+          let wob = 0, wob2 = 0;
           for (let k = 0; k < 4; k++) {
-            const wb = s.wobbles[k];
-            wob += Math.sin(p * wb.freq * Math.PI * 2 + wb.phase) * wb.amp;
+            wob += Math.sin(p * s.wobbles[k].freq * Math.PI * 2 + s.wobbles[k].phase) * s.wobbles[k].amp;
+            wob2 += Math.sin(p * s.wobbles[k + 4].freq * Math.PI * 2 + s.wobbles[k + 4].phase) * s.wobbles[k + 4].amp;
           }
-          let wob2 = 0;
-          for (let k = 4; k < 8; k++) {
-            const wb = s.wobbles[k];
-            wob2 += Math.sin(p * wb.freq * Math.PI * 2 + wb.phase) * wb.amp;
-          }
-
-          // Clamp wobble to ±50% of base width to prevent self-intersection
-          const clampW = baseW * 0.5;
-          const wTop = baseW + Math.max(-clampW, Math.min(clampW, wob));
-          const wBot = baseW + Math.max(-clampW, Math.min(clampW, wob2));
-          spine.push({ x, y, nx, ny, p, hwTop: Math.max(2, wTop), hwBot: Math.max(2, wBot) });
+          const clamp = baseW * 0.3;
+          spine.push({
+            x, y, nx, ny, p,
+            hwT: Math.max(3, baseW + Math.max(-clamp, Math.min(clamp, wob))),
+            hwB: Math.max(3, baseW + Math.max(-clamp, Math.min(clamp, wob2))),
+          });
         }
         if (spine.length < 3) continue;
 
-        // ── Draw main body as filled shape ──
+        // Compute top/bottom edge points
+        const topPts = spine.map(s2 => ({ x: s2.x + s2.nx * s2.hwT, y: s2.y + s2.ny * s2.hwT }));
+        const botPts = spine.map(s2 => ({ x: s2.x - s2.nx * s2.hwB, y: s2.y - s2.ny * s2.hwB }));
+
+        // Smooth Catmull-Rom through points → bezier commands
+        const smoothPath = (pts) => {
+          if (pts.length < 2) return;
+          ctx.moveTo(pts[0].x, pts[0].y);
+          if (pts.length === 2) { ctx.lineTo(pts[1].x, pts[1].y); return; }
+          for (let i = 0; i < pts.length - 1; i++) {
+            const p0 = pts[Math.max(0, i - 1)];
+            const p1 = pts[i];
+            const p2 = pts[i + 1];
+            const p3 = pts[Math.min(pts.length - 1, i + 2)];
+            // Catmull-Rom → cubic bezier control points
+            const cp1x = p1.x + (p2.x - p0.x) / 6;
+            const cp1y = p1.y + (p2.y - p0.y) / 6;
+            const cp2x = p2.x - (p3.x - p1.x) / 6;
+            const cp2y = p2.y - (p3.y - p1.y) / 6;
+            ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+          }
+        };
+
+        // ── Main body ──
         ctx.save();
         ctx.globalAlpha = s.alpha * fadeAlpha;
 
-        // Color gradient along length
         const first = spine[0], last = spine[spine.length - 1];
         const grad = ctx.createLinearGradient(first.x, first.y, last.x, last.y);
         grad.addColorStop(0, rgb(s.col, 1));
         grad.addColorStop(0.5, rgb(s.col2, 1));
         grad.addColorStop(1, rgb(s.col, 0.9));
-
         ctx.fillStyle = grad;
         ctx.shadowColor = rgb(s.col, 0.5);
         ctx.shadowBlur = 16;
 
-        // Build organic closed shape — smooth lineTo (no stepping gaps)
         ctx.beginPath();
-        // Top edge (forward)
-        ctx.moveTo(
-          first.x + first.nx * first.hwTop,
-          first.y + first.ny * first.hwTop
-        );
-        for (let i = 1; i < spine.length; i++) {
-          const sp = spine[i];
-          ctx.lineTo(sp.x + sp.nx * sp.hwTop, sp.y + sp.ny * sp.hwTop);
-        }
-        // Rounded tip connecting top edge to bottom edge
-        const tip = spine[spine.length - 1];
-        ctx.arc(tip.x, tip.y, Math.max(1, (tip.hwTop + tip.hwBot) * 0.3),
-          Math.atan2(tip.ny, tip.nx), Math.atan2(-tip.ny, -tip.nx), false);
-        // Bottom edge (backward)
-        for (let i = spine.length - 1; i >= 0; i--) {
-          const sp = spine[i];
-          ctx.lineTo(sp.x - sp.nx * sp.hwBot, sp.y - sp.ny * sp.hwBot);
-        }
+        smoothPath(topPts);
+        // Simple curve to connect tip (no arc)
+        const lastTop = topPts[topPts.length - 1];
+        const lastBot = botPts[botPts.length - 1];
+        ctx.quadraticCurveTo(last.x, last.y, lastBot.x, lastBot.y);
+        // Bottom edge backward
+        smoothPath(botPts.slice().reverse());
+        // Connect back to start
+        const firstTop = topPts[0];
+        const firstBot = botPts[0];
+        ctx.quadraticCurveTo(first.x, first.y, firstTop.x, firstTop.y);
         ctx.closePath();
         ctx.fill();
 
-        // ── Glossy highlight (shifted toward one edge) ──
-        ctx.globalAlpha = s.alpha * fadeAlpha * 0.45;
+        // ── Glossy highlight ──
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.4;
+        ctx.shadowBlur = 0;
         const hiGrad = ctx.createLinearGradient(first.x, first.y, last.x, last.y);
-        hiGrad.addColorStop(0, rgb(bright(s.col), 0.7));
-        hiGrad.addColorStop(0.4, 'rgba(255,255,255,0.5)');
-        hiGrad.addColorStop(0.6, 'rgba(255,255,255,0.3)');
+        hiGrad.addColorStop(0, rgb(bright(s.col), 0.6));
+        hiGrad.addColorStop(0.35, 'rgba(255,255,255,0.5)');
+        hiGrad.addColorStop(0.65, 'rgba(255,255,255,0.25)');
         hiGrad.addColorStop(1, rgb(bright(s.col2), 0.4));
         ctx.fillStyle = hiGrad;
-        ctx.shadowBlur = 0;
-
-        // Narrower highlight ribbon on top edge
+        // Highlight as a narrower band near top edge
+        const hiTop = spine.map(s2 => ({ x: s2.x + s2.nx * s2.hwT * 0.65, y: s2.y + s2.ny * s2.hwT * 0.65 }));
+        const hiBot = spine.map(s2 => ({ x: s2.x + s2.nx * s2.hwT * 0.1, y: s2.y + s2.ny * s2.hwT * 0.1 }));
         ctx.beginPath();
-        const hiShift = 0.6; // stay near top edge
-        for (let i = 0; i < spine.length; i++) {
-          const sp = spine[i];
-          const ox = sp.x + sp.nx * sp.hwTop * hiShift;
-          const oy = sp.y + sp.ny * sp.hwTop * hiShift;
-          if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
-        }
-        for (let i = spine.length - 1; i >= 0; i--) {
-          const sp = spine[i];
-          const ox = sp.x + sp.nx * sp.hwTop * 0.15;
-          const oy = sp.y + sp.ny * sp.hwTop * 0.15;
-          ctx.lineTo(ox, oy);
-        }
+        smoothPath(hiTop);
+        smoothPath(hiBot.slice().reverse());
         ctx.closePath();
         ctx.fill();
 
-        // ── Dark edge for depth (bottom side) ──
-        ctx.globalAlpha = s.alpha * fadeAlpha * 0.3;
-        ctx.fillStyle = rgb(dark(s.col), 0.6);
+        // ── Shadow depth on bottom edge ──
+        ctx.globalAlpha = s.alpha * fadeAlpha * 0.25;
+        ctx.fillStyle = rgb(dark(s.col), 0.5);
+        const shTop = spine.map(s2 => ({ x: s2.x - s2.nx * s2.hwB * 0.4, y: s2.y - s2.ny * s2.hwB * 0.4 }));
         ctx.beginPath();
-        for (let i = 0; i < spine.length; i++) {
-          const sp = spine[i];
-          const ox = sp.x - sp.nx * sp.hwBot * 0.5;
-          const oy = sp.y - sp.ny * sp.hwBot * 0.5;
-          if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
-        }
-        for (let i = spine.length - 1; i >= 0; i--) {
-          const sp = spine[i];
-          ctx.lineTo(sp.x - sp.nx * sp.hwBot, sp.y - sp.ny * sp.hwBot);
-        }
+        smoothPath(shTop);
+        smoothPath(botPts.slice().reverse());
         ctx.closePath();
         ctx.fill();
 
