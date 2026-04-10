@@ -825,10 +825,11 @@ const BANNER_THEMES = {
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-        // Hands — full constant speed, then instant dead stop at 1.5s
-        const spinOffset = stopped ? 0 : cT * Math.PI * 6;
-        const minA = Math.PI + (stopped ? 0 : spinOffset * 1.6);
-        const hourA = (Math.PI + Math.PI / 12) + (stopped ? 0 : spinOffset * 0.5);
+        // Hands — full constant speed, freeze in place at stop moment
+        const handT = stopped ? 1.0 : cT; // freeze at the angle they had at 1.0s
+        const spinAngle = handT * Math.PI * 6;
+        const minA = Math.PI + spinAngle * 1.6;
+        const hourA = (Math.PI + Math.PI / 12) + spinAngle * 0.5;
         // Hand: diamond tip + smaller diamond + two flat teardrop wings
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
