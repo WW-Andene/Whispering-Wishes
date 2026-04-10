@@ -497,11 +497,11 @@ const BANNER_THEMES = {
       const baseW = 20 + Math.random() * 35;
 
       // Pre-computed noise per segment for organic edges (deterministic, no flicker)
-      const SEG = 24;
+      const SEG = 36;
       const noise = Array.from({length: SEG + 1}, () => ({
-        ox: (Math.random() - 0.5) * baseW * 0.4,  // position jitter perpendicular
-        oy: (Math.random() - 0.5) * baseW * 0.3,
-        wMul: 0.7 + Math.random() * 0.6,           // width variation (0.7-1.3x)
+        ox: (Math.random() - 0.5) * baseW * 0.35,
+        oy: (Math.random() - 0.5) * baseW * 0.25,
+        wMul: 0.75 + Math.random() * 0.5,           // width variation (0.75-1.25x)
       }));
 
       // Edge splatter — tiny dots sprayed along the edges
@@ -553,8 +553,8 @@ const BANNER_THEMES = {
     // Draw a tapered noisy bezier stroke with organic edges
     const drawNoisyStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, maxW, color, alpha, noise, nSeg) => {
       ctx.save();
-      ctx.lineCap = 'butt';
-      ctx.lineJoin = 'miter';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.strokeStyle = rgb(color, 1);
       ctx.globalAlpha = alpha;
 
@@ -571,8 +571,9 @@ const BANNER_THEMES = {
         x1 += n1.ox; y1 += n1.oy;
         // Taper with noise on width
         const tMid = (t0 + t1) * 0.5;
-        // Sharper taper: flat in middle, quick taper at ends
-        const envelope = Math.min(1, Math.min(tMid * 4, (1 - tMid) * 4));
+        // Smooth taper: smoothstep at ends, flat middle
+        const e = tMid < 0.2 ? tMid / 0.2 : tMid > 0.8 ? (1 - tMid) / 0.2 : 1;
+        const envelope = e * e * (3 - 2 * e); // smoothstep
         const noiseMul = (n0.wMul + n1.wMul) * 0.5;
         ctx.lineWidth = Math.max(1, maxW * envelope * noiseMul);
         ctx.beginPath();
