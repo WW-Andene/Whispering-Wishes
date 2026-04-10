@@ -635,8 +635,8 @@ const BANNER_THEMES = {
         const tx = bz(s.sx,s.cp1x,s.cp2x,s.ex,tp) - bz(s.sx,s.cp1x,s.cp2x,s.ex,t);
         const ty = bz(s.sy,s.cp1y,s.cp2y,s.ey,tp) - bz(s.sy,s.cp1y,s.cp2y,s.ey,t);
         const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        // Width thins as it's sucked — like water stretching into a drain
-        const hw = s.baseW * s.widths[i] * s.noise[i].wMul * (1 - suckP * 0.5);
+        // Width collapses to zero as fully sucked
+        const hw = s.baseW * s.widths[i] * s.noise[i].wMul * (1 - suckP);
         spine.push({ x, y, nx: -ty/tl, ny: tx/tl, hw: Math.max(0.5, hw) });
       }
       return spine;
