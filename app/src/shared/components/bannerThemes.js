@@ -622,31 +622,64 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Draw one thick solid brush stroke + splatter (like the reference)
+    // Draw a thick brush stroke with internal texture + rough edges + splatter
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, strokeData) => {
       ctx.save();
-      ctx.globalAlpha = alpha;
-
-      // One thick bezier stroke — solid filled, round ends
-      ctx.strokeStyle = rgb(color, 1);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+
+      // Layer 1: Main thick body
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.strokeStyle = rgb(color, 1);
       ctx.lineWidth = baseW;
-      ctx.shadowColor = rgb(color, 0.3);
+      ctx.shadowColor = rgb(color, 0.25);
       ctx.shadowBlur = baseW * 0.3;
       ctx.beginPath();
       ctx.moveTo(p1[0], p1[1]);
       ctx.bezierCurveTo(p2[0], p2[1], p3[0], p3[1], p4[0], p4[1]);
       ctx.stroke();
-
-      // Splatter dots around the stroke — pre-computed
       ctx.shadowBlur = 0;
+
+      // Layer 2: 4-5 offset strokes for internal texture (pre-computed offsets)
+      for (let i = 0; i < strokeData.bristles.length && i < 5; i++) {
+        const b = strokeData.bristles[i];
+        const off = b.offset * baseW * 0.35;
+        ctx.globalAlpha = alpha * (0.4 + b.opacity * 0.3);
+        ctx.lineWidth = baseW * (0.15 + b.lw * 0.1);
+        ctx.strokeStyle = rgb(color, 0.9);
+        ctx.beginPath();
+        ctx.moveTo(p1[0] + off, p1[1] + b.jitters[0] * 2);
+        ctx.bezierCurveTo(
+          p2[0] + off * 0.8, p2[1] + b.jitters[1] * 2,
+          p3[0] + off * 0.6, p3[1] + b.jitters[2] * 2,
+          p4[0] + off * 0.3, p4[1] + b.jitters[3] * 2
+        );
+        ctx.stroke();
+      }
+
+      // Layer 3: Rough edge strokes (thinner, at the borders)
+      for (let i = 0; i < 3; i++) {
+        const b = strokeData.bristles[5 + i] || strokeData.bristles[i];
+        const side = i === 0 ? 1 : i === 1 ? -1 : 0.5;
+        const edgeOff = side * baseW * 0.5;
+        ctx.globalAlpha = alpha * 0.5;
+        ctx.lineWidth = baseW * 0.12;
+        ctx.strokeStyle = rgb(color, 0.7);
+        ctx.beginPath();
+        ctx.moveTo(p1[0] + edgeOff + b.jitters[0] * 3, p1[1] + b.jitters[1] * 3);
+        ctx.bezierCurveTo(
+          p2[0] + edgeOff + b.jitters[2] * 4, p2[1] + b.jitters[3] * 4,
+          p3[0] + edgeOff + b.jitters[4] * 4, p3[1] + b.jitters[5] * 4,
+          p4[0] + edgeOff * 0.5 + b.jitters[6] * 3, p4[1] + b.jitters[7] * 3
+        );
+        ctx.stroke();
+      }
+
+      // Splatter dots — pre-computed
       ctx.fillStyle = rgb(color, 1);
-      const N = strokeData.SPINE_N;
       for (const sp of strokeData.splatters) {
-        const t = sp.t;
-        const x = bz(p1[0],p2[0],p3[0],p4[0],t);
-        const y = bz(p1[1],p2[1],p3[1],p4[1],t);
+        const x = bz(p1[0],p2[0],p3[0],p4[0],sp.t);
+        const y = bz(p1[1],p2[1],p3[1],p4[1],sp.t);
         ctx.globalAlpha = alpha * sp.a;
         ctx.beginPath();
         ctx.arc(x + sp.ox * baseW, y + sp.oy * baseW, sp.r, 0, Math.PI * 2);
