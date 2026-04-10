@@ -792,7 +792,7 @@ const BANNER_THEMES = {
         };
         // Render gears — spin fast on appear, decelerate before explosion
         // cT goes 0→2.5. Speed multiplier: starts at 5x, eases to 0.3x
-        const gearSpeedMult = 0.3 + 4.7 * Math.pow(1 - Math.min(1, cT / 1.1), 2);
+        const gearSpeedMult = 0.3 + 4.7 * Math.pow(1 - Math.min(1, cT / 2.1), 2);
         for (const g of gears) {
           // Accumulate rotation based on deceleration (integrate speed over time)
           const rot = g.speed * cT * gearSpeedMult * 3;
@@ -827,7 +827,7 @@ const BANNER_THEMES = {
         }
         ctx.restore();
         // Hands — spinning, decelerating
-        const decel = Math.min(1, cT / 1.0);
+        const decel = Math.min(1, cT / 2.0);
         const easeOut = 1 - Math.pow(1 - decel, 3);
         const spinOffset = (1 - easeOut) * Math.PI * 8;
         const minA = Math.PI + spinOffset * 1.6;
