@@ -622,72 +622,94 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Brush stroke: 8 fanned beziers (not parallel) + heavy splatter
+    // Ink brush stroke: wispy tail → solid body → splattered end
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, sd) => {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      ctx.strokeStyle = rgb(color, 1);
 
-      // 8 bezier strokes that fan out from thin tail → thick head
-      // Each has its own width, angle offset, and start/end variation
-      for (let i = 0; i < 8 && i < sd.bristles.length; i++) {
+      // 10 strokes fanning from tight tail to wide head
+      // Outer strokes start LATER (skip tail) = only center reaches the thin tip
+      for (let i = 0; i < 10 && i < sd.bristles.length; i++) {
         const b = sd.bristles[i];
-        // Fan: tight at start (p1), splayed at end (p4)
-        const fanStart = b.offset * baseW * 0.05;   // tight at tail
-        const fanEnd = b.offset * baseW * 0.55;     // wide splay at head
-        const fanMid1 = fanStart * 0.3 + fanEnd * 0.7;
-        const fanMid2 = fanStart * 0.15 + fanEnd * 0.85;
+        const edgeDist = Math.abs(b.offset); // 0=center, 1=edge
+        const fanStart = b.offset * baseW * 0.02;
+        const fanEnd = b.offset * baseW * 0.5;
+        const fanM1 = fanStart * 0.4 + fanEnd * 0.6;
+        const fanM2 = fanStart * 0.2 + fanEnd * 0.8;
 
-        // Width: thicker strokes in center, thinner at edges
-        const edgeDist = Math.abs(b.offset);
-        const w = baseW * (0.15 + (1 - edgeDist) * 0.25) + b.lw * 2;
+        // Width: center strokes thick, edge strokes thinner
+        const w = baseW * (0.08 + (1 - edgeDist) * 0.32) + b.lw * 1.5;
 
-        ctx.globalAlpha = alpha * (0.65 + (1 - edgeDist) * 0.3);
+        // Edge strokes start partway along (creates the thin wispy tail)
+        const startT = edgeDist > 0.5 ? 0.15 + edgeDist * 0.25 : 0;
+
+        ctx.globalAlpha = alpha * (0.6 + (1 - edgeDist) * 0.35);
         ctx.lineWidth = w;
-        ctx.strokeStyle = rgb(color, 1);
-        if (i === 0) { ctx.shadowColor = rgb(color, 0.2); ctx.shadowBlur = 6; }
+        if (i === 0) { ctx.shadowColor = rgb(color, 0.15); ctx.shadowBlur = 5; }
         else ctx.shadowBlur = 0;
 
-        // Each bristle has slight curve variation via jitter on control points
+        if (startT > 0) {
+          // Shortened stroke — starts partway
+          const sx = bz(p1[0],p2[0],p3[0],p4[0], startT);
+          const sy = bz(p1[1],p2[1],p3[1],p4[1], startT);
+          const mx = bz(p1[0],p2[0],p3[0],p4[0], 0.55 + startT * 0.2);
+          const my = bz(p1[1],p2[1],p3[1],p4[1], 0.55 + startT * 0.2);
+          ctx.beginPath();
+          ctx.moveTo(sx + fanM1 + b.jitters[0]*3, sy + b.jitters[1]*3);
+          ctx.quadraticCurveTo(
+            mx + fanM2 + b.jitters[2]*4, my + b.jitters[3]*4,
+            p4[0] + fanEnd + b.jitters[6]*3, p4[1] + b.jitters[7]*3
+          );
+          ctx.stroke();
+        } else {
+          // Full stroke from tail to head
+          ctx.beginPath();
+          ctx.moveTo(p1[0] + fanStart + b.jitters[0]*1.5, p1[1] + b.jitters[1]*1.5);
+          ctx.bezierCurveTo(
+            p2[0] + fanM1 + b.jitters[2]*3, p2[1] + b.jitters[3]*3,
+            p3[0] + fanM2 + b.jitters[4]*3, p3[1] + b.jitters[5]*3,
+            p4[0] + fanEnd + b.jitters[6]*2, p4[1] + b.jitters[7]*2
+          );
+          ctx.stroke();
+        }
+      }
+
+      // Thin trailing lines behind the tail
+      ctx.shadowBlur = 0;
+      const tailDx = p1[0] - p2[0], tailDy = p1[1] - p2[1];
+      const tailLen = Math.sqrt(tailDx*tailDx + tailDy*tailDy) || 1;
+      for (let i = 10; i < 13 && i < sd.bristles.length; i++) {
+        const b = sd.bristles[i];
+        const ext = 12 + Math.abs(b.offset) * 25;
+        ctx.globalAlpha = alpha * 0.45;
+        ctx.lineWidth = 0.6 + b.lw * 0.4;
         ctx.beginPath();
-        ctx.moveTo(
-          p1[0] + fanStart + b.jitters[0] * 2,
-          p1[1] + b.jitters[1] * 2
-        );
-        ctx.bezierCurveTo(
-          p2[0] + fanMid1 + b.jitters[2] * 4,
-          p2[1] + b.jitters[3] * 4,
-          p3[0] + fanMid2 + b.jitters[4] * 4,
-          p3[1] + b.jitters[5] * 4,
-          p4[0] + fanEnd + b.jitters[6] * 3,
-          p4[1] + b.jitters[7] * 3
-        );
+        ctx.moveTo(p1[0], p1[1]);
+        ctx.lineTo(p1[0] + tailDx/tailLen*ext + b.jitters[0]*5,
+                   p1[1] + tailDy/tailLen*ext + b.jitters[1]*5);
         ctx.stroke();
       }
 
-      // Heavy splatter — concentrated at thick end
+      // Heavy splatter concentrated at thick end (t > 0.5)
       ctx.fillStyle = rgb(color, 1);
-      ctx.shadowBlur = 0;
       for (const sp of sd.splatters) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sp.t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],sp.t);
         ctx.globalAlpha = alpha * sp.a;
         ctx.beginPath();
-        ctx.arc(x + sp.ox * baseW * 1.5, y + sp.oy * baseW * 1.5, sp.r, 0, Math.PI * 2);
+        ctx.arc(x + sp.ox*baseW*1.5, y + sp.oy*baseW*1.5, sp.r, 0, Math.PI*2);
         ctx.fill();
       }
 
-      // Flung streaks
-      ctx.strokeStyle = rgb(color, 0.85);
+      // Dense splatter cluster at the very end
       for (const sk of sd.streaks) {
-        const x = bz(p1[0],p2[0],p3[0],p4[0],sk.t);
-        const y = bz(p1[1],p2[1],p3[1],p4[1],sk.t);
-        ctx.globalAlpha = alpha * 0.65;
-        ctx.lineWidth = 1 + sk.lw;
+        ctx.globalAlpha = alpha * 0.8;
         ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + sk.ext * sk.side + sk.ox, y + sk.ext * 0.4 + sk.oy);
-        ctx.stroke();
+        ctx.arc(p4[0] + sk.ox*baseW*0.7, p4[1] + sk.oy*baseW*0.7,
+          0.8 + sk.lw*1.5, 0, Math.PI*2);
+        ctx.fill();
       }
 
       ctx.restore();
