@@ -622,77 +622,67 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Ink brush stroke: wispy tail → solid body → splattered end
+    // ONE solid filled shape — no strokes, just a filled path with noisy edges
     const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, sd) => {
       ctx.save();
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.strokeStyle = rgb(color, 1);
 
-      // 10 strokes fanning from tight tail to wide head
-      // Outer strokes start LATER (skip tail) = only center reaches the thin tip
-      for (let i = 0; i < 10 && i < sd.bristles.length; i++) {
-        const b = sd.bristles[i];
-        const edgeDist = Math.abs(b.offset); // 0=center, 1=edge
-        const fanStart = b.offset * baseW * 0.02;
-        const fanEnd = b.offset * baseW * 0.5;
-        const fanM1 = fanStart * 0.4 + fanEnd * 0.6;
-        const fanM2 = fanStart * 0.2 + fanEnd * 0.8;
+      // Build outline: 40 points along the bezier, each with perpendicular offset + noise
+      const N = 40;
+      const topEdge = [], botEdge = [];
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
+        const x = bz(p1[0],p2[0],p3[0],p4[0],t);
+        const y = bz(p1[1],p2[1],p3[1],p4[1],t);
+        // Tangent → normal
+        const dt = 0.015;
+        const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt)) - x;
+        const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt)) - y;
+        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+        const nx = -ty/tl, ny = tx/tl;
+        // Width: thin tail (t=0) → thick body+head (t=1)
+        const widthCurve = Math.pow(t, 0.4) * (0.7 + 0.3 * Math.sin(t * Math.PI));
+        const hw = baseW * widthCurve;
+        // Pre-computed noise for each edge point
+        const ni = Math.min(i, sd.bristles.length > 0 ? sd.SPINE_N : 0);
+        const noiseT = sd.bristles[i % sd.bristles.length] || sd.bristles[0];
+        const nTop = (noiseT.jitters[i % noiseT.jitters.length] || 0) * baseW * 0.15;
+        const nBot = (noiseT.jitters[(i + 5) % noiseT.jitters.length] || 0) * baseW * 0.15;
 
-        // Width: center strokes thick, edge strokes thinner
-        const w = baseW * (0.08 + (1 - edgeDist) * 0.32) + b.lw * 1.5;
-
-        // Edge strokes start partway along (creates the thin wispy tail)
-        const startT = edgeDist > 0.5 ? 0.15 + edgeDist * 0.25 : 0;
-
-        ctx.globalAlpha = alpha * (0.6 + (1 - edgeDist) * 0.35);
-        ctx.lineWidth = w;
-        if (i === 0) { ctx.shadowColor = rgb(color, 0.15); ctx.shadowBlur = 5; }
-        else ctx.shadowBlur = 0;
-
-        if (startT > 0) {
-          // Shortened stroke — starts partway
-          const sx = bz(p1[0],p2[0],p3[0],p4[0], startT);
-          const sy = bz(p1[1],p2[1],p3[1],p4[1], startT);
-          const mx = bz(p1[0],p2[0],p3[0],p4[0], 0.55 + startT * 0.2);
-          const my = bz(p1[1],p2[1],p3[1],p4[1], 0.55 + startT * 0.2);
-          ctx.beginPath();
-          ctx.moveTo(sx + fanM1 + b.jitters[0]*3, sy + b.jitters[1]*3);
-          ctx.quadraticCurveTo(
-            mx + fanM2 + b.jitters[2]*4, my + b.jitters[3]*4,
-            p4[0] + fanEnd + b.jitters[6]*3, p4[1] + b.jitters[7]*3
-          );
-          ctx.stroke();
-        } else {
-          // Full stroke from tail to head
-          ctx.beginPath();
-          ctx.moveTo(p1[0] + fanStart + b.jitters[0]*1.5, p1[1] + b.jitters[1]*1.5);
-          ctx.bezierCurveTo(
-            p2[0] + fanM1 + b.jitters[2]*3, p2[1] + b.jitters[3]*3,
-            p3[0] + fanM2 + b.jitters[4]*3, p3[1] + b.jitters[5]*3,
-            p4[0] + fanEnd + b.jitters[6]*2, p4[1] + b.jitters[7]*2
-          );
-          ctx.stroke();
-        }
+        topEdge.push([x + nx * (hw + nTop), y + ny * (hw + nTop)]);
+        botEdge.push([x - nx * (hw + nBot), y - ny * (hw + nBot)]);
       }
+
+      // Fill the solid shape
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = rgb(color, 1);
+      ctx.shadowColor = rgb(color, 0.15);
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.moveTo(topEdge[0][0], topEdge[0][1]);
+      for (let i = 1; i < topEdge.length; i++) ctx.lineTo(topEdge[i][0], topEdge[i][1]);
+      // Connect top to bottom at the head end
+      ctx.lineTo(botEdge[botEdge.length-1][0], botEdge[botEdge.length-1][1]);
+      for (let i = botEdge.length - 2; i >= 0; i--) ctx.lineTo(botEdge[i][0], botEdge[i][1]);
+      ctx.closePath();
+      ctx.fill();
 
       // Thin trailing lines behind the tail
       ctx.shadowBlur = 0;
-      const tailDx = p1[0] - p2[0], tailDy = p1[1] - p2[1];
-      const tailLen = Math.sqrt(tailDx*tailDx + tailDy*tailDy) || 1;
-      for (let i = 10; i < 13 && i < sd.bristles.length; i++) {
-        const b = sd.bristles[i];
-        const ext = 12 + Math.abs(b.offset) * 25;
+      const tdx = p1[0]-p2[0], tdy = p1[1]-p2[1];
+      const tlen = Math.sqrt(tdx*tdx+tdy*tdy) || 1;
+      for (let i = 0; i < 3 && i < sd.streaks.length; i++) {
+        const sk = sd.streaks[i];
         ctx.globalAlpha = alpha * 0.45;
-        ctx.lineWidth = 0.6 + b.lw * 0.4;
+        ctx.lineWidth = 0.6 + sk.lw * 0.4;
+        ctx.strokeStyle = rgb(color, 0.8);
+        ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(p1[0], p1[1]);
-        ctx.lineTo(p1[0] + tailDx/tailLen*ext + b.jitters[0]*5,
-                   p1[1] + tailDy/tailLen*ext + b.jitters[1]*5);
+        ctx.lineTo(p1[0]+tdx/tlen*(15+sk.ext*0.5)+sk.ox*2, p1[1]+tdy/tlen*(15+sk.ext*0.5)+sk.oy*2);
         ctx.stroke();
       }
 
-      // Heavy splatter concentrated at thick end (t > 0.5)
+      // Splatter dots
       ctx.fillStyle = rgb(color, 1);
       for (const sp of sd.splatters) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sp.t);
@@ -703,12 +693,11 @@ const BANNER_THEMES = {
         ctx.fill();
       }
 
-      // Dense splatter cluster at the very end
+      // Dense cluster at end
       for (const sk of sd.streaks) {
         ctx.globalAlpha = alpha * 0.8;
         ctx.beginPath();
-        ctx.arc(p4[0] + sk.ox*baseW*0.7, p4[1] + sk.oy*baseW*0.7,
-          0.8 + sk.lw*1.5, 0, Math.PI*2);
+        ctx.arc(p4[0]+sk.ox*baseW*0.6, p4[1]+sk.oy*baseW*0.6, 0.8+sk.lw*1.5, 0, Math.PI*2);
         ctx.fill();
       }
 
