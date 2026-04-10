@@ -958,7 +958,13 @@ const BANNER_THEMES = {
             ctx.lineTo(Math.cos(a2 + ht) * gr * 0.92, Math.sin(a2 + ht) * gr * 0.92);
           }
           ctx.closePath(); ctx.fill(); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, gr * 0.35, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // Hub ring — hollow, not filled
+          ctx.beginPath(); ctx.arc(0, 0, gr * 0.38, 0, Math.PI * 2); ctx.stroke();
+          // Center hole
+          ctx.fillStyle = 'rgba(0,0,0,0.3)';
+          ctx.beginPath(); ctx.arc(0, 0, gr * 0.15, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(255,235,180,0.6)';
+          ctx.stroke();
           ctx.restore();
         }
         // Nebula clouds
