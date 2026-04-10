@@ -685,7 +685,7 @@ const BANNER_THEMES = {
 
           // Droplets
           for (const dr of s.drops) {
-            if (alpha0 < 0.5) continue; // wait for stroke to appear
+            if (strokeAlpha < 0.5) continue; // wait for stroke to appear
             let dx = bz(sx2,c1x2,c2x2,ex3,dr.t) + dr.ox*(1-suckP);
             let dy = bz(sy2,c1y2,c2y2,ey3,dr.t) + dr.oy*(1-suckP);
             const [dx2,dy2] = suck(dx, dy, suckP * 0.5, dr.t);
