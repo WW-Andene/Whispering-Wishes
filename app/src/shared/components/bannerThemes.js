@@ -529,10 +529,10 @@ const BANNER_THEMES = {
       const colShadow = darker(PAINT[ci], 0.35);   // drop shadow
       const colEdge = lighter(PAINT[ci2], 60);      // bright edge highlight
 
-      const sx = -w*0.4 + Math.random()*w*1.8;
-      const sy = -h*0.4 + Math.random()*h*1.8;
+      const sx = -w*0.15 + Math.random()*w*1.3;
+      const sy = -h*0.1 + Math.random()*h*1.2;
       const ang = Math.random() * Math.PI * 2;
-      const len = 150 + Math.random() * 300;
+      const len = 120 + Math.random() * 200;
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
