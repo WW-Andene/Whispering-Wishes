@@ -518,7 +518,7 @@ const BANNER_THEMES = {
         baseW: 16 + Math.random() * 24,
         strandNoise, widthNoise, drops, SEG,
         twistFreq: 1.5 + Math.random() * 2,
-        delay: idx * 0.6 + Math.random() * 0.3,
+        delay: idx * 0.9 + Math.random() * 0.1,
       };
     };
 
@@ -639,14 +639,22 @@ const BANNER_THEMES = {
         for (const s of strokes) {
           const age = ct - s.delay;
           if (age < 0) continue;
-          // Instant appear — only fade opacity, no shape interpolation
-          const alpha0 = Math.min(1, age / 0.05); // 50ms fade-in
+          // Phase 0: fade in 50ms, hold 0.5s, fade out 0.3s
+          // Phase 1 (suck): all reappear at full alpha
+          let strokeAlpha;
+          if (ct < APPEAR_END) {
+            if (age < 0.05) strokeAlpha = age / 0.05;
+            else if (age < 0.55) strokeAlpha = 1;
+            else strokeAlpha = Math.max(0, 1 - (age - 0.55) / 0.3);
+          } else {
+            strokeAlpha = 1; // all visible during suck
+          }
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
             suckP = suckP * suckP;
           }
-          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * alpha0;
+          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * strokeAlpha;
           if (alpha < 0.01) continue;
 
           // Suck all 4 control points toward center
