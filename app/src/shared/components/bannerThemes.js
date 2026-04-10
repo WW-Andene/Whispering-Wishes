@@ -507,22 +507,23 @@ const BANNER_THEMES = {
       widths[0] *= 0.3;
       widths[widths.length - 1] *= 0.4;
 
-      // Edge wobble: low-freq organic undulation
+      // Edge wobble: gentle organic undulation (clamped to prevent tearing)
       const wobbles = Array.from({ length: 8 }, () => ({
-        freq: 1 + Math.random() * 3,
-        amp: 3 + Math.random() * 10,
+        freq: 0.8 + Math.random() * 2,
+        amp: 2 + Math.random() * 5,
         phase: Math.random() * Math.PI * 2,
       }));
 
       // Tendrils branching off at random spine positions
       const tendrilCount = 2 + Math.floor(Math.random() * 3);
       const tendrils = Array.from({ length: tendrilCount }, () => {
-        const at = 0.2 + Math.random() * 0.6; // where on spine (0-1)
+        const at = 0.2 + Math.random() * 0.6;
         const ang = (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 1.2);
         const len = 20 + Math.random() * 50;
         const thick = 3 + Math.random() * 8;
-        const endBlob = 2 + Math.random() * 5; // blob at tip
-        return { at, ang, len, thick, endBlob, ci: Math.random() > 0.5 ? ci : ci2 };
+        const endBlob = 2 + Math.random() * 5;
+        const midOff = (Math.random() - 0.5) * 10; // deterministic — computed once
+        return { at, ang, len, thick, endBlob, midOff, ci: Math.random() > 0.5 ? ci : ci2 };
       });
 
       // Flying droplets
@@ -631,11 +632,11 @@ const BANNER_THEMES = {
             wob2 += Math.sin(p * wb.freq * Math.PI * 2 + wb.phase) * wb.amp;
           }
 
-          spine.push({
-            x, y, nx, ny, p,
-            hwTop: Math.max(1, baseW + wob),
-            hwBot: Math.max(1, baseW + wob2),
-          });
+          // Clamp wobble to ±50% of base width to prevent self-intersection
+          const clampW = baseW * 0.5;
+          const wTop = baseW + Math.max(-clampW, Math.min(clampW, wob));
+          const wBot = baseW + Math.max(-clampW, Math.min(clampW, wob2));
+          spine.push({ x, y, nx, ny, p, hwTop: Math.max(2, wTop), hwBot: Math.max(2, wBot) });
         }
         if (spine.length < 3) continue;
 
@@ -654,34 +655,25 @@ const BANNER_THEMES = {
         ctx.shadowColor = rgb(s.col, 0.5);
         ctx.shadowBlur = 16;
 
-        // Build organic closed shape with bezier curves
+        // Build organic closed shape — smooth lineTo (no stepping gaps)
         ctx.beginPath();
         // Top edge (forward)
-        let px = first.x + first.nx * first.hwTop;
-        let py = first.y + first.ny * first.hwTop;
-        ctx.moveTo(px, py);
-        for (let i = 2; i < spine.length; i += 2) {
-          const cp = spine[Math.min(i - 1, spine.length - 1)];
-          const pt = spine[Math.min(i, spine.length - 1)];
-          ctx.quadraticCurveTo(
-            cp.x + cp.nx * cp.hwTop, cp.y + cp.ny * cp.hwTop,
-            pt.x + pt.nx * pt.hwTop, pt.y + pt.ny * pt.hwTop
-          );
-        }
-        // Rounded tip
-        const tip = spine[spine.length - 1];
-        ctx.quadraticCurveTo(
-          tip.x + tip.nx * 2, tip.y + tip.ny * 2,
-          tip.x - tip.nx * tip.hwBot, tip.y - tip.ny * tip.hwBot
+        ctx.moveTo(
+          first.x + first.nx * first.hwTop,
+          first.y + first.ny * first.hwTop
         );
+        for (let i = 1; i < spine.length; i++) {
+          const sp = spine[i];
+          ctx.lineTo(sp.x + sp.nx * sp.hwTop, sp.y + sp.ny * sp.hwTop);
+        }
+        // Rounded tip connecting top edge to bottom edge
+        const tip = spine[spine.length - 1];
+        ctx.arc(tip.x, tip.y, Math.max(1, (tip.hwTop + tip.hwBot) * 0.3),
+          Math.atan2(tip.ny, tip.nx), Math.atan2(-tip.ny, -tip.nx), false);
         // Bottom edge (backward)
-        for (let i = spine.length - 3; i >= 0; i -= 2) {
-          const cp = spine[Math.max(i + 1, 0)];
-          const pt = spine[Math.max(i, 0)];
-          ctx.quadraticCurveTo(
-            cp.x - cp.nx * cp.hwBot, cp.y - cp.ny * cp.hwBot,
-            pt.x - pt.nx * pt.hwBot, pt.y - pt.ny * pt.hwBot
-          );
+        for (let i = spine.length - 1; i >= 0; i--) {
+          const sp = spine[i];
+          ctx.lineTo(sp.x - sp.nx * sp.hwBot, sp.y - sp.ny * sp.hwBot);
         }
         ctx.closePath();
         ctx.fill();
@@ -743,8 +735,8 @@ const BANNER_THEMES = {
           const dy = base.nx * sa + base.ny * ca;
           const ex = base.x + dx * ten.len;
           const ey = base.y + dy * ten.len;
-          const mx = base.x + dx * ten.len * 0.5 + (Math.random() - 0.5) * 10;
-          const my = base.y + dy * ten.len * 0.5 + (Math.random() - 0.5) * 10;
+          const mx = base.x + dx * ten.len * 0.5 + ten.midOff;
+          const my = base.y + dy * ten.len * 0.5 + ten.midOff;
 
           ctx.fillStyle = rgb(PAINT[ten.ci], 1);
           ctx.shadowColor = rgb(PAINT[ten.ci], 0.4);
