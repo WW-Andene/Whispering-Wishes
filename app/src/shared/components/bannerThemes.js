@@ -479,16 +479,15 @@ const BANNER_THEMES = {
       const ci2 = (ci + 2) % PAINT.length;
       const ci3 = (ci + 4) % PAINT.length;
       // Keep strokes mostly within the card
-      const margin = 20;
+      const margin = 15;
       const sx = margin + Math.random() * (w - margin * 2);
       const sy = margin + Math.random() * (h - margin * 2);
       const ang = Math.random() * Math.PI * 2;
-      const len = 80 + Math.random() * 140;
-      // Clamp end point loosely — can overshoot by 30%
-      const ex = Math.max(-w*0.3, Math.min(w*1.3, sx + Math.cos(ang) * len));
-      const ey = Math.max(-h*0.3, Math.min(h*1.3, sy + Math.sin(ang) * len));
+      const len = 150 + Math.random() * 200;
+      const ex = sx + Math.cos(ang) * len;
+      const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 100;
+      const curv = (Math.random() - 0.5) * 140;
 
       // Noise offsets for the 3 sub-strands (deterministic per stroke)
       const strandNoise = Array.from({length: 3}, () => ({
@@ -516,7 +515,7 @@ const BANNER_THEMES = {
         c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
         cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
-        baseW: 10 + Math.random() * 18,
+        baseW: 16 + Math.random() * 24,
         strandNoise, widthNoise, drops, SEG,
         twistFreq: 1.5 + Math.random() * 2,
         delay: idx * 0.6 + Math.random() * 0.3,
@@ -524,13 +523,53 @@ const BANNER_THEMES = {
     };
 
     const initAll = () => Array.from({length: 3+Math.floor(Math.random()*2)}, (_,i) => initStroke(i));
+
+    // Extra strokes that fly in from outside during suck phase
+    const initSuckStrokes = () => Array.from({length: 4+Math.floor(Math.random()*3)}, (_,i) => {
+      const ci = (i * 2 + 1) % PAINT.length;
+      const ci2 = (ci + 3) % PAINT.length;
+      // Start from outside the screen edges
+      const edge = Math.floor(Math.random() * 4); // 0=top 1=right 2=bottom 3=left
+      let sx, sy;
+      if (edge === 0) { sx = Math.random() * w; sy = -60 - Math.random() * 40; }
+      else if (edge === 1) { sx = w + 60 + Math.random() * 40; sy = Math.random() * h; }
+      else if (edge === 2) { sx = Math.random() * w; sy = h + 60 + Math.random() * 40; }
+      else { sx = -60 - Math.random() * 40; sy = Math.random() * h; }
+      // Aim toward center
+      const ang = Math.atan2(ccy - sy, ccx - sx) + (Math.random() - 0.5) * 0.5;
+      const len = 100 + Math.random() * 150;
+      const ex = sx + Math.cos(ang) * len;
+      const ey = sy + Math.sin(ang) * len;
+      const perp = ang + Math.PI * 0.5;
+      const curv = (Math.random() - 0.5) * 80;
+      const SEG = 20;
+      return {
+        sx, sy, ex, ey,
+        c1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
+        c1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
+        c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.3,
+        c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.3,
+        cols: [PAINT[ci], PAINT[ci2], PAINT[(ci+4)%PAINT.length]],
+        baseW: 12 + Math.random() * 18,
+        strandNoise: Array.from({length:3}, () => ({
+          ox1:(Math.random()-0.5)*10,oy1:(Math.random()-0.5)*8,
+          ox2:(Math.random()-0.5)*12,oy2:(Math.random()-0.5)*10,
+          ox3:(Math.random()-0.5)*10,oy3:(Math.random()-0.5)*8,
+          ox4:(Math.random()-0.5)*6, oy4:(Math.random()-0.5)*6,
+        })),
+        widthNoise: Array.from({length:SEG}, () => 0.5+Math.random()*1.0),
+        drops: [], SEG,
+        twistFreq: 1.5+Math.random()*2,
+        enterDelay: i * 0.3 + Math.random() * 0.2, // stagger during suck
+      };
+    });
     const initDebris = () => Array.from({length: 40}, () => ({
       angle: Math.random()*Math.PI*2, speed: 25+Math.random()*110,
       r: 1.5+Math.random()*5, ci: Math.floor(Math.random()*PAINT.length),
       drag: 0.93+Math.random()*0.04,
     }));
 
-    let strokes = initAll(), debris = initDebris(), cycleStart = -CYCLE;
+    let strokes = initAll(), suckStrokes = initSuckStrokes(), debris = initDebris(), cycleStart = -CYCLE;
 
     const ambDots = Array.from({length: 15}, () => ({
       x: Math.random()*w, y: Math.random()*h, r: 1+Math.random()*2.5,
@@ -582,7 +621,7 @@ const BANNER_THEMES = {
 
     return (ctx, t) => {
       let ct = t - cycleStart;
-      if (ct > CYCLE) { cycleStart = t; ct = 0; strokes = initAll(); debris = initDebris(); }
+      if (ct > CYCLE) { cycleStart = t; ct = 0; strokes = initAll(); suckStrokes = initSuckStrokes(); debris = initDebris(); }
 
       // Ambient dots
       for (const d of ambDots) {
@@ -616,8 +655,8 @@ const BANNER_THEMES = {
           const [c2x2,c2y2] = suck(s.c2x, s.c2y, suckP, 0.66);
           const [ex3,ey3] = suck(s.ex, s.ey, suckP, 1);
 
-          // Width shrinks with suck
-          const bw = s.baseW * (1 - suckP);
+          // Keep width — strokes stay opaque, only position collapses
+          const bw = s.baseW;
 
           // Draw 3 twisted sub-strands
           for (let si = 0; si < 3; si++) {
@@ -648,6 +687,39 @@ const BANNER_THEMES = {
             ctx.shadowColor = rgb(PAINT[dr.ci],0.3); ctx.shadowBlur = 3;
             ctx.beginPath(); ctx.arc(dx2,dy2,dr.r*(1-suckP*0.6),0,Math.PI*2); ctx.fill();
             ctx.restore();
+          }
+        }
+      }
+
+      // ── Extra strokes flying in from outside during suck ──
+      if (ct > APPEAR_END && ct < EXPLODE_T + 0.3) {
+        const suckAge = ct - APPEAR_END;
+        for (const s of suckStrokes) {
+          const age = suckAge - s.enterDelay;
+          if (age < 0) continue;
+          const alpha0 = Math.min(1, age / 0.1);
+          // These strokes are always being sucked — their suckP starts at their entry
+          const sp = Math.min(1, age / (SUCK_END - APPEAR_END));
+          const sP = sp * sp;
+          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.88) * alpha0;
+          if (alpha < 0.01) continue;
+
+          const [sx2,sy2] = suck(s.sx, s.sy, sP, 0);
+          const [c1x2,c1y2] = suck(s.c1x, s.c1y, sP, 0.33);
+          const [c2x2,c2y2] = suck(s.c2x, s.c2y, sP, 0.66);
+          const [ex3,ey3] = suck(s.ex, s.ey, sP, 1);
+          const bw = s.baseW;
+
+          for (let si2 = 0; si2 < 3; si2++) {
+            const sn = s.strandNoise[si2];
+            const twP = si2 * Math.PI * 2 / 3;
+            const offS = bw * 0.8;
+            const tw = (f) => Math.sin(f * Math.PI * 2 * s.twistFreq + twP) * offS;
+            const p1 = [sx2+sn.ox1+tw(0), sy2+sn.oy1];
+            const p2 = [c1x2+sn.ox2+tw(0.33), c1y2+sn.oy2];
+            const p3 = [c2x2+sn.ox3+tw(0.66), c2y2+sn.oy3];
+            const p4 = [ex3+sn.ox4+tw(1), ey3+sn.oy4];
+            drawStroke(ctx, p1, p2, p3, p4, bw*0.7, s.cols[si2], alpha*0.9, s.widthNoise, s.SEG);
           }
         }
       }
