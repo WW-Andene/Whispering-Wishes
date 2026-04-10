@@ -622,58 +622,59 @@ const BANNER_THEMES = {
       return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
     };
 
-    // Brush stroke: thick body + 6 medium bristle marks + heavy splatter
-    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, strokeData) => {
+    // Brush stroke: 4 overlapping thick beziers + splatter
+    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, sd) => {
       ctx.save();
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.strokeStyle = rgb(color, 1);
+      ctx.globalAlpha = alpha;
 
-      // Main thick body
-      ctx.globalAlpha = alpha * 0.9;
-      ctx.lineWidth = baseW;
-      ctx.shadowColor = rgb(color, 0.2);
-      ctx.shadowBlur = baseW * 0.25;
-      ctx.beginPath();
-      ctx.moveTo(p1[0], p1[1]);
-      ctx.bezierCurveTo(p2[0], p2[1], p3[0], p3[1], p4[0], p4[1]);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      // 6 medium bristle marks — thick enough to be visible, not thin scribbles
-      for (let i = 0; i < 6 && i < strokeData.bristles.length; i++) {
-        const b = strokeData.bristles[i];
-        const off = b.offset * baseW * 0.45;
-        ctx.globalAlpha = alpha * 0.7;
-        ctx.lineWidth = 3 + b.lw * 2; // 3-7px — visible but not dominant
+      // 4 overlapping thick beziers with pre-computed offsets
+      // They overlap → solid body. Where edges don't align → natural texture
+      const layers = [
+        { w: baseW * 0.9, a: 0.95 },         // main body
+        { w: baseW * 0.65, a: 0.85 },         // inner
+        { w: baseW * 0.5, a: 0.8 },           // narrower
+        { w: baseW * 0.3, a: 0.7 },           // thin core
+      ];
+      for (let i = 0; i < layers.length && i < sd.bristles.length; i++) {
+        const b = sd.bristles[i];
+        const l = layers[i];
+        const off = b.offset * baseW * 0.3;
+        ctx.globalAlpha = alpha * l.a;
+        ctx.lineWidth = l.w;
+        if (i === 0) { ctx.shadowColor = rgb(color, 0.2); ctx.shadowBlur = 8; }
+        else { ctx.shadowBlur = 0; }
         ctx.beginPath();
-        ctx.moveTo(p1[0] + off, p1[1] + b.jitters[0] * 3);
+        ctx.moveTo(p1[0] + off + b.jitters[0]*2, p1[1] + b.jitters[1]*2);
         ctx.bezierCurveTo(
-          p2[0] + off * 0.7 + b.jitters[1] * 4, p2[1] + b.jitters[2] * 4,
-          p3[0] + off * 0.4 + b.jitters[3] * 4, p3[1] + b.jitters[4] * 4,
-          p4[0] + off * 0.2 + b.jitters[5] * 3, p4[1] + b.jitters[6] * 3
+          p2[0] + off*0.7 + b.jitters[2]*3, p2[1] + b.jitters[3]*3,
+          p3[0] + off*0.4 + b.jitters[4]*3, p3[1] + b.jitters[5]*3,
+          p4[0] + off*0.15 + b.jitters[6]*2, p4[1] + b.jitters[7]*2
         );
         ctx.stroke();
       }
 
-      // Heavy splatter — lots of dots, varied sizes
+      // Splatter
       ctx.fillStyle = rgb(color, 1);
-      for (const sp of strokeData.splatters) {
+      ctx.shadowBlur = 0;
+      for (const sp of sd.splatters) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sp.t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],sp.t);
         ctx.globalAlpha = alpha * sp.a;
         ctx.beginPath();
-        ctx.arc(x + sp.ox * baseW * 1.2, y + sp.oy * baseW * 1.2, sp.r, 0, Math.PI * 2);
+        ctx.arc(x + sp.ox * baseW * 1.3, y + sp.oy * baseW * 1.3, sp.r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Streaks flung off edges
-      for (const sk of strokeData.streaks) {
+      // Flung streaks
+      ctx.strokeStyle = rgb(color, 0.9);
+      for (const sk of sd.streaks) {
         const x = bz(p1[0],p2[0],p3[0],p4[0],sk.t);
         const y = bz(p1[1],p2[1],p3[1],p4[1],sk.t);
         ctx.globalAlpha = alpha * 0.7;
         ctx.lineWidth = 1 + sk.lw;
-        ctx.strokeStyle = rgb(color, 0.9);
         ctx.beginPath();
         ctx.moveTo(x, y);
         ctx.lineTo(x + sk.ext * sk.side + sk.ox, y + sk.ext * 0.3 + sk.oy);
