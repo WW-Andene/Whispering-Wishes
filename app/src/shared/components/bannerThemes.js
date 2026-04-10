@@ -792,10 +792,9 @@ const BANNER_THEMES = {
         };
         // Render gears — spin fast on appear, decelerate before explosion
         // cT goes 0→2.5. Speed multiplier: starts at 5x, eases to 0.3x
-        const gearSpeedMult = 0.3 + 4.7 * Math.pow(1 - Math.min(1, cT / 1.5), 2);
+        const gearT = stopped ? 1.5 : cT; // freeze rotation at 1.5s
         for (const g of gears) {
-          // Accumulate rotation based on deceleration (integrate speed over time)
-          const rot = g.speed * cT * gearSpeedMult * 3;
+          const rot = g.speed * gearT * 5;
           drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, rot, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
         }
         // Outer ring — double: thick + slim
@@ -826,11 +825,11 @@ const BANNER_THEMES = {
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-        // Hands — spin at full speed then HARD STOP at exactly 1.5s
+        // Hands — full constant speed, then instant dead stop at 1.5s
         const stopped = cT >= 1.5;
-        const spinOffset = stopped ? 0 : (1 - cT / 1.5) * Math.PI * 10;
-        const minA = Math.PI + spinOffset * 1.6;
-        const hourA = (Math.PI + Math.PI / 12) + spinOffset * 0.5;
+        const spinOffset = stopped ? 0 : cT * Math.PI * 6;
+        const minA = Math.PI + (stopped ? 0 : spinOffset * 1.6);
+        const hourA = (Math.PI + Math.PI / 12) + (stopped ? 0 : spinOffset * 0.5);
         // Hand: diamond tip + smaller diamond + two flat teardrop wings
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
