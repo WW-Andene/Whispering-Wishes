@@ -531,25 +531,27 @@ const BANNER_THEMES = {
       const baseW = 18 + Math.random() * 30;
 
       // Width profile: pointed → swell → neck → swell → pointed
-      const N = 12;
+      const N = 18;
       const widths = Array.from({length: N+1}, (_, i) => {
         const t = i / N;
-        // Smoothstep taper at ends
-        const e = t < 0.15 ? t/0.15 : t > 0.85 ? (1-t)/0.15 : 1;
+        const e = t < 0.12 ? t/0.12 : t > 0.88 ? (1-t)/0.12 : 1;
         const taper = e * e * (3 - 2*e);
-        // Organic variation: gentle swell/neck
-        const vary = 0.8 + 0.4 * Math.sin(t * Math.PI * 2.5 + idx * 1.7);
-        return taper * vary;
+        // Stronger organic variation: deeper necks, bigger swells
+        const vary = 0.6 + 0.7 * Math.sin(t * Math.PI * 3 + idx * 2.1);
+        // Extra high-frequency noise on the width itself
+        const wNoise = 0.85 + Math.random() * 0.3;
+        return taper * vary * wNoise;
       });
 
-      // Per-point noise for organic edges
+      // Per-point noise for organic edges — much stronger
       const noise = Array.from({length: N+1}, () => ({
-        ox: (Math.random()-0.5) * baseW * 0.25,
-        oy: (Math.random()-0.5) * baseW * 0.2,
+        ox: (Math.random()-0.5) * baseW * 0.7,
+        oy: (Math.random()-0.5) * baseW * 0.6,
+        wMul: 0.6 + Math.random() * 0.8, // per-point width jitter
       }));
 
-      // Splatter dots
-      const splatter = Array.from({length: 8+Math.floor(Math.random()*10)}, () => ({
+      // Splatter dots — more of them, spread wider
+      const splatter = Array.from({length: 14+Math.floor(Math.random()*14)}, () => ({
         t: Math.random(), side: Math.random()>0.5?1:-1,
         dist: 0.6+Math.random()*0.5, r: 0.5+Math.random()*2.5,
       }));
@@ -598,7 +600,7 @@ const BANNER_THEMES = {
         const tx = bz(s.sx,s.cp1x,s.cp2x,s.ex,tp) - bz(s.sx,s.cp1x,s.cp2x,s.ex,t);
         const ty = bz(s.sy,s.cp1y,s.cp2y,s.ey,tp) - bz(s.sy,s.cp1y,s.cp2y,s.ey,t);
         const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        const hw = s.baseW * s.widths[i] * (1 - suckP * 0.7);
+        const hw = s.baseW * s.widths[i] * s.noise[i].wMul * (1 - suckP * 0.7);
         spine.push({ x, y, nx: -ty/tl, ny: tx/tl, hw: Math.max(0.5, hw) });
       }
       return spine;
