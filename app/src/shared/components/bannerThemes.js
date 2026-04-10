@@ -529,15 +529,15 @@ const BANNER_THEMES = {
       const colShadow = darker(PAINT[ci], 0.35);   // drop shadow
       const colEdge = lighter(PAINT[ci2], 60);      // bright edge highlight
 
-      const sx = -w*0.2 + Math.random()*w*1.4;
-      const sy = -h*0.15 + Math.random()*h*1.3;
+      const sx = -w*0.4 + Math.random()*w*1.8;
+      const sy = -h*0.4 + Math.random()*h*1.8;
       const ang = Math.random() * Math.PI * 2;
-      const len = 80 + Math.random() * 180;
+      const len = 150 + Math.random() * 300;
       const ex = sx + Math.cos(ang) * len;
       const ey = sy + Math.sin(ang) * len;
       const perp = ang + Math.PI * 0.5;
-      const curv = (Math.random() - 0.5) * 140;
-      const baseW = 18 + Math.random() * 30;
+      const curv = (Math.random() - 0.5) * 180;
+      const baseW = 22 + Math.random() * 38;
 
       // Width profile: pointed → swell → neck → swell → pointed
       const N = 18;
@@ -597,20 +597,47 @@ const BANNER_THEMES = {
       ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
     }));
 
-    // Build spine for a splash at given suck progress
+    // Build spine — suck acts like water draining: spiral pull, stretching, tip leads
     const buildSpine = (s, drawP, suckP) => {
       const spine = [];
       for (let i = 0; i <= s.N; i++) {
-        const t = (i / s.N) * drawP;
+        const frac = i / s.N;
+        const t = frac * drawP;
         let x = bz(s.sx, s.cp1x, s.cp2x, s.ex, t);
         let y = bz(s.sy, s.cp1y, s.cp2y, s.ey, t);
-        x += (ccx - x) * suckP + s.noise[i].ox * (1 - suckP);
-        y += (ccy - y) * suckP + s.noise[i].oy * (1 - suckP);
+
+        // Add noise
+        x += s.noise[i].ox * (1 - suckP);
+        y += s.noise[i].oy * (1 - suckP);
+
+        if (suckP > 0) {
+          // Distance to center
+          const dx = x - ccx, dy = y - ccy;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const angle = Math.atan2(dy, dx);
+
+          // Points closer to tip (higher frac) get sucked faster — like water flowing
+          const pointPull = suckP * (0.3 + frac * 0.7);
+          // Cubic ease — slow start, accelerates hard
+          const pull = pointPull * pointPull;
+
+          // Spiral: rotate around center as being pulled in
+          const spiral = pull * Math.PI * 1.5; // 3/4 turn at full suck
+          const newAngle = angle + spiral;
+
+          // Shrink distance toward center
+          const newDist = dist * (1 - pull * 0.92);
+
+          x = ccx + Math.cos(newAngle) * newDist;
+          y = ccy + Math.sin(newAngle) * newDist;
+        }
+
         const tp = Math.min(1, t + 0.03);
         const tx = bz(s.sx,s.cp1x,s.cp2x,s.ex,tp) - bz(s.sx,s.cp1x,s.cp2x,s.ex,t);
         const ty = bz(s.sy,s.cp1y,s.cp2y,s.ey,tp) - bz(s.sy,s.cp1y,s.cp2y,s.ey,t);
         const tl = Math.sqrt(tx*tx+ty*ty) || 1;
-        const hw = s.baseW * s.widths[i] * s.noise[i].wMul * (1 - suckP * 0.7);
+        // Width thins as it's sucked — like water stretching into a drain
+        const hw = s.baseW * s.widths[i] * s.noise[i].wMul * (1 - suckP * 0.5);
         spine.push({ x, y, nx: -ty/tl, ny: tx/tl, hw: Math.max(0.5, hw) });
       }
       return spine;
