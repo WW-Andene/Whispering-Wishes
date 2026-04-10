@@ -627,12 +627,14 @@ const BANNER_THEMES = {
       start: i * SLOT_DUR,
     }));
     let lastCycleId = -1;
+    let handFrozenAt = -1; // cT when hands locked at 6:30
     return (ctx, t) => {
       const cycle = t % CYCLE;
       const cycleId = Math.floor(t / CYCLE);
       // Re-randomize timestamp positions each cycle
       if (cycleId !== lastCycleId) {
         lastCycleId = cycleId;
+        handFrozenAt = -1; // reset for new cycle
         for (let i = 0; i < timestamps.length; i++) {
           const ts = timestamps[i];
           ts.x = (i % 2 === 0 ? 0.1 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35) * w;
@@ -790,9 +792,9 @@ const BANNER_THEMES = {
           ctx.stroke();
           ctx.restore();
         };
-        // Render gears — full speed then dead stop at 1.0s (before explosion at 1.5s)
-        const stopped = cT >= 1.0;
-        const gearT = stopped ? 1.0 : cT;
+        // Gears + hands: full speed until hands cross 6:30, then everything freezes
+        const stopped = handFrozenAt >= 0;
+        const gearT = stopped ? handFrozenAt : cT;
         for (const g of gears) {
           const rot = g.speed * gearT * 5;
           drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, rot, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
@@ -825,11 +827,18 @@ const BANNER_THEMES = {
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-        // Hands — full constant speed, freeze in place at stop moment
-        const handT = stopped ? 1.0 : cT; // freeze at the angle they had at 1.0s
-        const spinAngle = handT * Math.PI * 6;
-        const minA = Math.PI + spinAngle * 1.6;
-        const hourA = (Math.PI + Math.PI / 12) + spinAngle * 0.5;
+        // Hands — spin at constant speed, lock when minute crosses 6:30 (π)
+        const minSpeed = Math.PI * 6 * 1.6;
+        if (handFrozenAt < 0 && cT > 0.8) {
+          const minRaw = cT * minSpeed;
+          const minMod = ((minRaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+          if (minMod < 0.2 || minMod > Math.PI * 2 - 0.2) {
+            handFrozenAt = cT;
+          }
+        }
+        const handT = stopped ? handFrozenAt : cT;
+        const minA = Math.PI + handT * minSpeed;
+        const hourA = (Math.PI + Math.PI / 12) + handT * Math.PI * 6 * 0.5;
         // Hand: diamond tip + smaller diamond + two flat teardrop wings
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
