@@ -518,7 +518,8 @@ const BANNER_THEMES = {
         baseW: 16 + Math.random() * 24,
         strandNoise, widthNoise, drops, SEG,
         twistFreq: 1.5 + Math.random() * 2,
-        delay: idx * 0.6 + Math.random() * 0.3,
+        delay: idx * 0.8 + Math.random() * 0.2,
+        fadeDur: 0.4, // fade out over 0.4s before next one
       };
     };
 
@@ -639,14 +640,20 @@ const BANNER_THEMES = {
         for (const s of strokes) {
           const age = ct - s.delay;
           if (age < 0) continue;
-          // Instant appear — only fade opacity, no shape interpolation
-          const alpha0 = Math.min(1, age / 0.05); // 50ms fade-in
+          // Fade in fast, hold, fade out before next stroke
+          const fadeIn = Math.min(1, age / 0.05);
+          const holdEnd = 0.8 - s.fadeDur; // hold until 0.4s, then fade
+          const fadeOut = age > holdEnd && ct < APPEAR_END
+            ? Math.max(0, 1 - (age - holdEnd) / s.fadeDur)
+            : 1;
           let suckP = 0;
           if (ct > APPEAR_END) {
             suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
             suckP = suckP * suckP;
           }
-          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * alpha0;
+          // During suck phase, all strokes reappear and stay visible
+          const suckAlpha = ct >= APPEAR_END ? 1 : fadeOut;
+          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * fadeIn * suckAlpha;
           if (alpha < 0.01) continue;
 
           // Suck all 4 control points toward center
