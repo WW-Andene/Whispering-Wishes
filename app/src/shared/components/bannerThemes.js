@@ -790,9 +790,9 @@ const BANNER_THEMES = {
           ctx.stroke();
           ctx.restore();
         };
-        // Render gears — full speed then dead stop at 1.5s
-        const stopped = cT >= 1.5;
-        const gearT = stopped ? 1.5 : cT;
+        // Render gears — full speed then dead stop at 1.0s (before explosion at 1.5s)
+        const stopped = cT >= 1.0;
+        const gearT = stopped ? 1.0 : cT;
         for (const g of gears) {
           const rot = g.speed * gearT * 5;
           drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, rot, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
