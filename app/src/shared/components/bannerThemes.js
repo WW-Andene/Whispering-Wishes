@@ -492,11 +492,12 @@ const BANNER_THEMES = {
       }
     };
 
-    // Draw a filled liquid shape at a given width fraction
-    const drawFluidShape = (ctx, spine, widthScale, color, alpha) => {
+    // Draw a filled fluid shape, optionally offset perpendicular to spine
+    const drawFluidShape = (ctx, spine, widthScale, color, alpha, offset) => {
       if (spine.length < 3) return;
-      const top = spine.map(s => [s.x + s.nx * s.hw * widthScale, s.y + s.ny * s.hw * widthScale]);
-      const bot = spine.map(s => [s.x - s.nx * s.hw * widthScale, s.y - s.ny * s.hw * widthScale]);
+      const off = offset || 0;
+      const top = spine.map(s => [s.x + s.nx * (s.hw * widthScale + off), s.y + s.ny * (s.hw * widthScale + off)]);
+      const bot = spine.map(s => [s.x + s.nx * (off - s.hw * widthScale), s.y + s.ny * (off - s.hw * widthScale)]);
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle = rgb(color, 1);
@@ -516,9 +517,12 @@ const BANNER_THEMES = {
     const initSplash = (idx) => {
       const ci = idx % PAINT.length;
       const ci2 = (ci + 2) % PAINT.length;
-      const colDark = darker(PAINT[ci], 0.6);
-      const colMid = lerp(PAINT[ci], PAINT[ci2], 0.4);
-      const colLite = lighter(PAINT[ci2], 100);
+      const ci3 = (ci + 4) % PAINT.length;
+      const colA = PAINT[ci];                       // strand 1
+      const colB = PAINT[ci2];                      // strand 2
+      const colC = lerp(PAINT[ci3], [255,255,255], 0.25); // strand 3 (lighter)
+      const colShadow = darker(PAINT[ci], 0.35);   // drop shadow
+      const colEdge = lighter(PAINT[ci2], 60);      // bright edge highlight
 
       const sx = -w*0.2 + Math.random()*w*1.4;
       const sy = -h*0.15 + Math.random()*h*1.3;
@@ -567,7 +571,7 @@ const BANNER_THEMES = {
         cp1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
         cp2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
         cp2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
-        colDark, colMid, colLite, baseW, widths, noise, splatter, drops, N,
+        colA, colB, colC, colShadow, colEdge, baseW, widths, noise, splatter, drops, N,
         delay: idx * 0.6 + Math.random() * 0.3,
       };
     };
@@ -640,14 +644,25 @@ const BANNER_THEMES = {
           const spine = buildSpine(s, drawP, suckP);
           if (spine.length < 3) continue;
 
-          // 3 layered fills: dark outer → mid body → bright highlight
-          // This creates the 3D depth illusion
-          ctx.shadowColor = rgb(s.colMid, 0.3);
-          ctx.shadowBlur = 10;
-          drawFluidShape(ctx, spine, 1.0, s.colDark, alpha * 0.85);   // dark outer edge
-          ctx.shadowBlur = 0;
-          drawFluidShape(ctx, spine, 0.72, s.colMid, alpha * 0.9);    // mid body
-          drawFluidShape(ctx, spine, 0.3, s.colLite, alpha * 0.45);   // bright highlight core
+          // Drop shadow behind everything
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 14;
+          ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 4;
+          drawFluidShape(ctx, spine, 1.05, s.colShadow, alpha * 0.4, 0);
+          ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+
+          // 3 parallel color strands offset perpendicular
+          const gap = spine[0].hw * 0.7; // spacing between strands
+          drawFluidShape(ctx, spine, 0.38, s.colA, alpha * 0.92, gap);     // strand 1: top side
+          drawFluidShape(ctx, spine, 0.38, s.colB, alpha * 0.92, 0);       // strand 2: center
+          drawFluidShape(ctx, spine, 0.38, s.colC, alpha * 0.92, -gap);    // strand 3: bottom side
+
+          // Bright edge highlight along top strand
+          drawFluidShape(ctx, spine, 0.12, s.colEdge, alpha * 0.5, gap * 1.1);
+          // Thin dark line between strands for separation
+          drawFluidShape(ctx, spine, 0.06, s.colShadow, alpha * 0.3, gap * 0.5);
+          drawFluidShape(ctx, spine, 0.06, s.colShadow, alpha * 0.3, -gap * 0.5);
 
           // Edge splatter
           ctx.save();
@@ -658,7 +673,7 @@ const BANNER_THEMES = {
             const dx = pt.x + pt.nx * pt.hw * sp.dist * sp.side * (1-suckP*0.5);
             const dy = pt.y + pt.ny * pt.hw * sp.dist * sp.side * (1-suckP*0.5);
             ctx.globalAlpha = alpha * 0.7;
-            ctx.fillStyle = rgb(s.colMid, 1);
+            ctx.fillStyle = rgb(s.colB, 1);
             ctx.beginPath(); ctx.arc(dx, dy, sp.r*(1-suckP*0.4), 0, Math.PI*2); ctx.fill();
           }
           ctx.restore();
