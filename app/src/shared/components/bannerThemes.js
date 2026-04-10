@@ -553,10 +553,12 @@ const BANNER_THEMES = {
     // Draw a tapered noisy bezier stroke with organic edges
     const drawNoisyStroke = (ctx, sx,sy,c1x,c1y,c2x,c2y,ex,ey, maxW, color, alpha, noise, nSeg) => {
       ctx.save();
-      ctx.lineCap = 'round';
+      ctx.lineCap = 'butt';
+      ctx.lineJoin = 'miter';
       ctx.strokeStyle = rgb(color, 1);
       ctx.globalAlpha = alpha;
 
+      // Draw as one continuous path with varying width per chunk
       for (let i = 0; i < nSeg; i++) {
         const t0 = i / nSeg;
         const t1 = (i + 1) / nSeg;
@@ -569,7 +571,8 @@ const BANNER_THEMES = {
         x1 += n1.ox; y1 += n1.oy;
         // Taper with noise on width
         const tMid = (t0 + t1) * 0.5;
-        const envelope = Math.pow(Math.sin(tMid * Math.PI), 0.55);
+        // Sharper taper: flat in middle, quick taper at ends
+        const envelope = Math.min(1, Math.min(tMid * 4, (1 - tMid) * 4));
         const noiseMul = (n0.wMul + n1.wMul) * 0.5;
         ctx.lineWidth = Math.max(1, maxW * envelope * noiseMul);
         ctx.beginPath();
