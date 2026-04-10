@@ -459,295 +459,200 @@ const BANNER_THEMES = {
     };
   },
 
-  // 🎨 PRISMATIC (Lynae): paint streams swoosh in → suck to center → mix → explode
+  // 🎨 PRISMATIC (Lynae): liquid paint blobs appear → suck to center → explode
   prismatic: (w, h) => {
     const PAINT = [
       [255,45,120], [255,140,0], [250,230,20], [0,220,100],
       [30,180,255], [180,50,255], [0,230,230], [255,80,200],
     ];
     const rgb = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
-    const bright = (c) => [Math.min(255, c[0] + 90), Math.min(255, c[1] + 90), Math.min(255, c[2] + 90)];
-    const bz = (a, b, c, d, p) => { const u = 1 - p; return u*u*u*a + 3*u*u*p*b + 3*u*p*p*c + p*p*p*d; };
+    const bright = (c) => [Math.min(255, c[0]+90), Math.min(255, c[1]+90), Math.min(255, c[2]+90)];
+    const bz = (a, b, c, d, p) => { const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d; };
 
-    const CYCLE = 9; // seconds per full cycle
-    // Phase 0: 0→3s random swooshes appear, Phase 1: 3→5s swooshes get sucked to center,
-    // Phase 2: 5→5.5s mix swirl, Phase 3: 5.5→6.8s explode, Phase 4: 6.8→9s settle+floaters
-    const cx = w * 0.45, cy = h * 0.5; // convergence point
+    const CYCLE = 9;
+    const cx = w * 0.45, cy = h * 0.5;
+    const pad = 15; // keep shapes inside card
 
-    // 3-4 random liquid swooshes that appear across the canvas then get pulled in
-    const initSwooshes = () => {
-      const count = 3 + Math.floor(Math.random() * 2);
-      return Array.from({ length: count }, (_, i) => {
-        const ci = (i * 2) % PAINT.length;
-        const ci2 = (ci + 3) % PAINT.length;
-        const sx = Math.random() * w;
-        const sy = Math.random() * h;
-        const ang = Math.random() * Math.PI * 2;
-        const len = 100 + Math.random() * 160;
-        const ex = sx + Math.cos(ang) * len;
-        const ey = sy + Math.sin(ang) * len;
-        const perpAng = ang + Math.PI * 0.5;
-        const curve = (Math.random() - 0.5) * 120;
+    // A swoosh is a bezier path with blob stamps along it
+    const initSwoosh = (idx) => {
+      const ci = (idx * 2) % PAINT.length;
+      const ci2 = (ci + 3) % PAINT.length;
+      // Keep start/end INSIDE the card with padding
+      const sx = pad + Math.random() * (w - pad * 2);
+      const sy = pad + Math.random() * (h - pad * 2);
+      const ang = Math.random() * Math.PI * 2;
+      const len = 60 + Math.random() * 100;
+      const ex = Math.max(pad, Math.min(w - pad, sx + Math.cos(ang) * len));
+      const ey = Math.max(pad, Math.min(h - pad, sy + Math.sin(ang) * len));
+      const perpAng = ang + Math.PI * 0.5;
+      const curve = (Math.random() - 0.5) * 80;
 
-        // Thick width profile: pointed → dramatic swell → neck → swell → pointed
-        const wPts = 5 + Math.floor(Math.random() * 2);
-        const widths = Array.from({ length: wPts }, (_, j) => {
-          if (j === 0 || j === wPts - 1) return 0; // pointed ends
-          return j % 2 === 1 ? (25 + Math.random() * 40) : (5 + Math.random() * 12); // swell/neck
-        });
+      // Blob radius profile along path: 0 → swell → peak → swell → 0
+      // Creates tapered pointed ends with fat middle
+      const blobCount = 20 + Math.floor(Math.random() * 10);
+      const blobs = [];
+      for (let i = 0; i < blobCount; i++) {
+        const t = i / (blobCount - 1);
+        // Smooth taper: sin curve gives pointed ends, fat middle
+        const envelope = Math.pow(Math.sin(t * Math.PI), 0.6);
+        // Add some random variation for organic feel
+        const variation = 0.8 + Math.random() * 0.4;
+        const r = envelope * variation * (12 + Math.random() * 18);
+        blobs.push({ t, r, variation });
+      }
 
-        // Tendrils branching off
-        const tendrils = Array.from({ length: 2 + Math.floor(Math.random() * 2) }, () => ({
-          at: 0.2 + Math.random() * 0.6,
-          ang: (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 1.0),
-          len: 15 + Math.random() * 40, thick: 3 + Math.random() * 6,
-          blob: 2 + Math.random() * 4, midOff: (Math.random() - 0.5) * 8,
-          ci: Math.random() > 0.5 ? ci : ci2,
-        }));
+      // Scattered droplets near the path
+      const drops = Array.from({ length: 5 + Math.floor(Math.random() * 6) }, () => ({
+        t: Math.random(),
+        offX: (Math.random() - 0.5) * 50,
+        offY: (Math.random() - 0.5) * 40,
+        r: 1.5 + Math.random() * 4,
+        ci: Math.random() > 0.5 ? ci : ci2,
+      }));
 
-        // Flying droplets
-        const drops = Array.from({ length: 6 + Math.floor(Math.random() * 8) }, () => ({
-          at: Math.random(), offAng: (Math.random() - 0.5) * Math.PI,
-          dist: 12 + Math.random() * 50, r: 1 + Math.random() * 4,
-          ci: Math.random() > 0.5 ? ci : ci2,
-        }));
-
-        // Edge wobble seeds
-        const wobbles = Array.from({ length: 6 }, () => ({
-          freq: 0.8 + Math.random() * 2, amp: 2 + Math.random() * 4,
-          phase: Math.random() * Math.PI * 2,
-        }));
-
-        return {
-          sx, sy, ex, ey,
-          cp1x: sx + (ex - sx) * 0.3 + Math.cos(perpAng) * curve,
-          cp1y: sy + (ey - sy) * 0.3 + Math.sin(perpAng) * curve,
-          cp2x: sx + (ex - sx) * 0.7 + Math.cos(perpAng) * curve * 0.5,
-          cp2y: sy + (ey - sy) * 0.7 + Math.sin(perpAng) * curve * 0.5,
-          col: PAINT[ci], col2: PAINT[ci2],
-          widths, wPts, tendrils, drops, wobbles,
-          delay: i * 0.7 + Math.random() * 0.4,
-          drawDur: 0.12 + Math.random() * 0.13,
-        };
-      });
+      return {
+        sx, sy, ex, ey,
+        cp1x: sx + (ex - sx) * 0.3 + Math.cos(perpAng) * curve,
+        cp1y: sy + (ey - sy) * 0.3 + Math.sin(perpAng) * curve,
+        cp2x: sx + (ex - sx) * 0.7 + Math.cos(perpAng) * curve * 0.5,
+        cp2y: sy + (ey - sy) * 0.7 + Math.sin(perpAng) * curve * 0.5,
+        col: PAINT[ci], col2: PAINT[ci2],
+        blobs, drops,
+        delay: idx * 0.8 + Math.random() * 0.3,
+      };
     };
 
-    // Explosion debris
-    const initDebris = () => Array.from({ length: 35 }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 40 + Math.random() * 120;
-      const ci = Math.floor(Math.random() * PAINT.length);
-      return {
-        angle, speed, r: 1.5 + Math.random() * 5,
-        ci, drag: 0.92 + Math.random() * 0.05,
-        x: 0, y: 0, // set at explosion time
-      };
-    });
+    const initAll = () => {
+      const count = 3 + Math.floor(Math.random() * 2);
+      return Array.from({ length: count }, (_, i) => initSwoosh(i));
+    };
 
-    let swooshes = initSwooshes();
-    let debris = initDebris();
-    let cycleStart = -CYCLE; // start immediately
-
-    // Ambient floating droplets — always visible, provide life between cycles
-    const floaters = Array.from({ length: 20 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      r: 1.5 + Math.random() * 3.5,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.4,
+    const initDebris = () => Array.from({ length: 40 }, () => ({
+      angle: Math.random() * Math.PI * 2,
+      speed: 30 + Math.random() * 100,
+      r: 1.5 + Math.random() * 5.5,
       ci: Math.floor(Math.random() * PAINT.length),
-      alpha: 0.4 + Math.random() * 0.3,
+      drag: 0.93 + Math.random() * 0.04,
+    }));
+
+    let swooshes = initAll();
+    let debris = initDebris();
+    let cycleStart = -CYCLE;
+
+    // Ambient floaters
+    const floaters = Array.from({ length: 18 }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: 1.5 + Math.random() * 3,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.25,
+      ci: Math.floor(Math.random() * PAINT.length),
       phase: Math.random() * Math.PI * 2,
     }));
 
-    // Catmull-Rom smooth path helper
-    const smoothEdge = (ctx, pts, close) => {
-      if (pts.length < 2) return;
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (let i = 0; i < pts.length - 1; i++) {
-        const p0 = pts[Math.max(0, i - 1)];
-        const p1 = pts[i];
-        const p2 = pts[i + 1];
-        const p3 = pts[Math.min(pts.length - 1, i + 2)];
-        ctx.bezierCurveTo(
-          p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6,
-          p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6,
-          p2.x, p2.y
-        );
-      }
-    };
-
     return (ctx, t) => {
-      // Cycle management
       let ct = t - cycleStart;
-      if (ct > CYCLE) {
-        cycleStart = t;
-        ct = 0;
-        swooshes = initSwooshes();
-        debris = initDebris();
-      }
+      if (ct > CYCLE) { cycleStart = t; ct = 0; swooshes = initAll(); debris = initDebris(); }
 
-      // ── Ambient floaters (always visible) ──
+      const APPEAR_END = 3.0;
+      const SUCK_END = 5.0;
+      const EXPLODE_T = 5.5;
+
+      // ── Ambient floaters ──
       for (const f of floaters) {
         f.x += f.vx; f.y += f.vy;
-        if (f.x < -10) f.x = w + 10; if (f.x > w + 10) f.x = -10;
-        if (f.y < -10) f.y = h + 10; if (f.y > h + 10) f.y = -10;
-        const pulse = 0.5 + 0.5 * Math.sin(t * 1.5 + f.phase);
+        if (f.x < -5) f.x = w + 5; if (f.x > w + 5) f.x = -5;
+        if (f.y < -5) f.y = h + 5; if (f.y > h + 5) f.y = -5;
         ctx.save();
-        ctx.globalAlpha = f.alpha * pulse;
-        const c = PAINT[f.ci];
-        ctx.fillStyle = rgb(c, 1);
-        ctx.shadowColor = rgb(c, 0.5);
-        ctx.shadowBlur = 6;
+        ctx.globalAlpha = 0.35 + 0.25 * Math.sin(t * 1.5 + f.phase);
+        ctx.fillStyle = rgb(PAINT[f.ci], 1);
+        ctx.shadowColor = rgb(PAINT[f.ci], 0.4);
+        ctx.shadowBlur = 5;
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
-        // Glossy dot
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.shadowBlur = 0;
-        ctx.beginPath(); ctx.arc(f.x - f.r * 0.2, f.y - f.r * 0.2, f.r * 0.3, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
 
-      // Phase boundaries
-      const SWOOSH_END = 3.0;  // random swooshes appear 0→3s
-      const SUCK_END = 5.0;    // get sucked to center 3→5s
-      const MIX_END = 5.5;     // mix swirl 5→5.5s
-      const EXPLODE_T = 5.5;   // explosion starts
-
-      // ── Phase 0+1: Liquid swooshes appear then get sucked to center ──
-      if (ct < SUCK_END + 1.5) {
+      // ── Liquid paint swooshes (blob stamps) ──
+      if (ct < SUCK_END + 1.2) {
         for (const s of swooshes) {
-          const swooshAge = ct - s.delay;
-          if (swooshAge < 0) continue;
+          const age = ct - s.delay;
+          if (age < 0) continue;
 
-          const rawDraw = Math.min(1, swooshAge / s.drawDur);
-          const drawP = 1 - Math.pow(1 - rawDraw, 3);
+          // Appear instantly, then stay immobile until suck
+          const appeared = age > 0.15; // snap in over 150ms
 
           let suckP = 0;
-          if (ct > SWOOSH_END) {
-            suckP = Math.min(1, (ct - SWOOSH_END) / (SUCK_END - SWOOSH_END));
-            suckP = suckP * suckP * suckP;
+          if (ct > APPEAR_END) {
+            suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
+            suckP = suckP * suckP * suckP; // ease-in
           }
-
-          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 1.0) : 0.9;
+          const alpha = ct > SUCK_END ? Math.max(0, 1 - (ct - SUCK_END) / 0.8) : 0.92;
           if (alpha < 0.01) continue;
 
-          // Build thick spine with wobble + width profile
-          const N = 14;
-          const spine = [];
-          for (let i = 0; i <= N; i++) {
-            const frac = i / N;
-            const p = frac * drawP;
-            let x = bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
-            let y = bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
-            x += (cx - x) * suckP;
-            y += (cy - y) * suckP;
-
-            const pp = Math.min(1, p + 0.03);
-            const tx = bz(s.sx, s.cp1x, s.cp2x, s.ex, pp) - bz(s.sx, s.cp1x, s.cp2x, s.ex, p);
-            const ty = bz(s.sy, s.cp1y, s.cp2y, s.ey, pp) - bz(s.sy, s.cp1y, s.cp2y, s.ey, p);
-            const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
-            const nx = -ty / tLen, ny = tx / tLen;
-
-            // Width from swell/neck profile
-            const wp = frac * (s.wPts - 1);
-            const wi = Math.min(s.wPts - 2, Math.floor(wp));
-            const baseW = s.widths[wi] * (1 - (wp - wi)) + s.widths[wi + 1] * (wp - wi);
-            // Wobble per edge
-            let wT = 0, wB = 0;
-            for (let k = 0; k < 3; k++) {
-              wT += Math.sin(frac * s.wobbles[k].freq * Math.PI * 2 + s.wobbles[k].phase) * s.wobbles[k].amp;
-              wB += Math.sin(frac * s.wobbles[k+3].freq * Math.PI * 2 + s.wobbles[k+3].phase) * s.wobbles[k+3].amp;
-            }
-            const clamp = baseW * 0.3;
-            const hwT = Math.max(0.3, (baseW + Math.max(-clamp, Math.min(clamp, wT))) * (1 - suckP * 0.7));
-            const hwB = Math.max(0.3, (baseW + Math.max(-clamp, Math.min(clamp, wB))) * (1 - suckP * 0.7));
-            spine.push({ x, y, nx, ny, hwT, hwB, frac });
-          }
-
-          const topPts = spine.map(sp => ({ x: sp.x + sp.nx * sp.hwT, y: sp.y + sp.ny * sp.hwT }));
-          const botPts = spine.map(sp => ({ x: sp.x - sp.nx * sp.hwB, y: sp.y - sp.ny * sp.hwB }));
+          // Draw progress: instant snap (150ms), then stays at full
+          const drawP = appeared ? 1 : Math.min(1, age / 0.15);
 
           ctx.save();
           ctx.globalAlpha = alpha;
 
-          // Gradient body
-          const grad = ctx.createLinearGradient(spine[0].x, spine[0].y, spine[spine.length-1].x, spine[spine.length-1].y);
-          grad.addColorStop(0, rgb(s.col, 1));
-          grad.addColorStop(0.5, rgb(s.col2, 1));
-          grad.addColorStop(1, rgb(s.col, 0.9));
-          ctx.fillStyle = grad;
-          ctx.shadowColor = rgb(s.col, 0.4);
-          ctx.shadowBlur = 14;
+          // Stamp overlapping circles along the bezier path
+          // First pass: draw all blobs as solid color (creates the liquid body)
+          for (let pass = 0; pass < 2; pass++) {
+            for (let bi = 0; bi < s.blobs.length; bi++) {
+              const b = s.blobs[bi];
+              if (b.t > drawP) continue;
 
-          // Smooth liquid body
-          ctx.beginPath();
-          smoothEdge(ctx, topPts);
-          const ls = spine[spine.length - 1];
-          ctx.quadraticCurveTo(ls.x, ls.y, botPts[botPts.length - 1].x, botPts[botPts.length - 1].y);
-          smoothEdge(ctx, botPts.slice().reverse());
-          ctx.quadraticCurveTo(spine[0].x, spine[0].y, topPts[0].x, topPts[0].y);
-          ctx.closePath();
-          ctx.fill();
+              // Position on bezier
+              let bx = bz(s.sx, s.cp1x, s.cp2x, s.ex, b.t);
+              let by = bz(s.sy, s.cp1y, s.cp2y, s.ey, b.t);
 
-          // Glossy highlight
-          ctx.globalAlpha = alpha * 0.4;
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = rgb(bright(s.col), 0.5);
-          const hiPts = spine.map(sp => ({ x: sp.x + sp.nx * sp.hwT * 0.55, y: sp.y + sp.ny * sp.hwT * 0.55 }));
-          const hiBot = spine.map(sp => ({ x: sp.x + sp.nx * sp.hwT * 0.05, y: sp.y + sp.ny * sp.hwT * 0.05 }));
-          ctx.beginPath();
-          smoothEdge(ctx, hiPts);
-          smoothEdge(ctx, hiBot.slice().reverse());
-          ctx.closePath();
-          ctx.fill();
+              // During suck, pull toward center
+              bx += (cx - bx) * suckP;
+              by += (cy - by) * suckP;
 
-          // Tendrils
-          if (suckP < 0.8) {
-            ctx.globalAlpha = alpha * (1 - suckP);
-            for (const ten of s.tendrils) {
-              if (ten.at > drawP) continue;
-              const si2 = Math.floor(ten.at * (spine.length - 1));
-              const base = spine[Math.min(si2, spine.length - 1)];
-              const ca = Math.cos(ten.ang), sa = Math.sin(ten.ang);
-              const dx = base.nx * ca - base.ny * sa;
-              const dy = base.nx * sa + base.ny * ca;
-              const tex = base.x + dx * ten.len * (1 - suckP);
-              const tey = base.y + dy * ten.len * (1 - suckP);
-              const mx = base.x + dx * ten.len * 0.5 + ten.midOff;
-              const my = base.y + dy * ten.len * 0.5 + ten.midOff;
-              ctx.fillStyle = rgb(PAINT[ten.ci], 1);
-              ctx.shadowColor = rgb(PAINT[ten.ci], 0.3);
-              ctx.shadowBlur = 5;
-              ctx.beginPath();
-              ctx.moveTo(base.x + base.nx * ten.thick, base.y + base.ny * ten.thick);
-              ctx.quadraticCurveTo(mx + dy * 2, my - dx * 2, tex, tey);
-              ctx.quadraticCurveTo(mx - dy * 2, my + dx * 2, base.x - base.nx * ten.thick, base.y - base.ny * ten.thick);
-              ctx.closePath(); ctx.fill();
-              ctx.beginPath(); ctx.arc(tex, tey, ten.blob, 0, Math.PI * 2); ctx.fill();
+              // Radius shrinks during suck
+              const r = b.r * (1 - suckP * 0.7);
+              if (r < 0.5) continue;
+
+              if (pass === 0) {
+                // Main body: solid color gradient along path
+                const colorT = b.t;
+                const cr = s.col[0] + (s.col2[0] - s.col[0]) * colorT;
+                const cg = s.col[1] + (s.col2[1] - s.col[1]) * colorT;
+                const cb = s.col[2] + (s.col2[2] - s.col[2]) * colorT;
+                ctx.fillStyle = `rgba(${cr|0},${cg|0},${cb|0},1)`;
+                ctx.shadowColor = `rgba(${cr|0},${cg|0},${cb|0},0.3)`;
+                ctx.shadowBlur = 8;
+                ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI * 2); ctx.fill();
+              } else {
+                // Highlight pass: smaller, brighter, offset up-left
+                ctx.globalAlpha = alpha * 0.35;
+                const hiC = bright(b.t < 0.5 ? s.col : s.col2);
+                ctx.fillStyle = rgb(hiC, 0.6);
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(bx - r * 0.15, by - r * 0.2, r * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = alpha;
+              }
             }
           }
 
           // Flying droplets
           ctx.shadowBlur = 3;
           for (const dr of s.drops) {
-            if (dr.at > drawP) continue;
-            const si2 = Math.floor(dr.at * (spine.length - 1));
-            const base = spine[Math.min(si2, spine.length - 1)];
-            const ca2 = Math.cos(dr.offAng), sa2 = Math.sin(dr.offAng);
-            const ddx = base.nx * ca2 - base.ny * sa2;
-            const ddy = base.nx * sa2 + base.ny * ca2;
-            let dpx = base.x + ddx * dr.dist * (1 - suckP * 0.8);
-            let dpy = base.y + ddy * dr.dist * (1 - suckP * 0.8);
-            // During suck, droplets also pull toward center
-            dpx += (cx - dpx) * suckP * 0.5;
-            dpy += (cy - dpy) * suckP * 0.5;
+            if (dr.t > drawP) continue;
+            let dx = bz(s.sx, s.cp1x, s.cp2x, s.ex, dr.t) + dr.offX;
+            let dy = bz(s.sy, s.cp1y, s.cp2y, s.ey, dr.t) + dr.offY;
+            dx += (cx - dx) * suckP * 0.7;
+            dy += (cy - dy) * suckP * 0.7;
+            const dr2 = dr.r * (1 - suckP * 0.5);
             ctx.globalAlpha = alpha * 0.9;
             ctx.fillStyle = rgb(PAINT[dr.ci], 1);
-            ctx.shadowColor = rgb(PAINT[dr.ci], 0.4);
-            ctx.beginPath(); ctx.arc(dpx, dpy, dr.r * (1 - suckP * 0.5), 0, Math.PI * 2); ctx.fill();
-            if (dr.r > 2) {
-              ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.shadowColor = rgb(PAINT[dr.ci], 0.3);
+            ctx.beginPath(); ctx.arc(dx, dy, dr2, 0, Math.PI * 2); ctx.fill();
+            if (dr2 > 2) {
+              ctx.fillStyle = 'rgba(255,255,255,0.35)';
               ctx.shadowBlur = 0;
-              ctx.beginPath(); ctx.arc(dpx - dr.r * 0.2, dpy - dr.r * 0.2, dr.r * 0.3, 0, Math.PI * 2); ctx.fill();
+              ctx.beginPath(); ctx.arc(dx - dr2*0.2, dy - dr2*0.2, dr2*0.3, 0, Math.PI*2); ctx.fill();
               ctx.shadowBlur = 3;
             }
           }
@@ -756,70 +661,53 @@ const BANNER_THEMES = {
         }
       }
 
-      // ── Phase 2: Mix swirl at center ──
-      if (ct > SWOOSH_END + 1.5 && ct < EXPLODE_T + 0.5) {
-        const mixStart = SWOOSH_END + 1.5;
-        const mixP = Math.min(1, (ct - mixStart) / (MIX_END - mixStart));
-        const mixAlpha = ct < MIX_END ? mixP * 0.5 : Math.max(0, 0.5 - (ct - MIX_END) * 2);
-        if (mixAlpha > 0.01) {
-          const swirl = ct * 5;
-          const mr = 12 + mixP * 25;
+      // ── Mix swirl ──
+      if (ct > APPEAR_END + 1.5 && ct < EXPLODE_T + 0.5) {
+        const mixP = Math.min(1, (ct - APPEAR_END - 1.5) / 1.5);
+        const mixA = ct < EXPLODE_T ? mixP * 0.5 : Math.max(0, 0.5 - (ct - EXPLODE_T) * 2);
+        if (mixA > 0.01) {
+          const sw = ct * 5, mr = 10 + mixP * 20;
           for (let i = 0; i < 5; i++) {
-            const a = swirl + i * Math.PI * 0.4;
-            const r2 = mr * (0.4 + i * 0.15);
-            const px2 = cx + Math.cos(a) * r2;
-            const py2 = cy + Math.sin(a) * r2;
-            const ci2 = (i * 2) % PAINT.length;
-            ctx.save();
-            ctx.globalAlpha = mixAlpha;
-            const g = ctx.createRadialGradient(px2, py2, 0, px2, py2, mr * 0.5);
-            g.addColorStop(0, rgb(PAINT[ci2], 0.7));
-            g.addColorStop(1, rgb(PAINT[ci2], 0));
+            const a = sw + i * Math.PI * 0.4;
+            const px = cx + Math.cos(a) * mr * (0.4 + i * 0.12);
+            const py = cy + Math.sin(a) * mr * (0.4 + i * 0.12);
+            ctx.save(); ctx.globalAlpha = mixA;
+            const g = ctx.createRadialGradient(px, py, 0, px, py, mr * 0.4);
+            g.addColorStop(0, rgb(PAINT[(i*2)%8], 0.8));
+            g.addColorStop(1, rgb(PAINT[(i*2)%8], 0));
             ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(px2, py2, mr * 0.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(px, py, mr * 0.4, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
           }
         }
       }
 
-      // ── Phase 3: Explosion ──
+      // ── Explosion ──
       if (ct > EXPLODE_T) {
-        const explodeAge = ct - EXPLODE_T;
-
-        // Flash
-        if (explodeAge < 0.15) {
-          ctx.save();
-          ctx.globalAlpha = 0.3 * (1 - explodeAge / 0.15);
-          const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.4);
-          fg.addColorStop(0, 'rgba(255,255,255,0.8)');
+        const ea = ct - EXPLODE_T;
+        if (ea < 0.15) {
+          ctx.save(); ctx.globalAlpha = 0.35 * (1 - ea / 0.15);
+          const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w,h)*0.4);
+          fg.addColorStop(0, 'rgba(255,255,255,0.9)');
           fg.addColorStop(1, 'rgba(255,255,255,0)');
           ctx.fillStyle = fg;
-          ctx.beginPath(); ctx.arc(cx, cy, Math.max(w, h) * 0.4, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx, cy, Math.max(w,h)*0.4, 0, Math.PI*2); ctx.fill();
           ctx.restore();
         }
-
-        // Debris particles
-        const debrisAlpha = explodeAge < 0.2 ? explodeAge / 0.2 : Math.max(0, 1 - (explodeAge - 0.2) / 3);
-        if (debrisAlpha > 0.01) {
+        const da = ea < 0.2 ? ea/0.2 : Math.max(0, 1 - (ea-0.2)/3);
+        if (da > 0.01) {
           for (const d of debris) {
-            // Physics: shoot out then drag
-            const dist = d.speed * explodeAge * Math.pow(d.drag, explodeAge * 30);
+            const dist = d.speed * ea * Math.pow(d.drag, ea * 30);
             const dx = cx + Math.cos(d.angle) * dist;
-            const dy = cy + Math.sin(d.angle) * dist + explodeAge * explodeAge * 15; // gravity
-            ctx.save();
-            ctx.globalAlpha = debrisAlpha * 0.95;
-            const c = PAINT[d.ci];
-            ctx.fillStyle = rgb(c, 1);
-            ctx.shadowColor = rgb(c, 0.5);
+            const dy = cy + Math.sin(d.angle) * dist + ea*ea*12;
+            ctx.save(); ctx.globalAlpha = da * 0.95;
+            ctx.fillStyle = rgb(PAINT[d.ci], 1);
+            ctx.shadowColor = rgb(PAINT[d.ci], 0.4);
             ctx.shadowBlur = 4;
-            ctx.beginPath(); ctx.arc(dx, dy, d.r, 0, Math.PI * 2); ctx.fill();
-            // Highlight on bigger drops
+            ctx.beginPath(); ctx.arc(dx, dy, d.r, 0, Math.PI*2); ctx.fill();
             if (d.r > 2.5) {
-              ctx.fillStyle = 'rgba(255,255,255,0.4)';
-              ctx.shadowBlur = 0;
-              ctx.beginPath();
-              ctx.arc(dx - d.r * 0.2, dy - d.r * 0.2, d.r * 0.3, 0, Math.PI * 2);
-              ctx.fill();
+              ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.shadowBlur=0;
+              ctx.beginPath(); ctx.arc(dx-d.r*0.2, dy-d.r*0.2, d.r*0.3, 0, Math.PI*2); ctx.fill();
             }
             ctx.restore();
           }
