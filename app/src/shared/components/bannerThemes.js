@@ -827,18 +827,18 @@ const BANNER_THEMES = {
           ctx.closePath(); ctx.fill();
         }
         ctx.restore();
-        // Hands — spin at constant speed, lock when minute crosses 6:30 (π)
-        const minSpeed = Math.PI * 6 * 1.6;
-        if (handFrozenAt < 0 && cT > 0.8) {
+        // Hands — spin fast, lock exactly at 6:30 when they pass through it
+        const minSpeed = Math.PI * 20; // much faster spin
+        if (handFrozenAt < 0 && cT > 0.5) {
           const minRaw = cT * minSpeed;
           const minMod = ((minRaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-          if (minMod < 0.2 || minMod > Math.PI * 2 - 0.2) {
+          if (minMod < 0.3 || minMod > Math.PI * 2 - 0.3) {
             handFrozenAt = cT;
           }
         }
-        const handT = stopped ? handFrozenAt : cT;
-        const minA = Math.PI + handT * minSpeed;
-        const hourA = (Math.PI + Math.PI / 12) + handT * Math.PI * 6 * 0.5;
+        // When stopped, snap to exact 6:30 — not approximate
+        const minA = stopped ? Math.PI : Math.PI + cT * minSpeed;
+        const hourA = stopped ? Math.PI + Math.PI / 12 : (Math.PI + Math.PI / 12) + cT * minSpeed * 0.3;
         // Hand: diamond tip + smaller diamond + two flat teardrop wings
         const drawHand = (angle, len, hw, alpha) => {
           ctx.save(); ctx.globalAlpha = alpha;
