@@ -517,6 +517,11 @@ const VERSION_SPLASH_SCREENS = [
 const OTHER_BACKGROUNDS = [
   { id: 'dream-team', name: 'The Dream Team', art: 'https://i.ibb.co/Gfkn50Fk/The-dream-team.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '40% 50%' } },
   { id: 'utterance-of-marvels', name: 'Utterance of Marvels', art: 'https://i.ibb.co/KjjRTp27/1-2-2.jpg', pos: { header: '50% 28%', nav: '50% 26%', bg: '58% 50%' } },
+  { id: 'reverberation', name: 'Reverberation', art: 'https://i.ibb.co/pBV5hJ3L/Reverberation.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'solaris-3', name: 'Solaris 3', art: 'https://i.ibb.co/jvY1KmRq/Solaris-3.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'tacet-discord', name: 'Tacet Discord', art: 'https://i.ibb.co/KxDbBcD1/Tacet-discord.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'tacet-field', name: 'Tacet Field', art: 'https://i.ibb.co/zgQbgTp/Tacet-field.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'three-two-one-cheese', name: 'Three Two One Cheese', art: 'https://i.ibb.co/dJ2xPnNf/Three-two-one-cheese.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
 ];
 
 
