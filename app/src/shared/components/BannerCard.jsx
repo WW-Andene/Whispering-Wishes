@@ -10,7 +10,6 @@ import { haptic, getElementColor } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
-import { BANNER_THEMES, CHARACTER_THEME_MAP, ELEMENT_THEME_FALLBACK } from './bannerThemes.js';
 import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 
 const BANNER_GRADIENT_MAP = {
@@ -35,8 +34,7 @@ const EVENT_ACCENT_COLORS = {
 const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 // L-FIX: Extracted inline style constants to avoid re-creating objects every render
-const CANVAS_OVERLAY_STYLE = Object.freeze({ zIndex: 2, width: '100%', height: '100%' });
-const MOON_GLOW_STYLE = Object.freeze({ left: '65.5%', top: '10.5%', width: '140px', height: '140px', zIndex: 3 });
+
 const IMG_LAYER_STYLE = Object.freeze({ zIndex: 1 });
 const BANNER_SUBTLE_SHADOW = '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)';
 
@@ -73,63 +71,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
   return result;
 };
 
-// §BANNER_PARTICLES: Theme-driven particle overlay — each banner gets a fitting visual personality
-// Character-specific theme overrides (matched to their banner art mood)
 
-const BannerParticleOverlay = memo(({ characterName, element }) => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    const rect = canvas.parentElement.getBoundingClientRect();
-    const w = rect.width || 400;
-    const h = rect.height || 190;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
-
-    // Pick theme: character-specific override → element fallback → sparkle default
-    const themeKey = CHARACTER_THEME_MAP[characterName]
-      || ELEMENT_THEME_FALLBACK[element]
-      || 'sparkle';
-    const drawFn = (BANNER_THEMES[themeKey] || BANNER_THEMES.sparkle)(w, h);
-
-    let animId, t = 0;
-    const frame = () => {
-      ctx.clearRect(0, 0, w, h);
-      t += 0.016;
-      drawFn(ctx, t);
-      animId = requestAnimationFrame(frame);
-    };
-    animId = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(animId);
-  }, [characterName, element]);
-
-  const isQiuyuan = characterName === 'Qiuyuan';
-
-  return (
-    <>
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={CANVAS_OVERLAY_STYLE}
-        aria-hidden="true"
-      />
-      {isQiuyuan && (
-        <div
-          className="absolute pointer-events-none moon-glow-pulse"
-          style={MOON_GLOW_STYLE}
-          aria-hidden="true"
-        />
-      )}
-    </>
-  );
-});
-BannerParticleOverlay.displayName = 'BannerParticleOverlay';
 
 const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
   const isChar = type === 'character';
@@ -176,7 +118,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           />
         </div>
       )}
-      {imgUrl && isFull && !useSpine && <BannerParticleOverlay characterName={isChar ? item.name : item.forCharacter || item.name} element={item.element} />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
@@ -251,4 +192,4 @@ const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
 ));
 ProbabilityBar.displayName = 'ProbabilityBar';
 
-export { BannerCard, BannerParticleOverlay, ProbabilityBar, generateMaskGradient, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW };
+export { BannerCard, ProbabilityBar, generateMaskGradient, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW };
