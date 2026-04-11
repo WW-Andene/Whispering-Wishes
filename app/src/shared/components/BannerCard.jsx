@@ -107,12 +107,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <img
             src={imgUrl}
             alt={item.name}
-            className="w-full h-full object-cover breath-zoom"
+            className="w-full h-full object-cover object-center breath-zoom"
             style={{
               opacity: pictureOpacity,
               maskImage: maskGradient,
               WebkitMaskImage: maskGradient,
-              objectPosition: 'center center',
             }}
             loading="eager"
             onError={hideOnError}

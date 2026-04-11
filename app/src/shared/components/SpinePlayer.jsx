@@ -1,27 +1,24 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — shared/components/SpinePlayer.jsx
 // Animated Spine character renderer using spine-player 4.2 loaded from CDN.
-// Uses window.spine.SpinePlayer (IIFE global) — not the npm ES module.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
 
-// Per-character CSS transform to position the spine like the static banner image.
-// scale: zoom level, tx/ty: translate % to shift character in frame
 export const SPINE_CHARACTERS = {
-  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.5, tx: 10,  ty: -8 },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.5, tx: 10,  ty: -8 },
-  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: 8,   ty: -8 },
-  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.5, tx: 10,  ty: -8 },
-  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.3, tx: 10,  ty: -8 },
-  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 10,  ty: -8 },
-  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.5, tx: 10,  ty: -8 },
-  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.5, tx: 10,  ty: -8 },
-  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.3, tx: 10,  ty: -8 },
-  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.3, tx: 10,  ty: -8 },
-  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 10,  ty: -8 },
-  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 10,  ty: -8 },
-  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.5, tx: 10,  ty: -8 },
+  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: 0, ty: 0 },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: 0, ty: 0 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: 0, ty: 0 },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.3, tx: 0, ty: 0 },
+  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.3, tx: 0, ty: 0 },
+  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 0, ty: 0 },
+  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: 0, ty: 0 },
+  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: 0, ty: 0 },
+  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.3, tx: 0, ty: 0 },
+  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.3, tx: 0, ty: 0 },
+  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 0, ty: 0 },
+  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0, ty: 0 },
+  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 0, ty: 0 },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
@@ -52,7 +49,6 @@ function SpinePlayerComponent({
     const charData = SPINE_CHARACTERS[characterId];
     if (!charData) { setFailed(true); return; }
     if (!window.spine?.SpinePlayer) {
-      console.error('[SpinePlayer] window.spine.SpinePlayer not loaded');
       setFailed(true);
       return;
     }
@@ -78,14 +74,12 @@ function SpinePlayerComponent({
         premultipliedAlpha: false,
         showLoading: true,
         error: (player, msg) => {
-          console.error(`[SpinePlayer] "${characterId}":`, msg);
           if (containerRef.current) containerRef.current.innerHTML = '';
           setFailed(true);
           if (onError) onError(characterId, msg);
         },
       });
     } catch (err) {
-      console.error(`[SpinePlayer] init failed "${characterId}":`, err);
       if (containerRef.current) containerRef.current.innerHTML = '';
       setFailed(true);
       if (onError) onError(characterId, err);
@@ -107,19 +101,14 @@ function SpinePlayerComponent({
   return (
     <div
       className={className}
-      style={{
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        ...style,
-      }}
+      style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
     >
       <div
         ref={containerRef}
         style={{
           width: '100%',
           height: '100%',
-          transform: `scale(${scale}) translate(${tx}%, ${ty}%)`,
+          transform: scale !== 1 || tx || ty ? `scale(${scale}) translate(${tx}%, ${ty}%)` : undefined,
           transformOrigin: 'center center',
         }}
       />
