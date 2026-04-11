@@ -92,18 +92,24 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
     <div className="relative overflow-hidden rounded-xl border banner-card" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : BANNER_SUBTLE_SHADOW }}>
       {imgUrl && (
-        <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
+        <div
+          className="absolute inset-0"
+          style={{
+            ...IMG_LAYER_STYLE,
+            opacity: useSpine ? 0.5 : 1,
+            filter: useSpine ? 'blur(10px)' : undefined,
+            transform: useSpine ? 'scale(2)' : undefined,
+          }}
+        >
           <img
             src={imgUrl}
             alt={item.name}
-            className="w-full h-full object-cover breath-zoom"
+            className={`w-full h-full object-cover ${useSpine ? '' : 'breath-zoom'}`}
             style={{
-              opacity: useSpine ? 0.5 : pictureOpacity,
+              opacity: pictureOpacity,
               objectPosition: 'center 100%',
               maskImage: maskGradient,
               WebkitMaskImage: maskGradient,
-              filter: useSpine ? 'blur(10px)' : undefined,
-              transform: useSpine ? 'scale(2)' : undefined,
             }}
             loading="eager"
             onError={hideOnError}
