@@ -98,10 +98,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <img
             src={imgUrl}
             alt={item.name}
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover"
             style={{
               opacity: 1,
               filter: 'saturate(0) brightness(1.2) sepia(1) hue-rotate(0deg) saturate(10) contrast(1.5)',
+              objectPosition: 'center 48%',
             }}
             loading="eager"
             onError={hideOnError}
