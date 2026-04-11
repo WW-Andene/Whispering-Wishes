@@ -78,17 +78,13 @@ function SpinePlayerComponent({
     // Clear any error HTML the spine-player may have dumped
     containerRef.current.innerHTML = '';
 
-    const cdnBase = `https://wutheringwaves.kurogames.com/spine-file/role_${characterId}`;
+    const basePath = `/spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
 
     try {
       playerRef.current = new SpinePlayerLib(containerRef.current, {
-        jsonUrl: `${cdnBase}/${prefix}.json`,
-        atlasUrl: `${cdnBase}/${prefix}.atlas`,
-        // Explicitly map the atlas image filename → CDN URL
-        rawDataURIs: {
-          [`${prefix}.png`]: `${cdnBase}/${prefix}.png`,
-        },
+        jsonUrl: `${basePath}/${prefix}.json`,
+        atlasUrl: `${basePath}/${prefix}.atlas`,
         animation,
         loop,
         showControls,
