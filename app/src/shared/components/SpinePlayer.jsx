@@ -1,14 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — shared/components/SpinePlayer.jsx
-// Animated Spine character renderer using @esotericsoftware/spine-player 4.2.
-// Loads .json + .atlas + .png triplet from /spine/{folder}/ and plays idle loop.
+// Animated Spine character renderer using spine-player 4.2 loaded from CDN.
+// Uses window.spine.SpinePlayer (IIFE global) — not the npm ES module.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
-import { SpinePlayer as SpinePlayerLib } from '@esotericsoftware/spine-player';
-import '@esotericsoftware/spine-player/dist/spine-player.css';
 
-// Internal pinyin → display name mapping
 export const SPINE_CHARACTERS = {
   xigelika:    { name: 'Sigrika',      element: 'Aero' },
   qiuyuan:     { name: 'Qiuyuan',      element: 'Aero' },
@@ -25,28 +22,15 @@ export const SPINE_CHARACTERS = {
   chun:        { name: 'Chun',         element: 'Glacio' },
 };
 
-// English display name → pinyin spine ID (case-insensitive lookup)
 const NAME_TO_SPINE_ID = Object.fromEntries(
   Object.entries(SPINE_CHARACTERS).map(([id, { name }]) => [name.toLowerCase(), id])
 );
 
-/** Look up spine ID from English display name. Returns null if no spine asset exists. */
 export function getSpineId(displayName) {
   if (!displayName) return null;
   return NAME_TO_SPINE_ID[displayName.toLowerCase()] || null;
 }
 
-/**
- * SpinePlayer — renders a single Spine-animated resonator.
- *
- * @param {string}  characterId  — key from SPINE_CHARACTERS (e.g. 'jinxi')
- * @param {string}  [animation]  — animation name (default: 'idle')
- * @param {boolean} [loop]       — loop the animation (default: true)
- * @param {string}  [className]  — optional CSS class for the container
- * @param {object}  [style]      — optional inline styles for the container
- * @param {boolean} [showControls] — show spine player UI controls (default: false)
- * @param {string}  [backgroundColor] — canvas bg color (default: transparent)
- */
 function SpinePlayerComponent({
   characterId,
   animation = 'idle',
@@ -63,77 +47,55 @@ function SpinePlayerComponent({
 
   useEffect(() => {
     if (!containerRef.current || !characterId || failed) return;
-    if (!SPINE_CHARACTERS[characterId]) {
-      console.warn(`[SpinePlayer] Unknown character: "${characterId}"`);
+    if (!SPINE_CHARACTERS[characterId]) { setFailed(true); return; }
+    if (!window.spine?.SpinePlayer) {
+      console.error('[SpinePlayer] window.spine.SpinePlayer not loaded');
       setFailed(true);
       return;
     }
 
-    // Clean up previous instance
     if (playerRef.current) {
       playerRef.current.dispose();
       playerRef.current = null;
     }
-
     containerRef.current.innerHTML = '';
 
     const basePath = `/spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
-    let cancelled = false;
-    let blobUrl = null;
 
-    // Preload the PNG as a blob URL to bypass spine-player's
-    // crossOrigin="anonymous" image loader which fails on some hosts
-    fetch(`${basePath}/${prefix}.png`)
-      .then(r => {
-        if (!r.ok) throw new Error(`PNG fetch ${r.status}`);
-        return r.blob();
-      })
-      .then(blob => {
-        if (cancelled) return;
-        blobUrl = URL.createObjectURL(blob);
-
-        playerRef.current = new SpinePlayerLib(containerRef.current, {
-          jsonUrl: `${basePath}/${prefix}.json`,
-          atlasUrl: `${basePath}/${prefix}.atlas`,
-          rawDataURIs: {
-            [`${prefix}.png`]: blobUrl,
-          },
-          animation,
-          loop,
-          showControls,
-          backgroundColor,
-          alpha: true,
-          premultipliedAlpha: false,
-          preserveDrawingBuffer: false,
-          viewport: { debugRender: false },
-          showLoading: true,
-          error: (player, msg) => {
-            console.error(`[SpinePlayer] "${characterId}" error:`, msg);
-            if (containerRef.current) containerRef.current.innerHTML = '';
-            setFailed(true);
-            if (onError) onError(characterId, msg);
-          },
-        });
-      })
-      .catch(err => {
-        console.error(`[SpinePlayer] Preload failed "${characterId}":`, err);
-        if (containerRef.current) containerRef.current.innerHTML = '';
-        setFailed(true);
-        if (onError) onError(characterId, err);
+    try {
+      playerRef.current = new window.spine.SpinePlayer(containerRef.current, {
+        jsonUrl: `${basePath}/${prefix}.json`,
+        atlasUrl: `${basePath}/${prefix}.atlas`,
+        animation,
+        loop,
+        showControls,
+        backgroundColor,
+        alpha: true,
+        premultipliedAlpha: false,
+        showLoading: true,
+        error: (player, msg) => {
+          console.error(`[SpinePlayer] "${characterId}":`, msg);
+          if (containerRef.current) containerRef.current.innerHTML = '';
+          setFailed(true);
+          if (onError) onError(characterId, msg);
+        },
       });
+    } catch (err) {
+      console.error(`[SpinePlayer] init failed "${characterId}":`, err);
+      if (containerRef.current) containerRef.current.innerHTML = '';
+      setFailed(true);
+      if (onError) onError(characterId, err);
+    }
 
     return () => {
-      cancelled = true;
       if (playerRef.current) {
-        try { playerRef.current.dispose(); } catch (_) { /* noop */ }
+        try { playerRef.current.dispose(); } catch (_) {}
         playerRef.current = null;
       }
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
   }, [characterId, animation, loop, showControls, backgroundColor, failed]);
 
-  // If spine failed, render nothing — let parent show fallback
   if (failed) return null;
 
   return (
