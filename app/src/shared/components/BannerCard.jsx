@@ -88,6 +88,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const spineId = isChar ? getSpineId(item.name) : null;
   const useSpine = isFull && spineId && !spineFailed;
   const debugSpine = spineId && !spineFailed;
+  const charData = spineId ? SPINE_CHARACTERS[spineId] : null;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
