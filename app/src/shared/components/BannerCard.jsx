@@ -10,7 +10,7 @@ import { haptic, getElementColor } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
-import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
+import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -87,6 +87,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
   const useSpine = isFull && spineId && !spineFailed;
+  const spineTransform = spineId ? SPINE_CHARACTERS[spineId] : null;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
@@ -103,15 +104,19 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       )}
       {(!useSpine && imgUrl) && (
-        <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
+        <div className="absolute inset-0" style={{ ...IMG_LAYER_STYLE, overflow: 'hidden' }}>
           <img
             src={imgUrl}
             alt={item.name}
-            className="w-full h-full object-cover object-top breath-zoom"
+            className="w-full h-full object-cover breath-zoom"
             style={{
               opacity: pictureOpacity,
               maskImage: maskGradient,
-              WebkitMaskImage: maskGradient
+              WebkitMaskImage: maskGradient,
+              ...(spineTransform ? {
+                transform: `scale(${spineTransform.scale}) translate(${spineTransform.tx}%, ${spineTransform.ty}%)`,
+                transformOrigin: 'center center',
+              } : { objectPosition: 'center top' }),
             }}
             loading="eager"
             onError={hideOnError}
