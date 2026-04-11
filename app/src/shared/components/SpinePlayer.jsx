@@ -11,7 +11,7 @@ export const SPINE_CHARACTERS = {
   qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: 0.5, ty: 2.5 },
   zanni:       { name: 'Zani',         element: 'Electro', scale: 2.0, tx: -0.5, ty: -7 },
   feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.0, tx: 5.5,  ty: -10 },
-  linnai:      { name: 'Lynae',        element: 'Spectro', scale: 2.0, tx: 9,    ty: -10 },
+  linnai:      { name: 'Lynae',        element: 'Spectro', scale: 2.0, tx: 9,    ty: -10.5 },
   jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 1.5, ty: 2.5 },
   luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: 1,   ty: 2.5 },
   yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: 2,   ty: 2.5 },
