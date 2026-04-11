@@ -6,23 +6,22 @@
 
 import React, { useEffect, useRef, useState, memo } from 'react';
 
+// Per-character CSS transform to position the spine like the static banner image.
+// scale: zoom level, tx/ty: translate % to shift character in frame
 export const SPINE_CHARACTERS = {
-  // viewport: { x, y, width, height } in skeleton coordinates
-  // origin (0,0) is at character feet; y increases upward
-  // Tuned so upper body fills the banner card like the static image
-  xigelika:    { name: 'Sigrika',      element: 'Aero',    vp: { x: 0, y: 400, w: 1400, h: 900 } },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    vp: { x: 0, y: 400, w: 1300, h: 900 } },
-  zanni:       { name: 'Zani',         element: 'Electro', vp: { x: 0, y: 1800, w: 5100, h: 3200 } },
-  feibi:       { name: 'Phoebe',       element: 'Spectro', vp: { x: 0, y: 400, w: 1400, h: 900 } },
-  linnai:      { name: 'Rinne',        element: 'Havoc',   vp: { x: 0, y: 500, w: 1700, h: 1000 } },
-  jinxi:       { name: 'Jinhsi',       element: 'Spectro', vp: { x: 0, y: 500, w: 2000, h: 1200 } },
-  luokeke:     { name: 'Lumi',         element: 'Glacio',  vp: { x: 0, y: 350, w: 1200, h: 750 } },
-  yinlin:      { name: 'Yinlin',       element: 'Electro', vp: { x: 0, y: 350, w: 1500, h: 900 } },
-  bulante:     { name: 'Brant',        element: 'Fusion',  vp: { x: 0, y: 450, w: 1500, h: 950 } },
-  jiyan:       { name: 'Jiyan',        element: 'Aero',    vp: { x: 0, y: 400, w: 1600, h: 950 } },
-  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', vp: { x: 0, y: 500, w: 1550, h: 1000 } },
-  changli:     { name: 'Changli',      element: 'Fusion',  vp: { x: 0, y: 550, w: 1750, h: 1100 } },
-  chun:        { name: 'Chun',         element: 'Glacio',  vp: { x: 0, y: 400, w: 1200, h: 800 } },
+  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.2, tx: 0,  ty: 20 },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.2, tx: 0,  ty: 20 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.0, tx: 0,  ty: 20 },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.2, tx: 0,  ty: 20 },
+  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.0, tx: 0,  ty: 20 },
+  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.0, tx: 0,  ty: 20 },
+  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.2, tx: 0,  ty: 20 },
+  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.2, tx: 0,  ty: 20 },
+  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.0, tx: 0,  ty: 20 },
+  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.0, tx: 0,  ty: 20 },
+  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.0, tx: 0,  ty: 20 },
+  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.0, tx: 0,  ty: 20 },
+  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.2, tx: 0,  ty: 20 },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
@@ -50,7 +49,8 @@ function SpinePlayerComponent({
 
   useEffect(() => {
     if (!containerRef.current || !characterId || failed) return;
-    if (!SPINE_CHARACTERS[characterId]) { setFailed(true); return; }
+    const charData = SPINE_CHARACTERS[characterId];
+    if (!charData) { setFailed(true); return; }
     if (!window.spine?.SpinePlayer) {
       console.error('[SpinePlayer] window.spine.SpinePlayer not loaded');
       setFailed(true);
@@ -65,8 +65,6 @@ function SpinePlayerComponent({
 
     const basePath = `spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
-    const charData = SPINE_CHARACTERS[characterId];
-    const vp = charData.vp;
 
     try {
       playerRef.current = new window.spine.SpinePlayer(containerRef.current, {
@@ -79,17 +77,6 @@ function SpinePlayerComponent({
         alpha: true,
         premultipliedAlpha: false,
         showLoading: true,
-        viewport: {
-          x: vp.x,
-          y: vp.y,
-          width: vp.w,
-          height: vp.h,
-          padLeft: '0%',
-          padRight: '0%',
-          padTop: '0%',
-          padBottom: '0%',
-          debugRender: false,
-        },
         error: (player, msg) => {
           console.error(`[SpinePlayer] "${characterId}":`, msg);
           if (containerRef.current) containerRef.current.innerHTML = '';
@@ -114,12 +101,29 @@ function SpinePlayerComponent({
 
   if (failed) return null;
 
+  const charData = SPINE_CHARACTERS[characterId] || {};
+  const { scale = 1, tx = 0, ty = 0 } = charData;
+
   return (
     <div
-      ref={containerRef}
       className={className}
-      style={{ width: '100%', height: '100%', ...style }}
-    />
+      style={{
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        ...style,
+      }}
+    >
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          transform: `scale(${scale}) translate(${tx}%, ${ty}%)`,
+          transformOrigin: 'center center',
+        }}
+      />
+    </div>
   );
 }
 
