@@ -87,7 +87,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
   const useSpine = isFull && spineId && !spineFailed;
-  const spineTransform = spineId ? SPINE_CHARACTERS[spineId] : null;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
@@ -104,19 +103,15 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       )}
       {(!useSpine && imgUrl) && (
-        <div className="absolute inset-0" style={{ ...IMG_LAYER_STYLE, overflow: 'hidden' }}>
+        <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
           <img
             src={imgUrl}
             alt={item.name}
-            className="w-full h-full object-cover breath-zoom"
+            className="w-full h-full object-cover object-top breath-zoom"
             style={{
               opacity: pictureOpacity,
               maskImage: maskGradient,
               WebkitMaskImage: maskGradient,
-              ...(spineTransform ? {
-                transform: `scale(${spineTransform.scale}) translate(${spineTransform.tx}%, ${spineTransform.ty}%)`,
-                transformOrigin: 'center center',
-              } : { objectPosition: 'center top' }),
             }}
             loading="eager"
             onError={hideOnError}
