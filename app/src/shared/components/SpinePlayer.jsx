@@ -9,19 +9,19 @@ import React, { useEffect, useRef, useState, memo } from 'react';
 // Per-character CSS transform to position the spine like the static banner image.
 // scale: zoom level, tx/ty: translate % to shift character in frame
 export const SPINE_CHARACTERS = {
-  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.2, tx: 0,  ty: 20 },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.2, tx: 0,  ty: 20 },
-  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.0, tx: 0,  ty: 20 },
-  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.2, tx: 0,  ty: 20 },
-  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.0, tx: 0,  ty: 20 },
-  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.0, tx: 0,  ty: 20 },
-  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.2, tx: 0,  ty: 20 },
-  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.2, tx: 0,  ty: 20 },
-  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.0, tx: 0,  ty: 20 },
-  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.0, tx: 0,  ty: 20 },
-  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.0, tx: 0,  ty: 20 },
-  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.0, tx: 0,  ty: 20 },
-  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.2, tx: 0,  ty: 20 },
+  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.2, tx: 0,  ty: -5 },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.2, tx: 0,  ty: -5 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.0, tx: 0,  ty: -5 },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.2, tx: 0,  ty: -5 },
+  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.0, tx: 0,  ty: -5 },
+  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.0, tx: 0,  ty: -5 },
+  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.2, tx: 0,  ty: -5 },
+  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.2, tx: 0,  ty: -5 },
+  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.0, tx: 0,  ty: -5 },
+  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.0, tx: 0,  ty: -5 },
+  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.0, tx: 0,  ty: -5 },
+  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.0, tx: 0,  ty: -5 },
+  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.2, tx: 0,  ty: -5 },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
