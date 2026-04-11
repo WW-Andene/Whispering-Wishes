@@ -1,4 +1,8 @@
 {
+  "rewrites": [
+    { "source": "/spine/(.*)", "destination": "/spine/$1" },
+    { "source": "/((?!spine/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
