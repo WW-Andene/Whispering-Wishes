@@ -99,14 +99,15 @@
   <h1>Spineless Zani — polygon silhouette animation demo</h1>
   <p class="lead">
     Loads Zani's full sprite (webp, alpha channel), traces the alpha boundary with Moore-neighbourhood walking,
-    simplifies with Douglas–Peucker, and renders the clipped polygon with breath + parallax + tilt on top of a
-    blurred background copy and Spectro-tinted particles. No rigging data — just pixels in, pseudo-spine out.
+    simplifies with Douglas–Peucker, and renders the clipped polygon through an SVG feTurbulence + feDisplacementMap
+    filter — real organic pixel warping, not a transform. Sub-pixel parallax drift and Spectro particles on top.
+    No rigging data — just pixels in, pseudo-spine out.
   </p>
 
   <div class="controls">
     <label><input type="checkbox" id="toggleOutline" /> show polygon outline</label>
     <label><input type="checkbox" id="toggleAnim" checked /> animation</label>
-    <label>breath <input type="range" id="breathAmt" min="0" max="50" value="20" /></label>
+    <label>distortion <input type="range" id="distortAmt" min="0" max="200" value="100" /></label>
     <label>parallax <input type="range" id="parallaxAmt" min="0" max="50" value="18" /></label>
     <label>particles <input type="range" id="particleAmt" min="0" max="100" value="60" /></label>
   </div>
@@ -407,7 +408,7 @@
   const state = {
     showOutline: false,
     animate: true,
-    breath: 0.20,
+    distortion: 1.0,
     parallax: 0.18,
     particles: 0.60,
   };
@@ -510,14 +511,18 @@
       bg.appendChild(bgImg);
       stage.appendChild(bg);
 
-      // Foreground SVG with clip-path silhouette
+      // Foreground SVG with clip-path silhouette + animated turbulence displacement
       // viewBox matches the source aspect so the polygon (in mask-space) aligns with the <image>
       const clipId = `clip-${asset.id}`;
       const outlineId = `outline-${asset.id}`;
+      const distortId = `distort-${asset.id}`;
       const path = polyToSvgPath(result.polygon);
       const vbW = result.maskW;
       const vbH = result.maskH;
       const outlineStroke = Math.max(vbW, vbH) * 0.004;
+      // Distortion scale is relative to viewBox size so displacement reads similarly
+      // across sprites of different resolutions
+      const distortScale = Math.max(vbW, vbH) * 0.04;
       const fg = document.createElement('div');
       fg.className = 'layer layer-fg';
       fg.innerHTML = `
@@ -526,8 +531,23 @@
             <clipPath id="${clipId}" clipPathUnits="userSpaceOnUse">
               <path d="${path}" />
             </clipPath>
+            <!--
+              Live warp: fractal-noise turbulence fed into a displacement map.
+              baseFrequency cycles between two sets of x/y freqs over 12s, which
+              re-generates the noise field smoothly (SMIL interpolation), so the
+              clipped image ripples and flows as if caught in a soft current.
+              Horizontal and vertical frequencies are deliberately different so
+              the distortion has directional character instead of being uniform.
+            -->
+            <filter id="${distortId}" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="3" result="noise">
+                <animate attributeName="baseFrequency" dur="11s" values="0.008 0.013;0.011 0.016;0.007 0.012;0.008 0.013" keyTimes="0;0.33;0.66;1" repeatCount="indefinite" />
+                <animate attributeName="seed" dur="40s" values="3;17;29;41;3" keyTimes="0;0.25;0.5;0.75;1" repeatCount="indefinite" />
+              </feTurbulence>
+              <feDisplacementMap data-displace="${asset.id}" in="SourceGraphic" in2="noise" scale="${distortScale.toFixed(2)}" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
           </defs>
-          <g clip-path="url(#${clipId})">
+          <g clip-path="url(#${clipId})" filter="url(#${distortId})">
             <image href="${asset.url}" x="0" y="0" width="${vbW}" height="${vbH}" preserveAspectRatio="none" />
           </g>
           <path id="${outlineId}" d="${path}" fill="none" stroke="#edaf18" stroke-width="${outlineStroke.toFixed(3)}" stroke-linejoin="round" opacity="0" />
@@ -552,8 +572,9 @@
       statMask.textContent = `mask ${result.maskW}×${result.maskH}`;
 
       const outlineEl = fg.querySelector(`#${outlineId}`);
+      const displaceEl = fg.querySelector(`[data-displace="${asset.id}"]`);
 
-      cards.push({ root, stage, fg, bg, particles, outlineEl });
+      cards.push({ root, stage, fg, bg, particles, outlineEl, displaceEl, baseDistort: distortScale });
     } catch (err) {
       console.error(err);
       stage.innerHTML = `<div class="error">${err.message || 'Extraction failed'}</div>`;
@@ -562,18 +583,27 @@
   }
 
   // Animation loop
+  // Note: the main "alive" motion comes from the SVG feTurbulence +
+  // feDisplacementMap filter, which animates via SMIL inside the SVG itself.
+  // The JS loop only drives a very subtle parallax drift on the wrapper
+  // divs and the canvas particle layer. No scale, no rotation — anything
+  // big would just read as "zoom" and fight with the displacement.
   function tick(t) {
+    // Organic variation on top of the slider's base — slow sine wave so the
+    // displacement has an ebb-and-flow quality instead of constant intensity.
+    const organic = 0.75 + Math.sin(t * 0.0006) * 0.25;
     for (const c of cards) {
-      const bAmp = state.breath * (state.animate ? 1 : 0);
       const pAmp = state.parallax * (state.animate ? 1 : 0);
-      const scale = 1 + Math.sin(t * 0.0018) * 0.022 * bAmp * 5;
-      const tx = Math.sin(t * 0.0011) * 4 * pAmp;
-      const ty = Math.cos(t * 0.0013) * 3 * pAmp;
-      const rot = Math.sin(t * 0.0007) * 0.4 * pAmp;
-      c.fg.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) rotate(${rot.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
-      c.bg.style.transform = `translate(${(-tx * 0.4).toFixed(2)}px, ${(-ty * 0.4).toFixed(2)}px) scale(1.12)`;
+      const tx = Math.sin(t * 0.00085) * 2.2 * pAmp;
+      const ty = Math.cos(t * 0.00110) * 1.8 * pAmp;
+      c.fg.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px)`;
+      c.bg.style.transform = `translate(${(-tx * 0.5).toFixed(2)}px, ${(-ty * 0.5).toFixed(2)}px) scale(1.12)`;
       c.particles.draw(t, state.particles * (state.animate ? 1 : 0));
       if (c.outlineEl) c.outlineEl.setAttribute('opacity', state.showOutline ? '1' : '0');
+      if (c.displaceEl) {
+        const s = c.baseDistort * state.distortion * (state.animate ? organic : 0);
+        c.displaceEl.setAttribute('scale', s.toFixed(2));
+      }
     }
     requestAnimationFrame(tick);
   }
@@ -581,7 +611,7 @@
   // Wire controls
   document.getElementById('toggleOutline').addEventListener('change', (e) => { state.showOutline = e.target.checked; });
   document.getElementById('toggleAnim').addEventListener('change', (e) => { state.animate = e.target.checked; });
-  document.getElementById('breathAmt').addEventListener('input', (e) => { state.breath = +e.target.value / 100; });
+  document.getElementById('distortAmt').addEventListener('input', (e) => { state.distortion = +e.target.value / 100; });
   document.getElementById('parallaxAmt').addEventListener('input', (e) => { state.parallax = +e.target.value / 100; });
   document.getElementById('particleAmt').addEventListener('input', (e) => { state.particles = +e.target.value / 100; });
 
