@@ -529,7 +529,7 @@ const OTHER_BACKGROUNDS = [
 const ANIMATED_BACKGROUNDS = [
   {
     id: 'bg-video-1',
-    name: 'Background Video',
+    name: 'v3.2',
     art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/bg-video_nvf8y9.mp4',
     poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/bg-video_nvf8y9.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
