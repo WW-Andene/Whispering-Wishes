@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
+import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -34,6 +34,10 @@ function TeamsTab({
   const [teamEquipment, setTeamEquipment] = useState(() => {
     try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
   });
+  const [equipPresets, setEquipPresets] = useState(() => {
+    try { const s = localStorage.getItem('ww-equipment-presets'); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [showPresetDropdown, setShowPresetDropdown] = useState(false);
   // Debounced save for teamEquipment — prevents localStorage thrash on rapid interactions
   const eqSaveTimerRef = useRef(null);
   useEffect(() => {
@@ -43,6 +47,9 @@ function TeamsTab({
     }, 300);
     return () => { if (eqSaveTimerRef.current) clearTimeout(eqSaveTimerRef.current); };
   }, [teamEquipment]);
+  useEffect(() => {
+    try { localStorage.setItem('ww-equipment-presets', JSON.stringify(equipPresets)); } catch {}
+  }, [equipPresets]);
   const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false);
   const [weaponSelectorTarget, setWeaponSelectorTarget] = useState({ teamIdx: 0, charName: '' });
   const [weaponSearch, setWeaponSearch] = useState('');
@@ -314,6 +321,73 @@ function TeamsTab({
                         })}
                       </div>
 
+                      {/* Loadout Preset Buttons */}
+                      <div className="flex gap-1 mb-3 relative">
+                        <button
+                          onClick={() => {
+                            const name = window.prompt('Save loadout as:', `${activeTeam.name || 'Team ' + (state.activeTeamIndex + 1)} Loadout`);
+                            if (!name || !name.trim()) return;
+                            const preset = {
+                              name: name.trim(),
+                              teams: state.teams.map(t => t.name),
+                              equipment: { ...teamEquipment },
+                            };
+                            setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
+                            toast?.addToast?.(`Loadout "${name.trim()}" saved!`, 'success');
+                            haptic.success();
+                          }}
+                          className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 flex items-center gap-1"
+                          aria-label="Save equipment loadout preset"
+                        >
+                          <BookmarkPlus size={12} /> Save Loadout
+                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowPresetDropdown(prev => !prev)}
+                            className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 flex items-center gap-1"
+                            aria-label="Load equipment loadout preset"
+                            aria-expanded={showPresetDropdown}
+                          >
+                            <FolderOpen size={12} /> Load Loadout
+                          </button>
+                          {showPresetDropdown && (
+                            <div className="absolute top-full left-0 mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                              {equipPresets.length === 0 ? (
+                                <div className="px-3 py-2 text-sm text-gray-500">No saved loadouts</div>
+                              ) : (
+                                equipPresets.map((preset, i) => (
+                                  <div key={i} className="flex items-center border-b border-[var(--border-medium)] last:border-b-0">
+                                    <button
+                                      onClick={() => {
+                                        setTeamEquipment(preset.equipment);
+                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {}
+                                        setShowPresetDropdown(false);
+                                        toast?.addToast?.(`Loadout "${preset.name}" loaded!`, 'success');
+                                        haptic.success();
+                                      }}
+                                      className="flex-1 text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors"
+                                    >
+                                      {preset.name}
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEquipPresets(prev => prev.filter((_, idx) => idx !== i));
+                                        toast?.addToast?.(`Loadout "${preset.name}" deleted`, 'success');
+                                      }}
+                                      className="px-2 py-2 text-gray-500 hover:text-red-400 transition-colors"
+                                      aria-label={`Delete loadout ${preset.name}`}
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
                         {!teamSlots.some(s => s) && (
@@ -401,12 +475,13 @@ function TeamsTab({
                             return d ? (
                               <div key={i} className="kuro-badge font-medium"
                                 style={{ color: getElementColor(d.element), background: getElementBg(d.element), border: `1px solid ${getElementBorder(d.element)}` }}>
-                                {d.element}
+                                {getElementShape(d.element)}{getElementShape(d.element) ? ' ' : ''}{d.element}
                               </div>
                             ) : null;
                           })}
                         </div>
                       )}
+
                     </CardBody>
                   </Card>
 

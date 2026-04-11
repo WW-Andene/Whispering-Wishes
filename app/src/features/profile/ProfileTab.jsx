@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Diamond, Download, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
@@ -1158,6 +1158,29 @@ function ProfileTab({
                     aria-label="Toggle dyslexia font"
                   >
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.dyslexicFont ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                  </button>
+                </div>
+
+                {/* Color-Blind Mode Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.colorBlindMode ? 'bg-teal-500 text-white' : 'text-gray-400'}`} style={!visualSettings.colorBlindMode ? { background: 'var(--bg-btn)' } : undefined}>
+                      <Eye size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-base font-medium">Color-Blind Mode</div>
+                      <div className="text-gray-400 text-sm">Adds patterns to element colors</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, colorBlindMode: !visualSettings.colorBlindMode })}
+                    className="relative w-[52px] h-[24px] rounded-full transition-colors"
+                    style={{ background: visualSettings.colorBlindMode ? '#14b8a6' : 'var(--bg-btn)' }}
+                    role="switch"
+                    aria-checked={visualSettings.colorBlindMode}
+                    aria-label="Toggle color-blind mode"
+                  >
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.colorBlindMode ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
 

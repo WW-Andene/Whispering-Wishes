@@ -200,9 +200,11 @@ function CalculatorTab({ state, dispatch }) {
 
                   {/* 50/50 Toggle */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
+                    <div className="pb-1.5">
                     <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} aria-pressed={state.calc.charGuaranteed} aria-label={state.calc.charGuaranteed ? 'Guaranteed next 5-star: on' : '50/50 active: off'} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
                       {state.calc.charGuaranteed ? '✓ Guaranteed (100%)' : '⚠ 50/50 Active'}
                     </button>
+                    </div>
                   )}
                   {state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' && (
                     <p className="text-gray-400 text-sm text-center">Weapon banners do not have a guaranteed pity system.</p>

@@ -7,15 +7,14 @@
 
 // [SECTION:BANNERS]
 const CURRENT_BANNERS = {
-  version: '3.2', phase: 1, // Game version (not app version)
-  // Times from wuwatracker.com (Europe CET/CEST reference, converted to UTC)
-  // Mar 19 is CET (UTC+1) — DST transition is Mar 29. Apr dates are CEST (UTC+2).
-  // Banner: Wed, 19 Mar 2026 10:00 CET - Thu, 09 Apr 2026 11:59 CEST
-  startDate: '2026-03-19T09:00:00Z', // Mar 19, 10:00 CET (UTC+1) = 09:00 UTC
-  endDate: '2026-04-09T09:59:00Z',   // Apr 09, 11:59 CEST (UTC+2) = 09:59 UTC
-  characterBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
-  weaponBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
-  eventBannerImage: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg',
+  version: '3.2', phase: 2, // Game version (not app version)
+  // Times from Fandom wiki (Server Time reference, converted to UTC)
+  // Apr 9 is CEST (UTC+2). Banner: Thu, 09 Apr 2026 10:00 CEST - Wed, 29 Apr 2026 11:59 CEST
+  startDate: '2026-04-09T08:00:00Z', // Apr 09, 10:00 CEST (UTC+2) = 08:00 UTC
+  endDate: '2026-04-29T09:59:00Z',   // Apr 29, 11:59 CEST (UTC+2) = 09:59 UTC
+  characterBannerImage: 'https://i.ibb.co/q3HW3sGP/Lynae.jpg',
+  weaponBannerImage: 'https://i.ibb.co/Q3Yht20g/Spectrum-Blaster.jpg',
+  eventBannerImage: 'https://i.ibb.co/q3HW3sGP/Lynae.jpg',
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
   endstateMatrixImage: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg',
   pioneerPodcastImage: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png',
@@ -27,19 +26,21 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'sigrika', name: 'Sigrika', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Gauntlets', isNew: true, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/KxqVsJPs/HA8o-Hi-Ybs-AMv-Uf-J.jpg', imagePosition: 'center 15%' },
-    { id: 'qiuyuan', name: 'Qiuyuan', title: 'When the Runes Glitter', element: 'Aero', weaponType: 'Sword', isNew: false, featured4Stars: ['Sanhua', 'Buling', 'Yangyang'], imageUrl: 'https://i.ibb.co/27WC0nVY/G0-Ec-Fat-W4-AAubh-M.jpg', imagePosition: 'center 15%' },
+    { id: 'lynae', name: 'Lynae', title: 'Undefined Spectrum', element: 'Spectro', weaponType: 'Pistols', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/q3HW3sGP/Lynae.jpg', imagePosition: 'center 15%' },
+    { id: 'zani', name: 'Zani', title: 'Between Light and Shadow', element: 'Spectro', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/V08JgCGf/Zani.jpg', imagePosition: 'center 15%' },
+    { id: 'phoebe', name: 'Phoebe', title: 'With Hushed Whispers', element: 'Spectro', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/tPxL5gmR/Phoebe.jpg', imagePosition: 'center 15%' },
   ],
   weapons: [
-    { id: 'solsworn-ciphers', name: 'Solsworn Ciphers', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Sigrika', element: 'Aero', isNew: true, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/8LYrgYdN/e7a3b-17738194413502-1920.jpg' },
-    { id: 'emerald-sentence', name: 'Emerald Sentence', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Qiuyuan', element: 'Aero', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/9HyYC5vt/Absolute-Pulsation-Emerald-Sentence-2026-03-19.webp' },
+    { id: 'spectrum-blaster', name: 'Spectrum Blaster', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lynae', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/Q3Yht20g/Spectrum-Blaster.jpg' },
+    { id: 'blazing-justice', name: 'Blazing Justice', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Zani', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/N6D53FRt/Blazing-Justice.jpg' },
+    { id: 'luminous-hymn', name: 'Luminous Hymn', title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Phoebe', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/8Q0MCnz/Luminous-Hymn.jpg' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
   // Standard Weapon Banner (Utterance of Marvels)
   standardWeapons: [
     { name: 'Verdant Summit', type: 'Broadblade' },
-    { name: 'Lustrous Razor', type: 'Broadblade' }, // P9-FIX: Standard 5★ per WEAPON_DATA — was missing from banner list
+    { name: 'Lustrous Razor', type: 'Broadblade' },
     { name: 'Emerald of Genesis', type: 'Sword' },
     { name: 'Static Mist', type: 'Pistols' },
     { name: 'Abyss Surges', type: 'Gauntlets' },
@@ -56,13 +57,14 @@ const CURRENT_BANNERS = {
 
 const BANNER_HISTORY = [
   // Version 3.2
+  { id: 'v3.2-p2', version: '3.2', phase: 2, characters: ['Lynae', 'Zani', 'Phoebe'], weapons: ['Spectrum Blaster', 'Blazing Justice', 'Luminous Hymn'], startDate: '2026-04-09', endDate: '2026-04-29' },
   { id: 'v3.2-p1', version: '3.2', phase: 1, characters: ['Sigrika', 'Qiuyuan'], weapons: ['Solsworn Ciphers', 'Emerald Sentence'], startDate: '2026-03-19', endDate: '2026-04-09', bannerArt: 'https://i.ibb.co/s9ws1Zf1/Sigrika-Banner-Art.jpg' },
   // Version 3.1
   { id: 'v3.1-p2', version: '3.1', phase: 2, characters: ['Luuk Herssen', 'Galbrena'], weapons: ["Daybreaker's Spine", 'Lux & Umbra'], startDate: '2026-02-26', endDate: '2026-03-18', bannerArt: 'https://i.ibb.co/DPcdf0RY/Luuk-Hersen-Banner-Art.jpg' },
   { id: 'v3.1-p1', version: '3.1', phase: 1, characters: ['Aemeath', 'Chisa', 'Lupa'], weapons: ['Everbright Polestar', 'Kumokiri', 'Wildfire Mark'], startDate: '2026-02-05', endDate: '2026-02-26', bannerArt: 'https://i.ibb.co/YFQBgJ8W/Aemaeth-Banner-Art.jpg' },
   // Version 3.0
   { id: 'v3.0-p2', version: '3.0', phase: 2, characters: ['Mornye', 'Augusta', 'Iuno'], weapons: ['Starfield Calibrator', 'Thunderflare Dominion', "Moongazer's Sigil"], startDate: '2026-01-15', endDate: '2026-02-04', bannerArt: 'https://i.ibb.co/cKY4dY6W/Mornye-Banner-Art.png' },
-  { id: 'v3.0-p1', version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-24', endDate: '2026-01-15' },
+  { id: 'v3.0-p1', version: '3.0', phase: 1, characters: ['Lynae', 'Cartethyia', 'Ciaccona'], weapons: ['Spectrum Blaster', "Defier's Thorn", 'Woodland Aria'], startDate: '2025-12-25', endDate: '2026-01-15' },
   // Version 2.8
   { id: 'v2.8-p2', version: '2.8', phase: 2, characters: ['Phrolova', 'Cantarella'], weapons: ['Lethean Elegy', 'Whispers of Sirens'], startDate: '2025-12-11', endDate: '2025-12-24' },
   { id: 'v2.8-p1', version: '2.8', phase: 1, characters: ['Chisa', 'Phoebe'], weapons: ['Kumokiri', 'Luminous Hymn'], startDate: '2025-11-20', endDate: '2025-12-11', bannerArt: 'https://i.ibb.co/p6gwfsWC/Chisa-Banner-Art.jpg' },
@@ -144,7 +146,7 @@ const EVENTS = {
     resetType: 'Weekly (Monday)',
     color: 'purple',
     weeklyReset: true,
-    introducedVersion: '2.1', // Replaced Depths of Illusive Realm in v2.1
+    introducedVersion: '1.0', // Originally "Depths of Illusive Realm" (v1.0–v2.0), renamed to current in v2.1
     rewards: '160 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
@@ -529,7 +531,7 @@ const OTHER_BACKGROUNDS = [
 const PIONEER_PODCAST_HISTORY = [
   { version: '3.2', startDate: '2026-03-19', endDate: '2026-04-29', rewards: 400 },
   { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
-  { version: '3.0', startDate: '2025-12-24', endDate: '2026-02-04', rewards: 400 },
+  { version: '3.0', startDate: '2025-12-25', endDate: '2026-02-04', rewards: 400 },
   { version: '2.8', startDate: '2025-11-20', endDate: '2025-12-24', rewards: 400 },
   { version: '2.7', startDate: '2025-10-09', endDate: '2025-11-19', rewards: 400 },
   { version: '2.6', startDate: '2025-08-28', endDate: '2025-10-08', rewards: 400 },
@@ -546,11 +548,29 @@ const PIONEER_PODCAST_HISTORY = [
   { version: '1.0', startDate: '2024-05-23', endDate: '2024-06-27', rewards: 400 },
 ];
 
+// Doubled Pawns Matrix: Pilot — recurring boss rush introduced in v3.0, replaced by Endstate Matrix in v3.2
+// Source: Fandom wiki (Doubled_Pawns_Matrix:_Pilot), rewards reset each version
+const DOUBLED_PAWNS_MATRIX_HISTORY = [
+  { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
+  { version: '3.0', startDate: '2025-12-25', endDate: '2026-02-04', rewards: 400 },
+];
+
+// Tactical Hologram — permanent combat challenges, new arenas added with new regions
+// Source: Fandom wiki (Change History per page: Calamity=1.0, Phantom Pain=2.0, Synchronization=3.0)
+// One entry per version where a new Tactical Hologram arena was introduced
+const TACTICAL_HOLOGRAM_HISTORY = [
+  { version: '3.2', name: 'Synchronization — Hyvatia',   startDate: '2026-03-19', endDate: '2026-04-29' },
+  { version: '3.0', name: 'Synchronization (Lahai-Roi)',  startDate: '2025-12-25', endDate: '2026-02-04' },
+  { version: '2.0', name: 'Phantom Pain (Rinascita)',     startDate: '2025-01-02', endDate: '2025-02-12' },
+  { version: '1.3', name: 'Calamity — Inferno Rider',     startDate: '2024-09-29', endDate: '2024-11-13' },
+  { version: '1.0', name: 'Calamity (Huanglong)',         startDate: '2024-05-23', endDate: '2024-06-27' },
+];
+
 // Version start dates (P1 start from BANNER_HISTORY) — used to derive event boundaries
 const VERSION_DATES = [
   { version: '3.2', start: '2026-03-19', end: '2026-04-29' },
   { version: '3.1', start: '2026-02-05', end: '2026-03-18' },
-  { version: '3.0', start: '2025-12-24', end: '2026-02-04' },
+  { version: '3.0', start: '2025-12-25', end: '2026-02-04' },
   { version: '2.8', start: '2025-11-20', end: '2025-12-24' },
   { version: '2.7', start: '2025-10-09', end: '2025-11-19' },
   { version: '2.6', start: '2025-08-28', end: '2025-10-08' },
@@ -572,6 +592,8 @@ export {
   BANNER_HISTORY,
   EVENTS,
   PIONEER_PODCAST_HISTORY,
+  DOUBLED_PAWNS_MATRIX_HISTORY,
+  TACTICAL_HOLOGRAM_HISTORY,
   VERSION_DATES,
   DEFAULT_COLLECTION_IMAGES,
   CHARACTER_THEMES,

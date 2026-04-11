@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Star, Users, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -204,10 +204,10 @@ export default function TeamSelector({
                                     );
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
-                                  {/* Element dot */}
+                                  {/* Element indicator */}
                                   <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center"
                                     style={{ background: getElementColor(el) }}>
-                                    {el?.[0]}
+                                    {getElementShape(el) || el?.[0]}
                                   </div>
                                   {/* Rarity */}
                                   <div className="absolute top-1 right-1">

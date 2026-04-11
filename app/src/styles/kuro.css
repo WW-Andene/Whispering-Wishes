@@ -376,8 +376,8 @@
     }
     
     @keyframes borderGlow {
-      0%, 100% { border-color: rgba(237, 175, 24, 0.3); }
-      50% { border-color: rgba(237, 175, 24, 0.6); }
+      0%, 100% { border-color: rgba(237, 175, 24, 0.5); }
+      50% { border-color: rgba(237, 175, 24, 0.9); }
     }
     
     @keyframes pulseScale {
@@ -2876,6 +2876,9 @@
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 50%;
     }
+
+    /* Color-blind mode — palette swap handled by getElementColor/Bg/Border in helpers.js.
+       Re-render triggered by key change on <main> in App.jsx. */
 
     /* Header icon — 4-branch star emanation */
     @keyframes header-star-emanate {

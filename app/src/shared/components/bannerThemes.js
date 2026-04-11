@@ -6,6 +6,9 @@
 const CHARACTER_THEME_MAP = {
   Sigrika: 'sparkle',    // warm, magical, golden sparkles at feet, starry sky
   Qiuyuan: 'qiuyuan',    // dark forest, moon, crows, brume, swirling leaves
+  Lynae: 'prismatic',     // rainbow-shifting light rays, prismatic sparkles
+  Zani: 'radiance',       // golden-white burning light, clock-like geometry
+  Phoebe: 'luminous',     // soft holy light rays, ethereal white-gold halos
   Aemeath: 'frost',      // ice crystals, cold blue digital structures
   'Luuk Herssen': 'feathers', // white doves, bright nature, airy
   Chisa: 'energy',       // urban, red energy lines, industrial
@@ -451,6 +454,937 @@ const BANNER_THEMES = {
         ctx.shadowColor = 'rgba(100,240,140,0.9)';
         ctx.shadowBlur = 14;
         ctx.beginPath(); ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+  },
+
+  // 🎨 PRISMATIC (Lynae): textured paint strokes → suck → explode
+  prismatic: (w, h) => {
+    const PAINT = [
+      [0,210,200], [220,40,170], [100,245,50],
+      [150,30,245], [245,60,140], [0,170,250],
+    ];
+    const rgb = (c,a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+    const lerpc = (a,b,t) => [a[0]+(b[0]-a[0])*t|0, a[1]+(b[1]-a[1])*t|0, a[2]+(b[2]-a[2])*t|0];
+    const bz = (a,b,c,d,p) => {const u=1-p; return u*u*u*a+3*u*u*p*b+3*u*p*p*c+p*p*p*d;};
+
+    // Generate brush grunge texture on offscreen canvas (once)
+    const texSize = 128;
+    const texCanvas = document.createElement('canvas');
+    texCanvas.width = texSize; texCanvas.height = texSize;
+    const texCtx = texCanvas.getContext('2d');
+    const texData = texCtx.createImageData(texSize, texSize);
+    const td = texData.data;
+    for (let y = 0; y < texSize; y++) {
+      for (let x = 0; x < texSize; x++) {
+        const i = (y * texSize + x) * 4;
+        // Horizontal streaking: pixels in same row tend to be similar
+        const rowSeed = (y * 7 + 13) & 0xFF;
+        const noise = Math.random();
+        // Mix of random noise + horizontal streaks
+        const streak = ((rowSeed + x * 3) & 0xFF) / 255;
+        const val = noise * 0.5 + streak * 0.5;
+        // Most pixels opaque, some gaps for texture
+        const alpha = val > 0.25 ? 255 : val > 0.12 ? Math.floor(val * 4 * 255) : 0;
+        td[i] = 255; td[i+1] = 255; td[i+2] = 255; td[i+3] = alpha;
+      }
+    }
+    texCtx.putImageData(texData, 0, 0);
+
+    const CYCLE = 9;
+    const ccx = w * 0.45, ccy = h * 0.5;
+    const APPEAR_END = 3.0, SUCK_END = 5.0, EXPLODE_T = 5.8;
+
+    // Each stroke = a bezier curve defined by 4 control points
+    const initStroke = (idx) => {
+      const ci = idx % PAINT.length;
+      const ci2 = (ci + 2) % PAINT.length;
+      const ci3 = (ci + 4) % PAINT.length;
+      // Start inside card, end can extend off-screen
+      const sx = 30 + Math.random() * (w - 60);
+      const sy = 30 + Math.random() * (h - 60);
+      const ang = Math.random() * Math.PI * 2;
+      const len = 250 + Math.random() * 300;
+      const ex = sx + Math.cos(ang) * len;
+      const ey = sy + Math.sin(ang) * len;
+      const perp = ang + Math.PI * 0.5;
+      const curv = (Math.random() - 0.5) * 180;
+
+      // Noise offsets for the 3 sub-strands (deterministic per stroke)
+      const strandNoise = Array.from({length: 3}, () => ({
+        ox1: (Math.random()-0.5)*12, oy1: (Math.random()-0.5)*10,
+        ox2: (Math.random()-0.5)*15, oy2: (Math.random()-0.5)*12,
+        ox3: (Math.random()-0.5)*12, oy3: (Math.random()-0.5)*10,
+        ox4: (Math.random()-0.5)*8,  oy4: (Math.random()-0.5)*8,
+      }));
+
+      // Width noise along the curve (for varying lineWidth per segment)
+      const SEG = 20;
+      const widthNoise = Array.from({length: SEG}, () => 0.5 + Math.random() * 1.0);
+
+      // Pre-compute bristle gap streaks (erased through the solid fill for texture)
+      const gapStreaks = Array.from({length: 8 + Math.floor(Math.random() * 6)}, () => {
+        const offset = (Math.random() - 0.5) * 1.6; // position across width (-0.8 to 0.8)
+        const startT = Math.random() * 0.3;          // where streak starts along path
+        const endT = 0.5 + Math.random() * 0.5;      // where it ends
+        const lw = 0.3 + Math.random() * 1.2;        // thin gap
+        const drift = (Math.random() - 0.5) * 0.3;   // slight drift across width
+        return { offset, startT, endT, lw, drift };
+      });
+
+      // Pre-compute bristle data (deterministic — no random in draw loop)
+      const SPINE_N = 30;
+      const bristleCount = 20 + Math.floor(Math.random() * 6);
+      const bristles = Array.from({length: bristleCount}, () => {
+        const offset = (Math.random() - 0.5) * 2; // -1 to +1 across width
+        const startI = Math.floor(Math.random() * 0.15 * SPINE_N);
+        const endI = SPINE_N - Math.floor(Math.random() * 0.2 * SPINE_N);
+        const lw = 0.5 + Math.random() * 1.8;
+        const opacity = 0.7 + Math.random() * 0.3;
+        // Pre-compute jitter + gaps for each spine sample
+        const jitters = Array.from({length: SPINE_N + 1}, () => (Math.random() - 0.5) * 2);
+        const gaps = Array.from({length: SPINE_N + 1}, () => Math.random() < 0.06);
+        return { offset, startI, endI, lw, opacity, jitters, gaps };
+      });
+      // Pre-compute splatter
+      const splatters = Array.from({length: 15 + Math.floor(Math.random() * 15)}, () => ({
+        t: 0.3 + Math.random() * 0.7,
+        ox: (Math.random() - 0.5) * 2.8,
+        oy: (Math.random() - 0.5) * 2,
+        r: 0.5 + Math.random() * 3,
+        a: 0.5 + Math.random() * 0.5,
+      }));
+      // Pre-compute thin streaks
+      const streaks = Array.from({length: 5}, () => ({
+        t: Math.random(), ext: 10 + Math.random() * 30,
+        side: Math.random() > 0.5 ? 1 : -1,
+        ox: (Math.random() - 0.5) * 10, oy: (Math.random() - 0.5) * 10,
+        lw: 0.5 + Math.random(),
+      }));
+
+      // Splatter dots
+      const drops = Array.from({length: 6+Math.floor(Math.random()*8)}, () => ({
+        t: Math.random(), ox: (Math.random()-0.5)*45, oy: (Math.random()-0.5)*35,
+        r: 1+Math.random()*4, ci: [ci,ci2,ci3][Math.floor(Math.random()*3)],
+      }));
+
+      return {
+        // Raw control points
+        sx, sy, ex, ey,
+        c1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
+        c1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
+        c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.4,
+        c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.4,
+        cols: [PAINT[ci], PAINT[ci2], PAINT[ci3]],
+        baseW: 24 + Math.random() * 32,
+        strandNoise, widthNoise, drops, SEG, SPINE_N,
+        bristles, splatters, streaks, gapStreaks,
+        twistFreq: 1.5 + Math.random() * 2,
+        delay: idx * 1.0,
+      };
+    };
+
+    const initAll = () => Array.from({length: 3+Math.floor(Math.random()*2)}, (_,i) => initStroke(i));
+
+    // Extra strokes that fly in from outside during suck phase
+    const initSuckStrokes = () => Array.from({length: 4+Math.floor(Math.random()*3)}, (_,i) => {
+      const ci = (i * 2 + 1) % PAINT.length;
+      const ci2 = (ci + 3) % PAINT.length;
+      // Start from outside the screen edges
+      const edge = Math.floor(Math.random() * 4); // 0=top 1=right 2=bottom 3=left
+      let sx, sy;
+      if (edge === 0) { sx = Math.random() * w; sy = -60 - Math.random() * 40; }
+      else if (edge === 1) { sx = w + 60 + Math.random() * 40; sy = Math.random() * h; }
+      else if (edge === 2) { sx = Math.random() * w; sy = h + 60 + Math.random() * 40; }
+      else { sx = -60 - Math.random() * 40; sy = Math.random() * h; }
+      // Aim toward center
+      const ang = Math.atan2(ccy - sy, ccx - sx) + (Math.random() - 0.5) * 0.5;
+      const len = 100 + Math.random() * 150;
+      const ex = sx + Math.cos(ang) * len;
+      const ey = sy + Math.sin(ang) * len;
+      const perp = ang + Math.PI * 0.5;
+      const curv = (Math.random() - 0.5) * 80;
+      const SEG = 20;
+      return {
+        sx, sy, ex, ey,
+        c1x: sx+(ex-sx)*0.3+Math.cos(perp)*curv,
+        c1y: sy+(ey-sy)*0.3+Math.sin(perp)*curv,
+        c2x: sx+(ex-sx)*0.7+Math.cos(perp)*curv*0.3,
+        c2y: sy+(ey-sy)*0.7+Math.sin(perp)*curv*0.3,
+        cols: [PAINT[ci], PAINT[ci2], PAINT[(ci+4)%PAINT.length]],
+        baseW: 12 + Math.random() * 18,
+        strandNoise: Array.from({length:3}, () => ({
+          ox1:(Math.random()-0.5)*10,oy1:(Math.random()-0.5)*8,
+          ox2:(Math.random()-0.5)*12,oy2:(Math.random()-0.5)*10,
+          ox3:(Math.random()-0.5)*10,oy3:(Math.random()-0.5)*8,
+          ox4:(Math.random()-0.5)*6, oy4:(Math.random()-0.5)*6,
+        })),
+        widthNoise: Array.from({length:SEG}, () => 0.5+Math.random()*1.0),
+        drops: [], SEG,
+        twistFreq: 1.5+Math.random()*2,
+        enterDelay: i * 0.3 + Math.random() * 0.2, // stagger during suck
+      };
+    });
+    const initDebris = () => Array.from({length: 40}, () => ({
+      angle: Math.random()*Math.PI*2, speed: 25+Math.random()*110,
+      r: 1.5+Math.random()*5, ci: Math.floor(Math.random()*PAINT.length),
+      drag: 0.93+Math.random()*0.04,
+    }));
+
+    let strokes = initAll(), suckStrokes = initSuckStrokes(), debris = initDebris(), cycleStart = -CYCLE;
+
+    const ambDots = Array.from({length: 15}, () => ({
+      x: Math.random()*w, y: Math.random()*h, r: 1+Math.random()*2.5,
+      vx: (Math.random()-0.5)*0.25, vy: (Math.random()-0.5)*0.2,
+      ci: Math.floor(Math.random()*PAINT.length), phase: Math.random()*Math.PI*2,
+    }));
+
+    // Pull a point toward center — smooth fluid physics
+    const suck = (x, y, suckP, frac) => {
+      if (suckP <= 0) return [x, y];
+      // Progressive pull: smoothstep for fluid motion
+      const raw = Math.min(1, suckP * (0.2 + frac * 0.8));
+      const pull = raw * raw * (3 - 2 * raw); // smoothstep — smooth acceleration AND deceleration
+      // Gentle spiral: increases with pull, proportional to distance
+      const dx = x - ccx, dy = y - ccy;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const angle = Math.atan2(dy, dx);
+      const spiral = pull * pull * Math.PI * 0.8; // gentle spiral, stronger near end
+      const newDist = dist * (1 - pull);
+      return [ccx + Math.cos(angle + spiral) * newDist, ccy + Math.sin(angle + spiral) * newDist];
+    };
+
+    // ONE solid filled shape — no strokes, just a filled path with noisy edges
+    const drawStroke = (ctx, p1, p2, p3, p4, baseW, color, alpha, sd) => {
+      ctx.save();
+
+      // Build outline: 40 points along the bezier, each with perpendicular offset + noise
+      const N = 40;
+      const topEdge = [], botEdge = [];
+      for (let i = 0; i <= N; i++) {
+        const t = i / N;
+        const x = bz(p1[0],p2[0],p3[0],p4[0],t);
+        const y = bz(p1[1],p2[1],p3[1],p4[1],t);
+        // Tangent → normal
+        const dt = 0.015;
+        const tx = bz(p1[0],p2[0],p3[0],p4[0],Math.min(1,t+dt)) - x;
+        const ty = bz(p1[1],p2[1],p3[1],p4[1],Math.min(1,t+dt)) - y;
+        const tl = Math.sqrt(tx*tx+ty*ty) || 1;
+        const nx = -ty/tl, ny = tx/tl;
+        // Width: thin tail (t=0) → thick body+head (t=1)
+        const widthCurve = Math.pow(t, 0.4) * (0.7 + 0.3 * Math.sin(t * Math.PI));
+        const hw = baseW * widthCurve;
+        // Pre-computed noise for each edge point
+        const ni = Math.min(i, sd.bristles.length > 0 ? sd.SPINE_N : 0);
+        const noiseT = sd.bristles[i % sd.bristles.length] || sd.bristles[0];
+        const nTop = (noiseT.jitters[i % noiseT.jitters.length] || 0) * baseW * 0.15;
+        const nBot = (noiseT.jitters[(i + 5) % noiseT.jitters.length] || 0) * baseW * 0.15;
+
+        topEdge.push([x + nx * (hw + nTop), y + ny * (hw + nTop)]);
+        botEdge.push([x - nx * (hw + nBot), y - ny * (hw + nBot)]);
+      }
+
+      // Build path function
+      const buildPath = (c) => {
+        c.beginPath();
+        c.moveTo(topEdge[0][0], topEdge[0][1]);
+        for (let i = 1; i < topEdge.length; i++) c.lineTo(topEdge[i][0], topEdge[i][1]);
+        c.lineTo(botEdge[botEdge.length-1][0], botEdge[botEdge.length-1][1]);
+        for (let i = botEdge.length - 2; i >= 0; i--) c.lineTo(botEdge[i][0], botEdge[i][1]);
+        c.closePath();
+      };
+
+      // Render to offscreen canvas so compositing doesn't affect main canvas
+      const oc = document.createElement('canvas');
+      oc.width = ctx.canvas.width; oc.height = ctx.canvas.height;
+      const ox = oc.getContext('2d');
+      ox.scale(ctx.canvas.width / w, ctx.canvas.height / h); // match DPR
+
+      // Fill solid color
+      ox.fillStyle = rgb(color, 1);
+      buildPath(ox);
+      ox.fill();
+
+      // Erase texture gaps: use the grunge pattern with destination-out
+      ox.globalCompositeOperation = 'destination-out';
+      ox.fillStyle = ox.createPattern(texCanvas, 'repeat');
+      ox.globalAlpha = 0.35; // partial erase = subtle texture
+      buildPath(ox);
+      ox.fill();
+      ox.globalCompositeOperation = 'source-over';
+
+      // Stamp offscreen canvas onto main canvas
+      ctx.globalAlpha = alpha;
+      ctx.shadowColor = rgb(color, 0.15);
+      ctx.shadowBlur = 6;
+      ctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, w, h);
+      ctx.shadowBlur = 0;
+
+      // Thin trailing lines behind the tail
+      ctx.shadowBlur = 0;
+      const tdx = p1[0]-p2[0], tdy = p1[1]-p2[1];
+      const tlen = Math.sqrt(tdx*tdx+tdy*tdy) || 1;
+      for (let i = 0; i < 3 && i < sd.streaks.length; i++) {
+        const sk = sd.streaks[i];
+        ctx.globalAlpha = alpha * 0.45;
+        ctx.lineWidth = 0.6 + sk.lw * 0.4;
+        ctx.strokeStyle = rgb(color, 0.8);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(p1[0], p1[1]);
+        ctx.lineTo(p1[0]+tdx/tlen*(15+sk.ext*0.5)+sk.ox*2, p1[1]+tdy/tlen*(15+sk.ext*0.5)+sk.oy*2);
+        ctx.stroke();
+      }
+
+      // Splatter dots
+      ctx.fillStyle = rgb(color, 1);
+      for (const sp of sd.splatters) {
+        const x = bz(p1[0],p2[0],p3[0],p4[0],sp.t);
+        const y = bz(p1[1],p2[1],p3[1],p4[1],sp.t);
+        ctx.globalAlpha = alpha * sp.a;
+        ctx.beginPath();
+        ctx.arc(x + sp.ox*baseW*1.5, y + sp.oy*baseW*1.5, sp.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // Dense cluster at end
+      for (const sk of sd.streaks) {
+        ctx.globalAlpha = alpha * 0.8;
+        ctx.beginPath();
+        ctx.arc(p4[0]+sk.ox*baseW*0.6, p4[1]+sk.oy*baseW*0.6, 0.8+sk.lw*1.5, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    };
+
+    return (ctx, t) => {
+      let ct = t - cycleStart;
+      if (ct > CYCLE) { cycleStart = t; ct = 0; strokes = initAll(); suckStrokes = initSuckStrokes(); debris = initDebris(); }
+
+      // Ambient dots
+      for (const d of ambDots) {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x<-5) d.x=w+5; if (d.x>w+5) d.x=-5;
+        if (d.y<-5) d.y=h+5; if (d.y>h+5) d.y=-5;
+        ctx.save(); ctx.globalAlpha = 0.3+0.2*Math.sin(t*1.5+d.phase);
+        ctx.fillStyle = rgb(PAINT[d.ci],1);
+        ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+
+      // ── Paint strokes ──
+      if (ct < EXPLODE_T + 0.3) {
+        for (const s of strokes) {
+          const age = ct - s.delay;
+          if (age < 0) continue;
+          // Phase 0: pop in, hold 0.6s, fade out 0.3s — gone before next
+          // Phase 1 (suck): all reappear
+          let strokeAlpha;
+          if (ct < APPEAR_END) {
+            if (age < 0.03) strokeAlpha = age / 0.03;
+            else if (age < 0.6) strokeAlpha = 1;
+            else strokeAlpha = Math.max(0, 1 - (age - 0.6) / 0.3);
+          } else {
+            strokeAlpha = 1;
+          }
+          let suckP = 0;
+          if (ct > APPEAR_END) {
+            suckP = Math.min(1, (ct - APPEAR_END) / (SUCK_END - APPEAR_END));
+            suckP = suckP * suckP;
+          }
+          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.92) * strokeAlpha;
+          if (alpha < 0.01) continue;
+
+          // Suck all 4 control points toward center
+          const [sx2,sy2] = suck(s.sx, s.sy, suckP, 0);
+          const [c1x2,c1y2] = suck(s.c1x, s.c1y, suckP, 0.33);
+          const [c2x2,c2y2] = suck(s.c2x, s.c2y, suckP, 0.66);
+          const [ex3,ey3] = suck(s.ex, s.ey, suckP, 1);
+
+          // Keep width — strokes stay opaque, only position collapses
+          const bw = s.baseW;
+
+          // Draw 3 twisted sub-strands
+          for (let si = 0; si < 3; si++) {
+            const sn = s.strandNoise[si];
+            const twistPhase = si * Math.PI * 2 / 3;
+            // Per-strand offset that twists along the path
+            const offScale = bw * 0.8 * (1 - suckP);
+            // Offset each control point perpendicular (approximated by rotating noise)
+            const twist = (frac) => Math.sin(frac * Math.PI * 2 * s.twistFreq + twistPhase) * offScale;
+            const t0 = twist(0), t1 = twist(0.33), t2 = twist(0.66), t3 = twist(1);
+
+            const p1 = [sx2 + sn.ox1 + t0, sy2 + sn.oy1];
+            const p2 = [c1x2 + sn.ox2 + t1, c1y2 + sn.oy2];
+            const p3 = [c2x2 + sn.ox3 + t2, c2y2 + sn.oy3];
+            const p4 = [ex3 + sn.ox4 + t3, ey3 + sn.oy4];
+
+            drawStroke(ctx, p1, p2, p3, p4, bw * 0.7, s.cols[si], alpha * 0.9, s);
+          }
+
+          // Droplets
+          for (const dr of s.drops) {
+            if (strokeAlpha < 0.5) continue; // wait for stroke to appear
+            let dx = bz(sx2,c1x2,c2x2,ex3,dr.t) + dr.ox*(1-suckP);
+            let dy = bz(sy2,c1y2,c2y2,ey3,dr.t) + dr.oy*(1-suckP);
+            const [dx2,dy2] = suck(dx, dy, suckP * 0.5, dr.t);
+            ctx.save(); ctx.globalAlpha = alpha * 0.8;
+            ctx.fillStyle = rgb(PAINT[dr.ci],1);
+            ctx.shadowColor = rgb(PAINT[dr.ci],0.3); ctx.shadowBlur = 3;
+            ctx.beginPath(); ctx.arc(dx2,dy2,dr.r*(1-suckP*0.6),0,Math.PI*2); ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+
+      // ── Extra strokes flying in from outside during suck ──
+      if (ct > APPEAR_END && ct < EXPLODE_T + 0.3) {
+        const suckAge = ct - APPEAR_END;
+        for (const s of suckStrokes) {
+          const age = suckAge - s.enterDelay;
+          if (age < 0) continue;
+          const alpha0 = Math.min(1, age / 0.1);
+          // These strokes are always being sucked — their suckP starts at their entry
+          const sp = Math.min(1, age / (SUCK_END - APPEAR_END));
+          const sP = sp * sp;
+          const alpha = (ct > EXPLODE_T ? Math.max(0, 1-(ct-EXPLODE_T)/0.2) : 0.88) * alpha0;
+          if (alpha < 0.01) continue;
+
+          const [sx2,sy2] = suck(s.sx, s.sy, sP, 0);
+          const [c1x2,c1y2] = suck(s.c1x, s.c1y, sP, 0.33);
+          const [c2x2,c2y2] = suck(s.c2x, s.c2y, sP, 0.66);
+          const [ex3,ey3] = suck(s.ex, s.ey, sP, 1);
+          const bw = s.baseW;
+
+          for (let si2 = 0; si2 < 3; si2++) {
+            const sn = s.strandNoise[si2];
+            const twP = si2 * Math.PI * 2 / 3;
+            const offS = bw * 0.8;
+            const tw = (f) => Math.sin(f * Math.PI * 2 * s.twistFreq + twP) * offS;
+            const p1 = [sx2+sn.ox1+tw(0), sy2+sn.oy1];
+            const p2 = [c1x2+sn.ox2+tw(0.33), c1y2+sn.oy2];
+            const p3 = [c2x2+sn.ox3+tw(0.66), c2y2+sn.oy3];
+            const p4 = [ex3+sn.ox4+tw(1), ey3+sn.oy4];
+            drawStroke(ctx, p1, p2, p3, p4, bw*0.7, s.cols[si2], alpha*0.9, s);
+          }
+        }
+      }
+
+      // ── Mix swirl ──
+      if (ct > SUCK_END && ct < EXPLODE_T + 0.3) {
+        const mP = Math.min(1, (ct - SUCK_END) / (EXPLODE_T - SUCK_END));
+        const mA = mP * 0.6;
+        if (mA > 0.01) {
+          const sw = ct * 8, mr = 5 + mP * 15;
+          for (let i = 0; i < 6; i++) {
+            const a = sw + i * Math.PI / 3;
+            const px = ccx + Math.cos(a) * mr * (0.3+i*0.1);
+            const py = ccy + Math.sin(a) * mr * (0.3+i*0.1);
+            ctx.save(); ctx.globalAlpha = mA;
+            const g = ctx.createRadialGradient(px,py,0,px,py,mr*0.3);
+            g.addColorStop(0,rgb(PAINT[i%6],0.8)); g.addColorStop(1,rgb(PAINT[i%6],0));
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px,py,mr*0.3,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+
+      // ── Explosion ──
+      if (ct > EXPLODE_T) {
+        const ea = ct - EXPLODE_T;
+        if (ea < 0.12) {
+          ctx.save(); ctx.globalAlpha = 0.4*(1-ea/0.12);
+          const fg = ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,Math.max(w,h)*0.35);
+          fg.addColorStop(0,'rgba(255,255,255,0.9)'); fg.addColorStop(1,'rgba(255,255,255,0)');
+          ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(ccx,ccy,Math.max(w,h)*0.35,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+        const da = ea<0.15 ? ea/0.15 : Math.max(0,1-(ea-0.15)/3);
+        if (da > 0.01) {
+          for (const d of debris) {
+            const dist = d.speed * ea * Math.pow(d.drag, ea*30);
+            const dx = ccx+Math.cos(d.angle)*dist, dy = ccy+Math.sin(d.angle)*dist+ea*ea*10;
+            ctx.save(); ctx.globalAlpha = da*0.95;
+            ctx.fillStyle = rgb(PAINT[d.ci],1); ctx.shadowColor = rgb(PAINT[d.ci],0.4); ctx.shadowBlur = 3;
+            ctx.beginPath(); ctx.arc(dx,dy,d.r,0,Math.PI*2); ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+    };
+  },
+
+
+  // ⏰ RADIANCE (Zani): glitching timestamps → massive ornate clock with gears → explosion
+  radiance: (w, h) => {
+    if (!document.getElementById('ww-font-temporal')) {
+      const s = document.createElement('style'); s.id = 'ww-font-temporal';
+      s.textContent = `@font-face{font-family:'Temporal Shift';src:url('https://db.onlinewebfonts.com/t/14490ee451fc403e46ba565d82c4ab53.woff2') format('woff2');font-display:swap}`;
+      document.head.appendChild(s);
+    }
+    const cx = w * 0.5, cy = h * 0.48;
+    const clockR = Math.min(w, h) * 0.82; // 50% bigger — extends beyond card edges
+    const CYCLE = 15;
+    // More gears, interlocking, varied sizes
+    // Gears with mechanically correct rotation:
+    // When two gears mesh, speed ratio = teeth_driver / teeth_driven, direction flips.
+    // Gear 0 is the driver. Each subsequent gear meshes with a neighbor.
+    const BASE_SPEED = 0.1; // gear 0 rotation speed
+    const gearDefs = [
+      { x: -0.35, y: -0.10, r: 0.48, teeth: 24 },     // [0] large left
+      { x: 0.30, y: 0.25, r: 0.38, teeth: 18 },        // [1] large right-bottom
+      { x: 0.20, y: -0.35, r: 0.28, teeth: 14 },       // [2] medium top-right
+      { x: -0.25, y: 0.42, r: 0.22, teeth: 12 },       // [3] medium bottom-left
+      { x: 0.48, y: -0.15, r: 0.16, teeth: 10 },       // [4] small far right
+      { x: -0.50, y: -0.35, r: 0.13, teeth: 8 },       // [5] small far top-left
+      { x: 0.05, y: 0.50, r: 0.14, teeth: 8 },         // [6] small bottom
+    ];
+    // meshes: [gearIndex] = index of gear it meshes with
+    const meshes = [-1, 0, 0, 0, 2, 0, 3];
+    // Compute speeds: driver gear speed * (driver teeth / this teeth) * -1 per link
+    const gearSpeeds = gearDefs.map((_, i) => {
+      if (i === 0) return BASE_SPEED;
+      let speed = BASE_SPEED;
+      let cur = i;
+      let flips = 0;
+      while (meshes[cur] >= 0) {
+        const parent = meshes[cur];
+        speed *= gearDefs[parent].teeth / gearDefs[cur].teeth;
+        flips++;
+        cur = parent;
+      }
+      return speed * (flips % 2 === 1 ? -1 : 1);
+    });
+    const gears = gearDefs.map((g, i) => ({ ...g, speed: gearSpeeds[i] }));
+    const nebulae = Array.from({ length: 20 }, () => ({
+      angle: 0, dist: 0, speed: 0.3 + Math.random() * 1.5, size: 25 + Math.random() * 55,
+      maxAlpha: 0.05 + Math.random() * 0.07, drift: (Math.random() - 0.5) * 0.4,
+      color: ['255,210,90','255,170,60','255,130,40','255,240,160','220,180,80'][Math.floor(Math.random()*5)],
+      active: false,
+    }));
+    const wisps = Array.from({ length: 8 }, () => ({
+      angle: 0, dist: 0, speed: 0.4 + Math.random() * 1.2, len: 25 + Math.random() * 45,
+      width: 10 + Math.random() * 18, maxAlpha: 0.03 + Math.random() * 0.04,
+      rot: 0, rotV: (Math.random() - 0.5) * 0.015, active: false,
+    }));
+    // Explosion debris — only mini gears, lots of them, fly across full screen
+    const miniGears = Array.from({ length: 35 }, () => ({
+      x: 0, y: 0, vx: 0, vy: 0, rot: 0, rotV: (Math.random() - 0.5) * 0.25,
+      size: 5 + Math.random() * 14, teeth: 6 + Math.floor(Math.random() * 6), active: false,
+    }));
+    let lastBoom = -1;
+    // Timestamps — varied sizes, full spread, sequential
+    const COUNT = 5;
+    const SLOT_DUR = 8.0 / COUNT; // 1.6s each
+    const sizes = [28, 16, 34, 20, 24]; // varied — some big, some small
+    const timestamps = Array.from({ length: COUNT }, (_, i) => ({
+      x: (i % 2 === 0 ? 0.1 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35) * w, // alternate sides
+      y: 0.08 * h + (i / COUNT) * h * 0.75 + Math.random() * h * 0.1,
+      min: Math.floor(Math.random() * 60),
+      glitchX: 0, glitchY: 0, timer: Math.random() * 0.1,
+      size: sizes[i] || 22,
+      start: i * SLOT_DUR,
+    }));
+    let lastCycleId = -1;
+    let handFrozenAt = -1; // cT when hands locked at 6:30
+    return (ctx, t) => {
+      const cycle = t % CYCLE;
+      const cycleId = Math.floor(t / CYCLE);
+      // Re-randomize timestamp positions each cycle
+      if (cycleId !== lastCycleId) {
+        lastCycleId = cycleId;
+        handFrozenAt = -1; // reset for new cycle
+        for (let i = 0; i < timestamps.length; i++) {
+          const ts = timestamps[i];
+          ts.x = (i % 2 === 0 ? 0.1 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35) * w;
+          ts.y = 0.08 * h + (i / COUNT) * h * 0.75 + Math.random() * h * 0.1;
+          ts.min = Math.floor(Math.random() * 60);
+          ts.glitchX = 0; ts.glitchY = 0;
+        }
+      }
+      // ── PHASE 1→3: TIMESTAMPS (appear sequentially, freeze, erased by explosion) ──
+      if (cycle < 10.0) {
+        for (const ts of timestamps) {
+          const localT = cycle - ts.start;
+          if (localT < 0) continue; // not spawned yet
+          // Fade in during slot, then STAY (no fade out)
+          const fadeIn = 0.15 * SLOT_DUR * 1.3;
+          let a = localT < fadeIn ? localT / fadeIn : 1;
+          // During clock phase (8-9.5): freeze, stop glitching
+          const frozen = cycle >= 8.0;
+          // Erased by explosion (9.5-11): fast fade out
+          if (cycle >= 9.5) a *= Math.max(0, 1 - (cycle - 9.5) / 0.4);
+          if (a < 0.01) continue;
+          // Time: keeps ticking until clock appears at 8s, then freezes
+          const runTime = Math.min(cycle, 8.0) - ts.start;
+          if (runTime < 0) continue;
+          const progress = ts.start / 8.0;
+          const startMin = 23 * 60;
+          const totalForward = 450;
+          const slotMin = Math.floor(runTime * 8);
+          const currentMin = (startMin + Math.floor(progress * totalForward) + slotMin) % 1440;
+          const h2 = Math.floor(currentMin / 60);
+          const m2 = currentMin % 60;
+          const str = `${String(h2).padStart(2, '0')}:${String(m2).padStart(2, '0')}`;
+          // Glitch only while not frozen
+          if (!frozen) {
+            ts.timer -= 0.016;
+            if (ts.timer <= 0) {
+              ts.glitchX = (Math.random() - 0.5) * 2;
+              ts.glitchY = (Math.random() - 0.5) * 1.5;
+              ts.timer = 0.1 + Math.random() * 0.15;
+            }
+          }
+          const dx = ts.x + ts.glitchX, dy = ts.y + ts.glitchY;
+          const fs = ts.size;
+          ctx.save();
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.font = `${fs}px 'Temporal Shift', monospace`;
+          ctx.letterSpacing = '2px';
+          // Double shadow — second one glitch-offset
+          const shGX = (Math.sin(t * 7 + ts.start * 3) * 3);
+          const shGY = (Math.cos(t * 5 + ts.start * 2) * 2);
+          ctx.globalAlpha = a * 0.35;
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillText(str, dx + shGX, dy + shGY); // glitched far shadow
+          ctx.globalAlpha = a * 0.6;
+          ctx.fillStyle = 'rgba(0,0,0,0.9)';
+          ctx.fillText(str, dx + 1, dy + 1); // near shadow
+          // RGB split
+          const split = localT * 0.8;
+          if (split > 0.3) {
+            ctx.globalAlpha = a * 0.35;
+            ctx.fillStyle = 'rgba(255,60,60,0.9)';
+            ctx.fillText(str, dx - split, dy);
+            ctx.fillStyle = 'rgba(60,160,255,0.9)';
+            ctx.fillText(str, dx + split, dy);
+          }
+          // Main text — outlined + filled
+          ctx.globalAlpha = a * 0.9;
+          ctx.strokeStyle = 'rgba(255,200,80,0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.strokeText(str, dx, dy);
+          ctx.fillStyle = 'rgba(255,235,170,1)';
+          ctx.shadowColor = 'rgba(255,200,80,1)';
+          ctx.shadowBlur = 20;
+          ctx.fillText(str, dx, dy);
+          ctx.restore();
+        }
+        // Scanlines — only during active glitch phase, not when frozen
+        if (cycle > 1.5 && cycle < 8.0) {
+          const count = Math.floor(2 + (cycle - 1.5) * 1.2);
+          for (let s = 0; s < count; s++) {
+            const sy = Math.random() * h;
+            ctx.save();
+            ctx.globalAlpha = 0.06 + Math.random() * 0.08;
+            ctx.fillStyle = 'rgba(255,220,120,0.5)';
+            ctx.fillRect(0, sy, w, 1);
+            ctx.restore();
+          }
+        }
+      }
+      // ── PHASE 2 (8–9.5s): MASSIVE CLOCK WITH FILLED GEARS ──
+      // Draw gear — shared between clock and explosion mini gears
+      const drawGear = (gx, gy, gr, teeth, rot, alpha) => {
+        ctx.save(); ctx.globalAlpha = alpha; ctx.translate(gx, gy); ctx.rotate(rot);
+        const tH = gr * 0.08, iR = gr * 0.92, oR = gr + tH;
+        ctx.fillStyle = 'rgba(215,195,155,0.5)';
+        ctx.strokeStyle = 'rgba(255,235,180,0.65)'; ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        for (let i = 0; i < teeth; i++) {
+          const a2 = (Math.PI * 2 / teeth) * i;
+          const ht = Math.PI / teeth * 0.5;
+          ctx.lineTo(Math.cos(a2 - ht) * iR, Math.sin(a2 - ht) * iR);
+          ctx.lineTo(Math.cos(a2 - ht * 0.55) * oR, Math.sin(a2 - ht * 0.55) * oR);
+          ctx.lineTo(Math.cos(a2 + ht * 0.55) * oR, Math.sin(a2 + ht * 0.55) * oR);
+          ctx.lineTo(Math.cos(a2 + ht) * iR, Math.sin(a2 + ht) * iR);
+        }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(200,180,140,0.45)';
+        ctx.beginPath(); ctx.arc(0, 0, gr * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        const irR2 = gr * 0.6;
+        ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(0, 0, irR2, 0, Math.PI * 2); ctx.stroke();
+        if (gr > 8) { // thorns + spokes only on larger gears
+          const thN = Math.max(10, Math.floor(teeth * 1.2));
+          ctx.fillStyle = 'rgba(235,215,170,0.7)'; ctx.strokeStyle = 'rgba(255,235,180,0.5)'; ctx.lineWidth = 0.5;
+          for (let th = 0; th < thN; th++) { const ta = (Math.PI * 2 / thN) * th; const thH2 = gr * 0.1; const thW = Math.PI / thN * 0.4; ctx.beginPath(); ctx.moveTo(Math.cos(ta - thW) * irR2, Math.sin(ta - thW) * irR2); ctx.lineTo(Math.cos(ta) * (irR2 - thH2), Math.sin(ta) * (irR2 - thH2)); ctx.lineTo(Math.cos(ta + thW) * irR2, Math.sin(ta + thW) * irR2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+          const spkN = teeth >= 12 ? 6 : 4;
+          ctx.strokeStyle = 'rgba(255,230,170,0.3)'; ctx.lineWidth = Math.max(1, gr * 0.02);
+          for (let s = 0; s < spkN; s++) { const sa = (Math.PI * 2 / spkN) * s; ctx.beginPath(); ctx.moveTo(Math.cos(sa) * gr * 0.16, Math.sin(sa) * gr * 0.16); ctx.lineTo(Math.cos(sa) * gr * 0.4, Math.sin(sa) * gr * 0.4); ctx.stroke(); }
+        }
+        ctx.fillStyle = 'rgba(20,18,15,0.5)';
+        ctx.beginPath(); ctx.arc(0, 0, gr * 0.12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,230,170,0.4)'; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.restore();
+      };
+      const clockVisible = cycle >= 8.0 && cycle < 9.7;
+      if (clockVisible) {
+        const cT = cycle - 8.0;
+        const bIn = Math.min(1, cT / 0.12);
+        const cFade = cycle >= 9.5 ? Math.max(0, 1 - (cycle - 9.5) / 0.2) : 1;
+        const a = bIn * cFade * 0.9;
+        const r = clockR * bIn;
+        // Light bloom
+        ctx.save(); ctx.globalAlpha = a * 0.5;
+        const bloom = ctx.createRadialGradient(cx + r * 0.3, cy, 0, cx + r * 0.3, cy, r * 1.2);
+        bloom.addColorStop(0, 'rgba(255,240,200,0.6)');
+        bloom.addColorStop(0.4, 'rgba(255,210,130,0.15)');
+        bloom.addColorStop(1, 'rgba(255,180,80,0)');
+        ctx.fillStyle = bloom; ctx.beginPath(); ctx.arc(cx + r * 0.3, cy, r * 1.2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        // Gears + hands: full speed until hands cross 6:30, then everything freezes
+        const stopped = handFrozenAt >= 0;
+        const gearT = stopped ? handFrozenAt : cT;
+        for (const g of gears) {
+          const rot = g.speed * gearT * 5;
+          drawGear(cx + g.x * r, cy + g.y * r, g.r * r, g.teeth, rot, a * (g.r > 0.2 ? 0.9 : g.r > 0.1 ? 0.7 : 0.5));
+        }
+        // Outer ring — double: thick + slim
+        ctx.save(); ctx.globalAlpha = a * 0.9;
+        ctx.strokeStyle = 'rgba(255,230,150,0.8)'; ctx.shadowColor = 'rgba(255,210,100,0.8)'; ctx.shadowBlur = 30; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        ctx.save(); ctx.globalAlpha = a * 0.7;
+        ctx.strokeStyle = 'rgba(255,225,140,0.6)'; ctx.shadowColor = 'rgba(255,200,80,0.4)'; ctx.shadowBlur = 10; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.94, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+        // Inner ring with inverted thorns
+        ctx.save(); ctx.globalAlpha = a * 0.4;
+        ctx.strokeStyle = 'rgba(255,220,140,0.5)'; ctx.lineWidth = 1.5;
+        const cIR = r * 0.85;
+        ctx.beginPath(); ctx.arc(cx, cy, cIR, 0, Math.PI * 2); ctx.stroke();
+        // Thorns pointing inward on clock inner ring
+        ctx.fillStyle = 'rgba(255,230,170,0.5)';
+        const cThornN = 36;
+        for (let ti = 0; ti < cThornN; ti++) {
+          const ta = (Math.PI * 2 / cThornN) * ti;
+          const tW = Math.PI / cThornN * 0.4;
+          const tH = r * 0.03;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(ta - tW) * cIR, cy + Math.sin(ta - tW) * cIR);
+          ctx.lineTo(cx + Math.cos(ta) * (cIR - tH), cy + Math.sin(ta) * (cIR - tH));
+          ctx.lineTo(cx + Math.cos(ta + tW) * cIR, cy + Math.sin(ta + tW) * cIR);
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+        // Hands — spin fast, lock exactly at 6:30 when they pass through it
+        const minSpeed = Math.PI * 20; // much faster spin
+        if (handFrozenAt < 0 && cT > 0.6) {
+          const minRaw = cT * minSpeed;
+          const minMod = ((minRaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+          if (minMod < 0.3 || minMod > Math.PI * 2 - 0.3) {
+            handFrozenAt = cT;
+          }
+        }
+        // When stopped, snap to exact 6:30 — not approximate
+        const minA = stopped ? Math.PI : Math.PI + cT * minSpeed;
+        const hourA = stopped ? Math.PI + Math.PI / 12 : (Math.PI + Math.PI / 12) + cT * minSpeed * 0.3;
+        // Hand: diamond tip + smaller diamond + two flat teardrop wings
+        const drawHand = (angle, len, hw, alpha) => {
+          ctx.save(); ctx.globalAlpha = alpha;
+          ctx.translate(cx, cy); ctx.rotate(angle + Math.PI / 2);
+          ctx.fillStyle = 'rgba(255,248,215,1)';
+          ctx.shadowColor = 'rgba(255,235,120,1)'; ctx.shadowBlur = 22;
+          // Shaft — tapered
+          ctx.beginPath();
+          ctx.moveTo(-hw * 0.22, len * 0.04);
+          ctx.lineTo(-hw * 0.08, -len * 0.55);
+          ctx.lineTo(hw * 0.08, -len * 0.55);
+          ctx.lineTo(hw * 0.22, len * 0.04);
+          ctx.closePath(); ctx.fill();
+          // Large diamond at tip
+          const dY = -len * 0.85;
+          const dH = len * 0.15;
+          const dW = hw * 0.8;
+          ctx.beginPath();
+          ctx.moveTo(0, dY - dH);
+          ctx.lineTo(dW, dY);
+          ctx.lineTo(0, dY + dH);
+          ctx.lineTo(-dW, dY);
+          ctx.closePath(); ctx.fill();
+          // Smaller diamond below
+          const d2Y = -len * 0.58;
+          const d2H = len * 0.07;
+          const d2W = hw * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(0, d2Y - d2H);
+          ctx.lineTo(d2W, d2Y);
+          ctx.lineTo(0, d2Y + d2H);
+          ctx.lineTo(-d2W, d2Y);
+          ctx.closePath(); ctx.fill();
+          // Volute scrolls — thin stroked spirals, not filled blobs
+          const wY = d2Y + d2H * 0.3;
+          const sc = hw * 2.0;
+          ctx.strokeStyle = 'rgba(255,248,215,1)';
+          ctx.lineWidth = hw * 0.25;
+          ctx.lineCap = 'round';
+          // Right scroll: sweep out, arc up, spiral inward
+          ctx.beginPath();
+          ctx.moveTo(hw * 0.15, wY);
+          ctx.bezierCurveTo(sc * 0.6, wY - sc * 0.5, sc * 1.3, wY - sc * 0.6, sc * 1.2, wY - sc * 0.1);
+          ctx.bezierCurveTo(sc * 1.1, wY + sc * 0.25, sc * 0.6, wY + sc * 0.2, sc * 0.75, wY);
+          ctx.stroke();
+          // Left scroll: mirror
+          ctx.beginPath();
+          ctx.moveTo(-hw * 0.15, wY);
+          ctx.bezierCurveTo(-sc * 0.6, wY - sc * 0.5, -sc * 1.3, wY - sc * 0.6, -sc * 1.2, wY - sc * 0.1);
+          ctx.bezierCurveTo(-sc * 1.1, wY + sc * 0.25, -sc * 0.6, wY + sc * 0.2, -sc * 0.75, wY);
+          ctx.stroke();
+          // Counterweight circle
+          ctx.beginPath(); ctx.arc(0, len * 0.06, hw * 0.35, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        };
+        drawHand(minA, r * 0.82, 5, a * 1.5);
+        drawHand(hourA, r * 0.5, 7, a * 1.4);
+        // Center jewel
+        ctx.save(); ctx.globalAlpha = Math.min(1, a * 2.5);
+        ctx.fillStyle = 'rgba(255,245,200,1)'; ctx.shadowColor = 'rgba(255,230,120,1)'; ctx.shadowBlur = 25;
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
+      // ── PHASE 3 (9.5s): SHATTER — flash + shards + mini gears ──
+      if (cycleId !== lastBoom && cycle >= 9.5) {
+        lastBoom = cycleId;
+        for (const n of nebulae) { n.dist = 0; n.active = true; n.angle = Math.random() * Math.PI * 2; }
+        for (const ws of wisps) { ws.dist = 0; ws.active = true; ws.angle = Math.random() * Math.PI * 2; ws.rot = Math.random() * Math.PI; }
+        // Launch mini gears in all directions across the full screen
+        for (const mg of miniGears) {
+          mg.x = cx + (Math.random() - 0.5) * clockR * 0.6;
+          mg.y = cy + (Math.random() - 0.5) * clockR * 0.6;
+          const ang = Math.random() * Math.PI * 2;
+          const spd = 3 + Math.random() * 8; // fast — reaches screen edges
+          mg.vx = Math.cos(ang) * spd;
+          mg.vy = Math.sin(ang) * spd;
+          mg.rot = Math.random() * Math.PI * 2;
+          mg.active = true;
+        }
+      }
+      if (cycle >= 9.5 && cycle < 10.0) {
+        const bT = (cycle - 9.5) / 0.5;
+        // Flash
+        ctx.save(); ctx.globalAlpha = 0.7 * (1 - bT);
+        const fg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h));
+        fg.addColorStop(0, 'rgba(255,255,240,1)'); fg.addColorStop(0.15, 'rgba(255,240,180,0.8)');
+        fg.addColorStop(0.4, 'rgba(255,200,80,0.4)'); fg.addColorStop(1, 'rgba(255,160,30,0)');
+        ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(cx, cy, Math.max(w, h), 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        // Shockwave ring
+        const ringR = bT * clockR * 2.5;
+        ctx.save(); ctx.globalAlpha = 0.5 * (1 - bT);
+        ctx.strokeStyle = 'rgba(255,240,180,0.8)'; ctx.lineWidth = 3; ctx.shadowColor = 'rgba(255,220,100,0.8)'; ctx.shadowBlur = 20;
+        ctx.beginPath(); ctx.arc(cx, cy, ringR, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      }
+      // ── PHASE 4 (9.5–15s): SHARDS + MINI GEARS + NEBULA ──
+      if (cycle >= 9.5) {
+        const nT = cycle - 9.5;
+        // Mini gears flying across the full screen — use same drawGear as clock
+        for (const mg of miniGears) {
+          if (!mg.active) continue;
+          mg.x += mg.vx; mg.y += mg.vy; mg.rot += mg.rotV;
+          mg.vx *= 0.995; mg.vy *= 0.995;
+          const fade = Math.max(0, 1 - nT / 4.2);
+          if (fade < 0.01) { mg.active = false; continue; }
+          drawGear(mg.x, mg.y, mg.size, mg.teeth, mg.rot, fade * 0.8);
+        }
+        // Nebula clouds
+        for (const n of nebulae) { if (!n.active) continue; n.dist += n.speed * 0.7; n.angle += n.drift * 0.016; const x = cx + Math.cos(n.angle) * n.dist, y = cy + Math.sin(n.angle) * n.dist; const eS = n.size * (0.5 + nT * 0.35); const fd = Math.max(0, n.maxAlpha * (1 - nT / 3.5)); if (fd < 0.002) { n.active = false; continue; } ctx.save(); ctx.globalAlpha = fd; const g = ctx.createRadialGradient(x, y, 0, x, y, eS); g.addColorStop(0, `rgba(${n.color},0.5)`); g.addColorStop(0.4, `rgba(${n.color},0.15)`); g.addColorStop(1, `rgba(${n.color},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, eS, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+        // Wisps
+        for (const ws of wisps) { if (!ws.active) continue; ws.dist += ws.speed * 0.5; ws.rot += ws.rotV; const x = cx + Math.cos(ws.angle) * ws.dist, y = cy + Math.sin(ws.angle) * ws.dist; const fd = Math.max(0, ws.maxAlpha * (1 - nT / 3.5)); if (fd < 0.002) { ws.active = false; continue; } ctx.save(); ctx.globalAlpha = fd; ctx.translate(x, y); ctx.rotate(ws.rot); ctx.fillStyle = 'rgba(255,220,130,0.25)'; ctx.beginPath(); ctx.ellipse(0, 0, ws.len * (0.8 + nT * 0.12), ws.width * (0.6 + nT * 0.08), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+      }
+    };
+  },
+
+  // 🌊 LUMINOUS (Phoebe): underwater caustics, rising bubbles, candle flickers, floating veils
+  luminous: (w, h) => {
+    // Caustic light pattern — shimmering refracted light on the "ceiling"
+    const caustics = Array.from({ length: 8 }, () => ({
+      x: Math.random() * w, y: Math.random() * h * 0.4,
+      size: 30 + Math.random() * 50, phase: Math.random() * Math.PI * 2,
+      speed: 0.2 + Math.random() * 0.3, vx: (Math.random() - 0.5) * 0.15,
+    }));
+    // Rising bubbles
+    const bubbles = Array.from({ length: 10 }, () => ({
+      x: Math.random() * w, y: h + Math.random() * h * 0.3,
+      size: 1.5 + Math.random() * 3, vy: -0.15 - Math.random() * 0.25,
+      wobbleAmp: 3 + Math.random() * 8, wobbleSpeed: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2, alpha: 0.2 + Math.random() * 0.25,
+    }));
+    // Candle flickers — warm points of light
+    const candles = Array.from({ length: 5 }, () => ({
+      x: w * 0.15 + Math.random() * w * 0.7, y: h * 0.5 + Math.random() * h * 0.4,
+      phase: Math.random() * Math.PI * 2, speed: 2 + Math.random() * 3,
+      size: 2 + Math.random() * 2.5,
+    }));
+    // Floating veil shapes — translucent arcs drifting slowly
+    const veils = Array.from({ length: 3 }, () => ({
+      x: Math.random() * w, y: h * 0.2 + Math.random() * h * 0.5,
+      width: 60 + Math.random() * 80, height: 15 + Math.random() * 25,
+      vx: -0.08 - Math.random() * 0.12, phase: Math.random() * Math.PI * 2,
+      alpha: 0.04 + Math.random() * 0.03,
+    }));
+    return (ctx, t) => {
+      // Caustic light ripples
+      for (const c of caustics) {
+        c.x += c.vx; if (c.x < -c.size) c.x = w + c.size;
+        const a = c.alpha = 0.04 + Math.sin(t * c.speed + c.phase) * 0.03;
+        ctx.save();
+        ctx.globalAlpha = a;
+        const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.size);
+        g.addColorStop(0, 'rgba(180,230,255,0.5)');
+        g.addColorStop(0.5, 'rgba(140,210,240,0.15)');
+        g.addColorStop(1, 'rgba(100,180,220,0)');
+        ctx.fillStyle = g;
+        // Distort shape with sin for watery feel
+        ctx.beginPath();
+        for (let i = 0; i <= 24; i++) {
+          const angle = (Math.PI * 2 / 24) * i;
+          const wobble = 1 + Math.sin(angle * 3 + t * 1.5 + c.phase) * 0.2;
+          const r = c.size * wobble;
+          ctx[i === 0 ? 'moveTo' : 'lineTo'](c.x + Math.cos(angle) * r, c.y + Math.sin(angle) * r * 0.6);
+        }
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      // Floating veils
+      for (const v of veils) {
+        v.x += v.vx; if (v.x < -v.width) v.x = w + 10;
+        const sway = Math.sin(t * 0.3 + v.phase) * 8;
+        ctx.save();
+        ctx.globalAlpha = v.alpha;
+        ctx.fillStyle = 'rgba(220,240,255,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(v.x, v.y + sway);
+        ctx.quadraticCurveTo(v.x + v.width * 0.3, v.y - v.height + sway, v.x + v.width * 0.5, v.y + sway * 0.5);
+        ctx.quadraticCurveTo(v.x + v.width * 0.7, v.y + v.height + sway, v.x + v.width, v.y + sway);
+        ctx.fill();
+        ctx.restore();
+      }
+      // Rising bubbles
+      for (const b of bubbles) {
+        b.y += b.vy;
+        const wx = b.x + Math.sin(t * b.wobbleSpeed + b.phase) * b.wobbleAmp;
+        if (b.y < -10) { b.y = h + 10; b.x = Math.random() * w; }
+        ctx.save();
+        ctx.globalAlpha = b.alpha;
+        ctx.strokeStyle = 'rgba(180,220,255,0.7)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(wx, b.y, b.size, 0, Math.PI * 2); ctx.stroke();
+        // Highlight
+        ctx.globalAlpha = b.alpha * 0.6;
+        ctx.fillStyle = 'rgba(220,240,255,0.8)';
+        ctx.beginPath(); ctx.arc(wx - b.size * 0.3, b.y - b.size * 0.3, b.size * 0.3, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      // Candle flickers
+      for (const c of candles) {
+        const flicker = 0.4 + Math.sin(t * c.speed + c.phase) * 0.3 + Math.sin(t * c.speed * 1.7 + c.phase) * 0.2;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, flicker) * 0.5;
+        ctx.fillStyle = 'rgba(255,230,170,1)';
+        ctx.shadowColor = 'rgba(255,200,100,0.7)';
+        ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.arc(c.x, c.y, c.size * (0.6 + flicker * 0.4), 0, Math.PI * 2); ctx.fill();
         ctx.restore();
       }
     };

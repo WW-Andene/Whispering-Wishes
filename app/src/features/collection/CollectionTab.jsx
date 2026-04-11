@@ -55,6 +55,13 @@ function CollectionTab({
   const [collectionView, setCollectionView] = useSessionState('ww-coll-view', 'items');
   const [collectionOwnedFilter, setCollectionOwnedFilter] = useSessionState('ww-coll-owned', 'all');
 
+  // ── Initial loading skeleton (shown briefly while collection data is computed) ──
+  const [initialLoading, setInitialLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setInitialLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   // ── Owned characters tracking (persisted to localStorage) ────────────────────
   const [ownedChars, setOwnedChars] = useState(() => {
     try { return JSON.parse(localStorage.getItem('ww-owned-chars') || '[]'); } catch { return []; }
@@ -267,7 +274,14 @@ function CollectionTab({
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="gathering" />
 
-      {!state.profile.importedAt ? (
+      {initialLoading && state.profile.importedAt ? (
+        <div className="space-y-2">
+          <div className="kuro-skeleton kuro-skeleton-stat rounded-lg" />
+          <div className="kuro-skeleton kuro-skeleton-row rounded-lg" />
+          <div className="kuro-skeleton kuro-skeleton-row rounded-lg" />
+          <div className="kuro-skeleton kuro-skeleton-stat rounded-lg" />
+        </div>
+      ) : !state.profile.importedAt ? (
         <Card>
           <CardBody className="kuro-empty-state text-center py-8">
             <Archive size={32} className="mx-auto mb-2 text-gray-500" />

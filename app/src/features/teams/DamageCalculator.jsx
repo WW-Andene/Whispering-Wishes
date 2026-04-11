@@ -4,7 +4,7 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../dat
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
-import { haptic, getElementColor, getElementBg, getElementBorder } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -1186,7 +1186,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{m.d.role}</span>
                         <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                          {m.d.element}
+                          {getElementShape(m.d.element)}{getElementShape(m.d.element) ? ' ' : ''}{m.d.element}
                         </span>
                         <span className="text-sm text-gray-500">{m.d.weapon}</span>
                       </div>
@@ -1470,7 +1470,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       <div className="flex flex-wrap gap-1">
                         <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                          {m.d.element} DMG
+                          {getElementShape(m.d.element)}{getElementShape(m.d.element) ? ' ' : ''}{m.d.element} DMG
                         </span>
                         {(m.d.dmgFocus || []).map((df, di) => (
                           <span key={di} className="kuro-badge kuro-badge-amber">{df}</span>
@@ -1514,7 +1514,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <span className="kuro-badge kuro-badge-cyan">CD {cd.toFixed(1)}%</span>
                         <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
-                          {m.d.element} +{elemDmg.toFixed(0)}%
+                          {getElementShape(m.d.element)}{getElementShape(m.d.element) ? ' ' : ''}{m.d.element} +{elemDmg.toFixed(0)}%
                         </span>
                         {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">Skill +{skillDmg.toFixed(0)}%</span>}
                         {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">ATK% +{atkPct.toFixed(0)}%</span>}
@@ -1531,7 +1531,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               );
             })}
 
-            {/* Aggregated buffs/debuffs */}
+            {/* Aggregated buffs/debuffs — values appended to existing tags */}
             {allBuffs.length > 0 && (
               <div>
                 <div className="kuro-label">Team Buffs</div>
@@ -1541,10 +1541,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       {b.buff} <span className="text-gray-500">({b.source})</span>
                     </span>
                   ))}
+                  {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">+{atkPct.toFixed(1)}% ATK</span>}
+                  {elemDmg > 0 && <span className="kuro-badge kuro-badge-yellow">+{elemDmg.toFixed(1)}% Elem DMG</span>}
+                  {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">+{skillDmg.toFixed(1)}% Skill DMG</span>}
+                  {deepen > 0 && <span className="kuro-badge kuro-badge-purple">+{deepen.toFixed(1)}% Deepen</span>}
+                  {amplify > 0 && <span className="kuro-badge kuro-badge-pink">+{amplify.toFixed(1)}% Amplify</span>}
+                  {cr > 5 && <span className="kuro-badge kuro-badge-cyan">{cr.toFixed(1)}% Crit Rate</span>}
+                  {cd > 150 && <span className="kuro-badge kuro-badge-cyan">{cd.toFixed(1)}% Crit DMG</span>}
                 </div>
               </div>
             )}
-            {allDebuffs.length > 0 && (
+            {(allDebuffs.length > 0 || defShred > 0 || resShred > 0 || defIgnore > 0) && (
               <div>
                 <div className="kuro-label">Enemy Debuffs</div>
                 <div className="flex flex-wrap gap-1">
@@ -1553,6 +1560,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       {b.debuff} <span className="text-gray-500">({b.source})</span>
                     </span>
                   ))}
+                  {defShred > 0 && <span className="kuro-badge kuro-badge-red">-{defShred.toFixed(1)}% DEF Shred</span>}
+                  {resShred > 0 && <span className="kuro-badge kuro-badge-red">-{resShred.toFixed(1)}% RES Shred</span>}
+                  {defIgnore > 0 && <span className="kuro-badge kuro-badge-red">{defIgnore.toFixed(1)}% DEF Ignore</span>}
                 </div>
               </div>
             )}

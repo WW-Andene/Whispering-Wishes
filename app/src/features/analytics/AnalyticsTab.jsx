@@ -364,6 +364,12 @@ function AnalyticsTab({
                   <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">Open Profile to import</button>
                 </CardBody>
               </Card>
+            ) : !overallStats?.totalPulls ? (
+              <div className="space-y-2">
+                <div className="kuro-skeleton kuro-skeleton-stat rounded-lg" />
+                <div className="kuro-skeleton kuro-skeleton-stat rounded-lg" />
+                <div className="kuro-skeleton kuro-skeleton-row rounded-lg" />
+              </div>
             ) : (
               <div className="space-y-3">
                 {/* Success Rate Card */}
@@ -643,7 +649,7 @@ function AnalyticsTab({
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <p className="kuro-empty-state text-gray-400 text-base text-center py-4">Awaiting 5★ signal resonance</p>;
+                      if (fiveStars.length === 0) return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">Awaiting 5★ signal resonance</p><p className="text-gray-500 text-sm mt-1">Import Convene history in Profile to see your 5★ pull log</p></div>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
                           {fiveStars.map((p, i) => {
@@ -678,7 +684,7 @@ function AnalyticsTab({
                       <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="kuro-empty-state text-gray-400 text-base text-center py-4">Import more history to earn trophies</p>
+                      <p className="kuro-empty-state text-gray-400 text-base text-center py-4">Import more Convene history in the Profile tab to unlock achievements</p>
                     </CardBody>
                   </Card>
                 )}

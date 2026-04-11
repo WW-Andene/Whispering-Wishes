@@ -10,11 +10,15 @@
 // [SECTION:PLANNER]      PlannerTab main component (income, goals, saved states)
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Minus, Plus, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS } from '../../data/constants.js';
-import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, VERSION_DATES } from '../../data/banners.js';
-import { generateUniqueId } from '../../utils/helpers.js';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Hammer, Minus, Plus, Search, Star, X } from 'lucide-react';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { generateUniqueId, getElementColor, getElementShape } from '../../utils/helpers.js';
+import { CHARACTER_DATA, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { WEAPON_DATA } from '../../data/weapons.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -28,15 +32,24 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 // interpolation (e.g. `${color}40` for alpha) where CSS var() would be invalid.
 // Canonical tokens are defined in kuro.css (--event-*) for pure-CSS contexts.
 const EVENT_COLORS = {
-  weeklyBoss:        '#60a5fa',  // marine (rarity-3star blue)
-  endstateMatrix:    '#ec4899',  // fuchsia (featured weapon pink)
-  towerOfAdversity:  '#ef4444',  // red-500 (better contrast at small sizes)
-  whimperingWastes:  '#06b6d4',  // cyan
-  tacticalHologram:  '#a3e635',  // lime
-  pioneerPodcast:    '#fb923c',  // pumpkin (pity ring orange)
-  illusiveRealm:     '#c4b5fd',  // lavender
+  weeklyBoss:           '#60a5fa',  // marine (rarity-3star blue)
+  endstateMatrix:       '#ec4899',  // fuchsia (featured weapon pink)
+  towerOfAdversity:     '#ef4444',  // red-500 (better contrast at small sizes)
+  whimperingWastes:     '#06b6d4',  // cyan
+  tacticalHologram:     '#a3e635',  // lime
+  pioneerPodcast:       '#fb923c',  // pumpkin (pity ring orange)
+  illusiveRealm:        '#c4b5fd',  // lavender
 };
 const BANNER_COLOR = '#edaf18';  // gold
+const GAME_LAUNCH = new Date('2024-05-23'); // Wuthering Waves global launch date
+GAME_LAUNCH.setHours(0, 0, 0, 0);
+
+// Legend labels — maps legendGroup keys to display names
+const LEGEND_LABELS = {
+  banner: 'Banner', weeklyBoss: 'Weekly Boss', illusiveRealm: 'Illusive Realm',
+  towerOfAdversity: 'Tower of Adversity', whimperingWastes: 'Whimpering Wastes',
+  matrix: 'Matrix', tacticalHologram: 'Tactical Hologram', pioneerPodcast: 'Pioneer Podcast',
+};
 
 // Get the earliest date an event type existed (from introducedVersion)
 const getIntroducedDate = (ev) => {
@@ -61,6 +74,7 @@ const get28DayCycle = (ev, date) => {
 };
 
 const getActiveEvents = (date) => {
+  if (date < GAME_LAUNCH) return []; // No events before game launch
   const result = [];
   // Weekly events — only show after their introduction version
   for (const [key, ev] of Object.entries(EVENTS)) {
@@ -198,9 +212,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [sel]);
 
   // ── Chronology bars ──────────────────────────────────────────────────────
+  const [selectedBar, setSelectedBar] = useState(null);
   const chronoBars = useMemo(() => {
     const monthStart = new Date(cal.year, cal.month, 1);
     const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
+    // No events before game launch
+    if (monthEnd < GAME_LAUNCH) return [];
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const bars = [];
 
@@ -215,7 +232,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
         const endLabel = bannerEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const startLabel = bannerStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel });
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel, legendGroup: 'banner', description: `Current banner phase — ${activeBanners?.version || '?'} Phase ${activeBanners?.phase || '?'}` });
       }
     }
 
@@ -225,7 +242,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       if (pastBannerCount >= 3) break;
       const bhStart = new Date(bh.startDate);
       const bhEnd = new Date(bh.endDate);
-      if (bhEnd < monthStart || bhStart > monthEnd) continue;
+      if (bhEnd < monthStart || bhStart > monthEnd || bhStart < GAME_LAUNCH) continue;
       if (activeBanners && bh.version === activeBanners.version && bh.phase === activeBanners.phase) continue;
       const pStart = Math.max(0, Math.floor((bhStart - monthStart) / 86400000));
       const pEnd = Math.min(cal.daysInMonth - 1, Math.floor((bhEnd - monthStart) / 86400000));
@@ -234,20 +251,21 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const label = `v${bh.version} P${bh.phase}`;
         const endLabel = bhEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const charNames = bh.characters?.slice(0, 2).join(', ') || '';
-        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true });
+        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true, legendGroup: 'banner', description: `v${bh.version} Phase ${bh.phase}: ${bh.characters?.join(', ') || 'N/A'}` });
         pastBannerCount++;
       }
     }
 
     // Helper: add a bar if it overlaps this month
     const addBar = (key, label, color, cStart, cEnd, astrite, extra = {}) => {
-      if (cEnd < monthStart || cStart > monthEnd) return;
+      if (cEnd < monthStart || cStart > monthEnd || cEnd < GAME_LAUNCH) return;
+      const clampedStart = cStart < GAME_LAUNCH ? GAME_LAUNCH : cStart;
       const ended = cEnd < today;
-      const eStart = Math.max(0, Math.floor((cStart - monthStart) / 86400000));
+      const eStart = Math.max(0, Math.floor((clampedStart - monthStart) / 86400000));
       const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((cEnd - monthStart) / 86400000));
       if (eEnd >= eStart) {
         const endLabel = cEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const startLabel = cStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const startLabel = clampedStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
         bars.push({ key, label, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft, ...extra });
       }
@@ -261,6 +279,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       if (!color) continue;
       const introduced = getIntroducedDate(ev);
       if (introduced && monthEnd < introduced) continue;
+      if (monthEnd < GAME_LAUNCH) continue;
       const astrite = parseInt(ev.rewards, 10) || 0;
       const mondays = [];
       for (let d = 1; d <= cal.daysInMonth; d++) {
@@ -278,7 +297,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         segments.push({ start: segStart, end: segEnd, isCurrent: todayIdx >= segStart && todayIdx <= segEnd });
       }
       if (mondays.length === 0) segments.push({ start: 0, end: cal.daysInMonth - 1 });
-      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments });
+      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments, legendGroup: key, description: `${ev.name} — ${ev.description || ev.subtitle}. Rewards: ${ev.rewards}` });
     }
 
     // 28-day cycling events (ToA, Whimpering Wastes) — compute all cycles
@@ -294,7 +313,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const cEnd = new Date(baseEnd.getTime() + c * cycleMs);
         const cStart = new Date(cEnd.getTime() - cycleMs);
         if (introduced && cStart < introduced) continue;
-        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite);
+        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite, { legendGroup: key, description: `${ev.name} — ${ev.description}. ${ev.resetType} cycle. Rewards: ${ev.rewards}` });
       }
     }
 
@@ -305,14 +324,26 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const color = EVENT_COLORS[key];
       if (!color) continue;
       const astrite = parseInt(ev.rewards, 10) || 0;
-      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite);
+      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite, { legendGroup: 'matrix', description: `${ev.name} — ${ev.description}. Rewards: ${ev.rewards}` });
     }
 
     // Pioneer Podcast — full history, one bar per version
     for (const pp of PIONEER_PODCAST_HISTORY) {
       const color = EVENT_COLORS.pioneerPodcast;
       if (!color) continue;
-      addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards);
+      addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards, { legendGroup: 'pioneerPodcast', description: `Pioneer Podcast — version ${pp.version} limited-time event. Rewards: ${pp.rewards} Astrite` });
+    }
+
+    // Doubled Pawns Matrix: Pilot — predecessor to Endstate Matrix (v3.0–v3.1), same color as Matrix
+    for (const dp of DOUBLED_PAWNS_MATRIX_HISTORY) {
+      const color = EVENT_COLORS.endstateMatrix;
+      addBar(`dpm-${dp.version}`, `Doubled Pawns Matrix v${dp.version}`, color, new Date(dp.startDate), new Date(dp.endDate), dp.rewards, { legendGroup: 'matrix', description: `Doubled Pawns Matrix: Pilot — v${dp.version} recurring boss rush (replaced by Endstate Matrix in v3.2). Rewards: ${dp.rewards} Astrite` });
+    }
+
+    // Tactical Hologram — permanent challenges, show when new arenas were introduced
+    for (const th of TACTICAL_HOLOGRAM_HISTORY) {
+      const color = EVENT_COLORS.tacticalHologram;
+      addBar(`th-${th.version}`, `Tactical Hologram: ${th.name}`, color, new Date(th.startDate), new Date(th.endDate), 0, { legendGroup: 'tacticalHologram', description: `Tactical Hologram: ${th.name} — permanent combat challenge introduced in v${th.version}` });
     }
 
     // Version-scoped events without explicit start (Pioneer Podcast already handled above)
@@ -325,7 +356,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const astrite = parseInt(ev.rewards, 10) || 0;
       // Show for current version only
       const versionStart = BANNER_HISTORY.length > 0 ? new Date(BANNER_HISTORY[0].startDate) : monthStart;
-      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite);
+      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite, { legendGroup: key, description: `${ev.name} — ${ev.description}. Rewards: ${ev.rewards}` });
     }
     return bars;
   }, [cal, bannerEndDate, activeBanners]);
@@ -491,11 +522,12 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             })()}
             {chronoBars.map((bar) => {
               const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.startLabel && bar.endLabel ? ` — ${bar.startLabel} → ${bar.endLabel}` : bar.endLabel ? ` — ends ${bar.endLabel}` : ''}${bar.daysLeft != null ? ` (${bar.daysLeft}d left)` : ''}${bar.weekly ? ' (resets weekly Mon)' : ''}${bar.ended ? ' (ended)' : ''}`;
+              const handleBarClick = () => setSelectedBar(prev => prev?.key === bar.key ? null : bar);
 
               // Weekly events: render segmented bars showing Mon-Sun reset boundaries
               if (bar.weekly && bar.segments) {
                 return (
-                  <div key={bar.key} title={tooltipText} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px' }}>
+                  <div key={bar.key} title={tooltipText} onClick={handleBarClick} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px', cursor: 'pointer' }}>
                     {bar.segments.map((seg, si) => {
                       const segLeft = (seg.start / cal.daysInMonth) * 100;
                       const segWidth = ((seg.end - seg.start + 1) / cal.daysInMonth) * 100;
@@ -523,7 +555,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               const leftPct = (bar.start / cal.daysInMonth) * 100;
               const widthPct = ((bar.end - bar.start + 1) / cal.daysInMonth) * 100;
               return (
-                <div key={bar.key} title={tooltipText} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px' }}>
+                <div key={bar.key} title={tooltipText} onClick={handleBarClick} style={{ position: 'relative', height: 'var(--size-icon-btn)', marginBottom: '4px', cursor: 'pointer' }}>
                   <div style={{
                     position: 'absolute', left: `${leftPct}%`, width: `${widthPct}%`,
                     height: '100%', borderRadius: 'var(--radius-sm)',
@@ -548,18 +580,39 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             )}
           </div>
 
-          {/* Chronology legend */}
+          {/* Bar detail popup */}
+          {selectedBar && (
+            <div onClick={() => setSelectedBar(null)} style={{ marginTop: '4px', padding: '8px 12px', borderRadius: 'var(--radius-md)', background: `${selectedBar.color}15`, border: `1px solid ${selectedBar.color}40`, cursor: 'pointer' }}>
+              <div style={{ fontSize: 'var(--font-base)', fontWeight: 600, color: selectedBar.color }}>{selectedBar.label}</div>
+              {selectedBar.description && <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{selectedBar.description}</div>}
+              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {selectedBar.startLabel && <span>{selectedBar.startLabel} → {selectedBar.endLabel}</span>}
+                {selectedBar.astrite > 0 && <span className="text-yellow-400">+{selectedBar.astrite} Astrite</span>}
+                {selectedBar.daysLeft != null && <span>{selectedBar.daysLeft} days left</span>}
+                {selectedBar.ended && <span>Ended</span>}
+                {selectedBar.weekly && <span>Resets weekly (Monday)</span>}
+              </div>
+            </div>
+          )}
+
+          {/* Chronology legend — adaptive: only shows event types present this month */}
           <div className="flex items-center gap-2 justify-center flex-wrap" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: 'var(--space-sm)' }}>
-            <span className="flex items-center gap-1"><span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: BANNER_COLOR, display: 'inline-block' }} />Banner</span>
-            {Object.entries(EVENT_COLORS).map(([key, color]) => (
-              <span key={key} className="flex items-center gap-1">
-                {EVENTS[key]?.weeklyReset
-                  ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
-                  : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
-                }
-                {EVENTS[key]?.name || key}
-              </span>
-            ))}
+            {(() => {
+              const seen = new Map();
+              for (const bar of chronoBars) {
+                const group = bar.legendGroup || bar.key;
+                if (!seen.has(group)) seen.set(group, { color: bar.color, weekly: !!bar.weekly });
+              }
+              return [...seen.entries()].map(([group, { color, weekly }]) => (
+                <span key={group} className="flex items-center gap-1">
+                  {weekly
+                    ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
+                    : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
+                  }
+                  {LEGEND_LABELS[group] || group}
+                </span>
+              ));
+            })()}
           </div>
         </div>
 
@@ -589,6 +642,15 @@ function PlannerTab({
       return next;
     });
   }, []);
+  // Farming planner targets
+  const [farmTargetsState, setFarmTargetsState] = useState(() => {
+    try { const v = localStorage.getItem('ww-farm-targets'); return v ? JSON.parse(v) : []; } catch { return []; }
+  });
+  const [farmPickerOpen, setFarmPickerOpen] = useState(false);
+  const [farmSearch, setFarmSearch] = useState('');
+  useEffect(() => {
+    try { localStorage.setItem('ww-farm-targets', JSON.stringify(farmTargetsState)); } catch {}
+  }, [farmTargetsState]);
   // Collapsible card state
   const [collapsed, setCollapsed] = useState({});
 
@@ -943,6 +1005,155 @@ function PlannerTab({
             </div>
           ))}
         </CardBody>
+        )}
+      </Card>
+      {/* ── 8. Material Farming Planner ──────────────────────────────────── */}
+      <Card>
+        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('farm')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('farm'); } }} aria-expanded={!collapsed.farm}>
+          <CardHeader action={<>
+            {farmTargetsState.length > 0 && <span className="text-orange-400 text-sm">{farmTargetsState.length} target{farmTargetsState.length > 1 ? 's' : ''}</span>}
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.farm ? '' : 'rotate-180'}`} />
+          </>}><Hammer size={14} className="inline mr-1.5 -mt-0.5 text-orange-400" />Farming Planner</CardHeader>
+        </div>
+        {!collapsed.farm && (
+          <CardBody className="space-y-3">
+            {/* Add Resonator button */}
+            <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '10px' }}>
+              <Plus size={14} className="inline mr-1.5" />Add Resonator
+            </button>
+
+            {/* Resonator picker modal */}
+            {farmPickerOpen && (
+              <FocusTrapModal isOpen onClose={() => setFarmPickerOpen(false)} className="" onClick={() => setFarmPickerOpen(false)} centered>
+                <div className="kuro-card w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
+                    <h3 className="text-white text-xl font-semibold">Select Resonator</h3>
+                    <button onClick={() => setFarmPickerOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
+                  </div>
+                  <div className="p-3 border-b border-[var(--border-subtle)]">
+                    <div className="relative">
+                      <input type="text" value={farmSearch} onChange={e => setFarmSearch(e.target.value)} placeholder="Search resonators…" className="kuro-input w-full pl-8 text-base" aria-label="Search resonators" autoFocus />
+                      <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4">
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                      {[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS]
+                        .filter(n => !farmTargetsState.some(t => t.name === n))
+                        .filter(n => !farmSearch || n.toLowerCase().includes(farmSearch.toLowerCase()))
+                        .map(name => {
+                          const cd = CHARACTER_DATA[name];
+                          const img = DEFAULT_COLLECTION_IMAGES[name] || '';
+                          const rarity5 = cd?.rarity === 5;
+                          return (
+                            <button key={name} onClick={() => { setFarmTargetsState(prev => [...prev, { name, ascension: true, skills: true, weapon: false }]); setFarmPickerOpen(false); }}
+                              className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 ${rarity5 ? 'border bg-yellow-500/10 border-yellow-500/30' : 'border bg-purple-500/10 border-purple-500/30'}`}
+                              style={{ height: '90px', contain: 'paint' }}>
+                              {img && <img src={img} alt={name} className="absolute inset-0 w-full h-full object-contain pointer-events-none" loading="lazy" onError={hideOnError} />}
+                              <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
+                              <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{getElementShape(cd?.element) || cd?.element?.[0]}</div>
+                              <div className="absolute top-1 right-1"><Star size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" /></div>
+                              {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span></div>}
+                              <div className="absolute bottom-0 inset-x-0 p-1 z-10"><div className="text-white text-2xs font-medium truncate text-center leading-tight">{name}</div></div>
+                            </button>
+                          );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </FocusTrapModal>
+            )}
+
+            {/* Farming targets */}
+            {farmTargetsState.map((t, i) => {
+              const d = CHARACTER_DATA[t.name];
+              const elColor = d ? getElementColor(d.element) : '#9ca3af';
+              return (
+                <div key={t.name} className="p-2.5 rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-semibold text-base flex-1" style={{ color: elColor }}>{t.name}</span>
+                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {[['ascension', 'Ascension'], ['skills', 'Forte'], ['weapon', 'Weapon']].map(([key, label]) => (
+                      <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '6px 8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Material summary */}
+            {farmTargetsState.length > 0 && (() => {
+              const mats = {};
+              let totalShell = 0;
+              const addMat = (name, qty) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
+              farmTargetsState.forEach(t => {
+                const d = CHARACTER_DATA[t.name];
+                if (!d) return;
+                if (t.ascension) {
+                  addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
+                  const ct = COMMON_MAT_TIERS[d.ascension?.common];
+                  if (ct) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT3); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT4); }
+                  addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
+                  totalShell += RESONATOR_ASCENSION_COSTS.shell;
+                }
+                if (t.skills) {
+                  const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
+                  if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4); }
+                  const ct = COMMON_MAT_TIERS[d.ascension?.common];
+                  if (ct) { addMat(ct[0], SKILL_UPGRADE_COSTS.commonT3); addMat(ct[1], SKILL_UPGRADE_COSTS.commonT4); }
+                  addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
+                  totalShell += SKILL_UPGRADE_COSTS.shell;
+                }
+                if (t.weapon && d.bestWeapon) {
+                  const w = WEAPON_DATA?.[d.bestWeapon];
+                  if (w?.ascensionMaterials) {
+                    const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
+                    const ft = FORGERY_MAT_TIERS[w.ascensionMaterials.forgery];
+                    if (ft) { addMat(ft[0], costs.forgeryT3); addMat(ft[1], costs.forgeryT4); }
+                    const ct = COMMON_MAT_TIERS[w.ascensionMaterials.common];
+                    if (ct) { addMat(ct[0], costs.commonT3); addMat(ct[1], costs.commonT4); }
+                    totalShell += costs.shell;
+                  }
+                }
+              });
+              const matList = Object.entries(mats).sort((a, b) => b[1].qty - a[1].qty);
+              return (
+                <>
+                  {/* Shell Credit total */}
+                  <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-yellow-400 text-base font-medium">Shell Credit</span>
+                      <span className="text-yellow-400 font-bold text-lg kuro-number">{totalShell.toLocaleString('en-US')}</span>
+                    </div>
+                  </div>
+                  {/* Material grid — sub-card style */}
+                  <div className="kuro-label">Materials Required</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {matList.map(([name, { qty, img }]) => (
+                      <div key={name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                        {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={hideOnError} />}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                        </div>
+                        <span className="text-orange-400 font-bold kuro-number text-base flex-shrink-0">×{qty}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* Empty state */}
+            {farmTargetsState.length === 0 && (
+              <div className="kuro-empty-state text-center py-6">
+                <Hammer size={28} className="mx-auto mb-2 opacity-40" />
+                <div style={{ color: 'var(--text-muted)' }}>Awaiting farming directives</div>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>Select Resonators to compute material requirements for Ascension, Forte, and Weapon upgrades</p>
+              </div>
+            )}
+          </CardBody>
         )}
       </Card>
     </div>
