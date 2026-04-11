@@ -176,7 +176,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           />
         </div>
       )}
-      {imgUrl && isFull && <BannerParticleOverlay characterName={isChar ? item.name : item.forCharacter || item.name} element={item.element} />}
+      {imgUrl && isFull && !useSpine && <BannerParticleOverlay characterName={isChar ? item.name : item.forCharacter || item.name} element={item.element} />}
 
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
