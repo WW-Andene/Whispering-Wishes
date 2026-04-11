@@ -4,7 +4,7 @@
 // Loads .json + .atlas + .png triplet from /spine/{folder}/ and plays idle loop.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useRef, memo } from 'react';
+import React, { useEffect, useRef, useState, memo } from 'react';
 import { SpinePlayer as SpinePlayerLib } from '@esotericsoftware/spine-player';
 import '@esotericsoftware/spine-player/dist/spine-player.css';
 
@@ -55,14 +55,17 @@ function SpinePlayerComponent({
   style = {},
   showControls = false,
   backgroundColor = '#00000000',
+  onError,
 }) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current || !characterId) return;
+    if (!containerRef.current || !characterId || failed) return;
     if (!SPINE_CHARACTERS[characterId]) {
       console.warn(`[SpinePlayer] Unknown character: "${characterId}"`);
+      setFailed(true);
       return;
     }
 
@@ -72,6 +75,9 @@ function SpinePlayerComponent({
       playerRef.current = null;
     }
 
+    // Clear any error HTML the spine-player may have dumped
+    containerRef.current.innerHTML = '';
+
     const basePath = `/spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
 
@@ -79,6 +85,10 @@ function SpinePlayerComponent({
       playerRef.current = new SpinePlayerLib(containerRef.current, {
         jsonUrl: `${basePath}/${prefix}.json`,
         atlasUrl: `${basePath}/${prefix}.atlas`,
+        // Explicitly map the atlas image filename → full path
+        rawDataURIs: {
+          [`${prefix}.png`]: `${basePath}/${prefix}.png`,
+        },
         animation,
         loop,
         showControls,
@@ -86,15 +96,23 @@ function SpinePlayerComponent({
         alpha: true,
         premultipliedAlpha: false,
         preserveDrawingBuffer: false,
-        // Fit the skeleton within the container
         viewport: {
           debugRender: false,
         },
-        // Disable default UI elements for clean integration
         showLoading: true,
+        error: (player, msg) => {
+          console.error(`[SpinePlayer] "${characterId}" error:`, msg);
+          // Clear the error HTML that spine-player dumps into the container
+          if (containerRef.current) containerRef.current.innerHTML = '';
+          setFailed(true);
+          if (onError) onError(characterId, msg);
+        },
       });
     } catch (err) {
       console.error(`[SpinePlayer] Failed to init "${characterId}":`, err);
+      if (containerRef.current) containerRef.current.innerHTML = '';
+      setFailed(true);
+      if (onError) onError(characterId, err);
     }
 
     return () => {
@@ -103,7 +121,10 @@ function SpinePlayerComponent({
         playerRef.current = null;
       }
     };
-  }, [characterId, animation, loop, showControls, backgroundColor]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed]);
+
+  // If spine failed, render nothing — let parent show fallback
+  if (failed) return null;
 
   return (
     <div
