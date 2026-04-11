@@ -113,7 +113,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <SpinePlayer
             characterId={spineId}
             className="w-full h-full"
-            style={{ opacity: 0.25, filter: 'saturate(0) brightness(1.2) sepia(1) hue-rotate(0deg) saturate(10) contrast(1.5)' }}
+            style={{ opacity: 0.5, filter: 'saturate(0) brightness(1.2) sepia(1) hue-rotate(0deg) saturate(10) contrast(1.5)' }}
             backgroundColor="#00000000"
             onError={() => setSpineFailed(true)}
           />
