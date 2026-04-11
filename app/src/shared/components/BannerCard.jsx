@@ -87,13 +87,22 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
   const useSpine = isFull && spineId && !spineFailed;
-  // DEBUG overlay: show both to measure offset
-  const debugSpine = spineId && !spineFailed;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
     <div className="relative overflow-hidden rounded-xl border banner-card" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : BANNER_SUBTLE_SHADOW }}>
-      {imgUrl && (
+      {useSpine && (
+        <div className="absolute inset-0" style={{ zIndex: 1 }}>
+          <SpinePlayer
+            characterId={spineId}
+            className="w-full h-full"
+            style={{ opacity: pictureOpacity }}
+            backgroundColor="#00000000"
+            onError={() => setSpineFailed(true)}
+          />
+        </div>
+      )}
+      {(!useSpine && imgUrl) && (
         <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
           <img
             src={imgUrl}
@@ -106,17 +115,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             }}
             loading="eager"
             onError={hideOnError}
-          />
-        </div>
-      )}
-      {debugSpine && (
-        <div className="absolute inset-0" style={{ zIndex: 2 }}>
-          <SpinePlayer
-            characterId={spineId}
-            className="w-full h-full"
-            style={{ opacity: 0.5 }}
-            backgroundColor="#00000000"
-            onError={() => setSpineFailed(true)}
           />
         </div>
       )}
