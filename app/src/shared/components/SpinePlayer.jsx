@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState, memo } from 'react';
 export const SPINE_CHARACTERS = {
   xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.5, tx: 10,  ty: -8 },
   qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.5, tx: 10,  ty: -8 },
-  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: 12,  ty: -8 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: 8,   ty: -8 },
   feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.5, tx: 10,  ty: -8 },
   linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.3, tx: 10,  ty: -8 },
   jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 10,  ty: -8 },
