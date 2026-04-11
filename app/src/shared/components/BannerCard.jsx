@@ -103,14 +103,14 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       )}
       {(!useSpine && imgUrl) && (
-        <div className="absolute inset-0" style={{ ...IMG_LAYER_STYLE, transform: 'scale(1.05)' }}>
+        <div className="absolute inset-0" style={{ ...IMG_LAYER_STYLE, transform: 'scale(1.05) translateY(0%)' }}>
           <img
             src={imgUrl}
             alt={item.name}
             className="w-full h-full object-cover breath-zoom"
             style={{
               opacity: pictureOpacity,
-              objectPosition: 'center 70%',
+              objectPosition: 'center 50%',
               maskImage: maskGradient,
               WebkitMaskImage: maskGradient,
             }}
