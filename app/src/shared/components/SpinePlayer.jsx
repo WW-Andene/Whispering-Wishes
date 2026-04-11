@@ -9,9 +9,9 @@ export const SPINE_CHARACTERS = {
   // tx/ty tuned per-character based on face offset from skeleton center
   xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: 3,   ty: 2.5 },
   qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: 0.5, ty: 2.5 },
-  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: -1,  ty: -1 },
-  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.3, tx: 4,   ty: -1 },
-  linnai:      { name: 'Lynae',        element: 'Spectro', scale: 2.3, tx: 4,   ty: -1 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: 1,   ty: -1 },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.3, tx: 5,   ty: -1 },
+  linnai:      { name: 'Lynae',        element: 'Spectro', scale: 2.3, tx: 5,   ty: -1 },
   jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 1.5, ty: 2.5 },
   luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: 1,   ty: 2.5 },
   yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: 2,   ty: 2.5 },
