@@ -7,19 +7,22 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
 
 export const SPINE_CHARACTERS = {
-  xigelika:    { name: 'Sigrika',      element: 'Aero' },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero' },
-  zanni:       { name: 'Zani',         element: 'Electro' },
-  feibi:       { name: 'Phoebe',       element: 'Spectro' },
-  linnai:      { name: 'Rinne',        element: 'Havoc' },
-  jinxi:       { name: 'Jinhsi',       element: 'Spectro' },
-  luokeke:     { name: 'Lumi',         element: 'Glacio' },
-  yinlin:      { name: 'Yinlin',       element: 'Electro' },
-  bulante:     { name: 'Brant',        element: 'Fusion' },
-  jiyan:       { name: 'Jiyan',        element: 'Aero' },
-  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro' },
-  changli:     { name: 'Changli',      element: 'Fusion' },
-  chun:        { name: 'Chun',         element: 'Glacio' },
+  // viewport: { x, y, width, height } in skeleton coordinates
+  // origin (0,0) is at character feet; y increases upward
+  // Tuned so upper body fills the banner card like the static image
+  xigelika:    { name: 'Sigrika',      element: 'Aero',    vp: { x: 0, y: 400, w: 1400, h: 900 } },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    vp: { x: 0, y: 400, w: 1300, h: 900 } },
+  zanni:       { name: 'Zani',         element: 'Electro', vp: { x: 0, y: 1800, w: 5100, h: 3200 } },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', vp: { x: 0, y: 400, w: 1400, h: 900 } },
+  linnai:      { name: 'Rinne',        element: 'Havoc',   vp: { x: 0, y: 500, w: 1700, h: 1000 } },
+  jinxi:       { name: 'Jinhsi',       element: 'Spectro', vp: { x: 0, y: 500, w: 2000, h: 1200 } },
+  luokeke:     { name: 'Lumi',         element: 'Glacio',  vp: { x: 0, y: 350, w: 1200, h: 750 } },
+  yinlin:      { name: 'Yinlin',       element: 'Electro', vp: { x: 0, y: 350, w: 1500, h: 900 } },
+  bulante:     { name: 'Brant',        element: 'Fusion',  vp: { x: 0, y: 450, w: 1500, h: 950 } },
+  jiyan:       { name: 'Jiyan',        element: 'Aero',    vp: { x: 0, y: 400, w: 1600, h: 950 } },
+  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', vp: { x: 0, y: 500, w: 1550, h: 1000 } },
+  changli:     { name: 'Changli',      element: 'Fusion',  vp: { x: 0, y: 550, w: 1750, h: 1100 } },
+  chun:        { name: 'Chun',         element: 'Glacio',  vp: { x: 0, y: 400, w: 1200, h: 800 } },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
@@ -62,6 +65,8 @@ function SpinePlayerComponent({
 
     const basePath = `spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
+    const charData = SPINE_CHARACTERS[characterId];
+    const vp = charData.vp;
 
     try {
       playerRef.current = new window.spine.SpinePlayer(containerRef.current, {
@@ -74,6 +79,17 @@ function SpinePlayerComponent({
         alpha: true,
         premultipliedAlpha: false,
         showLoading: true,
+        viewport: {
+          x: vp.x,
+          y: vp.y,
+          width: vp.w,
+          height: vp.h,
+          padLeft: '0%',
+          padRight: '0%',
+          padTop: '0%',
+          padBottom: '0%',
+          debugRender: false,
+        },
         error: (player, msg) => {
           console.error(`[SpinePlayer] "${characterId}":`, msg);
           if (containerRef.current) containerRef.current.innerHTML = '';
