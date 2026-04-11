@@ -535,8 +535,8 @@ const ANIMATED_BACKGROUNDS = [
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
-    id: 'kuro-hero-mobile',
-    name: 'Kuro Hero',
+    id: 'startorch-academy',
+    name: 'Startorch Academy',
     art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/wm2id79usopllntxt7-1766736146258_g8ss4o.mp4',
     poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/wm2id79usopllntxt7-1766736146258_g8ss4o.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
