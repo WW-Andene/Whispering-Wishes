@@ -11,6 +11,7 @@ import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { BANNER_THEMES, CHARACTER_THEME_MAP, ELEMENT_THEME_FALLBACK } from './bannerThemes.js';
+import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -141,11 +142,22 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
+  const spineId = isChar ? getSpineId(item.name) : null;
+  const useSpine = isFull && spineId;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
     <div className="relative overflow-hidden rounded-xl border banner-card" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : BANNER_SUBTLE_SHADOW }}>
-      {imgUrl && (
+      {useSpine ? (
+        <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
+          <SpinePlayer
+            characterId={spineId}
+            className="w-full h-full"
+            style={{ opacity: pictureOpacity }}
+            backgroundColor="#00000000"
+          />
+        </div>
+      ) : imgUrl && (
         <div className="absolute inset-0" style={IMG_LAYER_STYLE}>
           <img
             src={imgUrl}

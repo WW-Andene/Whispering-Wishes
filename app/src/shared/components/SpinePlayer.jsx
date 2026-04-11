@@ -11,8 +11,8 @@ import '@esotericsoftware/spine-player/dist/spine-player.css';
 // Internal pinyin → display name mapping
 export const SPINE_CHARACTERS = {
   xigelika:    { name: 'Sigrika',      element: 'Aero' },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Glacio' },
-  zanni:       { name: 'Zanni',        element: 'Electro' },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero' },
+  zanni:       { name: 'Zani',         element: 'Electro' },
   feibi:       { name: 'Phoebe',       element: 'Spectro' },
   linnai:      { name: 'Rinne',        element: 'Havoc' },
   jinxi:       { name: 'Jinhsi',       element: 'Spectro' },
@@ -24,6 +24,17 @@ export const SPINE_CHARACTERS = {
   changli:     { name: 'Changli',      element: 'Fusion' },
   chun:        { name: 'Chun',         element: 'Glacio' },
 };
+
+// English display name → pinyin spine ID (case-insensitive lookup)
+const NAME_TO_SPINE_ID = Object.fromEntries(
+  Object.entries(SPINE_CHARACTERS).map(([id, { name }]) => [name.toLowerCase(), id])
+);
+
+/** Look up spine ID from English display name. Returns null if no spine asset exists. */
+export function getSpineId(displayName) {
+  if (!displayName) return null;
+  return NAME_TO_SPINE_ID[displayName.toLowerCase()] || null;
+}
 
 /**
  * SpinePlayer — renders a single Spine-animated resonator.
