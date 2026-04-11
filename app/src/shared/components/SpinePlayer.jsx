@@ -6,19 +6,19 @@
 import React, { useEffect, useRef, useState, memo } from 'react';
 
 export const SPINE_CHARACTERS = {
-  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: -3, ty: -8 },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: -3, ty: -8 },
-  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: -3, ty: -8 },
-  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.3, tx: -3, ty: -8 },
-  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.3, tx: -3, ty: -8 },
-  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: -3, ty: -8 },
-  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: -3, ty: -8 },
-  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: -3, ty: -8 },
-  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.3, tx: -3, ty: -8 },
-  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.3, tx: -3, ty: -8 },
-  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: -3, ty: -8 },
-  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: -3, ty: -8 },
-  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: -3, ty: -8 },
+  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: 3, ty: 8 },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: 3, ty: 8 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.3, tx: 3, ty: 8 },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.3, tx: 3, ty: 8 },
+  linnai:      { name: 'Rinne',        element: 'Havoc',   scale: 2.3, tx: 3, ty: 8 },
+  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 3, ty: 8 },
+  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: 3, ty: 8 },
+  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: 3, ty: 8 },
+  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.3, tx: 3, ty: 8 },
+  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.3, tx: 3, ty: 8 },
+  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 3, ty: 8 },
+  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 3, ty: 8 },
+  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 3, ty: 8 },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
