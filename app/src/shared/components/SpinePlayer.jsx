@@ -75,47 +75,61 @@ function SpinePlayerComponent({
       playerRef.current = null;
     }
 
-    // Clear any error HTML the spine-player may have dumped
     containerRef.current.innerHTML = '';
 
     const basePath = `/spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
+    let cancelled = false;
+    let blobUrl = null;
 
-    try {
-      playerRef.current = new SpinePlayerLib(containerRef.current, {
-        jsonUrl: `${basePath}/${prefix}.json`,
-        atlasUrl: `${basePath}/${prefix}.atlas`,
-        animation,
-        loop,
-        showControls,
-        backgroundColor,
-        alpha: true,
-        premultipliedAlpha: false,
-        preserveDrawingBuffer: false,
-        viewport: {
-          debugRender: false,
-        },
-        showLoading: true,
-        error: (player, msg) => {
-          console.error(`[SpinePlayer] "${characterId}" error:`, msg);
-          // Clear the error HTML that spine-player dumps into the container
-          if (containerRef.current) containerRef.current.innerHTML = '';
-          setFailed(true);
-          if (onError) onError(characterId, msg);
-        },
+    // Preload the PNG as a blob URL to bypass spine-player's
+    // crossOrigin="anonymous" image loader which fails on some hosts
+    fetch(`${basePath}/${prefix}.png`)
+      .then(r => {
+        if (!r.ok) throw new Error(`PNG fetch ${r.status}`);
+        return r.blob();
+      })
+      .then(blob => {
+        if (cancelled) return;
+        blobUrl = URL.createObjectURL(blob);
+
+        playerRef.current = new SpinePlayerLib(containerRef.current, {
+          jsonUrl: `${basePath}/${prefix}.json`,
+          atlasUrl: `${basePath}/${prefix}.atlas`,
+          rawDataURIs: {
+            [`${prefix}.png`]: blobUrl,
+          },
+          animation,
+          loop,
+          showControls,
+          backgroundColor,
+          alpha: true,
+          premultipliedAlpha: false,
+          preserveDrawingBuffer: false,
+          viewport: { debugRender: false },
+          showLoading: true,
+          error: (player, msg) => {
+            console.error(`[SpinePlayer] "${characterId}" error:`, msg);
+            if (containerRef.current) containerRef.current.innerHTML = '';
+            setFailed(true);
+            if (onError) onError(characterId, msg);
+          },
+        });
+      })
+      .catch(err => {
+        console.error(`[SpinePlayer] Preload failed "${characterId}":`, err);
+        if (containerRef.current) containerRef.current.innerHTML = '';
+        setFailed(true);
+        if (onError) onError(characterId, err);
       });
-    } catch (err) {
-      console.error(`[SpinePlayer] Failed to init "${characterId}":`, err);
-      if (containerRef.current) containerRef.current.innerHTML = '';
-      setFailed(true);
-      if (onError) onError(characterId, err);
-    }
 
     return () => {
+      cancelled = true;
       if (playerRef.current) {
         try { playerRef.current.dispose(); } catch (_) { /* noop */ }
         playerRef.current = null;
       }
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
   }, [characterId, animation, loop, showControls, backgroundColor, failed]);
 
