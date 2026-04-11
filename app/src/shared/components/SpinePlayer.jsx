@@ -60,7 +60,7 @@ function SpinePlayerComponent({
     }
     containerRef.current.innerHTML = '';
 
-    const basePath = `/spine/role_${characterId}`;
+    const basePath = `spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
 
     try {
