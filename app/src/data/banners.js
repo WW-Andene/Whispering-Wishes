@@ -524,6 +524,18 @@ const OTHER_BACKGROUNDS = [
   { id: 'three-two-one-cheese', name: 'Three Two One Cheese', art: 'https://i.ibb.co/dJ2xPnNf/Three-two-one-cheese.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
 ];
 
+// Animated (video) backgrounds — hosted on Cloudinary. `art` is the video URL,
+// `poster` is a JPG first-frame used as picker thumbnail and <video poster>.
+const ANIMATED_BACKGROUNDS = [
+  {
+    id: 'bg-video-1',
+    name: 'Background Video',
+    art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/bg-video_nvf8y9.mp4',
+    poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/bg-video_nvf8y9.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+];
+
 
 // ══════════════════════════════════════════════════════════════════════════════
 // EVENT HISTORY — Recurring event periods with verified dates
@@ -604,4 +616,5 @@ export {
   CHARACTER_THEMES,
   VERSION_SPLASH_SCREENS,
   OTHER_BACKGROUNDS,
+  ANIMATED_BACKGROUNDS,
 };
