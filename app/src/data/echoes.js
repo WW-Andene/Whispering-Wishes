@@ -10,7 +10,7 @@ const ECHO_SETS = {
   'Sierra Gale':          { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Intro Skill → +30% Aero DMG', p5val: { aeroDmg: 40 } },
   'Celestial Light':      { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Intro Skill → +30% Spectro DMG', p5val: { spectroDmg: 40 } },
   'Havoc Eclipse':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Basic/Heavy → +7.5% Havoc DMG (max x4)', p5val: { havocDmg: 40 } },
-  'Sun-Sinking Eclipse':  { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Basic/Heavy → +7.5% Havoc DMG (max x4)', p5val: { havocDmg: 40 } },
+  // Sun-Sinking Eclipse was renamed to Havoc Eclipse in v1.4 — they are the same set
   'Rejuvenating Glow':    { element: 'Heal',    p2: '+10% Healing',     p2val: { healBonus: 10 },   p5: 'Heal ally → +15% ATK for team', p5val: { teamAtk: 15 } },
   'Moonlit Clouds':       { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Outro → +22.5% ATK for next', p5val: { nextAtk: 22.5 } },
   'Lingering Tunes':      { element: 'ATK',     p2: '+10% ATK',         p2val: { atkPct: 10 },      p5: 'ATK +5%/1.5s (max x4), Outro +60%', p5val: { atkPct: 20, outroDmg: 60 } },
@@ -23,7 +23,7 @@ const ECHO_SETS = {
   'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
   // v2.5–2.6 — Sanguis Plateaus sets
   'Flaming Clawprint':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Liberation → +15% Fusion team, +20% Lib DMG for 35s', p5val: { fusionDmg: 15, libDmg: 20 } },
-  'Crown of Valor':       { element: 'Shield',  p3: 'Shield → ATK +6%, Crit DMG +4% for 4s (0.5s CD, max x5)', p3val: { atkPct: 30, critDmg: 40 } },
+  'Crown of Valor':       { element: 'Shield',  p3: 'Shield → ATK +6%, Crit DMG +4% for 4s (0.5s CD, max x5)', p3val: { atkPct: 30, critDmg: 20 } },
   'Law of Harmony':       { element: 'Support', p3: 'Echo Skill → +30% Heavy ATK DMG 4s; team Echo Skill DMG +4% 30s (max x4)', p3val: { heavyDmg: 30, echoDmg: 16 } },
   // v2.7–2.8 — Chronorift sets
   "Flamewing's Shadow":   { element: 'Fusion',  p3: 'Echo Skill → +20% Heavy Crit Rate; Heavy ATK → +20% Echo Crit Rate; both → +16% Fusion DMG', p3val: { critRate: 20, fusionDmg: 16 } },
