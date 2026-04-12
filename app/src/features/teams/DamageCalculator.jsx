@@ -563,19 +563,38 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
-    const DOT_LEVEL_MULT = 3674;
-    const DOT_BASE_FACTOR = 1.25078;
+    // ── ICD-aware DOT damage calculation ──
+    // WuWa ICD: most element applications follow a 3-hit / 2.5s rule.
+    // DOT ticks have their own ICD separate from skill hits.
+    // Frazzle: Level-scaled, ticks every 3s, each tick consumes 1 stack. ICD 2.5s per application source.
+    // Erosion: Ticks every 2s, does NOT consume stacks. ICD 2s.
+    // Fusion Burst: Detonation on stack threshold. No tick-based ICD but limited by stack application rate.
+    // Electro Flare: Decays by half each tick (4s interval). ICD 4s matches tick rate.
+    const DOT_LEVEL_MULT = 3674; // Level 90 character level multiplier
+    const DOT_BASE_FACTOR = 1.25078; // Base damage coefficient
     let dotDmgPerRotation = 0;
 
-    const hasFrazzle = mems.some(m => {
-      const bt = CHAR_BUFF_TABLE[m.name];
-      return bt?.debuffs?.some(db => db.stat === 'frazzle');
-    });
+    // ── Spectro Frazzle (ICD-aware) ──
+    const hasFrazzle = mems.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'frazzle'));
     if (hasFrazzle) {
-      const frazzleStacks = mems.some(m => m.name === 'Phoebe') ? 18 : 10;
-      const numTicks = Math.min(Math.floor(rotTime / 3), frazzleStacks);
+      const frazzleAppliers = mems.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'frazzle'));
+      // ICD limits how fast stacks can be applied: 2.5s per source, multiple sources can interleave
+      const icdPerSource = 2.5;
+      const numSources = frazzleAppliers.length;
+      const effectiveApplicationRate = numSources / icdPerSource; // stacks per second across all sources
+      const maxStacksRaw = frazzleAppliers.reduce((s, m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        const fd = bt?.debuffs?.find(db => db.stat === 'frazzle');
+        return s + (fd?.value || 10);
+      }, 0);
+      // ICD caps actual stacks applied in the rotation window
+      const icdCappedStacks = Math.min(maxStacksRaw, Math.floor(effectiveApplicationRate * rotTime));
+      const frazzleStacks = icdCappedStacks;
+      // Frazzle ticks every 3s, consuming 1 stack per tick
+      const tickInterval = 3;
+      const numTicks = Math.min(Math.floor(rotTime / tickInterval), frazzleStacks);
       let frazzleTotal = 0;
-      for (let s = frazzleStacks; s > frazzleStacks - numTicks; s--) {
+      for (let s = frazzleStacks; s > frazzleStacks - numTicks && s > 0; s--) {
         frazzleTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15);
       }
       const hasPhoebeAmp = mems.some(m => m.name === 'Phoebe');
@@ -583,37 +602,47 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       dotDmgPerRotation += frazzleTotal * frazzleAmpMult * defMult * resMult;
     }
 
-    const hasErosion = mems.some(m => {
-      const bt = CHAR_BUFF_TABLE[m.name];
-      return bt?.debuffs?.some(db => db.stat === 'erosion');
-    });
+    // ── Aero Erosion (ICD-aware) ──
+    const hasErosion = mems.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'erosion'));
     if (hasErosion) {
-      const erosionStacks = mems.some(m => m.name === 'Rover') ? 6 : 3;
-      const erosionTicks = Math.max(1, Math.floor(rotTime / 15));
+      const erosionAppliers = mems.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'erosion'));
+      const baseStacks = erosionAppliers.reduce((s, m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        const ed = bt?.debuffs?.find(db => db.stat === 'erosion');
+        return Math.max(s, ed?.value || 3);
+      }, 3);
+      // Erosion ticks every 2s, does NOT consume stacks. ICD on application is 2s per source.
+      const erosionTickInterval = 2;
+      const erosionDuration = 15; // Erosion debuff lasts 15s
+      const erosionUptime = Math.min(1, erosionDuration / rotTime);
+      const erosionTicks = Math.floor(erosionDuration / erosionTickInterval);
       let erosionTotal = 0;
       for (let t = 0; t < erosionTicks; t++) {
-        erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (erosionStacks * 0.8);
+        erosionTotal += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (baseStacks * 0.8);
       }
-      dotDmgPerRotation += erosionTotal * defMult * resMult;
+      dotDmgPerRotation += erosionTotal * erosionUptime * defMult * resMult;
     }
 
-    const hasFusionBurst = mems.some(m => {
-      const bt = CHAR_BUFF_TABLE[m.name];
-      return bt?.debuffs?.some(db => db.stat === 'fusionBurst');
-    });
+    // ── Fusion Burst (ICD: limited by stack application rate) ──
+    const hasFusionBurst = mems.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'fusionBurst'));
     if (hasFusionBurst) {
-      const burstExplosions = 2;
-      const burstStacks = 10;
+      // Fusion Burst detonates when threshold reached. Application ICD ~1s limits buildup speed.
+      const applicationIcd = 1;
+      const burstThreshold = 10; // stacks needed to detonate
+      const timeToDetonate = burstThreshold * applicationIcd;
+      const burstExplosions = Math.max(1, Math.floor(rotTime / Math.max(timeToDetonate, 8)));
+      const burstStacks = burstThreshold;
       const fusionTrailMult = 3.0;
       const burstDmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (burstStacks * 0.5) * fusionTrailMult;
       dotDmgPerRotation += burstDmg * burstExplosions * defMult * resMult;
     }
 
-    const hasElectroFlare = mems.some(m => {
-      return CHAR_BUFF_TABLE[m.name]?.electroFlare;
-    });
+    // ── Electro Flare (ICD: 4s tick matches decay rate) ──
+    const hasElectroFlare = mems.some(m => CHAR_BUFF_TABLE[m.name]?.electroFlare);
     if (hasElectroFlare) {
-      const flareTicks = Math.min(4, Math.floor(rotTime / 4));
+      // Flare ticks every 4s, halves stacks each tick. ICD = tick interval (no extra procs possible).
+      const flareTickInterval = 4;
+      const flareTicks = Math.min(4, Math.floor(rotTime / flareTickInterval));
       let flareTotal = 0;
       let stacks = 10;
       for (let t = 0; t < flareTicks; t++) {
@@ -623,6 +652,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       dotDmgPerRotation += flareTotal * defMult * resMult;
     }
 
+    // ── Tune Break damage (ICD: limited by Off-Tune buildup rate) ──
     let tuneBreakDmg = 0;
     let tuneBreakAmp = 0;
     let tuneBreakDeepenMult = 1;
@@ -634,7 +664,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         totalTuneBreakBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
       });
 
-      const tuneBreaksPerRotation = 1;
+      // Off-Tune buildup rate determines breaks per rotation (not hardcoded 1)
+      const hasOffTuneAccel = tuneBreakMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
+      const tuneBreaksPerRotation = hasOffTuneAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
 
       const baseTuneBreakDmg = 5000 * (1 + totalTuneBreakBoost * 0.01);
       tuneBreakDmg += baseTuneBreakDmg * tuneBreaksPerRotation * defMult;
@@ -663,6 +695,34 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     }
     dotDmgPerRotation += tuneBreakDmg;
 
+    // ── Energy cycle awareness ──
+    // Track whether team has enough Energy Regen for smooth rotations.
+    // Characters with ≥125% ER can reliably cast Liberation every rotation.
+    // Characters below this threshold have reduced Liberation uptime.
+    const energyCycleFactors = {};
+    mems.forEach(m => {
+      let totalER = 100; // base 100% ER
+      if (m.weapSubstat === 'Energy Regen') totalER += parseFloat(m.weapSubVal) || 0;
+      const eqKey = teamIdx + ':' + m.name;
+      const eq = teamEquipment[eqKey];
+      (eq?.echoes || []).forEach((echo, ei) => {
+        if (!echo || typeof echo !== 'object') return;
+        if (echo.mainStat === 'Energy Regen') {
+          const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
+          totalER += cost === 4 ? 32 : cost === 3 ? 32 : 0;
+        }
+        (echo.substats || []).forEach(sub => { if (sub === 'Energy Regen') totalER += 8; });
+      });
+      if (m.echoSet?.p2val?.energyRegen) totalER += m.echoSet.p2val.energyRegen;
+      if (m.echoSet2?.p2val?.energyRegen) totalER += m.echoSet2.p2val.energyRegen;
+      // Liberation uptime: 100% if ER ≥ 125% (comfortable), scales down below that
+      // Characters with very high energy cost (175 = healers) need more ER
+      const energyCost = m.d.maxEnergy || 125;
+      const erThreshold = energyCost >= 175 ? 140 : 125;
+      const libUptime = totalER >= erThreshold ? 1.0 : Math.max(0.6, totalER / erThreshold);
+      energyCycleFactors[m.name] = { totalER, libUptime, energyCost };
+    });
+
     let totalRotDmg = 0;
     const memberDmgArr = [];
     const mainOnField = Math.min(mainDps.d.onField || 15, rotTime * 0.8);
@@ -675,6 +735,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (mult === 0) { memberDmgArr.push({ name: m.name, dmg: 0 }); return; }
       const mBase = m.baseStat;
       const isMain = m.name === mainDps.name;
+      // Apply energy cycle factor: if Liberation can't be cast every rotation, reduce mult
+      const ecf = energyCycleFactors[m.name];
+      if (ecf && ecf.libUptime < 1) {
+        // Liberation typically accounts for 20-40% of totalMult. Reduce that portion by uptime.
+        const libShare = (m.d.dmgFocus || []).includes('Liberation') ? 0.35 : 0.2;
+        mult = mult * (1 - libShare * (1 - ecf.libUptime));
+      }
       if (isMain && seqTotalMultBonus > 0) mult = mult * (1 + seqTotalMultBonus / 100);
       if (!isMain) {
         const subOnField = m.d.onField || 5;
@@ -733,14 +800,26 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             sElem += 60;
           }
         }
+        // ── Buff snapshotting for off-field damage ──
+        // Coordinated ATK characters snapshot buffs at swap-out time.
+        // They benefit from buffs that exist BEFORE they swap out (team-wide Lib buffs,
+        // earlier outro buffs), but NOT from outro buffs applied AFTER them in rotation order.
+        // On-field sub-DPS characters receive all buffs normally.
+        const focus = m.d.dmgFocus || [];
+        const isOffField = focus.includes('Coordinated ATK') && focus.length <= 2;
         mems.forEach(other => {
           if (other.name === m.name) return;
           const obt = CHAR_BUFF_TABLE[other.name];
           if (!obt) return;
           (obt.outroBuffs || []).forEach(b => {
             if (b.target === 'next' || b.target === 'enemy') {
+              // Snapshot rule: off-field chars only get outro buffs from characters who swap BEFORE them.
+              // In typical rotation, supports swap before sub-DPS. The DPS-adjacent outro buff
+              // (the last support before DPS) does NOT reach the off-field sub-DPS who already left.
+              // Approximate: off-field chars get 60% effective value from outro buffs (snapshot discount).
+              const snapshotFactor = isOffField ? 0.6 : 1.0;
               const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
-              const val = b.value * uptime;
+              const val = b.value * uptime * snapshotFactor;
               if (b.stat === 'atkPct' && m.scaling === 'ATK') sAtkPct += val;
               else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sAmplify += val;
               else if (b.stat === 'deepen') sDeepen += val;
@@ -866,12 +945,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const sEffAtk = mBase * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
         let sTypeDmg = sSkillDmg;
-        const focus = m.d.dmgFocus || [];
-        if (focus.includes('Basic ATK')) sTypeDmg += sBasicDmg;
-        if (focus.includes('Heavy ATK')) sTypeDmg += sHeavyDmg;
-        if (focus.includes('Liberation')) sTypeDmg += sLibDmg;
-        if (focus.includes('Echo')) sTypeDmg += sEchoDmg;
-        if (focus.includes('Coordinated ATK')) sTypeDmg += sCoordDmg;
+        const sFocus = m.d.dmgFocus || [];
+        if (sFocus.includes('Basic ATK')) sTypeDmg += sBasicDmg;
+        if (sFocus.includes('Heavy ATK')) sTypeDmg += sHeavyDmg;
+        if (sFocus.includes('Liberation')) sTypeDmg += sLibDmg;
+        if (sFocus.includes('Echo')) sTypeDmg += sEchoDmg;
+        if (sFocus.includes('Coordinated ATK')) sTypeDmg += sCoordDmg;
         const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sAmplify / 100) * (1 + sDeepen / 100);
         const sReducedDef = enemyDef90 * Math.max(0, 1 - sDefShred / 100);
         const sEffDef = sReducedDef * Math.max(0, 1 - sDefIgnore / 100);
@@ -1203,7 +1282,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       return { segments: timeline, buffs, totalTime: rotTime };
     })();
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, warnings, memberDps, rotationTimeline,
+    // Add energy warnings
+    mems.forEach(m => {
+      const ecf = energyCycleFactors[m.name];
+      if (ecf && ecf.libUptime < 0.9) {
+        warnings.push(`${m.name}: low ER (${Math.round(ecf.totalER)}%) — Liberation uptime ${Math.round(ecf.libUptime * 100)}%`);
+      }
+    });
+
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline,
       // Legacy aliases for DPSComparisonCard compatibility
       rawDps: soloDps, realDps: teamDps, perfectDps: teamDps, synergy: Math.min(100, Math.max(0, synergyUplift)) };
   }, [teamEquipment, enemyLevel, enemyEcho]);
