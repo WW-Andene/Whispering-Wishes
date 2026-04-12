@@ -121,7 +121,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <span className="kuro-badge kuro-badge-neutral">{(() => {
                 const [m, d] = data.birthday.split('-');
                 const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return `${months[parseInt(m)]} ${parseInt(d)}`;
+                return `${months[parseInt(m, 10)]} ${parseInt(d, 10)}`;
               })()}</span>
             )}
           </div>

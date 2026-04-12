@@ -67,6 +67,7 @@ export default function ImportFlow({
       if (directGachaId) params.gachaId = directGachaId;
       if (directGachaType) params.gachaType = directGachaType;
       if (directLang) params.lang = directLang;
+      directAbortRef.current?.abort();
       directAbortRef.current = new AbortController();
       setDirectStatus('fetching');
       setDirectError('');

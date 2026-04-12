@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { Archive, BarChart3, Calculator, Calendar, Check, ChevronDown, Crown, Diamond, Download, Heart, Info, Menu, Settings, Sparkles, Star, Sword, TrendingUp, Trophy, User, Users, X, Zap } from 'lucide-react';
+import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Sparkles, TrendingUp, User, Users, X } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
 import { CURRENT_BANNERS } from './data/banners.js';
@@ -819,7 +819,7 @@ function WhisperingWishesInner() {
   const handleOnboardingComplete = useCallback(() => {
     setShowOnboarding(false);
     dispatch({ type: 'SET_SETTINGS', field: 'showOnboarding', value: false });
-  }, []);
+  }, [dispatch]);
 
   const {
     activeTheme, themeAccent,
@@ -1443,7 +1443,7 @@ function WhisperingWishesInner() {
           onViewInTeams={() => {
             const name = detailModal.name;
             const team = state.teams?.[state.activeTeamIndex] || { slots: [null, null, null] };
-            const emptySlot = team.slots.findIndex(s => s == null);
+            const emptySlot = team.slots.findIndex(s => s === null);
             if (emptySlot !== -1 && !team.slots.includes(name)) {
               dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: emptySlot, character: name });
             }

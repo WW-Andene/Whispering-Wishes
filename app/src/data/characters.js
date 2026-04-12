@@ -1647,35 +1647,14 @@ const RELEASE_ORDER = [
   'Sigrika',
 ];
 
-// All known character names (for filtering weapons vs characters)
-const ALL_CHARACTERS = new Set([
-  // 5★
-  'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
-  'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
-  'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
-  'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
-  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath', 'Sigrika',
-  // 4★
-  'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
-  'Mortefi', 'Youhu', 'Lumi', 'Buling',
-]);
+// Derived character lists — single source of truth from CHARACTER_DATA
+// Adding a new character only requires editing CHARACTER_DATA + RELEASE_ORDER
+const ALL_5STAR_RESONATORS = RELEASE_ORDER.filter(name => CHARACTER_DATA[name]?.rarity === 5);
+const ALL_4STAR_RESONATORS = Object.keys(CHARACTER_DATA).filter(name => CHARACTER_DATA[name].rarity === 4);
+const ALL_CHARACTERS = new Set([...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS]);
 
-// Complete lists for Collection display (show all, grey out unpossessed)
 // Standard 5★ characters (Tidal Chorus / 50-50 loss pool) — update when new standard chars are added
 const STANDARD_5STAR_CHARACTERS = new Set(['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina']);
-
-const ALL_5STAR_RESONATORS = [
-  'Rover', 'Jiyan', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina', 'Yinlin',
-  'Jinhsi', 'Changli', 'Zhezhi', 'Xiangli Yao', 'Shorekeeper', 'Camellya',
-  'Carlotta', 'Roccia', 'Phoebe', 'Brant', 'Cantarella', 'Zani', 'Ciaccona',
-  'Cartethyia', 'Lupa', 'Phrolova', 'Augusta', 'Iuno', 'Galbrena', 'Qiuyuan',
-  'Chisa', 'Lynae', 'Mornye', 'Luuk Herssen', 'Aemeath', 'Sigrika',
-];
-
-const ALL_4STAR_RESONATORS = [
-  'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 
-  'Mortefi', 'Youhu', 'Lumi', 'Buling',
-];
 
 export {
   CHARACTER_DATA,

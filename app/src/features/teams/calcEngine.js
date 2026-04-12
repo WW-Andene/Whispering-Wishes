@@ -17,6 +17,22 @@ export const BASE_CRIT_DMG = 150;
 export const DOT_LEVEL_MULT = 3674;   // Level 90 character level multiplier
 export const DOT_BASE_FACTOR = 1.25078; // Base damage coefficient for DOT ticks
 
+// DOT mechanic constants (extracted from inline magic numbers)
+export const FRAZZLE_TICK_INTERVAL = 3;    // Frazzle ticks every 3s, consumes 1 stack
+export const FRAZZLE_STACK_MULT = 0.15;    // DMG multiplier per Frazzle stack
+export const FRAZZLE_ICD_PER_SOURCE = 2.5; // Application ICD per source (seconds)
+export const EROSION_TICK_INTERVAL = 2;    // Erosion ticks every 2s, does NOT consume stacks
+export const EROSION_STACK_MULT = 0.8;     // DMG multiplier per Erosion stack
+export const EROSION_DURATION = 15;        // Erosion debuff duration (seconds)
+export const FUSION_BURST_THRESHOLD = 10;  // Stacks needed to detonate
+export const FUSION_BURST_APP_ICD = 1;     // Application ICD (seconds)
+export const FUSION_TRAIL_MULT = 3.0;      // Fusion Trail damage multiplier
+export const FLARE_TICK_INTERVAL = 4;      // Electro Flare tick interval (seconds)
+export const FLARE_STACK_MULT = 0.12;      // DMG multiplier per Flare stack
+export const TUNE_BREAK_BASE_DMG = 5000;   // Base Tune Break damage
+export const ER_THRESHOLD_STANDARD = 125;  // ER threshold for standard characters
+export const ER_THRESHOLD_HEALER = 140;    // ER threshold for 175-cost healers
+
 // Echo main stat values by cost tier
 export const ECHO_MAIN_STAT_VALUES = {
   4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
@@ -240,19 +256,17 @@ export function calcDmgBonus(elemDmg, skillDmg, amplify, deepen) {
 export function calcFrazzleDmg(members, rotTime, defMult, resMult) {
   const appliers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'frazzle'));
   if (!appliers.length) return { dmg: 0, active: false };
-  const icdPerSource = 2.5;
   const numSources = appliers.length;
-  const effectiveRate = numSources / icdPerSource;
+  const effectiveRate = numSources / FRAZZLE_ICD_PER_SOURCE;
   const maxStacksRaw = appliers.reduce((s, m) => {
     const fd = CHAR_BUFF_TABLE[m.name]?.debuffs?.find(db => db.stat === 'frazzle');
     return s + (fd?.value || 10);
   }, 0);
   const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime));
-  const tickInterval = 3;
-  const numTicks = Math.min(Math.floor(rotTime / tickInterval), stacks);
+  const numTicks = Math.min(Math.floor(rotTime / FRAZZLE_TICK_INTERVAL), stacks);
   let total = 0;
   for (let s = stacks; s > stacks - numTicks && s > 0; s--) {
-    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15);
+    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * FRAZZLE_STACK_MULT);
   }
   const hasPhoebe = members.some(m => m.name === 'Phoebe');
   return { dmg: total * (hasPhoebe ? 2.0 : 1.0) * defMult * resMult, active: true };
@@ -265,30 +279,28 @@ export function calcErosionDmg(members, rotTime, defMult, resMult) {
     const ed = CHAR_BUFF_TABLE[m.name]?.debuffs?.find(db => db.stat === 'erosion');
     return Math.max(s, ed?.value || 3);
   }, 3);
-  const duration = 15;
-  const uptime = Math.min(1, duration / rotTime);
-  const ticks = Math.floor(duration / 2);
+  const uptime = Math.min(1, EROSION_DURATION / rotTime);
+  const ticks = Math.floor(EROSION_DURATION / EROSION_TICK_INTERVAL);
   let total = 0;
-  for (let t = 0; t < ticks; t++) total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (baseStacks * 0.8);
+  for (let t = 0; t < ticks; t++) total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (baseStacks * EROSION_STACK_MULT);
   return { dmg: total * uptime * defMult * resMult, active: true };
 }
 
 export function calcFusionBurstDmg(members, rotTime, defMult, resMult) {
   const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'fusionBurst'));
   if (!has) return { dmg: 0, active: false };
-  const threshold = 10;
-  const explosions = Math.max(1, Math.floor(rotTime / Math.max(threshold, 8)));
-  const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (threshold * 0.5) * 3.0;
+  const explosions = Math.max(1, Math.floor(rotTime / Math.max(FUSION_BURST_THRESHOLD, 8)));
+  const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (FUSION_BURST_THRESHOLD * 0.5) * FUSION_TRAIL_MULT;
   return { dmg: dmg * explosions * defMult * resMult, active: true };
 }
 
 export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
   const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.electroFlare);
   if (!has) return { dmg: 0, active: false };
-  const ticks = Math.min(4, Math.floor(rotTime / 4));
+  const ticks = Math.min(4, Math.floor(rotTime / FLARE_TICK_INTERVAL));
   let total = 0, stacks = 10;
   for (let t = 0; t < ticks; t++) {
-    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * 0.12);
+    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * FLARE_STACK_MULT);
     stacks = Math.ceil(stacks / 2);
   }
   return { dmg: total * defMult * resMult, active: true };
@@ -304,7 +316,7 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult) {
   });
   const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
   const breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
-  let dmg = 5000 * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
+  let dmg = TUNE_BREAK_BASE_DMG * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
   tbMembers.forEach(m => {
     const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
     if (tb.ruptureDmgMult) {
@@ -343,7 +355,7 @@ export function calcEnergyCycles(members, teamEquipment, teamIdx) {
     if (m.echoSet?.p2val?.energyRegen) totalER += m.echoSet.p2val.energyRegen;
     if (m.echoSet2?.p2val?.energyRegen) totalER += m.echoSet2.p2val.energyRegen;
     const energyCost = m.d.maxEnergy || 125;
-    const erThreshold = energyCost >= 175 ? 140 : 125;
+    const erThreshold = energyCost >= 175 ? ER_THRESHOLD_HEALER : ER_THRESHOLD_STANDARD;
     factors[m.name] = {
       totalER,
       libUptime: totalER >= erThreshold ? 1.0 : Math.max(0.6, totalER / erThreshold),

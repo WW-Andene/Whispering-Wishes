@@ -121,7 +121,7 @@ const PWAProvider = ({ children }) => {
             const newWorker = registration.installing;
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[WW] New version available');
+                console.info('[WW] New version available');
               }
             });
           });

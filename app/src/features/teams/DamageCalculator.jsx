@@ -200,12 +200,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const echoes = mainEq?.echoes || [];
       const mainEl = (mainDps.d.element || '').toLowerCase();
       const elDmgKey = mainEl ? mainEl.charAt(0).toUpperCase() + mainEl.slice(1) + ' DMG' : '';
-      const mainStatVals = {
-        4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-        3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-        1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
-      };
-      const subVals = { 'ATK%': 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Basic ATK DMG': 9, 'Heavy ATK DMG': 9, 'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9 };
+      const mainStatVals = ECHO_MAIN_STAT_VALUES;
+      const subVals = ECHO_SUB_STAT_VALUES;
       const applyStat = (stat, val) => {
         if (stat === mainStatKey) atkPct += val;
         else if (stat === 'Crit Rate') cr += val;
