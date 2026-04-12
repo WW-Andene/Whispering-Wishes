@@ -75,6 +75,7 @@ import {
 } from './shared/constants/appConstants.js';
 import { silentCatch } from './utils/silentCatch.js';
 import { getMergedHistories } from './core/historyUtils.js';
+import { gatherAuxData, restoreAuxData } from './core/storageKeys.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -825,13 +826,7 @@ function WhisperingWishesInner() {
   // ── CloudStorageProvider callbacks ──────────────────────────────────────
   const getBackupPayload = useCallback(() => {
     const s = stateRef.current;
-    const aux = {};
-    try { const v = localStorage.getItem(VISUAL_SETTINGS_KEY); if (v) aux.visualSettings = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem(IMAGE_FRAMING_KEY); if (v) aux.imageFraming = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem(COLLECTION_IMAGES_KEY); if (v) aux.collectionImages = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem(TROPHY_OVERRIDES_KEY); if (v) aux.trophyOverrides = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem('ww-team-equipment'); if (v) aux.teamEquipment = JSON.parse(v); } catch {}
-    try { const v = localStorage.getItem('ww-calendar-notes'); if (v) aux.calendarNotes = JSON.parse(v); } catch {}
+    const aux = gatherAuxData();
     return {
       state: s,
       profile: s.profile,
@@ -853,31 +848,15 @@ function WhisperingWishesInner() {
     } else {
       dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
     }
-    // Restore auxiliary data if present
+    // Restore auxiliary data if present — localStorage via centralized registry
     if (data.aux && typeof data.aux === 'object') {
+      restoreAuxData(data.aux, sanitizeStateObj);
+      // Also sync React state for settings that have in-memory mirrors
       try {
-        if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
-          localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
-          setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
-        }
-        if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
-          localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
-          setImageFraming(sanitizeStateObj(data.aux.imageFraming));
-        }
-        if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
-          localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
-          setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
-        }
-        if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
-          localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
-          setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
-        }
-        if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
-          localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
-        }
-        if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
-          localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
-        }
+        if (data.aux.visualSettings) setVisualSettings(prev => ({ ...prev, ...sanitizeStateObj(data.aux.visualSettings) }));
+        if (data.aux.imageFraming) setImageFraming(sanitizeStateObj(data.aux.imageFraming));
+        if (data.aux.collectionImages) setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
+        if (data.aux.trophyOverrides) setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
       } catch {}
     }
   }, [dispatch, setImageFraming]);

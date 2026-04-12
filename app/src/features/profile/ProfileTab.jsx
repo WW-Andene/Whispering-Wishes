@@ -12,6 +12,7 @@ import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONAT
 import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
+import { clearAllAuxKeys } from '../../core/storageKeys.js';
 import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -1552,9 +1553,7 @@ function ProfileTab({
                   <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: `Are you sure you want to reset ALL data?${googleUser ? '\nThis includes your cloud backup.' : ''}\nThis cannot be undone.`, confirmLabel: 'Reset', destructive: true })) {
                     haptic.warning();
                     dispatch({ type: 'RESET' });
-                    // P4-F001: Clear ALL auxiliary localStorage keys on reset
-                    const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-equipment-presets', 'ww-calendar-notes', 'ww-owned-chars', 'ww-manual-counts', 'ww-bg-positions', 'ww-mini-panel-pos', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-admin-reset-v350', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id', 'ww-tracker-cat'];
-                    auxKeys.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+                    clearAllAuxKeys();
                     // Delete cloud backup if signed in (await before sign-out to preserve auth token)
                     if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();
