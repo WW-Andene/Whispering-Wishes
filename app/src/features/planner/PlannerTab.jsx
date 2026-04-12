@@ -1140,25 +1140,27 @@ function PlannerTab({
               const hasAnyToggle = t.ascension || t.skills || t.weapon;
 
               return (
-                <div key={t.name} className="relative overflow-hidden rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
-                  {/* Splash art header */}
+                <div key={t.name} className="relative overflow-hidden rounded-xl" style={{ border: `1px solid ${elColor}40`, isolation: 'isolate' }}>
+                  {/* Full-bleed banner splash art background (same pattern as BannerCard) */}
                   {themeArt && (
-                    <div className="relative h-20 overflow-hidden rounded-t-lg">
-                      <img src={themeArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none" loading="lazy" onError={hideOnError}
-                        style={{ objectPosition: 'center 25%' }} />
-                      <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${elColor}20 0%, transparent 40%)` }} />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="font-bold text-2xl text-white drop-shadow-lg">{t.name}</span>
-                      </div>
-                      <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="absolute top-2 right-2 text-white/60 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center rounded-full bg-black/40" aria-label={`Remove ${t.name}`}><X size={14} /></button>
+                    <div className="absolute inset-0">
+                      <img src={themeArt} alt="" className="w-full h-full object-cover pointer-events-none" loading="lazy" onError={hideOnError}
+                        style={{
+                          opacity: 0.35,
+                          objectPosition: 'center 30%',
+                          maskImage: 'linear-gradient(to bottom, black 20%, rgba(0,0,0,0.3) 70%, transparent 100%)',
+                          WebkitMaskImage: 'linear-gradient(to bottom, black 20%, rgba(0,0,0,0.3) 70%, transparent 100%)',
+                        }} />
                     </div>
                   )}
-                  {!themeArt && (
-                    <div className="relative z-10 flex items-center gap-2 p-2.5 pb-0">
-                      <span className="font-bold text-xl flex-1 text-center" style={{ color: elColor }}>{t.name}</span>
-                      <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
-                    </div>
-                  )}
+                  {/* Dark overlay for content readability */}
+                  <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${elColor}10 0%, rgba(10,14,22,0.85) 50%, rgba(10,14,22,0.95) 100%)` }} />
+
+                  {/* Character name + remove button */}
+                  <div className="relative z-10 flex items-center gap-2 p-3 pb-1">
+                    <span className="font-bold text-2xl flex-1 text-center drop-shadow-lg" style={{ color: elColor, textShadow: `0 0 20px ${elColor}40` }}>{t.name}</span>
+                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-white/50 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center rounded-full bg-black/30" aria-label={`Remove ${t.name}`}><X size={14} /></button>
+                  </div>
 
                   {/* Toggle buttons */}
                   <div className="relative z-10 flex gap-1.5 p-2.5">
