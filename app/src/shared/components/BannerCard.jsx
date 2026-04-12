@@ -210,7 +210,7 @@ const GachaInfoButton = memo(({ isChar }) => {
               <Info size={16} className="text-yellow-400" />
               <h3 className="text-white font-semibold text-lg">Convene System</h3>
             </div>
-            <button onClick={() => setOpen(false)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
+            <button onClick={() => setOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
           </div>
           <div className="p-4 space-y-3">
             <div className="space-y-2.5 text-sm text-gray-300 leading-relaxed">
