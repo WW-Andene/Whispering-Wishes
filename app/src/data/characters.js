@@ -737,11 +737,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% 12s.',
   },
   'Changli': {
-    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'next', duration: 14 }],
+    outroBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 10 },
+      { stat: 'libDmg', value: 25, target: 'next', duration: 10 },
+    ],
     libBuffs: [],
     selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'After 4 Resonance Skill casts' }],
     debuffs: [],
-    note: 'Outro: 20% Fusion DMG Amp to next. Self ATK ramp.',
+    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp.',
   },
   'Yinlin': {
     outroBuffs: [
@@ -765,8 +768,8 @@ const CHAR_BUFF_TABLE = {
   },
   'Phoebe': {
     outroBuffs: [
-      { stat: 'resShred', value: 10, target: 'enemy', duration: 14, condition: 'Spectro RES (Confession mode)' },
-      { stat: 'deepen', value: 100, target: 'next', duration: 14, condition: 'Spectro Frazzle DMG Amp (Confession)' },
+      { stat: 'resShred', value: 10, target: 'enemy', duration: 30, condition: 'Spectro RES (Confession mode)' },
+      { stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Spectro Frazzle DMG Amp (Confession)' },
     ],
     libBuffs: [],
     selfBuffs: [],
@@ -821,8 +824,8 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'defShred', value: 18, duration: 12 }],
-    note: 'DEF Shred 18% on skill. Quick swap support.',
+    debuffs: [{ stat: 'defIgnore', value: 18, duration: 15 }],
+    note: 'DEF Ignore 18% via Thread of Bane on Unseen Snare targets. Quick swap support.',
   },
   // ── 5★ Main DPS (mostly self-buffs, less team contribution) ──
   'Camellya': {
@@ -883,11 +886,11 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 23% Havoc DMG Bonus to next.',
   },
   'Baizhi': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 24 }],
-    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 40 }],
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 6 }],
+    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% Deepen. Lib: 15% ATK teamwide. Heal.',
+    note: 'Outro: 15% Deepen (6s per tick, refreshes on heal). Inherent: 15% ATK teamwide (20s on Euphonia pickup). Heal.',
   },
   'Taoqi': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
