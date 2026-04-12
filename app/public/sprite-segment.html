@@ -42,6 +42,7 @@
     <button id="btnEraser" class="tool">Eraser</button>
     <button id="btnUndo" class="tool">Undo</button>
     <button id="btnClear" class="tool">Clear All</button>
+    <button id="btnAutoSeg" class="tool" style="background:#e0a020;color:#000;">Auto Segment</button>
     <label>Size <input type="range" id="penSize" min="2" max="40" value="8" /></label>
   </div>
   <div id="container">
@@ -248,10 +249,172 @@ img.onload = () => {
   overlay.style.width = imgW + 'px';
   overlay.style.height = imgH + 'px';
   drawBase();
-  updateInfo(`Loaded: ${imgW}x${imgH} — Select a zone and draw`);
+  autoSegment();
+  updateInfo(`Loaded: ${imgW}x${imgH} — Auto-segmented. Draw to refine.`);
 };
 img.onerror = () => updateInfo('Failed to load sprite image');
 img.src = SPRITE_URL;
+
+// ── Auto-segmentation: reproduce the hand-drawn zone map ──
+function hexToRGB(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function autoSegment() {
+  if (!spriteImg) return;
+
+  // Read original sprite pixels
+  const tmp = document.createElement('canvas');
+  tmp.width = imgW; tmp.height = imgH;
+  const tctx = tmp.getContext('2d');
+  tctx.drawImage(spriteImg, 0, 0);
+  const src = tctx.getImageData(0, 0, imgW, imgH).data;
+
+  // Find character bounding box
+  let cMinX=imgW, cMinY=imgH, cMaxX=0, cMaxY=0;
+  for (let y=0; y<imgH; y++) {
+    for (let x=0; x<imgW; x++) {
+      if (src[(y*imgW+x)*4+3] > 20) {
+        if (x<cMinX) cMinX=x; if (x>cMaxX) cMaxX=x;
+        if (y<cMinY) cMinY=y; if (y>cMaxY) cMaxY=y;
+      }
+    }
+  }
+  const cW = cMaxX - cMinX, cH = cMaxY - cMinY;
+
+  // Per-row left/right extents for body center detection
+  const rows = [];
+  for (let y = cMinY; y <= cMaxY; y++) {
+    let left = imgW, right = 0;
+    for (let x = cMinX; x <= cMaxX; x++) {
+      if (src[(y*imgW+x)*4+3] > 20) {
+        if (x < left) left = x;
+        if (x > right) right = x;
+      }
+    }
+    rows.push({ y, left, right, cx: (left+right)/2, w: right-left });
+  }
+
+  // Find body center line (median of row centers in torso region 25-45%)
+  const torsoRows = rows.slice(Math.round(rows.length*0.25), Math.round(rows.length*0.45));
+  const centers = torsoRows.map(r => r.cx).sort((a,b) => a-b);
+  const bodyCX = centers[Math.floor(centers.length/2)];
+
+  // Find narrowest point in upper 20-30% for neck
+  let neckY = cMinY + cH*0.21, neckW = Infinity;
+  for (let i = Math.round(rows.length*0.15); i < Math.round(rows.length*0.25); i++) {
+    if (rows[i].w > 0 && rows[i].w < neckW) { neckW = rows[i].w; neckY = rows[i].y; }
+  }
+
+  // Zone boundaries (relative to character height)
+  const headEnd    = 0.18;   // where hair/head stops
+  const neckEnd    = 0.22;   // neck band
+  const torsoEnd   = 0.40;   // torso/shirt ends
+  const hipEnd     = 0.48;   // hip/belt ends
+  // legs below hipEnd
+
+  // Weapon: the large object on the right side
+  // Cape: flowing fabric on the left side
+  // Detect weapon region: find right-side extent that's far from body center
+  const weaponThreshX = bodyCX + cW * 0.25;
+  // Cape: left-side extent far from body center, below head
+  const capeThreshX = bodyCX - cW * 0.15;
+
+  // Build zone map overlay
+  octx.clearRect(0, 0, imgW, imgH);
+  const ovData = octx.createImageData(imgW, imgH);
+  const od = ovData.data;
+
+  for (let y = 0; y < imgH; y++) {
+    for (let x = 0; x < imgW; x++) {
+      const i = (y * imgW + x) * 4;
+      const a = src[i + 3];
+      if (a < 20) continue; // transparent — skip
+
+      const relY = (y - cMinY) / cH;  // 0=top, 1=bottom
+      const relX = (x - cMinX) / cW;
+      const distFromCenter = x - bodyCX;
+      const r = src[i], g = src[i+1], b = src[i+2];
+      const brightness = (r + g + b) / 3;
+
+      let zone = null;
+
+      // 1. Weapon (right side, large mechanical object)
+      if (x > weaponThreshX && relY > 0.15 && relY < 0.85) {
+        zone = 'objet';
+      }
+      // 2. Cape (left side, flowing below head)
+      else if (x < capeThreshX && relY > 0.15 && relY < 0.75) {
+        zone = 'objet';
+      }
+      // 3. Hair + horns (top area)
+      else if (relY < headEnd) {
+        // Face: skin pixels in center of head
+        const isSkin = r > 150 && g > 100 && b > 70 && b < 200 && r > b + 15 && brightness > 120 && brightness < 240 && !(r>230 && g>230 && b>230);
+        if (isSkin && Math.abs(distFromCenter) < cW * 0.12 && relY > 0.06) {
+          zone = 'face';
+        } else {
+          zone = 'hair';
+        }
+      }
+      // 4. Neck
+      else if (relY < neckEnd) {
+        // Narrow neck area or hair still present
+        const isSkin = r > 150 && g > 100 && b > 70 && r > b + 15 && brightness > 120;
+        if (isSkin || Math.abs(distFromCenter) < cW * 0.06) {
+          zone = 'face';
+        } else if (brightness > 160 && Math.abs(distFromCenter) < cW * 0.18) {
+          zone = 'hair';
+        } else {
+          zone = 'torso';
+        }
+      }
+      // 5. Torso
+      else if (relY < torsoEnd) {
+        // Arms extend out from torso
+        if (distFromCenter > cW * 0.15) {
+          zone = 'arm_r';
+        } else if (distFromCenter < -cW * 0.12) {
+          zone = 'arm_l';
+        } else {
+          zone = 'torso';
+        }
+      }
+      // 6. Hip
+      else if (relY < hipEnd) {
+        if (distFromCenter > cW * 0.18) {
+          zone = 'arm_r';
+        } else if (distFromCenter < -cW * 0.15) {
+          zone = 'arm_l';
+        } else {
+          zone = 'hip';
+        }
+      }
+      // 7. Legs
+      else {
+        if (distFromCenter > cW * 0.02) {
+          zone = 'leg_r';
+        } else {
+          zone = 'leg_l';
+        }
+      }
+
+      if (zone && ZONES[zone]) {
+        const [zr, zg, zb] = hexToRGB(ZONES[zone].color);
+        od[i]     = zr;
+        od[i + 1] = zg;
+        od[i + 2] = zb;
+        od[i + 3] = 140; // semi-transparent overlay
+      }
+    }
+  }
+
+  octx.putImageData(ovData, 0, 0);
+  updateInfo('Auto-segmented into ' + Object.keys(ZONES).length + ' zones');
+}
+
+document.getElementById('btnAutoSeg').onclick = autoSegment;
 
 window.getStrokes = () => JSON.stringify(strokes);
 </script>
