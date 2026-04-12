@@ -97,7 +97,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           className="absolute inset-0"
           style={{
             ...IMG_LAYER_STYLE,
-            opacity: useSpine ? 0.5 : 1,
+            opacity: 1,
             filter: useSpine ? 'blur(10px)' : undefined,
             transform: useSpine ? 'scale(2)' : undefined,
           }}
@@ -107,7 +107,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             alt={item.name}
             className={`w-full h-full object-cover ${useSpine ? '' : 'breath-zoom'}`}
             style={{
-              opacity: pictureOpacity,
+              opacity: useSpine ? 0.5 : pictureOpacity,
               objectPosition: 'center 100%',
               maskImage: maskGradient,
               WebkitMaskImage: maskGradient,
