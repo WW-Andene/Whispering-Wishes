@@ -59,15 +59,17 @@ import { ResonanceField } from './shared/backgrounds/ResonanceField.jsx';
 import { Honour } from './shared/backgrounds/Honour.jsx';
 import { getActiveBanners } from './shared/components/bannerUtils.js';
 // --- Feature tabs ---
-// --- Feature tabs (eager-loaded — code splitting reverted due to shared module race conditions) ---
-import TrackerTab from './features/tracker/TrackerTab.jsx';
-import EventsTab from './features/events/EventsTab.jsx';
-import PlannerTab from './features/planner/PlannerTab.jsx';
-import AnalyticsTab from './features/analytics/AnalyticsTab.jsx';
-import CalculatorTab from './features/calculator/CalculatorTab.jsx';
-import CollectionTab from './features/collection/CollectionTab.jsx';
-import TeamsTab from './features/teams/TeamsTab.jsx';
-import ProfileTab from './features/profile/ProfileTab.jsx';
+// --- Feature tabs (lazy-loaded for code splitting) ---
+import { lazy, Suspense } from 'react';
+const TrackerTab = lazy(() => import('./features/tracker/TrackerTab.jsx'));
+const EventsTab = lazy(() => import('./features/events/EventsTab.jsx'));
+const PlannerTab = lazy(() => import('./features/planner/PlannerTab.jsx'));
+const AnalyticsTab = lazy(() => import('./features/analytics/AnalyticsTab.jsx'));
+const CalculatorTab = lazy(() => import('./features/calculator/CalculatorTab.jsx'));
+const CollectionTab = lazy(() => import('./features/collection/CollectionTab.jsx'));
+const TeamsTab = lazy(() => import('./features/teams/TeamsTab.jsx'));
+const ProfileTab = lazy(() => import('./features/profile/ProfileTab.jsx'));
+const TabLoadingFallback = () => <div className="flex items-center justify-center py-20 text-gray-500 text-sm">Loading...</div>;
 import { constantTimeCompare } from './utils/constantTimeCompare.js';
 import {
   VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY,
@@ -1016,6 +1018,7 @@ function WhisperingWishesInner() {
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && !bgFramingMode && (
           <TabErrorBoundary tabName="Tracker">
+            <Suspense fallback={<TabLoadingFallback />}>
               <TrackerTab
                 state={state}
                 dispatch={dispatch}
@@ -1029,12 +1032,14 @@ function WhisperingWishesInner() {
                 setActiveTab={setActiveTab}
               />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && !bgFramingMode && (
           <TabErrorBoundary tabName="Events">
+            <Suspense fallback={<TabLoadingFallback />}>
               <EventsTab
                 state={state}
                 dispatch={dispatch}
@@ -1044,20 +1049,24 @@ function WhisperingWishesInner() {
                 toast={toast}
               />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && !bgFramingMode && (
           <TabErrorBoundary tabName="Calculator">
+            <Suspense fallback={<TabLoadingFallback />}>
               <CalculatorTab state={state} dispatch={dispatch} />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && !bgFramingMode && (
           <TabErrorBoundary tabName="Planner">
+            <Suspense fallback={<TabLoadingFallback />}>
               <PlannerTab
                 state={state}
                 dispatch={dispatch}
@@ -1067,12 +1076,14 @@ function WhisperingWishesInner() {
                 confirm={confirm}
               />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && !bgFramingMode && (
           <TabErrorBoundary tabName="Analytics">
+            <Suspense fallback={<TabLoadingFallback />}>
               <AnalyticsTab
                 state={state}
                 dispatch={dispatch}
@@ -1086,12 +1097,14 @@ function WhisperingWishesInner() {
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
               />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && !bgFramingMode && (
           <TabErrorBoundary tabName="Collection">
+            <Suspense fallback={<TabLoadingFallback />}>
               <CollectionTab
                 state={state}
                 collectionData={collectionData}
@@ -1105,12 +1118,14 @@ function WhisperingWishesInner() {
                 handleSetProfilePic={handleSetProfilePic}
               />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-TEAMS] */}
         {activeTab === 'teams' && !bgFramingMode && (
           <TabErrorBoundary tabName="Teams">
+            <Suspense fallback={<TabLoadingFallback />}>
               <TeamsTab
                 state={state}
                 dispatch={dispatch}
@@ -1120,12 +1135,14 @@ function WhisperingWishesInner() {
                 confirm={confirm}
               />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
         {/* [SECTION:TAB-PROFILE] */}
         {(activeTab === 'profile' || bgFramingMode) && (
           <TabErrorBoundary tabName="Profile">
+            <Suspense fallback={<TabLoadingFallback />}>
               <ProfileTab
             state={state}
             dispatch={dispatch}
@@ -1165,6 +1182,7 @@ function WhisperingWishesInner() {
             getCustomBgPosition={getCustomBgPosition}
           />
 
+            </Suspense>
           </TabErrorBoundary>
         )}
 
