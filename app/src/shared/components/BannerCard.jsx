@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Star } from 'lucide-react';
+import { Info, Star } from 'lucide-react';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { haptic, getElementColor } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
@@ -182,11 +182,58 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             </div>
           </div>
         )}
+      {/* Gacha info icon — bottom-left corner */}
+      <GachaInfoButton isChar={isChar} />
     </div>
     </div>
   );
 });
 BannerCard.displayName = 'BannerCard';
+
+// Gacha system explanation popover
+const GachaInfoButton = memo(({ isChar }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        className="absolute bottom-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center bg-black/50 border border-white/20 text-gray-300 hover:text-white hover:bg-black/70 transition-all backdrop-blur-sm"
+        onClick={(e) => { e.stopPropagation(); setOpen(v => !v); haptic.light(); }}
+        aria-label="Convene system information"
+      >
+        <Info size={14} />
+      </button>
+      {open && (
+        <div className="absolute bottom-10 right-2 z-30 w-72 p-3 rounded-xl border border-white/15 text-sm space-y-2"
+          style={{ background: 'rgba(10,14,22,0.97)', backdropFilter: 'blur(16px)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
+          onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between">
+            <span className="text-white font-semibold">Convene System</span>
+            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white text-xs">✕</button>
+          </div>
+          <div className="space-y-1.5 text-gray-300 leading-relaxed">
+            <p><span className="text-yellow-400 font-medium">Base 5★ rate:</span> 0.8% per pull</p>
+            <p><span className="text-amber-400 font-medium">Soft pity:</span> Starting at pull 66, the rate increases by ~6.6% per pull</p>
+            <p><span className="text-red-400 font-medium">Hard pity:</span> Guaranteed 5★ at pull 80</p>
+            <p><span className="text-purple-400 font-medium">4★ pity:</span> Guaranteed every 10 pulls</p>
+            {isChar ? (
+              <>
+                <p><span className="text-orange-400 font-medium">50/50:</span> 50% chance for the featured Resonator. Losing gives 100% guarantee on next 5★</p>
+                <p><span className="text-cyan-400 font-medium">Carry-over:</span> Pity counter and 50/50 guarantee carry to the next featured Resonator banner</p>
+              </>
+            ) : (
+              <>
+                <p><span className="text-pink-400 font-medium">No 50/50:</span> Featured weapon is guaranteed when you pull a 5★</p>
+                <p><span className="text-cyan-400 font-medium">Carry-over:</span> Pity counter carries to the next featured weapon banner</p>
+              </>
+            )}
+            <p className="text-gray-500 text-xs mt-1">Avg. ~71 pulls per 5★ · Each banner type has independent pity</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+});
+GachaInfoButton.displayName = 'GachaInfoButton';
 
 const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2" role="meter" aria-label={`${label}: ${value}%`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>

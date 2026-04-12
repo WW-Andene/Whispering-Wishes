@@ -67,8 +67,10 @@ const getServerOffset = (server, atDate) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // [SECTION:CONSTANTS]
-// WuWa gacha rates: 0.8% base, soft pity starts at 64, hard pity at 80
-const HARD_PITY = 80, SOFT_PITY_START = 64; // AVG_PITY (5-star) removed — P8-FIX: was unused dead code
+// WuWa gacha rates: 0.8% base, soft pity at 66, hard pity at 80
+// Verified: community data mining (Steam analysis, pull trackers) confirms soft pity starts at pull 66
+// Pulls 1-65: flat 0.8%. Pulls 66-79: linear ramp ~6.6%/pull. Pull 80: guaranteed.
+const HARD_PITY = 80, SOFT_PITY_START = 66;
 const LUNITE_DAILY_ASTRITE = 90; // P7-FIX: Extract magic number (7E)
 const ASTRITE_PER_PULL = 160;
 const BEGINNER_ASTRITE_PER_PULL = 128; // P14-FIX: NIT-2 — Extract magic number (beginner banner = 80% of standard cost)
