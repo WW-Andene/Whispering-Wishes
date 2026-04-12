@@ -823,7 +823,7 @@ function WhisperingWishesInner() {
 
   const {
     activeTheme, themeAccent,
-    headerBgUrl, headerBgPos, navBgUrl, navBgPos, appBgUrl, appBgPos,
+    headerBgUrl, headerBgPos, navBgUrl, navBgPos, appBgUrl, appBgPos, appBgType,
   } = useThemeAccent(visualSettings);
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
@@ -903,7 +903,19 @@ function WhisperingWishesInner() {
       ) : null}
       {appBgUrl && (
         <div className={`fixed inset-0 ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
-          <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
+          {appBgType === 'animated' ? (
+            <video
+              src={appBgUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+              style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
+            />
+          ) : (
+            <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
+          )}
           {bgFramingMode && (
             <div className={`absolute inset-0 ${editingBgTarget === 'bg' ? 'ring-4 ring-inset ring-cyan-400' : ''}`}>
               <span className="absolute top-16 left-3 text-2xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'bg' ? '● BACKGROUND' : 'Background'}</span>

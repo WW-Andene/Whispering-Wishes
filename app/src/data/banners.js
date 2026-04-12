@@ -517,6 +517,30 @@ const VERSION_SPLASH_SCREENS = [
 const OTHER_BACKGROUNDS = [
   { id: 'dream-team', name: 'The Dream Team', art: 'https://i.ibb.co/Gfkn50Fk/The-dream-team.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '40% 50%' } },
   { id: 'utterance-of-marvels', name: 'Utterance of Marvels', art: 'https://i.ibb.co/KjjRTp27/1-2-2.jpg', pos: { header: '50% 28%', nav: '50% 26%', bg: '58% 50%' } },
+  { id: 'reverberation', name: 'Reverberation', art: 'https://i.ibb.co/pBV5hJ3L/Reverberation.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'solaris-3', name: 'Solaris 3', art: 'https://i.ibb.co/jvY1KmRq/Solaris-3.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'tacet-discord', name: 'Tacet Discord', art: 'https://i.ibb.co/KxDbBcD1/Tacet-discord.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'tacet-field', name: 'Tacet Field', art: 'https://i.ibb.co/zgQbgTp/Tacet-field.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'three-two-one-cheese', name: 'Three Two One Cheese', art: 'https://i.ibb.co/dJ2xPnNf/Three-two-one-cheese.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+];
+
+// Animated (video) backgrounds — hosted on Cloudinary. `art` is the video URL,
+// `poster` is a JPG first-frame used as picker thumbnail and <video poster>.
+const ANIMATED_BACKGROUNDS = [
+  {
+    id: 'bg-video-1',
+    name: 'v3.2',
+    art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/bg-video_nvf8y9.mp4',
+    poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/bg-video_nvf8y9.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'startorch-academy',
+    name: 'Startorch Academy',
+    art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/wm2id79usopllntxt7-1766736146258_g8ss4o.mp4',
+    poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/wm2id79usopllntxt7-1766736146258_g8ss4o.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
 ];
 
 
@@ -599,4 +623,5 @@ export {
   CHARACTER_THEMES,
   VERSION_SPLASH_SCREENS,
   OTHER_BACKGROUNDS,
+  ANIMATED_BACKGROUNDS,
 };

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spineless Zani — Polygon Silhouette Animation Demo</title>
+<style>
+  :root {
+    --bg: #080c14;
+    --card: #12182a;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8edf5;
+    --muted: #8892a6;
+    --accent: #edaf18; /* Spectro yellow */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; }
+  body { padding: 24px 20px 60px; max-width: 960px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }
+  p.lead { margin: 0 0 20px; color: var(--muted); font-size: 14px; max-width: 720px; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .card h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--text); }
+  .card .mode { font-size: 10px; color: var(--muted); font-family: ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background: radial-gradient(ellipse at center, #1a2234 0%, #080c14 80%);
+    border-radius: 10px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .stage > * { position: absolute; inset: 0; }
+  .layer-bg img {
+    width: 100%; height: 100%; object-fit: cover;
+    opacity: 0.32;
+    filter: blur(14px) saturate(1.2);
+  }
+  .layer-vignette {
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.45) 75%, rgba(0,0,0,0.8) 100%);
+    pointer-events: none;
+  }
+  .layer-fg {
+    will-change: transform;
+  }
+  .layer-fg svg { width: 100%; height: 100%; display: block; }
+  .layer-particles { pointer-events: none; mix-blend-mode: screen; opacity: 0.75; }
+  .card footer {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: ui-monospace, monospace;
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .card footer span { opacity: 0.85; }
+  .error {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #ef4444; font-size: 12px; font-family: ui-monospace, monospace;
+    background: rgba(239,68,68,0.1);
+    text-align: center;
+    padding: 12px;
+  }
+  .loading {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace;
+  }
+  .loading::after {
+    content: ''; width: 14px; height: 14px; margin-left: 8px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .controls {
+    display: flex; gap: 10px; margin: 0 0 18px;
+    flex-wrap: wrap;
+  }
+  .controls label { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .controls input[type=checkbox] { accent-color: var(--accent); }
+  .controls input[type=range] { width: 140px; accent-color: var(--accent); }
+</style>
+</head>
+<body>
+  <h1>Spineless Zani — polygon silhouette animation demo</h1>
+  <p class="lead">
+    Loads Zani's full sprite (webp, alpha channel), traces the alpha boundary with Moore-neighbourhood walking,
+    simplifies with Douglas–Peucker, and renders the clipped polygon through an SVG feTurbulence + feDisplacementMap
+    filter — real organic pixel warping, not a transform. Sub-pixel parallax drift and Spectro particles on top.
+    No rigging data — just pixels in, pseudo-spine out.
+  </p>
+
+  <div class="controls">
+    <label><input type="checkbox" id="toggleOutline" /> show polygon outline</label>
+    <label><input type="checkbox" id="toggleAnim" checked /> animation</label>
+    <label>distortion <input type="range" id="distortAmt" min="0" max="200" value="100" /></label>
+    <label>parallax <input type="range" id="parallaxAmt" min="0" max="50" value="18" /></label>
+    <label>particles <input type="range" id="particleAmt" min="0" max="100" value="60" /></label>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+  // ══════════════════════════════════════════════════════════════════════════
+  // SILHOUETTE EXTRACTION ENGINE
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /** Load an image with CORS so we can read pixel data from canvas. */
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Image load failed: ' + url));
+      img.src = url;
+    });
+  }
+
+  /**
+   * Draw the image to an offscreen canvas at a reduced size and produce a binary
+   * mask (1 = foreground, 0 = background). Returns { mask, w, h, srcW, srcH, mode }.
+   *
+   * Two strategies:
+   *   A) Alpha channel present → use alpha > 128 directly.
+   *   B) Opaque (JPG) → sample corner colors, compute perceptual distance threshold.
+   */
+  function extractMask(img, maxDim = 180) {
+    const srcW = img.naturalWidth;
+    const srcH = img.naturalHeight;
+    const scale = Math.min(maxDim / srcW, maxDim / srcH, 1);
+    const w = Math.max(1, Math.round(srcW * scale));
+    const h = Math.max(1, Math.round(srcH * scale));
+
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, w, h);
+    const data = ctx.getImageData(0, 0, w, h).data;
+
+    // Detect transparency: if >1% of pixels have alpha < 200, treat as alpha-bearing.
+    let transparentCount = 0;
+    const sample = Math.max(1, Math.floor((w * h) / 2000));
+    for (let i = 3; i < data.length; i += 4 * sample) {
+      if (data[i] < 200) transparentCount++;
+    }
+    const hasAlpha = transparentCount * sample * 100 > w * h;
+
+    const mask = new Uint8Array(w * h);
+    let mode;
+
+    if (hasAlpha) {
+      mode = 'alpha';
+      for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        mask[p] = data[i + 3] > 96 ? 1 : 0;
+      }
+    } else {
+      mode = 'chroma-key';
+      // Sample 8 corner regions to estimate background color
+      const samples = [];
+      const pad = 3;
+      const corners = [[pad, pad], [w - 1 - pad, pad], [pad, h - 1 - pad], [w - 1 - pad, h - 1 - pad]];
+      for (const [cx, cy] of corners) {
+        for (let dy = -2; dy <= 2; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const x = Math.max(0, Math.min(w - 1, cx + dx));
+            const y = Math.max(0, Math.min(h - 1, cy + dy));
+            const i = (y * w + x) * 4;
+            samples.push([data[i], data[i + 1], data[i + 2]]);
+          }
+        }
+      }
+      // Use median (more robust than mean) per channel
+      samples.sort((a, b) => (a[0] + a[1] + a[2]) - (b[0] + b[1] + b[2]));
+      const [br, bg, bb] = samples[Math.floor(samples.length / 2)];
+
+      // Threshold on weighted RGB distance (luma-aware: green weighted most)
+      const T = 48; // tuning constant
+      const T2 = T * T;
+      for (let y = 0, p = 0; y < h; y++) {
+        for (let x = 0; x < w; x++, p++) {
+          const i = p * 4;
+          const dr = data[i] - br, dg = data[i + 1] - bg, db = data[i + 2] - bb;
+          const dist2 = 0.299 * dr * dr + 0.587 * dg * dg + 0.114 * db * db;
+          mask[p] = dist2 > T2 ? 1 : 0;
+        }
+      }
+    }
+
+    // Morphological opening: erode then dilate (3×3) to de-noise.
+    const eroded = erode(mask, w, h);
+    const cleaned = dilate(eroded, w, h);
+    // Keep only the largest connected component
+    const largest = largestComponent(cleaned, w, h);
+
+    return { mask: largest, w, h, srcW, srcH, mode };
+  }
+
+  /** 3×3 erosion: a pixel survives only if all 8 neighbours + itself are 1. */
+  function erode(mask, w, h) {
+    const out = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        let keep = 1;
+        for (let dy = -1; dy <= 1 && keep; dy++) {
+          for (let dx = -1; dx <= 1 && keep; dx++) {
+            if (!mask[(y + dy) * w + (x + dx)]) keep = 0;
+          }
+        }
+        out[y * w + x] = keep;
+      }
+    }
+    return out;
+  }
+
+  /** 3×3 dilation: a pixel becomes 1 if any 8-neighbour is 1. */
+  function dilate(mask, w, h) {
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (mask[y * w + x]) { out[y * w + x] = 1; continue; }
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = x + dx, ny = y + dy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            if (mask[ny * w + nx]) { out[y * w + x] = 1; break; }
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  /** Flood-fill based largest-component finder. Discards all but the biggest blob. */
+  function largestComponent(mask, w, h) {
+    const visited = new Uint8Array(w * h);
+    const label = new Int32Array(w * h);
+    const sizes = [0]; // label 0 = background
+    let nextLabel = 1;
+    const stack = [];
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const p = y * w + x;
+        if (!mask[p] || visited[p]) continue;
+        let size = 0;
+        stack.push(p);
+        visited[p] = 1;
+        while (stack.length) {
+          const q = stack.pop();
+          label[q] = nextLabel;
+          size++;
+          const qx = q % w, qy = (q - qx) / w;
+          for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+            const nx = qx + dx, ny = qy + dy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            const np = ny * w + nx;
+            if (mask[np] && !visited[np]) {
+              visited[np] = 1;
+              stack.push(np);
+            }
+          }
+        }
+        sizes.push(size);
+        nextLabel++;
+      }
+    }
+    if (sizes.length <= 1) return mask;
+    let biggest = 1;
+    for (let i = 2; i < sizes.length; i++) if (sizes[i] > sizes[biggest]) biggest = i;
+    const out = new Uint8Array(w * h);
+    for (let p = 0; p < w * h; p++) out[p] = label[p] === biggest ? 1 : 0;
+    return out;
+  }
+
+  /**
+   * Moore-neighbourhood boundary tracing. Finds the first foreground pixel
+   * scanning left-to-right, top-to-bottom, then walks the outer boundary
+   * clockwise until it loops back to the start.
+   */
+  function traceBoundary(mask, w, h) {
+    let startX = -1, startY = -1;
+    outer: for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (mask[y * w + x]) { startX = x; startY = y; break outer; }
+      }
+    }
+    if (startX < 0) return [];
+
+    // Clockwise 8-connected neighbour offsets starting from east
+    const nb = [
+      [1, 0], [1, 1], [0, 1], [-1, 1],
+      [-1, 0], [-1, -1], [0, -1], [1, -1],
+    ];
+
+    const points = [[startX, startY]];
+    let cx = startX, cy = startY;
+    let prevDir = 6; // came from north → start searching east
+
+    const maxSteps = w * h * 8;
+    for (let step = 0; step < maxSteps; step++) {
+      // Begin search from (prevDir + 6) % 8 (CCW from reverse direction)
+      const startSearch = (prevDir + 6) % 8;
+      let found = false;
+      for (let i = 0; i < 8; i++) {
+        const d = (startSearch + i) % 8;
+        const nx = cx + nb[d][0];
+        const ny = cy + nb[d][1];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        if (mask[ny * w + nx]) {
+          cx = nx; cy = ny;
+          prevDir = d;
+          points.push([cx, cy]);
+          found = true;
+          break;
+        }
+      }
+      if (!found) break;
+      // Stop when we return to start (and have at least 3 points so we don't instant-terminate)
+      if (cx === startX && cy === startY && points.length > 3) break;
+    }
+    return points;
+  }
+
+  /** Perpendicular distance from point p to segment (a, b). */
+  function perpDist(p, a, b) {
+    const dx = b[0] - a[0], dy = b[1] - a[1];
+    if (dx === 0 && dy === 0) return Math.hypot(p[0] - a[0], p[1] - a[1]);
+    const t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy);
+    const tc = Math.max(0, Math.min(1, t));
+    const cx = a[0] + tc * dx, cy = a[1] + tc * dy;
+    return Math.hypot(p[0] - cx, p[1] - cy);
+  }
+
+  /** Iterative Douglas–Peucker polyline simplification. */
+  function simplify(points, epsilon) {
+    if (points.length < 3) return points.slice();
+    const keep = new Uint8Array(points.length);
+    keep[0] = 1;
+    keep[points.length - 1] = 1;
+    const stack = [[0, points.length - 1]];
+    while (stack.length) {
+      const [a, b] = stack.pop();
+      let maxD = 0, maxI = -1;
+      for (let i = a + 1; i < b; i++) {
+        const d = perpDist(points[i], points[a], points[b]);
+        if (d > maxD) { maxD = d; maxI = i; }
+      }
+      if (maxD > epsilon && maxI > 0) {
+        keep[maxI] = 1;
+        stack.push([a, maxI]);
+        stack.push([maxI, b]);
+      }
+    }
+    const out = [];
+    for (let i = 0; i < points.length; i++) if (keep[i]) out.push(points[i]);
+    return out;
+  }
+
+  /**
+   * Full pipeline: image → mask → largest component → outer boundary → simplified polygon.
+   * Returns { polygon, maskW, maskH, srcW, srcH, mode } where polygon is in mask-space coords.
+   */
+  async function extractSilhouette(url) {
+    const img = await loadImage(url);
+    const { mask, w, h, srcW, srcH, mode } = extractMask(img, 180);
+    const boundary = traceBoundary(mask, w, h);
+    if (boundary.length < 12) {
+      // Fallback: centred ellipse polygon
+      const poly = [];
+      const cx = w / 2, cy = h / 2, rx = w * 0.42, ry = h * 0.46;
+      for (let i = 0; i < 32; i++) {
+        const a = (i / 32) * Math.PI * 2;
+        poly.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]);
+      }
+      return { polygon: poly, maskW: w, maskH: h, srcW, srcH, mode: 'fallback-ellipse', img };
+    }
+    const simplified = simplify(boundary, 1.4);
+    return { polygon: simplified, maskW: w, maskH: h, srcW, srcH, mode, img };
+  }
+
+  /** Convert polygon to an SVG path string in raw mask-space coords. */
+  function polyToSvgPath(poly) {
+    if (!poly.length) return '';
+    let d = `M ${poly[0][0].toFixed(2)} ${poly[0][1].toFixed(2)}`;
+    for (let i = 1; i < poly.length; i++) d += ` L ${poly[i][0].toFixed(2)} ${poly[i][1].toFixed(2)}`;
+    d += ' Z';
+    return d;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // RENDERER
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const state = {
+    showOutline: false,
+    animate: true,
+    distortion: 1.0,
+    parallax: 0.18,
+    particles: 0.60,
+  };
+
+  const cards = [];
+
+  /** Particle layer — Spectro-tinted motes drifting upward. */
+  function makeParticles(canvas, accentHex) {
+    const ctx = canvas.getContext('2d');
+    let dpr = Math.min(2, window.devicePixelRatio || 1);
+    let w = 1, h = 1;
+    let motes = [];
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      w = Math.max(1, rect.width);
+      h = Math.max(1, rect.height);
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      motes = Array.from({ length: 28 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 0.7 + Math.random() * 2.0,
+        vy: -0.12 - Math.random() * 0.35,
+        vx: (Math.random() - 0.5) * 0.18,
+        phase: Math.random() * Math.PI * 2,
+        alpha: 0.35 + Math.random() * 0.45,
+      }));
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function draw(t, intensity) {
+      ctx.clearRect(0, 0, w, h);
+      if (intensity <= 0) return;
+      for (const m of motes) {
+        m.x += m.vx + Math.sin(t * 0.0008 + m.phase) * 0.08;
+        m.y += m.vy;
+        if (m.y < -4) { m.y = h + 4; m.x = Math.random() * w; }
+        if (m.x < -4) m.x = w + 4;
+        if (m.x > w + 4) m.x = -4;
+        const pulse = m.alpha * (0.55 + Math.sin(t * 0.0015 + m.phase) * 0.45) * intensity;
+        if (pulse < 0.04) continue;
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = accentHex;
+        ctx.shadowColor = accentHex;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    return { draw, resize };
+  }
+
+  /**
+   * Build a single card for a Zani asset. Extracts silhouette, mounts SVG with
+   * clip-path, and registers an animation slot.
+   */
+  async function buildCard(asset) {
+    const root = document.createElement('div');
+    root.className = 'card';
+    root.innerHTML = `
+      <header>
+        <h3>${asset.name}</h3>
+        <div class="mode" data-mode>loading</div>
+      </header>
+      <div class="stage">
+        <div class="layer loading">extracting silhouette</div>
+      </div>
+      <footer>
+        <span data-stat-src>source —</span>
+        <span data-stat-poly>polygon —</span>
+        <span data-stat-mask>mask —</span>
+      </footer>
+    `;
+    document.getElementById('grid').appendChild(root);
+
+    const stage = root.querySelector('.stage');
+    const modeEl = root.querySelector('[data-mode]');
+    const statSrc = root.querySelector('[data-stat-src]');
+    const statPoly = root.querySelector('[data-stat-poly]');
+    const statMask = root.querySelector('[data-stat-mask]');
+
+    try {
+      const result = await extractSilhouette(asset.url);
+      stage.innerHTML = '';
+
+      // Background layer (full image, blurred, dimmed)
+      const bg = document.createElement('div');
+      bg.className = 'layer layer-bg';
+      const bgImg = document.createElement('img');
+      bgImg.src = asset.url;
+      bgImg.crossOrigin = 'anonymous';
+      bg.appendChild(bgImg);
+      stage.appendChild(bg);
+
+      // Foreground SVG with clip-path silhouette + animated turbulence displacement
+      // viewBox matches the source aspect so the polygon (in mask-space) aligns with the <image>
+      const clipId = `clip-${asset.id}`;
+      const outlineId = `outline-${asset.id}`;
+      const distortId = `distort-${asset.id}`;
+      const path = polyToSvgPath(result.polygon);
+      const vbW = result.maskW;
+      const vbH = result.maskH;
+      const outlineStroke = Math.max(vbW, vbH) * 0.004;
+      // Distortion scale is relative to viewBox size so displacement reads similarly
+      // across sprites of different resolutions
+      const distortScale = Math.max(vbW, vbH) * 0.04;
+      const fg = document.createElement('div');
+      fg.className = 'layer layer-fg';
+      fg.innerHTML = `
+        <svg viewBox="0 0 ${vbW} ${vbH}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="${clipId}" clipPathUnits="userSpaceOnUse">
+              <path d="${path}" />
+            </clipPath>
+            <!--
+              Live warp: fractal-noise turbulence fed into a displacement map.
+              baseFrequency cycles between two sets of x/y freqs over 12s, which
+              re-generates the noise field smoothly (SMIL interpolation), so the
+              clipped image ripples and flows as if caught in a soft current.
+              Horizontal and vertical frequencies are deliberately different so
+              the distortion has directional character instead of being uniform.
+            -->
+            <filter id="${distortId}" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="3" result="noise">
+                <animate attributeName="baseFrequency" dur="11s" values="0.008 0.013;0.011 0.016;0.007 0.012;0.008 0.013" keyTimes="0;0.33;0.66;1" repeatCount="indefinite" />
+                <animate attributeName="seed" dur="40s" values="3;17;29;41;3" keyTimes="0;0.25;0.5;0.75;1" repeatCount="indefinite" />
+              </feTurbulence>
+              <feDisplacementMap data-displace="${asset.id}" in="SourceGraphic" in2="noise" scale="${distortScale.toFixed(2)}" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+          <g clip-path="url(#${clipId})" filter="url(#${distortId})">
+            <image href="${asset.url}" x="0" y="0" width="${vbW}" height="${vbH}" preserveAspectRatio="none" />
+          </g>
+          <path id="${outlineId}" d="${path}" fill="none" stroke="#edaf18" stroke-width="${outlineStroke.toFixed(3)}" stroke-linejoin="round" opacity="0" />
+        </svg>
+      `;
+      stage.appendChild(fg);
+
+      // Vignette for depth
+      const vig = document.createElement('div');
+      vig.className = 'layer layer-vignette';
+      stage.appendChild(vig);
+
+      // Particle overlay
+      const particleCanvas = document.createElement('canvas');
+      particleCanvas.className = 'layer layer-particles';
+      stage.appendChild(particleCanvas);
+      const particles = makeParticles(particleCanvas, '#edaf18');
+
+      modeEl.textContent = result.mode;
+      statSrc.textContent = `source ${result.srcW}×${result.srcH}`;
+      statPoly.textContent = `polygon ${result.polygon.length} pts`;
+      statMask.textContent = `mask ${result.maskW}×${result.maskH}`;
+
+      const outlineEl = fg.querySelector(`#${outlineId}`);
+      const displaceEl = fg.querySelector(`[data-displace="${asset.id}"]`);
+
+      cards.push({ root, stage, fg, bg, particles, outlineEl, displaceEl, baseDistort: distortScale });
+    } catch (err) {
+      console.error(err);
+      stage.innerHTML = `<div class="error">${err.message || 'Extraction failed'}</div>`;
+      modeEl.textContent = 'error';
+    }
+  }
+
+  // Animation loop
+  // Note: the main "alive" motion comes from the SVG feTurbulence +
+  // feDisplacementMap filter, which animates via SMIL inside the SVG itself.
+  // The JS loop only drives a very subtle parallax drift on the wrapper
+  // divs and the canvas particle layer. No scale, no rotation — anything
+  // big would just read as "zoom" and fight with the displacement.
+  function tick(t) {
+    // Organic variation on top of the slider's base — slow sine wave so the
+    // displacement has an ebb-and-flow quality instead of constant intensity.
+    const organic = 0.75 + Math.sin(t * 0.0006) * 0.25;
+    for (const c of cards) {
+      const pAmp = state.parallax * (state.animate ? 1 : 0);
+      const tx = Math.sin(t * 0.00085) * 2.2 * pAmp;
+      const ty = Math.cos(t * 0.00110) * 1.8 * pAmp;
+      c.fg.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px)`;
+      c.bg.style.transform = `translate(${(-tx * 0.5).toFixed(2)}px, ${(-ty * 0.5).toFixed(2)}px) scale(1.12)`;
+      c.particles.draw(t, state.particles * (state.animate ? 1 : 0));
+      if (c.outlineEl) c.outlineEl.setAttribute('opacity', state.showOutline ? '1' : '0');
+      if (c.displaceEl) {
+        const s = c.baseDistort * state.distortion * (state.animate ? organic : 0);
+        c.displaceEl.setAttribute('scale', s.toFixed(2));
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Wire controls
+  document.getElementById('toggleOutline').addEventListener('change', (e) => { state.showOutline = e.target.checked; });
+  document.getElementById('toggleAnim').addEventListener('change', (e) => { state.animate = e.target.checked; });
+  document.getElementById('distortAmt').addEventListener('input', (e) => { state.distortion = +e.target.value / 100; });
+  document.getElementById('parallaxAmt').addEventListener('input', (e) => { state.parallax = +e.target.value / 100; });
+  document.getElementById('particleAmt').addEventListener('input', (e) => { state.particles = +e.target.value / 100; });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ZANI ASSETS (sourced from app/src/data/banners.js — already in the app)
+  // ══════════════════════════════════════════════════════════════════════════
+  const ZANI_ASSETS = [
+    { id: 'sprite', name: 'Zani — Full Sprite', url: 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp' },
+  ];
+
+  (async () => {
+    for (const a of ZANI_ASSETS) await buildCard(a);
+    requestAnimationFrame(tick);
+  })();
+  </script>
+</body>
+</html>

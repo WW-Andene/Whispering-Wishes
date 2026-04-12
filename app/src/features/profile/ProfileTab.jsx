@@ -9,7 +9,7 @@ import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Monitor, Sett
 import ImportFlow from './ImportFlow.jsx';
 import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS } from '../../data/banners.js';
+import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
@@ -1292,8 +1292,9 @@ function ProfileTab({
                       ].map(t => {
                         const bg = visualSettings[t.settingKey];
                         return (
-                          <button key={t.key} onClick={() => { setBgTarget(t.key); if (t.key !== 'background' && bgCategory === 'custom') setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
-                            {bg?.url && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" style={{ objectPosition: bg.objectPosition || 'center' }} />}
+                          <button key={t.key} onClick={() => { setBgTarget(t.key); if (t.key !== 'background' && (bgCategory === 'custom' || bgCategory === 'animated')) setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                            {bg?.url && bg?.type !== 'animated' && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" style={{ objectPosition: bg.objectPosition || 'center' }} />}
+                            {bg?.type === 'animated' && <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/40 to-purple-900/40 opacity-50" />}
                             <span className="relative z-10">{t.label}</span>
                             {bg && <span className="relative z-10 ml-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />}
                           </button>
@@ -1303,9 +1304,9 @@ function ProfileTab({
 
                     {/* Category tabs */}
                     <div className="flex gap-1.5 mb-3">
-                      {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['custom'] : [])].map(c => (
+                      {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['animated', 'custom'] : [])].map(c => (
                         <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-sm ${bgCategory === c ? 'active-cyan' : ''}`}>
-                          {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : 'Animated'}
+                          {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : c === 'animated' ? 'Animated' : 'Custom'}
                         </button>
                       ))}
                     </div>
@@ -1356,6 +1357,20 @@ function ProfileTab({
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                           <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{o.name}</span>
                           {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                        </button>
+                      ))}
+                      {bgCategory === 'animated' && ANIMATED_BACKGROUNDS.map(a => (
+                        <button
+                          key={a.id}
+                          onClick={() => selectImage('animated', a.id, a.art, a.pos)}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('animated', a.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '16/9' }}
+                        >
+                          <img src={a.poster} alt={a.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{a.name}</span>
+                          <div className="absolute top-0.5 left-0.5 text-2xs bg-black/70 text-cyan-300 px-1 py-0.5 rounded">VIDEO</div>
+                          {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
                       {bgCategory === 'custom' && (

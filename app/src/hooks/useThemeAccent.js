@@ -29,6 +29,7 @@ export function useThemeAccent(visualSettings) {
   const navBgPos = _bgPos(visualSettings.navBg);
   const appBgUrl = visualSettings.appBg?.url || null;
   const appBgPos = _bgPos(visualSettings.appBg);
+  const appBgType = visualSettings.appBg?.type || null;
 
   // Apply theme accent as CSS custom properties for kuro-card system
   useEffect(() => {
@@ -58,6 +59,6 @@ export function useThemeAccent(visualSettings) {
     activeTheme, themeAccent,
     headerBgUrl, headerBgPos,
     navBgUrl, navBgPos,
-    appBgUrl, appBgPos,
+    appBgUrl, appBgPos, appBgType,
   };
 }
