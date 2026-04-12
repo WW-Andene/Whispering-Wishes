@@ -148,6 +148,8 @@ function WhisperingWishesInner() {
   // (googleUser, cloudBackupStatus, auth tokens managed inside provider)
 
   const stateRef = useRef(state);
+  const dispatchRef = useRef(dispatch);
+  const toastRef = useRef(toast);
   
 
   const [activeBanners, setActiveBanners] = useState(() => {
@@ -228,9 +230,9 @@ function WhisperingWishesInner() {
   // Admin password - only the app owner can access admin (hash defined at module level)
   
   // Keep ref updated
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  useEffect(() => { stateRef.current = state; }, [state]);
+  useEffect(() => { dispatchRef.current = dispatch; }, [dispatch]);
+  useEffect(() => { toastRef.current = toast; }, [toast]);
   
   // Load state from persistent storage on mount
   useEffect(() => {
@@ -327,8 +329,8 @@ function WhisperingWishesInner() {
             bookmarks: safeParsed.bookmarks || [],
             eventStatus: safeParsed.eventStatus || {},
           };
-          dispatch({ type: 'LOAD_STATE', state: merged });
-          toast?.addToast?.('Data synced from another tab', 'info');
+          dispatchRef.current({ type: 'LOAD_STATE', state: merged });
+          toastRef.current?.addToast?.('Data synced from another tab', 'info');
         } catch (err) {
           console.warn('Cross-tab sync failed:', err);
         }

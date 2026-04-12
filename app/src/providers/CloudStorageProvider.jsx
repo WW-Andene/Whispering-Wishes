@@ -4,7 +4,7 @@
 // Eliminates prop drilling of 10+ cloud-related props through App → ProfileTab.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { createContext, useContext, useState, useRef, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useToast } from './ToastProvider.jsx';
 import { useConfirm } from './ConfirmProvider.jsx';
 import { sanitizeStateObj } from '../core/storage.js';
@@ -47,6 +47,12 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     try { const v = localStorage.getItem('ww-google-user'); return v ? JSON.parse(v) : null; } catch { return null; }
   });
   const [cloudBackupStatus, setCloudBackupStatus] = useState('idle'); // idle|saving|loading|done|error
+
+  // Track mounted state to prevent setState after unmount during async cloud ops
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
+  const safeSetStatus = useCallback((s) => { if (mountedRef.current) setCloudBackupStatus(s); }, []);
+
   const googleAuthRef = useRef({ idToken: null, refreshToken: null, expiresAt: 0 });
 
   // ── Firebase Anonymous Auth ─────────────────────────────────────────────
@@ -203,7 +209,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       handleGoogleSignOut();
       return;
     }
-    setCloudBackupStatus('saving');
+    safeSetStatus('saving');
     try {
       const backupData = getBackupPayload();
       const res = await firebaseFetch(`user-history/${googleUser.uid}`, token, {
@@ -214,17 +220,17 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       if (res.status === 401) {
         toast?.addToast?.('Session expired — please sign in again', 'error');
         handleGoogleSignOut();
-        setCloudBackupStatus('idle');
+        safeSetStatus('idle');
         return;
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setCloudBackupStatus('done');
+      safeSetStatus('done');
       toast?.addToast?.(`Backed up ${backupData.pullCount} pulls to cloud`, 'success');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+      setTimeout(() => safeSetStatus('idle'), 3000);
     } catch (err) {
-      setCloudBackupStatus('error');
+      safeSetStatus('error');
       toast?.addToast?.('Backup failed: ' + (err.message || 'Unknown error'), 'error');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+      setTimeout(() => safeSetStatus('idle'), 3000);
     }
   }, [getGoogleAuth, googleUser, firebaseFetch, toast, handleGoogleSignOut, getBackupPayload, cloudBackupStatus]);
 
@@ -236,20 +242,20 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       handleGoogleSignOut();
       return;
     }
-    setCloudBackupStatus('loading');
+    safeSetStatus('loading');
     try {
       const res = await firebaseFetch(`user-history/${googleUser.uid}`, token);
       if (res.status === 401) {
         toast?.addToast?.('Session expired — please sign in again', 'error');
         handleGoogleSignOut();
-        setCloudBackupStatus('idle');
+        safeSetStatus('idle');
         return;
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data || !data.profile) {
         toast?.addToast?.('No cloud backup found', 'error');
-        setCloudBackupStatus('idle');
+        safeSetStatus('idle');
         return;
       }
       const doRestore = await confirm?.({
@@ -258,16 +264,16 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
         confirmLabel: 'Restore',
         destructive: true,
       });
-      if (!doRestore) { setCloudBackupStatus('idle'); return; }
+      if (!doRestore) { safeSetStatus('idle'); return; }
       // Delegate state application to parent via callback
       onRestoreData(data);
-      setCloudBackupStatus('done');
+      safeSetStatus('done');
       toast?.addToast?.(`Restored ${data.pullCount || 0} pulls from cloud`, 'success');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+      setTimeout(() => safeSetStatus('idle'), 3000);
     } catch (err) {
-      setCloudBackupStatus('error');
+      safeSetStatus('error');
       toast?.addToast?.('Restore failed: ' + (err.message || 'Unknown error'), 'error');
-      setTimeout(() => setCloudBackupStatus('idle'), 3000);
+      setTimeout(() => safeSetStatus('idle'), 3000);
     }
   }, [getGoogleAuth, googleUser, firebaseFetch, toast, confirm, handleGoogleSignOut, onRestoreData]);
 
