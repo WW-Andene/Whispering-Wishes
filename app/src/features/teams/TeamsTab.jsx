@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
@@ -62,9 +62,74 @@ function TeamsTab({
   const [renamingTeamIdx, setRenamingTeamIdx] = useState(null);
   const [renameValue, setRenameValue] = useState('');
   const longPressRef = useRef(null);
-  const startRename = (idx, name) => { setRenamingTeamIdx(idx); setRenameValue(name); haptic.medium(); };
+  const startRename = useCallback((idx, name) => { setRenamingTeamIdx(idx); setRenameValue(name); haptic.medium(); }, []);
   const damageCalcRef = useRef(null);
 
+  // ── Memoized team suggestions — prevents O(n³) recomputation on every render (H-1 fix) ──
+  const teamSuggestions = useMemo(() => {
+    const ownedNames = new Set([
+      ...Object.keys(collectionData?.chars5Counts || {}),
+      ...Object.keys(collectionData?.chars4Counts || {}),
+    ]);
+    const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
+    const scoreTeam = (members) => {
+      let score = 0;
+      const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
+      const tags = [];
+      let tierSum = 0;
+      members.forEach(m => { const t = CHARACTER_DATA[m]?.tier?.toa; if (t) tierSum += (TIER_SCORES[t] ?? 10); });
+      score += tierSum;
+      if (tierSum >= 115) tags.push('Meta'); else if (tierSum >= 95) tags.push('Strong');
+      const hasMain = roles.includes('Main DPS'), hasSub = roles.includes('Sub DPS');
+      const hasHeal = roles.includes('Healer'), hasSupp = roles.includes('Support');
+      if (hasMain) score += 15; if (hasHeal || hasSupp) score += 10; if (hasSub) score += 8;
+      if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
+      const mainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+      if (mainDps) {
+        score += Math.min(25, Math.round((CHARACTER_DATA[mainDps]?.totalMult || 0) / 120));
+        const mainEl = CHARACTER_DATA[mainDps]?.element;
+        members.forEach(other => {
+          if (other === mainDps) return;
+          const bt = CHAR_BUFF_TABLE[other];
+          if (!bt) return;
+          (bt.outroBuffs || []).forEach(b => {
+            if (b.stat === 'deepen') score += 8;
+            else if (b.stat === 'elemDmg') { const cond = (b.condition || '').toLowerCase(); const mel = (mainEl || '').toLowerCase(); if (!cond || cond.includes(mel) || cond.includes('all')) score += 6; }
+            else if (b.stat === 'basicDmg' || b.stat === 'heavyDmg' || b.stat === 'skillDmg') score += 5;
+            else if (b.stat === 'critRate' || b.stat === 'critDmg') score += 4;
+          });
+          (bt.debuffs || []).forEach(db => { if (db.stat === 'defShred' || db.stat === 'resShred' || db.stat === 'defIgnore') score += 4; });
+        });
+      }
+      const elements = new Set(members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean));
+      if (elements.size < members.length) { score += 5; tags.push('Resonance'); }
+      return { score, tags };
+    };
+    // Custom teams from roster
+    const customTeams = [];
+    const ownedArr = [...ownedNames].filter(n => CHARACTER_DATA[n]);
+    const ownedDps = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Main DPS');
+    const ownedSub = ownedArr.filter(n => ['Sub DPS', 'Support'].includes(CHARACTER_DATA[n].role));
+    const ownedHeal = ownedArr.filter(n => ['Healer', 'Support'].includes(CHARACTER_DATA[n].role));
+    for (const dps of ownedDps) {
+      const bestSubs = ownedSub.filter(s => s !== dps).map(sub => ({ name: sub, score: scoreTeam([dps, sub, ownedHeal[0] || sub]).score })).sort((a, b) => b.score - a.score).slice(0, 3);
+      const bestHeals = ownedHeal.filter(h => h !== dps).map(heal => ({ name: heal, score: scoreTeam([dps, bestSubs[0]?.name || heal, heal]).score })).sort((a, b) => b.score - a.score).slice(0, 3);
+      for (const sub of bestSubs) { for (const heal of bestHeals) { if (sub.name === heal.name) continue; const members = [dps, sub.name, heal.name]; const { score, tags } = scoreTeam(members); customTeams.push({ text: members.join(' + '), members, score, tags, ownedCount: 3, allOwned: true }); } }
+    }
+    customTeams.sort((a, b) => b.score - a.score);
+    const seenC = new Set(); const uniqCustom = customTeams.filter(t => { const k = [...t.members].sort().join(','); if (seenC.has(k)) return false; seenC.add(k); return true; });
+    // Curated meta teams
+    const metaTeams = [];
+    [...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS].forEach(name => {
+      (CHARACTER_DATA[name]?.teams || []).forEach(t => { const members = t.split('+').map(s => s.trim()).filter(Boolean); if (members.length < 2) return; const { score, tags } = scoreTeam(members); const oc = members.filter(m => ownedNames.has(m)).length; metaTeams.push({ text: t, members, score: score + oc * 8 + (oc === members.length ? 12 : 0), tags, ownedCount: oc, allOwned: oc === members.length }); });
+    });
+    metaTeams.sort((a, b) => b.score - a.score);
+    const seenM = new Set(); const uniqMeta = metaTeams.filter(t => { const k = [...t.members].sort().join(','); if (seenM.has(k)) return false; seenM.add(k); return true; });
+    const all = [];
+    if (uniqCustom.length > 0) { all.push({ header: 'Built from your roster' }); uniqCustom.slice(0, 8).forEach(s => all.push(s)); }
+    if (uniqMeta.length > 0) { all.push({ header: 'Curated teams' }); uniqMeta.slice(0, uniqCustom.length > 0 ? 7 : 15).forEach(s => all.push(s)); }
+    return all;
+  }, [collectionData]);
 
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
