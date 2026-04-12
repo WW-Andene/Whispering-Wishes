@@ -141,7 +141,96 @@ img.onload = () => {
     { x: Math.round(cx - imgW*0.03), y: Math.round(imgH*0.205), w: Math.round(imgW*0.08), h: Math.round(imgH*0.035) }
   );
 
-  updateInfo(`Sprite loaded: ${imgW}x${imgH} — Auto-mapped ${Object.values(BODY_REGIONS).reduce((s,g) => s+g.rects.length, 0)} regions with green filter`);
+  // Run pixel-level analysis to find character bounding box
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = imgW;
+  tempCanvas.height = imgH;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.drawImage(img, 0, 0);
+  const pixData = tempCtx.getImageData(0, 0, imgW, imgH).data;
+
+  let cMinX=imgW, cMinY=imgH, cMaxX=0, cMaxY=0;
+  for (let y=0; y<imgH; y++) {
+    for (let x=0; x<imgW; x++) {
+      if (pixData[(y*imgW+x)*4+3] > 20) {
+        if (x<cMinX) cMinX=x; if (x>cMaxX) cMaxX=x;
+        if (y<cMinY) cMinY=y; if (y>cMaxY) cMaxY=y;
+      }
+    }
+  }
+  const cW = cMaxX-cMinX, cH = cMaxY-cMinY;
+
+  // Scan rows to find the head region - look for horizontal extents at various heights
+  // Head top: where character starts. Scan down to find where width narrows (neck)
+  const rowWidths = [];
+  for (let y=cMinY; y<Math.min(cMinY+Math.round(cH*0.35), cMaxY); y++) {
+    let rLeft=imgW, rRight=0;
+    for (let x=cMinX; x<=cMaxX; x++) {
+      if (pixData[(y*imgW+x)*4+3] > 20) {
+        if (x<rLeft) rLeft=x;
+        if (x>rRight) rRight=x;
+      }
+    }
+    rowWidths.push({y, left:rLeft, right:rRight, width:rRight-rLeft});
+  }
+
+  // Find neck: narrowest point in upper 30% of character
+  let neckIdx = 0, neckWidth = Infinity;
+  for (let i=Math.round(rowWidths.length*0.4); i<rowWidths.length; i++) {
+    if (rowWidths[i].width > 0 && rowWidths[i].width < neckWidth) {
+      neckWidth = rowWidths[i].width;
+      neckIdx = i;
+    }
+  }
+  const neckY = rowWidths[neckIdx]?.y || cMinY + cH*0.25;
+  const neckLeft = rowWidths[neckIdx]?.left || cMinX;
+
+  // Scan for skin-colored pixels to find face region
+  // Skin color detection: look for warm tones (high R, moderate G, lower B)
+  let faceMinX=imgW, faceMinY=imgH, faceMaxX=0, faceMaxY=0;
+  const headBottom = neckY;
+  const headTop = cMinY;
+  for (let y=headTop; y<headBottom; y++) {
+    for (let x=cMinX; x<=cMaxX; x++) {
+      const i = (y*imgW+x)*4;
+      const r=pixData[i], g=pixData[i+1], b=pixData[i+2], a=pixData[i+3];
+      // Skin tone heuristic: warm, not too dark, not too bright white (hair)
+      if (a > 100 && r > 160 && r < 255 && g > 120 && g < 230 && b > 90 && b < 200 && r > b + 20 && r > g - 30) {
+        if (x<faceMinX) faceMinX=x; if (x>faceMaxX) faceMaxX=x;
+        if (y<faceMinY) faceMinY=y; if (y>faceMaxY) faceMaxY=y;
+      }
+    }
+  }
+
+  // Clear pre-set percentage regions and use pixel-derived ones
+  for (const g of Object.values(BODY_REGIONS)) g.rects = [];
+
+  // Now set precise regions based on pixel analysis
+  BODY_REGIONS.horn.rects.push(
+    { x: cMinX, y: cMinY, w: Math.round(cW*0.5), h: Math.round((faceMinY-cMinY)*0.8) }
+  );
+
+  BODY_REGIONS.hair.rects.push(
+    { x: cMinX, y: cMinY, w: cW, h: Math.round(headBottom-cMinY) }
+  );
+
+  BODY_REGIONS.head.rects.push(
+    { x: Math.round(faceMinX - (faceMaxX-faceMinX)*0.15), y: Math.round(cMinY + (faceMinY-cMinY)*0.3),
+      w: Math.round((faceMaxX-faceMinX)*1.3), h: Math.round((faceMaxY-cMinY)*1.1) }
+  );
+
+  BODY_REGIONS.face.rects.push(
+    { x: faceMinX, y: faceMinY, w: faceMaxX-faceMinX, h: faceMaxY-faceMinY }
+  );
+
+  BODY_REGIONS.neck.rects.push(
+    { x: neckLeft, y: Math.round(neckY - cH*0.01), w: neckWidth, h: Math.round(cH*0.04) }
+  );
+
+  const info = `IMG:${imgW}x${imgH} CHAR:(${cMinX},${cMinY})-(${cMaxX},${cMaxY}) ${cW}x${cH} FACE:(${faceMinX},${faceMinY})-(${faceMaxX},${faceMaxY}) NECK:y=${Math.round(neckY)} w=${neckWidth}`;
+  updateInfo(info);
+  document.getElementById('regionList').textContent = JSON.stringify({charBBox:{cMinX,cMinY,cMaxX,cMaxY,cW,cH}, face:{faceMinX,faceMinY,faceMaxX,faceMaxY}, neckY:Math.round(neckY), neckWidth});
+
   draw();
 };
 img.onerror = () => updateInfo('Failed to load sprite image');
