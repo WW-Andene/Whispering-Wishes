@@ -153,8 +153,16 @@ export default function EchoSelector({
                                 const n = { ...prev };
                                 const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
                                 const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
+                                // Auto-detect echo set from equipped echoes for set bonus calculation
                                 newEchoes[slotIdx] = { name, mainStat: null, substats: [] };
-                                n[eqKey] = { ...existing, echoes: newEchoes };
+                                // Update echoSet from equipped echo sonata sets
+                                const allNames = newEchoes.map(e => e?.name).filter(Boolean);
+                                const setCounts = {};
+                                allNames.forEach(en => { (ECHO_DATA[en]?.sets || []).forEach(s => { setCounts[s] = (setCounts[s] || 0) + 1; }); });
+                                const sortedSets = Object.entries(setCounts).sort((a, b) => b[1] - a[1]);
+                                const primarySet = sortedSets[0]?.[1] >= 2 ? sortedSets[0][0] : existing.echoSet || '';
+                                const secondarySet = sortedSets[1]?.[1] >= 2 ? sortedSets[1][0] : existing.echoSet2 || '';
+                                n[eqKey] = { ...existing, echoes: newEchoes, echoSet: primarySet, echoSet2: secondarySet };
                                 try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                                 return n;
                               });

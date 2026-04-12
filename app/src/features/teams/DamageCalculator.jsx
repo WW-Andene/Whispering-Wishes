@@ -1432,6 +1432,30 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         </button>
                       );
                     })()}
+                    {/* Reset Equipment button */}
+                    {(() => {
+                      const reqKey = state.activeTeamIndex + ':' + m.name;
+                      const hasEquip = teamEquipment[reqKey] && (teamEquipment[reqKey].weapon || (teamEquipment[reqKey].echoes || []).some(e => e));
+                      if (!hasEquip) return null;
+                      return (
+                        <button
+                          className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start text-gray-500 hover:text-red-400"
+                          aria-label={`Reset equipment for ${m.name}`}
+                          onClick={async () => {
+                            if (await confirm?.({ title: 'Reset Equipment', message: `Clear all equipment for ${m.name}?`, confirmLabel: 'Reset', destructive: true })) {
+                              setTeamEquipment(prev => {
+                                const n = { ...prev };
+                                n[reqKey] = { weapon: null, echoes: [null, null, null, null, null], sequence: prev[reqKey]?.sequence || 0, refinement: 1, echoSet: '', echoSet2: '', echoPreset: 'default' };
+                                return n;
+                              });
+                              haptic.light();
+                            }
+                          }}
+                        >
+                          <X size={10} className="inline mr-0.5" />Reset
+                        </button>
+                      );
+                    })()}
                   </div>
 
                   {/* ── Section 2: Base Stats ── */}
@@ -1543,12 +1567,33 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                   if (ed?.sets) ed.sets.forEach(s => { setCounts[s] = (setCounts[s] || 0) + 1; });
                                 });
                                 const activeSets = Object.entries(setCounts).filter(([, c]) => c >= 2);
+                                // All unique sets from equipped echoes (for manual override)
+                                const allDetectedSets = [...new Set(echoNames.flatMap(n => ECHO_DATA[n]?.sets || []))];
+                                const currentActiveSet = eq.echoSet || (activeSets[0]?.[0] || '');
                                 return (
                                   <div className="text-sm mt-1 space-y-0.5">
                                     <div className="text-cyan-400/70">{equipped.length}/5 echoes</div>
-                                    {activeSets.map(([setName, count]) => (
-                                      <div key={setName} className="text-gray-500">{setName} <span className="text-emerald-400/70">×{count}</span></div>
-                                    ))}
+                                    {activeSets.length > 0 ? activeSets.map(([setName, count]) => {
+                                      const isForced = eq.echoSet === setName;
+                                      return (
+                                        <div key={setName} className={`text-gray-500 ${allDetectedSets.length > 1 ? 'cursor-pointer hover:text-white' : ''}`}
+                                          title={allDetectedSets.length > 1 ? 'Click to set as active echo set' : ''}
+                                          onClick={allDetectedSets.length > 1 ? () => {
+                                            const eqk = state.activeTeamIndex + ':' + m.name;
+                                            setTeamEquipment(prev => {
+                                              const n = { ...prev };
+                                              n[eqk] = { ...(n[eqk] || {}), echoSet: setName };
+                                              return n;
+                                            });
+                                            haptic.light();
+                                          } : undefined}>
+                                          {isForced && <span className="text-emerald-400 mr-0.5">●</span>}
+                                          {setName} <span className="text-emerald-400/70">×{count}</span>
+                                        </div>
+                                      );
+                                    }) : allDetectedSets.length > 0 ? (
+                                      <div className="text-gray-600 text-2xs">No set bonus (need 2+ matching)</div>
+                                    ) : null}
                                   </div>
                                 );
                               })()}
