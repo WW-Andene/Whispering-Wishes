@@ -67,6 +67,13 @@ function CollectionTab({
     try { return JSON.parse(localStorage.getItem('ww-owned-chars') || '[]'); } catch { return []; }
   });
   useEffect(() => { try { localStorage.setItem('ww-owned-chars', JSON.stringify(ownedChars)); } catch {} }, [ownedChars]);
+  // Re-sync from localStorage when profile is cleared (importedAt becomes null)
+  useEffect(() => {
+    if (!state.profile.importedAt) {
+      try { setOwnedChars(JSON.parse(localStorage.getItem('ww-owned-chars') || '[]')); } catch { setOwnedChars([]); }
+      try { setManualCounts(JSON.parse(localStorage.getItem('ww-manual-counts') || '{}')); } catch { setManualCounts({}); }
+    }
+  }, [state.profile.importedAt]);
   const toggleOwned = useCallback((name) => setOwnedChars(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]), []);
 
   // ── Manual copy count overrides (long-press to add copies) ─────────────────
