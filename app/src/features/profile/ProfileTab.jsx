@@ -1293,7 +1293,7 @@ function ProfileTab({
                         const bg = visualSettings[t.settingKey];
                         return (
                           <button key={t.key} onClick={() => { setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); if (t.key !== 'background' && (bgCategory === 'custom' || bgCategory === 'animated')) setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
-                            {bg?.url && bg?.type !== 'animated' && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" style={{ objectPosition: bg.objectPosition || 'center' }} />}
+                            {bg?.url && bg?.type !== 'animated' && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />}
                             {bg?.type === 'animated' && <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/40 to-purple-900/40 opacity-50" />}
                             <span className="relative z-10">{t.label}</span>
                             {bg && <span className="relative z-10 ml-1 w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />}
