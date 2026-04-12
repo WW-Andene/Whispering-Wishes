@@ -57,7 +57,8 @@ export function useTabNavigation(swipeEnabled) {
     const handleTouchStart = (e) => {
       let el = e.target;
       while (el && el !== document.body) {
-        if (el.scrollWidth > el.clientWidth && (getComputedStyle(el).overflowX === 'auto' || getComputedStyle(el).overflowX === 'scroll')) {
+        // Ignore swipe on: horizontally scrollable containers, elements with data-no-swipe (e.g., calendar)
+        if (el.dataset?.noSwipe || (el.scrollWidth > el.clientWidth && (getComputedStyle(el).overflowX === 'auto' || getComputedStyle(el).overflowX === 'scroll'))) {
           swipeRef.current = { startX: 0, startY: 0, startTime: 0, ignore: true };
           return;
         }

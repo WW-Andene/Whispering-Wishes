@@ -22,9 +22,11 @@ import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
 import { MAX_BOOKMARK_NAME_LENGTH } from '../../shared/constants/appConstants.js';
+import { useConfirm } from '../../providers/ConfirmProvider.jsx';
 const CALC_DEFER_MS = 150;
 
 function CalculatorTab({ state, dispatch }) {
+  const confirm = useConfirm();
   // ── Tab-local state ──────────────────────────────────────────────────────
   const [showBookmarkModal, setShowBookmarkModal] = useState(false);
   const [bookmarkName, setBookmarkName] = useState('');
@@ -162,7 +164,7 @@ function CalculatorTab({ state, dispatch }) {
 
             {/* Banner Selection */}
             <Card>
-              <CardHeader action={<button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-sm flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button>}>Banner Selection</CardHeader>
+              <CardHeader action={<div className="flex gap-2"><button onClick={async () => { if (await confirm?.({ title: 'Reset Calculator', message: 'Reset all calculator fields to defaults?', confirmLabel: 'Reset', destructive: true })) { dispatch({ type: 'SET_CALC', field: '__reset', value: true }); haptic.light(); } }} className="text-gray-500 text-sm flex items-center gap-1 hover:text-red-400 transition-colors" aria-label="Reset calculator"><RefreshCcw size={12} />Reset</button><button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-sm flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button></div>}>Banner Selection</CardHeader>
               <CardBody className="space-y-3">
                   {/* Featured Banners */}
                   <div className="space-y-2">

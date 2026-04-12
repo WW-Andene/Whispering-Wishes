@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Hammer, Minus, Plus, Search, Star, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SOFT_PITY_START, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -362,7 +362,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
   }, [cal, bannerEndDate, activeBanners]);
 
   return (
-    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} className="space-y-3">
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} data-no-swipe className="space-y-3">
 
         {/* ── VIEW 1: Page Calendar ─────────────────────────────────────────── */}
 
@@ -691,7 +691,30 @@ function PlannerTab({
     const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
     const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
     const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress };
+    // Quick probability estimate: what's the chance of getting the target with available pulls?
+    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL);
+    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL);
+    // Simplified probability model: P(5★ in N pulls) using soft pity integral
+    const calcProb = (pulls, copies, has5050) => {
+      if (pulls <= 0 || copies <= 0) return 0;
+      // Expected pulls per 5★ (accounting for soft pity): ~62 avg with soft pity ramp
+      const avgPer5Star = 62;
+      const pullsPerFeatured = has5050 ? avgPer5Star * 1.5 : avgPer5Star; // 50/50 = 1.5x avg
+      const expectedCopies = pulls / pullsPerFeatured;
+      // Poisson CDF approximation for P(copies >= target)
+      if (expectedCopies >= copies * 2) return 99.9;
+      let prob = 0;
+      let term = Math.exp(-expectedCopies);
+      for (let k = 0; k < copies; k++) {
+        prob += term;
+        term *= expectedCopies / (k + 1);
+      }
+      return Math.min(99.9, Math.max(0.1, (1 - prob) * 100));
+    };
+    const has5050 = isFeatured && state.planner.goalBanner === 'featuredChar';
+    const probNow = calcProb(availablePulls, goalCopies, has5050);
+    const probByEnd = calcProb(pullsByEnd, goalCopies, has5050);
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
   }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
 
   // Collapsible section toggle
@@ -949,6 +972,17 @@ function PlannerTab({
             <div className="flex justify-between text-sm mt-1">
               <span className="text-gray-400">{Math.floor(planData.currentAstrite / ASTRITE_PER_PULL)} / {planData.targetPulls} Convenes</span>
               <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
+            </div>
+          </div>
+          {/* Probability estimate */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="kuro-stat p-2.5 text-center">
+              <div className={`kuro-number text-xl font-bold ${planData.probNow >= 80 ? 'text-emerald-400' : planData.probNow >= 50 ? 'text-yellow-400' : planData.probNow >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probNow.toFixed(1)}%</div>
+              <div className="text-gray-500 text-xs">Chance now ({planData.availablePulls} pulls)</div>
+            </div>
+            <div className="kuro-stat p-2.5 text-center">
+              <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
+              <div className="text-gray-500 text-xs">Chance by banner end ({planData.pullsByEnd} pulls)</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

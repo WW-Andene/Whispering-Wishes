@@ -112,7 +112,10 @@ const initialState = {
 const reducer = (state, action) => {
   switch (action.type) {
     case ACTION.SET_SERVER: return { ...state, server: action.server };
-    case ACTION.SET_CALC: return { ...state, calc: { ...state.calc, [action.field]: action.value } };
+    case ACTION.SET_CALC: {
+      if (action.field === '__reset') return { ...state, calc: { ...initialState.calc } };
+      return { ...state, calc: { ...state.calc, [action.field]: action.value } };
+    }
     case ACTION.SET_PLANNER: return { ...state, planner: { ...state.planner, [action.field]: action.value } };
     case ACTION.SET_SETTINGS: return { ...state, settings: { ...state.settings, [action.field]: action.value } };
     case ACTION.SET_EVENT_STATUS: {
