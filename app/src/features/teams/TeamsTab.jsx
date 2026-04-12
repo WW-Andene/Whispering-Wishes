@@ -11,6 +11,7 @@ import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { useSessionState } from '../../utils/useSessionState.js';
 
 function TeamsTab({
   state,
@@ -21,8 +22,7 @@ function TeamsTab({
   confirm,
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
-  const [overviewCollapsed, setOverviewCollapsed] = useState(false);
-  const [suggestionsCollapsed, setSuggestionsCollapsed] = useState(false);
+  const [suggestionsCollapsed, setSuggestionsCollapsed] = useSessionState('ww-team-suggestions-collapsed', false);
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
