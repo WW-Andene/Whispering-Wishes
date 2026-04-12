@@ -40,35 +40,139 @@ let alphaMask=null, meshVerts=[], meshTris=[];
 const canvas=document.getElementById('canvas'), ctx=canvas.getContext('2d');
 
 // ═══════════════════════════════════════════════════════════
-// SKELETON DEFINITION — bones as {name, parent, x, y, length, angle}
-// Positions are in normalized coords (0-1) relative to image
+// AUTO-DETECT LANDMARKS from sprite pixels, then build skeleton
 // ═══════════════════════════════════════════════════════════
-const BONES = [
-  { name:'root',       parent:null,         nx:0.42, ny:0.44, len:0 },
-  { name:'spine',      parent:'root',       nx:0.42, ny:0.35, len:0.09 },
-  { name:'chest',      parent:'spine',      nx:0.42, ny:0.27, len:0.08 },
-  { name:'neck',       parent:'chest',      nx:0.43, ny:0.20, len:0.07 },
-  { name:'head',       parent:'neck',       nx:0.44, ny:0.13, len:0.07 },
-  { name:'hair_top',   parent:'head',       nx:0.44, ny:0.05, len:0.08 },
-  { name:'hair_l',     parent:'head',       nx:0.36, ny:0.16, len:0.06 },
-  { name:'hair_r',     parent:'head',       nx:0.52, ny:0.14, len:0.05 },
-  { name:'shldr_l',    parent:'chest',      nx:0.34, ny:0.25, len:0.08 },
-  { name:'elbow_l',    parent:'shldr_l',    nx:0.28, ny:0.32, len:0.08 },
-  { name:'hand_l',     parent:'elbow_l',    nx:0.30, ny:0.38, len:0.06 },
-  { name:'shldr_r',    parent:'chest',      nx:0.52, ny:0.26, len:0.08 },
-  { name:'elbow_r',    parent:'shldr_r',    nx:0.56, ny:0.33, len:0.08 },
-  { name:'hand_r',     parent:'elbow_r',    nx:0.54, ny:0.40, len:0.07 },
-  { name:'hip_l',      parent:'root',       nx:0.40, ny:0.47, len:0.04 },
-  { name:'knee_l',     parent:'hip_l',      nx:0.39, ny:0.65, len:0.18 },
-  { name:'foot_l',     parent:'knee_l',     nx:0.38, ny:0.88, len:0.23 },
-  { name:'hip_r',      parent:'root',       nx:0.44, ny:0.47, len:0.04 },
-  { name:'knee_r',     parent:'hip_r',      nx:0.44, ny:0.63, len:0.16 },
-  { name:'foot_r',     parent:'knee_r',     nx:0.42, ny:0.85, len:0.22 },
-  { name:'cape_top',   parent:'chest',      nx:0.32, ny:0.26, len:0.06 },
-  { name:'cape_mid',   parent:'cape_top',   nx:0.22, ny:0.40, len:0.15 },
-  { name:'cape_tip',   parent:'cape_mid',   nx:0.15, ny:0.58, len:0.18 },
-  { name:'weapon',     parent:'hand_r',     nx:0.62, ny:0.50, len:0.15 },
-];
+let BONES = [];
+
+function detectLandmarks(srcData) {
+  // 1. Character bounding box
+  let cMinX=imgW,cMinY=imgH,cMaxX=0,cMaxY=0;
+  for(let y=0;y<imgH;y++) for(let x=0;x<imgW;x++)
+    if(srcData[(y*imgW+x)*4+3]>20){if(x<cMinX)cMinX=x;if(x>cMaxX)cMaxX=x;if(y<cMinY)cMinY=y;if(y>cMaxY)cMaxY=y;}
+  const cW=cMaxX-cMinX,cH=cMaxY-cMinY;
+
+  // 2. Per-row extents
+  const rows=[];
+  for(let y=cMinY;y<=cMaxY;y++){
+    let l=imgW,r=0,count=0;
+    for(let x=cMinX;x<=cMaxX;x++) if(srcData[(y*imgW+x)*4+3]>20){if(x<l)l=x;if(x>r)r=x;count++;}
+    rows.push({y,l,r,cx:(l+r)/2,w:r-l,count});
+  }
+
+  // 3. Body center line from torso rows (30-45%)
+  const torsoSlice=rows.slice(Math.round(rows.length*.30),Math.round(rows.length*.45));
+  const centers=torsoSlice.map(r=>r.cx).sort((a,b)=>a-b);
+  const bodyCX=centers[Math.floor(centers.length/2)];
+
+  // 4. Find neck = narrowest point between 15-25%
+  let neckRow=null,neckW=Infinity;
+  for(let i=Math.round(rows.length*.15);i<Math.round(rows.length*.25);i++){
+    if(rows[i].w>10&&rows[i].w<neckW){neckW=rows[i].w;neckRow=rows[i];}
+  }
+  const neckY=neckRow?neckRow.y:cMinY+cH*.21;
+  const neckCX=neckRow?(neckRow.l+neckRow.r)/2:bodyCX;
+
+  // 5. Find face center via skin pixels above neck
+  let skinSX=0,skinSY=0,skinN=0;
+  for(let y=cMinY;y<neckY;y++) for(let x=cMinX;x<=cMaxX;x++){
+    const i=(y*imgW+x)*4;
+    const r=srcData[i],g=srcData[i+1],b=srcData[i+2],a=srcData[i+3];
+    if(a>100&&r>150&&g>100&&b>70&&b<200&&r>b+15&&(r+g+b)/3>120&&(r+g+b)/3<240&&!(r>230&&g>230&&b>230)){
+      skinSX+=x;skinSY+=y;skinN++;
+    }
+  }
+  const faceCX=skinN>0?skinSX/skinN:bodyCX;
+  const faceCY=skinN>0?skinSY/skinN:cMinY+cH*.13;
+
+  // 6. Find widest point in torso for shoulders
+  let widestRow=null,widestW=0;
+  for(let i=Math.round(rows.length*.22);i<Math.round(rows.length*.32);i++){
+    if(rows[i].w>widestW){widestW=rows[i].w;widestRow=rows[i];}
+  }
+  const shoulderY=widestRow?widestRow.y:cMinY+cH*.25;
+  const shoulderL=widestRow?widestRow.l:cMinX+cW*.25;
+  const shoulderR=widestRow?widestRow.r:cMinX+cW*.75;
+
+  // 7. Find hip = widest point around 42-50%
+  let hipRow=null,hipW=0;
+  for(let i=Math.round(rows.length*.42);i<Math.round(rows.length*.50);i++){
+    if(rows[i].w>hipW){hipW=rows[i].w;hipRow=rows[i];}
+  }
+  const hipY=hipRow?hipRow.y:cMinY+cH*.46;
+  const hipCX=hipRow?(hipRow.l+hipRow.r)/2:bodyCX;
+
+  // 8. Find feet = bottom of character per leg half
+  let footLY=cMaxY,footRY=cMaxY,footLX=bodyCX-cW*.05,footRX=bodyCX+cW*.05;
+  // Scan bottom rows for left/right extent
+  for(let i=rows.length-1;i>rows.length*.85;i--){
+    const r=rows[i];
+    if(r.count>5){
+      const mid=(r.l+r.r)/2;
+      if(mid<bodyCX){footLY=r.y;footLX=mid;break;}
+    }
+  }
+  for(let i=rows.length-1;i>rows.length*.85;i--){
+    const r=rows[i];
+    if(r.count>5){
+      const mid=(r.l+r.r)/2;
+      if(mid>=bodyCX){footRY=r.y;footRX=mid;break;}
+    }
+  }
+
+  // 9. Find top of head (highest opaque pixel near center)
+  let headTopY=cMinY;
+  for(let y=cMinY;y<cMinY+cH*.1;y++){
+    for(let x=Math.round(faceCX-cW*.15);x<Math.round(faceCX+cW*.15);x++){
+      if(x>=0&&x<imgW&&srcData[(y*imgW+x)*4+3]>20){headTopY=y;break;}
+    }
+    if(headTopY<cMinY+2)break;
+  }
+
+  // 10. Find hand positions — leftmost/rightmost points around elbow height
+  const elbowPct=.33;
+  const elbowRowIdx=Math.round(rows.length*elbowPct);
+  const elbowRow=rows[elbowRowIdx];
+  const handLPct=.38;
+  const handRowIdx=Math.round(rows.length*handLPct);
+  const handRow=rows[handRowIdx];
+
+  // Normalize to 0-1
+  const n=(px,py)=>({nx:px/imgW, ny:py/imgH});
+
+  const root=n(hipCX,hipY);
+  const spine=n(bodyCX,cMinY+cH*.35);
+  const chest=n(bodyCX,shoulderY+cH*.02);
+  const neck=n(neckCX,neckY);
+  const head=n(faceCX,faceCY);
+  const hairTop=n(faceCX,headTopY);
+
+  BONES = [
+    {name:'root',     parent:null,      ...root,     len:0},
+    {name:'spine',    parent:'root',    ...spine,    len:0.09},
+    {name:'chest',    parent:'spine',   ...chest,    len:0.08},
+    {name:'neck',     parent:'chest',   ...neck,     len:0.07},
+    {name:'head',     parent:'neck',    ...head,     len:0.07},
+    {name:'hair_top', parent:'head',    ...hairTop,  len:0.08},
+    {name:'hair_l',   parent:'head',    nx:head.nx-0.08, ny:head.ny+0.03, len:0.06},
+    {name:'hair_r',   parent:'head',    nx:head.nx+0.08, ny:head.ny+0.01, len:0.05},
+    {name:'shldr_l',  parent:'chest',   nx:shoulderL/imgW+0.02, ny:shoulderY/imgH, len:0.08},
+    {name:'elbow_l',  parent:'shldr_l', nx:elbowRow?elbowRow.l/imgW+0.02:0.28, ny:elbowPct, len:0.08},
+    {name:'hand_l',   parent:'elbow_l', nx:handRow?handRow.l/imgW+0.03:0.30, ny:handLPct, len:0.06},
+    {name:'shldr_r',  parent:'chest',   nx:shoulderR/imgW-0.02, ny:shoulderY/imgH, len:0.08},
+    {name:'elbow_r',  parent:'shldr_r', nx:elbowRow?elbowRow.r/imgW-0.02:0.56, ny:elbowPct, len:0.08},
+    {name:'hand_r',   parent:'elbow_r', nx:handRow?handRow.r/imgW-0.03:0.54, ny:handLPct, len:0.07},
+    {name:'hip_l',    parent:'root',    nx:root.nx-0.02, ny:root.ny+0.02, len:0.04},
+    {name:'knee_l',   parent:'hip_l',   nx:root.nx-0.03, ny:root.ny+0.20, len:0.18},
+    {name:'foot_l',   parent:'knee_l',  nx:footLX/imgW, ny:footLY/imgH, len:0.23},
+    {name:'hip_r',    parent:'root',    nx:root.nx+0.02, ny:root.ny+0.02, len:0.04},
+    {name:'knee_r',   parent:'hip_r',   nx:root.nx+0.02, ny:root.ny+0.18, len:0.16},
+    {name:'foot_r',   parent:'knee_r',  nx:footRX/imgW, ny:footRY/imgH, len:0.22},
+    {name:'cape_top', parent:'chest',   nx:chest.nx-0.10, ny:chest.ny, len:0.06},
+    {name:'cape_mid', parent:'cape_top',nx:chest.nx-0.22, ny:chest.ny+0.14, len:0.15},
+    {name:'cape_tip', parent:'cape_mid',nx:chest.nx-0.30, ny:chest.ny+0.32, len:0.18},
+    {name:'weapon',   parent:'hand_r',  nx:(handRow?handRow.r/imgW:0.54)+0.10, ny:handLPct+0.12, len:0.15},
+  ];
+}
 
 let bones = []; // runtime bone data
 
@@ -337,13 +441,23 @@ img.onload=()=>{
   spriteImg=img;imgW=img.naturalWidth;imgH=img.naturalHeight;
   canvas.width=imgW;canvas.height=imgH;
   alphaMask=buildAlphaMask(img);
+
+  // Auto-detect body landmarks from pixel data
+  const tmp2=document.createElement('canvas');tmp2.width=imgW;tmp2.height=imgH;
+  const tctx2=tmp2.getContext('2d');tctx2.drawImage(img,0,0);
+  const srcPx=tctx2.getImageData(0,0,imgW,imgH).data;
+  detectLandmarks(srcPx);
+
   buildMesh(18);
   initBones();
   skinVertices();
-  // Initial FK solve
   animateBones(0,0);solveFK();
+
+  // Show skeleton on first load so user can verify placement
+  showSkel=true; document.getElementById('btnSkel').classList.add('active');
+
   document.getElementById('info').textContent=
-    `${imgW}x${imgH} — ${bones.length} bones, ${meshVerts.length} verts, ${meshTris.length} tris`;
+    `${imgW}x${imgH} — ${bones.length} bones, ${meshVerts.length} verts, ${meshTris.length} tris — auto-placed from pixel scan`;
   requestAnimationFrame(render);
 };
 img.onerror=()=>{document.getElementById('info').textContent='Failed to load';};
