@@ -883,13 +883,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         memberDmgArr.push({ name: m.name, dmg: sDmg });
       }
     });
-    const memberDps = memberDmgArr.map(m => {
-      const pct = totalRotDmg > 0 ? Math.round(m.dmg / totalRotDmg * 100) : 0;
-      return { name: m.name, dmg: m.dmg, pct };
+    // ── Per-member damage with type breakdown ──
+    const memberDmg = memberDmgArr.map(m => {
+      const mem = mems.find(mm => mm.name === m.name);
+      const isMain = m.name === mainDps.name;
+      const focus = mem?.d?.dmgFocus || [];
+      const hasCoord = focus.includes('Coordinated ATK');
+      return {
+        name: m.name,
+        skillDmg: m.dmg,           // On-field / off-field skill rotation damage
+        echoDmg: 0,                // Echo active skill damage (filled below)
+        dotDmg: 0,                 // DOT contribution (filled below)
+        total: m.dmg,
+        isOnField: isMain || (!hasCoord && (mem?.d?.onField || 0) > 3),
+        isCoord: hasCoord,
+      };
     });
-    const realDps = Math.round((totalRotDmg + dotDmgPerRotation) * tuneBreakDeepenMult / rotTime);
 
-    // ── PERFECT TIER: Full DPS + echo active skill damage ──
+    // ── Echo active skill damage — integrated into rotation (not separate tier) ──
     let echoActiveDmg = 0;
     mems.forEach(m => {
       const eqKey = teamIdx + ':' + m.name;
@@ -923,11 +934,69 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             if (m.echoSet) { const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {}; if (p2.critRate) eCr += p2.critRate; if (p5.critRate) eCr += p5.critRate; }
             return 1 + (Math.min(eCr, 100) / 100) * (eCd / 100 - 1);
           })();
-          echoActiveDmg += echoBase * (echoDmgPct / 100) * echoCrit * echoDmgMult * defMult * echoResMult;
+          const thisDmg = echoBase * (echoDmgPct / 100) * echoCrit * echoDmgMult * defMult * echoResMult;
+          echoActiveDmg += thisDmg;
+          // Attribute echo damage to the member who uses it
+          const md = memberDmg.find(mm => mm.name === m.name);
+          if (md) { md.echoDmg = thisDmg; md.total += thisDmg; }
         }
       }
     });
-    const perfectDps = Math.round(realDps + (echoActiveDmg / rotTime));
+
+    // Distribute DOT damage proportionally to members who enable it
+    const dotContributors = mems.filter(m => {
+      const bt = CHAR_BUFF_TABLE[m.name];
+      return bt?.debuffs?.some(db => ['frazzle', 'erosion', 'fusionBurst'].includes(db.stat)) || bt?.electroFlare || bt?.tuneBreak;
+    });
+    if (dotContributors.length > 0 && dotDmgPerRotation > 0) {
+      const share = dotDmgPerRotation / dotContributors.length;
+      dotContributors.forEach(m => {
+        const md = memberDmg.find(mm => mm.name === m.name);
+        if (md) { md.dotDmg = share; md.total += share; }
+      });
+    }
+
+    // ── TEAM DPS: Single authoritative number (skills + echoes + DOTs + Tune Break) ──
+    const grandTotal = totalRotDmg + echoActiveDmg + dotDmgPerRotation;
+    const teamDps = Math.round(grandTotal * tuneBreakDeepenMult / rotTime);
+
+    // ── Member DPS with full breakdown ──
+    const memberDps = memberDmg.map(m => {
+      const adjustedTotal = m.total * tuneBreakDeepenMult;
+      const grandTotalAdj = grandTotal * tuneBreakDeepenMult;
+      const pct = grandTotalAdj > 0 ? Math.round(adjustedTotal / grandTotalAdj * 100) : 0;
+      return {
+        name: m.name,
+        dmg: adjustedTotal,
+        pct,
+        // Damage source tags for distribution display
+        onField: m.isOnField,
+        hasEcho: m.echoDmg > 0,
+        hasDot: m.dotDmg > 0,
+        isCoord: m.isCoord,
+        // Per-source breakdown percentages
+        skillShare: m.total > 0 ? Math.round(m.skillDmg / m.total * 100) : 0,
+        echoShare: m.total > 0 ? Math.round(m.echoDmg / m.total * 100) : 0,
+        dotShare: m.total > 0 ? Math.round(m.dotDmg / m.total * 100) : 0,
+      };
+    });
+
+    // ── SOLO DPS: sum of individual solo DPS for synergy calculation ──
+    const soloDps = Math.round(rawTotalRotDmg / rawRotTime);
+
+    // ── SYNERGY UPLIFT: actual % DPS gain from team synergy ──
+    const synergyUplift = soloDps > 0 ? Math.round((teamDps / soloDps - 1) * 100) : 0;
+
+    // ── Damage source type breakdown for the whole team ──
+    const totalSkillDmg = memberDmg.reduce((s, m) => s + m.skillDmg, 0);
+    const totalDotDmg = dotDmgPerRotation;
+    const totalEchoDmg = echoActiveDmg;
+    const grandTotalRaw = totalSkillDmg + totalEchoDmg + totalDotDmg;
+    const dmgSources = grandTotalRaw > 0 ? {
+      rotation: Math.round(totalSkillDmg / grandTotalRaw * 100),
+      echo: Math.round(totalEchoDmg / grandTotalRaw * 100),
+      dot: Math.round(totalDotDmg / grandTotalRaw * 100),
+    } : { rotation: 100, echo: 0, dot: 0 };
 
     // ── Synergy scoring: measures how well the team works together ──
     let syn = 0;
@@ -1134,7 +1203,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       return { segments: timeline, buffs, totalTime: rotTime };
     })();
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawDps, realDps, perfectDps, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, synergy: syn, warnings, memberDps, rotationTimeline };
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, warnings, memberDps, rotationTimeline,
+      // Legacy aliases for DPSComparisonCard compatibility
+      rawDps: soloDps, realDps: teamDps, perfectDps: teamDps, synergy: Math.min(100, Math.max(0, synergyUplift)) };
   }, [teamEquipment, enemyLevel, enemyEcho]);
 
   // Expose calcTeamStats to parent via ref
@@ -1149,7 +1220,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
   const stats = activeTeamStats;
   if (!stats) return null;
-  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawDps, realDps, perfectDps, synergy, warnings, memberDps, rotationTimeline } = stats;
+  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
@@ -1569,29 +1640,41 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
             {/* DPS Tiers */}
             <div className="grid grid-cols-2 gap-2">
+              <div className="kuro-stat kuro-stat-cyan p-2 text-center col-span-2">
+                <div className="text-gray-400 text-sm">Team DPS</div>
+                <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{teamDps.toLocaleString('en-US')}/s</div>
+                <div className="text-gray-500 text-sm">skills + echoes + DOTs + reactions</div>
+              </div>
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
-                <div className="text-gray-400 text-sm">Raw DPS</div>
-                <div className="text-xl font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{rawDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">equipment only</div>
+                <div className="text-gray-400 text-sm">Solo DPS</div>
+                <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{soloDps.toLocaleString('en-US')}/s</div>
+                <div className="text-gray-500 text-sm">no team buffs</div>
               </div>
-              <div className="kuro-stat kuro-stat-cyan p-2 text-center">
-                <div className="text-gray-400 text-sm">Full DPS</div>
-                <div className="text-xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{realDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">+buffs &amp; debuffs</div>
-              </div>
-              <div className="kuro-stat kuro-stat-gold p-2 text-center">
-                <div className="text-gray-400 text-sm">Perfect DPS</div>
-                <div className="text-xl font-bold text-yellow-400 kuro-number kuro-tshadow-glow-yellow">{perfectDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">+echo active skills</div>
-              </div>
-              <div className={`kuro-stat ${synergy >= 75 ? 'kuro-stat-emerald' : synergy >= 50 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
-                <div className="text-gray-400 text-sm">Synergy</div>
-                <div className={`text-xl font-bold kuro-number ${synergy >= 75 ? 'text-emerald-400 synergy-high' : synergy >= 50 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergy >= 75 ? 'rgba(34,197,94,0.5)' : synergy >= 50 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>{synergy}%</div>
-                <div className="text-gray-500 text-sm">team comp</div>
+              <div className={`kuro-stat ${synergyUplift >= 80 ? 'kuro-stat-emerald' : synergyUplift >= 40 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
+                <div className="text-gray-400 text-sm">Synergy Uplift</div>
+                <div className={`text-lg font-bold kuro-number ${synergyUplift >= 80 ? 'text-emerald-400 synergy-high' : synergyUplift >= 40 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergyUplift >= 80 ? 'rgba(34,197,94,0.5)' : synergyUplift >= 40 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>+{synergyUplift}%</div>
+                <div className="text-gray-500 text-sm">team vs solo gain</div>
               </div>
             </div>
 
             {/* DPS Breakdown per character */}
+            {/* Damage Source Breakdown */}
+            {dmgSources && (dmgSources.echo > 0 || dmgSources.dot > 0) && (
+              <div className="mt-2 p-2 rounded-lg" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="text-gray-500 text-sm mb-1.5">Damage Sources</div>
+                <div className="flex gap-1 h-2.5 rounded-full overflow-hidden">
+                  <div className="bg-cyan-500/70 rounded-l-full" style={{ width: dmgSources.rotation + '%' }} title={`Rotation: ${dmgSources.rotation}%`} />
+                  {dmgSources.echo > 0 && <div className="bg-yellow-500/70" style={{ width: dmgSources.echo + '%' }} title={`Echo Skills: ${dmgSources.echo}%`} />}
+                  {dmgSources.dot > 0 && <div className="bg-purple-500/70 rounded-r-full" style={{ width: dmgSources.dot + '%' }} title={`DOT/Reactions: ${dmgSources.dot}%`} />}
+                </div>
+                <div className="flex gap-3 mt-1 text-sm">
+                  <span className="text-cyan-400">{dmgSources.rotation}% Rotation</span>
+                  {dmgSources.echo > 0 && <span className="text-yellow-400">{dmgSources.echo}% Echo</span>}
+                  {dmgSources.dot > 0 && <span className="text-purple-400">{dmgSources.dot}% DOT</span>}
+                </div>
+              </div>
+            )}
+
             {memberDps && (
               <div className="mt-2 p-2 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                 <div className="text-gray-500 text-sm mb-1">Damage Distribution</div>
@@ -1621,7 +1704,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 ))}
               </div>
             )}
-            <p className="text-sm text-gray-500 text-center mt-1">Raw: equipment only. Full: +team buffs, debuffs, DOTs. Perfect: +echo active skills. Synergy is an approximate team composition score.</p>
+            <p className="text-sm text-gray-500 text-center mt-1">Team DPS: full rotation including skills, echoes, DOTs, reactions. Solo DPS: equipment only, no team buffs. Synergy Uplift: actual % DPS gained from team composition.</p>
           </div>
         </CardBody>
       </Card>

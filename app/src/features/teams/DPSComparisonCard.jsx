@@ -24,7 +24,7 @@ const COMPARISON_STATS = [
   ['Amplify', e => (e.stats.amplify || 0).toFixed(1) + '%'],
   ['DEF Shred', e => (e.stats.defShred || 0) + '%'],
   ['RES Shred', e => (e.stats.resShred || 0) + '%'],
-  ['Synergy', e => e.stats.synergy + '%'],
+  ['Synergy', e => '+' + (e.stats.synergyUplift || e.stats.synergy || 0) + '%'],
 ];
 
 export default function DPSComparisonCard({
@@ -44,7 +44,7 @@ export default function DPSComparisonCard({
   if (!computed.length) return null;
 
   const unifiedMax = Math.max(
-    ...computed.flatMap(e => [e.stats.rawDps, e.stats.realDps, e.stats.perfectDps]),
+    ...computed.map(e => e.stats.teamDps || e.stats.perfectDps || 0),
     1
   );
 
@@ -84,9 +84,8 @@ export default function DPSComparisonCard({
         <div className="space-y-3">
           {computed.map((entry) => {
             const s = entry.stats;
-            const rawPct = (s.rawDps / unifiedMax) * 100;
-            const fullPct = (s.realDps / unifiedMax) * 100;
-            const perfectPct = (s.perfectDps / unifiedMax) * 100;
+            const teamPct = ((s.teamDps || s.perfectDps || 0) / unifiedMax) * 100;
+            const soloPct = ((s.soloDps || s.rawDps || 0) / unifiedMax) * 100;
             return (
               <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                 <div className="flex items-center justify-between mb-1.5 pr-8">
@@ -115,13 +114,12 @@ export default function DPSComparisonCard({
                   })}
                 </div>
 
-                {/* Three-tier DPS bars */}
+                {/* Two-tier DPS bars: Team DPS (primary) + Solo DPS (reference) */}
                 {[
-                  { label: 'Raw', value: s.rawDps, pct: rawPct, color: '#22c55e' },
-                  { label: 'Full', value: s.realDps, pct: fullPct, color: '#06b6d4' },
-                  { label: 'Perfect', value: s.perfectDps, pct: perfectPct, color: '#eab308' },
+                  { label: 'Team', value: s.teamDps || s.perfectDps || 0, pct: teamPct, color: '#06b6d4' },
+                  { label: 'Solo', value: s.soloDps || s.rawDps || 0, pct: soloPct, color: '#22c55e' },
                 ].map((bar, bi) => (
-                  <div key={bi} className={bi < 2 ? 'mb-1' : 'mb-0.5'}>
+                  <div key={bi} className={bi < 1 ? 'mb-1' : 'mb-0.5'}>
                     <div className="flex items-baseline justify-between mb-0.5">
                       <span className="text-gray-400 text-sm">{bar.label}</span>
                       <span className="font-bold text-base kuro-number dps-number" style={{ color: bar.color, textShadow: `0 0 8px ${bar.color}99` }}>{bar.value.toLocaleString('en-US')}/s</span>
@@ -140,6 +138,14 @@ export default function DPSComparisonCard({
                     </div>
                   </div>
                 ))}
+                {/* Synergy uplift badge */}
+                {(s.synergyUplift != null) && (
+                  <div className="text-center mt-1">
+                    <span className={`text-sm font-medium ${s.synergyUplift >= 80 ? 'text-emerald-400' : s.synergyUplift >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+                      +{s.synergyUplift || 0}% synergy uplift
+                    </span>
+                  </div>
+                )}
 
                 {/* Quick stats */}
                 <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1.5 border-t border-[var(--border-medium)]">
