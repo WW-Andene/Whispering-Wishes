@@ -98,7 +98,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           style={{
             ...IMG_LAYER_STYLE,
             opacity: useSpine ? 0.5 : 1,
-            filter: useSpine ? 'blur(5px)' : undefined,
+            filter: useSpine ? 'blur(2.5px)' : undefined,
             transform: useSpine ? 'scale(2)' : undefined,
           }}
         >
