@@ -80,26 +80,54 @@ function draw() {
   octx.clearRect(0, 0, imgW, imgH);
 
   if (showGreen) {
-    // Draw green tint over every opaque pixel of the character
     octx.drawImage(spriteImg, 0, 0, imgW, imgH);
-    const greenData = octx.getImageData(0, 0, imgW, imgH);
-    const d = greenData.data;
-    for (let i = 0; i < d.length; i += 4) {
-      if (d[i + 3] > 20) {
-        // Green layer: 0% opacity (present but invisible for detection)
-        d[i]     = d[i];     // keep original R
-        d[i + 1] = d[i + 1]; // keep original G
-        d[i + 2] = d[i + 2]; // keep original B
-        d[i + 3] = 0;        // fully transparent
+    const overlayData = octx.getImageData(0, 0, imgW, imgH);
+    const d = overlayData.data;
+    for (let px = 0; px < d.length; px += 4) {
+      const x = (px / 4) % imgW;
+      const y = Math.floor((px / 4) / imgW);
+      if (d[px + 3] > 20) {
+        // Opaque pixel — check if in head region (between headCutTop and headCutBottom)
+        if (typeof window._headCutTop !== 'undefined' && y >= window._headCutTop && y <= window._headCutBottom) {
+          // Purple filter on face/hair/horn region
+          d[px]     = Math.round(d[px] * 0.3 + 140);     // R boosted
+          d[px + 1] = Math.round(d[px + 1] * 0.2);       // G reduced
+          d[px + 2] = Math.round(d[px + 2] * 0.3 + 180); // B boosted
+          d[px + 3] = 220;
+        } else {
+          // Green layer: 0% opacity (present but invisible)
+          d[px + 3] = 0;
+        }
       } else {
         // Red fill on transparent pixels
-        d[i]     = 200; // R
-        d[i + 1] = 0;   // G
-        d[i + 2] = 0;   // B
-        d[i + 3] = 180; // semi-opaque red
+        d[px]     = 200;
+        d[px + 1] = 0;
+        d[px + 2] = 0;
+        d[px + 3] = 180;
       }
     }
-    octx.putImageData(greenData, 0, 0);
+    octx.putImageData(overlayData, 0, 0);
+
+    // Draw horizontal cut lines
+    if (typeof window._headCutTop !== 'undefined') {
+      octx.strokeStyle = '#ff0';
+      octx.lineWidth = 2;
+      octx.setLineDash([8, 4]);
+      octx.beginPath();
+      octx.moveTo(0, window._headCutTop);
+      octx.lineTo(imgW, window._headCutTop);
+      octx.stroke();
+      octx.beginPath();
+      octx.moveTo(0, window._headCutBottom);
+      octx.lineTo(imgW, window._headCutBottom);
+      octx.stroke();
+      octx.setLineDash([]);
+      // Labels
+      octx.fillStyle = '#ff0';
+      octx.font = '16px monospace';
+      octx.fillText('--- HEAD START (horn top) ---', 10, window._headCutTop - 6);
+      octx.fillText('--- HEAD END (neck cut) ---', 10, window._headCutBottom + 18);
+    }
   }
 }
 
@@ -234,7 +262,11 @@ img.onload = () => {
     { x: neckLeft, y: Math.round(neckY - cH*0.01), w: neckWidth, h: Math.round(cH*0.04) }
   );
 
-  const info = `IMG:${imgW}x${imgH} CHAR:(${cMinX},${cMinY})-(${cMaxX},${cMaxY}) ${cW}x${cH} FACE:(${faceMinX},${faceMinY})-(${faceMaxX},${faceMaxY}) NECK:y=${Math.round(neckY)} w=${neckWidth}`;
+  // Store horizontal cut lines for the draw function
+  window._headCutTop = cMinY;        // top of horns
+  window._headCutBottom = Math.round(neckY);  // neck narrowing point
+
+  const info = `IMG:${imgW}x${imgH} | HEAD CUT: y=${cMinY} to y=${Math.round(neckY)} | CHAR:(${cMinX},${cMinY})-(${cMaxX},${cMaxY}) ${cW}x${cH}`;
   updateInfo(info);
   document.getElementById('regionList').textContent = JSON.stringify({charBBox:{cMinX,cMinY,cMaxX,cMaxY,cW,cH}, face:{faceMinX,faceMinY,faceMaxX,faceMaxY}, neckY:Math.round(neckY), neckWidth});
 
