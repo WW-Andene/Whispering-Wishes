@@ -663,12 +663,9 @@ function ProfileTab({
                     }}
                     className="relative w-[72px] h-[24px] rounded-full transition-colors flex-shrink-0"
                     style={{ background: visualSettings.animationsEnabled === 'off' ? 'var(--bg-btn)' : visualSettings.animationsEnabled === 'on' ? '#a855f7' : '#d946ef' }}
-                    role="slider"
-                    aria-valuemin={0}
-                    aria-valuemax={2}
-                    aria-valuenow={visualSettings.animationsEnabled === 'off' ? 0 : visualSettings.animationsEnabled === 'on' ? 1 : 2}
-                    aria-valuetext={visualSettings.animationsEnabled.toUpperCase()}
-                    aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()}`}
+                    role="switch"
+                    aria-checked={visualSettings.animationsEnabled !== 'off'}
+                    aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()} — click to switch to ${visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF'}`}
                     title={`Currently: ${visualSettings.animationsEnabled.toUpperCase()}. Click to cycle.`}
                   >
                     <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-wide text-white/80 pointer-events-none select-none">
