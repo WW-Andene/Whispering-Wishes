@@ -1747,18 +1747,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {/* DPS Breakdown per character */}
             {/* Damage Source Breakdown */}
             {dmgSources && (dmgSources.echo > 0 || dmgSources.dot > 0) && (
-              <div className="mt-2 p-2 rounded-lg" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                <div className="text-gray-500 text-sm mb-1.5">Damage Sources</div>
-                <div className="flex gap-1 h-2.5 rounded-full overflow-hidden">
-                  <div className="bg-cyan-500/70 rounded-l-full" style={{ width: dmgSources.rotation + '%' }} title={`Rotation: ${dmgSources.rotation}%`} />
-                  {dmgSources.echo > 0 && <div className="bg-yellow-500/70" style={{ width: dmgSources.echo + '%' }} title={`Echo Skills: ${dmgSources.echo}%`} />}
-                  {dmgSources.dot > 0 && <div className="bg-purple-500/70 rounded-r-full" style={{ width: dmgSources.dot + '%' }} title={`DOT/Reactions: ${dmgSources.dot}%`} />}
-                </div>
-                <div className="flex gap-3 mt-1 text-sm">
-                  <span className="text-cyan-400">{dmgSources.rotation}% Rotation</span>
-                  {dmgSources.echo > 0 && <span className="text-yellow-400">{dmgSources.echo}% Echo</span>}
-                  {dmgSources.dot > 0 && <span className="text-purple-400">{dmgSources.dot}% DOT</span>}
-                </div>
+              <div className="mt-2 p-2 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="text-gray-500 text-sm">Damage Sources</div>
+                {[
+                  { label: 'Rotation', pct: dmgSources.rotation, color: '#06b6d4' },
+                  ...(dmgSources.echo > 0 ? [{ label: 'Echo Skill', pct: dmgSources.echo, color: '#eab308' }] : []),
+                  ...(dmgSources.dot > 0 ? [{ label: 'DOT / Reactions', pct: dmgSources.dot, color: '#a855f7' }] : []),
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-2">
+                    <span className="text-sm text-gray-300 w-24 truncate font-medium">{s.label}</span>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div className="h-full rounded-full dps-bar" style={{ width: `${s.pct}%`, background: `linear-gradient(90deg, ${s.color}30, ${s.color}60)`, boxShadow: `0 0 8px ${s.color}30` }} />
+                    </div>
+                    <span className="text-sm font-medium w-10 text-right" style={{ color: s.color }}>{s.pct}%</span>
+                  </div>
+                ))}
               </div>
             )}
 
