@@ -281,17 +281,16 @@ function CollectionTab({
           <div className="kuro-skeleton kuro-skeleton-row rounded-lg" />
           <div className="kuro-skeleton kuro-skeleton-stat rounded-lg" />
         </div>
-      ) : !state.profile.importedAt ? (
-        <Card>
-          <CardBody className="kuro-empty-state text-center py-8">
-            <Archive size={32} className="mx-auto mb-2 text-gray-500" />
-            <p className="text-gray-400 text-md">Awaiting Convene data transmission</p>
-            <p className="text-gray-400 text-base mt-1 mb-3">Import via Profile to initialize your archive</p>
-            <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">Open Profile to import</button>
-          </CardBody>
-        </Card>
       ) : (
         <>
+          {/* Import prompt banner — non-blocking, doesn't hide collection */}
+          {!state.profile.importedAt && (
+            <div className="flex items-center gap-2 p-2.5 rounded-lg border border-cyan-500/20" style={{ background: 'rgba(6,182,212,0.06)' }}>
+              <Archive size={16} className="text-cyan-400 flex-shrink-0" />
+              <p className="text-gray-400 text-sm flex-1">Import Convene history via Profile to track your owned Resonators and weapons.</p>
+              <button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-sm active-cyan flex-shrink-0">Import</button>
+            </div>
+          )}
           {/* Overall Collection Summary */}
           {(() => {
             try {
