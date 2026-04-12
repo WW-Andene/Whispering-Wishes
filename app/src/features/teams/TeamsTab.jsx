@@ -537,13 +537,13 @@ function TeamsTab({
                     </CardBody>
                   </Card>
 
-                  {/* Team Overview + Damage Analysis — collapsible */}
+                  {/* Team Overview — collapsible toggle */}
                   <Card>
                     <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
                       <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${overviewCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
                     </div>
+                  </Card>
                   {!overviewCollapsed && (
-                    <CardBody className="p-0">
                   <DamageCalculator
                     ref={damageCalcRef}
                     teamEquipment={teamEquipment}
@@ -567,9 +567,7 @@ function TeamsTab({
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
                   />
-                    </CardBody>
                   )}
-                  </Card>
 
                   {/* Suggested Teams from Character Data — collapsible */}
                   <Card>
