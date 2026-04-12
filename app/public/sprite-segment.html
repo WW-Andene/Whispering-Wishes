@@ -52,7 +52,7 @@ const BODY_REGIONS = {
 
 let spriteImg = null;
 let imgW = 0, imgH = 0;
-let showGreen = false;
+let showGreen = true;
 let activeGroups = new Set(['head', 'hair', 'horn', 'neck', 'face']);
 
 // Drawing state for manual region marking
@@ -80,19 +80,21 @@ function draw() {
   octx.clearRect(0, 0, imgW, imgH);
 
   if (showGreen) {
-    for (const [key, group] of Object.entries(BODY_REGIONS)) {
-      if (!activeGroups.has(key)) continue;
-      for (const r of group.rects) {
-        octx.fillStyle = group.color;
-        octx.fillRect(r.x, r.y, r.w, r.h);
-        octx.strokeStyle = '#0f0';
-        octx.lineWidth = 2;
-        octx.strokeRect(r.x, r.y, r.w, r.h);
-        octx.fillStyle = '#0f0';
-        octx.font = '14px monospace';
-        octx.fillText(`${group.label}`, r.x + 4, r.y + 16);
+    // Draw green tint over every opaque pixel of the character
+    octx.drawImage(spriteImg, 0, 0, imgW, imgH);
+    const greenData = octx.getImageData(0, 0, imgW, imgH);
+    const d = greenData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 20) {
+        // Tint green: blend original with green
+        d[i]     = Math.round(d[i] * 0.3);           // R reduced
+        d[i + 1] = Math.round(d[i + 1] * 0.3 + 180); // G boosted
+        d[i + 2] = Math.round(d[i + 2] * 0.3);       // B reduced
+      } else {
+        d[i + 3] = 0; // keep transparent pixels transparent
       }
     }
+    octx.putImageData(greenData, 0, 0);
   }
 }
 
