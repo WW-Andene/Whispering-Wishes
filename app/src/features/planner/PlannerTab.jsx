@@ -888,15 +888,15 @@ function PlannerTab({
             <CardBody className="space-y-2">
               <div className="text-gray-400 text-sm">v{activeBanners.version} P{activeBanners.phase} — {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''} left</div>
               <div className="grid grid-cols-3 gap-2">
-                <div className="kuro-stat p-2 text-center">
+                <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
                   <div className="text-yellow-400 kuro-number text-2xl">{planData.convenesByEnd.toLocaleString('en-US')}</div>
                   <div className="text-gray-400 text-sm">Total Convenes</div>
                 </div>
-                <div className="kuro-stat p-2 text-center">
+                <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
                   <div className="text-yellow-400 kuro-number text-2xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
                   <div className="text-gray-400 text-sm">Earned</div>
                 </div>
-                <div className="kuro-stat p-2 text-center">
+                <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
                   <div className="text-yellow-400 kuro-number text-2xl">{planData.totalAstriteByEnd.toLocaleString('en-US')}</div>
                   <div className="text-gray-400 text-sm">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Astrite'}</div>
                 </div>
