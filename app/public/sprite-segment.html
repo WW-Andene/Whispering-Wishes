@@ -109,46 +109,110 @@ function buildMesh(cellSize) {
   }
 }
 
-// ── Per-vertex displacement ──
+// ── Per-vertex displacement — anatomically driven ──
 function displace(v, t, amt) {
-  const nx = v.baseX / imgW;
-  const ny = v.baseY / imgH;
-  const edge = Math.abs(nx - 0.5) * 2;
-  const top = Math.max(0, 1 - ny * 4);
-  const bot = Math.max(0, ny - 0.55) * 2.2;
-  const mid = 1 - Math.abs(ny - 0.35) * 3;
+  const nx = v.baseX / imgW;        // 0..1 horizontal
+  const ny = v.baseY / imgH;        // 0..1 vertical
+  const fromCenter = nx - 0.42;     // character center ~42% from left
 
-  const dx =
-    Math.sin(t * 1.1 + ny * 6) * 5 * edge +
-    Math.sin(t * 0.7 + ny * 3) * 8 * top +
-    Math.sin(t * 0.9 + nx * 4) * 3 * bot +
-    Math.cos(t * 0.5) * 3 * (0.5 - ny);
+  // Breathing cycle — slow, drives torso expansion
+  const breath = Math.sin(t * 0.9);
+  // Idle weight shift — very slow left-right sway
+  const sway = Math.sin(t * 0.35);
 
-  const dy =
-    Math.sin(t * 1.3 + nx * 5) * 4 * top +
-    Math.sin(t * 1.0) * 5 * Math.max(0, mid) +
-    Math.cos(t * 0.8 + nx * 3) * 3 * bot +
-    Math.sin(t * 0.6) * 2 * edge;
+  let dx = 0, dy = 0;
+
+  // ─ Hair region (top 18%) — pendulum sway from scalp
+  if (ny < 0.18) {
+    const hairHang = ny / 0.18;                         // 0 at scalp, 1 at tips
+    dx += Math.sin(t * 0.6) * 6 * hairHang * hairHang;  // pendulum — tips move most
+    dx += Math.sin(t * 1.4 + ny * 8) * 2 * hairHang;   // secondary wave along strands
+    dy += Math.sin(t * 0.8 + nx * 4) * 1.5 * hairHang; // gentle vertical bounce
+  }
+
+  // ─ Face/head (8-20%) — subtle nod, follows breathing
+  if (ny > 0.06 && ny < 0.21) {
+    dx += sway * 1.5;                                    // head follows body sway
+    dy += breath * 1.0;                                   // slight nod with breath
+  }
+
+  // ─ Torso (20-40%) — breathing: ribcage expands horizontally, rises vertically
+  if (ny > 0.20 && ny < 0.40) {
+    const chestDepth = 1 - Math.abs(ny - 0.28) / 0.12;  // peaks at chest center
+    const chestW = Math.max(0, chestDepth);
+    dx += breath * 2.5 * fromCenter * chestW;             // ribcage widens on inhale
+    dy += breath * -1.5 * chestW;                          // chest rises on inhale
+    dx += sway * 2.0;                                      // body sway
+  }
+
+  // ─ Arms (sides, 20-45%) — pendulum swing from shoulder, follows body
+  if (ny > 0.20 && ny < 0.45 && Math.abs(fromCenter) > 0.10) {
+    const armHang = (ny - 0.20) / 0.25;                   // 0 at shoulder, 1 at hand
+    const side = fromCenter > 0 ? 1 : -1;
+    dx += Math.sin(t * 0.5 + side * 0.3) * 3 * armHang;  // pendulum from shoulder
+    dy += Math.sin(t * 0.7 + side * 0.5) * 2 * armHang;
+    dx += sway * 2.5 * armHang;                            // follows body sway
+  }
+
+  // ─ Hip/waist (40-48%) — minimal, anchors the body
+  if (ny > 0.40 && ny < 0.48) {
+    dx += sway * 1.2;
+    dy += breath * -0.5;
+  }
+
+  // ─ Legs (48-100%) — weight shift, very grounded at feet
+  if (ny > 0.48) {
+    const legPlant = (ny - 0.48) / 0.52;                  // 0 at hip, 1 at feet
+    const grounded = 1 - legPlant * legPlant;              // decreases toward feet (planted)
+    dx += sway * 1.5 * grounded;
+    dy += breath * -0.3 * grounded;
+    // Slight knee flex
+    if (ny > 0.55 && ny < 0.75) {
+      dy += Math.sin(t * 0.9 + 0.5) * 1.0 * (1 - Math.abs(ny - 0.65) / 0.1);
+    }
+  }
+
+  // ─ Cape (far left, below head) — cloth secondary motion, wave propagation
+  if (nx < 0.30 && ny > 0.15 && ny < 0.75) {
+    const clothDist = (0.30 - nx) / 0.30;                 // further from body = more motion
+    const clothHang = (ny - 0.15) / 0.60;
+    dx += Math.sin(t * 0.7 + ny * 5) * 8 * clothDist * clothHang;
+    dy += Math.sin(t * 0.9 + ny * 3) * 3 * clothDist;
+  }
+
+  // ─ Weapon (far right) — heavy inertial follow, lags behind body
+  if (nx > 0.60 && ny > 0.15) {
+    const wpnDist = (nx - 0.60) / 0.40;
+    dx += Math.sin(t * 0.35 - 0.8) * 3 * wpnDist;        // lags behind sway
+    dy += Math.sin(t * 0.5 - 0.5) * 2 * wpnDist;
+  }
 
   v.x = v.baseX + dx * amt;
   v.y = v.baseY + dy * amt;
 }
 
-// ── Draw textured triangle ──
+// ── Draw textured triangle with bleed to hide seams ──
 function drawTriangle(img, v0, v1, v2) {
-  // Affine texture mapping using canvas transform
-  // Map triangle (v0,v1,v2) with UV coords to canvas
   const x0 = v0.x, y0 = v0.y, x1 = v1.x, y1 = v1.y, x2 = v2.x, y2 = v2.y;
   const u0 = v0.u * imgW, vv0 = v0.v * imgH;
   const u1 = v1.u * imgW, vv1 = v1.v * imgH;
   const u2 = v2.u * imgW, vv2 = v2.v * imgH;
 
+  // Expand triangle by ~1px outward from centroid to cover seams
+  const cx = (x0+x1+x2)/3, cy = (y0+y1+y2)/3;
+  const bleed = 0.8;
+  const bx0 = x0 + (x0-cx)/(Math.hypot(x0-cx,y0-cy)||1)*bleed;
+  const by0 = y0 + (y0-cy)/(Math.hypot(x0-cx,y0-cy)||1)*bleed;
+  const bx1 = x1 + (x1-cx)/(Math.hypot(x1-cx,y1-cy)||1)*bleed;
+  const by1 = y1 + (y1-cy)/(Math.hypot(x1-cx,y1-cy)||1)*bleed;
+  const bx2 = x2 + (x2-cx)/(Math.hypot(x2-cx,y2-cy)||1)*bleed;
+  const by2 = y2 + (y2-cy)/(Math.hypot(x2-cx,y2-cy)||1)*bleed;
+
   ctx.save();
-  // Clip to triangle
   ctx.beginPath();
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x1, y1);
-  ctx.lineTo(x2, y2);
+  ctx.moveTo(bx0, by0);
+  ctx.lineTo(bx1, by1);
+  ctx.lineTo(bx2, by2);
   ctx.closePath();
   ctx.clip();
 
