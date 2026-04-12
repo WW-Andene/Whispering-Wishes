@@ -1098,7 +1098,7 @@ function PlannerTab({
               </FocusTrapModal>
             )}
 
-            {/* Farming targets — each character gets its own self-contained card */}
+            {/* Farming targets — splash / buttons / resources as separate visual blocks */}
             {farmTargetsState.map((t, i) => {
               const d = CHARACTER_DATA[t.name];
               if (!d) return null;
@@ -1140,38 +1140,30 @@ function PlannerTab({
               const hasAnyToggle = t.ascension || t.skills || t.weapon;
 
               return (
-                <div key={t.name} className="relative overflow-hidden rounded-xl" style={{ border: `1px solid ${elColor}40`, isolation: 'isolate' }}>
-                  {/* Full-bleed banner splash art background (same pattern as BannerCard) */}
-                  {themeArt && (
-                    <div className="absolute inset-0">
-                      <img src={themeArt} alt="" className="w-full h-full object-cover pointer-events-none" loading="lazy" onError={hideOnError}
-                        style={{
-                          opacity: 0.35,
-                          objectPosition: 'center 30%',
-                          maskImage: 'linear-gradient(to bottom, black 20%, rgba(0,0,0,0.3) 70%, transparent 100%)',
-                          WebkitMaskImage: 'linear-gradient(to bottom, black 20%, rgba(0,0,0,0.3) 70%, transparent 100%)',
-                        }} />
+                <div key={t.name} className="space-y-2">
+                  {/* ── Splash banner ── */}
+                  <div className="relative overflow-hidden rounded-xl" style={{ height: '100px', border: `1px solid ${elColor}40` }}>
+                    {themeArt && (
+                      <img src={themeArt} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" loading="lazy" onError={hideOnError}
+                        style={{ opacity: 0.5, objectPosition: 'center 30%' }} />
+                    )}
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(10,14,22,0.7) 0%, rgba(10,14,22,0.3) 50%, rgba(10,14,22,0.7) 100%)' }} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="font-bold text-2xl text-white" style={{ textShadow: `0 2px 12px rgba(0,0,0,0.8), 0 0 30px ${elColor}50` }}>{t.name}</span>
                     </div>
-                  )}
-                  {/* Dark overlay for content readability */}
-                  <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${elColor}10 0%, rgba(10,14,22,0.85) 50%, rgba(10,14,22,0.95) 100%)` }} />
-
-                  {/* Character name + remove button */}
-                  <div className="relative z-10 flex items-center gap-2 p-3 pb-1">
-                    <span className="font-bold text-2xl flex-1 text-center drop-shadow-lg" style={{ color: elColor, textShadow: `0 0 20px ${elColor}40` }}>{t.name}</span>
-                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-white/50 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center rounded-full bg-black/30" aria-label={`Remove ${t.name}`}><X size={14} /></button>
+                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="absolute top-2 right-2 text-white/50 hover:text-red-400 transition-colors p-1.5 rounded-full bg-black/40 backdrop-blur-sm" aria-label={`Remove ${t.name}`}><X size={14} /></button>
                   </div>
 
-                  {/* Toggle buttons */}
-                  <div className="relative z-10 flex gap-1.5 p-2.5">
+                  {/* ── Toggle buttons ── */}
+                  <div className="flex gap-1.5">
                     {[['ascension', 'Ascension'], ['skills', 'Forte'], ['weapon', 'Weapon']].map(([key, label]) => (
-                      <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '6px 8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
+                      <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
                     ))}
                   </div>
 
-                  {/* Per-character materials */}
+                  {/* ── Resources card ── */}
                   {hasAnyToggle && charMatList.length > 0 && (
-                    <div className="px-2.5 pb-2.5 space-y-1.5">
+                    <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                       <div className="flex items-center justify-between p-1.5 rounded bg-yellow-500/10">
                         <span className="text-yellow-400 text-sm font-medium">Shell Credit</span>
                         <span className="text-yellow-400 font-bold text-sm kuro-number">{charShell.toLocaleString('en-US')}</span>
