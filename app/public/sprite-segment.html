@@ -218,65 +218,68 @@ function animateBones(t, intensity) {
   const breath = Math.sin(t * 0.9);
   const sway = Math.sin(t * 0.35);
 
+  // Micro-tremor — tiny noise to break robotic feel
+  const micro = (seed) => Math.sin(t * 3.7 + seed * 13.1) * 0.002 + Math.sin(t * 5.3 + seed * 7.9) * 0.001;
+
   for (const b of bones) {
-    b.animRot = 0;
+    b.animRot = micro(bones.indexOf(b)); // every bone gets micro-tremor
     switch(b.name) {
       case 'root':
-        b.animRot = sway * 0.008 * s; break;          // very subtle body lean
+        b.animRot += sway * 0.004 * s; break;
       case 'spine':
-        b.animRot = breath * 0.015 * s; break;         // breathing tilt
+        b.animRot += breath * 0.008 * s; break;
       case 'chest':
-        b.animRot = breath * 0.012 * s + sway * 0.005 * s; break;
+        b.animRot += breath * 0.006 * s + sway * 0.003 * s; break;
       case 'neck':
-        b.animRot = -breath * 0.02 * s + Math.sin(t*0.5) * 0.01 * s; break;
+        b.animRot += -breath * 0.008 * s + Math.sin(t*0.5) * 0.005 * s; break;
       case 'head':
-        b.animRot = Math.sin(t*0.4) * 0.025 * s + breath * 0.01 * s; break;
+        b.animRot += Math.sin(t*0.4) * 0.010 * s + Math.sin(t*0.23) * 0.005 * s; break;
       case 'hair_top':
-        b.animRot = Math.sin(t*0.6) * 0.06 * s + Math.sin(t*1.3) * 0.03 * s; break;
+        b.animRot += Math.sin(t*0.6) * 0.025 * s + Math.sin(t*1.3) * 0.012 * s; break;
       case 'hair_l':
-        b.animRot = Math.sin(t*0.55+0.3) * 0.07 * s; break;
+        b.animRot += Math.sin(t*0.55+0.3) * 0.030 * s + Math.sin(t*1.1+0.7) * 0.010 * s; break;
       case 'hair_r':
-        b.animRot = Math.sin(t*0.55+0.8) * 0.05 * s; break;
+        b.animRot += Math.sin(t*0.55+0.8) * 0.022 * s + Math.sin(t*1.2+1.1) * 0.008 * s; break;
       case 'shldr_l':
-        b.animRot = breath * 0.02 * s + sway * 0.01 * s; break;
+        b.animRot += breath * 0.006 * s; break;
       case 'elbow_l':
-        b.animRot = Math.sin(t*0.5+0.2) * 0.03 * s; break;
+        b.animRot += Math.sin(t*0.5+0.2) * 0.010 * s; break;
       case 'hand_l':
-        b.animRot = Math.sin(t*0.7) * 0.04 * s; break;
+        b.animRot += Math.sin(t*0.7) * 0.012 * s + Math.sin(t*1.5+0.4) * 0.006 * s; break;
       case 'shldr_r':
-        b.animRot = breath * -0.015 * s + sway * 0.01 * s; break;
+        b.animRot += breath * -0.005 * s; break;
       case 'elbow_r':
-        b.animRot = Math.sin(t*0.5+0.5) * 0.025 * s; break;
+        b.animRot += Math.sin(t*0.5+0.5) * 0.008 * s; break;
       case 'hand_r':
-        b.animRot = Math.sin(t*0.65+0.3) * 0.03 * s; break;
+        b.animRot += Math.sin(t*0.65+0.3) * 0.010 * s + Math.sin(t*1.4+0.9) * 0.005 * s; break;
       case 'hip_l':
-        b.animRot = sway * -0.008 * s; break;
+        b.animRot += sway * -0.003 * s; break;
       case 'knee_l':
-        b.animRot = Math.sin(t*0.45) * 0.012 * s; break;
-      case 'foot_l': break;                             // planted
+        b.animRot += Math.sin(t*0.45) * 0.005 * s; break;
+      case 'foot_l': break;
       case 'hip_r':
-        b.animRot = sway * 0.008 * s; break;
+        b.animRot += sway * 0.003 * s; break;
       case 'knee_r':
-        b.animRot = Math.sin(t*0.45+0.4) * 0.01 * s; break;
+        b.animRot += Math.sin(t*0.45+0.4) * 0.004 * s; break;
       case 'foot_r': break;
       case 'cape_top':
-        b.animRot = Math.sin(t*0.6) * 0.04 * s + sway * 0.03 * s; break;
+        b.animRot += Math.sin(t*0.6) * 0.018 * s + sway * 0.012 * s; break;
       case 'cape_mid':
-        b.animRot = Math.sin(t*0.7+0.5) * 0.08 * s; break;
+        b.animRot += Math.sin(t*0.7+0.5) * 0.035 * s + Math.sin(t*1.1+0.3) * 0.015 * s; break;
       case 'cape_tip':
-        b.animRot = Math.sin(t*0.8+1.0) * 0.12 * s; break;
+        b.animRot += Math.sin(t*0.8+1.0) * 0.050 * s + Math.sin(t*1.3+0.6) * 0.020 * s; break;
       case 'weapon':
-        b.animRot = Math.sin(t*0.35-0.5) * 0.02 * s; break;
+        b.animRot += Math.sin(t*0.35-0.5) * 0.006 * s; break;
       case 'tail_1':
-        b.animRot = Math.sin(t*0.8) * 0.05 * s + sway * 0.03 * s; break;
+        b.animRot += Math.sin(t*0.8) * 0.020 * s + sway * 0.010 * s; break;
       case 'tail_2':
-        b.animRot = Math.sin(t*0.9+0.4) * 0.08 * s; break;
+        b.animRot += Math.sin(t*0.9+0.4) * 0.030 * s; break;
       case 'tail_3':
-        b.animRot = Math.sin(t*1.0+0.8) * 0.10 * s; break;
+        b.animRot += Math.sin(t*1.0+0.8) * 0.040 * s + Math.sin(t*1.6+1.3) * 0.015 * s; break;
       case 'tail_4':
-        b.animRot = Math.sin(t*1.1+1.2) * 0.12 * s; break;
+        b.animRot += Math.sin(t*1.1+1.2) * 0.050 * s + Math.sin(t*1.8+1.7) * 0.020 * s; break;
       case 'tail_5':
-        b.animRot = Math.sin(t*1.2+1.6) * 0.14 * s; break;
+        b.animRot += Math.sin(t*1.2+1.6) * 0.060 * s + Math.sin(t*2.0+2.1) * 0.025 * s; break;
     }
   }
 }
@@ -302,19 +305,35 @@ function solveFK() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// SKINNING — assign each mesh vertex to nearest bones
+// SKINNING — radius-limited, up to 4 bones, smooth falloff
 // ═══════════════════════════════════════════════════════════
 function skinVertices() {
+  // Max influence radius per bone — smaller = tighter zones
+  const maxRadius = Math.max(imgW, imgH) * 0.12;
   for (const v of meshVerts) {
-    // Find 2 nearest bones
-    const dists = bones.map((b, i) => ({ i, d: Math.hypot(v.baseX - b.wx, v.baseY - b.wy) }));
-    dists.sort((a, b) => a.d - b.d);
-    const b0 = dists[0], b1 = dists[1];
-    const totalInv = 1/b0.d + 1/b1.d;
-    v.boneWeights = [
-      { idx: b0.i, w: (1/b0.d) / totalInv },
-      { idx: b1.i, w: (1/b1.d) / totalInv },
-    ];
+    const weights = [];
+    for (let i = 0; i < bones.length; i++) {
+      const d = Math.hypot(v.baseX - bones[i].wx, v.baseY - bones[i].wy);
+      if (d < maxRadius) {
+        // Smooth falloff: (1 - d/r)^2
+        const f = 1 - d / maxRadius;
+        weights.push({ idx: i, w: f * f });
+      }
+    }
+    // Fallback: if no bones in radius, use nearest
+    if (weights.length === 0) {
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < bones.length; i++) {
+        const d = Math.hypot(v.baseX - bones[i].wx, v.baseY - bones[i].wy);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      weights.push({ idx: best, w: 1 });
+    }
+    // Keep top 4, normalize
+    weights.sort((a, b) => b.w - a.w);
+    const top = weights.slice(0, 4);
+    const total = top.reduce((s, w) => s + w.w, 0);
+    v.boneWeights = top.map(w => ({ idx: w.idx, w: w.w / total }));
   }
 }
 
@@ -480,7 +499,7 @@ function buildBoneButtons() {
 
 function rebuildAfterPlace() {
   initBones();
-  buildMesh(18);
+  buildMesh(12);
   skinVertices();
   animateBones(0, 0); solveFK();
 }
@@ -573,7 +592,7 @@ img.onload=()=>{
   const srcPx=tctx2.getImageData(0,0,imgW,imgH).data;
   detectLandmarks(srcPx);
 
-  buildMesh(18);
+  buildMesh(12);
   initBones();
   skinVertices();
   animateBones(0,0);solveFK();
