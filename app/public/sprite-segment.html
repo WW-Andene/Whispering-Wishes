@@ -109,37 +109,36 @@ img.onload = () => {
   imgH = img.naturalHeight;
 
   // Auto-detect body part regions based on sprite proportions.
-  // Zani full sprite is a full-body character facing slightly left.
-  // These percentage-based regions cover the upper portion (head area).
-  // Character occupies roughly the center-left of the image.
-  const cx = imgW * 0.42;  // character center x (slightly left of image center)
+  // Zani full sprite: full-body character, slightly left-facing.
+  // Character center is around 42% from left, head occupies top ~22%.
+  const cx = imgW * 0.44;  // character head center x
 
   // Horn/ears — dark pointed structures at the very top of head
   BODY_REGIONS.horn.rects.push(
-    { x: Math.round(cx - imgW*0.08), y: Math.round(imgH*0.01), w: Math.round(imgW*0.07), h: Math.round(imgH*0.07) },  // left horn
-    { x: Math.round(cx + imgW*0.02), y: Math.round(imgH*0.00), w: Math.round(imgW*0.07), h: Math.round(imgH*0.08) }   // right horn
+    { x: Math.round(cx - imgW*0.10), y: Math.round(imgH*0.005), w: Math.round(imgW*0.06), h: Math.round(imgH*0.055) },  // left horn
+    { x: Math.round(cx + imgW*0.04), y: Math.round(imgH*0.000), w: Math.round(imgW*0.06), h: Math.round(imgH*0.06) }    // right horn
   );
 
   // Hair — white/silver flowing hair, covers top of head, bangs, side locks
   BODY_REGIONS.hair.rects.push(
-    { x: Math.round(cx - imgW*0.15), y: Math.round(imgH*0.03), w: Math.round(imgW*0.32), h: Math.round(imgH*0.22) },  // main hair mass
-    { x: Math.round(cx - imgW*0.18), y: Math.round(imgH*0.18), w: Math.round(imgW*0.12), h: Math.round(imgH*0.20) },  // left side hair lock
-    { x: Math.round(cx + imgW*0.10), y: Math.round(imgH*0.15), w: Math.round(imgW*0.10), h: Math.round(imgH*0.15) }   // right side hair
+    { x: Math.round(cx - imgW*0.12), y: Math.round(imgH*0.035), w: Math.round(imgW*0.27), h: Math.round(imgH*0.12) },  // top hair mass
+    { x: Math.round(cx - imgW*0.14), y: Math.round(imgH*0.14), w: Math.round(imgW*0.08), h: Math.round(imgH*0.14) },   // left side lock
+    { x: Math.round(cx + imgW*0.12), y: Math.round(imgH*0.10), w: Math.round(imgW*0.06), h: Math.round(imgH*0.10) }    // right side hair
   );
 
-  // Head — overall cranium encompassing face + top of head (excluding horns)
+  // Head — overall cranium (excluding horns, including top of hair to chin)
   BODY_REGIONS.head.rects.push(
-    { x: Math.round(cx - imgW*0.10), y: Math.round(imgH*0.06), w: Math.round(imgW*0.22), h: Math.round(imgH*0.20) }
+    { x: Math.round(cx - imgW*0.09), y: Math.round(imgH*0.055), w: Math.round(imgW*0.20), h: Math.round(imgH*0.15) }
   );
 
   // Face — eyes, nose, mouth area (inner portion of head)
   BODY_REGIONS.face.rects.push(
-    { x: Math.round(cx - imgW*0.07), y: Math.round(imgH*0.12), w: Math.round(imgW*0.16), h: Math.round(imgH*0.12) }
+    { x: Math.round(cx - imgW*0.06), y: Math.round(imgH*0.10), w: Math.round(imgW*0.14), h: Math.round(imgH*0.09) }
   );
 
   // Neck — thin band connecting head to torso
   BODY_REGIONS.neck.rects.push(
-    { x: Math.round(cx - imgW*0.04), y: Math.round(imgH*0.24), w: Math.round(imgW*0.10), h: Math.round(imgH*0.05) }
+    { x: Math.round(cx - imgW*0.03), y: Math.round(imgH*0.205), w: Math.round(imgW*0.08), h: Math.round(imgH*0.035) }
   );
 
   updateInfo(`Sprite loaded: ${imgW}x${imgH} — Auto-mapped ${Object.values(BODY_REGIONS).reduce((s,g) => s+g.rects.length, 0)} regions with green filter`);
