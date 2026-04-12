@@ -1527,47 +1527,68 @@ const SKILL_MULTIPLIERS = {
   ],
 };
 
-// [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 buffs (cumulative % damage increase)
+// [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
 // Format: { s1-s6: { stat: value } } — each level adds ON TOP of previous
-// Values from Prydwen, WutheringLab, community testing
+// Stat types must match damage formula: atkPct, critRate, critDmg, elemDmg, skillDmg,
+// basicDmg, heavyDmg, libDmg, echoDmg, deepen, defIgnore, defShred, resShred, totalMult, allDmg, coordDmg
+// totalMult = rotation-averaged DPS contribution for utility/multiplier nodes
+// Sources: Game8 sequence nodes, Prydwen, wutheringlab, cross-verified Apr 2026
 const RESONANCE_CHAIN_DATA = {
-  // Camellya S1: +28% CD after Intro (confirmed). S6: Sweet Dream +150% mult + Perennial mechanic ≈ totalMult 50
-  'Camellya':     { s1: { critDmg: 28 }, s2: { skillDmg: 40 }, s3: { atkPct: 58, libDmg: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
-  // Carlotta S1: +12.5% CR on Deconstructed targets. S6: Death Knell mult +186.6% ≈ totalMult +50 (front-loaded burst)
-  'Carlotta':     { s1: { critRate: 12.5 }, s2: { skillDmg: 25 }, s3: { elemDmg: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { totalMult: 50 } },
-  'Jiyan':        { s1: { atkPct: 10 }, s2: { heavyDmg: 40 }, s3: { critRate: 15, critDmg: 40 }, s4: { heavyDmg: 15 }, s5: { atkPct: 25 }, s6: { libDmg: 40 } },
-  // Jinhsi S1: Herald of Revival stacks → up to +80% Illuminous Epiphany DMG ≈ skillDmg 40 avg. S6: +45% Illuminous mult ≈ totalMult 30
-  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { skillDmg: 40 }, s3: { critDmg: 25 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { totalMult: 30 } },
-  'Calcharo':     { s1: { elemDmg: 12 }, s2: { libDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { libDmg: 40 } },
-  'Encore':       { s1: { basicDmg: 15 }, s2: { atkPct: 40 }, s3: { elemDmg: 15 }, s4: { basicDmg: 15 }, s5: { totalMult: 10 }, s6: { elemDmg: 25 } },
-  'Xiangli Yao':  { s1: { elemDmg: 12 }, s2: { skillDmg: 40 }, s3: { critRate: 12 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
-  'Aemeath':      { s1: { critDmg: 30, heavyDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 40 }, s6: { totalMult: 40 } },
-  // Zani S1: +50% Spectro DMG for 14s. S6: +40% Heavy Slash mult + Blaze scaling
-  'Zani':         { s1: { elemDmg: 50 }, s2: { critDmg: 30, heavyDmg: 25 }, s3: { totalMult: 15 }, s4: { deepen: 15 }, s5: { totalMult: 40 }, s6: { totalMult: 40, heavyDmg: 40 } },
-  'Phoebe':       { s1: { elemDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
-  'Phrolova':     { s1: { critRate: 15 }, s2: { critRate: 30, totalMult: 40 }, s3: { totalMult: 15 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
-  'Brant':        { s1: { atkPct: 15, elemDmg: 12 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
-  // Augusta S1: +15% CD per Crown stack (max 2) ≈ critDmg 30. S6: Triumphant Slash mult boost ≈ totalMult 25
+  // Camellya S1: +28% CD after Intro (confirmed exact). S3: ATK+58% in Budding. S4: team Basic ATK DMG+25%
+  'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 40 }, s3: { atkPct: 58, totalMult: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
+  // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
+  'Carlotta':     { s1: { critRate: 12.5 }, s2: { totalMult: 25 }, s3: { totalMult: 15 }, s4: { skillDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 50 } },
+  // Jiyan S1: extra Windqueller charge (utility). S2: ATK+28%. S3: CR+16% CD+32% (confirmed). S4: team Heavy ATK+25%. S5: ATK stacking up to +45%
+  'Jiyan':        { s1: { totalMult: 10 }, s2: { atkPct: 28 }, s3: { critRate: 16, critDmg: 32 }, s4: { heavyDmg: 25 }, s5: { atkPct: 45 }, s6: { totalMult: 40 } },
+  // Jinhsi S1: up to +80% Illuminous DMG ≈ skillDmg 40 avg. S2: energy utility. S3: ATK+25% x2 stacks. S4: team Attr DMG+20%
+  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 30 } },
+  // Calcharo S1: energy recovery (utility). S2: Skill DMG+30%. S3: Electro DMG+25%. S4: team Electro DMG+20%
+  'Calcharo':     { s1: { totalMult: 5 }, s2: { skillDmg: 30 }, s3: { elemDmg: 25 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
+  // Encore S1: Fusion DMG+3% x4=12%. S2: energy utility. S3: Heavy ATK mult+40%. S4: team Fusion DMG+20%. S6: ATK stacking ~25%
+  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { totalMult: 10 }, s6: { atkPct: 25 } },
+  // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
+  'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { totalMult: 15 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
+  // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (conditional, no separate 30%). S3: DEF Ignore+20%, CD+60%
+  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 40 }, s6: { totalMult: 40 } },
+  // Zani S1: +50% Spectro DMG (confirmed exact). S2: CR+20% + mult boost. S4: team ATK+20%
+  'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { totalMult: 40 }, s6: { totalMult: 40, heavyDmg: 40 } },
+  // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
+  'Phoebe':       { s1: { libDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
+  // Phrolova S1: skill mult+80% (no CR). S2: Scarlet Coda+75% + Aftersound (no CR)
+  'Phrolova':     { s1: { totalMult: 15 }, s2: { totalMult: 40 }, s3: { totalMult: 15 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  // Brant S1: +20% DMG dealt per stack x3 (allDmg type). S2: CR+30% + explosions
+  'Brant':        { s1: { allDmg: 20 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
+  // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
   'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 20, critDmg: 40 }, s3: { totalMult: 15 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
-  'Cartethyia':   { s1: { defIgnore: 8, deepen: 40 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
+  // Cartethyia S1: +25% CD per 30 Conviction threshold (up to ~100%). S2: Basic/Heavy/etc DMG+50%, Mid-air+200%
+  'Cartethyia':   { s1: { critDmg: 40 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
   'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
-  'Galbrena':     { s1: { echoDmg: 15 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
-  'Iuno':         { s1: { heavyDmg: 40 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
-  'Sigrika':      { s1: { echoDmg: 15 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
-  'Luuk Herssen': { s1: { atkPct: 15 }, s2: { totalMult: 40 }, s3: { critDmg: 25 }, s4: { basicDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
-  'Lupa':         { s1: { elemDmg: 12 }, s2: { totalMult: 40 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
-  // Supports — less personal DMG but team contribution changes
-  'Verina':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { allDmg: 15 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
-  'Shorekeeper':  { s1: { critRate: 5 }, s2: { atkPct: 40 }, s3: { atkPct: 5 }, s4: { critRate: 5 }, s5: { deepen: 5 }, s6: { critDmg: 25 } },
+  // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
+  'Galbrena':     { s1: { critDmg: 40 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
+  // Iuno S1: ATK+40% during Lunar Cycle (not heavyDmg)
+  'Iuno':         { s1: { atkPct: 40 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  // Sigrika S1: +70% DMG mult to specific skills (rotation-averaged)
+  'Sigrika':      { s1: { totalMult: 15 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  // Luuk Herssen S1: +150% Mid-air ATK DMG. Simplified as basicDmg ~15 DPS impact
+  'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { totalMult: 40 }, s3: { critDmg: 25 }, s4: { basicDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  // Lupa S1: CR+20% for 10s (not elemDmg)
+  'Lupa':         { s1: { critRate: 20 }, s2: { totalMult: 40 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
+  // Supports — utility nodes represented as small totalMult DPS contributions
+  'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
+  // Shorekeeper S1: utility (range/duration). S2: ATK+40% (confirmed). S6: CD+500% self after Intro (very short window, ≈25 averaged)
+  'Shorekeeper':  { s1: { totalMult: 5 }, s2: { atkPct: 40 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { critDmg: 25 } },
   'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
   'Mornye':       { s1: { allDmg: 15 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
   'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
   'Sanhua':       { s1: { atkPct: 10 }, s2: { basicDmg: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { basicDmg: 10 }, s6: { deepen: 15 } },
   'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 40 } },
   'Danjin':       { s1: { elemDmg: 8 }, s2: { atkPct: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { atkPct: 15, elemDmg: 10 } },
-  'Chisa':        { s1: { defShred: 6 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { defShred: 6 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
-  'Ciaccona':     { s1: { elemDmg: 10 }, s2: { totalMult: 15 }, s3: { elemDmg: 10 }, s4: { deepen: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 15 } },
-  'Cantarella':   { s1: { deepen: 8 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  // Chisa S1: ATK+30% on Unseen Snare (not defShred). S4: improves Havoc Bane trigger rate (utility)
+  'Chisa':        { s1: { atkPct: 30 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  // Ciaccona S1: ATK+35% after Basic ATK (conditional)
+  'Ciaccona':     { s1: { atkPct: 35 }, s2: { totalMult: 15 }, s3: { elemDmg: 10 }, s4: { deepen: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 15 } },
+  // Cantarella S1: +50% Skill DMG mult + Trance recovery ≈ totalMult 20
+  'Cantarella':   { s1: { totalMult: 20 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
   'Yinlin':       { s1: { elemDmg: 10 }, s2: { resShred: 10 }, s3: { totalMult: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 15 } },
   'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 40 } },
   'Zhezhi':       { s1: { coordDmg: 10 }, s2: { totalMult: 15 }, s3: { coordDmg: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { coordDmg: 40 } },
@@ -1576,7 +1597,8 @@ const RESONANCE_CHAIN_DATA = {
   'Jianxin':      { s1: { atkPct: 8 }, s2: { deepen: 8 }, s3: { defShred: 5 }, s4: { atkPct: 8 }, s5: { totalMult: 10 }, s6: { deepen: 12 } },
   'Rover':        { s1: { elemDmg: 8 }, s2: { skillDmg: 12 }, s3: { critRate: 8 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 10, deepen: 15 } },
   'Aalto':        { s1: { elemDmg: 8 }, s2: { totalMult: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
-  'Baizhi':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
+  // Baizhi: mostly healing/utility nodes, minimal DPS contribution
+  'Baizhi':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
   'Buling':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
   'Chixia':       { s1: { atkPct: 8 }, s2: { skillDmg: 10 }, s3: { atkPct: 8 }, s4: { skillDmg: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
   'Lumi':         { s1: { skillDmg: 10 }, s2: { totalMult: 10 }, s3: { skillDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { skillDmg: 15 } },
