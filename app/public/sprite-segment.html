@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zani Sprite Segmentation</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; color: #eee; font-family: system-ui, sans-serif; padding: 20px; }
+  h1 { font-size: 18px; margin-bottom: 12px; }
+  #container { position: relative; display: inline-block; }
+  #spriteCanvas { display: block; }
+  #overlay { position: absolute; top: 0; left: 0; cursor: crosshair; }
+  .controls { margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .controls button { font-size: 13px; padding: 6px 12px; background: #222; color: #eee; border: 1px solid #444; border-radius: 4px; cursor: pointer; }
+  .controls button:hover { background: #333; }
+  .controls button.active { background: #2a6; color: #fff; border-color: #0c0; }
+  #info { margin-top: 12px; font-size: 12px; font-family: monospace; color: #aaa; min-height: 40px; }
+  #regionList { margin-top: 16px; font-size: 12px; font-family: monospace; color: #ccc; }
+</style>
+</head>
+<body>
+  <h1>Zani Sprite Segmentation — Full Sprite</h1>
+  <div class="controls">
+    <button id="btnHead" class="active" data-group="head">Head</button>
+    <button id="btnHair" class="active" data-group="hair">Hair</button>
+    <button id="btnHorn" class="active" data-group="horn">Horn</button>
+    <button id="btnNeck" class="active" data-group="neck">Neck</button>
+    <button id="btnFace" class="active" data-group="face">Face</button>
+    <button id="btnClear">Clear All</button>
+    <button id="btnApply" class="active">Apply Green Filter</button>
+  </div>
+  <div id="container">
+    <canvas id="spriteCanvas"></canvas>
+    <canvas id="overlay"></canvas>
+  </div>
+  <div id="info">Loading Zani full sprite...</div>
+  <div id="regionList"></div>
+
+<script>
+const SPRITE_URL = 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp';
+
+// Predefined body part regions (approximate pixel regions on the full sprite)
+// These will be refined using DV visual recognition tools
+const BODY_REGIONS = {
+  head: { label: 'Head', color: 'rgba(0,255,0,0.30)', rects: [] },
+  hair: { label: 'Hair', color: 'rgba(0,255,0,0.30)', rects: [] },
+  horn: { label: 'Horn', color: 'rgba(0,255,0,0.30)', rects: [] },
+  neck: { label: 'Neck', color: 'rgba(0,255,0,0.30)', rects: [] },
+  face: { label: 'Face', color: 'rgba(0,255,0,0.30)', rects: [] },
+};
+
+let spriteImg = null;
+let imgW = 0, imgH = 0;
+let showGreen = true;
+let activeGroups = new Set(['head', 'hair', 'horn', 'neck', 'face']);
+
+// Drawing state for manual region marking
+let isDrawing = false;
+let drawStart = null;
+let currentGroup = 'head';
+
+const canvas = document.getElementById('spriteCanvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const octx = overlay.getContext('2d');
+
+function draw() {
+  if (!spriteImg) return;
+  canvas.width = imgW;
+  canvas.height = imgH;
+  overlay.width = imgW;
+  overlay.height = imgH;
+  overlay.style.width = imgW + 'px';
+  overlay.style.height = imgH + 'px';
+
+  ctx.clearRect(0, 0, imgW, imgH);
+  ctx.drawImage(spriteImg, 0, 0, imgW, imgH);
+
+  octx.clearRect(0, 0, imgW, imgH);
+
+  if (showGreen) {
+    for (const [key, group] of Object.entries(BODY_REGIONS)) {
+      if (!activeGroups.has(key)) continue;
+      for (const r of group.rects) {
+        octx.fillStyle = group.color;
+        octx.fillRect(r.x, r.y, r.w, r.h);
+        octx.strokeStyle = '#0f0';
+        octx.lineWidth = 2;
+        octx.strokeRect(r.x, r.y, r.w, r.h);
+        octx.fillStyle = '#0f0';
+        octx.font = '14px monospace';
+        octx.fillText(`${group.label}`, r.x + 4, r.y + 16);
+      }
+    }
+  }
+}
+
+function updateInfo(text) {
+  document.getElementById('info').textContent = text;
+}
+
+// Load sprite
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.onload = () => {
+  spriteImg = img;
+  imgW = img.naturalWidth;
+  imgH = img.naturalHeight;
+  updateInfo(`Sprite loaded: ${imgW}x${imgH}. Use DV tools to identify regions, then mark them.`);
+  draw();
+};
+img.onerror = () => updateInfo('Failed to load sprite image');
+img.src = SPRITE_URL;
+
+// Manual rectangle drawing on overlay
+overlay.addEventListener('mousedown', (e) => {
+  const rect = overlay.getBoundingClientRect();
+  const scaleX = imgW / rect.width;
+  const scaleY = imgH / rect.height;
+  drawStart = {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+  isDrawing = true;
+});
+
+overlay.addEventListener('mousemove', (e) => {
+  if (!isDrawing || !drawStart) return;
+  const rect = overlay.getBoundingClientRect();
+  const scaleX = imgW / rect.width;
+  const scaleY = imgH / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  draw();
+  // Preview rectangle
+  octx.strokeStyle = '#0f0';
+  octx.lineWidth = 2;
+  octx.setLineDash([6, 4]);
+  octx.strokeRect(drawStart.x, drawStart.y, mx - drawStart.x, my - drawStart.y);
+  octx.setLineDash([]);
+});
+
+overlay.addEventListener('mouseup', (e) => {
+  if (!isDrawing || !drawStart) return;
+  isDrawing = false;
+  const rect = overlay.getBoundingClientRect();
+  const scaleX = imgW / rect.width;
+  const scaleY = imgH / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  const rx = Math.min(drawStart.x, mx);
+  const ry = Math.min(drawStart.y, my);
+  const rw = Math.abs(mx - drawStart.x);
+  const rh = Math.abs(my - drawStart.y);
+
+  if (rw > 5 && rh > 5) {
+    BODY_REGIONS[currentGroup].rects.push({ x: Math.round(rx), y: Math.round(ry), w: Math.round(rw), h: Math.round(rh) });
+    updateInfo(`Added ${currentGroup} region: (${Math.round(rx)},${Math.round(ry)}) ${Math.round(rw)}x${Math.round(rh)}`);
+  }
+  drawStart = null;
+  draw();
+});
+
+// Button controls
+document.querySelectorAll('[data-group]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentGroup = btn.dataset.group;
+    document.querySelectorAll('[data-group]').forEach(b => b.style.outline = '');
+    btn.style.outline = '2px solid #0f0';
+  });
+});
+
+document.getElementById('btnClear').onclick = () => {
+  for (const g of Object.values(BODY_REGIONS)) g.rects = [];
+  draw();
+  updateInfo('All regions cleared');
+};
+
+document.getElementById('btnApply').onclick = (e) => {
+  showGreen = !showGreen;
+  e.target.classList.toggle('active', showGreen);
+  draw();
+};
+
+// Expose for DV evaluate
+window.BODY_REGIONS = BODY_REGIONS;
+window.addRegion = (group, x, y, w, h) => {
+  if (BODY_REGIONS[group]) {
+    BODY_REGIONS[group].rects.push({ x, y, w, h });
+    draw();
+    return `Added ${group}: (${x},${y}) ${w}x${h}`;
+  }
+  return 'Unknown group: ' + group;
+};
+window.getRegions = () => JSON.stringify(BODY_REGIONS, null, 2);
+</script>
+</body>
+</html>
