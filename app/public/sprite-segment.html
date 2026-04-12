@@ -218,8 +218,8 @@ img.onload = () => {
       neckIdx = i;
     }
   }
-  // Face chin + hair side locks end around 22% of character height
-  const hairBottomY = Math.min(cMinY + Math.round(cH * 0.22), cMaxY);
+  // Face chin + hair side locks end around 25% of character height
+  const hairBottomY = Math.min(cMinY + Math.round(cH * 0.25), cMaxY);
   const neckY = rowWidths[neckIdx]?.y || cMinY + cH*0.25;
   const neckLeft = rowWidths[neckIdx]?.left || cMinX;
 
