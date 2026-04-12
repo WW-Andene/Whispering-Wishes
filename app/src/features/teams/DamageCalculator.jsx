@@ -1377,6 +1377,36 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 }
                               });
                             });
+                            // Read the current echo preset to assign appropriate mainStats
+                            const currentEq = teamEquipment[aeqKey];
+                            const preset = currentEq?.echoPreset || 'default';
+                            const scaling = d.statScaling || 'ATK';
+                            const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
+                            const elDmgKey = d.element ? d.element.charAt(0).toUpperCase() + d.element.slice(1).toLowerCase() + ' DMG' : '';
+                            // Preset-aware mainStat assignment per echo cost slot
+                            const getMainStat = (cost) => {
+                              if (preset === 'er') {
+                                if (cost === 4) return 'Energy Regen';
+                                if (cost === 3) return 'Energy Regen';
+                                return scalingStat;
+                              }
+                              if (preset === 'support') {
+                                if (cost === 4) return d.role === 'Healer' ? 'Healing Bonus' : 'Energy Regen';
+                                if (cost === 3) return elDmgKey || scalingStat;
+                                return scaling === 'HP' ? 'HP%' : scalingStat;
+                              }
+                              // default: ATK/Crit DPS build
+                              if (cost === 4) return 'Crit Rate';
+                              if (cost === 3) return elDmgKey || scalingStat;
+                              return scalingStat;
+                            };
+                            // Preset-aware substat assignment
+                            const getSubstats = () => {
+                              if (preset === 'er') return ['Energy Regen', scalingStat, 'Crit Rate', 'Crit DMG', scalingStat];
+                              if (preset === 'support') return [scalingStat, 'Energy Regen', 'Crit Rate'];
+                              return [scalingStat, 'Crit Rate', 'Crit DMG', scalingStat, 'Crit DMG'];
+                            };
+                            const defaultSubs = getSubstats();
                             const newEchoes = [null, null, null, null, null];
                             const usedNames = new Set();
                             const pickEcho = (tierList, setPrefs) => {
@@ -1385,14 +1415,14 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               return null;
                             };
                             const e0 = pickEcho(ALL_4COST_ECHOES, recSets);
-                            if (e0) newEchoes[0] = { name: e0, mainStat: null, substats: [] };
-                            for (let i = 1; i <= 2; i++) { const e = pickEcho(ALL_3COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: null, substats: [] }; }
-                            for (let i = 3; i <= 4; i++) { const e = pickEcho(ALL_1COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: null, substats: [] }; }
+                            if (e0) newEchoes[0] = { name: e0, mainStat: getMainStat(4), substats: defaultSubs.slice(0, 5) };
+                            for (let i = 1; i <= 2; i++) { const e = pickEcho(ALL_3COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: getMainStat(3), substats: defaultSubs.slice(0, 5) }; }
+                            for (let i = 3; i <= 4; i++) { const e = pickEcho(ALL_1COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: getMainStat(1), substats: defaultSubs.slice(0, 5) }; }
                             let echoSetVal = '';
                             if (recSets.size > 0) echoSetVal = [...recSets.keys()][0];
                             setTeamEquipment(prev => {
                               const n = { ...prev };
-                              n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, sequence: n[aeqKey]?.sequence || 0 };
+                              n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, echoPreset: preset, sequence: n[aeqKey]?.sequence || 0 };
                               return n;
                             });
                             haptic.success();
