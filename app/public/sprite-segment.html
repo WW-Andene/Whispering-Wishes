@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Zani — Polygon Vector Animation</title>
+<title>Zani — Polygon Vector Map</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { touch-action: none; overscroll-behavior: none; background: #080c14; }
   body { padding: 20px; color: #eee; font-family: system-ui, sans-serif; }
   h1 { font-size: 16px; margin-bottom: 10px; }
-  #stage { position: relative; display: inline-block; overflow: hidden; border-radius: 12px;
+  .stage { position: relative; display: inline-block; border-radius: 12px; overflow: hidden;
     background: radial-gradient(ellipse at center, #1a2234 0%, #080c14 80%); }
+  .stage svg { display: block; }
   .controls { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .controls button { font-size: 12px; padding: 5px 10px; background: #222; color: #eee;
     border: 1px solid #444; border-radius: 4px; cursor: pointer; }
@@ -21,249 +22,175 @@
 </style>
 </head>
 <body>
-  <h1>Zani — Polygon Vector Animation</h1>
+  <h1>Zani — Polygon Vector Map</h1>
   <div class="controls">
     <button id="btnAnim" class="active">Animation</button>
-    <button id="btnDebug">Show Polygons</button>
-    <label>Speed <input type="range" id="speed" min="0" max="200" value="100" /></label>
-    <label>Intensity <input type="range" id="intensity" min="0" max="200" value="100" /></label>
+    <button id="btnOutline">Show Polygon</button>
+    <label>Distortion <input type="range" id="distort" min="0" max="200" value="80" /></label>
+    <label>Drift <input type="range" id="drift" min="0" max="50" value="15" /></label>
   </div>
-  <div id="stage">
-    <canvas id="canvas"></canvas>
-  </div>
+  <div class="stage" id="stage"></div>
   <div id="info">Loading...</div>
 
 <script>
 const SPRITE_URL = 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp';
 
-const ZONES = {
-  objet_cape: { color: '#e040e0', order: 0 },
-  leg_l:      { color: '#80c040', order: 1 },
-  leg_r:      { color: '#40c080', order: 2 },
-  hip:        { color: '#a040c0', order: 3 },
-  arm_l:      { color: '#c06040', order: 4 },
-  torso:      { color: '#4080e0', order: 5 },
-  objet_wpn:  { color: '#c0c060', order: 6 },
-  arm_r:      { color: '#e04040', order: 7 },
-  hair:       { color: '#40e040', order: 8 },
-  face:       { color: '#e07040', order: 9 },
-};
+let showOutline = false, doAnimate = true;
 
-let spriteImg = null, imgW = 0, imgH = 0;
-let doAnimate = true, showDebug = false, speedMul = 1, intensityMul = 1;
-let zoneMap = null, zoneParts = {};
+// ── Mask extraction ──
+function extractMask(img, maxDim = 200) {
+  const sw = img.naturalWidth, sh = img.naturalHeight;
+  const scale = Math.min(maxDim / sw, maxDim / sh, 1);
+  const w = Math.max(1, Math.round(sw * scale));
+  const h = Math.max(1, Math.round(sh * scale));
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, w, h);
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const mask = new Uint8Array(w * h);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    mask[p] = data[i + 3] > 40 ? 1 : 0;
+  }
+  return { mask, w, h, sw, sh };
+}
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
-// ─── Polygon tracing ───
+// ── Moore boundary trace ──
 function traceBoundary(mask, w, h) {
-  let sx=-1, sy=-1;
-  outer: for (let y=0;y<h;y++) for (let x=0;x<w;x++) if (mask[y*w+x]) { sx=x;sy=y;break outer; }
-  if (sx<0) return [];
-  const nb=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
-  const pts=[[sx,sy]]; let cx=sx,cy=sy,pd=6;
-  for (let s=0;s<w*h*4;s++){
-    const ss=(pd+6)%8; let found=false;
-    for(let i=0;i<8;i++){const d=(ss+i)%8,nx=cx+nb[d][0],ny=cy+nb[d][1];
-      if(nx<0||ny<0||nx>=w||ny>=h)continue;
-      if(mask[ny*w+nx]){cx=nx;cy=ny;pd=d;pts.push([cx,cy]);found=true;break;}}
-    if(!found)break;
-    if(cx===sx&&cy===sy&&pts.length>3)break;
+  let sx = -1, sy = -1;
+  outer: for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (mask[y * w + x]) { sx = x; sy = y; break outer; }
+  if (sx < 0) return [];
+  const nb = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  const pts = [[sx, sy]];
+  let cx = sx, cy = sy, pd = 6;
+  for (let s = 0; s < w * h * 4; s++) {
+    const ss = (pd + 6) % 8;
+    let found = false;
+    for (let i = 0; i < 8; i++) {
+      const d = (ss + i) % 8, nx = cx + nb[d][0], ny = cy + nb[d][1];
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      if (mask[ny * w + nx]) {
+        cx = nx; cy = ny; pd = d; pts.push([cx, cy]); found = true; break;
+      }
+    }
+    if (!found) break;
+    if (cx === sx && cy === sy && pts.length > 3) break;
   }
   return pts;
 }
 
-function perpDist(p,a,b){
-  const dx=b[0]-a[0],dy=b[1]-a[1];
-  if(!dx&&!dy)return Math.hypot(p[0]-a[0],p[1]-a[1]);
-  const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));
-  return Math.hypot(p[0]-(a[0]+t*dx),p[1]-(a[1]+t*dy));
+// ── Douglas-Peucker simplify ──
+function perpDist(p, a, b) {
+  const dx = b[0]-a[0], dy = b[1]-a[1];
+  if (!dx && !dy) return Math.hypot(p[0]-a[0], p[1]-a[1]);
+  const t = Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / (dx*dx + dy*dy)));
+  return Math.hypot(p[0] - (a[0] + t*dx), p[1] - (a[1] + t*dy));
 }
-
-function simplify(pts,eps){
-  if(pts.length<3)return pts.slice();
-  const keep=new Uint8Array(pts.length);keep[0]=1;keep[pts.length-1]=1;
-  const stk=[[0,pts.length-1]];
-  while(stk.length){const[a,b]=stk.pop();let md=0,mi=-1;
-    for(let i=a+1;i<b;i++){const d=perpDist(pts[i],pts[a],pts[b]);if(d>md){md=d;mi=i;}}
-    if(md>eps&&mi>0){keep[mi]=1;stk.push([a,mi]);stk.push([mi,b]);}}
-  return pts.filter((_,i)=>keep[i]);
-}
-
-// ─── Zone classification (same as before) ───
-function classifyPixels(src) {
-  let cMinX=imgW,cMinY=imgH,cMaxX=0,cMaxY=0;
-  for(let y=0;y<imgH;y++)for(let x=0;x<imgW;x++)
-    if(src[(y*imgW+x)*4+3]>20){if(x<cMinX)cMinX=x;if(x>cMaxX)cMaxX=x;if(y<cMinY)cMinY=y;if(y>cMaxY)cMaxY=y;}
-  const cW=cMaxX-cMinX,cH=cMaxY-cMinY;
-  const rows=[];
-  for(let y=cMinY;y<=cMaxY;y++){let l=imgW,r=0;
-    for(let x=cMinX;x<=cMaxX;x++)if(src[(y*imgW+x)*4+3]>20){if(x<l)l=x;if(x>r)r=x;}
-    rows.push({y,l,r,cx:(l+r)/2});}
-  const mid=rows.slice(Math.round(rows.length*.25),Math.round(rows.length*.45));
-  const cs=mid.map(r=>r.cx).sort((a,b)=>a-b);
-  const bodyCX=cs[Math.floor(cs.length/2)];
-  const wpnX=bodyCX+cW*.25, capeX=bodyCX-cW*.15;
-  const map=new Array(imgW*imgH).fill(null);
-  for(let y=0;y<imgH;y++)for(let x=0;x<imgW;x++){
-    const i=(y*imgW+x)*4;if(src[i+3]<20)continue;
-    const rY=(y-cMinY)/cH,dist=x-bodyCX;
-    const r=src[i],g=src[i+1],b=src[i+2],bri=(r+g+b)/3;
-    let z=null;
-    if(x>wpnX&&rY>.15&&rY<.85)z='objet_wpn';
-    else if(x<capeX&&rY>.15&&rY<.75)z='objet_cape';
-    else if(rY<.18){const sk=r>150&&g>100&&b>70&&b<200&&r>b+15&&bri>120&&bri<240&&!(r>230&&g>230&&b>230);
-      z=(sk&&Math.abs(dist)<cW*.12&&rY>.06)?'face':'hair';}
-    else if(rY<.22){const sk=r>150&&g>100&&b>70&&r>b+15&&bri>120;
-      if(sk||Math.abs(dist)<cW*.06)z='face';else if(bri>160&&Math.abs(dist)<cW*.18)z='hair';else z='torso';}
-    else if(rY<.40){if(dist>cW*.15)z='arm_r';else if(dist<-cW*.12)z='arm_l';else z='torso';}
-    else if(rY<.48){if(dist>cW*.18)z='arm_r';else if(dist<-cW*.15)z='arm_l';else z='hip';}
-    else z=dist>cW*.02?'leg_r':'leg_l';
-    map[y*imgW+x]=z;
+function simplify(pts, eps) {
+  if (pts.length < 3) return pts.slice();
+  const keep = new Uint8Array(pts.length); keep[0] = 1; keep[pts.length-1] = 1;
+  const stk = [[0, pts.length-1]];
+  while (stk.length) {
+    const [a, b] = stk.pop(); let md = 0, mi = -1;
+    for (let i = a+1; i < b; i++) { const d = perpDist(pts[i], pts[a], pts[b]); if (d > md) { md = d; mi = i; } }
+    if (md > eps && mi > 0) { keep[mi] = 1; stk.push([a, mi]); stk.push([mi, b]); }
   }
-  return {map,cMinX,cMinY,cMaxX,cMaxY,cW,cH,bodyCX};
+  return pts.filter((_, i) => keep[i]);
 }
 
-// ─── Build polygon per zone ───
-function buildZoneParts() {
-  zoneParts = {};
-  for (const key of Object.keys(ZONES)) {
-    // Create binary mask for this zone
-    const mask = new Uint8Array(imgW * imgH);
-    let minX=imgW,minY=imgH,maxX=0,maxY=0,count=0;
-    for (let i=0;i<imgW*imgH;i++) {
-      if (zoneMap[i]===key) {
-        mask[i]=1; count++;
-        const x=i%imgW,y=Math.floor(i/imgW);
-        if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
-      }
+// ── Build SVG with polygon clip + displacement animation ──
+function build(img) {
+  const { mask, w, h, sw, sh } = extractMask(img, 200);
+  const raw = traceBoundary(mask, w, h);
+  const poly = simplify(raw, 1.2);
+  if (poly.length < 6) { document.getElementById('info').textContent = 'Polygon trace failed'; return; }
+
+  // Scale polygon to source dimensions
+  const scaleX = sw / w, scaleY = sh / h;
+  const scaled = poly.map(([x, y]) => [+(x * scaleX).toFixed(1), +(y * scaleY).toFixed(1)]);
+
+  // SVG path
+  const pathD = 'M ' + scaled.map(p => p.join(' ')).join(' L ') + ' Z';
+
+  // Distortion scale relative to image size
+  const distBase = Math.max(sw, sh) * 0.035;
+  const outlineW = Math.max(sw, sh) * 0.003;
+
+  const stage = document.getElementById('stage');
+  stage.innerHTML = `
+    <svg viewBox="0 0 ${sw} ${sh}" width="${sw}" height="${sh}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="polyClip" clipPathUnits="userSpaceOnUse">
+          <path d="${pathD}" />
+        </clipPath>
+        <filter id="warp" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.007 0.012" numOctaves="3" seed="5" result="noise">
+            <animate attributeName="baseFrequency" dur="12s"
+              values="0.007 0.012;0.010 0.015;0.006 0.011;0.007 0.012"
+              keyTimes="0;0.33;0.66;1" repeatCount="indefinite" />
+            <animate attributeName="seed" dur="45s"
+              values="5;19;31;43;5" keyTimes="0;0.25;0.5;0.75;1" repeatCount="indefinite" />
+          </feTurbulence>
+          <feDisplacementMap id="displace" in="SourceGraphic" in2="noise"
+            scale="${distBase}" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+
+      <!-- Animated character clipped to polygon -->
+      <g clip-path="url(#polyClip)" filter="url(#warp)" id="charGroup">
+        <image href="${SPRITE_URL}" x="0" y="0" width="${sw}" height="${sh}" preserveAspectRatio="none" />
+      </g>
+
+      <!-- Polygon outline (togglable) -->
+      <path id="polyOutline" d="${pathD}" fill="none" stroke="#edaf18"
+        stroke-width="${outlineW}" stroke-linejoin="round" opacity="0" />
+    </svg>
+  `;
+
+  // Parallax drift
+  const charGroup = document.getElementById('charGroup');
+  function tick(t) {
+    if (doAnimate) {
+      const driftVal = +document.getElementById('drift').value / 100;
+      const tx = Math.sin(t * 0.00085) * 2.5 * driftVal;
+      const ty = Math.cos(t * 0.00110) * 2.0 * driftVal;
+      charGroup.setAttribute('transform', `translate(${tx.toFixed(2)},${ty.toFixed(2)})`);
+    } else {
+      charGroup.removeAttribute('transform');
     }
-    if (count<50) continue;
 
-    // Trace boundary polygon
-    const rawPoly = traceBoundary(mask, imgW, imgH);
-    const poly = simplify(rawPoly, 2.5);
-    if (poly.length < 3) continue;
+    // Outline toggle
+    document.getElementById('polyOutline').setAttribute('opacity', showOutline ? '1' : '0');
 
-    // Pivot points
-    const cx=(minX+maxX)/2;
-    let pivotX=cx, pivotY=minY;
-    if(['hair','face'].includes(key)){pivotY=maxY;}
-    else if(['arm_r'].includes(key)){pivotX=minX;pivotY=minY;}
-    else if(['arm_l'].includes(key)){pivotX=maxX;pivotY=minY;}
-    else if(['objet_cape'].includes(key)){pivotX=maxX;pivotY=minY;}
-    else if(['objet_wpn'].includes(key)){pivotX=minX;pivotY=(minY+maxY)/2;}
+    // Distortion amount
+    const distVal = +document.getElementById('distort').value / 100;
+    const organic = 0.75 + Math.sin(t * 0.0006) * 0.25;
+    document.getElementById('displace').setAttribute('scale',
+      (distBase * distVal * (doAnimate ? organic : 0)).toFixed(2));
 
-    // Pre-render zone texture clipped to polygon
-    const zCanvas = document.createElement('canvas');
-    zCanvas.width = imgW; zCanvas.height = imgH;
-    const zCtx = zCanvas.getContext('2d');
-    // Clip to polygon
-    zCtx.beginPath();
-    zCtx.moveTo(poly[0][0], poly[0][1]);
-    for (let i=1;i<poly.length;i++) zCtx.lineTo(poly[i][0], poly[i][1]);
-    zCtx.closePath();
-    zCtx.clip();
-    zCtx.drawImage(spriteImg, 0, 0);
-
-    zoneParts[key] = { poly, minX, minY, maxX, maxY, pivotX, pivotY, canvas: zCanvas, count };
+    requestAnimationFrame(tick);
   }
+  requestAnimationFrame(tick);
+
+  document.getElementById('info').textContent =
+    `${sw}x${sh} — polygon: ${scaled.length} vertices — animating`;
 }
 
-// ─── Animation transforms per zone ───
-function getTransform(zone, t, s) {
-  const transforms = {
-    hair:       { r: Math.sin(t*1.2)*1.8*s, tx: Math.sin(t*0.8)*2*s, ty: Math.sin(t*1.5)*1*s },
-    face:       { r: Math.sin(t*1.0)*0.8*s, tx: Math.sin(t*0.7)*1*s, ty: Math.sin(t*1.3)*0.8*s },
-    torso:      { r: 0, tx: 0, ty: Math.sin(t*1.1)*2.5*s },
-    arm_r:      { r: Math.sin(t*0.9)*3*s, tx: Math.sin(t*0.6)*2*s, ty: Math.cos(t*1.0)*2*s },
-    arm_l:      { r: Math.sin(t*0.85+0.5)*2.5*s, tx: Math.sin(t*0.7+0.3)*2*s, ty: Math.cos(t*0.9+0.2)*2*s },
-    hip:        { r: 0, tx: 0, ty: Math.sin(t*1.1)*1.5*s },
-    leg_r:      { r: Math.sin(t*0.7)*0.7*s, tx: 0, ty: Math.sin(t*1.1)*1.2*s },
-    leg_l:      { r: Math.sin(t*0.7+0.4)*0.7*s, tx: 0, ty: Math.sin(t*1.1+0.3)*1.2*s },
-    objet_cape: { r: Math.sin(t*0.6)*3.5*s, tx: Math.sin(t*0.4)*5*s, ty: Math.sin(t*0.8)*3*s },
-    objet_wpn:  { r: Math.sin(t*0.5)*1.5*s, tx: Math.cos(t*0.4)*2*s, ty: Math.sin(t*0.7)*2.5*s },
-  };
-  return transforms[zone] || { r:0, tx:0, ty:0 };
-}
+// ── Controls ──
+document.getElementById('btnAnim').onclick = e => {
+  doAnimate = !doAnimate; e.target.classList.toggle('active', doAnimate);
+};
+document.getElementById('btnOutline').onclick = e => {
+  showOutline = !showOutline; e.target.classList.toggle('active', showOutline);
+};
 
-// ─── Render loop ───
-const RENDER_ORDER = Object.keys(ZONES).sort((a,b) => ZONES[a].order - ZONES[b].order);
-
-function render(t) {
-  const time = t * 0.001 * speedMul;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  for (const key of RENDER_ORDER) {
-    const part = zoneParts[key];
-    if (!part) continue;
-    const tf = doAnimate ? getTransform(key, time, intensityMul) : {r:0,tx:0,ty:0};
-
-    ctx.save();
-    ctx.translate(part.pivotX + tf.tx, part.pivotY + tf.ty);
-    ctx.rotate(tf.r * Math.PI / 180);
-    ctx.translate(-part.pivotX, -part.pivotY);
-    ctx.drawImage(part.canvas, 0, 0);
-    ctx.restore();
-
-    if (showDebug) {
-      ctx.save();
-      ctx.translate(part.pivotX + tf.tx, part.pivotY + tf.ty);
-      ctx.rotate(tf.r * Math.PI / 180);
-      ctx.translate(-part.pivotX, -part.pivotY);
-      // Draw polygon outline
-      ctx.strokeStyle = ZONES[key].color;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.7;
-      ctx.beginPath();
-      ctx.moveTo(part.poly[0][0], part.poly[0][1]);
-      for (let i=1;i<part.poly.length;i++) ctx.lineTo(part.poly[i][0], part.poly[i][1]);
-      ctx.closePath();
-      ctx.stroke();
-      // Label
-      ctx.fillStyle = ZONES[key].color;
-      ctx.font = '13px monospace';
-      ctx.fillText(key + ' (' + part.poly.length + 'pts)', part.minX+4, part.minY+14);
-      // Pivot
-      ctx.beginPath(); ctx.arc(part.pivotX, part.pivotY, 5, 0, Math.PI*2);
-      ctx.fillStyle='#ff0'; ctx.globalAlpha=1; ctx.fill();
-      ctx.restore();
-    }
-  }
-  requestAnimationFrame(render);
-}
-
-// ─── Controls ───
-document.getElementById('btnAnim').onclick = e => { doAnimate=!doAnimate; e.target.classList.toggle('active',doAnimate); };
-document.getElementById('btnDebug').onclick = e => { showDebug=!showDebug; e.target.classList.toggle('active',showDebug); };
-document.getElementById('speed').oninput = e => { speedMul = +e.target.value/100; };
-document.getElementById('intensity').oninput = e => { intensityMul = +e.target.value/100; };
-
-// ─── Load ───
+// ── Load ──
 const img = new Image();
 img.crossOrigin = 'anonymous';
-img.onload = () => {
-  spriteImg = img;
-  imgW = img.naturalWidth; imgH = img.naturalHeight;
-  canvas.width = imgW; canvas.height = imgH;
-
-  const tmp = document.createElement('canvas');
-  tmp.width=imgW;tmp.height=imgH;
-  const tctx=tmp.getContext('2d');
-  tctx.drawImage(img,0,0);
-  const srcData=tctx.getImageData(0,0,imgW,imgH).data;
-
-  const result = classifyPixels(srcData);
-  zoneMap = result.map;
-  buildZoneParts();
-
-  const totalPts = Object.values(zoneParts).reduce((s,p)=>s+p.poly.length,0);
-  document.getElementById('info').textContent =
-    `${imgW}x${imgH} — ${Object.keys(zoneParts).length} zones — ${totalPts} polygon vertices — animating`;
-  requestAnimationFrame(render);
-};
-img.onerror = () => { document.getElementById('info').textContent = 'Failed to load'; };
+img.onload = () => build(img);
+img.onerror = () => { document.getElementById('info').textContent = 'Failed to load sprite'; };
 img.src = SPRITE_URL;
 </script>
 </body>
