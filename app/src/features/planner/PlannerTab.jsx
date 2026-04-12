@@ -13,7 +13,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, GanttChart, Hammer, Minus, Plus, Search, Star, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SOFT_PITY_START, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
-import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, CURRENT_BANNERS } from '../../data/banners.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { generateUniqueId, getElementColor, getElementShape } from '../../utils/helpers.js';
@@ -1104,11 +1104,15 @@ function PlannerTab({
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
               return (
                 <div key={t.name} className="relative overflow-hidden p-2.5 rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
-                  {/* Splash art background */}
-                  {DEFAULT_COLLECTION_IMAGES[t.name] && (
-                    <img src={DEFAULT_COLLECTION_IMAGES[t.name]} alt="" className="absolute right-0 top-0 h-full w-1/3 object-contain object-right opacity-15 pointer-events-none" loading="lazy" onError={hideOnError}
-                      style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 50%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 50%)' }} />
-                  )}
+                  {/* Banner splash art background */}
+                  {(() => {
+                    const themeArt = CHARACTER_THEMES.find(ct => ct.name === t.name)?.bannerArt
+                      || CURRENT_BANNERS.characters?.find(c => c.name === t.name)?.imageUrl;
+                    return themeArt ? (
+                      <img src={themeArt} alt="" className="absolute right-0 top-0 h-full w-2/5 object-cover object-center opacity-20 pointer-events-none" loading="lazy" onError={hideOnError}
+                        style={{ maskImage: 'linear-gradient(to right, transparent 10%, black 60%)', WebkitMaskImage: 'linear-gradient(to right, transparent 10%, black 60%)' }} />
+                    ) : null;
+                  })()}
                   <div className="relative z-10 flex items-center gap-2 mb-2">
                     <span className="font-bold text-xl flex-1 text-center" style={{ color: elColor }}>{t.name}</span>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
