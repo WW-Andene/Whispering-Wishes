@@ -3,16 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Zani — Animated Sprite</title>
+<title>Zani — Polygon Vector Animation</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { touch-action: none; overscroll-behavior: none; background: #080c14; }
   body { padding: 20px; color: #eee; font-family: system-ui, sans-serif; }
   h1 { font-size: 16px; margin-bottom: 10px; }
-  #stage { position: relative; display: inline-block; overflow: hidden; border-radius: 12px; background: radial-gradient(ellipse at center, #1a2234 0%, #080c14 80%); }
-  canvas { display: block; }
+  #stage { position: relative; display: inline-block; overflow: hidden; border-radius: 12px;
+    background: radial-gradient(ellipse at center, #1a2234 0%, #080c14 80%); }
   .controls { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .controls button { font-size: 12px; padding: 5px 10px; background: #222; color: #eee; border: 1px solid #444; border-radius: 4px; cursor: pointer; }
+  .controls button { font-size: 12px; padding: 5px 10px; background: #222; color: #eee;
+    border: 1px solid #444; border-radius: 4px; cursor: pointer; }
   .controls button.active { background: #2a6; border-color: #0c0; }
   .controls label { font-size: 12px; color: #aaa; display: flex; align-items: center; gap: 4px; }
   .controls input[type=range] { width: 100px; }
@@ -23,7 +24,7 @@
   <h1>Zani — Polygon Vector Animation</h1>
   <div class="controls">
     <button id="btnAnim" class="active">Animation</button>
-    <button id="btnDebug">Show Zones</button>
+    <button id="btnDebug">Show Polygons</button>
     <label>Speed <input type="range" id="speed" min="0" max="200" value="100" /></label>
     <label>Intensity <input type="range" id="intensity" min="0" max="200" value="100" /></label>
   </div>
@@ -36,279 +37,233 @@
 const SPRITE_URL = 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp';
 
 const ZONES = {
-  hair:   { color: '#40e040' },
-  face:   { color: '#e07040' },
-  torso:  { color: '#4080e0' },
-  arm_r:  { color: '#e04040' },
-  arm_l:  { color: '#c06040' },
-  hip:    { color: '#a040c0' },
-  leg_r:  { color: '#40c080' },
-  leg_l:  { color: '#80c040' },
-  objet_cape: { color: '#e040e0' },
-  objet_wpn:  { color: '#c0c060' },
+  objet_cape: { color: '#e040e0', order: 0 },
+  leg_l:      { color: '#80c040', order: 1 },
+  leg_r:      { color: '#40c080', order: 2 },
+  hip:        { color: '#a040c0', order: 3 },
+  arm_l:      { color: '#c06040', order: 4 },
+  torso:      { color: '#4080e0', order: 5 },
+  objet_wpn:  { color: '#c0c060', order: 6 },
+  arm_r:      { color: '#e04040', order: 7 },
+  hair:       { color: '#40e040', order: 8 },
+  face:       { color: '#e07040', order: 9 },
 };
 
-let spriteImg = null;
-let imgW = 0, imgH = 0;
-let animate = true;
-let showDebug = false;
-let speedMul = 1.0;
-let intensityMul = 1.0;
-
-// Zone pixel masks: zoneMap[y * imgW + x] = zone key or null
-let zoneMap = null;
-// Per-zone bounding boxes & pivot points
-let zoneMeta = {};
+let spriteImg = null, imgW = 0, imgH = 0;
+let doAnimate = true, showDebug = false, speedMul = 1, intensityMul = 1;
+let zoneMap = null, zoneParts = {};
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-function classify(src, imgW, imgH) {
-  // Find character bounding box
-  let cMinX=imgW, cMinY=imgH, cMaxX=0, cMaxY=0;
-  for (let y=0; y<imgH; y++) {
-    for (let x=0; x<imgW; x++) {
-      if (src[(y*imgW+x)*4+3] > 20) {
-        if (x<cMinX) cMinX=x; if (x>cMaxX) cMaxX=x;
-        if (y<cMinY) cMinY=y; if (y>cMaxY) cMaxY=y;
-      }
-    }
+// ─── Polygon tracing ───
+function traceBoundary(mask, w, h) {
+  let sx=-1, sy=-1;
+  outer: for (let y=0;y<h;y++) for (let x=0;x<w;x++) if (mask[y*w+x]) { sx=x;sy=y;break outer; }
+  if (sx<0) return [];
+  const nb=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  const pts=[[sx,sy]]; let cx=sx,cy=sy,pd=6;
+  for (let s=0;s<w*h*4;s++){
+    const ss=(pd+6)%8; let found=false;
+    for(let i=0;i<8;i++){const d=(ss+i)%8,nx=cx+nb[d][0],ny=cy+nb[d][1];
+      if(nx<0||ny<0||nx>=w||ny>=h)continue;
+      if(mask[ny*w+nx]){cx=nx;cy=ny;pd=d;pts.push([cx,cy]);found=true;break;}}
+    if(!found)break;
+    if(cx===sx&&cy===sy&&pts.length>3)break;
   }
-  const cW = cMaxX-cMinX, cH = cMaxY-cMinY;
-
-  // Body center line from torso rows
-  const rows = [];
-  for (let y=cMinY; y<=cMaxY; y++) {
-    let left=imgW, right=0;
-    for (let x=cMinX; x<=cMaxX; x++) {
-      if (src[(y*imgW+x)*4+3]>20) { if(x<left)left=x; if(x>right)right=x; }
-    }
-    rows.push({y,left,right,cx:(left+right)/2,w:right-left});
-  }
-  const mid = rows.slice(Math.round(rows.length*0.25), Math.round(rows.length*0.45));
-  const cs = mid.map(r=>r.cx).sort((a,b)=>a-b);
-  const bodyCX = cs[Math.floor(cs.length/2)];
-
-  const weaponX = bodyCX + cW * 0.25;
-  const capeX = bodyCX - cW * 0.15;
-
-  const map = new Array(imgW * imgH).fill(null);
-
-  for (let y=0; y<imgH; y++) {
-    for (let x=0; x<imgW; x++) {
-      const i = (y*imgW+x)*4;
-      if (src[i+3] < 20) continue;
-      const relY = (y-cMinY)/cH;
-      const dist = x - bodyCX;
-      const r=src[i], g=src[i+1], b=src[i+2];
-      const bri = (r+g+b)/3;
-      let zone = null;
-
-      if (x > weaponX && relY > 0.15 && relY < 0.85) zone = 'objet_wpn';
-      else if (x < capeX && relY > 0.15 && relY < 0.75) zone = 'objet_cape';
-      else if (relY < 0.18) {
-        const isSkin = r>150&&g>100&&b>70&&b<200&&r>b+15&&bri>120&&bri<240&&!(r>230&&g>230&&b>230);
-        zone = (isSkin && Math.abs(dist)<cW*0.12 && relY>0.06) ? 'face' : 'hair';
-      }
-      else if (relY < 0.22) {
-        const isSkin = r>150&&g>100&&b>70&&r>b+15&&bri>120;
-        if (isSkin || Math.abs(dist)<cW*0.06) zone='face';
-        else if (bri>160 && Math.abs(dist)<cW*0.18) zone='hair';
-        else zone='torso';
-      }
-      else if (relY < 0.40) {
-        if (dist > cW*0.15) zone='arm_r';
-        else if (dist < -cW*0.12) zone='arm_l';
-        else zone='torso';
-      }
-      else if (relY < 0.48) {
-        if (dist > cW*0.18) zone='arm_r';
-        else if (dist < -cW*0.15) zone='arm_l';
-        else zone='hip';
-      }
-      else {
-        zone = (dist > cW*0.02) ? 'leg_r' : 'leg_l';
-      }
-
-      map[y*imgW+x] = zone;
-    }
-  }
-
-  // Compute per-zone bounding boxes + pivot
-  const meta = {};
-  for (const key of Object.keys(ZONES)) {
-    meta[key] = { minX:imgW, minY:imgH, maxX:0, maxY:0, count:0 };
-  }
-  for (let y=0; y<imgH; y++) {
-    for (let x=0; x<imgW; x++) {
-      const z = map[y*imgW+x];
-      if (!z || !meta[z]) continue;
-      const m = meta[z];
-      if (x<m.minX) m.minX=x; if(x>m.maxX) m.maxX=x;
-      if (y<m.minY) m.minY=y; if(y>m.maxY) m.maxY=y;
-      m.count++;
-    }
-  }
-  // Pivot = top-center for upper parts, bottom-center for lower
-  for (const [key, m] of Object.entries(meta)) {
-    const cx = (m.minX+m.maxX)/2;
-    if (['hair','face'].includes(key)) {
-      m.pivotX = cx; m.pivotY = m.maxY; // bottom of head
-    } else if (['leg_r','leg_l'].includes(key)) {
-      m.pivotX = cx; m.pivotY = m.minY; // top of legs (hip joint)
-    } else if (['arm_r','arm_l'].includes(key)) {
-      m.pivotX = key==='arm_r' ? m.minX : m.maxX; m.pivotY = m.minY; // shoulder
-    } else if (['objet_cape'].includes(key)) {
-      m.pivotX = m.maxX; m.pivotY = m.minY; // top-right attach
-    } else if (['objet_wpn'].includes(key)) {
-      m.pivotX = m.minX; m.pivotY = (m.minY+m.maxY)/2; // left-center attach
-    } else {
-      m.pivotX = cx; m.pivotY = m.minY; // top-center
-    }
-  }
-
-  return { map, meta, cMinX, cMinY, cMaxX, cMaxY, cW, cH, bodyCX };
+  return pts;
 }
 
-// Per-zone animation parameters
-function getZoneTransform(zone, t, intensity) {
-  const s = intensity;
-  const a = {
-    hair:       { rotate: Math.sin(t*1.2)*1.5*s, tx: Math.sin(t*0.8)*2*s, ty: Math.sin(t*1.5)*1*s },
-    face:       { rotate: Math.sin(t*1.0)*0.8*s, tx: Math.sin(t*0.7)*1*s, ty: Math.sin(t*1.3)*0.8*s },
-    torso:      { rotate: 0, tx: 0, ty: Math.sin(t*1.1)*2*s }, // breathing
-    arm_r:      { rotate: Math.sin(t*0.9)*2.5*s, tx: Math.sin(t*0.6)*1.5*s, ty: Math.cos(t*1.0)*1.5*s },
-    arm_l:      { rotate: Math.sin(t*0.85+0.5)*2*s, tx: Math.sin(t*0.7+0.3)*1.5*s, ty: Math.cos(t*0.9+0.2)*1.5*s },
-    hip:        { rotate: 0, tx: 0, ty: Math.sin(t*1.1)*1.2*s },
-    leg_r:      { rotate: Math.sin(t*0.7)*0.6*s, tx: 0, ty: Math.sin(t*1.1)*1*s },
-    leg_l:      { rotate: Math.sin(t*0.7+0.4)*0.6*s, tx: 0, ty: Math.sin(t*1.1+0.3)*1*s },
-    objet_cape: { rotate: Math.sin(t*0.6)*3*s, tx: Math.sin(t*0.4)*4*s, ty: Math.sin(t*0.8)*2*s },
-    objet_wpn:  { rotate: Math.sin(t*0.5)*1.5*s, tx: Math.cos(t*0.4)*2*s, ty: Math.sin(t*0.7)*2*s },
+function perpDist(p,a,b){
+  const dx=b[0]-a[0],dy=b[1]-a[1];
+  if(!dx&&!dy)return Math.hypot(p[0]-a[0],p[1]-a[1]);
+  const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));
+  return Math.hypot(p[0]-(a[0]+t*dx),p[1]-(a[1]+t*dy));
+}
+
+function simplify(pts,eps){
+  if(pts.length<3)return pts.slice();
+  const keep=new Uint8Array(pts.length);keep[0]=1;keep[pts.length-1]=1;
+  const stk=[[0,pts.length-1]];
+  while(stk.length){const[a,b]=stk.pop();let md=0,mi=-1;
+    for(let i=a+1;i<b;i++){const d=perpDist(pts[i],pts[a],pts[b]);if(d>md){md=d;mi=i;}}
+    if(md>eps&&mi>0){keep[mi]=1;stk.push([a,mi]);stk.push([mi,b]);}}
+  return pts.filter((_,i)=>keep[i]);
+}
+
+// ─── Zone classification (same as before) ───
+function classifyPixels(src) {
+  let cMinX=imgW,cMinY=imgH,cMaxX=0,cMaxY=0;
+  for(let y=0;y<imgH;y++)for(let x=0;x<imgW;x++)
+    if(src[(y*imgW+x)*4+3]>20){if(x<cMinX)cMinX=x;if(x>cMaxX)cMaxX=x;if(y<cMinY)cMinY=y;if(y>cMaxY)cMaxY=y;}
+  const cW=cMaxX-cMinX,cH=cMaxY-cMinY;
+  const rows=[];
+  for(let y=cMinY;y<=cMaxY;y++){let l=imgW,r=0;
+    for(let x=cMinX;x<=cMaxX;x++)if(src[(y*imgW+x)*4+3]>20){if(x<l)l=x;if(x>r)r=x;}
+    rows.push({y,l,r,cx:(l+r)/2});}
+  const mid=rows.slice(Math.round(rows.length*.25),Math.round(rows.length*.45));
+  const cs=mid.map(r=>r.cx).sort((a,b)=>a-b);
+  const bodyCX=cs[Math.floor(cs.length/2)];
+  const wpnX=bodyCX+cW*.25, capeX=bodyCX-cW*.15;
+  const map=new Array(imgW*imgH).fill(null);
+  for(let y=0;y<imgH;y++)for(let x=0;x<imgW;x++){
+    const i=(y*imgW+x)*4;if(src[i+3]<20)continue;
+    const rY=(y-cMinY)/cH,dist=x-bodyCX;
+    const r=src[i],g=src[i+1],b=src[i+2],bri=(r+g+b)/3;
+    let z=null;
+    if(x>wpnX&&rY>.15&&rY<.85)z='objet_wpn';
+    else if(x<capeX&&rY>.15&&rY<.75)z='objet_cape';
+    else if(rY<.18){const sk=r>150&&g>100&&b>70&&b<200&&r>b+15&&bri>120&&bri<240&&!(r>230&&g>230&&b>230);
+      z=(sk&&Math.abs(dist)<cW*.12&&rY>.06)?'face':'hair';}
+    else if(rY<.22){const sk=r>150&&g>100&&b>70&&r>b+15&&bri>120;
+      if(sk||Math.abs(dist)<cW*.06)z='face';else if(bri>160&&Math.abs(dist)<cW*.18)z='hair';else z='torso';}
+    else if(rY<.40){if(dist>cW*.15)z='arm_r';else if(dist<-cW*.12)z='arm_l';else z='torso';}
+    else if(rY<.48){if(dist>cW*.18)z='arm_r';else if(dist<-cW*.15)z='arm_l';else z='hip';}
+    else z=dist>cW*.02?'leg_r':'leg_l';
+    map[y*imgW+x]=z;
+  }
+  return {map,cMinX,cMinY,cMaxX,cMaxY,cW,cH,bodyCX};
+}
+
+// ─── Build polygon per zone ───
+function buildZoneParts() {
+  zoneParts = {};
+  for (const key of Object.keys(ZONES)) {
+    // Create binary mask for this zone
+    const mask = new Uint8Array(imgW * imgH);
+    let minX=imgW,minY=imgH,maxX=0,maxY=0,count=0;
+    for (let i=0;i<imgW*imgH;i++) {
+      if (zoneMap[i]===key) {
+        mask[i]=1; count++;
+        const x=i%imgW,y=Math.floor(i/imgW);
+        if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+      }
+    }
+    if (count<50) continue;
+
+    // Trace boundary polygon
+    const rawPoly = traceBoundary(mask, imgW, imgH);
+    const poly = simplify(rawPoly, 2.5);
+    if (poly.length < 3) continue;
+
+    // Pivot points
+    const cx=(minX+maxX)/2;
+    let pivotX=cx, pivotY=minY;
+    if(['hair','face'].includes(key)){pivotY=maxY;}
+    else if(['arm_r'].includes(key)){pivotX=minX;pivotY=minY;}
+    else if(['arm_l'].includes(key)){pivotX=maxX;pivotY=minY;}
+    else if(['objet_cape'].includes(key)){pivotX=maxX;pivotY=minY;}
+    else if(['objet_wpn'].includes(key)){pivotX=minX;pivotY=(minY+maxY)/2;}
+
+    // Pre-render zone texture clipped to polygon
+    const zCanvas = document.createElement('canvas');
+    zCanvas.width = imgW; zCanvas.height = imgH;
+    const zCtx = zCanvas.getContext('2d');
+    // Clip to polygon
+    zCtx.beginPath();
+    zCtx.moveTo(poly[0][0], poly[0][1]);
+    for (let i=1;i<poly.length;i++) zCtx.lineTo(poly[i][0], poly[i][1]);
+    zCtx.closePath();
+    zCtx.clip();
+    zCtx.drawImage(spriteImg, 0, 0);
+
+    zoneParts[key] = { poly, minX, minY, maxX, maxY, pivotX, pivotY, canvas: zCanvas, count };
+  }
+}
+
+// ─── Animation transforms per zone ───
+function getTransform(zone, t, s) {
+  const transforms = {
+    hair:       { r: Math.sin(t*1.2)*1.8*s, tx: Math.sin(t*0.8)*2*s, ty: Math.sin(t*1.5)*1*s },
+    face:       { r: Math.sin(t*1.0)*0.8*s, tx: Math.sin(t*0.7)*1*s, ty: Math.sin(t*1.3)*0.8*s },
+    torso:      { r: 0, tx: 0, ty: Math.sin(t*1.1)*2.5*s },
+    arm_r:      { r: Math.sin(t*0.9)*3*s, tx: Math.sin(t*0.6)*2*s, ty: Math.cos(t*1.0)*2*s },
+    arm_l:      { r: Math.sin(t*0.85+0.5)*2.5*s, tx: Math.sin(t*0.7+0.3)*2*s, ty: Math.cos(t*0.9+0.2)*2*s },
+    hip:        { r: 0, tx: 0, ty: Math.sin(t*1.1)*1.5*s },
+    leg_r:      { r: Math.sin(t*0.7)*0.7*s, tx: 0, ty: Math.sin(t*1.1)*1.2*s },
+    leg_l:      { r: Math.sin(t*0.7+0.4)*0.7*s, tx: 0, ty: Math.sin(t*1.1+0.3)*1.2*s },
+    objet_cape: { r: Math.sin(t*0.6)*3.5*s, tx: Math.sin(t*0.4)*5*s, ty: Math.sin(t*0.8)*3*s },
+    objet_wpn:  { r: Math.sin(t*0.5)*1.5*s, tx: Math.cos(t*0.4)*2*s, ty: Math.sin(t*0.7)*2.5*s },
   };
-  return a[zone] || { rotate: 0, tx: 0, ty: 0 };
+  return transforms[zone] || { r:0, tx:0, ty:0 };
 }
 
-// Pre-render each zone into its own canvas for fast compositing
-let zoneCanvases = {};
-
-function buildZoneCanvases() {
-  zoneCanvases = {};
-  for (const key of Object.keys(ZONES)) {
-    const m = zoneMeta[key];
-    if (!m || m.count === 0) continue;
-    const w = m.maxX - m.minX + 1;
-    const h = m.maxY - m.minY + 1;
-    const zc = document.createElement('canvas');
-    zc.width = w; zc.height = h;
-    const zctx = zc.getContext('2d');
-    // Draw only pixels belonging to this zone
-    const tmp = document.createElement('canvas');
-    tmp.width = imgW; tmp.height = imgH;
-    const tctx = tmp.getContext('2d');
-    tctx.drawImage(spriteImg, 0, 0);
-    const srcData = tctx.getImageData(0, 0, imgW, imgH);
-    const dstData = zctx.createImageData(w, h);
-    const sd = srcData.data, dd = dstData.data;
-    for (let y = m.minY; y <= m.maxY; y++) {
-      for (let x = m.minX; x <= m.maxX; x++) {
-        if (zoneMap[y*imgW+x] !== key) continue;
-        const si = (y*imgW+x)*4;
-        const di = ((y-m.minY)*w + (x-m.minX))*4;
-        dd[di]=sd[si]; dd[di+1]=sd[si+1]; dd[di+2]=sd[si+2]; dd[di+3]=sd[si+3];
-      }
-    }
-    zctx.putImageData(dstData, 0, 0);
-    zoneCanvases[key] = zc;
-  }
-}
-
-// Render order: back to front
-const RENDER_ORDER = ['objet_cape','leg_l','leg_r','hip','arm_l','torso','objet_wpn','arm_r','hair','face'];
+// ─── Render loop ───
+const RENDER_ORDER = Object.keys(ZONES).sort((a,b) => ZONES[a].order - ZONES[b].order);
 
 function render(t) {
   const time = t * 0.001 * speedMul;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (const key of RENDER_ORDER) {
-    const zc = zoneCanvases[key];
-    const m = zoneMeta[key];
-    if (!zc || !m || m.count === 0) continue;
-
-    const tf = animate ? getZoneTransform(key, time, intensityMul) : { rotate:0, tx:0, ty:0 };
+    const part = zoneParts[key];
+    if (!part) continue;
+    const tf = doAnimate ? getTransform(key, time, intensityMul) : {r:0,tx:0,ty:0};
 
     ctx.save();
-    // Translate to pivot, rotate, translate back
-    ctx.translate(m.pivotX + tf.tx, m.pivotY + tf.ty);
-    ctx.rotate(tf.rotate * Math.PI / 180);
-    ctx.translate(-m.pivotX, -m.pivotY);
-    ctx.drawImage(zc, m.minX, m.minY);
+    ctx.translate(part.pivotX + tf.tx, part.pivotY + tf.ty);
+    ctx.rotate(tf.r * Math.PI / 180);
+    ctx.translate(-part.pivotX, -part.pivotY);
+    ctx.drawImage(part.canvas, 0, 0);
     ctx.restore();
 
-    // Debug overlay
     if (showDebug) {
       ctx.save();
-      ctx.translate(m.pivotX + tf.tx, m.pivotY + tf.ty);
-      ctx.rotate(tf.rotate * Math.PI / 180);
-      ctx.translate(-m.pivotX, -m.pivotY);
+      ctx.translate(part.pivotX + tf.tx, part.pivotY + tf.ty);
+      ctx.rotate(tf.r * Math.PI / 180);
+      ctx.translate(-part.pivotX, -part.pivotY);
+      // Draw polygon outline
       ctx.strokeStyle = ZONES[key].color;
       ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.6;
-      ctx.strokeRect(m.minX, m.minY, m.maxX-m.minX, m.maxY-m.minY);
-      ctx.fillStyle = ZONES[key].color;
-      ctx.font = '14px monospace';
-      ctx.fillText(key, m.minX+4, m.minY+16);
-      // pivot dot
+      ctx.globalAlpha = 0.7;
       ctx.beginPath();
-      ctx.arc(m.pivotX, m.pivotY, 4, 0, Math.PI*2);
-      ctx.fillStyle = '#ff0';
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.moveTo(part.poly[0][0], part.poly[0][1]);
+      for (let i=1;i<part.poly.length;i++) ctx.lineTo(part.poly[i][0], part.poly[i][1]);
+      ctx.closePath();
+      ctx.stroke();
+      // Label
+      ctx.fillStyle = ZONES[key].color;
+      ctx.font = '13px monospace';
+      ctx.fillText(key + ' (' + part.poly.length + 'pts)', part.minX+4, part.minY+14);
+      // Pivot
+      ctx.beginPath(); ctx.arc(part.pivotX, part.pivotY, 5, 0, Math.PI*2);
+      ctx.fillStyle='#ff0'; ctx.globalAlpha=1; ctx.fill();
       ctx.restore();
     }
   }
-
   requestAnimationFrame(render);
 }
 
-// Controls
-document.getElementById('btnAnim').onclick = (e) => {
-  animate = !animate;
-  e.target.classList.toggle('active', animate);
-};
-document.getElementById('btnDebug').onclick = (e) => {
-  showDebug = !showDebug;
-  e.target.classList.toggle('active', showDebug);
-};
-document.getElementById('speed').oninput = (e) => { speedMul = +e.target.value / 100; };
-document.getElementById('intensity').oninput = (e) => { intensityMul = +e.target.value / 100; };
+// ─── Controls ───
+document.getElementById('btnAnim').onclick = e => { doAnimate=!doAnimate; e.target.classList.toggle('active',doAnimate); };
+document.getElementById('btnDebug').onclick = e => { showDebug=!showDebug; e.target.classList.toggle('active',showDebug); };
+document.getElementById('speed').oninput = e => { speedMul = +e.target.value/100; };
+document.getElementById('intensity').oninput = e => { intensityMul = +e.target.value/100; };
 
-// Load
+// ─── Load ───
 const img = new Image();
 img.crossOrigin = 'anonymous';
 img.onload = () => {
   spriteImg = img;
-  imgW = img.naturalWidth;
-  imgH = img.naturalHeight;
-  canvas.width = imgW;
-  canvas.height = imgH;
+  imgW = img.naturalWidth; imgH = img.naturalHeight;
+  canvas.width = imgW; canvas.height = imgH;
 
-  // Classify pixels
   const tmp = document.createElement('canvas');
-  tmp.width = imgW; tmp.height = imgH;
-  const tctx = tmp.getContext('2d');
-  tctx.drawImage(img, 0, 0);
-  const srcData = tctx.getImageData(0, 0, imgW, imgH).data;
+  tmp.width=imgW;tmp.height=imgH;
+  const tctx=tmp.getContext('2d');
+  tctx.drawImage(img,0,0);
+  const srcData=tctx.getImageData(0,0,imgW,imgH).data;
 
-  const result = classify(srcData, imgW, imgH);
+  const result = classifyPixels(srcData);
   zoneMap = result.map;
-  zoneMeta = result.meta;
+  buildZoneParts();
 
-  buildZoneCanvases();
+  const totalPts = Object.values(zoneParts).reduce((s,p)=>s+p.poly.length,0);
   document.getElementById('info').textContent =
-    `${imgW}x${imgH} — ${Object.entries(zoneMeta).filter(([,m])=>m.count>0).length} zones mapped — animating`;
+    `${imgW}x${imgH} — ${Object.keys(zoneParts).length} zones — ${totalPts} polygon vertices — animating`;
   requestAnimationFrame(render);
 };
-img.onerror = () => { document.getElementById('info').textContent = 'Failed to load sprite'; };
+img.onerror = () => { document.getElementById('info').textContent = 'Failed to load'; };
 img.src = SPRITE_URL;
 </script>
 </body>
