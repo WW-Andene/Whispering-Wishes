@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { BookmarkPlus, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -21,6 +21,8 @@ function TeamsTab({
   confirm,
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
+  const [overviewCollapsed, setOverviewCollapsed] = useState(false);
+  const [suggestionsCollapsed, setSuggestionsCollapsed] = useState(false);
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -335,6 +337,30 @@ function TeamsTab({
                           + Compare
                         </button>
                         <button
+                          onClick={() => {
+                            const name = window.prompt('Save loadout as:', `${activeTeam.name || 'Team ' + (state.activeTeamIndex + 1)} Loadout`);
+                            if (!name || !name.trim()) return;
+                            const preset = { name: name.trim(), teams: state.teams.map(t => ({ name: t.name, slots: [...t.slots] })), equipment: { ...teamEquipment } };
+                            setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
+                            toast?.addToast?.(`Loadout "${name.trim()}" saved!`, 'success');
+                            haptic.success();
+                          }}
+                          className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
+                          aria-label="Save equipment loadout"
+                          title="Save Loadout"
+                        >
+                          <BookmarkPlus size={12} />
+                        </button>
+                        <button
+                          onClick={() => setShowPresetDropdown(prev => !prev)}
+                          className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
+                          aria-label="Load equipment loadout"
+                          aria-expanded={showPresetDropdown}
+                          title="Load Loadout"
+                        >
+                          <FolderOpen size={12} />
+                        </button>
+                        <button
                           onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
@@ -396,80 +422,23 @@ function TeamsTab({
                         })}
                       </div>
 
-                      {/* Loadout Preset Buttons */}
-                      <div className="flex gap-1 mb-3 relative">
-                        <button
-                          onClick={() => {
-                            const name = window.prompt('Save loadout as:', `${activeTeam.name || 'Team ' + (state.activeTeamIndex + 1)} Loadout`);
-                            if (!name || !name.trim()) return;
-                            const preset = {
-                              name: name.trim(),
-                              teams: state.teams.map(t => ({ name: t.name, slots: [...t.slots] })),
-                              equipment: { ...teamEquipment },
-                            };
-                            setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
-                            toast?.addToast?.(`Loadout "${name.trim()}" saved!`, 'success');
-                            haptic.success();
-                          }}
-                          className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 flex items-center gap-1"
-                          aria-label="Save equipment loadout preset"
-                        >
-                          <BookmarkPlus size={12} /> Save Loadout
-                        </button>
-                        <div className="relative">
-                          <button
-                            onClick={() => setShowPresetDropdown(prev => !prev)}
-                            className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 flex items-center gap-1"
-                            aria-label="Load equipment loadout preset"
-                            aria-expanded={showPresetDropdown}
-                          >
-                            <FolderOpen size={12} /> Load Loadout
-                          </button>
-                          {showPresetDropdown && (
-                            <div className="absolute top-full left-0 mt-1 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
-                              {equipPresets.length === 0 ? (
-                                <div className="px-3 py-2 text-sm text-gray-500">No saved loadouts</div>
-                              ) : (
-                                equipPresets.map((preset, i) => (
-                                  <div key={i} className="flex items-center border-b border-[var(--border-medium)] last:border-b-0">
-                                    <button
-                                      onClick={() => {
-                                        setTeamEquipment(preset.equipment);
-                                        try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {}
-                                        // Restore team composition if saved (new format includes slots)
-                                        if (preset.teams?.[0]?.slots) {
-                                          preset.teams.forEach((t, ti) => {
-                                            if (t.slots) t.slots.forEach((char, si) => {
-                                              dispatch({ type: 'SET_TEAM_SLOT', teamIndex: ti, slotIndex: si, character: char });
-                                            });
-                                          });
-                                        }
-                                        setShowPresetDropdown(false);
-                                        toast?.addToast?.(`Loadout "${preset.name}" loaded!`, 'success');
-                                        haptic.success();
-                                      }}
-                                      className="flex-1 text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors"
-                                    >
-                                      {preset.name}
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setEquipPresets(prev => prev.filter((_, idx) => idx !== i));
-                                        toast?.addToast?.(`Loadout "${preset.name}" deleted`, 'success');
-                                      }}
-                                      className="px-2 py-2 text-gray-500 hover:text-red-400 transition-colors"
-                                      aria-label={`Delete loadout ${preset.name}`}
-                                    >
-                                      <X size={12} />
-                                    </button>
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          )}
+                      {/* Loadout preset dropdown (triggered from header Load icon) */}
+                      {showPresetDropdown && (
+                        <div className="relative mb-3">
+                          <div className="absolute top-0 right-0 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                            {equipPresets.length === 0 ? (
+                              <div className="px-3 py-2 text-sm text-gray-500">No saved loadouts</div>
+                            ) : (
+                              equipPresets.map((preset, i) => (
+                                <div key={i} className="flex items-center border-b border-[var(--border-medium)] last:border-b-0">
+                                  <button onClick={() => { setTeamEquipment(preset.equipment); try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {} if (preset.teams?.[0]?.slots) { preset.teams.forEach((t, ti) => { if (t.slots) t.slots.forEach((char, si) => { dispatch({ type: 'SET_TEAM_SLOT', teamIndex: ti, slotIndex: si, character: char }); }); }); } setShowPresetDropdown(false); toast?.addToast?.(`Loadout "${preset.name}" loaded!`, 'success'); haptic.success(); }} className="flex-1 text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors">{preset.name}</button>
+                                  <button onClick={(e) => { e.stopPropagation(); setEquipPresets(prev => prev.filter((_, idx) => idx !== i)); toast?.addToast?.(`Loadout "${preset.name}" deleted`, 'success'); }} className="px-2 py-2 text-gray-500 hover:text-red-400 transition-colors" aria-label={`Delete loadout ${preset.name}`}><X size={12} /></button>
+                                </div>
+                              ))
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Character Cards Grid — E2-FP2: hero treatment for active team */}
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
@@ -568,7 +537,13 @@ function TeamsTab({
                     </CardBody>
                   </Card>
 
-                  {/* Team Overview + Damage Analysis — extracted to DamageCalculator */}
+                  {/* Team Overview + Damage Analysis — collapsible */}
+                  <Card>
+                    <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
+                      <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${overviewCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
+                    </div>
+                  {!overviewCollapsed && (
+                    <CardBody className="p-0">
                   <DamageCalculator
                     ref={damageCalcRef}
                     teamEquipment={teamEquipment}
@@ -592,10 +567,16 @@ function TeamsTab({
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
                   />
+                    </CardBody>
+                  )}
+                  </Card>
 
-                  {/* Suggested Teams from Character Data */}
+                  {/* Suggested Teams from Character Data — collapsible */}
                   <Card>
-                    <CardHeader><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
+                    <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setSuggestionsCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSuggestionsCollapsed(p => !p); } }} aria-expanded={!suggestionsCollapsed}>
+                      <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${suggestionsCollapsed ? '' : 'rotate-180'}`} />}><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
+                    </div>
+                    {!suggestionsCollapsed && (
                     <CardBody>
                       <div className="space-y-2 team-suggestions-grid">
                         {(() => {
@@ -809,6 +790,7 @@ function TeamsTab({
                         })()}
                       </div>
                     </CardBody>
+                    )}
                   </Card>
 
                   {/* Character Selector Modal */}

@@ -1072,7 +1072,7 @@ function PlannerTab({
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
                     <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                      {[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS]
+                      {[...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS].reverse()
                         .filter(n => !farmTargetsState.some(t => t.name === n))
                         .filter(n => !farmSearch || n.toLowerCase().includes(farmSearch.toLowerCase()))
                         .map(name => {
