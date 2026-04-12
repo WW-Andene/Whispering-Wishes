@@ -65,6 +65,61 @@ const ctx = canvas.getContext('2d');
 const overlay = document.getElementById('overlay');
 const octx = overlay.getContext('2d');
 
+// Skin tone detection
+function isSkin(r, g, b) {
+  // Warm tones: high R, moderate G, lower B, not too dark, not pure white
+  const brightness = (r + g + b) / 3;
+  return r > 150 && g > 100 && b > 70 && b < 200
+    && r > b + 15 && r > g - 40
+    && brightness > 120 && brightness < 240
+    && !(r > 230 && g > 230 && b > 230); // exclude white (hair)
+}
+
+// Hair detection (silver/white/light gray)
+function isHair(r, g, b) {
+  const brightness = (r + g + b) / 3;
+  // Silver/white hair: high brightness, low saturation
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const saturation = max > 0 ? (max - min) / max : 0;
+  return brightness > 160 && saturation < 0.3;
+}
+
+// Horn detection (dark pixels)
+function isHorn(r, g, b) {
+  const brightness = (r + g + b) / 3;
+  return brightness < 80;
+}
+
+// Classify a pixel within the head zone as face/hair/horn or reject
+function classifyPixel(r, g, b, x, y, faceCX, faceCY, headTop, zoneH) {
+  const distFromFaceX = Math.abs(x - faceCX);
+  const relY = (y - headTop) / zoneH; // 0=top of zone, 1=bottom
+
+  // 1. Skin → face (always keep)
+  if (isSkin(r, g, b)) return true;
+
+  // 2. Hair: silver/white pixels near or above face
+  if (isHair(r, g, b)) {
+    // Hair should be above face center or within reasonable x-range
+    if (relY < 0.75 || distFromFaceX < zoneH * 0.8) return true;
+  }
+
+  // 3. Horns: dark pixels in the top 40% of zone
+  if (isHorn(r, g, b) && relY < 0.4) return true;
+
+  // 4. Eye region: colored pixels near face center (could be any color)
+  const distFromFace = Math.sqrt(
+    Math.pow(x - faceCX, 2) + Math.pow(y - faceCY, 2)
+  );
+  if (distFromFace < zoneH * 0.25) return true; // close to face center
+
+  // 5. Medium-tone pixels that are part of face shading/features
+  const brightness = (r + g + b) / 3;
+  if (brightness > 80 && brightness < 160 && distFromFace < zoneH * 0.4) return true;
+
+  return false; // reject: likely shirt, cape, accessories
+}
+
 function draw() {
   if (!spriteImg) return;
   canvas.width = imgW;
@@ -83,27 +138,51 @@ function draw() {
     octx.drawImage(spriteImg, 0, 0, imgW, imgH);
     const overlayData = octx.getImageData(0, 0, imgW, imgH);
     const d = overlayData.data;
+
+    // Per-pixel classification within the head zone
+    // Pass 1: find face center from skin pixels
+    const headTop = window._headCutTop || 0;
+    const headBot = window._headCutBottom || 0;
+    const zoneH = headBot - headTop;
+    let skinSumX = 0, skinSumY = 0, skinCount = 0;
+    for (let px = 0; px < d.length; px += 4) {
+      const x = (px / 4) % imgW;
+      const y = Math.floor((px / 4) / imgW);
+      if (d[px + 3] > 20 && y >= headTop && y <= headBot) {
+        const r = d[px], g = d[px+1], b = d[px+2];
+        if (isSkin(r, g, b)) {
+          skinSumX += x; skinSumY += y; skinCount++;
+        }
+      }
+    }
+    const faceCX = skinCount > 0 ? Math.round(skinSumX / skinCount) : imgW / 2;
+    const faceCY = skinCount > 0 ? Math.round(skinSumY / skinCount) : headTop + zoneH * 0.5;
+
+    // Store for DV inspection
+    window._faceCenter = { x: faceCX, y: faceCY, skinCount };
+
     for (let px = 0; px < d.length; px += 4) {
       const x = (px / 4) % imgW;
       const y = Math.floor((px / 4) / imgW);
       if (d[px + 3] > 20) {
-        // Opaque pixel — check if in head region (between headCutTop and headCutBottom)
-        if (typeof window._headCutTop !== 'undefined' && y >= window._headCutTop && y <= window._headCutBottom) {
-          // Purple filter on face/hair/horn region
-          d[px]     = Math.round(d[px] * 0.3 + 140);     // R boosted
-          d[px + 1] = Math.round(d[px + 1] * 0.2);       // G reduced
-          d[px + 2] = Math.round(d[px + 2] * 0.3 + 180); // B boosted
-          d[px + 3] = 220;
+        if (y >= headTop && y <= headBot) {
+          const r = d[px], g = d[px+1], b = d[px+2];
+          const keep = classifyPixel(r, g, b, x, y, faceCX, faceCY, headTop, zoneH);
+          if (keep) {
+            // Purple filter
+            d[px]     = Math.round(r * 0.3 + 140);
+            d[px + 1] = Math.round(g * 0.2);
+            d[px + 2] = Math.round(b * 0.3 + 180);
+            d[px + 3] = 220;
+          } else {
+            d[px + 3] = 0; // reject — not face/hair/horn
+          }
         } else {
-          // Green layer: 0% opacity (present but invisible)
-          d[px + 3] = 0;
+          d[px + 3] = 0; // outside head zone
         }
       } else {
-        // Red fill on transparent pixels
-        d[px]     = 200;
-        d[px + 1] = 0;
-        d[px + 2] = 0;
-        d[px + 3] = 180;
+        // Red workspace
+        d[px] = 200; d[px+1] = 0; d[px+2] = 0; d[px+3] = 180;
       }
     }
     octx.putImageData(overlayData, 0, 0);
