@@ -1151,7 +1151,7 @@ function PlannerTab({
                     )}
                     <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(10,14,22,0.6) 0%, rgba(10,14,22,0.2) 50%, rgba(10,14,22,0.6) 100%)' }} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', textShadow: `0 2px 8px rgba(0,0,0,0.9), 0 0 20px ${elColor}40` }}>{t.name}</span>
+                      <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(3px)', textShadow: `0 1px 6px rgba(0,0,0,0.5)` }}>{t.name}</span>
                     </div>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
                       className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
