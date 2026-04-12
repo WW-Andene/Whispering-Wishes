@@ -218,12 +218,8 @@ img.onload = () => {
       neckIdx = i;
     }
   }
-  // Extend below neck to capture flowing hair and full face/chin
-  // Scan further down (up to 45% of character height) to find where hair ends
-  const extendedScanEnd = Math.min(cMinY + Math.round(cH * 0.45), cMaxY);
-  let hairBottomY = rowWidths[neckIdx]?.y || cMinY + cH*0.25;
-  // Hair extends past neck — push cut down to include side locks
-  hairBottomY = extendedScanEnd;
+  // Extend slightly below neck to capture chin and hair side locks
+  const hairBottomY = Math.min(cMinY + Math.round(cH * 0.30), cMaxY);
   const neckY = rowWidths[neckIdx]?.y || cMinY + cH*0.25;
   const neckLeft = rowWidths[neckIdx]?.left || cMinX;
 
