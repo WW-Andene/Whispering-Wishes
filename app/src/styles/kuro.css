@@ -41,17 +41,43 @@
       --bg-stat: rgba(6, 6, 6, 0.9);
     }
 
-    /* Colorblind mode — applies deuteranopia-safe filter to ALL visual content including images.
-       Uses SVG feColorMatrix to remap red-green channel confusion into blue-yellow distinction.
+    /* Colorblind mode — deuteranopia-safe color remapping across the entire app.
+       Two-layer approach:
+       1. Text/badge colors → Wong palette via JS (helpers.js ELEMENT_COLORS_CB)
+       2. Visual media → SVG feColorMatrix filter for images, canvas, backgrounds
        Applied via .colorblind-mode class on <html> (toggled by visualSettings.colorBlindMode). */
+
+    /* Layer 2: SVG filter on all visual media (images, canvas, video, SVG icons) */
     .colorblind-mode img,
     .colorblind-mode canvas,
     .colorblind-mode video,
+    .colorblind-mode svg:not([aria-hidden="true"]),
     .colorblind-mode .collection-img-wrap,
     .colorblind-mode .breath-zoom,
-    .colorblind-mode .holo-5star {
+    .colorblind-mode .holo-5star,
+    .colorblind-mode .kuro-stat::before,
+    .colorblind-mode .dps-bar {
       filter: url(#cb-deuteranopia);
     }
+
+    /* Remap problematic Tailwind reds/greens to colorblind-safe equivalents */
+    .colorblind-mode .text-red-400 { color: #e69f00 !important; }      /* red → amber */
+    .colorblind-mode .text-red-500 { color: #e69f00 !important; }
+    .colorblind-mode .text-emerald-400 { color: #0072b2 !important; }   /* green → blue */
+    .colorblind-mode .text-green-400 { color: #0072b2 !important; }
+    .colorblind-mode .bg-red-500\/10 { background: rgba(230,159,0,0.1) !important; }
+    .colorblind-mode .bg-emerald-500\/10 { background: rgba(0,114,178,0.1) !important; }
+    .colorblind-mode .border-red-500\/30 { border-color: rgba(230,159,0,0.3) !important; }
+    .colorblind-mode .border-emerald-500\/30 { border-color: rgba(0,114,178,0.3) !important; }
+
+    /* Progress bars, pity indicators */
+    .colorblind-mode .bg-red-500 { background-color: #e69f00 !important; }
+    .colorblind-mode .bg-emerald-500 { background-color: #0072b2 !important; }
+    .colorblind-mode .bg-green-500 { background-color: #0072b2 !important; }
+
+    /* Active/warning states */
+    .colorblind-mode .active-red { border-color: #e69f00 !important; color: #e69f00 !important; }
+    .colorblind-mode .active-emerald { border-color: #0072b2 !important; color: #0072b2 !important; }
 
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
        is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
