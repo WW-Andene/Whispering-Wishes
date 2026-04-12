@@ -1103,12 +1103,17 @@ function PlannerTab({
               const d = CHARACTER_DATA[t.name];
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
               return (
-                <div key={t.name} className="p-2.5 rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-base flex-1" style={{ color: elColor }}>{t.name}</span>
+                <div key={t.name} className="relative overflow-hidden p-2.5 rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
+                  {/* Splash art background */}
+                  {DEFAULT_COLLECTION_IMAGES[t.name] && (
+                    <img src={DEFAULT_COLLECTION_IMAGES[t.name]} alt="" className="absolute right-0 top-0 h-full w-1/3 object-contain object-right opacity-15 pointer-events-none" loading="lazy" onError={hideOnError}
+                      style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 50%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 50%)' }} />
+                  )}
+                  <div className="relative z-10 flex items-center gap-2 mb-2">
+                    <span className="font-bold text-xl flex-1 text-center" style={{ color: elColor }}>{t.name}</span>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
                   </div>
-                  <div className="flex gap-1.5">
+                  <div className="relative z-10 flex gap-1.5">
                     {[['ascension', 'Ascension'], ['skills', 'Forte'], ['weapon', 'Weapon']].map(([key, label]) => (
                       <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '6px 8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
                     ))}
