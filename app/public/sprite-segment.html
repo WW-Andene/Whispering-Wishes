@@ -209,7 +209,8 @@ img.onload = () => {
     rowWidths.push({y, left:rLeft, right:rRight, width:rRight-rLeft});
   }
 
-  // Find neck: narrowest point in upper 30% of character
+  // Find neck: narrowest point in upper portion of character
+  // But the hair flows well below the neck, so we scan further down
   let neckIdx = 0, neckWidth = Infinity;
   for (let i=Math.round(rowWidths.length*0.4); i<rowWidths.length; i++) {
     if (rowWidths[i].width > 0 && rowWidths[i].width < neckWidth) {
@@ -217,6 +218,12 @@ img.onload = () => {
       neckIdx = i;
     }
   }
+  // Extend below neck to capture flowing hair and full face/chin
+  // Scan further down (up to 45% of character height) to find where hair ends
+  const extendedScanEnd = Math.min(cMinY + Math.round(cH * 0.45), cMaxY);
+  let hairBottomY = rowWidths[neckIdx]?.y || cMinY + cH*0.25;
+  // Hair extends past neck — push cut down to include side locks
+  hairBottomY = extendedScanEnd;
   const neckY = rowWidths[neckIdx]?.y || cMinY + cH*0.25;
   const neckLeft = rowWidths[neckIdx]?.left || cMinX;
 
@@ -263,8 +270,8 @@ img.onload = () => {
   );
 
   // Store horizontal cut lines for the draw function
-  window._headCutTop = cMinY;        // top of horns
-  window._headCutBottom = Math.round(neckY);  // neck narrowing point
+  window._headCutTop = cMinY;                  // top of horns
+  window._headCutBottom = Math.round(hairBottomY);  // bottom of hair/face
 
   const info = `IMG:${imgW}x${imgH} | HEAD CUT: y=${cMinY} to y=${Math.round(neckY)} | CHAR:(${cMinX},${cMinY})-(${cMaxX},${cMaxY}) ${cW}x${cH}`;
   updateInfo(info);
