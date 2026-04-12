@@ -4,7 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Info, Star } from 'lucide-react';
+import { Info, Star, X } from 'lucide-react';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { haptic, getElementColor } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
@@ -190,46 +191,61 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
 });
 BannerCard.displayName = 'BannerCard';
 
-// Gacha system explanation popover
+// Gacha system explanation — kuro-styled modal
 const GachaInfoButton = memo(({ isChar }) => {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         className="absolute bottom-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center bg-black/50 border border-white/20 text-gray-300 hover:text-white hover:bg-black/70 transition-all backdrop-blur-sm"
-        onClick={(e) => { e.stopPropagation(); setOpen(v => !v); haptic.light(); }}
+        onClick={(e) => { e.stopPropagation(); setOpen(true); haptic.light(); }}
         aria-label="Convene system information"
       >
         <Info size={14} />
       </button>
-      {open && (
-        <div className="absolute bottom-10 right-2 z-30 w-72 p-3 rounded-xl border border-white/15 text-sm space-y-2"
-          style={{ background: 'rgba(10,14,22,0.97)', backdropFilter: 'blur(16px)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
-          onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between">
-            <span className="text-white font-semibold">Convene System</span>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-white text-xs">✕</button>
+      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} className="" onClick={() => setOpen(false)} ariaLabel="Convene system information" centered>
+        <div className="kuro-card w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between" data-sheet-header>
+            <div className="flex items-center gap-2">
+              <Info size={16} className="text-yellow-400" />
+              <h3 className="text-white font-semibold text-lg">Convene System</h3>
+            </div>
+            <button onClick={() => setOpen(false)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
           </div>
-          <div className="space-y-1.5 text-gray-300 leading-relaxed">
-            <p><span className="text-yellow-400 font-medium">Base 5★ rate:</span> 0.8% per pull</p>
-            <p><span className="text-amber-400 font-medium">Soft pity:</span> Starting at pull 66, the rate increases by ~6.6% per pull</p>
-            <p><span className="text-red-400 font-medium">Hard pity:</span> Guaranteed 5★ at pull 80</p>
-            <p><span className="text-purple-400 font-medium">4★ pity:</span> Guaranteed every 10 pulls</p>
-            {isChar ? (
-              <>
-                <p><span className="text-orange-400 font-medium">50/50:</span> 50% chance for the featured Resonator. Losing gives 100% guarantee on next 5★</p>
-                <p><span className="text-cyan-400 font-medium">Carry-over:</span> Pity counter and 50/50 guarantee carry to the next featured Resonator banner</p>
-              </>
-            ) : (
-              <>
-                <p><span className="text-pink-400 font-medium">No 50/50:</span> Featured weapon is guaranteed when you pull a 5★</p>
-                <p><span className="text-cyan-400 font-medium">Carry-over:</span> Pity counter carries to the next featured weapon banner</p>
-              </>
-            )}
-            <p className="text-gray-500 text-xs mt-1">Avg. ~71 pulls per 5★ · Each banner type has independent pity</p>
+          <div className="p-4 space-y-3">
+            <div className="space-y-2.5 text-sm text-gray-300 leading-relaxed">
+              <div className="flex items-start gap-2">
+                <span className="text-yellow-400 text-lg leading-none mt-0.5">★</span>
+                <div><span className="text-white font-medium">Base 5★ rate:</span> 0.8% per Convene</div>
+              </div>
+              <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="flex justify-between"><span className="text-amber-400 font-medium">Soft Pity</span><span className="text-white">Pull 66+</span></div>
+                <div className="text-gray-400 text-xs">Rate increases by ~6.6% per pull after pull 65. By pull 79, rate exceeds 90%.</div>
+              </div>
+              <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="flex justify-between"><span className="text-red-400 font-medium">Hard Pity</span><span className="text-white">Pull 80</span></div>
+                <div className="text-gray-400 text-xs">Guaranteed 5★ at pull 80. Average is ~71 pulls.</div>
+              </div>
+              <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="flex justify-between"><span className="text-purple-400 font-medium">4★ Guarantee</span><span className="text-white">Every 10 pulls</span></div>
+                <div className="text-gray-400 text-xs">Base rate 6%. Independent from 5★ pity counter.</div>
+              </div>
+              {isChar ? (
+                <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                  <div className="flex justify-between"><span className="text-orange-400 font-medium">50/50 System</span><span className="text-white">Featured Resonator</span></div>
+                  <div className="text-gray-400 text-xs">50% chance for the featured Resonator. Losing the 50/50 guarantees the featured Resonator on your next 5★ pull. Both pity counter and guarantee carry over to the next featured banner.</div>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                  <div className="flex justify-between"><span className="text-pink-400 font-medium">No 50/50</span><span className="text-white">Featured Weapon</span></div>
+                  <div className="text-gray-400 text-xs">The featured weapon is guaranteed when you pull a 5★. Pity counter carries over to the next featured weapon banner.</div>
+                </div>
+              )}
+            </div>
+            <div className="text-gray-500 text-xs text-center pt-1 border-t border-[var(--border-medium)]">Each banner type has its own independent pity counter</div>
           </div>
         </div>
-      )}
+      </FocusTrapModal>
     </>
   );
 });
