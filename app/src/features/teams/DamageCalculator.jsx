@@ -92,11 +92,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       return enemyResMap[elLow] ?? 10;
     };
 
-    // ── RAW TIER: equipment-only stats, no team buffs ──
-    // Adaptive rotation time: sum of all members' onField, clamped to reasonable range
+    // ── Shared team data (computed once, used by all tiers) ──
+    const elCounts = countTeamElements(mems);
     const sumOnField = mems.reduce((s, m) => s + (m.d.onField || (m.name === mainDps.name ? 15 : 5)), 0);
     const rawRotTime = Math.max(15, Math.min(35, sumOnField + 2)); // +2s for swap animations
-    const rotTime = rawRotTime; // Shared rotation time for all tiers
+    const rotTime = rawRotTime;
+
+    // ── RAW TIER: equipment-only stats, no team buffs ──
     const rawMainOnField = Math.min(mainDps.d.onField || 15, rawRotTime * 0.8); // DPS gets at most 80% of rotation
     const rawOffFieldTime = Math.max(0, rawRotTime - rawMainOnField);
     // Proportional field time based on each sub-DPS's onField needs
@@ -137,65 +139,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         rElem += (wp.elemDmg || 0); rSkillDmg += (wp.skillDmg || 0);
         rCr += (wp.critRate || 0); rCd += (wp.critDmg || 0);
       }
-      // Apply echo set bonuses (supports p2+p5, p3, and hybrid 3pc+2pc)
-      const applySetVals = (setData, valKey) => {
-        const vals = setData[valKey] || {};
-        const ek = (m.d.element || '').toLowerCase() + 'Dmg';
-        if (m.scaling === 'ATK' && vals.atkPct) rStatPct += vals.atkPct;
-        else if (m.scaling === 'HP' && vals.hpPct) rStatPct += vals.hpPct;
-        else if (m.scaling === 'DEF' && vals.defPct) rStatPct += vals.defPct;
-        if (vals.critRate) rCr += vals.critRate;
-        if (vals.critDmg) rCd += vals.critDmg;
-        if (vals.skillDmg) rSkillDmg += vals.skillDmg;
-        if (vals[ek]) rElem += vals[ek];
-        if (vals.allDmg) rElem += vals.allDmg;
-      };
-      if (m.echoSet) {
-        if (m.echoSet.p3val) {
-          // 3-piece set (Crown of Valor, Law of Harmony, etc.)
-          applySetVals(m.echoSet, 'p3val');
-        } else {
-          applySetVals(m.echoSet, 'p2val');
-          applySetVals(m.echoSet, 'p5val');
-        }
-      }
-      if (m.echoSet2) {
-        // Hybrid 2pc bonus from second set
-        applySetVals(m.echoSet2, 'p2val');
-      }
+      // Apply echo set + echo stats using shared utility (was 50 lines of duplicated logic)
+      const rStats = { atkPct: rStatPct, cr: rCr, cd: rCd, elemDmg: rElem, skillDmg: rSkillDmg, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+      applyFullEchoSet(rStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
       const eqKey = teamIdx + ':' + m.name;
-      const eq = teamEquipment[eqKey];
-      const echoes = eq?.echoes || [];
-      const elKey = (m.d.element || '').toLowerCase();
-      const elDmg = elKey ? elKey.charAt(0).toUpperCase() + elKey.slice(1) + ' DMG' : '';
-      const mStatVals = { 4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44 }, 3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30 }, 1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 } };
-      const subV = { [sKey]: 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Resonance Skill DMG': 9 };
-      echoes.forEach((echo, ei) => {
-        if (!echo || typeof echo !== 'object') return;
-        const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
-        if (echo.mainStat) {
-          const val = mStatVals[cost]?.[echo.mainStat] || 0;
-          if (echo.mainStat === sKey) rStatPct += val;
-          else if (echo.mainStat === 'Crit Rate') rCr += val;
-          else if (echo.mainStat === 'Crit DMG') rCd += val;
-          else if (echo.mainStat === elDmg) rElem += val;
-        }
-        (echo.substats || []).forEach(sub => {
-          if (sub === sKey) rStatPct += 9;
-          else if (sub === 'Crit Rate') rCr += 7.5;
-          else if (sub === 'Crit DMG') rCd += 15;
-          else if (sub === 'Resonance Skill DMG') rSkillDmg += 9;
-        });
-      });
-      const elCnts = {};
-      mems.forEach(mm => { const el = mm.d.element; if (el) elCnts[el] = (elCnts[el] || 0) + 1; });
-      if (m.d.element && elCnts[m.d.element] >= 2) rElem += 10;
-      const rEff = m.baseStat * (1 + rStatPct / 100);
-      const rAvgCrit = 1 + (Math.min(rCr, 100) / 100) * (rCd / 100 - 1);
-      const rDmgBonus = 1 + (rElem + rSkillDmg) / 100;
+      applyEchoStats(rStats, teamEquipment[eqKey]?.echoes, m.d.element, m.scaling);
+      if (m.d.element && elCounts[m.d.element] >= 2) rStats.elemDmg += 10;
+      const rEff = m.baseStat * (1 + rStats.atkPct / 100);
+      const rAvgCrit = calcAvgCrit(rStats.cr, rStats.cd);
+      const rDmgBonus = 1 + (rStats.elemDmg + rStats.skillDmg) / 100;
       const rDefMult = ATTACKER_FACTOR / (ATTACKER_FACTOR + enemyDef90);
-      const rBaseRes = getEnemyRes(m.d.element);
-      const rResMult = calcResMult(rBaseRes, 0);
+      const rResMult = calcResMult(getEnemyRes(m.d.element), 0);
       rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
     });
     const rawDps = Math.round(rawTotalRotDmg / rawRotTime);
@@ -227,33 +181,14 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       wpCoordDmg = (wp.coordDmg || 0);
     }
 
-    // Apply main DPS echo set bonuses (supports p2+p5, p3, and hybrid 3pc+2pc)
-    const applyMainSetVals = (setData, valKey) => {
-      const vals = setData[valKey] || {};
-      const ek = (mainDps.d.element || '').toLowerCase() + 'Dmg';
-      if (mainDps.scaling === 'ATK' && vals.atkPct) atkPct += vals.atkPct;
-      else if (mainDps.scaling === 'HP' && vals.hpPct) atkPct += vals.hpPct;
-      else if (mainDps.scaling === 'DEF' && vals.defPct) atkPct += vals.defPct;
-      if (vals.critRate) cr += vals.critRate;
-      if (vals.critDmg) cd += vals.critDmg;
-      if (vals.skillDmg) skillDmg += vals.skillDmg;
-      if (vals[ek]) elemDmg += vals[ek];
-      if (vals.allDmg) elemDmg += vals.allDmg;
-      if (vals.basicDmg) wpBasicDmg += vals.basicDmg;
-      if (vals.heavyDmg) wpHeavyDmg += vals.heavyDmg;
-      if (vals.libDmg) wpLibDmg += vals.libDmg;
-      if (vals.echoDmg) wpEchoDmg += vals.echoDmg;
-    };
-    if (mainDps.echoSet) {
-      if (mainDps.echoSet.p3val) {
-        applyMainSetVals(mainDps.echoSet, 'p3val');
-      } else {
-        applyMainSetVals(mainDps.echoSet, 'p2val');
-        applyMainSetVals(mainDps.echoSet, 'p5val');
-      }
-    }
-    if (mainDps.echoSet2) {
-      applyMainSetVals(mainDps.echoSet2, 'p2val');
+    // Apply main DPS echo set bonuses (using shared utility)
+    {
+      const setStats = createStats();
+      applyFullEchoSet(setStats, mainDps.echoSet, mainDps.echoSet2, mainDps.d.element, mainDps.scaling);
+      atkPct += setStats.atkPct; cr += setStats.cr - BASE_CRIT_RATE; cd += setStats.cd - BASE_CRIT_DMG;
+      elemDmg += setStats.elemDmg; skillDmg += setStats.skillDmg;
+      wpBasicDmg += setStats.basicDmg; wpHeavyDmg += setStats.heavyDmg;
+      wpLibDmg += setStats.libDmg; wpEchoDmg += setStats.echoDmg;
     }
 
     let echoBasicDmg = 0, echoHeavyDmg = 0, echoSkillDmg = 0, echoLibDmg = 0;
@@ -294,8 +229,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     }
 
     {
-      const elCounts = {};
-      mems.forEach(m => { const el = m.d.element; if (el) elCounts[el] = (elCounts[el] || 0) + 1; });
       const mainEl = mainDps.d.element;
       if (mainEl && elCounts[mainEl] >= 2) elemDmg += 10;
     }
@@ -844,65 +777,20 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           sCoordDmg += (swp.coordDmg || 0);
           sDefIgnore += (swp.defIgnore || 0); sResShred += (swp.resShred || 0);
         }
-        // Apply sub-DPS echo set bonuses (p2+p5, p3, hybrid 3pc+2pc)
-        const applySubSetVals = (setData, valKey) => {
-          const vals = setData[valKey] || {};
-          const ek2 = sEl + 'Dmg';
-          if (m.scaling === 'ATK' && vals.atkPct) sAtkPct += vals.atkPct;
-          else if (m.scaling === 'HP' && vals.hpPct) sAtkPct += vals.hpPct;
-          else if (m.scaling === 'DEF' && vals.defPct) sAtkPct += vals.defPct;
-          if (vals.critRate) sCr += vals.critRate;
-          if (vals.critDmg) sCd += vals.critDmg;
-          if (vals[ek2]) sElem += vals[ek2];
-          if (vals.allDmg) sElem += vals.allDmg;
-          if (vals.skillDmg) sSkillDmg += vals.skillDmg;
-          if (vals.basicDmg) sBasicDmg += vals.basicDmg;
-          if (vals.heavyDmg) sHeavyDmg += vals.heavyDmg;
-          if (vals.libDmg) sLibDmg += vals.libDmg;
-          if (vals.echoDmg) sEchoDmg += vals.echoDmg;
-        };
-        if (m.echoSet) {
-          if (m.echoSet.p3val) {
-            applySubSetVals(m.echoSet, 'p3val');
-          } else {
-            applySubSetVals(m.echoSet, 'p2val');
-            applySubSetVals(m.echoSet, 'p5val');
-          }
+        // Apply sub-DPS echo set + echo stats (using shared utility)
+        {
+          const subSetStats = createStats();
+          applyFullEchoSet(subSetStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
+          applyEchoStats(subSetStats, sEchoes, m.d.element, m.scaling);
+          sAtkPct += subSetStats.atkPct; sCr += subSetStats.cr - BASE_CRIT_RATE; sCd += subSetStats.cd - BASE_CRIT_DMG;
+          sElem += subSetStats.elemDmg; sSkillDmg += subSetStats.skillDmg;
+          sBasicDmg += subSetStats.basicDmg; sHeavyDmg += subSetStats.heavyDmg;
+          sLibDmg += subSetStats.libDmg; sEchoDmg += subSetStats.echoDmg;
         }
-        if (m.echoSet2) {
-          applySubSetVals(m.echoSet2, 'p2val');
-        }
-        const subElCounts = {};
-        mems.forEach(mm => { const el = mm.d.element; if (el) subElCounts[el] = (subElCounts[el] || 0) + 1; });
-        if (m.d.element && subElCounts[m.d.element] >= 2) sElem += 10;
+        if (m.d.element && elCounts[m.d.element] >= 2) sElem += 10;
         if (m.weapSubstat === 'Crit Rate') sCr += parseFloat(m.weapSubVal) || 0;
         if (m.weapSubstat === 'Crit DMG') sCd += parseFloat(m.weapSubVal) || 0;
         if (m.weapSubstat === sStatKey) sAtkPct += parseFloat(m.weapSubVal) || 0;
-        const sMainStatVals = {
-          4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-          3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-          1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
-        };
-        const sSubVals = { [sStatKey]: 9, 'Crit Rate': 7.5, 'Crit DMG': 15, 'Energy Regen': 8, 'Resonance Skill DMG': 9 };
-        sEchoes.forEach((echo, ei) => {
-          if (!echo || typeof echo !== 'object') return;
-          const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
-          if (echo.mainStat) {
-            const val = sMainStatVals[cost]?.[echo.mainStat] || 0;
-            if (echo.mainStat === sStatKey) sAtkPct += val;
-            else if (echo.mainStat === 'Crit Rate') sCr += val;
-            else if (echo.mainStat === 'Crit DMG') sCd += val;
-            else if (echo.mainStat === sElDmgKey) sElem += val;
-          }
-          (echo.substats || []).forEach(sub => {
-            const val = sSubVals[sub];
-            if (!val) return;
-            if (sub === sStatKey) sAtkPct += val;
-            else if (sub === 'Crit Rate') sCr += val;
-            else if (sub === 'Crit DMG') sCd += val;
-            else if (sub === 'Resonance Skill DMG') sSkillDmg += val;
-          });
-        });
         const sEffAtk = mBase * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
         let sTypeDmg = sSkillDmg;
@@ -1047,8 +935,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     if (hasHealer) syn += 15;
     if (hasSubDps || hasSupport) syn += 15;
     // Element synergy (0-20): matching elements enable resonance + buff alignment
-    const elCounts = {};
-    mems.forEach(m => { const el = m.d.element; if (el) elCounts[el] = (elCounts[el] || 0) + 1; });
     const mainEl = mainDps.d.element;
     if (mainEl && elCounts[mainEl] >= 2) syn += 10; // Element resonance with DPS
     if (mainEl && elCounts[mainEl] >= 3) syn += 5;  // Mono-element bonus
