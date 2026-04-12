@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Zani — Skeleton Rigged</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{touch-action:none;overscroll-behavior:none;background:#080c14}
+  html,body{background:#080c14}
   body{padding:20px;color:#eee;font-family:system-ui,sans-serif}
   h1{font-size:16px;margin-bottom:10px}
   #container{position:relative;display:inline-block;border-radius:12px;overflow:hidden;
@@ -26,9 +26,12 @@
     <button id="btnAnim" class="active">Animation</button>
     <button id="btnSkel">Show Skeleton</button>
     <button id="btnMesh">Show Mesh</button>
+    <button id="btnPlace" style="background:#c06000;">Place Bones</button>
     <label>Intensity <input type="range" id="intensity" min="0" max="200" value="100" /></label>
     <label>Speed <input type="range" id="speed" min="0" max="200" value="100" /></label>
+    <label>Zoom <input type="range" id="zoom" min="20" max="100" value="100" /></label>
   </div>
+  <div id="boneList" style="margin-bottom:8px;display:none;flex-wrap:wrap;gap:4px;"></div>
   <div id="container"><canvas id="canvas"></canvas></div>
   <div id="info">Loading...</div>
 
@@ -420,20 +423,127 @@ function render(t){
         ctx.strokeStyle='#0ff';ctx.lineWidth=2;
         ctx.beginPath();ctx.moveTo(p.worldX,p.worldY);ctx.lineTo(b.worldX,b.worldY);ctx.stroke();
       }
-      // Joint dot
-      ctx.fillStyle='#ff0';ctx.beginPath();ctx.arc(b.worldX,b.worldY,4,0,Math.PI*2);ctx.fill();
+      // Joint dot — highlight selected bone
+      const bIdx=bones.indexOf(b);
+      const isSel=placingBones&&bIdx===selectedBone;
+      const isDrag=placingBones&&bIdx===draggingBone;
+      ctx.fillStyle=isDrag?'#f00':isSel?'#0f0':'#ff0';
+      ctx.beginPath();ctx.arc(b.worldX,b.worldY,isSel||isDrag?7:4,0,Math.PI*2);ctx.fill();
       // Label
-      ctx.fillStyle='#0ff';ctx.font='10px monospace';ctx.fillText(b.name,b.worldX+6,b.worldY-4);
+      ctx.fillStyle=isSel?'#0f0':'#0ff';ctx.font=(isSel?'bold 12':'10')+'px monospace';
+      ctx.fillText(b.name,b.worldX+8,b.worldY-4);
     }
   }
 
   requestAnimationFrame(render);
 }
 
+// ═══════════════════════════════════════════════════════════
+// BONE PLACEMENT MODE
+// ═══════════════════════════════════════════════════════════
+let placingBones = false;
+let selectedBone = null;
+let draggingBone = null;
+let zoomLevel = 1;
+
+function buildBoneButtons() {
+  const list = document.getElementById('boneList');
+  list.innerHTML = '';
+  BONES.forEach((def, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = def.name;
+    btn.style.cssText = 'font-size:10px;padding:3px 6px;background:#333;color:#eee;border:1px solid #555;border-radius:3px;cursor:pointer;';
+    btn.onclick = () => {
+      selectedBone = i;
+      document.querySelectorAll('#boneList button').forEach(b => b.style.outline = '');
+      btn.style.outline = '2px solid #ff0';
+      document.getElementById('info').textContent = `Click on sprite to place: ${def.name}`;
+    };
+    list.appendChild(btn);
+  });
+}
+
+function rebuildAfterPlace() {
+  initBones();
+  buildMesh(18);
+  skinVertices();
+  animateBones(0, 0); solveFK();
+}
+
+// Click to place or drag bone
+canvas.addEventListener('pointerdown', (e) => {
+  if (!placingBones || !spriteImg) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width * imgW;
+  const py = (e.clientY - rect.top) / rect.height * imgH;
+
+  // Check if clicking near an existing bone to drag it
+  for (let i = 0; i < bones.length; i++) {
+    if (Math.hypot(bones[i].wx - px, bones[i].wy - py) < 15) {
+      draggingBone = i;
+      return;
+    }
+  }
+
+  // Otherwise place the selected bone
+  if (selectedBone !== null && selectedBone < BONES.length) {
+    BONES[selectedBone].nx = px / imgW;
+    BONES[selectedBone].ny = py / imgH;
+    rebuildAfterPlace();
+    document.getElementById('info').textContent =
+      `Placed ${BONES[selectedBone].name} at (${Math.round(px)}, ${Math.round(py)})`;
+    // Auto-advance to next bone
+    if (selectedBone < BONES.length - 1) {
+      selectedBone++;
+      const btns = document.querySelectorAll('#boneList button');
+      btns.forEach(b => b.style.outline = '');
+      if (btns[selectedBone]) btns[selectedBone].style.outline = '2px solid #ff0';
+    }
+  }
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if (draggingBone === null || !placingBones) return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width * imgW;
+  const py = (e.clientY - rect.top) / rect.height * imgH;
+  BONES[draggingBone].nx = px / imgW;
+  BONES[draggingBone].ny = py / imgH;
+  rebuildAfterPlace();
+  document.getElementById('info').textContent =
+    `Dragging ${BONES[draggingBone].name} → (${Math.round(px)}, ${Math.round(py)})`;
+});
+
+canvas.addEventListener('pointerup', () => { draggingBone = null; });
+canvas.addEventListener('pointercancel', () => { draggingBone = null; });
+
 // Controls
 document.getElementById('btnAnim').onclick=e=>{doAnimate=!doAnimate;e.target.classList.toggle('active',doAnimate);};
 document.getElementById('btnSkel').onclick=e=>{showSkel=!showSkel;e.target.classList.toggle('active',showSkel);};
 document.getElementById('btnMesh').onclick=e=>{showMesh=!showMesh;e.target.classList.toggle('active',showMesh);};
+
+document.getElementById('btnPlace').onclick=e=>{
+  placingBones=!placingBones;
+  e.target.classList.toggle('active',placingBones);
+  const list=document.getElementById('boneList');
+  list.style.display=placingBones?'flex':'none';
+  if(placingBones){
+    doAnimate=false;document.getElementById('btnAnim').classList.remove('active');
+    showSkel=true;document.getElementById('btnSkel').classList.add('active');
+    buildBoneButtons();
+    selectedBone=0;
+    document.querySelectorAll('#boneList button')[0]?.click();
+    document.getElementById('info').textContent='Click on sprite to place bones. Drag existing joints to move them.';
+  }
+};
+
+document.getElementById('zoom').oninput=e=>{
+  zoomLevel=+e.target.value/100;
+  canvas.style.width=Math.round(imgW*zoomLevel)+'px';
+  canvas.style.height=Math.round(imgH*zoomLevel)+'px';
+};
 
 // Load
 const img=new Image();img.crossOrigin='anonymous';
@@ -453,11 +563,10 @@ img.onload=()=>{
   skinVertices();
   animateBones(0,0);solveFK();
 
-  // Show skeleton on first load so user can verify placement
   showSkel=true; document.getElementById('btnSkel').classList.add('active');
 
   document.getElementById('info').textContent=
-    `${imgW}x${imgH} — ${bones.length} bones, ${meshVerts.length} verts, ${meshTris.length} tris — auto-placed from pixel scan`;
+    `${imgW}x${imgH} — ${bones.length} bones — click "Place Bones" to position manually`;
   requestAnimationFrame(render);
 };
 img.onerror=()=>{document.getElementById('info').textContent='Failed to load';};
