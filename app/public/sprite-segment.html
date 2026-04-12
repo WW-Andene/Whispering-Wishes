@@ -174,6 +174,11 @@ function detectLandmarks(srcData) {
     {name:'cape_mid', parent:'cape_top',nx:chest.nx-0.22, ny:chest.ny+0.14, len:0.15},
     {name:'cape_tip', parent:'cape_mid',nx:chest.nx-0.30, ny:chest.ny+0.32, len:0.18},
     {name:'weapon',   parent:'hand_r',  nx:(handRow?handRow.r/imgW:0.54)+0.10, ny:handLPct+0.12, len:0.15},
+    {name:'tail_1',   parent:'root',    nx:root.nx-0.03, ny:root.ny+0.05, len:0.05},
+    {name:'tail_2',   parent:'tail_1',  nx:root.nx-0.08, ny:root.ny+0.12, len:0.08},
+    {name:'tail_3',   parent:'tail_2',  nx:root.nx-0.14, ny:root.ny+0.20, len:0.09},
+    {name:'tail_4',   parent:'tail_3',  nx:root.nx-0.18, ny:root.ny+0.28, len:0.09},
+    {name:'tail_5',   parent:'tail_4',  nx:root.nx-0.20, ny:root.ny+0.36, len:0.09},
   ];
 }
 
@@ -262,6 +267,16 @@ function animateBones(t, intensity) {
         b.animRot = Math.sin(t*0.8+1.0) * 0.12 * s; break;
       case 'weapon':
         b.animRot = Math.sin(t*0.35-0.5) * 0.02 * s; break;
+      case 'tail_1':
+        b.animRot = Math.sin(t*0.8) * 0.05 * s + sway * 0.03 * s; break;
+      case 'tail_2':
+        b.animRot = Math.sin(t*0.9+0.4) * 0.08 * s; break;
+      case 'tail_3':
+        b.animRot = Math.sin(t*1.0+0.8) * 0.10 * s; break;
+      case 'tail_4':
+        b.animRot = Math.sin(t*1.1+1.2) * 0.12 * s; break;
+      case 'tail_5':
+        b.animRot = Math.sin(t*1.2+1.6) * 0.14 * s; break;
     }
   }
 }
