@@ -15,12 +15,14 @@ import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx
 function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
   const timerRef = useRef(null);
   const firedRef = useRef(false);
-  const onPointerDown = useCallback(() => {
+  const eventRef = useRef(null);
+  const onPointerDown = useCallback((e) => {
     firedRef.current = false;
+    eventRef.current = e;
     timerRef.current = setTimeout(() => {
       firedRef.current = true;
       haptic.success();
-      onLongPress?.();
+      onLongPress?.(eventRef.current);
     }, delay);
   }, [onLongPress, delay]);
   const onPointerUp = useCallback(() => {
@@ -43,7 +45,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     return () => { cancelled = true; };
   }, [imgUrl, isEcho, noBgProcess]);
   const longPressHandlers = useLongPress(
-    onLongPress ? () => onLongPress(name, isCharacter) : null,
+    onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
     () => {
       if (framingMode) {
         setEditingImage(imageKey);

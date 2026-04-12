@@ -923,6 +923,18 @@ function WhisperingWishesInner() {
       {/* Onboarding Modal */}
       {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
       
+      {/* SVG filter for colorblind mode — deuteranopia-safe color remapping */}
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
+        <defs>
+          <filter id="cb-deuteranopia" colorInterpolationFilters="linearRGB">
+            <feColorMatrix type="matrix" values="0.625 0.375 0    0 0
+                                                  0.7   0.3   0    0 0
+                                                  0     0.3   0.7  0 0
+                                                  0     0     0    1 0" />
+          </filter>
+        </defs>
+      </svg>
+
       {/* P12-FIX: Skip to content link for keyboard users (Step 11 audit - MEDIUM-6n) */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-yellow-500 focus:text-black focus:rounded-lg focus:font-bold focus:text-md">
         Skip to content

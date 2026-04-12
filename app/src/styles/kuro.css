@@ -41,6 +41,18 @@
       --bg-stat: rgba(6, 6, 6, 0.9);
     }
 
+    /* Colorblind mode — applies deuteranopia-safe filter to ALL visual content including images.
+       Uses SVG feColorMatrix to remap red-green channel confusion into blue-yellow distinction.
+       Applied via .colorblind-mode class on <html> (toggled by visualSettings.colorBlindMode). */
+    .colorblind-mode img,
+    .colorblind-mode canvas,
+    .colorblind-mode video,
+    .colorblind-mode .collection-img-wrap,
+    .colorblind-mode .breath-zoom,
+    .colorblind-mode .holo-5star {
+      filter: url(#cb-deuteranopia);
+    }
+
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
        is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
     @supports (padding-top: env(safe-area-inset-top)) {

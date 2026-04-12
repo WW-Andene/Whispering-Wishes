@@ -81,18 +81,36 @@ function CollectionTab({
     try { return JSON.parse(localStorage.getItem('ww-manual-counts') || '{}'); } catch { return {}; }
   });
   useEffect(() => { try { localStorage.setItem('ww-manual-counts', JSON.stringify(manualCounts)); } catch {} }, [manualCounts]);
-  const addManualCopy = useCallback((name, isCharacter) => {
+  // Floating +/- counter widget (replaces long-press +1 only)
+  const [counterWidget, setCounterWidget] = useState(null); // { name, isCharacter, x, y }
+  const counterWidgetRef = useRef(null);
+  const showCounterWidget = useCallback((name, isCharacter, event) => {
+    const touch = event?.touches?.[0] || event;
+    const x = touch?.clientX || 0;
+    const y = touch?.clientY || 0;
+    setCounterWidget({ name, isCharacter, x, y });
+  }, []);
+  const adjustManualCount = useCallback((name, isCharacter, delta) => {
     setManualCounts(prev => {
       const current = prev[name] || 0;
-      const max = isCharacter ? 7 : 5; // S0-S6 = 7 copies, R1-R5 = 5 copies
-      if (current >= max) return prev;
-      return { ...prev, [name]: current + 1 };
+      const max = isCharacter ? 7 : 5;
+      const next = Math.max(0, Math.min(max, current + delta));
+      if (next === 0) { const { [name]: _, ...rest } = prev; return rest; }
+      return { ...prev, [name]: next };
     });
-    // Also mark as owned if character
-    if (isCharacter) {
+    if (isCharacter && delta > 0) {
       setOwnedChars(prev => prev.includes(name) ? prev : [...prev, name]);
     }
+    haptic.light();
   }, []);
+  // Dismiss widget on outside click
+  useEffect(() => {
+    if (!counterWidget) return;
+    const dismiss = (e) => { if (counterWidgetRef.current && !counterWidgetRef.current.contains(e.target)) setCounterWidget(null); };
+    const timer = setTimeout(() => setCounterWidget(null), 5000); // auto-dismiss after 5s
+    document.addEventListener('pointerdown', dismiss);
+    return () => { document.removeEventListener('pointerdown', dismiss); clearTimeout(timer); };
+  }, [counterWidget]);
 
   // Merge pull history counts with manual overrides (take the higher value)
   const mergeCount = useCallback((name, historyCount) => Math.max(historyCount || 0, manualCounts[name] || 0), [manualCounts]);
@@ -702,7 +720,7 @@ function CollectionTab({
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -725,7 +743,7 @@ function CollectionTab({
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -749,7 +767,7 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -771,7 +789,7 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -793,7 +811,7 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -815,7 +833,7 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -837,7 +855,7 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={WEAPON_DATA} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                onLongPress={addManualCopy}
+                onLongPress={showCounterWidget}
                 collapsible
               />
             </CardBody>
@@ -846,6 +864,35 @@ function CollectionTab({
         </>
       )}
     </div>
+
+    {/* Floating -/+ counter widget (appears on long-press of collection card) */}
+    {counterWidget && (
+      <div ref={counterWidgetRef}
+        className="fixed z-50 flex items-center gap-1 p-1 rounded-xl border border-white/20"
+        style={{
+          left: Math.min(counterWidget.x - 52, window.innerWidth - 120),
+          top: Math.max(counterWidget.y - 50, 10),
+          background: 'rgba(10,14,22,0.95)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.2)',
+        }}>
+        <button
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-red-400 hover:bg-red-500/20 transition-colors"
+          onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, -1)}
+          aria-label="Remove 1 copy"
+        >−</button>
+        <div className="text-center min-w-[40px] px-1">
+          <div className="text-white text-sm font-bold">{manualCounts[counterWidget.name] || 0}</div>
+          <div className="text-gray-500 text-2xs truncate max-w-[60px]">{counterWidget.name.split(' ')[0]}</div>
+        </div>
+        <button
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+          onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, +1)}
+          aria-label="Add 1 copy"
+        >+</button>
+      </div>
+    )}
+
     </TabErrorBoundary>
     </div>
   );
