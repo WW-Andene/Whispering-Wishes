@@ -1047,7 +1047,7 @@ function PlannerTab({
           <CardHeader action={<>
             {farmTargetsState.length > 0 && <span className="text-orange-400 text-sm">{farmTargetsState.length} target{farmTargetsState.length > 1 ? 's' : ''}</span>}
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.farm ? '' : 'rotate-180'}`} />
-          </>}><Hammer size={14} className="inline mr-1.5 -mt-0.5 text-orange-400" />Farming Planner</CardHeader>
+          </>}>Farming Planner</CardHeader>
         </div>
         {!collapsed.farm && (
           <CardBody className="space-y-3">
@@ -1103,8 +1103,10 @@ function PlannerTab({
               const d = CHARACTER_DATA[t.name];
               if (!d) return null;
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
-              const themeArt = CHARACTER_THEMES.find(ct => ct.name === t.name)?.bannerArt
-                || CURRENT_BANNERS.characters?.find(c => c.name === t.name)?.imageUrl;
+              const theme = CHARACTER_THEMES.find(ct => ct.name === t.name);
+              const currentBanner = CURRENT_BANNERS.characters?.find(c => c.name === t.name);
+              const themeArt = theme?.bannerArt || currentBanner?.imageUrl;
+              const artPosition = theme?.pos?.header || currentBanner?.imagePosition || 'center 30%';
 
               // Per-character materials
               const charMats = {};
@@ -1145,13 +1147,15 @@ function PlannerTab({
                   <div className="relative overflow-hidden rounded-xl" style={{ height: '100px', border: `1px solid ${elColor}40` }}>
                     {themeArt && (
                       <img src={themeArt} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" loading="lazy" onError={hideOnError}
-                        style={{ opacity: 0.5, objectPosition: 'center 30%' }} />
+                        style={{ opacity: 0.5, objectPosition: artPosition }} />
                     )}
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(10,14,22,0.7) 0%, rgba(10,14,22,0.3) 50%, rgba(10,14,22,0.7) 100%)' }} />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(10,14,22,0.6) 0%, rgba(10,14,22,0.2) 50%, rgba(10,14,22,0.6) 100%)' }} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-bold text-2xl text-white" style={{ textShadow: `0 2px 12px rgba(0,0,0,0.8), 0 0 30px ${elColor}50` }}>{t.name}</span>
+                      <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', textShadow: `0 2px 8px rgba(0,0,0,0.9), 0 0 20px ${elColor}40` }}>{t.name}</span>
                     </div>
-                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="absolute top-2 right-2 text-white/50 hover:text-red-400 transition-colors p-1.5 rounded-full bg-black/40 backdrop-blur-sm" aria-label={`Remove ${t.name}`}><X size={14} /></button>
+                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
+                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
+                      aria-label={`Remove ${t.name}`}><X size={12} /></button>
                   </div>
 
                   {/* ── Toggle buttons ── */}
@@ -1248,8 +1252,7 @@ function PlannerTab({
             {/* Empty state */}
             {farmTargetsState.length === 0 && (
               <div className="kuro-empty-state text-center py-6">
-                <Hammer size={28} className="mx-auto mb-2 opacity-40" />
-                <div style={{ color: 'var(--text-muted)' }}>Awaiting farming directives</div>
+                <div className="text-center py-6" style={{ color: 'var(--text-muted)' }}>Awaiting farming directives</div>
                 <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>Select Resonators to compute material requirements for Ascension, Forte, and Weapon upgrades</p>
               </div>
             )}
