@@ -1154,7 +1154,7 @@ function PlannerTab({
                       <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', textShadow: `0 2px 8px rgba(0,0,0,0.9), 0 0 20px ${elColor}40` }}>{t.name}</span>
                     </div>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
-                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
+                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
                       aria-label={`Remove ${t.name}`}><X size={12} /></button>
                   </div>
 
