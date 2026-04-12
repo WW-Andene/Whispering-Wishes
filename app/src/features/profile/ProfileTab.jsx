@@ -1553,7 +1553,7 @@ function ProfileTab({
                     haptic.warning();
                     dispatch({ type: 'RESET' });
                     // P4-F001: Clear ALL auxiliary localStorage keys on reset
-                    const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-calendar-notes', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id'];
+                    const auxKeys = ['whispering-wishes-visual-settings-v3', 'whispering-wishes-image-framing-v1', 'whispering-wishes-trophy-overrides-v1', 'whispering-wishes-collection-images', 'ww-team-equipment', 'ww-equipment-presets', 'ww-calendar-notes', 'ww-owned-chars', 'ww-manual-counts', 'ww-bg-positions', 'ww-mini-panel-pos', 'ww-google-user', 'ww-admin-lockout', 'ww-admin-fails', 'ww-admin-banned', 'ww-admin-lockdowns', 'ww-admin-reset-v350', 'ww-import-diagnostic', 'whispering-wishes-pre-import-backup', 'whispering-wishes-pre-restore-backup', 'ww-leaderboard-consent', 'ww-leaderboard-id', 'ww-tracker-cat'];
                     auxKeys.forEach(k => { try { localStorage.removeItem(k); } catch {} });
                     // Delete cloud backup if signed in (await before sign-out to preserve auth token)
                     if (handleCloudDelete) await handleCloudDelete();
