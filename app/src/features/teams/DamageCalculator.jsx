@@ -986,11 +986,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   );
   const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
+  const [overviewCollapsed, setOverviewCollapsed] = useState(false);
 
   return (
     <>
       <Card>
-        <CardHeader><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
+        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${overviewCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
+        </div>
+        {!overviewCollapsed && (
         <CardBody>
           <div className="space-y-3">
             {/* Per-member: overview + damage breakdown */}
@@ -1565,6 +1569,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             <p className="text-sm text-gray-500 text-center mt-1">Team DPS: full rotation including skills, echoes, DOTs, reactions. Solo DPS: equipment only, no team buffs. Synergy Uplift: actual % DPS gained from team composition.</p>
           </div>
         </CardBody>
+        )}
       </Card>
 
       {/* Rotation Timeline — outside Team Overview Card to avoid overflow:hidden clipping */}
