@@ -1577,8 +1577,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     onClick={() => {
                                       setTeamEquipment(prev => {
                                         const n = { ...prev };
-                                        n[eqKey] = { ...(n[eqKey] || { weapon: null }), echoPreset: opt.value, echoes: [null,null,null,null,null], echoSet: '' };
-                                                  return n;
+                                        const existing = n[eqKey] || { weapon: null };
+                                        const existingEchoes = existing.echoes || [null,null,null,null,null];
+                                        // Update mainStats on existing echoes to match new preset, but preserve echo names
+                                        const scaling = m.d.statScaling || 'ATK';
+                                        const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
+                                        const elKey = m.d.element ? m.d.element.charAt(0).toUpperCase() + m.d.element.slice(1).toLowerCase() + ' DMG' : '';
+                                        const getPresetStat = (cost) => {
+                                          if (opt.value === 'er') return cost >= 3 ? 'Energy Regen' : scalingStat;
+                                          if (opt.value === 'support') return cost === 4 ? (m.d.role === 'Healer' ? 'Healing Bonus' : 'Energy Regen') : cost === 3 ? (elKey || scalingStat) : (scaling === 'HP' ? 'HP%' : scalingStat);
+                                          return cost === 4 ? 'Crit Rate' : cost === 3 ? (elKey || scalingStat) : scalingStat;
+                                        };
+                                        const updatedEchoes = existingEchoes.map((echo, i) => {
+                                          if (!echo || !echo.name) return echo;
+                                          const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
+                                          return { ...echo, mainStat: getPresetStat(cost) };
+                                        });
+                                        n[eqKey] = { ...existing, echoPreset: opt.value, echoes: updatedEchoes };
+                                        return n;
                                       });
                                       haptic.light();
                                     }}

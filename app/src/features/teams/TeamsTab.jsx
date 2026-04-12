@@ -98,6 +98,16 @@ function TeamsTab({
                 const charName = teamSlots[slotIdx];
                 if (await confirm?.({ title: 'Remove Resonator', message: `Remove ${charName || 'this Resonator'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
                   dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
+                  // Clean up orphaned equipment entry to prevent localStorage bloat
+                  if (charName) {
+                    setTeamEquipment(prev => {
+                      const eqKey = state.activeTeamIndex + ':' + charName;
+                      if (!prev[eqKey]) return prev;
+                      const n = { ...prev };
+                      delete n[eqKey];
+                      return n;
+                    });
+                  }
                   haptic.light();
                 }
               };
