@@ -301,8 +301,11 @@ function CollectionTab({
           {/* Overall Collection Summary */}
           {(() => {
             try {
-            const ownedChars5 = Object.keys(collectionData.chars5Counts).length;
-            const ownedChars4 = Object.keys(collectionData.chars4Counts).length;
+            // Include both pull-history ownership AND manual toggles
+            const manualOwned5 = ownedChars.filter(n => ALL_5STAR_RESONATORS.includes(n) && !collectionData.chars5Counts[n]);
+            const manualOwned4 = ownedChars.filter(n => ALL_4STAR_RESONATORS.includes(n) && !collectionData.chars4Counts[n]);
+            const ownedChars5 = Object.keys(collectionData.chars5Counts).length + manualOwned5.length;
+            const ownedChars4 = Object.keys(collectionData.chars4Counts).length + manualOwned4.length;
             const ownedWeaps5 = Object.keys(collectionData.weaps5Counts).length;
             const ownedWeaps4 = Object.keys(collectionData.weaps4Counts).length;
             const ownedWeaps3 = Object.keys(collectionData.weaps3Counts).length;

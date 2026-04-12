@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, X, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
@@ -978,7 +978,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   );
 
   const stats = activeTeamStats;
-  if (!stats) return null;
+  if (!stats) return (
+    <Card><CardBody className="text-center py-6">
+      <Users size={24} className="mx-auto mb-2 text-gray-500" />
+      <p className="text-gray-400 text-sm">Add Resonators to your team to see damage analysis</p>
+    </CardBody></Card>
+  );
   const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
@@ -1091,10 +1096,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             for (let i = 1; i <= 2; i++) { const e = pickEcho(ALL_3COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: getMainStat(3), substats: defaultSubs.slice(0, 5) }; }
                             for (let i = 3; i <= 4; i++) { const e = pickEcho(ALL_1COST_ECHOES, recSets); if (e) newEchoes[i] = { name: e, mainStat: getMainStat(1), substats: defaultSubs.slice(0, 5) }; }
                             let echoSetVal = '';
-                            if (recSets.size > 0) echoSetVal = [...recSets.keys()][0];
+                            let echoSet2Val = '';
+                            const recSetKeys = [...recSets.keys()];
+                            if (recSetKeys.length > 0) echoSetVal = recSetKeys[0];
+                            if (recSetKeys.length > 1) echoSet2Val = recSetKeys[1];
                             setTeamEquipment(prev => {
                               const n = { ...prev };
-                              n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, echoPreset: preset, sequence: n[aeqKey]?.sequence || 0 };
+                              n[aeqKey] = { ...(n[aeqKey] || {}), weapon: weapon || (n[aeqKey]?.weapon || null), echoes: newEchoes, echoSet: echoSetVal, echoSet2: echoSet2Val, echoPreset: preset, sequence: n[aeqKey]?.sequence || 0 };
                               return n;
                             });
                             haptic.success();
@@ -1273,11 +1281,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                           </div>
                         </div>
 
-                        {/* Echo Preset */}
-                        {isMain && (
-                          <div className="text-sm text-gray-500 italic">Echo stats: default ATK/Crit preset</div>
-                        )}
-                        {!isMain && (
+                        {/* Echo Preset (available for all characters including main DPS) */}
+                        {(
                           <div>
                             <div className="kuro-micro-label">Echo Preset</div>
                             <div className="flex gap-0.5">

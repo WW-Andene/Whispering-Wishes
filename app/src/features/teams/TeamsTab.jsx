@@ -404,7 +404,7 @@ function TeamsTab({
                             if (!name || !name.trim()) return;
                             const preset = {
                               name: name.trim(),
-                              teams: state.teams.map(t => t.name),
+                              teams: state.teams.map(t => ({ name: t.name, slots: [...t.slots] })),
                               equipment: { ...teamEquipment },
                             };
                             setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
@@ -436,6 +436,14 @@ function TeamsTab({
                                       onClick={() => {
                                         setTeamEquipment(preset.equipment);
                                         try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {}
+                                        // Restore team composition if saved (new format includes slots)
+                                        if (preset.teams?.[0]?.slots) {
+                                          preset.teams.forEach((t, ti) => {
+                                            if (t.slots) t.slots.forEach((char, si) => {
+                                              dispatch({ type: 'SET_TEAM_SLOT', teamIndex: ti, slotIndex: si, character: char });
+                                            });
+                                          });
+                                        }
                                         setShowPresetDropdown(false);
                                         toast?.addToast?.(`Loadout "${preset.name}" loaded!`, 'success');
                                         haptic.success();

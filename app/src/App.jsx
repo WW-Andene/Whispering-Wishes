@@ -298,7 +298,16 @@ function WhisperingWishesInner() {
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, []);
-  
+
+  // Listen for storage warning events (dispatched by saveToStorage at 80% capacity)
+  useEffect(() => {
+    const onWarning = () => toastRef.current?.addToast?.('Storage nearly full — consider exporting a backup', 'warning');
+    const onError = () => toastRef.current?.addToast?.('Storage full — data may not be saved', 'error');
+    window.addEventListener('ww-storage-warning', onWarning);
+    window.addEventListener('ww-storage-error', onError);
+    return () => { window.removeEventListener('ww-storage-warning', onWarning); window.removeEventListener('ww-storage-error', onError); };
+  }, []);
+
   // P12-FIX: Cross-tab synchronization - reload state when another tab writes to localStorage (Step 14 audit - MEDIUM-10b)
   // Without this, two tabs open simultaneously would silently overwrite each other's changes (last-write-wins).
   // Debounced (3.7 fix) to prevent rapid dispatches when another tab saves frequently.
@@ -328,6 +337,8 @@ function WhisperingWishesInner() {
             calc: { ...initialState.calc }, // Always start calculator fresh
             planner: { ...initialState.planner, ...safeParsed.planner },
             settings: { ...initialState.settings, ...safeParsed.settings },
+            teams: Array.isArray(safeParsed.teams) && safeParsed.teams.length === 5 ? safeParsed.teams : initialState.teams,
+            activeTeamIndex: typeof safeParsed.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, safeParsed.activeTeamIndex)) : 0,
             bookmarks: safeParsed.bookmarks || [],
             eventStatus: safeParsed.eventStatus || {},
           };
@@ -843,12 +854,22 @@ function WhisperingWishesInner() {
   }, []);
 
   const handleRestoreData = useCallback((data) => {
-    // F-007: Sanitize cloud-restored data to prevent state injection
-    if (data.state && typeof data.state === 'object') {
-      dispatch({ type: 'LOAD_STATE', state: sanitizeStateObj(data.state) });
-    } else {
-      dispatch({ type: 'LOAD_STATE', state: { ...stateRef.current, profile: sanitizeStateObj(data.profile) } });
-    }
+    // F-007: Sanitize cloud-restored data with deep profile merge (matches cross-tab sync and loadFromStorage)
+    const raw = data.state ? sanitizeStateObj(data.state) : { ...stateRef.current, profile: sanitizeStateObj(data.profile) };
+    const safeProfile = raw.profile ? sanitizeStateObj(raw.profile) : {};
+    const merged = {
+      ...raw,
+      profile: {
+        ...initialState.profile,
+        ...safeProfile,
+        featured: { ...initialState.profile.featured, ...(safeProfile.featured ? sanitizeStateObj(safeProfile.featured) : {}) },
+        weapon: { ...initialState.profile.weapon, ...(safeProfile.weapon ? sanitizeStateObj(safeProfile.weapon) : {}) },
+        standardChar: { ...initialState.profile.standardChar, ...(safeProfile.standardChar ? sanitizeStateObj(safeProfile.standardChar) : {}) },
+        standardWeap: { ...initialState.profile.standardWeap, ...(safeProfile.standardWeap ? sanitizeStateObj(safeProfile.standardWeap) : {}) },
+        beginner: { ...initialState.profile.beginner, ...(safeProfile.beginner ? sanitizeStateObj(safeProfile.beginner) : {}) },
+      },
+    };
+    dispatch({ type: 'LOAD_STATE', state: merged });
     // Restore auxiliary data if present — localStorage via centralized registry
     if (data.aux && typeof data.aux === 'object') {
       restoreAuxData(data.aux, sanitizeStateObj);

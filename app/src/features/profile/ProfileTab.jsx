@@ -987,6 +987,8 @@ function ProfileTab({
                     haptic.warning();
                     dispatch({ type: 'RESET' });
                     clearAllAuxKeys();
+                    // Immediately persist reset to localStorage (don't wait for 300ms debounce)
+                    try { localStorage.removeItem('whispering-wishes-v2.2'); } catch {}
                     // Delete cloud backup if signed in (await before sign-out to preserve auth token)
                     if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();
@@ -1066,5 +1068,6 @@ export default React.memo(ProfileTab, (prev, next) =>
   prev.detailModal === next.detailModal &&
   prev.luckRating === next.luckRating && prev.ownedCharNames === next.ownedCharNames &&
   prev.trophyOverrides === next.trophyOverrides && prev.pwa === next.pwa &&
-  prev.customCollectionImages === next.customCollectionImages
+  prev.customCollectionImages === next.customCollectionImages &&
+  prev.processImportData === next.processImportData
 );
