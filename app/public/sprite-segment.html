@@ -9,9 +9,9 @@
   html, body { touch-action: none; overscroll-behavior: none; background: #080c14; }
   body { padding: 20px; color: #eee; font-family: system-ui, sans-serif; }
   h1 { font-size: 16px; margin-bottom: 10px; }
-  .stage { position: relative; display: inline-block; border-radius: 12px; overflow: hidden;
+  #container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden;
     background: radial-gradient(ellipse at center, #1a2234 0%, #080c14 80%); }
-  .stage svg { display: block; }
+  canvas { display: block; }
   .controls { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .controls button { font-size: 12px; padding: 5px 10px; background: #222; color: #eee;
     border: 1px solid #444; border-radius: 4px; cursor: pointer; }
@@ -22,175 +22,185 @@
 </style>
 </head>
 <body>
-  <h1>Zani — Polygon Vector Map</h1>
+  <h1>Zani — Polygon Stretch Animation</h1>
   <div class="controls">
     <button id="btnAnim" class="active">Animation</button>
     <button id="btnOutline">Show Polygon</button>
-    <label>Distortion <input type="range" id="distort" min="0" max="200" value="80" /></label>
-    <label>Drift <input type="range" id="drift" min="0" max="50" value="15" /></label>
+    <label>Stretch <input type="range" id="stretch" min="0" max="200" value="80" /></label>
+    <label>Speed <input type="range" id="speed" min="0" max="200" value="100" /></label>
   </div>
-  <div class="stage" id="stage"></div>
+  <div id="container">
+    <canvas id="canvas"></canvas>
+  </div>
   <div id="info">Loading...</div>
 
 <script>
 const SPRITE_URL = 'https://i.ibb.co/5XLvmGfC/Zani-Full-Sprite-1.webp';
 
-let showOutline = false, doAnimate = true;
+let spriteImg = null, imgW = 0, imgH = 0;
+let polygon = [];       // base polygon vertices [[x,y], ...]
+let doAnimate = true, showOutline = false;
 
-// ── Mask extraction ──
-function extractMask(img, maxDim = 200) {
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// ── Mask ──
+function extractMask(img, maxDim) {
   const sw = img.naturalWidth, sh = img.naturalHeight;
   const scale = Math.min(maxDim / sw, maxDim / sh, 1);
-  const w = Math.max(1, Math.round(sw * scale));
-  const h = Math.max(1, Math.round(sh * scale));
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const ctx = c.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(img, 0, 0, w, h);
-  const data = ctx.getImageData(0, 0, w, h).data;
+  const w = Math.max(1, Math.round(sw * scale)), h = Math.max(1, Math.round(sh * scale));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const cx = c.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, 0, 0, w, h);
+  const data = cx.getImageData(0, 0, w, h).data;
   const mask = new Uint8Array(w * h);
-  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-    mask[p] = data[i + 3] > 40 ? 1 : 0;
-  }
-  return { mask, w, h, sw, sh };
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) mask[p] = data[i+3] > 40 ? 1 : 0;
+  return { mask, w, h, scaleX: sw/w, scaleY: sh/h };
 }
 
-// ── Moore boundary trace ──
+// ── Trace ──
 function traceBoundary(mask, w, h) {
-  let sx = -1, sy = -1;
-  outer: for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++)
-      if (mask[y * w + x]) { sx = x; sy = y; break outer; }
-  if (sx < 0) return [];
-  const nb = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
-  const pts = [[sx, sy]];
-  let cx = sx, cy = sy, pd = 6;
-  for (let s = 0; s < w * h * 4; s++) {
-    const ss = (pd + 6) % 8;
-    let found = false;
-    for (let i = 0; i < 8; i++) {
-      const d = (ss + i) % 8, nx = cx + nb[d][0], ny = cy + nb[d][1];
-      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-      if (mask[ny * w + nx]) {
-        cx = nx; cy = ny; pd = d; pts.push([cx, cy]); found = true; break;
-      }
-    }
-    if (!found) break;
-    if (cx === sx && cy === sy && pts.length > 3) break;
-  }
+  let sx=-1, sy=-1;
+  outer: for (let y=0;y<h;y++) for (let x=0;x<w;x++) if (mask[y*w+x]) {sx=x;sy=y;break outer;}
+  if (sx<0) return [];
+  const nb=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  const pts=[[sx,sy]]; let cx=sx,cy=sy,pd=6;
+  for (let s=0;s<w*h*4;s++){
+    const ss=(pd+6)%8; let found=false;
+    for(let i=0;i<8;i++){const d=(ss+i)%8,nx=cx+nb[d][0],ny=cy+nb[d][1];
+      if(nx<0||ny<0||nx>=w||ny>=h)continue;
+      if(mask[ny*w+nx]){cx=nx;cy=ny;pd=d;pts.push([cx,cy]);found=true;break;}}
+    if(!found)break;
+    if(cx===sx&&cy===sy&&pts.length>3)break;}
   return pts;
 }
 
-// ── Douglas-Peucker simplify ──
-function perpDist(p, a, b) {
-  const dx = b[0]-a[0], dy = b[1]-a[1];
-  if (!dx && !dy) return Math.hypot(p[0]-a[0], p[1]-a[1]);
-  const t = Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / (dx*dx + dy*dy)));
-  return Math.hypot(p[0] - (a[0] + t*dx), p[1] - (a[1] + t*dy));
+// ── Simplify ──
+function perpDist(p,a,b){
+  const dx=b[0]-a[0],dy=b[1]-a[1];
+  if(!dx&&!dy)return Math.hypot(p[0]-a[0],p[1]-a[1]);
+  const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy)));
+  return Math.hypot(p[0]-(a[0]+t*dx),p[1]-(a[1]+t*dy));
 }
-function simplify(pts, eps) {
-  if (pts.length < 3) return pts.slice();
-  const keep = new Uint8Array(pts.length); keep[0] = 1; keep[pts.length-1] = 1;
-  const stk = [[0, pts.length-1]];
-  while (stk.length) {
-    const [a, b] = stk.pop(); let md = 0, mi = -1;
-    for (let i = a+1; i < b; i++) { const d = perpDist(pts[i], pts[a], pts[b]); if (d > md) { md = d; mi = i; } }
-    if (md > eps && mi > 0) { keep[mi] = 1; stk.push([a, mi]); stk.push([mi, b]); }
-  }
-  return pts.filter((_, i) => keep[i]);
+function simplify(pts,eps){
+  if(pts.length<3)return pts.slice();
+  const keep=new Uint8Array(pts.length);keep[0]=1;keep[pts.length-1]=1;
+  const stk=[[0,pts.length-1]];
+  while(stk.length){const[a,b]=stk.pop();let md=0,mi=-1;
+    for(let i=a+1;i<b;i++){const d=perpDist(pts[i],pts[a],pts[b]);if(d>md){md=d;mi=i;}}
+    if(md>eps&&mi>0){keep[mi]=1;stk.push([a,mi]);stk.push([mi,b]);}}
+  return pts.filter((_,i)=>keep[i]);
 }
 
-// ── Build SVG with polygon clip + displacement animation ──
-function build(img) {
-  const { mask, w, h, sw, sh } = extractMask(img, 200);
-  const raw = traceBoundary(mask, w, h);
-  const poly = simplify(raw, 1.2);
-  if (poly.length < 6) { document.getElementById('info').textContent = 'Polygon trace failed'; return; }
+// ── Per-vertex displacement: stretch & distort based on vertex position ──
+function displaceVertex(x, y, t, stretchAmt) {
+  // Normalize position in image
+  const nx = x / imgW;        // 0..1 horizontal
+  const ny = y / imgH;        // 0..1 vertical (0=top, 1=bottom)
 
-  // Scale polygon to source dimensions
-  const scaleX = sw / w, scaleY = sh / h;
-  const scaled = poly.map(([x, y]) => [+(x * scaleX).toFixed(1), +(y * scaleY).toFixed(1)]);
+  // Different frequencies per region for organic feel
+  // Top (hair) — more sway
+  // Middle (torso) — breathing stretch
+  // Bottom (legs) — subtle shift
+  // Edges — more displacement than center
 
-  // SVG path
-  const pathD = 'M ' + scaled.map(p => p.join(' ')).join(' L ') + ' Z';
+  const edgeFactor = Math.abs(nx - 0.5) * 2; // 0 at center, 1 at edges
+  const topFactor = Math.max(0, 1 - ny * 3); // strong at top, zero below 33%
+  const bottomFactor = Math.max(0, ny - 0.6) * 2.5; // grows toward bottom
 
-  // Distortion scale relative to image size
-  const distBase = Math.max(sw, sh) * 0.035;
-  const outlineW = Math.max(sw, sh) * 0.003;
+  // Horizontal stretch/distort
+  const dx =
+    Math.sin(t * 1.1 + ny * 6) * 4 * edgeFactor +          // edge wobble
+    Math.sin(t * 0.7 + ny * 3) * 6 * topFactor +            // hair sway
+    Math.sin(t * 0.9 + nx * 4) * 2 * bottomFactor +         // leg shift
+    Math.cos(t * 0.5) * 2 * (0.5 - ny);                      // overall lean
 
-  const stage = document.getElementById('stage');
-  stage.innerHTML = `
-    <svg viewBox="0 0 ${sw} ${sh}" width="${sw}" height="${sh}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <clipPath id="polyClip" clipPathUnits="userSpaceOnUse">
-          <path d="${pathD}" />
-        </clipPath>
-        <filter id="warp" x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.007 0.012" numOctaves="3" seed="5" result="noise">
-            <animate attributeName="baseFrequency" dur="12s"
-              values="0.007 0.012;0.010 0.015;0.006 0.011;0.007 0.012"
-              keyTimes="0;0.33;0.66;1" repeatCount="indefinite" />
-            <animate attributeName="seed" dur="45s"
-              values="5;19;31;43;5" keyTimes="0;0.25;0.5;0.75;1" repeatCount="indefinite" />
-          </feTurbulence>
-          <feDisplacementMap id="displace" in="SourceGraphic" in2="noise"
-            scale="${distBase}" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </defs>
+  // Vertical stretch/distort
+  const dy =
+    Math.sin(t * 1.3 + nx * 5) * 3 * topFactor +            // hair bounce
+    Math.sin(t * 1.0) * 3 * (ny - 0.3) +                     // breathing (torso expands)
+    Math.cos(t * 0.8 + nx * 3) * 2 * bottomFactor +          // leg flex
+    Math.sin(t * 0.6) * 1.5 * edgeFactor;                    // edge pulse
 
-      <!-- Animated character clipped to polygon -->
-      <g clip-path="url(#polyClip)" filter="url(#warp)" id="charGroup">
-        <image href="${SPRITE_URL}" x="0" y="0" width="${sw}" height="${sh}" preserveAspectRatio="none" />
-      </g>
+  return [
+    x + dx * stretchAmt,
+    y + dy * stretchAmt
+  ];
+}
 
-      <!-- Polygon outline (togglable) -->
-      <path id="polyOutline" d="${pathD}" fill="none" stroke="#edaf18"
-        stroke-width="${outlineW}" stroke-linejoin="round" opacity="0" />
-    </svg>
-  `;
+// ── Render ──
+function render(t) {
+  const time = t * 0.001 * (+document.getElementById('speed').value / 100);
+  const stretchAmt = +document.getElementById('stretch').value / 100;
 
-  // Parallax drift
-  const charGroup = document.getElementById('charGroup');
-  function tick(t) {
-    if (doAnimate) {
-      const driftVal = +document.getElementById('drift').value / 100;
-      const tx = Math.sin(t * 0.00085) * 2.5 * driftVal;
-      const ty = Math.cos(t * 0.00110) * 2.0 * driftVal;
-      charGroup.setAttribute('transform', `translate(${tx.toFixed(2)},${ty.toFixed(2)})`);
-    } else {
-      charGroup.removeAttribute('transform');
+  ctx.clearRect(0, 0, imgW, imgH);
+
+  if (!spriteImg || polygon.length < 3) { requestAnimationFrame(render); return; }
+
+  // Compute displaced polygon
+  const displaced = doAnimate
+    ? polygon.map(([x, y]) => displaceVertex(x, y, time, stretchAmt))
+    : polygon.map(p => [...p]);
+
+  // Draw sprite clipped to displaced polygon
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(displaced[0][0], displaced[0][1]);
+  for (let i = 1; i < displaced.length; i++) ctx.lineTo(displaced[i][0], displaced[i][1]);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(spriteImg, 0, 0, imgW, imgH);
+  ctx.restore();
+
+  // Draw polygon outline
+  if (showOutline) {
+    ctx.strokeStyle = '#edaf18';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(displaced[0][0], displaced[0][1]);
+    for (let i = 1; i < displaced.length; i++) ctx.lineTo(displaced[i][0], displaced[i][1]);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Draw vertices
+    ctx.fillStyle = '#edaf18';
+    for (const [vx, vy] of displaced) {
+      ctx.beginPath();
+      ctx.arc(vx, vy, 2.5, 0, Math.PI * 2);
+      ctx.fill();
     }
-
-    // Outline toggle
-    document.getElementById('polyOutline').setAttribute('opacity', showOutline ? '1' : '0');
-
-    // Distortion amount
-    const distVal = +document.getElementById('distort').value / 100;
-    const organic = 0.75 + Math.sin(t * 0.0006) * 0.25;
-    document.getElementById('displace').setAttribute('scale',
-      (distBase * distVal * (doAnimate ? organic : 0)).toFixed(2));
-
-    requestAnimationFrame(tick);
+    ctx.globalAlpha = 1;
   }
-  requestAnimationFrame(tick);
 
-  document.getElementById('info').textContent =
-    `${sw}x${sh} — polygon: ${scaled.length} vertices — animating`;
+  requestAnimationFrame(render);
 }
 
 // ── Controls ──
-document.getElementById('btnAnim').onclick = e => {
-  doAnimate = !doAnimate; e.target.classList.toggle('active', doAnimate);
-};
-document.getElementById('btnOutline').onclick = e => {
-  showOutline = !showOutline; e.target.classList.toggle('active', showOutline);
-};
+document.getElementById('btnAnim').onclick = e => { doAnimate=!doAnimate; e.target.classList.toggle('active',doAnimate); };
+document.getElementById('btnOutline').onclick = e => { showOutline=!showOutline; e.target.classList.toggle('active',showOutline); };
 
 // ── Load ──
 const img = new Image();
 img.crossOrigin = 'anonymous';
-img.onload = () => build(img);
-img.onerror = () => { document.getElementById('info').textContent = 'Failed to load sprite'; };
+img.onload = () => {
+  spriteImg = img;
+  imgW = img.naturalWidth; imgH = img.naturalHeight;
+  canvas.width = imgW; canvas.height = imgH;
+
+  const { mask, w, h, scaleX, scaleY } = extractMask(img, 220);
+  const raw = traceBoundary(mask, w, h);
+  const simple = simplify(raw, 1.0);
+
+  // Scale to full image coords
+  polygon = simple.map(([x, y]) => [x * scaleX, y * scaleY]);
+
+  document.getElementById('info').textContent =
+    `${imgW}x${imgH} — ${polygon.length} vertices — stretch & distort per vertex`;
+  requestAnimationFrame(render);
+};
+img.onerror = () => { document.getElementById('info').textContent = 'Failed to load'; };
 img.src = SPRITE_URL;
 </script>
 </body>
