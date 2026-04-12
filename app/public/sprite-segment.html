@@ -400,12 +400,12 @@ function autoSegment() {
         }
       }
 
-      if (zone && ZONES[zone]) {
-        const [zr, zg, zb] = hexToRGB(ZONES[zone].color);
-        od[i]     = zr;
-        od[i + 1] = zg;
-        od[i + 2] = zb;
-        od[i + 3] = 140; // semi-transparent overlay
+      if (zone) {
+        // Green filter on all opaque pixels
+        od[i]     = 0;
+        od[i + 1] = 220;
+        od[i + 2] = 0;
+        od[i + 3] = 140;
       }
     }
   }
