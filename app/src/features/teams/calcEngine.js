@@ -1,0 +1,392 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — teams/calcEngine.js
+// Extracted calculation utilities for the damage calculator.
+// Eliminates tripled logic (raw/full/sub-DPS) by providing shared functions.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import { WEAPON_DATA } from '../../data/weapons.js';
+import { ECHO_SETS, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
+import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
+
+// ── Constants (named, not magic) ──
+export const ATTACKER_LEVEL = 90;
+export const ATTACKER_FACTOR = 800 + 8 * ATTACKER_LEVEL; // 1520
+export const BASE_CRIT_RATE = 5;
+export const BASE_CRIT_DMG = 150;
+export const DOT_LEVEL_MULT = 3674;   // Level 90 character level multiplier
+export const DOT_BASE_FACTOR = 1.25078; // Base damage coefficient for DOT ticks
+
+// Echo main stat values by cost tier
+export const ECHO_MAIN_STAT_VALUES = {
+  4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+  1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+};
+
+// Echo substat values
+export const ECHO_SUB_STAT_VALUES = {
+  'ATK%': 9, 'HP%': 9, 'DEF%': 9,
+  'Crit Rate': 7.5, 'Crit DMG': 15,
+  'Energy Regen': 8,
+  'Basic ATK DMG': 9, 'Heavy ATK DMG': 9,
+  'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9,
+};
+
+// ── Stat accumulator: replaces 50+ loose variables per tier ──
+export function createStats() {
+  return {
+    atkPct: 0, cr: BASE_CRIT_RATE, cd: BASE_CRIT_DMG,
+    elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0,
+    libDmg: 0, echoDmg: 0, coordDmg: 0,
+    deepen: 0, amplify: 0,
+    defShred: 0, resShred: 0, defIgnore: 0,
+  };
+}
+
+// ── Weapon passive parser (cached) ──
+const _passiveCache = new Map();
+export function parsePassive(passive, element) {
+  const cacheKey = `${passive || ''}|${element || ''}`;
+  if (_passiveCache.has(cacheKey)) return _passiveCache.get(cacheKey);
+  const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0, hpPct: 0, defPct: 0 };
+  if (!passive) { _passiveCache.set(cacheKey, r); return r; }
+  const p = passive.toLowerCase();
+  const atkMatch = p.match(/atk\s*\+(\d+)%/);         if (atkMatch) r.atkPct += parseInt(atkMatch[1], 10);
+  if (element) {
+    const elLow = element.toLowerCase();
+    const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
+    if (elMatch) r.elemDmg += parseInt(elMatch[1], 10);
+    const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
+    if (attrMatch) r.elemDmg += parseInt(attrMatch[1], 10);
+  }
+  const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);   if (skillMatch) r.skillDmg += parseInt(skillMatch[1], 10);
+  const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/); if (libMatch) r.libDmg += parseInt(libMatch[1], 10);
+  const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);     if (basicMatch) r.basicDmg += parseInt(basicMatch[1], 10);
+  const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);           if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1], 10);
+  const coordMatch = p.match(/coord(?:inated)?\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/); if (coordMatch) r.coordDmg += parseInt(coordMatch[1], 10);
+  const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);      if (echoMatch) r.echoDmg += parseInt(echoMatch[1], 10);
+  const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);                                if (crMatch) r.critRate += parseInt(crMatch[1], 10);
+  const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);                                 if (cdMatch) r.critDmg += parseInt(cdMatch[1], 10);
+  const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);                              if (defMatch) r.defIgnore += parseInt(defMatch[1], 10);
+  const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);                           if (resMatch) r.resShred += parseInt(resMatch[1], 10);
+  _passiveCache.set(cacheKey, r);
+  return r;
+}
+
+// ── Weapon passive with refinement scaling ──
+export function getWeaponPv(weapon, element, refinement) {
+  if (!weapon) return {};
+  const refScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[(refinement || 1) - 1] || 1 : 1;
+  const rawPv = weapon.pv || parsePassive(weapon.passive, element);
+  return Object.fromEntries(Object.entries(rawPv).map(([k, v]) => [k, typeof v === 'number' ? v * refScale : v]));
+}
+
+// ── Apply weapon pv stats to a stat accumulator ──
+export function applyWeaponPv(stats, wp, scaling) {
+  if (scaling === 'ATK') stats.atkPct += (wp.atkPct || 0);
+  else if (scaling === 'HP') stats.atkPct += (wp.hpPct || 0);
+  else if (scaling === 'DEF') stats.atkPct += (wp.defPct || 0);
+  stats.elemDmg += (wp.elemDmg || 0);
+  stats.skillDmg += (wp.skillDmg || 0);
+  stats.cr += (wp.critRate || 0);
+  stats.cd += (wp.critDmg || 0);
+  stats.defIgnore += (wp.defIgnore || 0);
+  stats.resShred += (wp.resShred || 0);
+  stats.basicDmg += (wp.basicDmg || 0);
+  stats.heavyDmg += (wp.heavyDmg || 0);
+  stats.libDmg += (wp.libDmg || 0);
+  stats.echoDmg += (wp.echoDmg || 0);
+  stats.coordDmg += (wp.coordDmg || 0);
+}
+
+// ── Apply echo set bonus values (used for p2val, p5val, p3val) ──
+export function applyEchoSetBonus(stats, setData, valKey, element, scaling) {
+  const vals = setData?.[valKey];
+  if (!vals) return;
+  const ek = (element || '').toLowerCase() + 'Dmg';
+  // Scaling stat (ATK%/HP%/DEF%) → routes to atkPct for the damage formula
+  if (scaling === 'ATK' && vals.atkPct) stats.atkPct += vals.atkPct;
+  else if (scaling === 'HP' && vals.hpPct) stats.atkPct += vals.hpPct;
+  else if (scaling === 'DEF' && vals.defPct) stats.atkPct += vals.defPct;
+  if (vals.critRate) stats.cr += vals.critRate;
+  if (vals.critDmg) stats.cd += vals.critDmg;
+  if (vals.skillDmg) stats.skillDmg += vals.skillDmg;
+  if (vals[ek]) stats.elemDmg += vals[ek];
+  if (vals.allDmg) stats.elemDmg += vals.allDmg;
+  if (vals.basicDmg) stats.basicDmg += vals.basicDmg;
+  if (vals.heavyDmg) stats.heavyDmg += vals.heavyDmg;
+  if (vals.libDmg) stats.libDmg += vals.libDmg;
+  if (vals.echoDmg) stats.echoDmg += vals.echoDmg;
+}
+
+// ── Apply full echo set (handles p2+p5, p3, and hybrid 3pc+2pc) ──
+export function applyFullEchoSet(stats, echoSet, echoSet2, element, scaling) {
+  if (echoSet) {
+    if (echoSet.p3val) {
+      applyEchoSetBonus(stats, echoSet, 'p3val', element, scaling);
+    } else {
+      applyEchoSetBonus(stats, echoSet, 'p2val', element, scaling);
+      applyEchoSetBonus(stats, echoSet, 'p5val', element, scaling);
+    }
+  }
+  if (echoSet2) {
+    applyEchoSetBonus(stats, echoSet2, 'p2val', element, scaling);
+  }
+}
+
+// ── Apply echo main stats and substats to accumulator ──
+export function applyEchoStats(stats, echoes, element, scaling) {
+  const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
+  const elDmgKey = element ? element.charAt(0).toUpperCase() + element.slice(1).toLowerCase() + ' DMG' : '';
+  (echoes || []).forEach((echo, i) => {
+    if (!echo || typeof echo !== 'object') return;
+    const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
+    if (echo.mainStat) {
+      const val = ECHO_MAIN_STAT_VALUES[cost]?.[echo.mainStat] || 0;
+      if (echo.mainStat === scalingStat) stats.atkPct += val;
+      else if (echo.mainStat === 'Crit Rate') stats.cr += val;
+      else if (echo.mainStat === 'Crit DMG') stats.cd += val;
+      else if (echo.mainStat === elDmgKey) stats.elemDmg += val;
+      else if (echo.mainStat === 'Basic ATK DMG') stats.basicDmg += val;
+      else if (echo.mainStat === 'Heavy ATK DMG') stats.heavyDmg += val;
+      else if (echo.mainStat === 'Resonance Skill DMG') stats.skillDmg += val;
+      else if (echo.mainStat === 'Resonance Liberation DMG') stats.libDmg += val;
+    }
+    (echo.substats || []).forEach(sub => {
+      const val = ECHO_SUB_STAT_VALUES[sub];
+      if (!val) return;
+      if (sub === scalingStat) stats.atkPct += val;
+      else if (sub === 'Crit Rate') stats.cr += val;
+      else if (sub === 'Crit DMG') stats.cd += val;
+      else if (sub === 'Resonance Skill DMG') stats.skillDmg += val;
+      else if (sub === 'Energy Regen') { /* tracked separately */ }
+    });
+  });
+}
+
+// ── Apply buff to stat accumulator (replaces 8 identical if-else chains) ──
+export function applyBuff(stats, buff, value, options = {}) {
+  const { isAmplify = false } = options;
+  const target = isAmplify ? 'amplify' : null;
+  switch (buff) {
+    case 'atkPct':    stats.atkPct += value; break;
+    case 'allDmg':    stats[target || 'elemDmg'] += value; break;
+    case 'elemDmg':   stats[target || 'elemDmg'] += value; break;
+    case 'deepen':    stats.deepen += value; break;
+    case 'basicDmg':  stats[target || 'basicDmg'] += value; break;
+    case 'heavyDmg':  stats[target || 'heavyDmg'] += value; break;
+    case 'libDmg':    stats[target || 'libDmg'] += value; break;
+    case 'echoDmg':   stats[target || 'echoDmg'] += value; break;
+    case 'skillDmg':  stats[target || 'skillDmg'] += value; break;
+    case 'coordDmg':  stats[target || 'coordDmg'] += value; break;
+    case 'critRate':  stats.cr += value; break;
+    case 'critDmg':   stats.cd += value; break;
+    case 'resShred':  stats.resShred += value; break;
+    case 'defShred':  stats.defShred += value; break;
+    case 'defIgnore': stats.defIgnore += value; break;
+    default: break;
+  }
+}
+
+// ── Count team element occurrences (was duplicated 3 times) ──
+export function countTeamElements(members) {
+  const counts = {};
+  members.forEach(m => {
+    const el = m.d?.element;
+    if (el) counts[el] = (counts[el] || 0) + 1;
+  });
+  return counts;
+}
+
+// ── Route type-specific DMG bonuses into skillDmg based on damage focus ──
+export function routeTypeBonuses(stats, dpsFocus) {
+  if (dpsFocus.includes('Basic ATK')) stats.skillDmg += stats.basicDmg;
+  else if (stats.basicDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.basicDmg * 0.5;
+  if (dpsFocus.includes('Heavy ATK')) stats.skillDmg += stats.heavyDmg;
+  else if (stats.heavyDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.heavyDmg * 0.5;
+  if (dpsFocus.includes('Liberation')) stats.skillDmg += stats.libDmg;
+  else if (stats.libDmg > 0) stats.skillDmg += stats.libDmg * 0.3;
+  if (dpsFocus.includes('Echo')) stats.skillDmg += stats.echoDmg;
+  if (dpsFocus.includes('Coordinated ATK')) stats.skillDmg += stats.coordDmg;
+}
+
+// ── Defense multiplier calculation ──
+export function calcDefMult(enemyDef, defShred, defIgnore) {
+  const reducedDef = enemyDef * Math.max(0, 1 - defShred / 100);
+  const effectiveDef = reducedDef * Math.max(0, 1 - defIgnore / 100);
+  return Math.min(2, ATTACKER_FACTOR / (ATTACKER_FACTOR + effectiveDef));
+}
+
+// ── Resistance multiplier calculation ──
+export function calcResMult(baseRes, shred) {
+  const totalRes = (baseRes - shred) / 100;
+  if (totalRes < 0) return 1 - totalRes / 2;
+  if (totalRes < 0.8) return 1 - totalRes;
+  return 1 / (1 + 5 * totalRes);
+}
+
+// ── Average crit multiplier ──
+export function calcAvgCrit(cr, cd) {
+  return 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
+}
+
+// ── WuWa 3-layer DMG bonus formula ──
+export function calcDmgBonus(elemDmg, skillDmg, amplify, deepen) {
+  return (1 + (elemDmg + skillDmg) / 100) * (1 + amplify / 100) * (1 + deepen / 100);
+}
+
+// ── DOT damage calculations (ICD-aware) ──
+export function calcFrazzleDmg(members, rotTime, defMult, resMult) {
+  const appliers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'frazzle'));
+  if (!appliers.length) return { dmg: 0, active: false };
+  const icdPerSource = 2.5;
+  const numSources = appliers.length;
+  const effectiveRate = numSources / icdPerSource;
+  const maxStacksRaw = appliers.reduce((s, m) => {
+    const fd = CHAR_BUFF_TABLE[m.name]?.debuffs?.find(db => db.stat === 'frazzle');
+    return s + (fd?.value || 10);
+  }, 0);
+  const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime));
+  const tickInterval = 3;
+  const numTicks = Math.min(Math.floor(rotTime / tickInterval), stacks);
+  let total = 0;
+  for (let s = stacks; s > stacks - numTicks && s > 0; s--) {
+    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * 0.15);
+  }
+  const hasPhoebe = members.some(m => m.name === 'Phoebe');
+  return { dmg: total * (hasPhoebe ? 2.0 : 1.0) * defMult * resMult, active: true };
+}
+
+export function calcErosionDmg(members, rotTime, defMult, resMult) {
+  const appliers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'erosion'));
+  if (!appliers.length) return { dmg: 0, active: false };
+  const baseStacks = appliers.reduce((s, m) => {
+    const ed = CHAR_BUFF_TABLE[m.name]?.debuffs?.find(db => db.stat === 'erosion');
+    return Math.max(s, ed?.value || 3);
+  }, 3);
+  const duration = 15;
+  const uptime = Math.min(1, duration / rotTime);
+  const ticks = Math.floor(duration / 2);
+  let total = 0;
+  for (let t = 0; t < ticks; t++) total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (baseStacks * 0.8);
+  return { dmg: total * uptime * defMult * resMult, active: true };
+}
+
+export function calcFusionBurstDmg(members, rotTime, defMult, resMult) {
+  const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'fusionBurst'));
+  if (!has) return { dmg: 0, active: false };
+  const threshold = 10;
+  const explosions = Math.max(1, Math.floor(rotTime / Math.max(threshold, 8)));
+  const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (threshold * 0.5) * 3.0;
+  return { dmg: dmg * explosions * defMult * resMult, active: true };
+}
+
+export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
+  const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.electroFlare);
+  if (!has) return { dmg: 0, active: false };
+  const ticks = Math.min(4, Math.floor(rotTime / 4));
+  let total = 0, stacks = 10;
+  for (let t = 0; t < ticks; t++) {
+    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (stacks * 0.12);
+    stacks = Math.ceil(stacks / 2);
+  }
+  return { dmg: total * defMult * resMult, active: true };
+}
+
+export function calcTuneBreakDmg(members, rotTime, defMult, resMult) {
+  const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
+  if (!tbMembers.length) return { dmg: 0, deepenMult: 1 };
+  let totalBoost = 0;
+  tbMembers.forEach(m => {
+    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+    totalBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
+  });
+  const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
+  const breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
+  let dmg = 5000 * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
+  tbMembers.forEach(m => {
+    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+    if (tb.ruptureDmgMult) {
+      dmg += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * breaksPerRot * defMult * resMult;
+    }
+  });
+  let deepenMult = 1;
+  const mornyeMem = tbMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
+  if (mornyeMem) {
+    const amp = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
+    deepenMult *= 1 + (amp / 100) * Math.min(1, (8 * breaksPerRot) / rotTime);
+  }
+  const maxStrain = Math.max(...tbMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
+  if (maxStrain > 0 && totalBoost > 0) {
+    const strainPct = maxStrain * totalBoost * 0.12;
+    deepenMult *= 1 + (strainPct / 100) * Math.min(1, (8 * breaksPerRot) / rotTime);
+  }
+  return { dmg, deepenMult };
+}
+
+// ── Energy cycle tracking ──
+export function calcEnergyCycles(members, teamEquipment, teamIdx) {
+  const factors = {};
+  members.forEach(m => {
+    let totalER = 100;
+    if (m.weapSubstat === 'Energy Regen') totalER += parseFloat(m.weapSubVal) || 0;
+    const eq = teamEquipment[teamIdx + ':' + m.name];
+    (eq?.echoes || []).forEach((echo, ei) => {
+      if (!echo || typeof echo !== 'object') return;
+      if (echo.mainStat === 'Energy Regen') {
+        const cost = ei === 0 ? 4 : ei < 3 ? 3 : 1;
+        totalER += cost >= 3 ? 32 : 0;
+      }
+      (echo.substats || []).forEach(sub => { if (sub === 'Energy Regen') totalER += 8; });
+    });
+    if (m.echoSet?.p2val?.energyRegen) totalER += m.echoSet.p2val.energyRegen;
+    if (m.echoSet2?.p2val?.energyRegen) totalER += m.echoSet2.p2val.energyRegen;
+    const energyCost = m.d.maxEnergy || 125;
+    const erThreshold = energyCost >= 175 ? 140 : 125;
+    factors[m.name] = {
+      totalER,
+      libUptime: totalER >= erThreshold ? 1.0 : Math.max(0.6, totalER / erThreshold),
+      energyCost,
+    };
+  });
+  return factors;
+}
+
+// ── Apply resonance chain bonuses ──
+export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
+  const rc = RESONANCE_CHAIN_DATA[charName];
+  if (!rc || seqLevel <= 0) return 0;
+  let totalMultBonus = 0;
+  for (let s = 1; s <= Math.min(seqLevel, 6); s++) {
+    const lvl = rc['s' + s];
+    if (!lvl) continue;
+    if (isMainDps) {
+      if (lvl.atkPct) stats.atkPct += lvl.atkPct;
+      if (lvl.critRate) stats.cr += lvl.critRate;
+      if (lvl.critDmg) stats.cd += lvl.critDmg;
+      if (lvl.elemDmg) stats.elemDmg += lvl.elemDmg;
+      if (lvl.skillDmg) stats.skillDmg += lvl.skillDmg;
+      if (lvl.basicDmg) stats.basicDmg += lvl.basicDmg;
+      if (lvl.heavyDmg) stats.heavyDmg += lvl.heavyDmg;
+      if (lvl.libDmg) stats.libDmg += lvl.libDmg;
+      if (lvl.echoDmg) stats.echoDmg += lvl.echoDmg;
+      if (lvl.deepen) stats.deepen += lvl.deepen;
+      if (lvl.defIgnore) stats.defIgnore += lvl.defIgnore;
+      if (lvl.defShred) stats.defShred += lvl.defShred;
+      if (lvl.resShred) stats.resShred += lvl.resShred;
+      if (lvl.totalMult) totalMultBonus += lvl.totalMult;
+    } else {
+      if (lvl.allDmg) stats.elemDmg += lvl.allDmg;
+      if (lvl.deepen) stats.deepen += lvl.deepen;
+      if (lvl.defShred) stats.defShred += lvl.defShred;
+      if (lvl.resShred) stats.resShred += lvl.resShred;
+      if (lvl.atkPct) stats.atkPct += lvl.atkPct;
+      if (lvl.critRate) stats.cr += lvl.critRate;
+      if (lvl.critDmg) stats.cd += lvl.critDmg;
+      if (lvl.basicDmg) stats.basicDmg += lvl.basicDmg;
+      if (lvl.heavyDmg) stats.heavyDmg += lvl.heavyDmg;
+    }
+  }
+  return totalMultBonus;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, X, Zap } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
@@ -12,6 +12,14 @@ import { EchoImage } from '../../shared/components/EchoImage.jsx';
 import RotationTimeline from './RotationTimeline.jsx';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
+import {
+  ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG, ECHO_MAIN_STAT_VALUES, ECHO_SUB_STAT_VALUES,
+  createStats, parsePassive, getWeaponPv, applyWeaponPv, applyFullEchoSet, applyEchoStats,
+  applyBuff, countTeamElements, routeTypeBonuses,
+  calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
+  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
+  calcEnergyCycles, applyResonanceChain,
+} from './calcEngine.js';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -75,55 +83,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       || mems.reduce((best, m) => (!best || (m.d.totalMult || 0) > (best.d.totalMult || 0)) ? m : best, null)
       || mems[0];
 
-    const _passiveCache = new Map();
-    const parsePassive = (passive, element) => {
-      const cacheKey = `${passive || ''}|${element || ''}`;
-      if (_passiveCache.has(cacheKey)) return _passiveCache.get(cacheKey);
-      const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0 };
-      if (!passive) { _passiveCache.set(cacheKey, r); return r; }
-      const p = passive.toLowerCase();
-      const atkMatch = p.match(/atk\s*\+(\d+)%/);
-      if (atkMatch) r.atkPct += parseInt(atkMatch[1], 10);
-      if (element) {
-        const elLow = element.toLowerCase();
-        const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
-        if (elMatch) r.elemDmg += parseInt(elMatch[1], 10);
-        const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
-        if (attrMatch) r.elemDmg += parseInt(attrMatch[1], 10);
-      }
-      const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);
-      if (skillMatch) r.skillDmg += parseInt(skillMatch[1], 10);
-      const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/);
-      if (libMatch) r.libDmg += parseInt(libMatch[1], 10);
-      const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
-      if (basicMatch) r.basicDmg += parseInt(basicMatch[1], 10);
-      const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
-      if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1], 10);
-      const coordMatch = p.match(/coord(?:inated)?\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);
-      if (coordMatch) r.coordDmg += parseInt(coordMatch[1], 10);
-      const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);
-      if (echoMatch) r.echoDmg += parseInt(echoMatch[1], 10);
-      const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);
-      if (crMatch) r.critRate += parseInt(crMatch[1], 10);
-      const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);
-      if (cdMatch) r.critDmg += parseInt(cdMatch[1], 10);
-      const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);
-      if (defMatch) r.defIgnore += parseInt(defMatch[1], 10);
-      const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);
-      if (resMatch) r.resShred += parseInt(resMatch[1], 10);
-      _passiveCache.set(cacheKey, r);
-      return r;
-    };
-
-    // ── Enemy scaling ──
-    const attackerFactor = 800 + 8 * 90; // 1520 at attacker level 90
+    // ── Enemy scaling (using named constants from calcEngine) ──
     const enemyDef90 = 792 + 8 * (Number(enemyLevel) || 90);
-    const calcResMult = (baseRes, shred) => {
-      const totalRes = (baseRes - shred) / 100;
-      if (totalRes < 0) return 1 - totalRes / 2;
-      if (totalRes < 0.8) return 1 - totalRes;
-      return 1 / (1 + 5 * totalRes);
-    };
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
     const enemyResMap = enemyEchoData?.enemyRes || {};
     const getEnemyRes = (el) => {
@@ -232,7 +193,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const rEff = m.baseStat * (1 + rStatPct / 100);
       const rAvgCrit = 1 + (Math.min(rCr, 100) / 100) * (rCd / 100 - 1);
       const rDmgBonus = 1 + (rElem + rSkillDmg) / 100;
-      const rDefMult = attackerFactor / (attackerFactor + enemyDef90);
+      const rDefMult = ATTACKER_FACTOR / (ATTACKER_FACTOR + enemyDef90);
       const rBaseRes = getEnemyRes(m.d.element);
       const rResMult = calcResMult(rBaseRes, 0);
       rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
@@ -558,7 +519,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const dmgBonus = (1 + (elemDmg + skillDmg) / 100) * (1 + amplify / 100) * (1 + deepen / 100);
     const reducedDef = enemyDef90 * Math.max(0, 1 - defShred / 100);
     const effectiveDef = reducedDef * Math.max(0, 1 - defIgnore / 100);
-    const defMult = Math.min(2, attackerFactor / (attackerFactor + effectiveDef));
+    const defMult = Math.min(2, ATTACKER_FACTOR / (ATTACKER_FACTOR + effectiveDef));
     const mainBaseRes = getEnemyRes(mainDps.d.element);
     const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
@@ -954,7 +915,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sAmplify / 100) * (1 + sDeepen / 100);
         const sReducedDef = enemyDef90 * Math.max(0, 1 - sDefShred / 100);
         const sEffDef = sReducedDef * Math.max(0, 1 - sDefIgnore / 100);
-        const sDefMult = Math.min(2, attackerFactor / (attackerFactor + sEffDef));
+        const sDefMult = Math.min(2, ATTACKER_FACTOR / (ATTACKER_FACTOR + sEffDef));
         const sBaseRes = getEnemyRes(m.d.element);
         const sResMult = calcResMult(sBaseRes, sResShred);
         const sDmg = sEffAtk * (mult / 100) * sAvgCrit * sDmgBonus * sDefMult * sResMult;
