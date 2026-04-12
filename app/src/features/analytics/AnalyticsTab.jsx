@@ -15,6 +15,7 @@ import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy,
 import PityHistogram from './PityHistogram.jsx';
 import ConveneHistoryChart from './ConveneHistoryChart.jsx';
 import { ALL_CHARACTERS } from '../../data/characters.js';
+import { getMergedHistories } from '../../core/historyUtils.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
@@ -310,8 +311,7 @@ function AnalyticsTab({
         body: JSON.stringify(entry)
       });
       if (!res.ok) throw new Error(`Firebase write failed (${res.status})`);
-      const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || [])];
-      const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || [])];
+      const { charHistory, weapHistory } = getMergedHistories(state.profile);
       const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
       if (owned5Chars.length > 0 || owned5Weaps.length > 0) {

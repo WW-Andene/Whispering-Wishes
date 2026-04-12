@@ -59,7 +59,7 @@ const createUndoReducer = (baseReducer) => {
     }
     if (UNDOABLE_ACTIONS.has(action.type)) {
       if (undoStack.length >= MAX_UNDO_STACK) undoStack.shift();
-      undoStack.push(state);
+      undoStack.push(JSON.parse(JSON.stringify(state))); // Deep clone to prevent mutation leaking into snapshot
     }
     return baseReducer(state, action);
   };

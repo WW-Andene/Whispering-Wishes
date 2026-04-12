@@ -5,15 +5,16 @@
 
 import { ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, STANDARD_5STAR_CHARACTERS } from '../data/characters.js';
 import { HARD_PITY, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS } from '../data/constants.js';
+import { getMergedHistories } from './historyUtils.js';
 
 export function computeTrophies(profile, overallStats, trophyOverrides = {}) {
     if (!profile.importedAt) return null;
-    
+
+    const { allHistory } = getMergedHistories(profile);
     const featuredHist = profile.featured?.history || [];
     const weaponHist = profile.weapon?.history || [];
     const stdCharHist = profile.standardChar?.history || [];
     const stdWeapHist = profile.standardWeap?.history || [];
-    const allHistory = [...featuredHist, ...weaponHist, ...stdCharHist, ...stdWeapHist];
     
     // All 5★ pulls with pity
     const all5Stars = allHistory.filter(p => p.rarity === 5 && p.pity > 0);
@@ -53,10 +54,8 @@ export function computeTrophies(profile, overallStats, trophyOverrides = {}) {
       }
     }
     
-    // Collection counts
-    const beginnerHistTr = profile.beginner?.history || [];
-    const charHistory = [...featuredHist, ...stdCharHist, ...beginnerHistTr.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
-    const weapHistory = [...weaponHist, ...stdWeapHist, ...beginnerHistTr.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
+    // Collection counts (charHistory/weapHistory from getMergedHistories already include beginner)
+    const { charHistory, weapHistory } = getMergedHistories(profile);
     const owned5StarChars = new Set(charHistory.filter(p => p.rarity === 5 && p.name).map(p => p.name));
     const owned4StarChars = new Set(charHistory.filter(p => p.rarity === 4 && p.name).map(p => p.name));
     const owned5StarWeaps = new Set(weapHistory.filter(p => p.rarity === 5 && p.name).map(p => p.name));

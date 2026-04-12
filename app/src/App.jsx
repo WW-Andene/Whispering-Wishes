@@ -68,24 +68,18 @@ import CalculatorTab from './features/calculator/CalculatorTab.jsx';
 import CollectionTab from './features/collection/CollectionTab.jsx';
 import TeamsTab from './features/teams/TeamsTab.jsx';
 import ProfileTab from './features/profile/ProfileTab.jsx';
+import { constantTimeCompare } from './utils/constantTimeCompare.js';
+import {
+  VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY,
+  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, MAX_BOOKMARK_NAME_LENGTH,
+} from './shared/constants/appConstants.js';
+import { silentCatch } from './utils/silentCatch.js';
+import { getMergedHistories } from './core/historyUtils.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
 const CALC_DEFER_MS = 150;
 const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
-import { constantTimeCompare } from './utils/constantTimeCompare.js'; // I4-01: deduplicated
-import {
-  VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY,
-  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, MAX_BOOKMARK_NAME_LENGTH,
-} from './shared/constants/appConstants.js';
-const currentYear = new Date().getFullYear();
-const TRACKER_CATEGORIES = Object.freeze([
-  Object.freeze({ key: 'character', label: 'Resonators', color: 'yellow' }),
-  Object.freeze({ key: 'weapon', label: 'Weapons', color: 'pink' }),
-  Object.freeze({ key: 'standard', label: 'Standard', color: 'cyan' }),
-]);
-
-import { silentCatch } from './utils/silentCatch.js';
 
 // P13-FIX: HIGH-5 - Hash UIDs before writing to Firebase to protect player privacy.
 // Game UIDs can potentially be correlated to real identities; hashing makes stored data pseudonymous.
@@ -475,9 +469,7 @@ function WhisperingWishesInner() {
   // File import handler
   // P4: Memoized collection data - avoids recomputing 5x per render
   const collectionData = useMemo(() => {
-    const beginnerHist = state.profile.beginner?.history || [];
-    const charHistory = [...state.profile.featured.history, ...(state.profile.standardChar?.history || []), ...beginnerHist.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
-    const weapHistory = [...state.profile.weapon.history, ...(state.profile.standardWeap?.history || []), ...beginnerHist.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
+    const { charHistory, weapHistory } = getMergedHistories(state.profile);
     const countItems = (history, rarity, isChar) => {
       const items = history.filter(p => p.rarity === rarity && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name)));
       return items.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
