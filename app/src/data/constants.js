@@ -144,7 +144,7 @@ const MATERIAL_IMAGES = {
   'Arithmetic Shell': 'https://i.ibb.co/7x2b0KH1/Item-Arithmetic-Shell.webp',
   'Afterlife': 'https://i.ibb.co/Kp3YWmGF/Afterlife.webp',
   'Moss Amber': 'https://i.ibb.co/7tNWkRfj/1771262854560.png',
-  'Edelschnee': 'https://wuwatracker.com/api/item-icons/file/edelschnee.png',
+  'Edelschnee': 'https://i.ibb.co/gbXc1QYD/T-Icon-C-074-UI.webp',
   // === Skill Upgrade — Weekly Boss Drops ===
   'Monument Bell': 'https://i.ibb.co/S4194zWY/Item-Monument-Bell.webp',
   'Unending Destruction': 'https://i.ibb.co/gFghm5L6/Item-Unending-Destruction.webp',
