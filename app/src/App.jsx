@@ -76,8 +76,7 @@ import {
   ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, MAX_BOOKMARK_NAME_LENGTH,
 } from './shared/constants/appConstants.js';
 import { silentCatch } from './utils/silentCatch.js';
-import { getMergedHistories } from './core/historyUtils.js';
-import { gatherAuxData, restoreAuxData } from './core/storageKeys.js';
+import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;

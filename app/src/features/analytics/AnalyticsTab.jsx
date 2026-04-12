@@ -15,7 +15,7 @@ import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy,
 import PityHistogram from './PityHistogram.jsx';
 import ConveneHistoryChart from './ConveneHistoryChart.jsx';
 import { ALL_CHARACTERS } from '../../data/characters.js';
-import { getMergedHistories } from '../../core/historyUtils.js';
+import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';

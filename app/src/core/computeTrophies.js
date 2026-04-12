@@ -5,7 +5,7 @@
 
 import { ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, STANDARD_5STAR_CHARACTERS } from '../data/characters.js';
 import { HARD_PITY, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS } from '../data/constants.js';
-import { getMergedHistories } from './historyUtils.js';
+import { getMergedHistories } from './storageKeys.js';
 
 export function computeTrophies(profile, overallStats, trophyOverrides = {}) {
     if (!profile.importedAt) return null;

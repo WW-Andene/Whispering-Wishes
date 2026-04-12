@@ -103,3 +103,19 @@ export function restoreAuxData(aux, sanitizeFn) {
 export function clearAllAuxKeys() {
   ALL_CLEARABLE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
 }
+
+// ── History merging (was historyUtils.js — too small for own file) ──
+import { ALL_CHARACTERS } from '../data/characters.js';
+
+/** Merge all banner histories from a profile into character and weapon histories.
+ *  Single source of truth — replaces 6 duplicated merge blocks across 4 files. */
+export function getMergedHistories(profile) {
+  const featuredHist = profile.featured?.history || [];
+  const weaponHist = profile.weapon?.history || [];
+  const stdCharHist = profile.standardChar?.history || [];
+  const stdWeapHist = profile.standardWeap?.history || [];
+  const beginnerHist = profile.beginner?.history || [];
+  const charHistory = [...featuredHist, ...stdCharHist, ...beginnerHist.filter(p => p.name && ALL_CHARACTERS.has(p.name))];
+  const weapHistory = [...weaponHist, ...stdWeapHist, ...beginnerHist.filter(p => p.name && !ALL_CHARACTERS.has(p.name))];
+  return { charHistory, weapHistory, allHistory: [...charHistory, ...weapHistory] };
+}
