@@ -1098,36 +1098,101 @@ function PlannerTab({
               </FocusTrapModal>
             )}
 
-            {/* Farming targets */}
+            {/* Farming targets — each character gets its own self-contained card */}
             {farmTargetsState.map((t, i) => {
               const d = CHARACTER_DATA[t.name];
+              if (!d) return null;
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
+              const themeArt = CHARACTER_THEMES.find(ct => ct.name === t.name)?.bannerArt
+                || CURRENT_BANNERS.characters?.find(c => c.name === t.name)?.imageUrl;
+
+              // Per-character materials
+              const charMats = {};
+              let charShell = 0;
+              const addMat = (name, qty) => { if (!name || !qty) return; if (!charMats[name]) charMats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; charMats[name].qty += qty; };
+              if (t.ascension) {
+                addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
+                const ct = COMMON_MAT_TIERS[d.ascension?.common];
+                if (ct) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT3); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT4); }
+                addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
+                charShell += RESONATOR_ASCENSION_COSTS.shell;
+              }
+              if (t.skills) {
+                const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
+                if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4); }
+                const ct = COMMON_MAT_TIERS[d.ascension?.common];
+                if (ct) { addMat(ct[0], SKILL_UPGRADE_COSTS.commonT3); addMat(ct[1], SKILL_UPGRADE_COSTS.commonT4); }
+                addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
+                charShell += SKILL_UPGRADE_COSTS.shell;
+              }
+              if (t.weapon && d.bestWeapon) {
+                const w = WEAPON_DATA?.[d.bestWeapon];
+                if (w?.ascensionMaterials) {
+                  const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
+                  const ft = FORGERY_MAT_TIERS[w.ascensionMaterials.forgery];
+                  if (ft) { addMat(ft[0], costs.forgeryT3); addMat(ft[1], costs.forgeryT4); }
+                  const ct = COMMON_MAT_TIERS[w.ascensionMaterials.common];
+                  if (ct) { addMat(ct[0], costs.commonT3); addMat(ct[1], costs.commonT4); }
+                  charShell += costs.shell;
+                }
+              }
+              const charMatList = Object.entries(charMats).sort((a, b) => b[1].qty - a[1].qty);
+              const hasAnyToggle = t.ascension || t.skills || t.weapon;
+
               return (
-                <div key={t.name} className="relative overflow-hidden p-2.5 rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
-                  {/* Banner splash art background */}
-                  {(() => {
-                    const themeArt = CHARACTER_THEMES.find(ct => ct.name === t.name)?.bannerArt
-                      || CURRENT_BANNERS.characters?.find(c => c.name === t.name)?.imageUrl;
-                    return themeArt ? (
-                      <img src={themeArt} alt="" className="absolute right-0 top-0 h-full w-2/5 object-cover object-center opacity-20 pointer-events-none" loading="lazy" onError={hideOnError}
-                        style={{ maskImage: 'linear-gradient(to right, transparent 10%, black 60%)', WebkitMaskImage: 'linear-gradient(to right, transparent 10%, black 60%)' }} />
-                    ) : null;
-                  })()}
-                  <div className="relative z-10 flex items-center gap-2 mb-2">
-                    <span className="font-bold text-xl flex-1 text-center" style={{ color: elColor }}>{t.name}</span>
-                    <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
-                  </div>
-                  <div className="relative z-10 flex gap-1.5">
+                <div key={t.name} className="relative overflow-hidden rounded-lg" style={{ background: `${elColor}08`, border: `1px solid ${elColor}25` }}>
+                  {/* Splash art header */}
+                  {themeArt && (
+                    <div className="relative h-20 overflow-hidden rounded-t-lg">
+                      <img src={themeArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none" loading="lazy" onError={hideOnError}
+                        style={{ objectPosition: 'center 25%' }} />
+                      <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${elColor}20 0%, transparent 40%)` }} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="font-bold text-2xl text-white drop-shadow-lg">{t.name}</span>
+                      </div>
+                      <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="absolute top-2 right-2 text-white/60 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center rounded-full bg-black/40" aria-label={`Remove ${t.name}`}><X size={14} /></button>
+                    </div>
+                  )}
+                  {!themeArt && (
+                    <div className="relative z-10 flex items-center gap-2 p-2.5 pb-0">
+                      <span className="font-bold text-xl flex-1 text-center" style={{ color: elColor }}>{t.name}</span>
+                      <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors p-1 min-w-[28px] min-h-[28px] flex items-center justify-center" aria-label={`Remove ${t.name}`}><X size={12} /></button>
+                    </div>
+                  )}
+
+                  {/* Toggle buttons */}
+                  <div className="relative z-10 flex gap-1.5 p-2.5">
                     {[['ascension', 'Ascension'], ['skills', 'Forte'], ['weapon', 'Weapon']].map(([key, label]) => (
                       <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '6px 8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
                     ))}
                   </div>
+
+                  {/* Per-character materials */}
+                  {hasAnyToggle && charMatList.length > 0 && (
+                    <div className="px-2.5 pb-2.5 space-y-1.5">
+                      <div className="flex items-center justify-between p-1.5 rounded bg-yellow-500/10">
+                        <span className="text-yellow-400 text-sm font-medium">Shell Credit</span>
+                        <span className="text-yellow-400 font-bold text-sm kuro-number">{charShell.toLocaleString('en-US')}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1">
+                        {charMatList.map(([name, { qty, img }]) => (
+                          <div key={name} className="flex items-center gap-1.5 p-1.5 rounded" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                            {img && <img src={img} alt="" className="w-5 h-5 rounded flex-shrink-0" onError={hideOnError} />}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                            </div>
+                            <span className="text-orange-400 font-bold kuro-number text-xs flex-shrink-0">×{qty}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
 
-            {/* Material summary */}
-            {farmTargetsState.length > 0 && (() => {
+            {/* Combined total summary */}
+            {farmTargetsState.length > 1 && (() => {
               const mats = {};
               let totalShell = 0;
               const addMat = (name, qty) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
@@ -1164,15 +1229,13 @@ function PlannerTab({
               const matList = Object.entries(mats).sort((a, b) => b[1].qty - a[1].qty);
               return (
                 <>
-                  {/* Shell Credit total */}
+                  <div className="kuro-label mt-2">Combined Total ({farmTargetsState.length} Resonators)</div>
                   <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                     <div className="flex items-center justify-between">
                       <span className="text-yellow-400 text-base font-medium">Shell Credit</span>
                       <span className="text-yellow-400 font-bold text-lg kuro-number">{totalShell.toLocaleString('en-US')}</span>
                     </div>
                   </div>
-                  {/* Material grid — sub-card style */}
-                  <div className="kuro-label">Materials Required</div>
                   <div className="grid grid-cols-2 gap-2">
                     {matList.map(([name, { qty, img }]) => (
                       <div key={name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
