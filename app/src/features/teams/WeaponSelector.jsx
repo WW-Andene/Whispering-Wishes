@@ -87,7 +87,7 @@ export default function WeaponSelector({
                                       <div className="flex items-center gap-2">
                                         {collectionImages[name] ? (
                                           <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${rarity5 ? 'kuro-rarity-frame-5 holo-5star' : 'kuro-rarity-frame-4'}`} style={{ position: 'relative' }}>
-                                            <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                                            <img src={collectionImages[name]} alt={name} className="w-full h-full object-cover" onError={hideOnError} />
                                           </div>
                                         ) : (
                                           <Sword size={14} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} />

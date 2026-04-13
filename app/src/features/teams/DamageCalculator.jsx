@@ -1177,7 +1177,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 title={eq.weapon || 'Select weapon'}
                               >
                                 {equippedWeap && collectionImages[eq.weapon] ? (
-                                  <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-contain rounded-lg" onError={hideOnError} />
+                                  <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-cover rounded-lg" onError={hideOnError} />
                                 ) : equippedWeap ? (
                                   <>
                                     <Sword size={14} className={equippedWeap.rarity === 5 ? 'text-yellow-400' : 'text-purple-400'} />
