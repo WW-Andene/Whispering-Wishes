@@ -364,7 +364,9 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Guardian Rectifier': 'https://i.ibb.co/Wp618BH3/Guardian-Rectifier.webp',
   'Augment': 'https://i.ibb.co/Mk44Y5W4/Augment.webp',
   // Broadblades
-  'Guardian Broadblade': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/85/Weapon_Guardian_Broadblade.png',
+  'Training Broadblade': 'https://i.ibb.co/sdfM24cr/Weapon-Training-Broadblade.webp',
+  'Tyro Broadblade': 'https://i.ibb.co/ds5DBHgM/Weapon-Tyro-Broadblade.webp',
+  'Guardian Broadblade': 'https://i.ibb.co/gLqjnhM1/Weapon-Guardian-Broadblade.webp',
   'Broadblade of Night': 'https://i.ibb.co/m5kvbBJH/Broadblade-of-Night.webp',
   'Discord': 'https://i.ibb.co/p6L36v9V/Discord.webp',
   // Gauntlets
