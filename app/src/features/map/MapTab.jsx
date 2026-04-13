@@ -41,8 +41,8 @@ export default function MapTab() {
     // Fit the map to show the full image
     map.fitBounds(bounds);
 
-    // Tile layer — Google layout: {z}/{x}/{y}
-    L.tileLayer('/map-tiles/{z}/{x}/{y}.webp', {
+    // Tile layer — vips Google layout: {z}/{y}/{x}
+    L.tileLayer('/map-tiles/{z}/{y}/{x}.webp', {
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
       tileSize: TILE_SIZE,
