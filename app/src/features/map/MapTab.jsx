@@ -60,7 +60,6 @@ export default function MapTab({ navPadding = 80 }) {
         errorTileUrl: BASE + 'map-tiles/blank.png',
       }).addTo(map);
 
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
 
       setTimeout(() => { if (map) map.invalidateSize(); }, 200);
 
