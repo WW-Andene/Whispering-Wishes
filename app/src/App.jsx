@@ -1000,11 +1000,8 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setShowServerDropdown(true)} aria-label="Select server region" className="text-gray-300 text-sm px-2 py-1.5 rounded-lg focus:outline-none transition-all min-h-[44px] flex items-center gap-1.5" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
-                {state.server} <ChevronDown size={10} />
-              </button>
-              <button onClick={handleExport} aria-label="Export backup" title="Export backup" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 active:scale-95 transition-all" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
-                <Download size={14} />
+              <button onClick={() => setActiveTab('profile')} aria-label="Profile" title="Profile" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: 'var(--radius-md)' }}>
+                <User size={16} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
               </button>
             </div>
           </div>
@@ -1012,8 +1009,8 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflowX: 'auto', overflowY: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
-          const tabs = ['tracker','events','planner','calculator','analytics','teams','gathering','profile'];
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+          const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
           if (e.key === 'ArrowRight') { e.preventDefault(); newTab = tabs[(idx + 1) % tabs.length]; }
@@ -1040,7 +1037,6 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
         <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
         <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
-        <TabButton active={activeTab === 'profile'} onClick={() => setActiveTab('profile')} tabRef={tabNavRef} tabId="profile" accentColor={themeAccent}><User size={18} /> Profile</TabButton>
       </nav>
 
       <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{ paddingBottom: navPadding }} role="main">
