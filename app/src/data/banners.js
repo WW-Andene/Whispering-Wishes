@@ -537,6 +537,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Glommoth': 'https://i.ibb.co/yBX17MGF/Glommoth-Icon.webp',
   'Ironhoof': 'https://i.ibb.co/bRNS0DKF/Ironhoof-Icon.webp',
   'Mining Reindeer': 'https://i.ibb.co/8gc61bfT/Mining-Reindeer-Icon.webp',
+  'Reminiscence - Kronaclaw': 'https://i.ibb.co/KxrLYyzN/T-Icon-Monster-Head-32060-UI.webp',
   'Kronablight': 'https://i.ibb.co/4ZJ1Kzwb/Kronablight-Icon.webp',
   'Pilgrim\'s Shell': 'https://i.ibb.co/rGSxX774/Pilgrim-s-Shell-Icon.webp',
   'Kerasaur': 'https://i.ibb.co/tP81d0f5/Kerasaur-Icon.webp',
