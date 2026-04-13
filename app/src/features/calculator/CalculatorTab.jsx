@@ -46,7 +46,7 @@ function CalculatorTab({ state, dispatch }) {
   // P15-FIX: MEDIUM-16 — Initial deferredCalc is null to defer first DP computation
   // until after first paint, preventing jank on calculator tab open.
   // [SECTION:CALC] ── Deferred calculation & astrite allocation ───────────────
-  const [deferredCalc, setDeferredCalc] = useState(null);
+  const [deferredCalc, setDeferredCalc] = useState(state.calc);
   const calcDeferTimerRef = useRef(null);
   useEffect(() => {
     if (calcDeferTimerRef.current) clearTimeout(calcDeferTimerRef.current);
