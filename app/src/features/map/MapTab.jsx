@@ -27,12 +27,10 @@ export default function MapTab() {
 
       setStatus('Initializing...');
 
-      // Calculate the minimum zoom so the map always fills the container
       const container = containerRef.current;
-      const minZoomFit = Math.ceil(Math.log2(
+      const minZoom = Math.max(0, Math.ceil(Math.log2(
         Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
-      ) + MAX_ZOOM);
-      const minZoom = Math.max(0, minZoomFit);
+      ) + MAX_ZOOM));
 
       map = L.map(container, {
         crs: L.CRS.Simple,
@@ -80,11 +78,11 @@ export default function MapTab() {
 
   return (
     <>
-      <style>{`.leaflet-map-bg .leaflet-container, .leaflet-map-bg { background: ${MAP_BG} !important; }`}</style>
+      <style>{`.leaflet-map-bg, .leaflet-map-bg .leaflet-container { background: ${MAP_BG} !important; }`}</style>
       <Card>
         <CardHeader>Interactive Map</CardHeader>
-        <CardBody style={{ padding: 0 }}>
-          <div style={{ width: '100%', height: 'calc(100vh - 200px)', minHeight: '300px', position: 'relative' }}>
+        <CardBody>
+          <div style={{ position: 'relative', height: '60vh', minHeight: '300px' }}>
             {status && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                 {status}
@@ -93,13 +91,11 @@ export default function MapTab() {
             <div
               ref={containerRef}
               className="leaflet-map-bg"
-              style={{ width: '100%', height: '100%', background: MAP_BG, overflow: 'hidden', borderRadius: '0 0 12px 12px' }}
+              style={{ width: '100%', height: '100%', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
             />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 1000, pointerEvents: 'none' }}>
-              <div className="kuro-header" style={{ borderTop: '1px solid var(--border-medium)', borderBottom: 'none', borderRadius: '0 0 12px 12px' }}><h3>Pinch to zoom · Drag to pan</h3></div>
-            </div>
           </div>
         </CardBody>
+        <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
       </Card>
     </>
   );
