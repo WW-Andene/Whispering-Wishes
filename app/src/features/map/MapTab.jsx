@@ -81,19 +81,13 @@ export default function MapTab() {
       <style>{`.leaflet-map-bg, .leaflet-map-bg .leaflet-container { background: ${MAP_BG} !important; }`}</style>
       <Card>
         <CardHeader>Interactive Map</CardHeader>
-        <CardBody>
-          <div style={{ position: 'relative', height: '60vh', minHeight: '300px' }}>
-            {status && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
-                {status}
-              </div>
-            )}
-            <div
-              ref={containerRef}
-              className="leaflet-map-bg"
-              style={{ width: '100%', height: '100%', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
-            />
-          </div>
+        <CardBody className="space-y-2">
+          {status && <div className="text-center text-gray-500 text-sm py-4">{status}</div>}
+          <div
+            ref={containerRef}
+            className="leaflet-map-bg"
+            style={{ width: '100%', aspectRatio: '3/4', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
+          />
         </CardBody>
         <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
       </Card>
