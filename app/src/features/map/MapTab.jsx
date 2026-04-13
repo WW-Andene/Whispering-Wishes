@@ -6,7 +6,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 // Map dimensions in pixels
 const MAP_W = 12288;
