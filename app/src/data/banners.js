@@ -441,7 +441,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Flora Drone': 'https://i.ibb.co/yccgwMG1/Flora-Drone-Icon.webp',
   'Mining Drone': 'https://i.ibb.co/q3m55xgj/Mining-Drone-Icon.webp',
   'Geospider S4': 'https://i.ibb.co/P7x6wBm/Geospider-S4-Icon.webp',
-  'Young Roseshroom': 'https://i.ibb.co/FZD3Z3N/Baby-Roseshroom-Icon.webp',
+  'Baby Roseshroom': 'https://i.ibb.co/gMCfrP73/Baby-Roseshroom-Icon.webp',
   'Vanguard Junrock': 'https://i.ibb.co/zVGNLzdt/Vanguard-Junrock-Icon.webp',
   'Fission Junrock': 'https://i.ibb.co/yBhnf1nj/Fission-Junrock-Icon.webp',
   'Golden Junrock': 'https://i.ibb.co/R4Mtj1t6/Golden-Junrock-Icon.webp',

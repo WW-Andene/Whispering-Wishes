@@ -116,7 +116,7 @@ const ALL_1COST_ECHOES = [
   // v1.1 — Mt. Firmament
   'Electro Predator', 'Fusion Dreadmane', 'Lava Larva',
   'Clang Bang', 'Dwarf Cassowary', 'Excarat',
-  'Baby Viridblaze Saurian', 'Young Roseshroom',
+  'Baby Viridblaze Saurian', 'Baby Roseshroom',
   // v1.0 — Launch
   'Fusion Prism', 'Glacio Prism', 'Havoc Prism', 'Spectro Prism',
   'Snip Snap', 'Zig Zag', 'Hooscamp',
@@ -234,7 +234,7 @@ const ECHO_DATA = {
   'Havoc Prism':                     { sets: ['Void Thunder', 'Celestial Light', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A mineral TD filled with Havoc energy. Skill summons Havoc Prism to fire 5 crystal shards, each dealing 23% Havoc DMG.' , imageUrl: 'https://i.ibb.co/GvXxrfB8/Havoc-Prism.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/dwq9gCwp/Havoc-Prism-Icon.webp' },
   'Spectro Prism':                   { sets: ['Molten Rift', 'Void Thunder', 'Celestial Light'], buff: 'Spectro DMG', desc: 'A mineral TD that emits Spectro light to buff nearby allies. Skill summons Spectro Prism to emit a laser hitting up to 8 times for 14% Spectro DMG each.' , imageUrl: 'https://i.ibb.co/mFgskgrq/Spectro-Prism.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/DfBFLQ5q/Spectro-Prism-Icon.webp' },
   'Baby Viridblaze Saurian':         { sets: ['Molten Rift', 'Void Thunder', 'Lingering Tunes'], buff: 'Fusion DMG', desc: 'A small amphibian-like creature found in forests. Skill transforms into Baby Viridblaze Saurian to rest in place and slowly restore HP.' , imageUrl: 'https://i.ibb.co/bgYKXrZY/Baby-Viridblaze-Saurian.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/DHhNddtp/Baby-Viridblaze-Saurian-Icon.webp' },
-  'Young Roseshroom':                { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A young fungal Tacet Discord. Skill summons Baby Roseshroom to fire a laser dealing 32% + 64 Havoc DMG.' , imageUrl: 'https://i.ibb.co/wrZwHGPY/Young-Roseshroom.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/FZD3Z3N/Baby-Roseshroom-Icon.webp' },
+  'Baby Roseshroom':                { sets: ['Sierra Gale', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A young fungal Tacet Discord. Skill summons Baby Roseshroom to fire a laser dealing 32% + 64 Havoc DMG.' , imageUrl: 'https://i.ibb.co/wrZwHGPY/Young-Roseshroom.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/gMCfrP73/Baby-Roseshroom-Icon.webp' },
   'Clang Bang':                      { sets: ['Freezing Frost', 'Celestial Light'], buff: 'Glacio DMG', desc: 'An immature humanoid TD with ice crystals that make a "clang bang" sound. Skill summons Clang Bang that follows the enemy and self-combusts, dealing 32% + 64 Glacio DMG.' , imageUrl: 'https://i.ibb.co/nqNfQkTY/Clang-Bang.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/cc3hxYDw/Clang-Bang-Icon.webp' },
   'Dwarf Cassowary':                 { sets: ['Sierra Gale', 'Rejuvenating Glow'], buff: 'Physical DMG', desc: 'A small flightless bird-like Tacet Discord. Skill summons Dwarf Cassowary to track and attack the enemy dealing 38% Physical DMG x3.' , imageUrl: 'https://i.ibb.co/zWw2yrNK/Dwarf-Cassowary.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/nqkB7N5H/Dwarf-Cassowary-Icon.webp' },
   'Excarat':                         { sets: ['Freezing Frost', 'Havoc Eclipse'], buff: 'Physical DMG', desc: 'A burrowing rodent-like Tacet Discord. Skill transforms into Excarat and tunnels underground to advance, immune to damage while burrowed. Can change direction freely.' , imageUrl: 'https://i.ibb.co/GQmwQXBz/Excarat.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/7JCWR4LZ/Excarat-Icon.webp' },
@@ -456,7 +456,7 @@ const ECHO_SKILL_BUFFS = {
   ['Havoc Prism', 115, 'Havoc', null],
   ['Spectro Prism', 115, 'Spectro', null],
   ['Baby Viridblaze Saurian', 0, 'Healing', null],
-  ['Young Roseshroom', 0, 'Havoc', null],
+  ['Baby Roseshroom', 0, 'Havoc', null],
   ['Clang Bang', 0, 'Glacio', null],
   ['Dwarf Cassowary', 115, 'Physical', null],
   ['Excarat', 0, 'Physical', null],
