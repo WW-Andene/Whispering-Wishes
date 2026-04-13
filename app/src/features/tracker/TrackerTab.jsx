@@ -57,6 +57,7 @@ function TrackerTab({
   }, [pullHistorySearch]);
   const [pullHistoryBannerFilter, setPullHistoryBannerFilter] = useState('all');
   const [pullHistoryRarityFilter, setPullHistoryRarityFilter] = useState('all');
+  const [dismissedImport, setDismissedImport] = useState(false);
 
   // Merge all pull histories from all banners
   const allPulls = useMemo(() => {
@@ -87,12 +88,15 @@ function TrackerTab({
             <TabBackground id="tracker" glowColor="gold" />
 
             {/* Onboarding hint for new users with no imported data */}
-            {!state.profile.importedAt && setActiveTab && (
-              <button onClick={() => setActiveTab('profile')} className="w-full flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer hover:border-cyan-400/40 active:scale-[0.98] transition-all">
-                <Upload size={14} className="text-cyan-400 flex-shrink-0" />
-                <span className="text-cyan-300/90 text-base">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
-                <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
-              </button>
+            {!state.profile.importedAt && !dismissedImport && setActiveTab && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer">
+                <button onClick={() => setActiveTab('profile')} className="flex items-center gap-2.5 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+                  <Upload size={14} className="text-cyan-400 flex-shrink-0" />
+                  <span className="text-cyan-300/90 text-base">Import your Convene history in the <strong>Profile</strong> tab to start tracking!</span>
+                  <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
+                </button>
+                <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-1.5" aria-label="Dismiss"><X size={14} /></button>
+              </div>
             )}
             {/* Category Tabs */}
             <Card>
