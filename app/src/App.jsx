@@ -960,7 +960,16 @@ function WhisperingWishesInner() {
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
           <div className="header-top flex items-center justify-between py-1.5">
             <div className="flex items-center gap-2">
-              <div className="relative group cursor-pointer" onClick={() => setActiveTab('profile')} title="Profile">
+              <div className="relative group cursor-pointer" onClick={async () => {
+                if (pwa?.canInstall) {
+                  const accepted = await pwa.promptInstall();
+                  if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                } else if (pwa?.isInstalled) {
+                  toast?.addToast?.('App is already installed', 'success');
+                } else {
+                  pwa?.showInstallGuide?.();
+                }
+              }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden group-hover:scale-[1.02] transition-transform" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
                   {state.profile.profilePic && collectionImages[state.profile.profilePic]
                     ? <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-cover object-top" />
@@ -992,6 +1001,11 @@ function WhisperingWishesInner() {
                 <h1 className="text-white font-semibold text-xl tracking-wide leading-tight">Whispering Wishes</h1>
                 <p className="text-sm tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
               </div>
+            </div>
+            <div className="header-controls flex items-center gap-2">
+              <button onClick={() => setActiveTab('profile')} aria-label="Profile" title="Profile" className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: 'var(--radius-md)' }}>
+                <User size={16} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
+              </button>
             </div>
           </div>
         </div>
