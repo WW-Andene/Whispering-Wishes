@@ -1,6 +1,8 @@
 import React from 'react';
-import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
+
+const CARD_HEIGHT = 'calc(100dvh - var(--map-nav-pad, 80px) - 12px)';
 
 export default function MapTab({ navPadding = 80 }) {
   return (
@@ -8,13 +10,15 @@ export default function MapTab({ navPadding = 80 }) {
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="map" />
 
-      <Card style={{ height: `calc(100dvh - ${navPadding}px - 12px)`, overflow: 'hidden' }}>
-        <CardHeader>Interactive Map</CardHeader>
-        <CardBody>
-          <p className="text-gray-400 text-sm">Map goes here</p>
-        </CardBody>
-        <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
-      </Card>
+      <div className="kuro-card" style={{ height: CARD_HEIGHT, '--map-nav-pad': `${navPadding}px`, overflow: 'hidden' }}>
+        <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <CardHeader>Interactive Map</CardHeader>
+          <div className="kuro-body" style={{ flex: 1, overflow: 'hidden' }}>
+            <p className="text-gray-400 text-sm">Map goes here</p>
+          </div>
+          <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
+        </div>
+      </div>
 
     </div>
     </div>
