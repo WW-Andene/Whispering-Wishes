@@ -10,7 +10,7 @@ const MAP_W = 12288;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
 const MAX_ZOOM = 6;
-const MAP_BG = '#162a3a';
+const MAP_BG = '#062633';
 const BASE = import.meta.env.BASE_URL || '/';
 
 export default function MapTab() {
