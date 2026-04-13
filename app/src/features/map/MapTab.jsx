@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 
 const CARD_HEIGHT = 'calc(100dvh - var(--map-nav-pad, 80px) - 12px)';
 
 export default function MapTab({ navPadding = 80 }) {
+  // Prevent page scroll while map tab is active
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   return (
     <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
     <div className="kuro-calc space-y-3 tab-content">
