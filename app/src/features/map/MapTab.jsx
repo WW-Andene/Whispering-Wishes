@@ -93,10 +93,11 @@ export default function MapTab() {
             <div
               ref={containerRef}
               className="leaflet-map-bg"
-              style={{ width: '100%', height: '100%', background: MAP_BG, borderRadius: '0 0 12px 12px', overflow: 'hidden' }}
+              style={{ width: '100%', height: '100%', background: MAP_BG, overflow: 'hidden' }}
             />
           </div>
         </CardBody>
+        <div className="kuro-header"><h3>Pinch to zoom · Drag to pan</h3></div>
       </Card>
     </>
   );
