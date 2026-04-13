@@ -1,8 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { writeFileSync, readFileSync } from 'fs';
+
+// Stamp sw.js with build time so the browser detects a new service worker each deploy
+const stampSW = () => ({
+  name: 'stamp-sw',
+  buildStart() {
+    const swPath = 'public/sw.js';
+    let sw = readFileSync(swPath, 'utf8');
+    sw = sw.replace(/\/\/ BUILD:.*/, '').trimEnd();
+    sw += `\n// BUILD: ${new Date().toISOString()}\n`;
+    writeFileSync(swPath, sw);
+  },
+});
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), stampSW()],
   test: {
     environment: 'jsdom',
     globals: true,
