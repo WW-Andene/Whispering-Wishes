@@ -970,7 +970,7 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
-                <div className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden group-hover:scale-[1.02] transition-transform" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid var(--border-medium)`, borderRadius: 'var(--radius-md)' }}>
+                <div className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden group-hover:scale-[1.02] transition-transform">
                   {state.profile.profilePic && collectionImages[state.profile.profilePic]
                     ? <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-cover object-top" />
                     : <img src={HEADER_ICON} alt="Whispering Wishes logo" style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
@@ -982,7 +982,7 @@ function WhisperingWishesInner() {
                       <span key={i} className="header-star" style={{
                         position: 'absolute',
                         left: '50%', top: '50%',
-                        width: 4, height: 4,
+                        width: 6, height: 6,
                         background: activeTheme ? themeAccent : '#facc15',
                         clipPath: 'polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%)',
                         animation: `header-star-emanate 2.5s ease-out ${i * 0.6}s infinite`,
