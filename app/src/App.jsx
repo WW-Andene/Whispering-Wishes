@@ -1091,7 +1091,7 @@ function WhisperingWishesInner() {
         {activeTab === 'map' && !bgFramingMode && (
           <TabErrorBoundary tabName="Map">
             <Suspense fallback={<TabLoadingFallback />}>
-              <MapTab />
+              <MapTab navPadding={navPadding} />
             </Suspense>
           </TabErrorBoundary>
         )}

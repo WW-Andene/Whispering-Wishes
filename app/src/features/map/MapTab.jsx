@@ -1,10 +1,10 @@
 import React from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 
-export default function MapTab() {
+export default function MapTab({ navPadding = 80 }) {
   return (
     <div className="kuro-card">
-      <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 12px - 80px)' }}>
+      <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', minHeight: `calc(100dvh - 12px - ${navPadding}px)` }}>
         <CardHeader>Interactive Map</CardHeader>
         <div className="kuro-body" style={{ flex: 1 }}>
           <p className="text-gray-400 text-sm">Map goes here</p>
