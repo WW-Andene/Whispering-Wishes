@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 
-const CARD_HEIGHT = 'calc(100dvh - var(--map-nav-pad, 80px) - 36px)';
+const CARD_HEIGHT = 'calc(100dvh - var(--map-nav-pad, 80px) - 12px)';
 
 export default function MapTab({ navPadding = 80 }) {
   // Prevent page scroll while map tab is active
