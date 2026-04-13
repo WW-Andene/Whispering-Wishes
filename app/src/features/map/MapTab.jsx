@@ -86,7 +86,7 @@ export default function MapTab() {
           <div
             ref={containerRef}
             className="leaflet-map-bg"
-            style={{ width: '100%', height: 'calc(100vh - 11rem)', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
+            style={{ width: '100%', aspectRatio: '3/4', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
           />
         </CardBody>
         <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
