@@ -79,18 +79,20 @@ export default function MapTab() {
   return (
     <>
       <style>{`.leaflet-map-bg, .leaflet-map-bg .leaflet-container { background: ${MAP_BG} !important; }`}</style>
-      <Card>
-        <CardHeader>Interactive Map</CardHeader>
-        <CardBody className="space-y-2">
-          {status && <div className="text-center text-gray-500 text-sm py-4">{status}</div>}
-          <div
-            ref={containerRef}
-            className="leaflet-map-bg"
-            style={{ width: '100%', aspectRatio: '3/4', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
-          />
-        </CardBody>
-        <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
-      </Card>
+      <div className="kuro-card" style={{ minHeight: 'calc(100dvh - var(--nav-height, 5rem) - 1.5rem)' }}>
+        <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', minHeight: 'inherit' }}>
+          <CardHeader>Interactive Map</CardHeader>
+          <div className="kuro-body flex-1 flex flex-col">
+            {status && <div className="text-center text-gray-500 text-sm py-4">{status}</div>}
+            <div
+              ref={containerRef}
+              className="leaflet-map-bg flex-1"
+              style={{ width: '100%', minHeight: '300px', background: MAP_BG, borderRadius: '8px', overflow: 'hidden' }}
+            />
+          </div>
+          <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
+        </div>
+      </div>
     </>
   );
 }
