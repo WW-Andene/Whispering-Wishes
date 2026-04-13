@@ -80,7 +80,7 @@ export default function EnemyEchoSelectorModal({
                   <div className="flex items-center gap-2">
                     {collectionImages[name] ? (
                       <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`}>
-                        <img src={collectionImages[name]} alt={name} className="w-full h-full object-contain" onError={hideOnError} />
+                        <img src={collectionImages[name]} alt={name} className="w-full h-full object-cover" onError={hideOnError} />
                       </div>
                     ) : (
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-${costColor}-500/30 bg-${costColor}-500/5`}>

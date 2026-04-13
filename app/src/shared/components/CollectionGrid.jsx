@@ -85,7 +85,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           src={processedUrl || imgUrl}
           alt={name}
           loading="lazy"
-          className="w-full h-full object-contain pointer-events-none"
+          className="w-full h-full object-cover pointer-events-none"
           style={{
             transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
             opacity: owned ? collOpacity : 0.3,

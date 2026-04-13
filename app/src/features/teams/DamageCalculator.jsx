@@ -1212,7 +1212,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     }}
                                   >
                                     {echoName && collectionImages[echoName] ? (
-                                      <EchoImage src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-contain rounded-lg" noBgProcess={ECHO_DATA[echoName]?.noBgProcess} />
+                                      <EchoImage src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-cover rounded-lg" noBgProcess={ECHO_DATA[echoName]?.noBgProcess} />
                                     ) : echoName ? (
                                       <>
                                         <Diamond size={12} className={`text-${costColor}-400`} />
