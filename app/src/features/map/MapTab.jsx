@@ -12,54 +12,50 @@ const MAP_W = 12288;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
 const MAX_ZOOM = 6;
-const MIN_ZOOM = 1;
+const MIN_ZOOM = 0;
 
 export default function MapTab() {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
 
   useEffect(() => {
-    if (mapRef.current) return; // already initialized
+    if (mapRef.current) return;
 
-    // Convert pixel bounds to Leaflet LatLng (CRS.Simple: y is inverted)
-    const southWest = L.CRS.Simple.pointToLatLng(L.point(0, MAP_H), MAX_ZOOM);
-    const northEast = L.CRS.Simple.pointToLatLng(L.point(MAP_W, 0), MAX_ZOOM);
-    const bounds = L.latLngBounds(southWest, northEast);
-
+    // CRS.Simple treats (lat, lng) as (y, x) in pixels, with y inverted.
+    // unproject converts pixel coords → LatLng at a given zoom.
     const map = L.map(containerRef.current, {
       crs: L.CRS.Simple,
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
-      maxBounds: bounds.pad(0.1),
-      maxBoundsViscosity: 1.0,
       zoomSnap: 0.5,
       zoomDelta: 0.5,
       attributionControl: false,
       zoomControl: false,
     });
 
-    // Fit the map to show the full image
+    // Image bounds in LatLng: top-left is [0,0], bottom-right is [-height, width]
+    const southWest = map.unproject([0, MAP_H], MAX_ZOOM);
+    const northEast = map.unproject([MAP_W, 0], MAX_ZOOM);
+    const bounds = L.latLngBounds(southWest, northEast);
+
+    map.setMaxBounds(bounds.pad(0.1));
     map.fitBounds(bounds);
 
-    // Tile layer — vips Google layout: {z}/{y}/{x}
-    L.tileLayer('/map-tiles/{z}/{y}/{x}.webp', {
+    // vips dzsave Google layout: tiles are at {z}/{y}/{x}.webp
+    // Leaflet CRS.Simple tile coords match directly (y=0 is top row)
+    L.tileLayer(import.meta.env.BASE_URL + 'map-tiles/{z}/{y}/{x}.webp', {
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
       tileSize: TILE_SIZE,
       noWrap: true,
       bounds,
-      errorTileUrl: '/map-tiles/blank.png',
+      errorTileUrl: import.meta.env.BASE_URL + 'map-tiles/blank.png',
     }).addTo(map);
 
-    // Zoom controls in bottom-right
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
+    return () => { map.remove(); mapRef.current = null; };
   }, []);
 
   return (
