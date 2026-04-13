@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState } from 'react';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 const MAP_W = 12288;
 const MAP_H = 16384;
@@ -70,16 +71,21 @@ export default function MapTab() {
   }, []);
 
   return (
-    <div style={{ width: '100%', height: 'calc(100vh - 130px)', minHeight: '300px', position: 'relative' }}>
-      {status && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
-          {status}
+    <Card>
+      <CardHeader>Interactive Map</CardHeader>
+      <CardBody style={{ padding: 0 }}>
+        <div style={{ width: '100%', height: 'calc(100vh - 200px)', minHeight: '300px', position: 'relative' }}>
+          {status && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
+              {status}
+            </div>
+          )}
+          <div
+            ref={containerRef}
+            style={{ width: '100%', height: '100%', background: '#0a0a0a', borderRadius: '0 0 12px 12px', overflow: 'hidden' }}
+          />
         </div>
-      )}
-      <div
-        ref={containerRef}
-        style={{ width: '100%', height: '100%', background: '#0a0a0a', borderRadius: '12px', overflow: 'hidden' }}
-      />
-    </div>
+      </CardBody>
+    </Card>
   );
 }
