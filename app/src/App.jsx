@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Sparkles, TrendingUp, User, Users, X } from 'lucide-react';
+import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Map, Sparkles, TrendingUp, User, Users, X } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
 import { CURRENT_BANNERS } from './data/banners.js';
@@ -69,6 +69,7 @@ const CalculatorTab = lazy(() => import('./features/calculator/CalculatorTab.jsx
 const CollectionTab = lazy(() => import('./features/collection/CollectionTab.jsx'));
 const TeamsTab = lazy(() => import('./features/teams/TeamsTab.jsx'));
 const ProfileTab = lazy(() => import('./features/profile/ProfileTab.jsx'));
+const MapTab = lazy(() => import('./features/map/MapTab.jsx'));
 const TabLoadingFallback = () => <div className="flex items-center justify-center py-20 text-gray-500 text-sm">Loading...</div>;
 import { constantTimeCompare } from './utils/constantTimeCompare.js';
 import {
@@ -1033,6 +1034,7 @@ function WhisperingWishesInner() {
         <div className="tab-indicator" />
         <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
         <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
+        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={18} /> Map</TabButton>
         <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
         <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
         <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
@@ -1081,6 +1083,15 @@ function WhisperingWishesInner() {
                 toast={toast}
               />
 
+            </Suspense>
+          </TabErrorBoundary>
+        )}
+
+        {/* [SECTION:TAB-MAP] */}
+        {activeTab === 'map' && !bgFramingMode && (
+          <TabErrorBoundary tabName="Map">
+            <Suspense fallback={<TabLoadingFallback />}>
+              <MapTab />
             </Suspense>
           </TabErrorBoundary>
         )}
