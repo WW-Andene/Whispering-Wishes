@@ -203,7 +203,7 @@
       --size-avatar-md: 68px;     /* Camera button, medium icons */
       --size-avatar-sm: 28px;     /* Trophy icons, small avatars */
       --size-touch-min: 44px;     /* iOS HIG minimum touch target */
-      --size-icon-btn: 22px;      /* Small icon buttons (profile pic setter) */
+      --size-icon-btn: 28px;      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
       --radius-micro: 1px;
       --radius-xs: 3px;
