@@ -35,7 +35,7 @@ export function useTabNavigation(swipeEnabled) {
   useEffect(() => {
     const saved = tabScrollPositions.current[activeTab];
     // Delay scroll restore so lazy-loaded tabs have time to render
-    const t = setTimeout(() => window.scrollTo(0, saved || 0), 50);
+    const t = setTimeout(() => window.scrollTo(0, saved || 0), 300);
     return () => clearTimeout(t);
   }, [activeTab]);
 
