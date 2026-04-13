@@ -79,7 +79,7 @@ export default function MapTab() {
   return (
     <>
       <style>{`.leaflet-map-bg, .leaflet-map-bg .leaflet-container { background: ${MAP_BG} !important; }`}</style>
-      <div className="kuro-card" style={{ height: 'calc(100dvh - 7.5rem)' }}>
+      <div className="kuro-card" style={{ height: 'calc(100dvh - 8.5rem)' }}>
         <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <CardHeader>Interactive Map</CardHeader>
           <div className="kuro-body flex-1 flex flex-col" style={{ overflow: 'hidden' }}>
