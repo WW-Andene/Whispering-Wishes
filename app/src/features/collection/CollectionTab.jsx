@@ -872,25 +872,22 @@ function CollectionTab({
     {/* Floating -/+ counter widget (appears on long-press of collection card) */}
     {counterWidget && (
       <div ref={counterWidgetRef}
-        className="fixed z-50 flex items-center gap-1 p-1 rounded-xl border border-white/20"
+        className="kuro-card fixed z-50 flex items-center gap-1.5 p-1.5"
         style={{
-          left: Math.min(counterWidget.x - 52, window.innerWidth - 120),
+          left: Math.min(counterWidget.x - 60, window.innerWidth - 140),
           top: Math.max(counterWidget.y - 50, 10),
-          background: 'rgba(10,14,22,0.95)',
-          backdropFilter: 'blur(12px)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.2)',
         }}>
         <button
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-red-400 hover:bg-red-500/20 transition-colors"
+          className="kuro-btn w-10 h-10 flex items-center justify-center text-lg font-bold text-red-400 hover:bg-red-500/20"
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, -1)}
           aria-label="Remove 1 copy"
         >−</button>
-        <div className="text-center min-w-[40px] px-1">
-          <div className="text-white text-sm font-bold">{manualCounts[counterWidget.name] || 0}</div>
+        <div className="text-center min-w-[44px] px-1">
+          <div className="text-white text-base font-bold kuro-number">{manualCounts[counterWidget.name] || 0}</div>
           <div className="text-gray-500 text-2xs truncate max-w-[60px]">{counterWidget.name.split(' ')[0]}</div>
         </div>
         <button
-          className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+          className="kuro-btn w-10 h-10 flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20"
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, +1)}
           aria-label="Add 1 copy"
         >+</button>
