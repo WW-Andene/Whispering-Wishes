@@ -16,7 +16,6 @@ const ECHO_IMG_STYLE = {
   imageRendering: 'auto',           // browser's best algorithm (lanczos/bicubic)
   WebkitBackfaceVisibility: 'hidden', // prevents blurring on transform
   backfaceVisibility: 'hidden',
-  filter: 'contrast(1.02) saturate(1.05)', // subtle boost — sharpens perceived detail
 };
 
 const EchoImage = ({ src, alt, className, style, noBgProcess, ...rest }) => {
