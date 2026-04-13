@@ -6,8 +6,8 @@ const CARD_HEIGHT = 'calc(100dvh - var(--map-nav-pad, 80px) - 12px)';
 
 export default function MapTab({ navPadding = 80 }) {
   return (
-    <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
-    <div className="kuro-calc space-y-3 tab-content">
+    <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ overflow: 'hidden', maxHeight: 'calc(100dvh - 12px)' }}>
+    <div className="kuro-calc space-y-3 tab-content" style={{ overflow: 'hidden' }}>
       <TabBackground id="map" />
 
       <div className="kuro-card" style={{ height: CARD_HEIGHT, '--map-nav-pad': `${navPadding}px`, overflow: 'hidden' }}>
