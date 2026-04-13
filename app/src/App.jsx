@@ -971,10 +971,7 @@ function WhisperingWishesInner() {
                 }
               }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
                 <div className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden group-hover:scale-[1.02] transition-transform">
-                  {state.profile.profilePic && collectionImages[state.profile.profilePic]
-                    ? <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-cover object-top" />
-                    : <img src={HEADER_ICON} alt="Whispering Wishes logo" style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
-                  }
+                  <img src={HEADER_ICON} alt="Whispering Wishes logo" style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -1005,7 +1002,7 @@ function WhisperingWishesInner() {
             <div className="header-controls flex items-center gap-2">
               <button onClick={() => setActiveTab('profile')} aria-label="Profile" title="Profile" className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: 'var(--radius-md)' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
-                  ? <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-cover object-top" />
+                  ? <img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" />
                   : <User size={16} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
                 }
               </button>
