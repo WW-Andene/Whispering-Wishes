@@ -29,6 +29,7 @@ export default function MapTab({ navPadding = 80 }) {
       setStatus('Initializing...');
 
       const container = containerRef.current;
+      container.style.backgroundColor = MAP_BG;
       const minZoom = Math.max(0, Math.ceil(Math.log2(
         Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
       ) + MAX_ZOOM));
@@ -79,7 +80,6 @@ export default function MapTab({ navPadding = 80 }) {
   return (
     <>
       <style>{`
-        body:has(#tabpanel-map),
         .map-card,
         .map-card .kuro-card-inner,
         .map-card .kuro-body,
@@ -88,7 +88,9 @@ export default function MapTab({ navPadding = 80 }) {
         .leaflet-map-bg .leaflet-tile-pane,
         .leaflet-map-bg .leaflet-overlay-pane,
         .leaflet-map-bg .leaflet-map-pane,
-        .leaflet-map-bg .leaflet-proxy { background: ${MAP_BG} !important; }
+        .leaflet-map-bg .leaflet-proxy,
+        .leaflet-map-bg .leaflet-layer { background-color: ${MAP_BG} !important; }
+        .map-card::before, .map-card::after { background: ${MAP_BG} !important; }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
