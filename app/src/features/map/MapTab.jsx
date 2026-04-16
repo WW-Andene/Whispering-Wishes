@@ -80,6 +80,9 @@ export default function MapTab({ navPadding = 80 }) {
 
   return (
     <>
+      <style>{`
+        .map-card .kuro-header { background: transparent !important; }
+      `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
