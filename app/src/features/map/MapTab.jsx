@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 
-const MAP_W = 12288;
+const MAP_W = 16384;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
 const MAX_ZOOM = 6;
