@@ -1002,18 +1002,22 @@ function WhisperingWishesInner() {
             <div className="header-controls flex items-center gap-2">
               <button onClick={() => setActiveTab('profile')} aria-label="Profile" title="Profile" className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: 'var(--radius-md)' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
-                  ? (
-                    <div className="absolute inset-0" style={{
-                      maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
-                    }}>
-                      <img
-                        src={collectionImages[state.profile.profilePic]}
-                        alt={state.profile.profilePic}
-                        className={`w-full h-full ${ALL_CHARACTERS.has(state.profile.profilePic) ? 'object-contain' : 'object-cover'}`}
-                      />
-                    </div>
-                  )
+                  ? (() => {
+                      const pf = getImageFraming(`collection-${state.profile.profilePic}`);
+                      return (
+                        <div className="absolute inset-0" style={{
+                          maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+                          WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+                        }}>
+                          <img
+                            src={collectionImages[state.profile.profilePic]}
+                            alt={state.profile.profilePic}
+                            className={`w-full h-full ${ALL_CHARACTERS.has(state.profile.profilePic) ? 'object-contain' : 'object-cover'}`}
+                            style={{ transform: `scale(${pf.zoom / 100}) translate(${-pf.x}%, ${-pf.y}%)` }}
+                          />
+                        </div>
+                      );
+                    })()
                   : <User size={16} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
                 }
               </button>
