@@ -147,3 +147,9 @@ Schema migration is scaffolded at `core/storage.js:51` (empty `migrations` objec
 - `P3` — Security & Trust
 - `P4` — State & Data Integrity
 - further parts to be issued
+
+## Related design docs
+
+- [BRAND.md](./BRAND.md) — identity thesis, protected elements, five-axis profile, always/never rules
+- [VOICE.md](./VOICE.md) — copy voice, domain vocabulary, state-type tone rules, anti-examples
+- [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) — token inventory (primitive/semantic/component), spacing dual-rhythm reference, component conventions, motion vocabulary
