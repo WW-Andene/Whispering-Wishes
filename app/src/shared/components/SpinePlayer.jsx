@@ -40,6 +40,10 @@ function SpinePlayerComponent({
   showControls = false,
   backgroundColor = '#00000000',
   onError,
+  paused = false,
+  scaleOverride,
+  txOverride,
+  tyOverride,
 }) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
@@ -74,6 +78,11 @@ function SpinePlayerComponent({
         alpha: true,
         premultipliedAlpha: false,
         showLoading: true,
+        success: (player) => {
+          if (paused && player && player.animationState) {
+            try { player.animationState.timeScale = 0; } catch (_) {}
+          }
+        },
         error: (player, msg) => {
           if (containerRef.current) containerRef.current.innerHTML = '';
           setFailed(true);
@@ -92,12 +101,14 @@ function SpinePlayerComponent({
         playerRef.current = null;
       }
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused]);
 
   if (failed) return null;
 
   const charData = SPINE_CHARACTERS[characterId] || {};
-  const { scale = 1, tx = 0, ty = 0 } = charData;
+  const scale = scaleOverride !== undefined ? scaleOverride : (charData.scale ?? 1);
+  const tx = txOverride !== undefined ? txOverride : (charData.tx ?? 0);
+  const ty = tyOverride !== undefined ? tyOverride : (charData.ty ?? 0);
 
   return (
     <div

@@ -107,22 +107,27 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     )}
     {useSpine && (
       <>
+        {/* Static backdrop: paused Spine, scaled 2x, dimmed */}
         <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4, transform: 'scale(2)', opacity: 0.5, filter: 'blur(2px)' }}>
           <SpineErrorBoundary onError={() => setSpineFailed(true)}>
             <SpinePlayer
               characterId={spineId}
               className="w-full h-full"
               backgroundColor="#00000000"
+              paused
               onError={() => setSpineFailed(true)}
             />
           </SpineErrorBoundary>
         </div>
+        {/* Foreground: animated, zoomed on face */}
         <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
           <SpineErrorBoundary onError={() => setSpineFailed(true)}>
             <SpinePlayer
               characterId={spineId}
               className="w-full h-full"
               backgroundColor="#00000000"
+              scaleOverride={4}
+              tyOverride={-15}
               onError={() => setSpineFailed(true)}
             />
           </SpineErrorBoundary>
