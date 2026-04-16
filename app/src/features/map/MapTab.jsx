@@ -44,8 +44,10 @@ export default function MapTab({ navPadding = 80 }) {
         zoomControl: false,
       });
 
-      const southWest = map.unproject([0, MAP_H], MAX_ZOOM);
-      const northEast = map.unproject([MAP_W, 0], MAX_ZOOM);
+      // Crop black padding bars — the tiles have black pixels on the edges
+      const CROP_X = 400;
+      const southWest = map.unproject([CROP_X, MAP_H], MAX_ZOOM);
+      const northEast = map.unproject([MAP_W - CROP_X, 0], MAX_ZOOM);
       const bounds = L.latLngBounds(southWest, northEast);
 
       map.setMaxBounds(bounds);
@@ -94,7 +96,7 @@ export default function MapTab({ navPadding = 80 }) {
               <div
                 ref={containerRef}
                 className="leaflet-map-bg"
-                style={{ position: 'absolute', top: 0, bottom: 0, left: '3%', right: '3%', background: MAP_BG }}
+                style={{ position: 'absolute', inset: 0, background: MAP_BG }}
               />
             </div>
             <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
