@@ -50,8 +50,22 @@ export default function MapTab({ navPadding = 80 }) {
       const northEast = map.unproject([MAP_W, 0], MAX_ZOOM);
       const bounds = L.latLngBounds(southWest, northEast);
 
-      map.setMaxBounds(bounds);
-      map.fitBounds(bounds);
+      // Measure header/footer heights so pan bounds + initial fit account for overlays
+      const cardInner = container.parentElement;
+      const headerH = cardInner?.querySelector('.kuro-header')?.offsetHeight || 48;
+      const footerH = cardInner?.querySelectorAll('.kuro-header')[1]?.offsetHeight || 48;
+
+      // Extend maxBounds in latLng so user can pan map content out from under the overlays
+      const pxToLat = (px) => map.unproject([0, 0], MAX_ZOOM).lat - map.unproject([0, px], MAX_ZOOM).lat;
+      const topPad = pxToLat(headerH);
+      const bottomPad = pxToLat(footerH);
+      const paddedBounds = L.latLngBounds(
+        [southWest.lat - bottomPad, southWest.lng],
+        [northEast.lat + topPad, northEast.lng]
+      );
+
+      map.setMaxBounds(paddedBounds);
+      map.fitBounds(bounds, { paddingTopLeft: [0, headerH], paddingBottomRight: [0, footerH] });
 
       L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
         minZoom,
