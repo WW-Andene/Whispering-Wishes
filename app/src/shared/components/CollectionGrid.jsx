@@ -93,9 +93,9 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           loading="lazy"
           className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
           style={{
-            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-            opacity: owned ? (useSpine ? 0.3 : collOpacity) : 0.3,
-            filter: owned ? (useSpine ? 'blur(2px)' : 'none') : 'grayscale(100%)',
+            transform: useSpine ? 'scale(2)' : `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+            opacity: owned ? (useSpine ? 0.5 : collOpacity) : 0.3,
+            filter: owned ? (useSpine ? 'blur(2.5px)' : 'none') : 'grayscale(100%)',
             maskImage: collMask,
             WebkitMaskImage: collMask
           }}
