@@ -45,10 +45,8 @@ export default function MapTab({ navPadding = 80 }) {
         zoomControl: false,
       });
 
-      // Crop 400px off each side to hide padding bars from tiling
-      const CROP = 400;
-      const southWest = map.unproject([CROP, MAP_H], MAX_ZOOM);
-      const northEast = map.unproject([MAP_W - CROP, 0], MAX_ZOOM);
+      const southWest = map.unproject([0, MAP_H], MAX_ZOOM);
+      const northEast = map.unproject([MAP_W, 0], MAX_ZOOM);
       const bounds = L.latLngBounds(southWest, northEast);
 
       map.setMaxBounds(bounds);
@@ -113,10 +111,10 @@ export default function MapTab({ navPadding = 80 }) {
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
 
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', '--bg-card': MAP_BG }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', '--bg-card': MAP_BG, background: MAP_BG }}>
           <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: MAP_BG }}>
             <CardHeader>Interactive Map</CardHeader>
-            <div className="kuro-body" style={{ flex: 1, overflow: 'hidden', padding: 0 }}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG }}>
               {status && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                   {status}
@@ -125,7 +123,7 @@ export default function MapTab({ navPadding = 80 }) {
               <div
                 ref={containerRef}
                 className="leaflet-map-bg"
-                style={{ width: '100%', height: '100%', background: MAP_BG }}
+                style={{ position: 'absolute', inset: 0, background: MAP_BG }}
               />
             </div>
             <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
