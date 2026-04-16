@@ -978,6 +978,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     [calcTeamStats, activeTeamData.slots, state.activeTeamIndex]
   );
 
+  const [overviewCollapsed, setOverviewCollapsed] = useSessionState('ww-team-overview-collapsed', false);
+
   const stats = activeTeamStats;
   if (!stats) return (
     <Card><CardBody className="text-center py-6">
@@ -987,7 +989,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   );
   const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
-  const [overviewCollapsed, setOverviewCollapsed] = useSessionState('ww-team-overview-collapsed', false);
 
   return (
     <>
