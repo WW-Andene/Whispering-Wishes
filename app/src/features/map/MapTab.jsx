@@ -55,6 +55,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [editingId, setEditingId] = useState(null);
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   const parentOptions = useMemo(() => {
     const canon = MAP_ZONES.map(z => ({ id: z.id, name: z.name || z.id, kind: 'canonical' }));
@@ -142,7 +143,7 @@ export default function MapTab({ navPadding = 80 }) {
         const parentName = isSub ? (MAP_ZONES.find(z => z.id === zone.parentId)?.name || zone.parentId) : null;
         const title = parentName ? `${parentName} › ${zone.name || zone.id}` : (zone.name || zone.id);
         const popupBody = zone.note ? `<div class="zone-popup-note">${zone.note}</div>` : '';
-        poly.bindPopup(`<div class="zone-popup-title">${title}</div>${popupBody}`, { className: 'zone-popup', closeButton: false });
+        poly.bindPopup(`<div class="zone-popup-title">${title}</div>${popupBody}`, { className: 'zone-popup', closeButton: false, autoPan: false });
         poly.bindTooltip(title, { sticky: true, className: 'zone-tooltip' });
       });
 
@@ -171,6 +172,9 @@ export default function MapTab({ navPadding = 80 }) {
     if (!authorMode) return;
     map.dragging.disable();
     const handler = (e) => {
+      // If a canonical-zone popup opened from the same click, close it so it
+      // doesn't visually shift the view or cover the newly placed point.
+      map.closePopup();
       const pt = map.project(e.latlng, MAX_ZOOM);
       setAuthorPoints(prev => [...prev, [Math.round(pt.x), Math.round(pt.y)]]);
     };
@@ -214,7 +218,7 @@ export default function MapTab({ navPadding = 80 }) {
         iconSize: [22, 22],
         iconAnchor: [11, 11],
       });
-      const marker = L.marker(ll, { draggable: true, icon, autoPan: true, keyboard: false });
+      const marker = L.marker(ll, { draggable: true, icon, autoPan: false, keyboard: false });
       marker.on('dragend', (e) => {
         const np = map.project(e.target.getLatLng(), MAX_ZOOM);
         const clamped = [
@@ -528,6 +532,28 @@ export default function MapTab({ navPadding = 80 }) {
           display: flex; flex-direction: column; gap: 8px;
           max-height: calc(100% - 120px); overflow-y: auto;
         }
+        .zone-author-panel .panel-top-row { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+        .zone-author-collapsed {
+          position: absolute; right: 12px; bottom: 56px; z-index: 20;
+          display: inline-flex; align-items: center; gap: 6px;
+          background: rgba(8, 12, 20, 0.92); color: #e8e8e8;
+          border: 1px solid rgba(237, 175, 24, 0.4); border-radius: 3px;
+          padding: 4px 10px; cursor: pointer;
+          font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
+          letter-spacing: 0.05em; text-transform: uppercase;
+          box-shadow: 0 0 16px rgba(6, 10, 24, 0.6);
+          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          -webkit-tap-highlight-color: transparent;
+        }
+        .zone-author-collapsed .count { color: ${COLOR_CANON}; font-weight: 700; font-size: 13px; }
+        .zone-author-collapsed .hint { color: #8a8a8a; font-size: 10px; }
+        .zone-author-collapsed .chip {
+          background: rgba(237, 175, 24, 0.18); color: ${COLOR_CANON};
+          border: 1px solid rgba(237, 175, 24, 0.4); border-radius: 2px;
+          padding: 0 5px; font-size: 9px; letter-spacing: 0.06em;
+        }
+        .zone-author-collapsed .caret { color: ${COLOR_CANON}; font-size: 10px; }
+        .zone-author-collapsed:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; }
         .zone-author-panel .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
         .zone-author-panel .count { color: ${COLOR_CANON}; font-weight: 700; }
         .zone-author-panel .hint { color: #8a8a8a; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -629,13 +655,36 @@ export default function MapTab({ navPadding = 80 }) {
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
 
-            {authorMode && (
+            {authorMode && panelCollapsed && (
+              <button
+                type="button"
+                className="zone-author-collapsed"
+                onClick={() => setPanelCollapsed(false)}
+                aria-label="Expand zone author panel"
+              >
+                <span className="count">{authorPoints.length}</span>
+                <span className="hint">pt{authorPoints.length === 1 ? '' : 's'}</span>
+                {editingId && <span className="chip">edit</span>}
+                <span className="caret">▲</span>
+              </button>
+            )}
+            {authorMode && !panelCollapsed && (
               <div className="zone-author-panel" role="group" aria-label="Zone author controls">
-                {editingId && (
-                  <div className="edit-banner">
-                    Editing <span className="edit-banner-name">{drafts.find(d => d.id === editingId)?.name || editingId}</span>
-                  </div>
-                )}
+                <div className="panel-top-row">
+                  {editingId ? (
+                    <div className="edit-banner">
+                      Editing <span className="edit-banner-name">{drafts.find(d => d.id === editingId)?.name || editingId}</span>
+                    </div>
+                  ) : <div style={{ flex: 1 }} />}
+                  <button
+                    type="button"
+                    className="zone-author-btn"
+                    onClick={() => setPanelCollapsed(true)}
+                    aria-label="Minimize panel"
+                    title="Minimize"
+                    style={{ padding: '2px 8px' }}
+                  >▼</button>
+                </div>
                 <div className="row">
                   <span className="count">{authorPoints.length}</span>
                   <span className="hint">point{authorPoints.length === 1 ? '' : 's'} · tap to add · drag pts · tap pt = delete · + = insert</span>
