@@ -81,28 +81,32 @@ export default function MapTab({ navPadding = 80 }) {
   return (
     <>
       <style>{`
-        .map-card .kuro-header { background: transparent !important; }
+        .map-card .kuro-header { background: ${MAP_BG_TRANSPARENT} !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
 
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG_TRANSPARENT }}>
-          <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <CardHeader>Interactive Map</CardHeader>
-            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG }}>
-              {status && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
-                  {status}
-                </div>
-              )}
-              <div
-                ref={containerRef}
-                className="leaflet-map-bg"
-                style={{ position: 'absolute', inset: 0, background: MAP_BG }}
-              />
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG }}>
+          <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
+            {/* Map fills the entire card */}
+            <div
+              ref={containerRef}
+              className="leaflet-map-bg"
+              style={{ position: 'absolute', inset: 0, background: MAP_BG, zIndex: 1 }}
+            />
+            {status && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
+                {status}
+              </div>
+            )}
+            {/* Overlay header and footer on top of map */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+              <CardHeader>Interactive Map</CardHeader>
             </div>
-            <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
+              <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
+            </div>
           </div>
         </div>
 
