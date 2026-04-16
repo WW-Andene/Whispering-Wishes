@@ -7,6 +7,7 @@ const MAP_H = 16384;
 const TILE_SIZE = 256;
 const MAX_ZOOM = 6;
 const MAP_BG = '#062633';
+const MAP_BG_TRANSPARENT = 'rgba(6, 38, 51, 0.55)';
 const BASE = import.meta.env.BASE_URL || '/';
 
 export default function MapTab({ navPadding = 80 }) {
@@ -83,7 +84,7 @@ export default function MapTab({ navPadding = 80 }) {
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
 
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden' }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG_TRANSPARENT }}>
           <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <CardHeader>Interactive Map</CardHeader>
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG }}>
