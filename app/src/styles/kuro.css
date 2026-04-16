@@ -80,14 +80,36 @@
     .colorblind-mode .active-emerald { border-color: #0072b2 !important; color: #0072b2 !important; }
 
     /* P12-FIX: Safe area insets for notched/dynamic-island devices — viewport-fit=cover
-       is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j) */
+       is set in the meta tag but no padding was applied (Step 12 audit — MEDIUM-12j)
+       P13-03 audit fix: use logical properties so safe-area insets + scrollbar
+       gutter flip correctly under `dir="rtl"` when/if an RTL locale is added. */
     @supports (padding-top: env(safe-area-inset-top)) {
       body {
         /* Top/bottom safe areas handled by sticky header and main content respectively */
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
+        padding-inline-start: env(safe-area-inset-left);
+        padding-inline-end: env(safe-area-inset-right);
       }
     }
+
+    /* P13-03 audit fix: RTL-readiness scaffold.
+       The app currently ships lang="en" only. When a translation lands and
+       setAppLocale('ar'|'he'|...) is called, utils/i18n.js flips
+       document.documentElement.dir = 'rtl'. Future work: migrate
+       margin-left/right + padding-left/right in kuro.css to their
+       logical equivalents (margin-inline-start, etc.) so the RTL flip is
+       automatic. Meanwhile this block handles the small set of direction-
+       critical overrides. */
+    [dir="rtl"] .kuro-search-wrap .kuro-input {
+      padding-inline-start: 32px;
+      padding-inline-end: 12px;
+    }
+    [dir="rtl"] .kuro-search-wrap svg:first-child {
+      inset-inline-start: 10px;
+      inset-inline-end: auto;
+    }
+    /* Icons with directional meaning (arrows, chevrons) that should mirror in RTL.
+       Add class `direction-aware` to any such icon to enable the mirror. */
+    [dir="rtl"] .direction-aware { transform: scaleX(-1); }
     html::-webkit-scrollbar,
     body::-webkit-scrollbar {
       display: none;

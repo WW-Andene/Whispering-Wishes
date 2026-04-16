@@ -18,6 +18,7 @@ import { ALL_CHARACTERS } from '../../data/characters.js';
 import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
+import { formatNumber } from '../../utils/i18n.js';
 import { storageAvailable } from '../../core/storage.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -608,7 +609,7 @@ function AnalyticsTab({
                           </div>
                           {communityStats.totalPullsAll > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-500">{communityStats.totalPullsAll.toLocaleString('en-US')} total Convenes tracked</span>
+                              <span className="text-gray-500">{formatNumber(communityStats.totalPullsAll)} total Convenes tracked</span>
                               <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
                             </div>
                           )}
@@ -790,8 +791,8 @@ function AnalyticsTab({
                   <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{overallStats.totalPulls.toLocaleString('en-US')}</div><div className="text-gray-400 text-sm">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{overallStats.totalAstrite.toLocaleString('en-US')}</div><div className="text-gray-400 text-sm">Astrite Spent (in-game)</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{formatNumber(overallStats.totalPulls)}</div><div className="text-gray-400 text-sm">Total Convenes</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{formatNumber(overallStats.totalAstrite)}</div><div className="text-gray-400 text-sm">Astrite Spent (in-game)</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-xl kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-sm">Won 50/50</div></div>
