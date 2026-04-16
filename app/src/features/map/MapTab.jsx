@@ -62,7 +62,22 @@ export default function MapTab({ navPadding = 80 }) {
       }).addTo(map);
 
 
-      setTimeout(() => { if (map) map.invalidateSize(); }, 200);
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+        // Force background color on all Leaflet internal elements
+        if (container) {
+          container.style.backgroundColor = MAP_BG;
+          container.querySelectorAll('.leaflet-container, .leaflet-tile-pane, .leaflet-overlay-pane, .leaflet-map-pane').forEach(el => {
+            el.style.backgroundColor = MAP_BG;
+          });
+          // Also set parent containers
+          let parent = container.parentElement;
+          while (parent && !parent.classList.contains('tab-content')) {
+            parent.style.backgroundColor = MAP_BG;
+            parent = parent.parentElement;
+          }
+        }
+      }, 200);
 
       mapRef.current = map;
       setStatus(null);
