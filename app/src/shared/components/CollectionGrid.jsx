@@ -3,7 +3,7 @@
 // CollectionGridSection component
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useRef, useCallback, memo } from 'react';
+import React, { useState, useRef, useCallback, useEffect, memo } from 'react';
 import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic } from '../../utils/helpers.js';
@@ -48,8 +48,23 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   // Pixel-level background removal for echo images (skip if pre-processed)
   const processedUrl = imgUrl;
   const [spineFailed, setSpineFailed] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardElRef = useRef(null);
   const spineId = isCharacter && animationsFull && !framingMode ? getSpineId(name) : null;
-  const useSpine = spineId && !spineFailed;
+  const canUseSpine = spineId && !spineFailed;
+  const useSpine = canUseSpine && isVisible;
+
+  // Only mount Spine when card is actually visible (avoids WebGL context limit)
+  useEffect(() => {
+    if (!canUseSpine || !cardElRef.current) return;
+    const el = cardElRef.current;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) setIsVisible(true);
+      else setIsVisible(false);
+    }, { rootMargin: '100px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [canUseSpine]);
   const longPressHandlers = useLongPress(
     onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
     () => {
@@ -71,6 +86,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   const cardClassName = `relative overflow-hidden border rounded text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer ${cardStateClass}`;
   return (
   <button
+    ref={cardElRef}
     type="button"
     className={cardClassName}
     style={{ height: 'var(--height-card-sm)', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
@@ -106,33 +122,18 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {useSpine && (
-      <>
-        {/* Static backdrop: paused Spine, scaled 2x, dimmed */}
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4, transform: 'scale(2)', opacity: 0.5, filter: 'blur(2px)' }}>
-          <SpineErrorBoundary onError={() => setSpineFailed(true)}>
-            <SpinePlayer
-              characterId={spineId}
-              className="w-full h-full"
-              backgroundColor="#00000000"
-              paused
-              onError={() => setSpineFailed(true)}
-            />
-          </SpineErrorBoundary>
-        </div>
-        {/* Foreground: animated, zoomed on face */}
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
-          <SpineErrorBoundary onError={() => setSpineFailed(true)}>
-            <SpinePlayer
-              characterId={spineId}
-              className="w-full h-full"
-              backgroundColor="#00000000"
-              scaleOverride={4}
-              tyOverride={-15}
-              onError={() => setSpineFailed(true)}
-            />
-          </SpineErrorBoundary>
-        </div>
-      </>
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+        <SpineErrorBoundary onError={() => setSpineFailed(true)}>
+          <SpinePlayer
+            characterId={spineId}
+            className="w-full h-full"
+            backgroundColor="#00000000"
+            scaleOverride={4}
+            tyOverride={-15}
+            onError={() => setSpineFailed(true)}
+          />
+        </SpineErrorBoundary>
+      </div>
     )}
     {isNew && (
       <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-sm font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
