@@ -94,7 +94,7 @@ export default function MapTab({ navPadding = 80 }) {
               <div
                 ref={containerRef}
                 className="leaflet-map-bg"
-                style={{ position: 'absolute', inset: 0, background: 'yellow', filter: 'hue-rotate(120deg) saturate(3)' }}
+                style={{ position: 'absolute', inset: 0, background: 'yellow', filter: 'invert(1)' }}
               />
             </div>
             <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
