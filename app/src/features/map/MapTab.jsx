@@ -78,7 +78,14 @@ export default function MapTab({ navPadding = 80 }) {
 
   return (
     <>
-      <style>{`.leaflet-map-bg, .leaflet-map-bg .leaflet-container { background: ${MAP_BG} !important; }`}</style>
+      <style>{`
+        .leaflet-map-bg,
+        .leaflet-map-bg .leaflet-container,
+        .leaflet-map-bg .leaflet-tile-pane,
+        .leaflet-map-bg .leaflet-overlay-pane,
+        .leaflet-map-bg .leaflet-map-pane,
+        .leaflet-map-bg .leaflet-proxy { background: ${MAP_BG} !important; }
+      `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
