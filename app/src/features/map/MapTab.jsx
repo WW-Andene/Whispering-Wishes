@@ -111,10 +111,10 @@ export default function MapTab({ navPadding = 80 }) {
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
 
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', '--bg-card': MAP_BG, background: MAP_BG }}>
-          <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: MAP_BG }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', '--bg-card': MAP_BG, background: 'lime' }}>
+          <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'cyan' }}>
             <CardHeader>Interactive Map</CardHeader>
-            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG }}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: 'magenta' }}>
               {status && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                   {status}
@@ -123,7 +123,7 @@ export default function MapTab({ navPadding = 80 }) {
               <div
                 ref={containerRef}
                 className="leaflet-map-bg"
-                style={{ position: 'absolute', inset: 0, background: MAP_BG }}
+                style={{ position: 'absolute', inset: 0, background: 'yellow' }}
               />
             </div>
             <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
