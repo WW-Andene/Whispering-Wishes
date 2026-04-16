@@ -114,12 +114,44 @@ const initialState = {
   settings: { showOnboarding: true },
 };
 
+// P4-19 audit fix: per-field numeric bounds for SET_CALC. UI already clamps
+// allocPriority to 0-100, but a bypassed UI (replay of a stale action, programmatic
+// dispatch) would otherwise admit any value. This enforces the invariant at the
+// reducer — the cheapest place to defend it.
+const CALC_FIELD_BOUNDS = Object.freeze({
+  // 0-100 sliders
+  allocPriority:    { min: 0,   max: 100 },
+  stdAllocPriority: { min: 0,   max: 100 },
+  // Pity counters: 0..HARD_PITY (80) for 5★, 0..HARD_PITY_4STAR (10) for 4★
+  charPity:         { min: 0,   max: 80 },
+  weapPity:         { min: 0,   max: 80 },
+  stdCharPity:      { min: 0,   max: 80 },
+  stdWeapPity:      { min: 0,   max: 80 },
+  // Copies targets: defensive cap at MAX_CALC_PULLS/40 = 50 (even S6 + sig is 7+7=14)
+  charCopies:          { min: 1,   max: 50 },
+  weapCopies:          { min: 1,   max: 50 },
+  stdCharCopies:       { min: 1,   max: 50 },
+  stdWeapCopies:       { min: 1,   max: 50 },
+  char4StarCopies:     { min: 1,   max: 99 },
+  weap4StarCopies:     { min: 1,   max: 99 },
+  stdChar4StarCopies:  { min: 1,   max: 99 },
+  stdWeap4StarCopies:  { min: 1,   max: 99 },
+});
+const _clampCalcField = (field, value) => {
+  const bounds = CALC_FIELD_BOUNDS[field];
+  if (!bounds) return value; // fields not in the map (strings like astrite, booleans) pass through
+  const n = Number(value);
+  if (!Number.isFinite(n)) return bounds.min;
+  return Math.max(bounds.min, Math.min(bounds.max, Math.round(n)));
+};
+
 const reducer = (state, action) => {
   switch (action.type) {
     case ACTION.SET_SERVER: return { ...state, server: action.server };
     case ACTION.SET_CALC: {
       if (action.field === '__reset') return { ...state, calc: { ...initialState.calc } };
-      return { ...state, calc: { ...state.calc, [action.field]: action.value } };
+      const value = _clampCalcField(action.field, action.value);
+      return { ...state, calc: { ...state.calc, [action.field]: value } };
     }
     case ACTION.SET_PLANNER: return { ...state, planner: { ...state.planner, [action.field]: action.value } };
     case ACTION.SET_SETTINGS: return { ...state, settings: { ...state.settings, [action.field]: action.value } };
@@ -207,12 +239,14 @@ const reducer = (state, action) => {
         if (!Array.isArray(existing) || existing.length === 0) return incoming;
         // Cross-source dedup (API French + WuWaTracker English):
         // Same pull has different names (language), timestamps (off by ~1h timezone),
-        // but same resourceId. Use resourceId + hour-rounded timestamp to match
-        // across sources while distinguishing truly different pulls.
-        const TWO_HOURS = 7200000;
+        // but same resourceId. Use resourceId + rounded timestamp to match across
+        // sources while distinguishing truly different pulls.
+        // P2-05 audit fix: renamed from TWO_HOURS — the 2h window's purpose is to
+        // bridge timezone-drift between API sources, not "2 hours" as a semantic unit.
+        const TIMEZONE_WINDOW_MS = 7200000;
         const makeKey = (p) => {
           const tsMs = new Date(p.timestamp || 0).getTime();
-          const timeSlot = Math.round(tsMs / TWO_HOURS);
+          const timeSlot = Math.round(tsMs / TIMEZONE_WINDOW_MS);
           if (p.id && !p.id.startsWith('imp_')) {
             // Extract resourceId from "1210_1738903202000"
             const resId = p.id.split('_')[0];

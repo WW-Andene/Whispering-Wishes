@@ -65,6 +65,22 @@ module.exports = {
       groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
       'newlines-between': 'ignore',
     }],
+
+    // ── P2-02 / P8-20 audit fix: falsy-trap prevention ────────────────────────
+    // `|| 0`, `|| ''` etc. swallow valid falsy values (0, '', false). For numeric
+    // and string fallbacks, `?? 0` is safer. Warn-level so existing ~210 sites
+    // don't break CI on day one — intent is to catch new violations and migrate
+    // the old ones incrementally. Flagged at P2-02 and P8-20.
+    'no-restricted-syntax': ['warn',
+      {
+        selector: "LogicalExpression[operator='||'] > Literal[value=0]",
+        message: "Use `?? 0` (nullish coalescing) instead of `|| 0` — see P2-02 / P8-20 audit findings. `|| 0` swallows legitimate 0 values.",
+      },
+      {
+        selector: "LogicalExpression[operator='||'] > Literal[value='']",
+        message: "Use `?? ''` (nullish coalescing) instead of `|| ''` — empty string is often a valid value (see P2-02 / P8-20).",
+      },
+    ],
   },
   overrides: [
     {

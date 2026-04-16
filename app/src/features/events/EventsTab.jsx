@@ -3,7 +3,7 @@
 // Time-gated content tracking with server-adjusted countdowns
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, Calendar } from 'lucide-react';
 import { EVENTS } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
@@ -26,6 +26,17 @@ function EventsTab({
 }) {
   const refreshCooldownRef = useRef(0);
   const [refreshCooling, setRefreshCooling] = useState(false);
+
+  // P4-10 audit fix: prune stale eventStatus keys on mount.
+  // Banner rotations remove events from EVENTS but their 'done'/'skipped' status
+  // entries would otherwise accumulate in localStorage forever. Runs once per
+  // mount to clear any keys no longer in the current EVENTS map.
+  useEffect(() => {
+    const validKeys = new Set(EVENT_ENTRIES.map(([key]) => key));
+    const staleKeys = Object.keys(state.eventStatus || {}).filter(k => !validKeys.has(k));
+    staleKeys.forEach(key => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: null }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // L1-FIX: Memoize event progress stats (was 60+ array iterations per render)
   const progressStats = useMemo(() => {

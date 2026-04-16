@@ -92,6 +92,14 @@ const SUBSCRIPTIONS = {
 // P12-FIX: Input safety caps to prevent browser freeze from extreme values (Step 14 audit — HIGH-10e)
 // 9,999,999 Astrite ≈ 62,499 pulls — well beyond any realistic scenario
 const MAX_ASTRITE = 9999999;
+// P2-09 audit fix: per-resource defensive ceilings. WuWa has no published
+// cap on Radiant/Lustrous Tides, but the calculator/planner cannot handle
+// arbitrary integer inputs. These ceilings are input-validation guards, not
+// game-mechanic limits. Aliased to MAX_ASTRITE until a per-resource semantic
+// distinction matters; kept as separate constants so future tuning is easy.
+const MAX_LUNITE = MAX_ASTRITE;
+const MAX_RADIANT = MAX_ASTRITE;
+const MAX_LUSTROUS = MAX_ASTRITE;
 // 2,000 pulls is the max the calculator will compute — prevents MC from iterating billions of times
 // (2000 pulls ≈ 320,000 Astrite, enough for ~25 guaranteed 5★ — absurdly generous ceiling)
 const MAX_CALC_PULLS = 2000;
@@ -422,6 +430,9 @@ export {
   BEGINNER_ASTRITE_PER_PULL,
   SUBSCRIPTIONS,
   MAX_ASTRITE,
+  MAX_LUNITE,
+  MAX_RADIANT,
+  MAX_LUSTROUS,
   MAX_CALC_PULLS,
   HARD_PITY_4STAR,
   FEATURED_4STAR_RATE,
