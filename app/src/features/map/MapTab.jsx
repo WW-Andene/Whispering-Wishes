@@ -108,9 +108,13 @@ export default function MapTab({ navPadding = 80 }) {
       const pxToLat = (px) => map.unproject([0, 0], MAX_ZOOM).lat - map.unproject([0, px], MAX_ZOOM).lat;
       const topPad = pxToLat(headerH) * scale;
       const bottomPad = pxToLat(footerH) * scale;
+      // Extra breathing room on all four sides so edges aren't tight when
+      // authoring zones near the perimeter.
+      const EDGE_PAD_PX = 300;
+      const edgePad = pxToLat(EDGE_PAD_PX) * scale;
       const paddedBounds = L.latLngBounds(
-        [southWest.lat - bottomPad, southWest.lng],
-        [northEast.lat + topPad, northEast.lng]
+        [southWest.lat - bottomPad - edgePad, southWest.lng - edgePad],
+        [northEast.lat + topPad + edgePad, northEast.lng + edgePad]
       );
 
       map.setMaxBounds(paddedBounds);
@@ -171,6 +175,7 @@ export default function MapTab({ navPadding = 80 }) {
     if (!map || !mapReady) return;
     if (!authorMode) return;
     map.dragging.disable();
+    if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
       // If a canonical-zone popup opened from the same click, close it so it
       // doesn't visually shift the view or cover the newly placed point.
@@ -182,6 +187,7 @@ export default function MapTab({ navPadding = 80 }) {
     return () => {
       map.off('click', handler);
       if (map.dragging) map.dragging.enable();
+      if (map.doubleClickZoom) map.doubleClickZoom.enable();
     };
   }, [authorMode, mapReady]);
 
