@@ -29,10 +29,7 @@ export default function MapTab({ navPadding = 80 }) {
       setStatus('Initializing...');
 
       const container = containerRef.current;
-      // Use ceil so map always fully covers the container (no black bands)
-      const minZoom = Math.max(0, Math.ceil(Math.log2(
-        Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
-      ) + MAX_ZOOM));
+      const minZoom = 0;
 
       map = L.map(container, {
         crs: L.CRS.Simple,
@@ -50,8 +47,7 @@ export default function MapTab({ navPadding = 80 }) {
       const bounds = L.latLngBounds(southWest, northEast);
 
       map.setMaxBounds(bounds);
-      // Center and set zoom so map covers container (like object-cover)
-      map.setView(bounds.getCenter(), minZoom);
+      map.fitBounds(bounds);
 
       L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
         minZoom,
@@ -87,7 +83,7 @@ export default function MapTab({ navPadding = 80 }) {
         <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', '--bg-card': MAP_BG, background: MAP_BG }}>
           <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: MAP_BG }}>
             <CardHeader>Interactive Map</CardHeader>
-            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG }}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG, display: 'flex', justifyContent: 'center' }}>
               {status && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                   {status}
@@ -96,7 +92,7 @@ export default function MapTab({ navPadding = 80 }) {
               <div
                 ref={containerRef}
                 className="leaflet-map-bg"
-                style={{ position: 'absolute', inset: 0, background: MAP_BG }}
+                style={{ height: '100%', aspectRatio: `${MAP_W} / ${MAP_H}`, background: MAP_BG }}
               />
             </div>
             <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
