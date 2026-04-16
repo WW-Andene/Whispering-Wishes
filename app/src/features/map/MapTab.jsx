@@ -55,10 +55,12 @@ export default function MapTab({ navPadding = 80 }) {
       const headerH = cardInner?.querySelector('.kuro-header')?.offsetHeight || 48;
       const footerH = cardInner?.querySelectorAll('.kuro-header')[1]?.offsetHeight || 48;
 
-      // Extend maxBounds in latLng so user can pan map content out from under the overlays
+      // Extend maxBounds so user can pan map content out from under overlays.
+      // Scale padding so it works at the worst (lowest) zoom level too.
+      const scale = Math.pow(2, MAX_ZOOM - minZoom);
       const pxToLat = (px) => map.unproject([0, 0], MAX_ZOOM).lat - map.unproject([0, px], MAX_ZOOM).lat;
-      const topPad = pxToLat(headerH);
-      const bottomPad = pxToLat(footerH);
+      const topPad = pxToLat(headerH) * scale;
+      const bottomPad = pxToLat(footerH) * scale;
       const paddedBounds = L.latLngBounds(
         [southWest.lat - bottomPad, southWest.lng],
         [northEast.lat + topPad, northEast.lng]
