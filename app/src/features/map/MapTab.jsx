@@ -57,13 +57,72 @@ export default function MapTab({ navPadding = 80 }) {
   const [toast, setToast] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
 
-  const parentOptions = useMemo(() => {
-    const canon = MAP_ZONES.map(z => ({ id: z.id, name: z.name || z.id, kind: 'canonical' }));
-    const drafted = drafts
-      .filter(z => z.id !== editingId) // can't parent a zone to itself
-      .map(z => ({ id: z.id, name: z.name || z.id, kind: 'draft' }));
-    return [...canon, ...drafted];
+  // Set of descendant ids of the zone being edited — used to forbid circular parenting.
+  const editingDescendants = useMemo(() => {
+    if (!editingId) return new Set();
+    const all = drafts;
+    const out = new Set();
+    const walk = (id) => {
+      all.forEach(z => {
+        if (z.parentId === id && !out.has(z.id)) {
+          out.add(z.id);
+          walk(z.id);
+        }
+      });
+    };
+    walk(editingId);
+    return out;
   }, [drafts, editingId]);
+
+  // Tree-shaped parent dropdown: canonical zones first, then drafts, each with depth.
+  // Excludes the zone being edited and any of its descendants (would create a cycle).
+  const parentOptionsTree = useMemo(() => {
+    const all = [
+      ...MAP_ZONES.map(z => ({ id: z.id, name: z.name || z.id, parentId: z.parentId, kind: 'canonical' })),
+      ...drafts
+        .filter(z => z.id !== editingId && !editingDescendants.has(z.id))
+        .map(z => ({ id: z.id, name: z.name || z.id, parentId: z.parentId, kind: 'draft' })),
+    ];
+    const allIds = new Set(all.map(z => z.id));
+    const byParent = new Map();
+    all.forEach(z => {
+      const pid = z.parentId && allIds.has(z.parentId) ? z.parentId : null;
+      if (!byParent.has(pid)) byParent.set(pid, []);
+      byParent.get(pid).push(z);
+    });
+    const out = [];
+    const walk = (pid, depth) => {
+      const kids = byParent.get(pid) || [];
+      kids.forEach(c => {
+        out.push({ id: c.id, name: c.name, kind: c.kind, depth });
+        walk(c.id, depth + 1);
+      });
+    };
+    walk(null, 0);
+    return out;
+  }, [drafts, editingId, editingDescendants]);
+
+  // Tree of drafts only (canonical-parented drafts surface at root with breadcrumb).
+  // Returns flat list in DFS traversal order, each node carrying { ...draft, depth, isLast }.
+  const draftTree = useMemo(() => {
+    const draftIds = new Set(drafts.map(d => d.id));
+    const byParent = new Map();
+    drafts.forEach(d => {
+      const pid = d.parentId && draftIds.has(d.parentId) ? d.parentId : null;
+      if (!byParent.has(pid)) byParent.set(pid, []);
+      byParent.get(pid).push(d);
+    });
+    const out = [];
+    const walk = (pid, depth) => {
+      const kids = byParent.get(pid) || [];
+      kids.forEach((c, i) => {
+        out.push({ ...c, depth, isLast: i === kids.length - 1 });
+        walk(c.id, depth + 1);
+      });
+    };
+    walk(null, 0);
+    return out;
+  }, [drafts]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -583,8 +642,27 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .zone-author-panel .draft-row:last-child { border-bottom: none; }
         .zone-author-panel .draft-row.is-editing { background: rgba(237, 175, 24, 0.08); padding-left: 4px; padding-right: 4px; border-radius: 2px; }
-        .zone-author-panel .draft-row .drname { color: #e8e8e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1 1 auto; }
+        .zone-author-panel .draft-tree { display: flex; flex-direction: column; }
+        .zone-author-panel .draft-row .drname { color: #e8e8e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1 1 auto; display: inline-flex; align-items: center; gap: 4px; }
         .zone-author-panel .draft-row .drsub { color: #8a8a8a; margin-left: 4px; }
+        .zone-author-panel .draft-row .tree-glyph { color: rgba(56, 189, 248, 0.55); font-size: 10px; }
+        .zone-author-panel .draft-row .lvl-tag {
+          display: inline-block; min-width: 22px; text-align: center;
+          padding: 0 4px; border-radius: 2px; font-size: 9px;
+          background: rgba(237, 175, 24, 0.15); color: ${COLOR_CANON};
+          border: 1px solid rgba(237, 175, 24, 0.3); letter-spacing: 0.04em;
+        }
+        .zone-author-panel .draft-row.depth-0 .lvl-tag { background: rgba(237, 175, 24, 0.25); }
+        .zone-author-panel .draft-row.depth-1 .lvl-tag { background: rgba(56, 189, 248, 0.18); color: ${COLOR_DRAFT}; border-color: rgba(56, 189, 248, 0.35); }
+        .zone-author-panel .draft-row.depth-2 .lvl-tag,
+        .zone-author-panel .draft-row.depth-3 .lvl-tag,
+        .zone-author-panel .draft-row.depth-4 .lvl-tag,
+        .zone-author-panel .draft-row.depth-5 .lvl-tag,
+        .zone-author-panel .draft-row.depth-6 .lvl-tag,
+        .zone-author-panel .draft-row.depth-7 .lvl-tag,
+        .zone-author-panel .draft-row.depth-8 .lvl-tag,
+        .zone-author-panel .draft-row.depth-9 .lvl-tag { background: rgba(168, 85, 247, 0.18); color: #a855f7; border-color: rgba(168, 85, 247, 0.35); }
+        .zone-author-panel .draft-row .drlabel { overflow: hidden; text-overflow: ellipsis; }
         .zone-author-panel .draft-row button {
           background: transparent; border: 1px solid rgba(248, 113, 113, 0.4);
           color: #f87171; padding: 1px 7px; border-radius: 2px; cursor: pointer;
@@ -715,10 +793,16 @@ export default function MapTab({ navPadding = 80 }) {
                       onChange={(e) => setDraftParent(e.target.value)}
                     >
                       <option value="">— None (top-level)</option>
-                      {parentOptions.length > 0 && (
-                        <optgroup label="Existing zones">
-                          {parentOptions.map(p => (
-                            <option key={p.id} value={p.id}>{p.kind === 'draft' ? '[draft] ' : ''}{p.name}</option>
+                      {parentOptionsTree.length > 0 && (
+                        <optgroup label="Existing zones (indented = sub-zone)">
+                          {parentOptionsTree.map(p => (
+                            <option key={p.id} value={p.id}>
+                              {'\u00A0\u00A0'.repeat(p.depth)}
+                              {p.depth > 0 ? '└ ' : ''}
+                              {p.kind === 'draft' ? '[draft] ' : ''}
+                              {p.name}
+                              {`  · L${p.depth + 1}`}
+                            </option>
                           ))}
                         </optgroup>
                       )}
@@ -746,25 +830,31 @@ export default function MapTab({ navPadding = 80 }) {
                         <button className="zone-author-btn is-danger" type="button" onClick={handleClearDrafts}>Clear drafts</button>
                       </div>
                     </div>
-                    <div>
-                      {drafts.map(d => {
-                        const parent = d.parentId
-                          ? (MAP_ZONES.find(p => p.id === d.parentId)?.name
-                             || drafts.find(p => p.id === d.parentId)?.name
-                             || d.parentId)
+                    <div className="draft-tree">
+                      {draftTree.map(node => {
+                        const isEditing = node.id === editingId;
+                        // Drafts whose parent is canonical (not in drafts) sit at root,
+                        // but we show the canonical parent name as a breadcrumb.
+                        const canonicalParentName = node.depth === 0 && node.parentId
+                          ? (MAP_ZONES.find(p => p.id === node.parentId)?.name || node.parentId)
                           : null;
-                        const isEditing = d.id === editingId;
                         return (
-                          <div key={d.id} className={`draft-row ${isEditing ? 'is-editing' : ''}`}>
+                          <div
+                            key={node.id}
+                            className={`draft-row depth-${Math.min(node.depth, 9)} ${isEditing ? 'is-editing' : ''}`}
+                            style={{ paddingLeft: 4 + node.depth * 14 }}
+                          >
                             <span className="drname">
-                              {d.name}
-                              {parent && <span className="drsub">› {parent}</span>}
+                              {node.depth > 0 && <span className="tree-glyph">└─ </span>}
+                              <span className="lvl-tag">L{node.depth + 1}</span>
+                              <span className="drlabel">{node.name}</span>
+                              {canonicalParentName && <span className="drsub">› {canonicalParentName}</span>}
                             </span>
                             <span className="row" style={{ gap: 4 }}>
                               {!isEditing && (
-                                <button className="edit-btn" type="button" onClick={() => handleEditDraft(d.id)} aria-label={`Edit ${d.name}`}>Edit</button>
+                                <button className="edit-btn" type="button" onClick={() => handleEditDraft(node.id)} aria-label={`Edit ${node.name}`}>Edit</button>
                               )}
-                              <button type="button" onClick={() => handleDeleteDraft(d.id)} aria-label={`Delete ${d.name}`}>Delete</button>
+                              <button type="button" onClick={() => handleDeleteDraft(node.id)} aria-label={`Delete ${node.name}`}>Delete</button>
                             </span>
                           </div>
                         );
