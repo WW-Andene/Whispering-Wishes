@@ -29,7 +29,6 @@ export default function MapTab({ navPadding = 80 }) {
       setStatus('Initializing...');
 
       const container = containerRef.current;
-      container.style.backgroundColor = MAP_BG;
       const minZoom = Math.max(0, Math.ceil(Math.log2(
         Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
       ) + MAX_ZOOM));
@@ -62,22 +61,7 @@ export default function MapTab({ navPadding = 80 }) {
       }).addTo(map);
 
 
-      setTimeout(() => {
-        if (map) map.invalidateSize();
-        // Force background color on all Leaflet internal elements
-        if (container) {
-          container.style.backgroundColor = MAP_BG;
-          container.querySelectorAll('.leaflet-container, .leaflet-tile-pane, .leaflet-overlay-pane, .leaflet-map-pane').forEach(el => {
-            el.style.backgroundColor = MAP_BG;
-          });
-          // Also set parent containers
-          let parent = container.parentElement;
-          while (parent && !parent.classList.contains('tab-content')) {
-            parent.style.backgroundColor = MAP_BG;
-            parent = parent.parentElement;
-          }
-        }
-      }, 200);
+      setTimeout(() => { if (map) map.invalidateSize(); }, 200);
 
       mapRef.current = map;
       setStatus(null);
@@ -94,19 +78,6 @@ export default function MapTab({ navPadding = 80 }) {
 
   return (
     <>
-      <style>{`
-        .map-card,
-        .map-card .kuro-card-inner,
-        .map-card .kuro-body,
-        .leaflet-map-bg,
-        .leaflet-map-bg .leaflet-container,
-        .leaflet-map-bg .leaflet-tile-pane,
-        .leaflet-map-bg .leaflet-overlay-pane,
-        .leaflet-map-bg .leaflet-map-pane,
-        .leaflet-map-bg .leaflet-proxy,
-        .leaflet-map-bg .leaflet-layer { background-color: ${MAP_BG} !important; }
-        .map-card::before, .map-card::after { background: ${MAP_BG} !important; }
-      `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
