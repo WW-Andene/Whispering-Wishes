@@ -315,8 +315,14 @@ function WhisperingWishesInner() {
   useEffect(() => {
     if (!storageAvailable) return;
     let debounceTimer = null;
+    // P4-06 audit hardening: cross-tab sync already exists; previously fired
+    // a toast on every incoming storage event even when our state was identical
+    // (e.g., two tabs saving the same user action in quick succession). Track
+    // the last-applied state signature so duplicate toasts are suppressed.
+    let lastAppliedSignature = null;
     const handleStorageChange = (e) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
+      if (e.newValue === lastAppliedSignature) return;
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         try {
@@ -344,6 +350,9 @@ function WhisperingWishesInner() {
             eventStatus: safeParsed.eventStatus || {},
           };
           dispatchRef.current({ type: 'LOAD_STATE', state: merged });
+          // Remember what we just applied so a subsequent identical-payload
+          // storage event doesn't re-toast.
+          lastAppliedSignature = e.newValue;
           toastRef.current?.addToast?.('Data synced from another tab', 'info');
         } catch (err) {
           console.warn('Cross-tab sync failed:', err);
