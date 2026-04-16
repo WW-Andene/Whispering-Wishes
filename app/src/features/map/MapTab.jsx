@@ -83,8 +83,8 @@ export default function MapTab({ navPadding = 80 }) {
       <div className="kuro-calc space-y-3 tab-content">
         <TabBackground id="map" />
 
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', '--bg-card': MAP_BG, background: MAP_BG }}>
-          <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: MAP_BG }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden' }}>
+          <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <CardHeader>Interactive Map</CardHeader>
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: MAP_BG }}>
               {status && (
