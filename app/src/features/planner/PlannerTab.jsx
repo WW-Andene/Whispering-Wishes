@@ -976,21 +976,21 @@ function PlannerTab({
           </div>
           {/* Probability estimate */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="kuro-stat p-2.5 text-center">
+            <div className="kuro-stat p-2.5 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probNow >= 80 ? 'text-emerald-400' : planData.probNow >= 50 ? 'text-yellow-400' : planData.probNow >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probNow.toFixed(1)}%</div>
               <div className="text-gray-500 text-xs">Chance now ({planData.availablePulls} pulls)</div>
             </div>
-            <div className="kuro-stat p-2.5 text-center">
+            <div className="kuro-stat p-2.5 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
               <div className="text-gray-500 text-xs">Chance by banner end ({planData.pullsByEnd} pulls)</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="kuro-stat p-3 text-center">
+            <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className="text-yellow-400 kuro-number text-2xl">{planData.goalNeeded.toLocaleString('en-US')}</div>
               <div className="text-gray-400 text-sm">Astrite Needed</div>
             </div>
-            <div className="kuro-stat p-3 text-center">
+            <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className="text-yellow-400 kuro-number text-2xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded.toLocaleString('en-US')}</div>
               <div className="text-gray-400 text-sm">Days to Goal</div>
             </div>
