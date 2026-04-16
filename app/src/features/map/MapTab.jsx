@@ -45,8 +45,10 @@ export default function MapTab({ navPadding = 80 }) {
         zoomControl: false,
       });
 
-      const southWest = map.unproject([0, MAP_H], MAX_ZOOM);
-      const northEast = map.unproject([MAP_W, 0], MAX_ZOOM);
+      // Crop 6px off each side to hide padding bars from tiling
+      const CROP = 6;
+      const southWest = map.unproject([CROP, MAP_H], MAX_ZOOM);
+      const northEast = map.unproject([MAP_W - CROP, 0], MAX_ZOOM);
       const bounds = L.latLngBounds(southWest, northEast);
 
       map.setMaxBounds(bounds);
