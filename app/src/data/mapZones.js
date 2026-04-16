@@ -16,6 +16,9 @@
 //   color      — hex string, default '#edaf18' (brand gold)
 //   parentId   — id of another zone in this file; marks this as a sub-zone
 //                (rendered with a thinner stroke; tooltip shows "Parent › Child")
+//   level      — integer 1..50, freely assigned by the author. Independent
+//                of parent depth — you decide what level a zone is, the
+//                hierarchy doesn't infer it for you.
 //   tags       — string[], free-form ('boss', 'echo', 'resource', ...)
 //   note       — string shown in the popup body
 //

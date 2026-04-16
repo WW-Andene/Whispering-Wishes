@@ -52,6 +52,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [drafts, setDrafts] = useState(loadDrafts);
   const [draftName, setDraftName] = useState('');
   const [draftParent, setDraftParent] = useState('');
+  const [draftLevel, setDraftLevel] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
@@ -78,10 +79,10 @@ export default function MapTab({ navPadding = 80 }) {
   // Excludes the zone being edited and any of its descendants (would create a cycle).
   const parentOptionsTree = useMemo(() => {
     const all = [
-      ...MAP_ZONES.map(z => ({ id: z.id, name: z.name || z.id, parentId: z.parentId, kind: 'canonical' })),
+      ...MAP_ZONES.map(z => ({ id: z.id, name: z.name || z.id, parentId: z.parentId, level: z.level, kind: 'canonical' })),
       ...drafts
         .filter(z => z.id !== editingId && !editingDescendants.has(z.id))
-        .map(z => ({ id: z.id, name: z.name || z.id, parentId: z.parentId, kind: 'draft' })),
+        .map(z => ({ id: z.id, name: z.name || z.id, parentId: z.parentId, level: z.level, kind: 'draft' })),
     ];
     const allIds = new Set(all.map(z => z.id));
     const byParent = new Map();
@@ -94,7 +95,7 @@ export default function MapTab({ navPadding = 80 }) {
     const walk = (pid, depth) => {
       const kids = byParent.get(pid) || [];
       kids.forEach(c => {
-        out.push({ id: c.id, name: c.name, kind: c.kind, depth });
+        out.push({ id: c.id, name: c.name, kind: c.kind, depth, level: c.level });
         walk(c.id, depth + 1);
       });
     };
@@ -395,6 +396,7 @@ export default function MapTab({ navPadding = 80 }) {
         setEditingId(null);
         setDraftName('');
         setDraftParent('');
+        setDraftLevel('');
       }
       return next;
     });
@@ -408,16 +410,25 @@ export default function MapTab({ navPadding = 80 }) {
     setTimeout(() => setToast(''), ms);
   };
 
+  const parseLevel = (raw) => {
+    const trimmed = String(raw ?? '').trim();
+    if (!trimmed) return undefined;
+    const n = Number(trimmed);
+    if (!Number.isFinite(n)) return undefined;
+    return Math.max(1, Math.min(50, Math.round(n)));
+  };
+
   const handleSaveDraft = () => {
     if (authorPoints.length < 3) return;
+    const level = parseLevel(draftLevel);
     if (editingId) {
-      // Update existing draft in place
       const name = draftName.trim() || drafts.find(d => d.id === editingId)?.name || 'Zone';
       const updated = drafts.map(d => d.id === editingId ? {
         ...d,
         name,
         polygon: authorPoints,
-        ...(draftParent ? { parentId: draftParent } : { parentId: undefined }),
+        parentId: draftParent || undefined,
+        level: level ?? undefined,
       } : d);
       setDrafts(updated);
       saveDrafts(updated);
@@ -425,6 +436,7 @@ export default function MapTab({ navPadding = 80 }) {
       setAuthorPoints([]);
       setDraftName('');
       setDraftParent('');
+      setDraftLevel('');
       setJsonSnippet('');
       showToast(`Updated "${name}"`);
       return;
@@ -439,6 +451,7 @@ export default function MapTab({ navPadding = 80 }) {
       name,
       polygon: authorPoints,
       ...(draftParent ? { parentId: draftParent } : {}),
+      ...(level ? { level } : {}),
     };
     const updated = [...drafts, next];
     setDrafts(updated);
@@ -446,6 +459,7 @@ export default function MapTab({ navPadding = 80 }) {
     setAuthorPoints([]);
     setDraftName('');
     setDraftParent('');
+    setDraftLevel('');
     setJsonSnippet('');
     showToast(`Saved "${name}"`);
   };
@@ -457,6 +471,7 @@ export default function MapTab({ navPadding = 80 }) {
     setAuthorPoints(Array.isArray(d.polygon) ? d.polygon.map(([x, y]) => [x, y]) : []);
     setDraftName(d.name || '');
     setDraftParent(d.parentId || '');
+    setDraftLevel(d.level != null ? String(d.level) : '');
     setJsonSnippet('');
     if (!authorMode) setAuthorMode(true);
     showToast(`Editing "${d.name || d.id}"`);
@@ -467,6 +482,7 @@ export default function MapTab({ navPadding = 80 }) {
     setAuthorPoints([]);
     setDraftName('');
     setDraftParent('');
+    setDraftLevel('');
     setJsonSnippet('');
     showToast('Edit cancelled');
   };
@@ -492,6 +508,7 @@ export default function MapTab({ navPadding = 80 }) {
       const parts = [`  id: '${z.id}'`, `  name: '${String(z.name).replace(/'/g, "\\'")}'`];
       parts.push(`  polygon: [${z.polygon.map(([x, y]) => `[${x}, ${y}]`).join(', ')}]`);
       if (z.parentId) parts.push(`  parentId: '${z.parentId}'`);
+      if (z.level != null) parts.push(`  level: ${z.level}`);
       return `{\n${parts.join(',\n')},\n}`;
     };
     return list.map(fmtZone).join(',\n') + ',';
@@ -649,19 +666,13 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-panel .draft-row .lvl-tag {
           display: inline-block; min-width: 22px; text-align: center;
           padding: 0 4px; border-radius: 2px; font-size: 9px;
-          background: rgba(237, 175, 24, 0.15); color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.3); letter-spacing: 0.04em;
+          background: rgba(237, 175, 24, 0.18); color: ${COLOR_CANON};
+          border: 1px solid rgba(237, 175, 24, 0.35); letter-spacing: 0.04em;
         }
-        .zone-author-panel .draft-row.depth-0 .lvl-tag { background: rgba(237, 175, 24, 0.25); }
-        .zone-author-panel .draft-row.depth-1 .lvl-tag { background: rgba(56, 189, 248, 0.18); color: ${COLOR_DRAFT}; border-color: rgba(56, 189, 248, 0.35); }
-        .zone-author-panel .draft-row.depth-2 .lvl-tag,
-        .zone-author-panel .draft-row.depth-3 .lvl-tag,
-        .zone-author-panel .draft-row.depth-4 .lvl-tag,
-        .zone-author-panel .draft-row.depth-5 .lvl-tag,
-        .zone-author-panel .draft-row.depth-6 .lvl-tag,
-        .zone-author-panel .draft-row.depth-7 .lvl-tag,
-        .zone-author-panel .draft-row.depth-8 .lvl-tag,
-        .zone-author-panel .draft-row.depth-9 .lvl-tag { background: rgba(168, 85, 247, 0.18); color: #a855f7; border-color: rgba(168, 85, 247, 0.35); }
+        .zone-author-panel .draft-row .lvl-tag.is-unset {
+          background: rgba(138, 138, 138, 0.12); color: #8a8a8a;
+          border-color: rgba(138, 138, 138, 0.35);
+        }
         .zone-author-panel .draft-row .drlabel { overflow: hidden; text-overflow: ellipsis; }
         .zone-author-panel .draft-row button {
           background: transparent; border: 1px solid rgba(248, 113, 113, 0.4);
@@ -801,12 +812,29 @@ export default function MapTab({ navPadding = 80 }) {
                               {p.depth > 0 ? '└ ' : ''}
                               {p.kind === 'draft' ? '[draft] ' : ''}
                               {p.name}
-                              {`  · L${p.depth + 1}`}
+                              {p.level != null ? `  · L${p.level}` : ''}
                             </option>
                           ))}
                         </optgroup>
                       )}
                     </select>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="field" style={{ flex: '0 0 90px' }}>
+                    <label htmlFor="zone-author-level">Level (1–50)</label>
+                    <input
+                      id="zone-author-level"
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max="50"
+                      step="1"
+                      value={draftLevel}
+                      onChange={(e) => setDraftLevel(e.target.value)}
+                      placeholder="—"
+                      autoComplete="off"
+                    />
                   </div>
                 </div>
                 <div className="row">
@@ -846,7 +874,9 @@ export default function MapTab({ navPadding = 80 }) {
                           >
                             <span className="drname">
                               {node.depth > 0 && <span className="tree-glyph">└─ </span>}
-                              <span className="lvl-tag">L{node.depth + 1}</span>
+                              <span className={`lvl-tag ${node.level == null ? 'is-unset' : ''}`}>
+                                {node.level != null ? `L${node.level}` : '—'}
+                              </span>
                               <span className="drlabel">{node.name}</span>
                               {canonicalParentName && <span className="drsub">› {canonicalParentName}</span>}
                             </span>
