@@ -3,14 +3,25 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, BookOpen } from 'lucide-react';
 import { APP_VERSION } from '../../data/constants.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 const currentYear = new Date().getFullYear();
 
-function AboutSection({ handleAdminTap, adminTapCount }) {
+// F-15 audit fix: returning users who want to replay the onboarding tour get
+// a button here. Dispatches the same SET_SETTINGS(showOnboarding=true) action
+// the fresh-install path uses; the App.jsx effect at :257-258 picks it up and
+// renders OnboardingModal on the next render.
+function AboutSection({ handleAdminTap, adminTapCount, dispatch, toast }) {
   const [aboutSections, setAboutSections] = useState({});
+
+  const handleReplayOnboarding = () => {
+    if (typeof dispatch === 'function') {
+      dispatch({ type: 'SET_SETTINGS', field: 'showOnboarding', value: true });
+      toast?.addToast?.('Onboarding restored — reopening tour.', 'info');
+    }
+  };
 
   const sections = [
     { key: 'disclaimer', label: 'Disclaimer', content: (
@@ -111,6 +122,21 @@ function AboutSection({ handleAdminTap, adminTapCount }) {
         </div>
 
         <p className="text-center text-sm text-gray-500 pt-1">© {currentYear} <span onClick={handleAdminTap} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdminTap(); } }} tabIndex={0} role="button" className="cursor-pointer select-none" style={adminTapCount >= 3 ? { color: 'rgba(237,175,24,0.5)', transition: 'color 0.3s' } : undefined}>{`Whispering Wishes Ver.${APP_VERSION}`}</span> by <a href="https://www.reddit.com/u/WW_Andene" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-400 transition-colors">u/WW_Andene</a> • Made with ♡ for the WuWa community.</p>
+
+        {/* F-15 audit fix: replay onboarding for returning users who want the tour again. */}
+        {typeof dispatch === 'function' && (
+          <div className="flex justify-center pt-1">
+            <button
+              type="button"
+              onClick={handleReplayOnboarding}
+              className="kuro-btn kuro-btn-sm inline-flex items-center gap-1.5 text-sm"
+              aria-label="Replay onboarding tour"
+            >
+              <BookOpen size={14} aria-hidden="true" />
+              Replay onboarding
+            </button>
+          </div>
+        )}
 
         <div className="kuro-divider" />
 

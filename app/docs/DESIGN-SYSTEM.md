@@ -297,6 +297,22 @@ State colors (calibrated, not raw):
 
 ---
 
+## Iconography decisions
+
+**Library:** Lucide React (single family across all 50+ consumer files).
+**Stroke weight:** 1.25px override (see `kuro.css:385-387` `.kuro-calc svg { stroke-width: 1.25px }`). Refined from Lucide's default 2px for a lighter HUD feel that matches our body type weight.
+**Sizes:** 28px (icon buttons) · 18-22px (nav + section headers) · 14-16px (inline) · 10-12px (metadata + badges).
+
+**Sub-14px renders:** At 10-12px the 1.25px stroke scales down to ~0.5-0.6px effective stroke. This holds acceptably across the 67 current sub-14px icon sites — no optical-size variant library is used. If a specific small-size icon shows legibility issues, the options are:
+
+1. Bump that individual icon to 14px (preferred)
+2. Wrap in `strokeWidth={1.5}` or `strokeWidth={2}` explicitly
+3. Swap to Phosphor's optical-size variants (`@phosphor-icons/react`) — only justified if the issue becomes widespread (DI-04 audit flag)
+
+**Direction-aware icons:** chevrons, back arrows, and other glyphs with directional meaning should receive the `direction-aware` CSS class so they auto-mirror under `dir="rtl"` (see P13-03 scaffold).
+
+---
+
 ## Authoring Rules (new components)
 
 Before adding a new component to `kuro.css`:

@@ -1000,7 +1000,7 @@ function ProfileTab({
               </CardBody>
             </Card>
 
-            <AboutSection handleAdminTap={handleAdminTap} adminTapCount={adminTapCount} />
+            <AboutSection handleAdminTap={handleAdminTap} adminTapCount={adminTapCount} dispatch={dispatch} toast={toast} />
           </div>
           </TabErrorBoundary>
           </div>

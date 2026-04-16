@@ -118,7 +118,14 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     <div
       ref={focusTrapRef}
       className={`fixed inset-0 z-[10000] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} modal-backdrop ${className}`}
-      style={{ backdropFilter: 'blur(2px) brightness(0.4)', WebkitBackdropFilter: 'blur(2px) brightness(0.4)' }}
+      style={{
+        // DSA-06 audit fix: chromatic navy scrim (--scrim token) instead of
+        // the prior pure backdrop-blur-only treatment. Keeps modals cohesive
+        // with the rest of the LAHAI-ROI palette; the blur still applies on top.
+        background: 'var(--scrim)',
+        backdropFilter: 'blur(2px) brightness(0.4)',
+        WebkitBackdropFilter: 'blur(2px) brightness(0.4)',
+      }}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}

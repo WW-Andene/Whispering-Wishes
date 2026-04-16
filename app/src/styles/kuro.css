@@ -110,6 +110,26 @@
     /* Icons with directional meaning (arrows, chevrons) that should mirror in RTL.
        Add class `direction-aware` to any such icon to enable the mirror. */
     [dir="rtl"] .direction-aware { transform: scaleX(-1); }
+
+    /* DT-09 audit fix: variable-weight interpolation utility for JetBrains
+       Mono (variable axis wght 100..800). Apply `.font-data-anim` on stats
+       that benefit from a subtle weight bump on hover — a character-positive
+       delight touch. Falls back to normal weight in browsers without
+       font-variation-settings support. Respects prefers-reduced-motion. */
+    .font-data-anim {
+      font-family: var(--font-data);
+      font-variation-settings: 'wght' 500;
+      transition: font-variation-settings var(--transition-normal);
+    }
+    @media (hover: hover) {
+      .font-data-anim:hover {
+        font-variation-settings: 'wght' 650;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .font-data-anim { transition: none; }
+      .font-data-anim:hover { font-variation-settings: 'wght' 500; }
+    }
     html::-webkit-scrollbar,
     body::-webkit-scrollbar {
       display: none;
@@ -268,6 +288,12 @@
       --text-disabled: #8b95a5;  /* oklch(65% 0.010 250) — replaces text-gray-500 */
       /* DBI3-S01: Calibrated 3-star rarity blue token */
       --rarity-3star: #60a5fa;
+      /* DSA-06 audit fix: modal backdrop scrim uses the navy surface color
+         (oklch 6% 0.02 240°) at 65% opacity rather than pure `rgba(0,0,0,…)`.
+         Keeps chromatic cohesion with the rest of the LAHAI-ROI palette —
+         avoids the "I'm just a generic black-modal-backdrop" feeling. */
+      --scrim: rgba(6, 10, 24, 0.65);
+      --scrim-strong: rgba(6, 10, 24, 0.8);
     }
     
     /* Hide scrollbar on specific horizontal scroll containers */
