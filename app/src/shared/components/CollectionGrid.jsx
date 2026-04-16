@@ -12,6 +12,14 @@ import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
+// Small error boundary to isolate Spine crashes per card
+class SpineErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(e) { if (this.props.onError) this.props.onError(e); }
+  render() { return this.state.hasError ? null : this.props.children; }
+}
+
 // Long-press detection hook (500ms hold)
 function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
   const timerRef = useRef(null);
@@ -99,12 +107,14 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     )}
     {useSpine && (
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
-        <SpinePlayer
-          characterId={spineId}
-          className="w-full h-full"
-          backgroundColor="#00000000"
-          onError={() => setSpineFailed(true)}
-        />
+        <SpineErrorBoundary onError={() => setSpineFailed(true)}>
+          <SpinePlayer
+            characterId={spineId}
+            className="w-full h-full"
+            backgroundColor="#00000000"
+            onError={() => setSpineFailed(true)}
+          />
+        </SpineErrorBoundary>
       </div>
     )}
     {isNew && (
