@@ -4,6 +4,8 @@
 // Auth: x-admin-key header must match ADMIN_HASH env var (same hash as admin panel)
 // Returns: { "name": "Echo Name", "resultUrl": "data:image/png;base64,..." }
 
+import { isServiceDisabled, rateLimit } from './_common.js';
+
 const HF_MODEL = 'briaai/RMBG-2.0';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 const MAX_RETRIES = 3;
@@ -21,6 +23,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // P12-10 kill switch (shares remove_bg service key)
+  if (isServiceDisabled(res, 'remove_bg')) return;
+  // P3-05 rate limit — admin batch, allow higher ceiling but still bounded
+  if (!rateLimit(req, res, { key: 'batch_remove_bg', max: 60, windowMs: 60_000 })) return;
 
   const apiKey = process.env.HF_API_KEY;
   if (!apiKey) {

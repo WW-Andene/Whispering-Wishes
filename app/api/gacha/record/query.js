@@ -1,4 +1,6 @@
 // Vercel/DV serverless function — proxies POST requests to WuWa gacha API to avoid CORS
+import { isServiceDisabled, rateLimit } from '../../_common.js';
+
 const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
 // F-004: Restrict CORS to app origins only (prevents open relay abuse)
 const ALLOWED_ORIGINS = [
@@ -24,6 +26,11 @@ export default async function handler(req, res) {
   if (!isAllowedOrigin(origin)) return res.status(403).json({ error: 'Origin not allowed' });
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Cache-Control', 'no-store');
+
+  // P12-10 kill switch
+  if (isServiceDisabled(res, 'gacha')) return;
+  // P3-05 rate limit — 30 queries/min accommodates multi-pool import sweeps
+  if (!rateLimit(req, res, { key: 'gacha', max: 30, windowMs: 60_000 })) return;
 
   try {
     let body = req.body;

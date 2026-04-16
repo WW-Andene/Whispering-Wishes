@@ -3,6 +3,8 @@
 // Usage: POST /api/remove-bg  { "imageUrl": "https://i.ibb.co/..." }
 // Returns: PNG image with transparent background
 
+import { isServiceDisabled, rateLimit } from './_common.js';
+
 const HF_MODEL = 'briaai/RMBG-2.0';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 const MAX_RETRIES = 3;
@@ -34,6 +36,11 @@ export default async function handler(req, res) {
   // F-005: Origin check
   const origin = req.headers.origin || '';
   if (!isAllowedOrigin(origin)) return res.status(403).json({ error: 'Origin not allowed' });
+
+  // P12-10 kill switch (both single + batch share the REMOVE_BG service key)
+  if (isServiceDisabled(res, 'remove_bg')) return;
+  // P3-05 rate limit — bg removal is expensive upstream; conservative cap
+  if (!rateLimit(req, res, { key: 'remove_bg', max: 20, windowMs: 60_000 })) return;
 
   const apiKey = process.env.HF_API_KEY;
   if (!apiKey) {

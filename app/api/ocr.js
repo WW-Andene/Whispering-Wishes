@@ -1,6 +1,8 @@
 // Vercel serverless function — proxies OCR requests to Groq Vision API
 // API key stored server-side via GROQ_API_KEY environment variable
 
+import { isServiceDisabled, rateLimit } from './_common.js';
+
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB base64 limit (Groq allows up to 20MB)
 const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
 
@@ -21,6 +23,12 @@ export default async function handler(req, res) {
   // F-013: Origin check
   const origin = req.headers.origin || '';
   if (!isAllowedOrigin(origin)) return res.status(403).json({ error: 'Origin not allowed' });
+
+  // P12-10: kill switch — env-toggled maintenance mode
+  if (isServiceDisabled(res, 'ocr')) return;
+  // P3-05: in-memory per-IP rate limit — 10 OCR calls per minute is well above
+  // legitimate usage (one call per import, maybe 2-3 per user session).
+  if (!rateLimit(req, res, { key: 'ocr', max: 10, windowMs: 60_000 })) return;
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {

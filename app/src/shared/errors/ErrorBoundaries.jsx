@@ -5,6 +5,9 @@
 
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
+// P12-05 audit fix: forward caught crashes to the optional external tracker.
+// No-op when no adapter is installed (see core/errorTracker.js).
+import { captureError } from '../../core/errorTracker.js';
 
 // Error Boundary — catches crashes per tab so one broken tab doesn't kill the app
 class TabErrorBoundary extends React.Component {
@@ -24,6 +27,7 @@ class TabErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     console.error(`[${this.props.tabName || 'Tab'}] Crash:`, error, info?.componentStack);
+    captureError(error, { boundary: 'tab', tab: this.props.tabName, componentStack: info?.componentStack });
   }
   render() {
     if (this.state.hasError) {
@@ -97,6 +101,7 @@ class AppErrorBoundary extends React.Component {
   }
   componentDidCatch(error, info) {
     console.error('[App] Fatal crash:', error, info?.componentStack);
+    captureError(error, { boundary: 'app', componentStack: info?.componentStack });
   }
   render() {
     if (this.state.hasError) {
