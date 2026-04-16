@@ -4,9 +4,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { APP_VERSION } from '../data/constants.js';
-// NOTE: circular import with reducer.js — safe because initialState is only
-// referenced inside function bodies (loadFromStorage), never at module-eval time.
+// One-way dep on reducer.js (for initialState) — the reverse edge was broken by
+// extracting sanitizers to stateSanitizer.js (see P1-08 audit fix).
+// initialState is still only referenced inside function bodies (loadFromStorage),
+// never at module-eval time, so this single edge remains evaluation-safe.
 import { initialState } from './reducer.js';
+// Sanitizers live in their own leaf module so reducer.js can also import them
+// without creating a cycle. Re-exported below for backwards compatibility.
+import { sanitizeStateObj, sanitizeImportedState } from './stateSanitizer.js';
 
 // Load saved state from persistent storage
 // Key kept as v2.2 for backwards compatibility — existing user data loads seamlessly.
@@ -27,33 +32,9 @@ const isStorageAvailable = () => {
 
 const storageAvailable = isStorageAvailable();
 
-// P10-FIX: Sanitize imported state to prevent prototype pollution and reject unknown keys (Step 6 audit)
-const ALLOWED_STATE_KEYS = new Set(['server', 'profile', 'calc', 'planner', 'settings', 'bookmarks', 'eventStatus', 'teams', 'activeTeamIndex']);
-const sanitizeStateObj = (obj) => {
-  if (typeof obj !== 'object' || obj === null) return obj;
-  // P14-FIX: MEDIUM-2 — Also recurse into array elements to sanitize objects inside arrays
-  // (e.g., [{__proto__: {isAdmin: true}}] would have passed through unsanitized)
-  if (Array.isArray(obj)) {
-    return obj.map(item => (typeof item === 'object' && item !== null) ? sanitizeStateObj(item) : item);
-  }
-  const clean = {};
-  for (const key of Object.keys(obj)) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    const val = obj[key];
-    clean[key] = (typeof val === 'object' && val !== null) ? sanitizeStateObj(val) : val;
-  }
-  return clean;
-};
-const sanitizeImportedState = (s) => {
-  if (typeof s !== 'object' || s === null) return {};
-  const clean = {};
-  for (const key of Object.keys(s)) {
-    if (ALLOWED_STATE_KEYS.has(key)) {
-      clean[key] = sanitizeStateObj(s[key]);
-    }
-  }
-  return clean;
-};
+// sanitizeStateObj / sanitizeImportedState / ALLOWED_STATE_KEYS moved to
+// ./stateSanitizer.js (P1-08 audit fix — breaks former reducer.js ↔ storage.js cycle).
+// Functions are re-exported from this module below for backwards compatibility.
 
 const loadFromStorage = () => {
   if (!storageAvailable) return null;

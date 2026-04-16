@@ -8,10 +8,11 @@ import {
   LUNITE_DAILY_ASTRITE, MAX_ASTRITE,
 } from '../data/constants.js';
 import { generateUniqueId } from '../utils/helpers.js';
-// NOTE: circular import with storage.js — safe because sanitizeImportedState
-// and sanitizeStateObj are only referenced inside function bodies (reducer case
-// handlers), never at module-evaluation time.
-import { sanitizeImportedState, sanitizeStateObj } from './storage.js';
+// Sanitizers moved to dedicated leaf module (P1-08 audit fix) — formerly this
+// line imported from ./storage.js, which created a reducer.js ↔ storage.js cycle.
+// The cycle was documented-safe but fragile: any future module-eval-time reference
+// to exports of the other file would have produced a silent TDZ bug.
+import { sanitizeImportedState, sanitizeStateObj } from './stateSanitizer.js';
 
 // P15-FIX: MEDIUM-12 — Action type constants to prevent silent typo failures in dispatch calls
 const ACTION = Object.freeze({
