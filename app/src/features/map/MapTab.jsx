@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
+import { MAP_ZONES } from '../../data/mapZones.js';
 
 const MAP_W = 16384;
 const MAP_H = 16384;
@@ -78,6 +79,35 @@ export default function MapTab({ navPadding = 80 }) {
         errorTileUrl: BASE + 'map-tiles/blank.png',
       }).addTo(map);
 
+      // Zone overlays — pixel coords in mapZones.js → Leaflet lat/lng via unproject
+      const pxToLatLng = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
+      MAP_ZONES.forEach(zone => {
+        if (!Array.isArray(zone.polygon) || zone.polygon.length < 3) return;
+        const color = zone.color || '#edaf18';
+        const poly = L.polygon(zone.polygon.map(pxToLatLng), {
+          color,
+          weight: 1.5,
+          opacity: 0.85,
+          fillColor: color,
+          fillOpacity: 0.10,
+          className: 'zone-polygon',
+        }).addTo(map);
+        const popupBody = zone.note ? `<div class="zone-popup-note">${zone.note}</div>` : '';
+        poly.bindPopup(
+          `<div class="zone-popup-title">${zone.name || zone.id}</div>${popupBody}`,
+          { className: 'zone-popup', closeButton: false }
+        );
+        poly.bindTooltip(zone.name || zone.id, { sticky: true, className: 'zone-tooltip' });
+      });
+
+      // Dev-only: click → log pixel coords for authoring zones
+      if (import.meta.env.DEV) {
+        map.on('click', (e) => {
+          const pt = map.project(e.latlng, MAX_ZOOM);
+          // eslint-disable-next-line no-console
+          console.log(`[mapZones] click → [${Math.round(pt.x)}, ${Math.round(pt.y)}]`);
+        });
+      }
 
       setTimeout(() => { if (map) map.invalidateSize(); }, 200);
 
@@ -98,6 +128,30 @@ export default function MapTab({ navPadding = 80 }) {
     <>
       <style>{`
         .map-card .kuro-header { background: ${MAP_BG_TRANSPARENT} !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        .zone-polygon { transition: fill-opacity 160ms cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
+        .zone-polygon:hover { fill-opacity: 0.22 !important; }
+        .leaflet-tooltip.zone-tooltip {
+          background: rgba(8, 12, 20, 0.92);
+          color: #edaf18;
+          border: 1px solid rgba(237, 175, 24, 0.4);
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          font-size: 11px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          padding: 4px 8px;
+          box-shadow: 0 0 12px rgba(6, 10, 24, 0.6);
+        }
+        .leaflet-tooltip.zone-tooltip::before { display: none; }
+        .leaflet-popup.zone-popup .leaflet-popup-content-wrapper {
+          background: rgba(8, 12, 20, 0.95);
+          color: #e8e8e8;
+          border: 1px solid rgba(237, 175, 24, 0.4);
+          border-radius: 4px;
+          box-shadow: 0 0 24px rgba(6, 10, 24, 0.7);
+        }
+        .leaflet-popup.zone-popup .leaflet-popup-tip { background: rgba(8, 12, 20, 0.95); border: 1px solid rgba(237, 175, 24, 0.4); }
+        .leaflet-popup.zone-popup .zone-popup-title { font-family: 'Cinzel', serif; font-size: 14px; color: #edaf18; letter-spacing: 0.06em; margin-bottom: 4px; }
+        .leaflet-popup.zone-popup .zone-popup-note { font-size: 12px; color: #b8b8b8; line-height: 1.45; }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
