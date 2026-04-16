@@ -3,7 +3,7 @@
     "leaderboard": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && (!data.exists() || data.child('timestamp').val() + 10000 < now)",
+        ".write": "auth != null && auth.uid == $uid && (!data.exists() || data.child('timestamp').val() + 10000 < now)",
         ".validate": "newData.hasChildren(['id', 'avgPity', 'pulls', 'totalPulls', 'timestamp'])
                       && newData.child('avgPity').isNumber()
                       && newData.child('avgPity').val() >= 1
@@ -23,7 +23,7 @@
     "community-pulls": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && (!data.exists() || data.child('timestamp').val() + 10000 < now)",
+        ".write": "auth != null && auth.uid == $uid && (!data.exists() || data.child('timestamp').val() + 10000 < now)",
         ".validate": "newData.hasChildren(['timestamp'])
                       && newData.child('timestamp').isNumber()
                       && newData.child('timestamp').val() <= now + 60000
