@@ -52,14 +52,17 @@ export default function MapTab({ navPadding = 80 }) {
   const [drafts, setDrafts] = useState(loadDrafts);
   const [draftName, setDraftName] = useState('');
   const [draftParent, setDraftParent] = useState('');
+  const [editingId, setEditingId] = useState(null);
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
 
   const parentOptions = useMemo(() => {
     const canon = MAP_ZONES.map(z => ({ id: z.id, name: z.name || z.id, kind: 'canonical' }));
-    const drafted = drafts.map(z => ({ id: z.id, name: z.name || z.id, kind: 'draft' }));
+    const drafted = drafts
+      .filter(z => z.id !== editingId) // can't parent a zone to itself
+      .map(z => ({ id: z.id, name: z.name || z.id, kind: 'draft' }));
     return [...canon, ...drafted];
-  }, [drafts]);
+  }, [drafts, editingId]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -178,7 +181,7 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [authorMode, mapReady]);
 
-  // Render live in-progress polygon/points
+  // Render live in-progress polygon with draggable points + midpoint inserters
   useEffect(() => {
     const map = mapRef.current;
     const L = leafletRef.current;
@@ -190,21 +193,71 @@ export default function MapTab({ navPadding = 80 }) {
     if (!authorMode || authorPoints.length === 0) return;
     const group = L.layerGroup();
     const latLngs = authorPoints.map(([x, y]) => map.unproject([x, y], MAX_ZOOM));
+
+    // Outline
     if (latLngs.length >= 3) {
       L.polygon(latLngs, {
         color: COLOR_ACTIVE, weight: 1.5, fillColor: COLOR_ACTIVE, fillOpacity: 0.12,
-        dashArray: '4 3', className: 'zone-author-poly',
+        dashArray: '4 3', className: 'zone-author-poly', interactive: false,
       }).addTo(group);
     } else if (latLngs.length >= 2) {
       L.polyline(latLngs, {
-        color: COLOR_ACTIVE, weight: 1.5, dashArray: '4 3', className: 'zone-author-poly',
+        color: COLOR_ACTIVE, weight: 1.5, dashArray: '4 3', className: 'zone-author-poly', interactive: false,
       }).addTo(group);
     }
+
+    // Draggable numbered vertex markers (drag → move, tap → delete)
     latLngs.forEach((ll, i) => {
-      L.circleMarker(ll, {
-        radius: 5, color: COLOR_ACTIVE, fillColor: '#080c14', fillOpacity: 1, weight: 1.5,
-      }).bindTooltip(String(i + 1), { permanent: true, direction: 'top', className: 'zone-author-label' }).addTo(group);
+      const icon = L.divIcon({
+        className: 'zone-author-point-icon',
+        html: `<span class="zone-author-point"><span class="zone-author-point-num">${i + 1}</span></span>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+      });
+      const marker = L.marker(ll, { draggable: true, icon, autoPan: true, keyboard: false });
+      marker.on('dragend', (e) => {
+        const np = map.project(e.target.getLatLng(), MAX_ZOOM);
+        const clamped = [
+          Math.max(0, Math.min(MAP_W, Math.round(np.x))),
+          Math.max(0, Math.min(MAP_H, Math.round(np.y))),
+        ];
+        setAuthorPoints(prev => prev.map((p, idx) => idx === i ? clamped : p));
+      });
+      marker.on('click', (ev) => {
+        L.DomEvent.stopPropagation(ev);
+        setAuthorPoints(prev => prev.filter((_, idx) => idx !== i));
+      });
+      marker.addTo(group);
     });
+
+    // Midpoint "+" inserters — one per edge (including closing edge when polygon)
+    if (authorPoints.length >= 2) {
+      const edgeCount = authorPoints.length >= 3 ? authorPoints.length : 1;
+      for (let i = 0; i < edgeCount; i++) {
+        const a = authorPoints[i];
+        const b = authorPoints[(i + 1) % authorPoints.length];
+        const midPx = [Math.round((a[0] + b[0]) / 2), Math.round((a[1] + b[1]) / 2)];
+        const midLL = map.unproject(midPx, MAX_ZOOM);
+        const ghostIcon = L.divIcon({
+          className: 'zone-author-ghost-icon',
+          html: '<span class="zone-author-ghost">+</span>',
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+        });
+        const insertAt = i + 1;
+        const ghost = L.marker(midLL, { icon: ghostIcon, keyboard: false });
+        ghost.on('click', (ev) => {
+          L.DomEvent.stopPropagation(ev);
+          setAuthorPoints(prev => {
+            const next = [...prev];
+            next.splice(insertAt, 0, midPx);
+            return next;
+          });
+        });
+        ghost.addTo(group);
+      }
+    }
+
     group.addTo(map);
     activeLayerRef.current = group;
   }, [authorMode, authorPoints, mapReady]);
@@ -218,9 +271,10 @@ export default function MapTab({ navPadding = 80 }) {
       map.removeLayer(draftsLayerRef.current);
       draftsLayerRef.current = null;
     }
-    if (drafts.length === 0) return;
+    const visible = drafts.filter(d => d.id !== editingId);
+    if (visible.length === 0) return;
     const group = L.layerGroup();
-    const sorted = [...drafts].sort((a, b) => (a.parentId ? 1 : 0) - (b.parentId ? 1 : 0));
+    const sorted = [...visible].sort((a, b) => (a.parentId ? 1 : 0) - (b.parentId ? 1 : 0));
     sorted.forEach(z => {
       if (!Array.isArray(z.polygon) || z.polygon.length < 3) return;
       const isSub = !!z.parentId;
@@ -244,7 +298,7 @@ export default function MapTab({ navPadding = 80 }) {
     });
     group.addTo(map);
     draftsLayerRef.current = group;
-  }, [drafts, mapReady]);
+  }, [drafts, editingId, mapReady]);
 
   // Triple-tap on header toggles author-enabled
   const handleHeaderTap = useCallback(() => {
@@ -266,7 +320,13 @@ export default function MapTab({ navPadding = 80 }) {
   const toggleAuthorMode = useCallback(() => {
     setAuthorMode(prev => {
       const next = !prev;
-      if (!next) { setAuthorPoints([]); setJsonSnippet(''); }
+      if (!next) {
+        setAuthorPoints([]);
+        setJsonSnippet('');
+        setEditingId(null);
+        setDraftName('');
+        setDraftParent('');
+      }
       return next;
     });
   }, []);
@@ -281,6 +341,25 @@ export default function MapTab({ navPadding = 80 }) {
 
   const handleSaveDraft = () => {
     if (authorPoints.length < 3) return;
+    if (editingId) {
+      // Update existing draft in place
+      const name = draftName.trim() || drafts.find(d => d.id === editingId)?.name || 'Zone';
+      const updated = drafts.map(d => d.id === editingId ? {
+        ...d,
+        name,
+        polygon: authorPoints,
+        ...(draftParent ? { parentId: draftParent } : { parentId: undefined }),
+      } : d);
+      setDrafts(updated);
+      saveDrafts(updated);
+      setEditingId(null);
+      setAuthorPoints([]);
+      setDraftName('');
+      setDraftParent('');
+      setJsonSnippet('');
+      showToast(`Updated "${name}"`);
+      return;
+    }
     const name = draftName.trim() || `New zone ${drafts.length + 1}`;
     const existingIds = new Set([...MAP_ZONES.map(z => z.id), ...drafts.map(z => z.id)]);
     let id = slugify(name);
@@ -302,10 +381,33 @@ export default function MapTab({ navPadding = 80 }) {
     showToast(`Saved "${name}"`);
   };
 
+  const handleEditDraft = (id) => {
+    const d = drafts.find(x => x.id === id);
+    if (!d) return;
+    setEditingId(id);
+    setAuthorPoints(Array.isArray(d.polygon) ? d.polygon.map(([x, y]) => [x, y]) : []);
+    setDraftName(d.name || '');
+    setDraftParent(d.parentId || '');
+    setJsonSnippet('');
+    if (!authorMode) setAuthorMode(true);
+    showToast(`Editing "${d.name || d.id}"`);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setAuthorPoints([]);
+    setDraftName('');
+    setDraftParent('');
+    setJsonSnippet('');
+    showToast('Edit cancelled');
+  };
+
   const handleDeleteDraft = (id) => {
+    if (editingId === id) setEditingId(null);
     const updated = drafts.filter(d => d.id !== id);
     setDrafts(updated);
     saveDrafts(updated);
+    if (editingId === id) { setAuthorPoints([]); setDraftName(''); setDraftParent(''); }
   };
 
   const handleClearDrafts = () => {
@@ -372,6 +474,36 @@ export default function MapTab({ navPadding = 80 }) {
           padding: 1px 5px; box-shadow: 0 0 6px rgba(237, 175, 24, 0.35);
         }
         .leaflet-tooltip.zone-author-label::before { display: none; }
+        .zone-author-point-icon { background: transparent; border: none; cursor: grab; }
+        .zone-author-point-icon:active { cursor: grabbing; }
+        .zone-author-point {
+          display: flex; align-items: center; justify-content: center;
+          width: 22px; height: 22px; border-radius: 50%;
+          background: #080c14; border: 1.5px solid ${COLOR_CANON};
+          box-shadow: 0 0 8px rgba(237, 175, 24, 0.5);
+          color: ${COLOR_CANON};
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          font-size: 10px; font-weight: 700;
+          -webkit-tap-highlight-color: transparent;
+          transition: transform 140ms, box-shadow 140ms;
+        }
+        .zone-author-point-icon:hover .zone-author-point { transform: scale(1.15); box-shadow: 0 0 12px rgba(237, 175, 24, 0.75); }
+        .zone-author-ghost-icon { background: transparent; border: none; cursor: pointer; }
+        .zone-author-ghost {
+          display: flex; align-items: center; justify-content: center;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: rgba(8, 12, 20, 0.8);
+          border: 1px dashed rgba(237, 175, 24, 0.6);
+          color: ${COLOR_CANON};
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          font-size: 12px; line-height: 1; font-weight: 700;
+          opacity: 0.55;
+          transition: opacity 140ms, transform 140ms, background 140ms;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .zone-author-ghost-icon:hover .zone-author-ghost {
+          opacity: 1; transform: scale(1.2); background: rgba(237, 175, 24, 0.15);
+        }
         .zone-author-btn {
           font-family: 'JetBrains Mono', ui-monospace, monospace;
           font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
@@ -418,7 +550,8 @@ export default function MapTab({ navPadding = 80 }) {
           font-size: 11px;
         }
         .zone-author-panel .draft-row:last-child { border-bottom: none; }
-        .zone-author-panel .draft-row .drname { color: #e8e8e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+        .zone-author-panel .draft-row.is-editing { background: rgba(237, 175, 24, 0.08); padding-left: 4px; padding-right: 4px; border-radius: 2px; }
+        .zone-author-panel .draft-row .drname { color: #e8e8e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1 1 auto; }
         .zone-author-panel .draft-row .drsub { color: #8a8a8a; margin-left: 4px; }
         .zone-author-panel .draft-row button {
           background: transparent; border: 1px solid rgba(248, 113, 113, 0.4);
@@ -426,6 +559,18 @@ export default function MapTab({ navPadding = 80 }) {
           font-family: inherit; font-size: 10px;
         }
         .zone-author-panel .draft-row button:hover { background: rgba(248, 113, 113, 0.12); }
+        .zone-author-panel .draft-row .edit-btn {
+          border-color: rgba(237, 175, 24, 0.45); color: ${COLOR_CANON};
+        }
+        .zone-author-panel .draft-row .edit-btn:hover { background: rgba(237, 175, 24, 0.12); }
+        .zone-author-panel .edit-banner {
+          background: rgba(237, 175, 24, 0.12);
+          border: 1px solid rgba(237, 175, 24, 0.35);
+          border-radius: 3px; padding: 4px 8px;
+          font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+          color: ${COLOR_CANON};
+        }
+        .zone-author-panel .edit-banner-name { color: #fff; font-weight: 700; letter-spacing: 0.03em; }
         .zone-author-panel textarea {
           width: 100%; min-height: 80px; resize: vertical;
           background: #080c14; color: #e8e8e8;
@@ -486,9 +631,14 @@ export default function MapTab({ navPadding = 80 }) {
 
             {authorMode && (
               <div className="zone-author-panel" role="group" aria-label="Zone author controls">
+                {editingId && (
+                  <div className="edit-banner">
+                    Editing <span className="edit-banner-name">{drafts.find(d => d.id === editingId)?.name || editingId}</span>
+                  </div>
+                )}
                 <div className="row">
                   <span className="count">{authorPoints.length}</span>
-                  <span className="hint">point{authorPoints.length === 1 ? '' : 's'} · tap map to add</span>
+                  <span className="hint">point{authorPoints.length === 1 ? '' : 's'} · tap to add · drag pts · tap pt = delete · + = insert</span>
                 </div>
                 <div className="row">
                   <div className="field">
@@ -523,7 +673,12 @@ export default function MapTab({ navPadding = 80 }) {
                 <div className="row">
                   <button className="zone-author-btn" type="button" onClick={handleUndo} disabled={authorPoints.length === 0}>Undo</button>
                   <button className="zone-author-btn" type="button" onClick={handleClear} disabled={authorPoints.length === 0}>Clear</button>
-                  <button className="zone-author-btn is-active" type="button" onClick={handleSaveDraft} disabled={authorPoints.length < 3}>Save zone</button>
+                  <button className="zone-author-btn is-active" type="button" onClick={handleSaveDraft} disabled={authorPoints.length < 3}>
+                    {editingId ? 'Update zone' : 'Save zone'}
+                  </button>
+                  {editingId && (
+                    <button className="zone-author-btn is-danger" type="button" onClick={handleCancelEdit}>Cancel edit</button>
+                  )}
                 </div>
 
                 {drafts.length > 0 && (
@@ -543,13 +698,19 @@ export default function MapTab({ navPadding = 80 }) {
                              || drafts.find(p => p.id === d.parentId)?.name
                              || d.parentId)
                           : null;
+                        const isEditing = d.id === editingId;
                         return (
-                          <div key={d.id} className="draft-row">
+                          <div key={d.id} className={`draft-row ${isEditing ? 'is-editing' : ''}`}>
                             <span className="drname">
                               {d.name}
                               {parent && <span className="drsub">› {parent}</span>}
                             </span>
-                            <button type="button" onClick={() => handleDeleteDraft(d.id)} aria-label={`Delete ${d.name}`}>Delete</button>
+                            <span className="row" style={{ gap: 4 }}>
+                              {!isEditing && (
+                                <button className="edit-btn" type="button" onClick={() => handleEditDraft(d.id)} aria-label={`Edit ${d.name}`}>Edit</button>
+                              )}
+                              <button type="button" onClick={() => handleDeleteDraft(d.id)} aria-label={`Delete ${d.name}`}>Delete</button>
+                            </span>
                           </div>
                         );
                       })}
@@ -571,7 +732,9 @@ export default function MapTab({ navPadding = 80 }) {
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
               <CardHeader>
                 {authorMode
-                  ? `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`
+                  ? (editingId
+                      ? `Editing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · tap Update to save`
+                      : `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`)
                   : 'Pinch to zoom · Drag to pan'}
               </CardHeader>
             </div>
