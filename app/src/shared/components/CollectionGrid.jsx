@@ -93,9 +93,9 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           loading="lazy"
           className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
           style={{
-            transform: useSpine ? 'scale(2)' : `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-            opacity: owned ? (useSpine ? 0.5 : collOpacity) : 0.3,
-            filter: owned ? (useSpine ? 'blur(2.5px)' : 'none') : 'grayscale(100%)',
+            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+            opacity: owned ? collOpacity : 0.3,
+            filter: owned ? 'none' : 'grayscale(100%)',
             maskImage: collMask,
             WebkitMaskImage: collMask
           }}
@@ -106,16 +106,28 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {useSpine && (
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
-        <SpineErrorBoundary onError={() => setSpineFailed(true)}>
-          <SpinePlayer
-            characterId={spineId}
-            className="w-full h-full"
-            backgroundColor="#00000000"
-            onError={() => setSpineFailed(true)}
-          />
-        </SpineErrorBoundary>
-      </div>
+      <>
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4, transform: 'scale(2)', opacity: 0.5, filter: 'blur(2px)' }}>
+          <SpineErrorBoundary onError={() => setSpineFailed(true)}>
+            <SpinePlayer
+              characterId={spineId}
+              className="w-full h-full"
+              backgroundColor="#00000000"
+              onError={() => setSpineFailed(true)}
+            />
+          </SpineErrorBoundary>
+        </div>
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+          <SpineErrorBoundary onError={() => setSpineFailed(true)}>
+            <SpinePlayer
+              characterId={spineId}
+              className="w-full h-full"
+              backgroundColor="#00000000"
+              onError={() => setSpineFailed(true)}
+            />
+          </SpineErrorBoundary>
+        </div>
+      </>
     )}
     {isNew && (
       <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-sm font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
