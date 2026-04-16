@@ -40,7 +40,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   // Pixel-level background removal for echo images (skip if pre-processed)
   const processedUrl = imgUrl;
   const [spineFailed, setSpineFailed] = useState(false);
-  const spineId = isCharacter && animationsFull && owned && !framingMode ? getSpineId(name) : null;
+  const spineId = isCharacter && animationsFull && !framingMode ? getSpineId(name) : null;
   const useSpine = spineId && !spineFailed;
   const longPressHandlers = useLongPress(
     onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
