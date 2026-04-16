@@ -61,12 +61,30 @@ export function createStats() {
 }
 
 // ── Weapon passive parser (cached) ──
+// P5-06 / P11-02 audit fix: LRU cap on the memo table. WuWa has ~60 weapons
+// today so the cache is small, but (passive × element) keys plus any future
+// locale-translated passive strings could multiply. Map preserves insertion
+// order — we delete the oldest when we exceed PASSIVE_CACHE_MAX.
+const PASSIVE_CACHE_MAX = 200;
 const _passiveCache = new Map();
+const _cacheSet = (key, value) => {
+  if (_passiveCache.size >= PASSIVE_CACHE_MAX) {
+    const oldest = _passiveCache.keys().next().value;
+    if (oldest !== undefined) _passiveCache.delete(oldest);
+  }
+  _passiveCache.set(key, value);
+};
 export function parsePassive(passive, element) {
   const cacheKey = `${passive || ''}|${element || ''}`;
-  if (_passiveCache.has(cacheKey)) return _passiveCache.get(cacheKey);
+  if (_passiveCache.has(cacheKey)) {
+    // LRU refresh — move to most-recently-used position.
+    const v = _passiveCache.get(cacheKey);
+    _passiveCache.delete(cacheKey);
+    _passiveCache.set(cacheKey, v);
+    return v;
+  }
   const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0, hpPct: 0, defPct: 0 };
-  if (!passive) { _passiveCache.set(cacheKey, r); return r; }
+  if (!passive) { _cacheSet(cacheKey, r); return r; }
   const p = passive.toLowerCase();
   const atkMatch = p.match(/atk\s*\+(\d+)%/);         if (atkMatch) r.atkPct += parseInt(atkMatch[1], 10);
   if (element) {
@@ -86,7 +104,7 @@ export function parsePassive(passive, element) {
   const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);                                 if (cdMatch) r.critDmg += parseInt(cdMatch[1], 10);
   const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);                              if (defMatch) r.defIgnore += parseInt(defMatch[1], 10);
   const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);                           if (resMatch) r.resShred += parseInt(resMatch[1], 10);
-  _passiveCache.set(cacheKey, r);
+  _cacheSet(cacheKey, r);
   return r;
 }
 

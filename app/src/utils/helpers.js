@@ -112,12 +112,37 @@ const ELEMENT_COLORS_CB = {
 const ELEMENT_SHAPES = {
   Fusion: '△', Electro: '◇', Aero: '○', Glacio: '□', Havoc: '✕', Spectro: '☆',
 };
-// P2-01 audit fix: previous guard was `typeof document !== 'undefined'` only,
-// but React 18 SSR paths produce a partially-built `document` where
-// `documentElement.classList` is also undefined — accessing `.contains(...)`
-// on it threw and crashed the render. Optional-chaining both hops makes the
-// check SSR-safe and returns `false` (non-CB mode) in any non-browser context.
-const _isCB = () => typeof document !== 'undefined' && document.documentElement?.classList?.contains('colorblind-mode') === true;
+// P2-01 + P5-08 / P11-03 audit fixes:
+//   P2-01: optional-chain documentElement.classList so the SSR render path
+//          no longer crashes when document is partially built.
+//   P5-08 / P11-03: the previous implementation read the DOM on every element
+//          color lookup (called many times per render). Now the result is
+//          cached in a module-scope flag, refreshed lazily when the
+//          `colorblind-mode` class toggles on <html>. A MutationObserver
+//          watches the classList and invalidates the cache on change —
+//          installed once, per tab, on first call.
+let _cbCached = null;            // null = not yet initialized; boolean once read
+let _cbObserverInstalled = false;
+const _refreshCBFlag = () => {
+  _cbCached = typeof document !== 'undefined'
+    && document.documentElement?.classList?.contains('colorblind-mode') === true;
+};
+const _installCBObserver = () => {
+  if (_cbObserverInstalled) return;
+  if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return;
+  const root = document.documentElement;
+  if (!root) return;
+  _cbObserverInstalled = true;
+  const observer = new MutationObserver(_refreshCBFlag);
+  observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+};
+const _isCB = () => {
+  if (_cbCached === null) {
+    _refreshCBFlag();
+    _installCBObserver();
+  }
+  return _cbCached === true;
+};
 const _getColors = (el) => (_isCB() ? ELEMENT_COLORS_CB[el] : ELEMENT_COLORS[el]) || ELEMENT_COLORS[el];
 const getElementColor = (el) => _getColors(el)?.hex || '#6b7280';
 const getElementBg = (el) => _getColors(el)?.bg || 'rgba(107,114,128,0.15)';

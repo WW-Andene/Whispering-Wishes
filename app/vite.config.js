@@ -2,15 +2,39 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { writeFileSync, readFileSync } from 'fs';
 
-// Stamp sw.js with build time so the browser detects a new service worker each deploy
+// P8-22 + P12-01 audit fixes:
+//   P8-22: the original stampSW plugin rewrote public/sw.js with a wall-clock
+//          timestamp on every build (and every vitest run), creating noisy
+//          working-tree diffs that forced a sw.js commit after every local
+//          test run.
+//   P12-01: APP_VERSION was duplicated across constants.js + package.json + the
+//          sw.js fallback literal — risk of drift on release bumps.
+// New behavior: plugin reads the SINGLE source of truth (package.json.version)
+// and stamps sw.js with it only when it's actually changed. Running tests
+// without a version bump produces a no-op. The client still sends SET_VERSION
+// via postMessage on SW registration, which keeps the cache names aligned
+// with the running app version at runtime.
 const stampSW = () => ({
   name: 'stamp-sw',
   buildStart() {
     const swPath = 'public/sw.js';
-    let sw = readFileSync(swPath, 'utf8');
-    sw = sw.replace(/\/\/ BUILD:.*/, '').trimEnd();
-    sw += `\n// BUILD: ${new Date().toISOString()}\n`;
-    writeFileSync(swPath, sw);
+    const pkgPath = 'package.json';
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+      const version = pkg.version || '0.0.0';
+      let sw = readFileSync(swPath, 'utf8');
+      // Replace existing BUILD: line OR append one
+      const nextStamp = `// BUILD: v${version}`;
+      const existing = sw.match(/\/\/ BUILD:.*/);
+      if (existing && existing[0] === nextStamp) return; // no-op — same version, don't touch file
+      sw = sw.replace(/\/\/ BUILD:.*/, '').trimEnd();
+      sw += `\n${nextStamp}\n`;
+      writeFileSync(swPath, sw);
+    } catch (err) {
+      // Non-fatal — if package.json can't be read (shouldn't happen), leave sw.js alone.
+      // eslint-disable-next-line no-console
+      console.warn('[stampSW] failed to stamp:', err.message);
+    }
   },
 });
 

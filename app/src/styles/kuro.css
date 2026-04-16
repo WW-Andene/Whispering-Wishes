@@ -1749,6 +1749,12 @@
       -webkit-mask-image: -webkit-radial-gradient(white, black);
       /* P12-FIX: Standard mask-image for Firefox support (Step 12 audit — LOW-12l) */
       mask-image: radial-gradient(white, black);
+      /* P5-12 audit fix: skip off-screen card render + paint. Cards hydrate
+         layout immediately (intrinsic-size = card-sm) so scrolling doesn't jump,
+         but paint work is deferred until the card enters the viewport. 60+ char
+         grids benefit most. Graceful no-op in browsers lacking the property. */
+      content-visibility: auto;
+      contain-intrinsic-size: var(--height-card-sm) auto;
     }
     
     /* ═══ CUSTOM SCROLLBAR ═══ */
