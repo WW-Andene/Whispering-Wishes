@@ -722,6 +722,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
+                animationsFull={visualSettings?.animationsEnabled === 'full'}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
@@ -745,6 +746,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
+                animationsFull={visualSettings?.animationsEnabled === 'full'}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
