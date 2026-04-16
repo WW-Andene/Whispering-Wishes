@@ -29,10 +29,10 @@ export default function MapTab({ navPadding = 80 }) {
       setStatus('Initializing...');
 
       const container = containerRef.current;
-      // Use max ratio so map always fully covers the container (no black bands)
-      const minZoom = Math.log2(
+      // Use ceil so map always fully covers the container (no black bands)
+      const minZoom = Math.max(0, Math.ceil(Math.log2(
         Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
-      ) + MAX_ZOOM;
+      ) + MAX_ZOOM));
 
       map = L.map(container, {
         crs: L.CRS.Simple,
