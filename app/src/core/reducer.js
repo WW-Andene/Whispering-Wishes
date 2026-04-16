@@ -188,7 +188,12 @@ const reducer = (state, action) => {
     }
     // SYNC_PITY removed - calculator is fully independent from history
     case ACTION.IMPORT_HISTORY: {
-      const safeUid = action.uid ? String(action.uid).slice(0, 32) : state.profile.uid;
+      // P2-07 audit fix: WuWa player IDs are numeric (per api/ocr.js prompt + observed data).
+      // Previously `safeUid` was any string truncated to 32 chars — could store
+      // control chars / whitespace. Now coerce to digits only; if nothing is left,
+      // keep the existing uid (same fallback behavior for empty input as before).
+      const rawUid = action.uid ? String(action.uid).replace(/[^0-9]/g, '').slice(0, 32) : '';
+      const safeUid = rawUid || state.profile.uid;
       const newProfile = { ...state.profile, importedAt: new Date().toISOString(), uid: safeUid };
       
       // Deduplicate: merge new history with existing, filtering out entries that match by timestamp + name + rarity

@@ -40,7 +40,8 @@ const generateUniqueId = () => {
 //   Mean pity at 5★ = 53.5 pulls, Std dev = 22.7 pulls (single draw).
 // For N 5★ pulls, the sample mean has std dev = 22.7/√N (central limit theorem).
 // We use max(N, 3) to avoid extreme percentiles from tiny samples.
-// Computed from app's soft pity model: SOFT_PITY_START=64, HARD_PITY=80, BASE_RATE=0.8%
+// Computed from app's soft pity model: SOFT_PITY_START=66, HARD_PITY=80
+// (P2-20 audit fix: comment previously said SOFT_PITY_START=64 — drift from constants.js:73), BASE_RATE=0.8%
 const LUCK_MEAN_PITY = 53.0;
 const LUCK_STD_DEV_SINGLE = 22.4;
 
@@ -111,7 +112,12 @@ const ELEMENT_COLORS_CB = {
 const ELEMENT_SHAPES = {
   Fusion: '△', Electro: '◇', Aero: '○', Glacio: '□', Havoc: '✕', Spectro: '☆',
 };
-const _isCB = () => typeof document !== 'undefined' && document.documentElement.classList.contains('colorblind-mode');
+// P2-01 audit fix: previous guard was `typeof document !== 'undefined'` only,
+// but React 18 SSR paths produce a partially-built `document` where
+// `documentElement.classList` is also undefined — accessing `.contains(...)`
+// on it threw and crashed the render. Optional-chaining both hops makes the
+// check SSR-safe and returns `false` (non-CB mode) in any non-browser context.
+const _isCB = () => typeof document !== 'undefined' && document.documentElement?.classList?.contains('colorblind-mode') === true;
 const _getColors = (el) => (_isCB() ? ELEMENT_COLORS_CB[el] : ELEMENT_COLORS[el]) || ELEMENT_COLORS[el];
 const getElementColor = (el) => _getColors(el)?.hex || '#6b7280';
 const getElementBg = (el) => _getColors(el)?.bg || 'rgba(107,114,128,0.15)';

@@ -22,7 +22,9 @@ const GACHA_EPS = 1e-15;
 // before clamping, but Math.min ensures it returns exactly 1.0. The DP table accesses
 // getPullRate(80) via nextPity = Math.min(MAX_PITY, p+1), which is correct — pity 80 = guaranteed.
 const BASE_5STAR_RATE = 0.008; // 0.8%
-const SOFT_PITY_STEPS = MAX_PITY - SOFT_PITY_START; // 80 - 64 = 16 steps
+// P2-14 audit fix: comment formerly said "80 - 64 = 16"; actual constants are
+// MAX_PITY=80 and SOFT_PITY_START=66 (constants.js), so the ramp is 14 steps.
+const SOFT_PITY_STEPS = MAX_PITY - SOFT_PITY_START; // 80 - 66 = 14 steps
 const getPullRate = (pity) => {
   if (pity < SOFT_PITY_START) return BASE_5STAR_RATE;
   return Math.min(BASE_5STAR_RATE + ((pity - SOFT_PITY_START + 1) / SOFT_PITY_STEPS) * (1.0 - BASE_5STAR_RATE), 1.0);
