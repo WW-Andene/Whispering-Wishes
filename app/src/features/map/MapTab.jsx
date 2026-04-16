@@ -29,9 +29,10 @@ export default function MapTab({ navPadding = 80 }) {
       setStatus('Initializing...');
 
       const container = containerRef.current;
-      const minZoom = Math.max(0, Math.ceil(Math.log2(
+      // Use max ratio so map always fully covers the container (no black bands)
+      const minZoom = Math.log2(
         Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
-      ) + MAX_ZOOM));
+      ) + MAX_ZOOM;
 
       map = L.map(container, {
         crs: L.CRS.Simple,
@@ -49,7 +50,8 @@ export default function MapTab({ navPadding = 80 }) {
       const bounds = L.latLngBounds(southWest, northEast);
 
       map.setMaxBounds(bounds);
-      map.fitBounds(bounds);
+      // Center and set zoom so map covers container (like object-cover)
+      map.setView(bounds.getCenter(), minZoom);
 
       L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
         minZoom,
@@ -94,7 +96,7 @@ export default function MapTab({ navPadding = 80 }) {
               <div
                 ref={containerRef}
                 className="leaflet-map-bg"
-                style={{ position: 'absolute', inset: 0, background: MAP_BG, clipPath: 'inset(0 10%)' }}
+                style={{ position: 'absolute', inset: 0, background: MAP_BG }}
               />
             </div>
             <CardHeader>Pinch to zoom · Drag to pan</CardHeader>
