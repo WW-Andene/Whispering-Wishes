@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 
-const MAP_W = 12288;
+const MAP_W = 12148;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
 const MAX_ZOOM = 6;
@@ -50,8 +50,7 @@ export default function MapTab({ navPadding = 80 }) {
       const bounds = L.latLngBounds(southWest, northEast);
 
       map.setMaxBounds(bounds);
-      // Center and set zoom so map covers container (like object-cover)
-      map.setView(bounds.getCenter(), minZoom);
+      map.fitBounds(bounds);
 
       L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
         minZoom,
