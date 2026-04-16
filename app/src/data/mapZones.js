@@ -14,6 +14,8 @@
 //
 // Optional fields:
 //   color      — hex string, default '#edaf18' (brand gold)
+//   parentId   — id of another zone in this file; marks this as a sub-zone
+//                (rendered with a thinner stroke; tooltip shows "Parent › Child")
 //   tags       — string[], free-form ('boss', 'echo', 'resource', ...)
 //   note       — string shown in the popup body
 //
@@ -22,11 +24,15 @@
 export const MAP_ZONES = [
   // Example placeholder — delete once real zones are authored.
   // {
+  //   id: 'huanglong',
+  //   name: 'Huanglong',
+  //   polygon: [[5000, 5000], [11000, 5000], [11000, 11000], [5000, 11000]],
+  // },
+  // {
   //   id: 'jinzhou',
   //   name: 'Jinzhou',
   //   polygon: [[7800, 7600], [9200, 7600], [9200, 8900], [7800, 8900]],
-  //   color: '#edaf18',
-  //   tags: ['city'],
+  //   parentId: 'huanglong',
   //   note: 'Capital of Huanglong.',
   // },
 ];
