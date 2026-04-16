@@ -97,6 +97,60 @@ describe('Reducer — team actions', () => {
     const state2 = reducer(initialState, { type: ACTION.SET_ACTIVE_TEAM, index: -5 });
     expect(state2.activeTeamIndex).toBeGreaterThanOrEqual(0);
   });
+
+  // ── P4-18 audit fix: IMPORT_TEAMS defensive-input regression tests ──
+  it('IMPORT_TEAMS rejects non-array payload', () => {
+    const state = reducer(initialState, { type: ACTION.IMPORT_TEAMS, teams: 'not-an-array' });
+    expect(state).toBe(initialState); // payload rejected, state unchanged
+  });
+
+  it('IMPORT_TEAMS rejects wrong length (3 teams instead of 5)', () => {
+    const badPayload = [
+      { name: 'A', slots: [null, null, null] },
+      { name: 'B', slots: [null, null, null] },
+      { name: 'C', slots: [null, null, null] },
+    ];
+    const state = reducer(initialState, { type: ACTION.IMPORT_TEAMS, teams: badPayload });
+    expect(state).toBe(initialState); // payload rejected
+  });
+
+  it('IMPORT_TEAMS strips non-string slot entries', () => {
+    const payload = [
+      { name: 'Clean', slots: ['Verina', 42, { injection: true }] }, // non-string → null
+      { name: 'T2', slots: [null, null, null] },
+      { name: 'T3', slots: [null, null, null] },
+      { name: 'T4', slots: [null, null, null] },
+      { name: 'T5', slots: [null, null, null] },
+    ];
+    const state = reducer(initialState, { type: ACTION.IMPORT_TEAMS, teams: payload });
+    expect(state.teams[0].slots[0]).toBe('Verina');
+    expect(state.teams[0].slots[1]).toBeNull(); // number stripped
+    expect(state.teams[0].slots[2]).toBeNull(); // object stripped
+  });
+
+  it('IMPORT_TEAMS deduplicates repeated characters within a team', () => {
+    const payload = [
+      { name: 'Dupes', slots: ['Verina', 'Verina', 'Verina'] }, // same char 3x
+      { name: 'T2', slots: [null, null, null] },
+      { name: 'T3', slots: [null, null, null] },
+      { name: 'T4', slots: [null, null, null] },
+      { name: 'T5', slots: [null, null, null] },
+    ];
+    const state = reducer(initialState, { type: ACTION.IMPORT_TEAMS, teams: payload });
+    const first = state.teams[0].slots;
+    expect(first.filter((x) => x === 'Verina')).toHaveLength(1);
+    expect(first.filter((x) => x === null)).toHaveLength(2);
+  });
+
+  it('IMPORT_TEAMS truncates overly long team names', () => {
+    const longName = 'A'.repeat(100);
+    const payload = Array.from({ length: 5 }, (_, i) => ({
+      name: i === 0 ? longName : `Team ${i + 1}`,
+      slots: [null, null, null],
+    }));
+    const state = reducer(initialState, { type: ACTION.IMPORT_TEAMS, teams: payload });
+    expect(state.teams[0].name.length).toBeLessThanOrEqual(20);
+  });
 });
 
 describe('Reducer — bookmark actions', () => {
