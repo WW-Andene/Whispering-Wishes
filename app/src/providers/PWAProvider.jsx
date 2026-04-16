@@ -114,17 +114,31 @@ const PWAProvider = ({ children }) => {
     // P14-FIX: HIGH-6 — Register service worker from a proper static file instead of blob URL.
     // Blob URLs bypass CSP, are invisible to security scanners, and prevent proper SW update lifecycle.
     // The static /sw.js file works in all browsers (Firefox, Safari, Chrome).
+    //
+    // P5-01 audit fix: track the SW registration + nested listeners so the cleanup
+    // function can detach them if this effect ever re-runs (defensive —
+    // PWAProvider is root-level so re-mount is rare, but unbalanced listeners
+    // accumulated across hot-reloads / nested providers otherwise.)
+    let swRegistration = null;
+    let swUpdateHandler = null;
+    let swStateChangeHandler = null;
+    let swInstallingWorker = null;
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then((registration) => {
-          registration.addEventListener('updatefound', () => {
+          swRegistration = registration;
+          swUpdateHandler = () => {
             const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
+            if (!newWorker) return;
+            swInstallingWorker = newWorker;
+            swStateChangeHandler = () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.info('[WW] New version available');
               }
-            });
-          });
+            };
+            newWorker.addEventListener('statechange', swStateChangeHandler);
+          };
+          registration.addEventListener('updatefound', swUpdateHandler);
         })
         .catch((err) => {
           console.info('[WW] Service worker not registered:', err.message);
@@ -136,6 +150,13 @@ const PWAProvider = ({ children }) => {
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      // P5-01 audit fix: detach SW registration listeners on unmount.
+      if (swRegistration && swUpdateHandler) {
+        try { swRegistration.removeEventListener('updatefound', swUpdateHandler); } catch {}
+      }
+      if (swInstallingWorker && swStateChangeHandler) {
+        try { swInstallingWorker.removeEventListener('statechange', swStateChangeHandler); } catch {}
+      }
       removeMetaTags();
     };
   }, []);
