@@ -66,8 +66,6 @@ const DEFAULT_OVERLAY_DRAFTS = [
 ];
 
 const OVERLAY_DRAFTS_KEY = 'ww-overlay-drafts';
-const OVERLAY_SEED_KEY = 'ww-overlay-drafts-seed';
-const CURRENT_SEED_VERSION = 1;
 
 export function loadOverlayDrafts() {
   if (typeof localStorage === 'undefined') return [...DEFAULT_OVERLAY_DRAFTS];
@@ -78,17 +76,11 @@ export function loadOverlayDrafts() {
     list = Array.isArray(parsed) ? parsed : [];
   } catch { list = []; }
 
-  let seedVersion = 0;
-  try { seedVersion = parseInt(localStorage.getItem(OVERLAY_SEED_KEY) || '0', 10) || 0; } catch {}
-
-  if (seedVersion < CURRENT_SEED_VERSION) {
-    const existingIds = new Set(list.map(o => o && o.id));
-    const missing = DEFAULT_OVERLAY_DRAFTS.filter(d => !existingIds.has(d.id));
-    if (missing.length > 0) {
-      list = [...list, ...missing];
-      try { localStorage.setItem(OVERLAY_DRAFTS_KEY, JSON.stringify(list)); } catch {}
-    }
-    try { localStorage.setItem(OVERLAY_SEED_KEY, String(CURRENT_SEED_VERSION)); } catch {}
+  const existingIds = new Set(list.map(o => o && o.id));
+  const missing = DEFAULT_OVERLAY_DRAFTS.filter(d => !existingIds.has(d.id));
+  if (missing.length > 0) {
+    list = [...list, ...missing];
+    try { localStorage.setItem(OVERLAY_DRAFTS_KEY, JSON.stringify(list)); } catch {}
   }
 
   return list;
