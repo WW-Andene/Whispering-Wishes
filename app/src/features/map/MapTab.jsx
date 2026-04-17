@@ -553,11 +553,21 @@ export default function MapTab({ navPadding = 80 }) {
         const s = inst.current.scale ?? 1;
         const [cx, cy] = inst.current.center;
         // Size in display px = natural px × user scale × zoom factor relative
-        // to the native tile zoom. Using the natural aspect directly keeps the
-        // sub-map the same ratio at every zoom/rotation — no projection drift.
+        // to the native tile zoom. Aspect = natural aspect, always.
         const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
         const w = nw * s * zoomFactor;
         const h = nh * s * zoomFactor;
+        // Past the GPU's safe texture dimension (~8192 px is portable, real
+        // limits vary 8k–16k), the browser subdivides the compositor layer
+        // and that fallback path introduces the close-zoom perspective warp.
+        // When the sub-map would exceed that, hide it outright instead of
+        // rendering a warped image — the base map still zooms normally.
+        const MAX_DISPLAY_PX = 8192;
+        if (w > MAX_DISPLAY_PX || h > MAX_DISPLAY_PX) {
+          inst.img.style.display = 'none';
+          return;
+        }
+        inst.img.style.display = '';
         const centerPt = map.latLngToContainerPoint(map.unproject([cx, cy], NATIVE_ZOOM));
         const left = centerPt.x - w / 2;
         const top = centerPt.y - h / 2;
