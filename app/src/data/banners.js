@@ -56,6 +56,9 @@ const CURRENT_BANNERS = {
 // [SECTION:HISTORY]
 
 const BANNER_HISTORY = [
+  // Version 3.3 (upcoming — dates approximate)
+  { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia'],  weapons: [], startDate: '2026-05-20', endDate: '2026-06-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg' },
+  { id: 'v3.3-p1', version: '3.3', phase: 1, characters: ['Hiyuki'], weapons: [], startDate: '2026-04-29', endDate: '2026-05-20', bannerArt: 'https://i.ibb.co/Gf7F9h12/hiyuki-banner.jpg' },
   // Version 3.2
   { id: 'v3.2-p2', version: '3.2', phase: 2, characters: ['Lynae', 'Zani', 'Phoebe'], weapons: ['Spectrum Blaster', 'Blazing Justice', 'Luminous Hymn'], startDate: '2026-04-09', endDate: '2026-04-29', bannerArt: 'https://i.ibb.co/h1Kwq7Vj/lynae-banner.jpg' },
   { id: 'v3.2-p1', version: '3.2', phase: 1, characters: ['Sigrika', 'Qiuyuan'], weapons: ['Solsworn Ciphers', 'Emerald Sentence'], startDate: '2026-03-19', endDate: '2026-04-09', bannerArt: 'https://i.ibb.co/DHJ2YMTM/sigrika-banner.jpg' },
