@@ -195,6 +195,7 @@ export default function MapTab({ navPadding = 80 }) {
       const tileLayer = L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
         minZoom,
         maxZoom: MAX_ZOOM,
+        maxNativeZoom: 6,
         tileSize: TILE_SIZE,
         noWrap: true,
         bounds,
