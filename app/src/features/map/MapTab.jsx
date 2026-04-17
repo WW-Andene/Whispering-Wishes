@@ -392,19 +392,20 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode]);
 
-  // Scrim: CSS overlay for floor dimming (lightweight, separate from overlays)
+  // Scrim: dark overlay for floor dimming. Uses a full-viewport div
+  // inside the map container (not a Leaflet pane — simpler, no z-index issues).
+  const scrimRef = useRef(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
+    if (!scrimRef.current) {
+      const div = document.createElement('div');
+      div.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:350;transition:background 300ms;';
+      map.getContainer().appendChild(div);
+      scrimRef.current = div;
+    }
     const floorDist = Math.abs(viewFloor);
-    const scrimPane = map.getPane('scrim') || (() => {
-      const sp = map.createPane('scrim');
-      sp.style.zIndex = '250';
-      sp.style.pointerEvents = 'none';
-      sp.style.transition = 'background 300ms';
-      return sp;
-    })();
-    scrimPane.style.background = floorDist > 0
+    scrimRef.current.style.background = floorDist > 0
       ? `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`
       : 'transparent';
   }, [viewFloor, mapReady]);
@@ -446,35 +447,19 @@ export default function MapTab({ navPadding = 80 }) {
         const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
         const url = (BASE + (cat?.imageUrl || ov.imageUrl || '')).replace(/\/\//g, '/');
         overlay = L.imageOverlay(url, bounds, {
-          interactive: !ov.locked,
+          interactive: false,
           className: 'map-overlay-img',
           opacity: ov.opacity ?? 1,
         }).addTo(map);
         instances.set(ov.id, overlay);
-
-        const origReset = overlay._reset;
-        overlay._ww_rotDeg = ov.rotation || 0;
-        overlay._reset = function () {
-          origReset.call(this);
-          const img = this._image;
-          if (img && this._ww_rotDeg) {
-            img.style.transformOrigin = 'center center';
-            img.style.transform += ` rotate(${Math.round(this._ww_rotDeg)}deg)`;
-          }
-        };
-        overlay._reset();
       } else {
         overlay.setBounds(bounds);
         overlay.setOpacity(ov.opacity ?? 1);
-        overlay._ww_rotDeg = ov.rotation || 0;
       }
 
       const el = overlay.getElement?.();
       if (el) {
-        el.style.pointerEvents = ov.locked ? 'none' : '';
-        el.style.cursor = ov.locked ? 'default' : 'grab';
-        el.style.outline = (!ov.locked && ov.id === activeOverlayId) ? '2px solid #edaf18' : '';
-        el.style.outlineOffset = (!ov.locked && ov.id === activeOverlayId) ? '2px' : '';
+        el.style.pointerEvents = 'none';
       }
     });
   }, [overlayDrafts, viewFloor, mapReady, activeOverlayId]);
