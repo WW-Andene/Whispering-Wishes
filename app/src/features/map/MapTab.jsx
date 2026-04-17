@@ -76,6 +76,8 @@ export default function MapTab({ navPadding = 80 }) {
   const activeLayerRef = useRef(null);
   const draftsLayerRef = useRef(null);
   const headerTapsRef = useRef([]);
+  const cardHeaderRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(48);
 
   const [status, setStatus] = useState('Loading map...');
   const [mapReady, setMapReady] = useState(false);
@@ -174,6 +176,24 @@ export default function MapTab({ navPadding = 80 }) {
     walk(null, 0);
     return out;
   }, [drafts]);
+
+  // Measure the map card's header so the floor picker sits the same visual
+  // gap below it as it does from the card's left edge.
+  useEffect(() => {
+    const el = cardHeaderRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const h = entry.contentRect.height;
+        if (h > 0) setHeaderHeight(h);
+      }
+    });
+    ro.observe(el);
+    // Initial measurement (RO fires asynchronously)
+    const rect = el.getBoundingClientRect();
+    if (rect.height > 0) setHeaderHeight(rect.height);
+    return () => ro.disconnect();
+  }, [mapReady]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -1254,10 +1274,10 @@ export default function MapTab({ navPadding = 80 }) {
 
         .floor-picker {
           /* Float the picker var(--space-md) (12 px) below the kuro-header
-             and var(--space-md) from the card's left edge — same gap on
-             top and sides. */
+             (actual height measured via ResizeObserver, applied as inline
+             `top`) and var(--space-md) from the card's left edge — same
+             gap on top and sides. */
           position: absolute;
-          top: calc(var(--card-padding, 14px) * 2 + 1rem + var(--space-md, 12px));
           left: var(--space-md, 12px);
           z-index: 20;
           display: flex; flex-direction: column; align-items: stretch;
@@ -1346,6 +1366,7 @@ export default function MapTab({ navPadding = 80 }) {
               </div>
             )}
             <div
+              ref={cardHeaderRef}
               className="map-header-tap"
               onClick={handleHeaderTap}
               style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}
@@ -1366,8 +1387,8 @@ export default function MapTab({ navPadding = 80 }) {
               </CardHeader>
             </div>
 
-            {/* Floor picker — always visible, top-right below header */}
-            <div className="floor-picker" role="group" aria-label="Floor">
+            {/* Floor picker — same var(--space-md) gap on top and sides */}
+            <div className="floor-picker" role="group" aria-label="Floor" style={{ top: `${headerHeight + 12}px` }}>
               <button type="button" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
               <input
                 type="number"
