@@ -100,7 +100,10 @@ export default function MapTab({ navPadding = 80 }) {
   const [viewFloor, setViewFloor] = useState(0);
   const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
   const [editingOverlayId, setEditingOverlayId] = useState(null);
-  const overlayImgsRef = useRef(new Map()); // id → { img, update }
+  const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
+  const overlayImagesRef = useRef(new Map());      // catalogId → HTMLImageElement (decoded source)
+  const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
+  const overlayRedrawRef = useRef(() => {});       // exposes draw() to the gesture effect
 
   const tileLayerRef = useRef(null);
   const gestureActiveRef = useRef(false);
@@ -515,84 +518,102 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode]);
 
-  // Sub-map overlay renderer. One <img> per placement on the current floor,
-  // repositioned on every map move/zoom via latLngToContainerPoint. Renders
-  // above the Leaflet tile pane so the sub-map sits on top of the base map.
+  // Sub-map overlay renderer — one shared <canvas>, sized to the map viewport.
+  // At every map move/zoom we clear and redraw each visible placement onto the
+  // canvas via ctx.drawImage with translate/rotate/scale. Because the canvas
+  // never exceeds viewport dimensions, the browser never has to subdivide an
+  // oversize compositor layer and the close-zoom perspective warp can't occur.
   useEffect(() => {
+    if (!mapReady) return;
     const map = mapRef.current;
-    if (!map || !mapReady) return;
+    if (!map) return;
     const container = map.getContainer();
-    const imgs = overlayImgsRef.current;
-    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
-    const visibleIds = new Set(visible.map(o => o.id));
 
-    for (const [id, inst] of imgs) {
-      if (!visibleIds.has(id)) {
-        if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
-        inst.img.remove();
-        imgs.delete(id);
-      }
+    let canvas = overlayCanvasRef.current;
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:400;';
+      container.appendChild(canvas);
+      overlayCanvasRef.current = canvas;
     }
 
+    // Pre-decode any source images we don't have yet
+    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
     visible.forEach(ov => {
       const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
       if (!cat) return;
-      let inst = imgs.get(ov.id);
-      if (!inst) {
-        const img = document.createElement('img');
+      if (!overlayImagesRef.current.has(cat.id)) {
+        const img = new Image();
+        img.decoding = 'async';
         img.src = (BASE + cat.imageUrl).replace(/\/\//g, '/');
-        img.draggable = false;
-        img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:400;will-change:transform;';
-        container.appendChild(img);
-        inst = { img, update: null, current: ov };
-        imgs.set(ov.id, inst);
+        img.onload = () => overlayRedrawRef.current();
+        overlayImagesRef.current.set(cat.id, img);
       }
-      inst.current = ov;
-      const update = () => {
-        const nw = cat.naturalWidth, nh = cat.naturalHeight;
-        const s = inst.current.scale ?? 1;
-        const [cx, cy] = inst.current.center;
-        // Size in display px = natural px × user scale × zoom factor relative
-        // to the native tile zoom. Aspect = natural aspect, always.
-        const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
-        const w = nw * s * zoomFactor;
-        const h = nh * s * zoomFactor;
-        // Past the GPU's safe texture dimension (~8192 px is portable, real
-        // limits vary 8k–16k), the browser subdivides the compositor layer
-        // and that fallback path introduces the close-zoom perspective warp.
-        // When the sub-map would exceed that, hide it outright instead of
-        // rendering a warped image — the base map still zooms normally.
-        const MAX_DISPLAY_PX = 8192;
-        if (w > MAX_DISPLAY_PX || h > MAX_DISPLAY_PX) {
-          inst.img.style.display = 'none';
-          return;
-        }
-        inst.img.style.display = '';
-        const centerPt = map.latLngToContainerPoint(map.unproject([cx, cy], NATIVE_ZOOM));
-        const left = centerPt.x - w / 2;
-        const top = centerPt.y - h / 2;
-        inst.img.style.width = w + 'px';
-        inst.img.style.height = h + 'px';
-        inst.img.style.transformOrigin = `${w / 2}px ${h / 2}px`;
-        inst.img.style.transform = `translate(${left}px, ${top}px) rotate(${inst.current.rotation || 0}deg)`;
-        inst.img.style.opacity = inst.current.opacity ?? 1;
-      };
-      if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
-      inst.update = update;
-      map.on('move zoom viewreset zoomend', update);
-      update();
     });
+
+    const syncSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const wantW = Math.round(cw * dpr), wantH = Math.round(ch * dpr);
+      if (canvas.width !== wantW || canvas.height !== wantH) {
+        canvas.width = wantW;
+        canvas.height = wantH;
+        canvas.style.width = cw + 'px';
+        canvas.style.height = ch + 'px';
+      }
+      return { dpr, cw, ch };
+    };
+
+    const draw = () => {
+      const { dpr, cw, ch } = syncSize();
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cw, ch);
+
+      const currentVisible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
+      const live = overlayLiveRef.current;
+      currentVisible.forEach(rawOv => {
+        const ov = (live && live.id === rawOv.id) ? { ...rawOv, ...live } : rawOv;
+        const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+        if (!cat) return;
+        const img = overlayImagesRef.current.get(cat.id);
+        if (!img || !img.complete || img.naturalWidth === 0) return;
+
+        const s = ov.scale ?? 1;
+        const rotRad = ((ov.rotation || 0) * Math.PI) / 180;
+        const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
+        const displayScale = s * zoomFactor;
+        const nw = cat.naturalWidth, nh = cat.naturalHeight;
+        const centerPt = map.latLngToContainerPoint(map.unproject(ov.center, NATIVE_ZOOM));
+
+        ctx.save();
+        ctx.globalAlpha = ov.opacity ?? 1;
+        ctx.translate(centerPt.x, centerPt.y);
+        ctx.rotate(rotRad);
+        ctx.scale(displayScale, displayScale);
+        ctx.drawImage(img, -nw / 2, -nh / 2, nw, nh);
+        ctx.restore();
+      });
+    };
+    overlayRedrawRef.current = draw;
+
+    map.on('move zoom viewreset zoomend resize', draw);
+    draw();
+
+    return () => {
+      map.off('move zoom viewreset zoomend resize', draw);
+    };
   }, [overlayDrafts, viewFloor, mapReady]);
 
-  // Cleanup sub-map imgs on unmount
+  // Cleanup shared canvas + image cache on unmount
   useEffect(() => {
     return () => {
-      const map = mapRef.current;
-      for (const [, inst] of overlayImgsRef.current) {
-        if (inst.update && map) map.off('move zoom viewreset zoomend', inst.update);
-        inst.img.remove();
+      if (overlayCanvasRef.current) {
+        overlayCanvasRef.current.remove();
+        overlayCanvasRef.current = null;
       }
-      overlayImgsRef.current.clear();
+      overlayImagesRef.current.clear();
     };
   }, []);
 
@@ -632,42 +653,62 @@ export default function MapTab({ navPadding = 80 }) {
     if (editingOverlayId === id) setEditingOverlayId(null);
   }, [overlayDrafts, editingOverlayId]);
 
-  // Finger-gesture placement for the currently-edited sub-map on the current floor:
-  //   1 finger drag → move center
-  //   2 fingers pinch → scale / rotate
-  // Live preview mutates the DOM directly; state is committed on release.
+  // Finger-gesture placement for the currently-edited sub-map on the current floor.
+  // Listens on the map container at capture phase so it runs before Leaflet's
+  // pan/zoom handlers. A hit-test compares the touch point against the overlay's
+  // rotated bounding box: only touches inside start a gesture, so tapping the
+  // empty map around the sub-map still pans/zooms normally.
+  //   1 finger drag   → move center
+  //   2 fingers pinch → scale + rotate
+  // Live state goes into overlayLiveRef; redraw is called directly on every
+  // move (no React re-render). State is committed once on release.
   useEffect(() => {
     if (!editingOverlayId || !mapReady) return;
     const map = mapRef.current;
     if (!map) return;
     const ov = overlayDrafts.find(o => o.id === editingOverlayId);
     if (!ov || (ov.floor ?? 0) !== viewFloor) return;
-    const inst = overlayImgsRef.current.get(editingOverlayId);
-    if (!inst) return;
-    const img = inst.img;
+    const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+    if (!cat) return;
+    const container = map.getContainer();
 
-    const prevCursor = img.style.cursor;
-    const prevPE = img.style.pointerEvents;
-    const prevOutline = img.style.outline;
-    const prevOutlineOffset = img.style.outlineOffset;
-    img.style.pointerEvents = 'auto';
-    img.style.cursor = 'grab';
-    img.style.outline = '2px dashed #edaf18';
-    img.style.outlineOffset = '2px';
+    const hitTest = (clientX, clientY) => {
+      const rect = container.getBoundingClientRect();
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      const live = overlayLiveRef.current;
+      const current = (live && live.id === ov.id) ? { ...ov, ...live } : ov;
+      const centerPt = map.latLngToContainerPoint(map.unproject(current.center, NATIVE_ZOOM));
+      const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
+      const halfW = (cat.naturalWidth * (current.scale ?? 1) * zoomFactor) / 2;
+      const halfH = (cat.naturalHeight * (current.scale ?? 1) * zoomFactor) / 2;
+      const rot = -((current.rotation || 0) * Math.PI) / 180;
+      const dx = px - centerPt.x, dy = py - centerPt.y;
+      const lx = dx * Math.cos(rot) - dy * Math.sin(rot);
+      const ly = dx * Math.sin(rot) + dy * Math.cos(rot);
+      return Math.abs(lx) <= halfW && Math.abs(ly) <= halfH;
+    };
 
     const live = {
+      id: ov.id,
       center: [...ov.center],
       scale: ov.scale ?? 1,
       rotation: ov.rotation ?? 0,
     };
-    let dragStart = null, pinchStart = null;
+    let dragStart = null, pinchStart = null, active = false;
 
     const applyLive = () => {
-      inst.current = { ...inst.current, center: live.center, scale: live.scale, rotation: live.rotation };
-      inst.update();
+      overlayLiveRef.current = {
+        id: live.id,
+        center: live.center,
+        scale: live.scale,
+        rotation: live.rotation,
+      };
+      overlayRedrawRef.current();
     };
 
     const onMove = (evt) => {
+      if (!active) return;
       evt.preventDefault();
       if (evt.touches && evt.touches.length >= 2) {
         if (!pinchStart) {
@@ -700,28 +741,38 @@ export default function MapTab({ navPadding = 80 }) {
     };
 
     const onUp = (evt) => {
+      if (!active) return;
       if (evt.touches && evt.touches.length > 0) return;
+      active = false;
       dragStart = null;
       pinchStart = null;
-      img.style.cursor = 'grab';
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onUp);
       map.dragging?.enable();
       if (map.touchZoom) map.touchZoom.enable();
-      handleUpdateOverlay(editingOverlayId, {
+      const committed = {
         center: [Math.round(live.center[0]), Math.round(live.center[1])],
         scale: +live.scale.toFixed(3),
         rotation: Math.round(live.rotation),
-      });
+      };
+      overlayLiveRef.current = null;
+      handleUpdateOverlay(editingOverlayId, committed);
     };
 
     const onDown = (evt) => {
+      const t = evt.touches ? evt.touches[0] : evt;
+      if (!hitTest(t.clientX, t.clientY)) return;
       evt.preventDefault();
       evt.stopPropagation();
+      active = true;
       map.dragging?.disable();
       if (map.touchZoom) map.touchZoom.disable();
+      // Refresh starting values from committed state in case it moved elsewhere
+      live.center = [...ov.center];
+      live.scale = ov.scale ?? 1;
+      live.rotation = ov.rotation ?? 0;
       if (evt.touches && evt.touches.length >= 2) {
         const t1 = evt.touches[0], t2 = evt.touches[1];
         pinchStart = {
@@ -732,33 +783,29 @@ export default function MapTab({ navPadding = 80 }) {
         };
         dragStart = null;
       } else {
-        const t = evt.touches ? evt.touches[0] : evt;
         dragStart = { sx: t.clientX, sy: t.clientY, cx: live.center[0], cy: live.center[1] };
         pinchStart = null;
       }
-      img.style.cursor = 'grabbing';
       document.addEventListener('mousemove', onMove, { passive: false });
       document.addEventListener('mouseup', onUp);
       document.addEventListener('touchmove', onMove, { passive: false });
       document.addEventListener('touchend', onUp);
     };
 
-    img.addEventListener('mousedown', onDown);
-    img.addEventListener('touchstart', onDown, { passive: false });
+    container.addEventListener('mousedown', onDown, true);
+    container.addEventListener('touchstart', onDown, { capture: true, passive: false });
 
     return () => {
-      img.removeEventListener('mousedown', onDown);
-      img.removeEventListener('touchstart', onDown);
+      container.removeEventListener('mousedown', onDown, true);
+      container.removeEventListener('touchstart', onDown, { capture: true });
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onUp);
-      img.style.cursor = prevCursor;
-      img.style.pointerEvents = prevPE;
-      img.style.outline = prevOutline;
-      img.style.outlineOffset = prevOutlineOffset;
       map.dragging?.enable();
       if (map.touchZoom) map.touchZoom.enable();
+      overlayLiveRef.current = null;
+      overlayRedrawRef.current();
     };
   }, [editingOverlayId, overlayDrafts, viewFloor, mapReady, handleUpdateOverlay]);
 
