@@ -389,11 +389,8 @@ export default function MapTab({ navPadding = 80 }) {
     const L = leafletRef.current;
     if (!map || !L || !mapReady) return;
 
-    // Clear previous overlay layers + disconnect observers + clear scrim
+    // Clear previous overlay layers + clear scrim
     if (overlayLayerRef.current) {
-      overlayLayerRef.current.eachLayer(l => {
-        if (l._ww_rotObserver) l._ww_rotObserver.disconnect();
-      });
       map.removeLayer(overlayLayerRef.current);
       overlayLayerRef.current = null;
     }
@@ -465,26 +462,18 @@ export default function MapTab({ navPadding = 80 }) {
           el.style.outlineOffset = '2px';
         }
       }
-      // Rotation: use MutationObserver to re-append rotate() whenever
-      // Leaflet overwrites el.style.transform (on zoom/pan/_reset).
-      // This is the ONLY rotation mechanism — no _reset patch, no manual append.
-      const rotDeg = ov.rotation || 0;
-      if (el && rotDeg) {
-        const ensureRotation = () => {
-          if (el.style.transform && !el.style.transform.includes('rotate')) {
-            el.style.transformOrigin = 'center center';
-            el.style.transform += ` rotate(${rotDeg}deg)`;
-          }
-        };
-        ensureRotation();
-        const rotObserver = new MutationObserver(ensureRotation);
-        rotObserver.observe(el, { attributes: true, attributeFilter: ['style'] });
-        // Store for cleanup
-        overlay._ww_rotObserver = rotObserver;
-      }
-      // Mutable rotation box for gesture code (unlocked overlays only)
-      const rotBox = { deg: rotDeg };
-      overlay._ww_rotBox = rotBox;
+      // Rotation via _reset patch — synchronous, no frame gap.
+      const rotBox = { deg: ov.rotation || 0 };
+      const origReset = overlay._reset;
+      overlay._reset = function () {
+        origReset.call(this);
+        const img = this._image;
+        if (img && rotBox.deg) {
+          img.style.transformOrigin = 'center center';
+          img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
+        }
+      };
+      if (overlay._map) overlay._reset();
 
       // Click to select in author mode (locked overlays are inert)
       if (!ov.locked) {
@@ -526,18 +515,9 @@ export default function MapTab({ navPadding = 80 }) {
           const hw = (nw * liveScale) / 2, hh = (nh * liveScale) / 2;
           const swLL = pxToLL([liveCenter[0] - hw, liveCenter[1] + hh]);
           const neLL = pxToLL([liveCenter[0] + hw, liveCenter[1] - hh]);
-          // Temporarily disconnect observer so setBounds doesn't trigger it
-          if (overlay._ww_rotObserver) overlay._ww_rotObserver.disconnect();
+          rotBox.deg = liveRotation;
+          // setBounds calls patched _reset which appends rotation
           overlay.setBounds(L.latLngBounds(swLL, neLL));
-          // Manually set rotation (observer is off, won't loop)
-          if (liveRotation && el) {
-            el.style.transformOrigin = 'center center';
-            el.style.transform += ` rotate(${Math.round(liveRotation)}deg)`;
-          }
-          // Reconnect observer
-          if (overlay._ww_rotObserver) {
-            overlay._ww_rotObserver.observe(el, { attributes: true, attributeFilter: ['style'] });
-          }
         };
 
         const cleanup = () => {
