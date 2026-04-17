@@ -8,15 +8,26 @@
 // Fields:
 //   id            — unique string
 //   name          — display name
-//   imageUrl      — path relative to public/ (resolved via BASE_URL)
-//   naturalWidth  — native pixel width of the image
-//   naturalHeight — native pixel height of the image
+//   imageUrl      — path relative to public/ (single image overlay)
+//   tiles         — alternative to imageUrl: array of { url, col, row }
+//                    for multi-tile overlays (e.g. 2×2 grid of 4096px tiles)
+//   naturalWidth  — native pixel width of the full image
+//   naturalHeight — native pixel height of the full image
+//   tileCols      — number of tile columns (for tiles mode)
+//   tileRows      — number of tile rows (for tiles mode)
 
 export const OVERLAY_CATALOG = [
   {
     id: 'lahai-roi',
     name: 'Lahai Roi',
-    imageUrl: 'map-tiles/lahai_roi.webp',
+    tiles: [
+      { url: 'map-tiles/lahai_roi_0.0.webp', col: 0, row: 0 },
+      { url: 'map-tiles/lahai_roi_1.0.webp', col: 1, row: 0 },
+      { url: 'map-tiles/lahai_roi_0.1.webp', col: 0, row: 1 },
+      { url: 'map-tiles/lahai_roi_1.1.webp', col: 1, row: 1 },
+    ],
+    tileCols: 2,
+    tileRows: 2,
     naturalWidth: 8192,
     naturalHeight: 8192,
   },

@@ -425,43 +425,69 @@ export default function MapTab({ navPadding = 80 }) {
       const halfW = (nw * s) / 2;
       const halfH = (nh * s) / 2;
       const [cx, cy] = ov.center;
-      const sw = pxToLL([cx - halfW, cy + halfH]);
-      const ne = pxToLL([cx + halfW, cy - halfH]);
-      const bounds = L.latLngBounds(sw, ne);
-      const url = (BASE + ov.imageUrl).replace(/\/\//g, '/');
-      const overlay = L.imageOverlay(url, bounds, {
-        interactive: !ov.locked,
-        className: 'map-overlay-img',
-        opacity: ov.opacity ?? 1,
-      });
-      overlay.addTo(group);
 
-      const el = overlay.getElement?.();
-      if (el) {
-        el.style.transformOrigin = 'center center';
-        if (ov.locked) {
-          el.style.pointerEvents = 'none';
-          el.style.cursor = 'default';
-        } else {
-          el.style.cursor = 'grab';
+      // Catalog entry for tile info
+      const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+      const tiles = cat?.tiles || (ov.imageUrl ? [{ url: ov.imageUrl, col: 0, row: 0 }] : []);
+      const tileCols = cat?.tileCols || 1;
+      const tileRows = cat?.tileRows || 1;
+      const tileW = (nw * s) / tileCols;
+      const tileH = (nh * s) / tileRows;
+
+      // Create one L.imageOverlay per tile (4096×4096 each = GPU-friendly)
+      const overlays = [];
+      tiles.forEach(tile => {
+        const tileLeft = cx - halfW + tile.col * tileW;
+        const tileTop = cy - halfH + tile.row * tileH;
+        const tileSW = pxToLL([tileLeft, tileTop + tileH]);
+        const tileNE = pxToLL([tileLeft + tileW, tileTop]);
+        const tileBounds = L.latLngBounds(tileSW, tileNE);
+        const tileUrl = (BASE + tile.url).replace(/\/\//g, '/');
+        const overlay = L.imageOverlay(tileUrl, tileBounds, {
+          interactive: !ov.locked,
+          className: 'map-overlay-img',
+          opacity: ov.opacity ?? 1,
+        });
+        overlay.addTo(group);
+        overlays.push(overlay);
+
+        const el = overlay.getElement?.();
+        if (el) {
+          el.style.transformOrigin = 'center center';
+          if (ov.locked) {
+            el.style.pointerEvents = 'none';
+            el.style.cursor = 'default';
+          } else {
+            el.style.cursor = 'grab';
+          }
+          if (!ov.locked && ov.id === activeOverlayId) {
+            el.style.outline = '2px solid #edaf18';
+            el.style.outlineOffset = '2px';
+          }
         }
-        if (!ov.locked && ov.id === activeOverlayId) {
-          el.style.outline = '2px solid #edaf18';
-          el.style.outlineOffset = '2px';
-        }
-      }
-      // Rotation via _reset patch — synchronous, no frame gap.
+      });
+
+      // Use the first overlay for rotation patch + gesture attachment
+      const overlay = overlays[0];
+      const el = overlay?.getElement?.();
+      // Rotation via _reset patch on ALL tile overlays.
+      // Each tile rotates around the composite center (not its own center).
       const rotBox = { deg: ov.rotation || 0 };
-      const origReset = overlay._reset;
-      overlay._reset = function () {
-        origReset.call(this);
-        const img = this._image;
-        if (img && rotBox.deg) {
-          img.style.transformOrigin = 'center center';
-          img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
-        }
-      };
-      if (overlay._map) overlay._reset();
+      const centerLL = pxToLL([cx, cy]);
+      overlays.forEach(oly => {
+        const orig = oly._reset;
+        oly._reset = function () {
+          orig.call(this);
+          const img = this._image;
+          if (img && rotBox.deg && this._map) {
+            const cPt = this._map.latLngToLayerPoint(centerLL);
+            const myNW = this._map.latLngToLayerPoint(this._bounds.getNorthWest());
+            img.style.transformOrigin = `${cPt.x - myNW.x}px ${cPt.y - myNW.y}px`;
+            img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
+          }
+        };
+        if (oly._map) oly._reset();
+      });
 
       // Click to select in author mode (locked overlays are inert)
       if (!ov.locked) {
@@ -1245,6 +1271,7 @@ export default function MapTab({ navPadding = 80 }) {
           border-bottom: 1px solid rgba(237, 175, 24, 0.2);
           letter-spacing: 0.06em; text-align: center; min-width: 48px;
         }
+        .leaflet-overlay-pane { overflow: visible !important; }
         .map-overlay-img { will-change: transform; }
         .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
         .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
