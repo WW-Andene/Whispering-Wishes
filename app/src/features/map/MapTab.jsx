@@ -640,18 +640,98 @@ export default function MapTab({ navPadding = 80 }) {
     setEditingOverlayId(ov.id);
   }, [overlayDrafts, viewFloor]);
 
+  // Compute a quad polygon (native px) from an overlay's center/scale/rotation.
+  // Used when adding a sub-map to the zone tree so the tree entry has a real
+  // polygon matching the overlay's footprint.
+  const overlayBoundsPolygon = useCallback((ov) => {
+    const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+    if (!cat) return [];
+    const nw = cat.naturalWidth, nh = cat.naturalHeight;
+    const s = ov.scale || 1;
+    const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
+    const [cx, cy] = ov.center;
+    const corners = [
+      [cx - halfW, cy - halfH],
+      [cx + halfW, cy - halfH],
+      [cx + halfW, cy + halfH],
+      [cx - halfW, cy + halfH],
+    ];
+    const rad = ((ov.rotation || 0) * Math.PI) / 180;
+    if (rad !== 0) {
+      const cos = Math.cos(rad), sin = Math.sin(rad);
+      return corners.map(([x, y]) => {
+        const dx = x - cx, dy = y - cy;
+        return [Math.round(cx + dx * cos - dy * sin), Math.round(cy + dx * sin + dy * cos)];
+      });
+    }
+    return corners.map(([x, y]) => [Math.round(x), Math.round(y)]);
+  }, []);
+
   const handleUpdateOverlay = useCallback((id, patch) => {
     const next = overlayDrafts.map(o => o.id === id ? { ...o, ...patch } : o);
     setOverlayDrafts(next);
     saveOverlayDrafts(next);
-  }, [overlayDrafts]);
+    // If this overlay has a linked tree zone and its footprint changed, keep
+    // the zone polygon in sync with the overlay bounds.
+    if (patch && (patch.center || patch.scale !== undefined || patch.rotation !== undefined)) {
+      const linkIdx = drafts.findIndex(d => d.overlayId === id);
+      if (linkIdx >= 0) {
+        const updatedOv = next.find(o => o.id === id);
+        if (updatedOv) {
+          const polygon = overlayBoundsPolygon(updatedOv);
+          const nextDrafts = drafts.map((d, i) => i === linkIdx ? { ...d, polygon } : d);
+          setDrafts(nextDrafts);
+          saveDrafts(nextDrafts);
+        }
+      }
+    }
+    // If the user just locked this overlay AND it's already in the tree, it
+    // leaves the editable Sub-maps list — close the edit panel.
+    if (patch && patch.locked === true && editingOverlayId === id &&
+        drafts.some(d => d.overlayId === id)) {
+      setEditingOverlayId(null);
+    }
+  }, [overlayDrafts, drafts, overlayBoundsPolygon, editingOverlayId]);
 
   const handleDeleteOverlay = useCallback((id) => {
+    // Also remove any linked zone from the tree
     const next = overlayDrafts.filter(o => o.id !== id);
+    const nextDrafts = drafts.filter(d => d.overlayId !== id);
     setOverlayDrafts(next);
     saveOverlayDrafts(next);
+    if (nextDrafts.length !== drafts.length) {
+      setDrafts(nextDrafts);
+      saveDrafts(nextDrafts);
+    }
     if (editingOverlayId === id) setEditingOverlayId(null);
-  }, [overlayDrafts, editingOverlayId]);
+  }, [overlayDrafts, drafts, editingOverlayId]);
+
+  const handleAddOverlayToTree = useCallback((id) => {
+    const ov = overlayDrafts.find(o => o.id === id);
+    if (!ov) return;
+    if (drafts.some(d => d.overlayId === id)) return;
+    const polygon = overlayBoundsPolygon(ov);
+    const zone = {
+      id: `overlay-${id}`,
+      name: ov.name || 'Sub-map',
+      polygon,
+      overlayId: id,
+    };
+    const nextDrafts = [...drafts, zone];
+    setDrafts(nextDrafts);
+    saveDrafts(nextDrafts);
+    // If this placement is locked + now in tree, it disappears from the
+    // editable Sub-maps list. Close its edit panel so we don't leave it
+    // open with a dangling editingOverlayId.
+    if (ov.locked && editingOverlayId === id) setEditingOverlayId(null);
+  }, [overlayDrafts, drafts, overlayBoundsPolygon, editingOverlayId]);
+
+  const handleRemoveOverlayFromTree = useCallback((id) => {
+    const nextDrafts = drafts.filter(d => d.overlayId !== id);
+    if (nextDrafts.length === drafts.length) return;
+    setDrafts(nextDrafts);
+    saveDrafts(nextDrafts);
+  }, [drafts]);
 
   // Finger-gesture placement for the currently-edited sub-map on the current floor.
   // Listens on the map container at capture phase so it runs before Leaflet's
@@ -668,6 +748,7 @@ export default function MapTab({ navPadding = 80 }) {
     if (!map) return;
     const ov = overlayDrafts.find(o => o.id === editingOverlayId);
     if (!ov || (ov.floor ?? 0) !== viewFloor) return;
+    if (ov.locked) return; // locked overlays don't accept gestures
     const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
     if (!cat) return;
     const container = map.getContainer();
@@ -1188,7 +1269,20 @@ export default function MapTab({ navPadding = 80 }) {
           border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
         }
         .overlay-row.is-active { border-color: ${COLOR_CANON}; background: rgba(237, 175, 24, 0.06); }
+        .overlay-row.is-locked { border-color: rgba(148, 163, 184, 0.35); background: rgba(148, 163, 184, 0.05); }
         .overlay-row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .lock-badge, .tree-badge {
+          font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+          padding: 0 4px; border-radius: 2px; margin-left: 4px;
+        }
+        .lock-badge {
+          background: rgba(148, 163, 184, 0.18); color: #94a3b8;
+          border: 1px solid rgba(148, 163, 184, 0.4);
+        }
+        .tree-badge {
+          background: rgba(34, 197, 94, 0.18); color: #22c55e;
+          border: 1px solid rgba(34, 197, 94, 0.4);
+        }
         .overlay-controls { display: flex; flex-direction: column; gap: 6px; }
         .overlay-slider {
           -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
@@ -1412,10 +1506,13 @@ export default function MapTab({ navPadding = 80 }) {
                   />
                 )}
 
-                {/* ── Sub-maps section ── */}
+                {/* ── Sub-maps section — only editable (unlocked or not in tree) placements. */}
+                {(() => {
+                  const editableOverlays = overlayDrafts.filter(ov => !(ov.locked && drafts.some(d => d.overlayId === ov.id)));
+                  return (<>
                 <div className="divider" />
                 <div className="drafts-head">
-                  <span>Sub-maps ({overlayDrafts.length})</span>
+                  <span>Sub-maps ({editableOverlays.length})</span>
                   <select
                     className="zone-author-btn"
                     value=""
@@ -1427,14 +1524,19 @@ export default function MapTab({ navPadding = 80 }) {
                     {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
-                {overlayDrafts.map(ov => {
+                {editableOverlays.map(ov => {
                   const editing = editingOverlayId === ov.id;
+                  const locked = !!ov.locked;
+                  const inTree = drafts.some(d => d.overlayId === ov.id);
+                  const disabled = locked;
                   return (
-                    <div key={ov.id} className={`overlay-row ${editing ? 'is-active' : ''}`}>
+                    <div key={ov.id} className={`overlay-row ${editing ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`}>
                       <div className="overlay-row-head">
                         <span className="drname">
                           <span className={`lvl-tag ${ov.floor === viewFloor ? '' : 'is-unset'}`}>F{ov.floor ?? 0}</span>
                           <span className="drlabel">{ov.name}</span>
+                          {locked && <span className="lock-badge">locked</span>}
+                          {inTree && <span className="tree-badge">tree</span>}
                         </span>
                         <span className="row" style={{ gap: 4 }}>
                           <button className="edit-btn" type="button" onClick={() => setEditingOverlayId(editing ? null : ov.id)}>
@@ -1446,29 +1548,54 @@ export default function MapTab({ navPadding = 80 }) {
                       {editing && (
                         <div className="overlay-controls">
                           <div className="row">
+                            <button
+                              type="button"
+                              className={`zone-author-btn ${locked ? 'is-active' : ''}`}
+                              aria-pressed={locked}
+                              onClick={() => handleUpdateOverlay(ov.id, { locked: !locked })}
+                              style={{ flex: '1 1 0' }}
+                            >
+                              {locked ? 'Unlock' : 'Lock'}
+                            </button>
+                            <button
+                              type="button"
+                              className={`zone-author-btn ${inTree ? 'is-active' : ''}`}
+                              aria-pressed={inTree}
+                              onClick={() => inTree ? handleRemoveOverlayFromTree(ov.id) : handleAddOverlayToTree(ov.id)}
+                              style={{ flex: '1 1 0' }}
+                            >
+                              {inTree ? 'Remove from tree' : 'Add to tree'}
+                            </button>
+                          </div>
+                          {locked && (
+                            <div className="hint" style={{ fontSize: 10, opacity: 0.7 }}>
+                              Locked — tap Unlock to modify, or Del to remove and re-add.
+                            </div>
+                          )}
+                          <div className="row">
                             <div className="field" style={{ flex: '1 1 0' }}>
                               <label>X</label>
-                              <input type="number" value={ov.center[0]}
+                              <input type="number" value={ov.center[0]} disabled={disabled}
                                 onChange={(e) => handleUpdateOverlay(ov.id, { center: [Math.round(+e.target.value) || 0, ov.center[1]] })} />
                             </div>
                             <div className="field" style={{ flex: '1 1 0' }}>
                               <label>Y</label>
-                              <input type="number" value={ov.center[1]}
+                              <input type="number" value={ov.center[1]} disabled={disabled}
                                 onChange={(e) => handleUpdateOverlay(ov.id, { center: [ov.center[0], Math.round(+e.target.value) || 0] })} />
                             </div>
                             <div className="field" style={{ flex: '0 0 80px' }}>
                               <label>Floor</label>
                               <div className="row" style={{ gap: 2 }}>
-                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
+                                <button className="zone-author-btn" type="button" disabled={disabled} onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
                                 <span style={{ minWidth: 28, textAlign: 'center' }}>{ov.floor ?? 0}</span>
-                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
+                                <button className="zone-author-btn" type="button" disabled={disabled} onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
                               </div>
                             </div>
                           </div>
                           <div className="row">
                             <div className="field" style={{ flex: '1 1 0' }}>
                               <label>Rotation ({Math.round(ov.rotation ?? 0)}°)</label>
-                              <input type="range" min="0" max="360" step="1" value={ov.rotation ?? 0}
+                              <input type="range" min="0" max="360" step="1" value={ov.rotation ?? 0} disabled={disabled}
                                 onChange={(e) => handleUpdateOverlay(ov.id, { rotation: +e.target.value })}
                                 className="overlay-slider" />
                             </div>
@@ -1476,7 +1603,7 @@ export default function MapTab({ navPadding = 80 }) {
                           <div className="row">
                             <div className="field" style={{ flex: '1 1 0' }}>
                               <label>Scale ({(ov.scale ?? 1).toFixed(2)}×)</label>
-                              <input type="range" min="0.1" max="5" step="0.05" value={ov.scale ?? 1}
+                              <input type="range" min="0.1" max="5" step="0.05" value={ov.scale ?? 1} disabled={disabled}
                                 onChange={(e) => handleUpdateOverlay(ov.id, { scale: +e.target.value })}
                                 className="overlay-slider" />
                             </div>
@@ -1484,7 +1611,7 @@ export default function MapTab({ navPadding = 80 }) {
                           <div className="row">
                             <div className="field" style={{ flex: '1 1 0' }}>
                               <label>Opacity ({Math.round((ov.opacity ?? 1) * 100)}%)</label>
-                              <input type="range" min="0.1" max="1" step="0.05" value={ov.opacity ?? 1}
+                              <input type="range" min="0.1" max="1" step="0.05" value={ov.opacity ?? 1} disabled={disabled}
                                 onChange={(e) => handleUpdateOverlay(ov.id, { opacity: +e.target.value })}
                                 className="overlay-slider" />
                             </div>
@@ -1494,6 +1621,8 @@ export default function MapTab({ navPadding = 80 }) {
                     </div>
                   );
                 })}
+                  </>);
+                })()}
 
               </div>
             )}
