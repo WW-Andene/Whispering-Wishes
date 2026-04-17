@@ -1254,25 +1254,35 @@ export default function MapTab({ navPadding = 80 }) {
 
         .floor-picker {
           position: absolute; top: 56px; left: 12px; z-index: 20;
-          display: flex; flex-direction: column; align-items: stretch; gap: 0;
+          display: flex; flex-direction: column; align-items: stretch; gap: 6px;
+          padding: 6px;
           background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
-          border-radius: 3px; overflow: hidden;
+          border-radius: 4px;
+          box-shadow: 0 0 16px rgba(6, 10, 24, 0.6);
+          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
           font-family: 'JetBrains Mono', ui-monospace, monospace;
         }
         .floor-picker button {
-          background: transparent; border: none; color: ${COLOR_CANON};
-          padding: 4px 10px; cursor: pointer; font-size: 11px;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); }
-        .floor-picker input {
-          width: 56px; padding: 2px 4px; font-size: 11px; color: #e8e8e8;
-          background: rgba(237, 175, 24, 0.08); border: none;
-          border-top: 1px solid rgba(237, 175, 24, 0.2);
-          border-bottom: 1px solid rgba(237, 175, 24, 0.2);
+          background: rgba(8, 12, 20, 0.85); color: ${COLOR_CANON};
+          border: 1px solid rgba(237, 175, 24, 0.45);
+          border-radius: 3px; padding: 3px 0;
           font-family: 'JetBrains Mono', ui-monospace, monospace;
+          font-size: 11px; letter-spacing: 0.06em;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 160ms, border-color 160ms;
+        }
+        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); border-color: ${COLOR_CANON}; }
+        .floor-picker input {
+          width: 44px; padding: 3px 4px; font-size: 11px; color: ${COLOR_CANON};
+          background: rgba(8, 12, 20, 0.85);
+          border: 1px solid rgba(237, 175, 24, 0.45);
+          border-radius: 3px;
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          letter-spacing: 0.04em;
           text-align: center; outline: none; -moz-appearance: textfield;
         }
+        .floor-picker input:focus { border-color: ${COLOR_CANON}; }
         .floor-picker input::-webkit-inner-spin-button,
         .floor-picker input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
