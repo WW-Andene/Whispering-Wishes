@@ -16,12 +16,9 @@ export const OVERLAY_CATALOG = [
   {
     id: 'hualong-outlines',
     name: 'Huanglong Outlines',
-    imageUrl: 'hualong_outlines.png',
-    // Fallback dimensions used only until the image loads and reports its
-    // real naturalWidth/Height (the renderer prefers those). Scale slider
-    // can be adjusted after placement to fit the world map.
-    naturalWidth: 4096,
-    naturalHeight: 4096,
+    imageUrl: 'map-tiles/hualong_outlines.png',
+    naturalWidth: 1156,
+    naturalHeight: 1200,
   },
 ];
 
