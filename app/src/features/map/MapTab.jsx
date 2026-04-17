@@ -421,6 +421,13 @@ export default function MapTab({ navPadding = 80 }) {
       const tileRows = cat?.tileRows || 1;
 
       let inst = instances.get(ov.id);
+      // Guard against stale entries from previous code versions
+      if (inst && !inst.imgs) {
+        try { map.removeLayer(inst); } catch {}
+        inst.imgs?.forEach(img => img.remove());
+        instances.delete(ov.id);
+        inst = undefined;
+      }
       if (!inst) {
         const imgs = tiles.map(tile => {
           const img = document.createElement('img');
