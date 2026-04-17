@@ -1129,13 +1129,16 @@ export default function MapTab({ navPadding = 80 }) {
           transition: background 120ms; -webkit-tap-highlight-color: transparent;
         }
         .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); }
-        .floor-picker .floor-label {
-          padding: 2px 10px; font-size: 11px; color: #e8e8e8;
-          background: rgba(237, 175, 24, 0.08);
+        .floor-input {
+          width: 48px; padding: 2px 4px; font-size: 11px; color: #e8e8e8;
+          background: rgba(237, 175, 24, 0.08); border: none;
           border-top: 1px solid rgba(237, 175, 24, 0.2);
           border-bottom: 1px solid rgba(237, 175, 24, 0.2);
-          letter-spacing: 0.06em; text-align: center; min-width: 48px;
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          text-align: center; outline: none;
+          -moz-appearance: textfield;
         }
+        .floor-input::-webkit-inner-spin-button, .floor-input::-webkit-outer-spin-button { -webkit-appearance: none; }
         .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
         .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
         .overlay-row {
@@ -1211,7 +1214,13 @@ export default function MapTab({ navPadding = 80 }) {
             {/* Floor picker — always visible */}
             <div className="floor-picker" role="group" aria-label="Floor level">
               <button type="button" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
-              <span className="floor-label">F{viewFloor >= 0 ? '+' : ''}{viewFloor}</span>
+              <input
+                type="number"
+                className="floor-input"
+                value={viewFloor}
+                onChange={(e) => { const v = parseInt(e.target.value, 10); if (Number.isFinite(v)) setViewFloor(v); }}
+                aria-label="Floor number"
+              />
               <button type="button" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
             </div>
 
@@ -1421,18 +1430,27 @@ export default function MapTab({ navPadding = 80 }) {
                 {/* ── Overlays section ── */}
                 <div className="divider" />
                 <div className="drafts-head">
-                  <span>Sub-maps ({overlayDrafts.filter(o => !o.locked).length})</span>
-                  <select
-                    className="zone-author-btn"
-                    value=""
-                    onChange={(e) => { if (e.target.value) handleAddOverlay(e.target.value); }}
-                    style={{ padding: '2px 8px', fontSize: 10, minWidth: 0 }}
-                  >
-                    <option value="">+ Add</option>
-                    {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  <span>Sub-maps ({overlayDrafts.length})</span>
+                  <div className="row" style={{ gap: 4 }}>
+                    <button className="zone-author-btn" type="button" onClick={async () => {
+                      const data = { zones: drafts, overlays: overlayDrafts };
+                      const json = JSON.stringify(data, null, 2);
+                      try { await navigator.clipboard.writeText(json); showToast('Copied JSON'); }
+                      catch { showToast('Long-press textarea to copy'); }
+                      setJsonSnippet(json);
+                    }}>.JSON</button>
+                    <select
+                      className="zone-author-btn"
+                      value=""
+                      onChange={(e) => { if (e.target.value) handleAddOverlay(e.target.value); }}
+                      style={{ padding: '2px 8px', fontSize: 10, minWidth: 0 }}
+                    >
+                      <option value="">+ Add</option>
+                      {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
                 </div>
-                {overlayDrafts.filter(ov => !ov.locked).map(ov => {
+                {overlayDrafts.map(ov => {
                   const isActive = ov.id === activeOverlayId;
                   return (
                     <div key={ov.id} className={`overlay-row ${isActive ? 'is-active' : ''}`}>
