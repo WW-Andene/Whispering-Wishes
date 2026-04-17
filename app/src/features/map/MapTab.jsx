@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
+import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 
 const MAP_W = 16384;
 const MAP_H = 16384;
@@ -57,6 +58,14 @@ export default function MapTab({ navPadding = 80 }) {
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+
+  // Overlay + floor state
+  const [viewFloor, setViewFloor] = useState(0);
+  const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
+  const [activeOverlayId, setActiveOverlayId] = useState(null);
+  const tileLayerRef = useRef(null);
+  const overlayLayerRef = useRef(null);
+  const overlayDragRef = useRef(null);
 
   // Set of descendant ids of the zone being edited — used to forbid circular parenting.
   const editingDescendants = useMemo(() => {
@@ -180,7 +189,7 @@ export default function MapTab({ navPadding = 80 }) {
       map.setMaxBounds(paddedBounds);
       map.fitBounds(bounds, { paddingTopLeft: [0, headerH], paddingBottomRight: [0, footerH] });
 
-      L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
+      const tileLayer = L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
         minZoom,
         maxZoom: MAX_ZOOM,
         tileSize: TILE_SIZE,
@@ -188,6 +197,7 @@ export default function MapTab({ navPadding = 80 }) {
         bounds,
         errorTileUrl: BASE + 'map-tiles/blank.png',
       }).addTo(map);
+      tileLayerRef.current = tileLayer;
 
       // Canonical zone overlays — render parents first, then sub-zones on top
       const pxToLatLng = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
@@ -369,6 +379,168 @@ export default function MapTab({ navPadding = 80 }) {
     group.addTo(map);
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady]);
+
+  // Render image overlays + apply floor-based brightness
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = leafletRef.current;
+    if (!map || !L || !mapReady) return;
+
+    // Clear previous overlay layers
+    if (overlayLayerRef.current) {
+      map.removeLayer(overlayLayerRef.current);
+      overlayLayerRef.current = null;
+    }
+
+    // Floor-based brightness on the base tile layer
+    const tileEl = tileLayerRef.current?.getContainer?.();
+    if (tileEl) {
+      const dist = Math.abs(viewFloor);
+      tileEl.style.filter = dist === 0 ? '' : `brightness(${Math.max(0.15, 1 - 0.25 * dist)})`;
+      tileEl.style.transition = 'filter 300ms';
+    }
+
+    if (overlayDrafts.length === 0) return;
+
+    const group = L.layerGroup();
+    const pxToLL = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
+
+    overlayDrafts.forEach(ov => {
+      if (!ov.center || !ov.imageUrl) return;
+      const nw = ov.naturalWidth || 4096;
+      const nh = ov.naturalHeight || 4096;
+      const s = ov.scale || 1;
+      const halfW = (nw * s) / 2;
+      const halfH = (nh * s) / 2;
+      const [cx, cy] = ov.center;
+      const sw = pxToLL([cx - halfW, cy + halfH]);
+      const ne = pxToLL([cx + halfW, cy - halfH]);
+      const bounds = L.latLngBounds(sw, ne);
+      const url = (BASE + ov.imageUrl).replace(/\/\//g, '/');
+      const overlay = L.imageOverlay(url, bounds, { interactive: true, className: 'map-overlay-img' });
+      overlay.addTo(group);
+
+      // Rotation via CSS
+      const el = overlay.getElement?.();
+      if (el) {
+        if (ov.rotation) {
+          el.style.transformOrigin = 'center center';
+          el.style.transform = `rotate(${ov.rotation}deg)`;
+        }
+        // Floor brightness
+        const floorDist = Math.abs((ov.floor ?? 0) - viewFloor);
+        el.style.filter = floorDist === 0 ? '' : `brightness(${Math.max(0.15, 1 - 0.25 * floorDist)})`;
+        el.style.transition = 'filter 300ms';
+        // Lock cursor
+        el.style.cursor = ov.locked ? 'default' : 'grab';
+        // Active highlight
+        if (ov.id === activeOverlayId) {
+          el.style.outline = '2px solid #edaf18';
+          el.style.outlineOffset = '2px';
+        }
+      }
+
+      // Click to select in author mode
+      overlay.on('click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        if (authorMode || authorEnabled) {
+          setActiveOverlayId(prev => prev === ov.id ? null : ov.id);
+        }
+      });
+
+      // Drag support for unlocked overlays in author mode
+      if (authorMode && !ov.locked && el) {
+        let startPx = null;
+        let startCenter = null;
+        const onDown = (evt) => {
+          evt.stopPropagation();
+          evt.preventDefault();
+          const touch = evt.touches ? evt.touches[0] : evt;
+          startPx = [touch.clientX, touch.clientY];
+          startCenter = [...ov.center];
+          document.addEventListener('mousemove', onMove, { passive: false });
+          document.addEventListener('mouseup', onUp);
+          document.addEventListener('touchmove', onMove, { passive: false });
+          document.addEventListener('touchend', onUp);
+          el.style.cursor = 'grabbing';
+        };
+        const onMove = (evt) => {
+          if (!startPx) return;
+          evt.preventDefault();
+          const touch = evt.touches ? evt.touches[0] : evt;
+          const dx = touch.clientX - startPx[0];
+          const dy = touch.clientY - startPx[1];
+          // Convert CSS pixel delta to map pixel delta at current zoom
+          const zoom = map.getZoom();
+          const scaleFactor = Math.pow(2, MAX_ZOOM - zoom);
+          const newCenter = [
+            Math.round(startCenter[0] + dx * scaleFactor),
+            Math.round(startCenter[1] + dy * scaleFactor),
+          ];
+          setOverlayDrafts(prev => {
+            const next = prev.map(o => o.id === ov.id ? { ...o, center: newCenter } : o);
+            saveOverlayDrafts(next);
+            return next;
+          });
+        };
+        const onUp = () => {
+          startPx = null;
+          startCenter = null;
+          el.style.cursor = 'grab';
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onUp);
+        };
+        el.addEventListener('mousedown', onDown);
+        el.addEventListener('touchstart', onDown, { passive: false });
+      }
+    });
+
+    group.addTo(map);
+    overlayLayerRef.current = group;
+  }, [overlayDrafts, viewFloor, mapReady, authorMode, authorEnabled, activeOverlayId]);
+
+  // Overlay management helpers
+  const handleAddOverlay = (catalogId) => {
+    const cat = OVERLAY_CATALOG.find(c => c.id === catalogId);
+    if (!cat) return;
+    const map = mapRef.current;
+    const center = map
+      ? (() => { const c = map.getCenter(); const pt = map.project(c, MAX_ZOOM); return [Math.round(pt.x), Math.round(pt.y)]; })()
+      : [MAP_W / 2, MAP_H / 2];
+    const placement = {
+      id: `${catalogId}-${Date.now().toString(36)}`,
+      catalogId: cat.id,
+      name: cat.name,
+      imageUrl: cat.imageUrl,
+      center,
+      scale: 1.0,
+      rotation: 0,
+      floor: viewFloor,
+      locked: false,
+      naturalWidth: cat.naturalWidth,
+      naturalHeight: cat.naturalHeight,
+    };
+    const next = [...overlayDrafts, placement];
+    setOverlayDrafts(next);
+    saveOverlayDrafts(next);
+    setActiveOverlayId(placement.id);
+    showToast(`Added "${cat.name}"`);
+  };
+
+  const handleUpdateOverlay = (id, patch) => {
+    const next = overlayDrafts.map(o => o.id === id ? { ...o, ...patch } : o);
+    setOverlayDrafts(next);
+    saveOverlayDrafts(next);
+  };
+
+  const handleDeleteOverlay = (id) => {
+    const next = overlayDrafts.filter(o => o.id !== id);
+    setOverlayDrafts(next);
+    saveOverlayDrafts(next);
+    if (activeOverlayId === id) setActiveOverlayId(null);
+  };
 
   // Triple-tap on header toggles author-enabled
   const handleHeaderTap = useCallback(() => {
@@ -710,6 +882,50 @@ export default function MapTab({ navPadding = 80 }) {
           pointer-events: none;
         }
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .floor-picker {
+          position: absolute; top: 56px; left: 12px; z-index: 20;
+          display: flex; flex-direction: column; align-items: center; gap: 0;
+          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
+          border-radius: 3px; overflow: hidden;
+          box-shadow: 0 0 12px rgba(6, 10, 24, 0.6);
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+        .floor-picker button {
+          background: transparent; border: none; color: ${COLOR_CANON};
+          padding: 4px 10px; cursor: pointer; font-size: 10px; width: 100%;
+          transition: background 120ms; -webkit-tap-highlight-color: transparent;
+        }
+        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); }
+        .floor-picker .floor-label {
+          padding: 2px 10px; font-size: 11px; color: #e8e8e8;
+          background: rgba(237, 175, 24, 0.08);
+          border-top: 1px solid rgba(237, 175, 24, 0.2);
+          border-bottom: 1px solid rgba(237, 175, 24, 0.2);
+          letter-spacing: 0.06em; text-align: center; min-width: 48px;
+        }
+        .map-overlay-img { transition: filter 300ms; }
+        .overlay-row {
+          background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
+          border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
+        }
+        .overlay-row.is-active { border-color: ${COLOR_CANON}; background: rgba(237, 175, 24, 0.06); }
+        .overlay-row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .overlay-row .lock-badge {
+          font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+          background: rgba(34, 197, 94, 0.18); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4);
+          padding: 0 4px; border-radius: 2px;
+        }
+        .overlay-controls { display: flex; flex-direction: column; gap: 6px; }
+        .overlay-slider {
+          -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
+          background: rgba(237, 175, 24, 0.2); border-radius: 2px; outline: none;
+        }
+        .overlay-slider::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none;
+          width: 14px; height: 14px; border-radius: 50%;
+          background: ${COLOR_CANON}; cursor: pointer;
+          border: 1.5px solid #080c14;
+        }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
       <div className="kuro-calc space-y-3 tab-content">
@@ -746,6 +962,13 @@ export default function MapTab({ navPadding = 80 }) {
               >
                 Interactive Map
               </CardHeader>
+            </div>
+
+            {/* Floor picker — always visible */}
+            <div className="floor-picker" role="group" aria-label="Floor level">
+              <button type="button" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
+              <span className="floor-label">F{viewFloor >= 0 ? '+' : ''}{viewFloor}</span>
+              <button type="button" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
             </div>
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
@@ -901,6 +1124,82 @@ export default function MapTab({ navPadding = 80 }) {
                     aria-label="Zone JSON snippet"
                   />
                 )}
+
+                {/* ── Overlays section ── */}
+                <div className="divider" />
+                <div className="drafts-head">
+                  <span>Sub-maps ({overlayDrafts.length})</span>
+                  <select
+                    className="zone-author-btn"
+                    value=""
+                    onChange={(e) => { if (e.target.value) handleAddOverlay(e.target.value); }}
+                    style={{ padding: '2px 8px', fontSize: 10, minWidth: 0 }}
+                  >
+                    <option value="">+ Add</option>
+                    {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                {overlayDrafts.map(ov => {
+                  const isActive = ov.id === activeOverlayId;
+                  return (
+                    <div key={ov.id} className={`overlay-row ${isActive ? 'is-active' : ''}`}>
+                      <div className="overlay-row-head">
+                        <span className="drname">
+                          <span className={`lvl-tag ${ov.floor === viewFloor ? '' : 'is-unset'}`}>F{ov.floor ?? 0}</span>
+                          <span className="drlabel">{ov.name}</span>
+                          {ov.locked && <span className="lock-badge">locked</span>}
+                        </span>
+                        <span className="row" style={{ gap: 4 }}>
+                          <button
+                            className="edit-btn"
+                            type="button"
+                            onClick={() => setActiveOverlayId(isActive ? null : ov.id)}
+                          >
+                            {isActive ? 'Close' : 'Edit'}
+                          </button>
+                          <button type="button" onClick={() => handleDeleteOverlay(ov.id)}>Del</button>
+                        </span>
+                      </div>
+                      {isActive && (
+                        <div className="overlay-controls">
+                          <div className="row">
+                            <div className="field" style={{ flex: '0 0 70px' }}>
+                              <label>Floor</label>
+                              <div className="row" style={{ gap: 2 }}>
+                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
+                                <span style={{ minWidth: 24, textAlign: 'center' }}>{ov.floor ?? 0}</span>
+                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
+                              </div>
+                            </div>
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Scale ({(ov.scale ?? 1).toFixed(2)}×)</label>
+                              <input type="range" min="0.1" max="5" step="0.05" value={ov.scale ?? 1}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { scale: +e.target.value })}
+                                className="overlay-slider" />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Rotation ({ov.rotation ?? 0}°)</label>
+                              <input type="range" min="0" max="360" step="1" value={ov.rotation ?? 0}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { rotation: +e.target.value })}
+                                className="overlay-slider" />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <button
+                              className={`zone-author-btn ${ov.locked ? 'is-active' : ''}`}
+                              type="button"
+                              onClick={() => handleUpdateOverlay(ov.id, { locked: !ov.locked })}
+                            >
+                              {ov.locked ? 'Unlock' : 'Lock'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
