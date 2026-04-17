@@ -449,19 +449,33 @@ export default function MapTab({ navPadding = 80 }) {
         }
       });
 
-      // Gesture support — only on the actively selected overlay
+      // Gesture support — only on the actively selected overlay.
+      // Updates the DOM directly (overlay.setBounds + el.style.rotate)
+      // during the gesture to avoid re-rendering the effect. State is
+      // committed once on release.
       if (authorMode && !ov.locked && ov.id === activeOverlayId && el) {
         let dragStart = null;
         let pinchStart = null;
+        let liveCenter = [...ov.center];
+        let liveScale = ov.scale || 1;
+        let liveRotation = ov.rotation || 0;
 
         const getTouchInfo = (touches) => {
           const t1 = touches[0], t2 = touches[1];
-          const dx = t2.clientX - t1.clientX, dy = t2.clientY - t1.clientY;
+          const dx2 = t2.clientX - t1.clientX, dy2 = t2.clientY - t1.clientY;
           return {
-            center: [(t1.clientX + t2.clientX) / 2, (t1.clientY + t2.clientY) / 2],
-            dist: Math.hypot(dx, dy),
-            angle: Math.atan2(dy, dx) * 180 / Math.PI,
+            dist: Math.hypot(dx2, dy2),
+            angle: Math.atan2(dy2, dx2) * 180 / Math.PI,
           };
+        };
+
+        const applyLive = () => {
+          const halfW2 = (nw * liveScale) / 2;
+          const halfH2 = (nh * liveScale) / 2;
+          const sw2 = pxToLL([liveCenter[0] - halfW2, liveCenter[1] + halfH2]);
+          const ne2 = pxToLL([liveCenter[0] + halfW2, liveCenter[1] - halfH2]);
+          overlay.setBounds(L.latLngBounds(sw2, ne2));
+          el.style.rotate = liveRotation ? `${Math.round(liveRotation)}deg` : '';
         };
 
         const onDown = (evt) => {
@@ -469,11 +483,11 @@ export default function MapTab({ navPadding = 80 }) {
           evt.preventDefault();
           if (evt.touches && evt.touches.length >= 2) {
             const info = getTouchInfo(evt.touches);
-            pinchStart = { ...info, initScale: ov.scale || 1, initRotation: ov.rotation || 0 };
+            pinchStart = { ...info, initScale: liveScale, initRotation: liveRotation };
             dragStart = null;
           } else {
             const touch = evt.touches ? evt.touches[0] : evt;
-            dragStart = { px: [touch.clientX, touch.clientY], center: [...ov.center] };
+            dragStart = { px: [touch.clientX, touch.clientY], center: [...liveCenter] };
             pinchStart = null;
           }
           el.style.cursor = 'grabbing';
@@ -485,47 +499,35 @@ export default function MapTab({ navPadding = 80 }) {
 
         const onMove = (evt) => {
           evt.preventDefault();
-          // Two-finger: pinch + rotate
-          if (evt.touches && evt.touches.length >= 2 && pinchStart) {
-            const info = getTouchInfo(evt.touches);
-            const newScale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
-            const angleDelta = info.angle - pinchStart.angle;
-            const newRotation = ((pinchStart.initRotation + angleDelta) % 360 + 360) % 360;
-            setOverlayDrafts(prev => {
-              const next = prev.map(o => o.id === ov.id ? { ...o, scale: +newScale.toFixed(3), rotation: Math.round(newRotation) } : o);
-              saveOverlayDrafts(next);
-              return next;
-            });
-            return;
-          }
-          // Single finger: drag
-          if (dragStart) {
-            // If a second finger arrives mid-drag, switch to pinch
-            if (evt.touches && evt.touches.length >= 2) {
+          if (evt.touches && evt.touches.length >= 2) {
+            if (!pinchStart) {
               const info = getTouchInfo(evt.touches);
-              pinchStart = { ...info, initScale: ov.scale || 1, initRotation: ov.rotation || 0 };
+              pinchStart = { ...info, initScale: liveScale, initRotation: liveRotation };
               dragStart = null;
               return;
             }
+            const info = getTouchInfo(evt.touches);
+            liveScale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
+            const angleDelta = info.angle - pinchStart.angle;
+            liveRotation = ((pinchStart.initRotation + angleDelta) % 360 + 360) % 360;
+            applyLive();
+            return;
+          }
+          if (dragStart) {
             const touch = evt.touches ? evt.touches[0] : evt;
             const dx = touch.clientX - dragStart.px[0];
             const dy = touch.clientY - dragStart.px[1];
             const zoom = map.getZoom();
             const scaleFactor = Math.pow(2, MAX_ZOOM - zoom);
-            const newCenter = [
+            liveCenter = [
               Math.round(dragStart.center[0] + dx * scaleFactor),
               Math.round(dragStart.center[1] + dy * scaleFactor),
             ];
-            setOverlayDrafts(prev => {
-              const next = prev.map(o => o.id === ov.id ? { ...o, center: newCenter } : o);
-              saveOverlayDrafts(next);
-              return next;
-            });
+            applyLive();
           }
         };
 
         const onUp = (evt) => {
-          // If still touching (lifted one finger from a 2-finger gesture), keep listening
           if (evt.touches && evt.touches.length > 0) return;
           dragStart = null;
           pinchStart = null;
@@ -534,6 +536,17 @@ export default function MapTab({ navPadding = 80 }) {
           document.removeEventListener('mouseup', onUp);
           document.removeEventListener('touchmove', onMove);
           document.removeEventListener('touchend', onUp);
+          // Commit final values to state (single re-render)
+          setOverlayDrafts(prev => {
+            const next = prev.map(o => o.id === ov.id ? {
+              ...o,
+              center: liveCenter,
+              scale: +liveScale.toFixed(3),
+              rotation: Math.round(liveRotation),
+            } : o);
+            saveOverlayDrafts(next);
+            return next;
+          });
         };
 
         el.addEventListener('mousedown', onDown);
