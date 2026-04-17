@@ -10,8 +10,8 @@ export const OVERLAY_CATALOG = [
     id: 'lahai-roi',
     name: 'Lahai Roi',
     imageUrl: 'map-tiles/lahai_roi.webp',
-    naturalWidth: 8192,
-    naturalHeight: 8192,
+    naturalWidth: 4096,
+    naturalHeight: 4096,
   },
 ];
 
