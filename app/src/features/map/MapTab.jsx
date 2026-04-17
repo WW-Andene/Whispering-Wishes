@@ -729,19 +729,8 @@ export default function MapTab({ navPadding = 80 }) {
     };
     implementRef.current.getLive = () => ({ ...live });
 
-    // Gesture handlers
-    const screenToMapPx = (cx, cy) => {
-      const rect = map.getContainer().getBoundingClientRect();
-      const cp = L.point(cx - rect.left, cy - rect.top);
-      const ll = map.containerPointToLatLng(cp);
-      const mp = map.project(ll, MAX_ZOOM);
-      return [mp.x, mp.y];
-    };
-    const twoFingerInfo = (touches) => ({
-      dist: Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY),
-      angle: Math.atan2(touches[1].clientY - touches[0].clientY, touches[1].clientX - touches[0].clientX) * 180 / Math.PI,
-    });
-
+    // Gesture handlers — raw pixel math only, no Leaflet API during gesture.
+    // Screen px → map px: at zoom Z, 1 screen px = 2^(MAX_ZOOM - Z) map px.
     let dragStart = null, pinchStart = null;
 
     const onDown = (evt) => {
@@ -749,11 +738,17 @@ export default function MapTab({ navPadding = 80 }) {
       evt.preventDefault();
       gestureActiveRef.current = true;
       if (evt.touches && evt.touches.length >= 2) {
-        pinchStart = { ...twoFingerInfo(evt.touches), initScale: live.scale, initRotation: live.rotation };
+        const t1 = evt.touches[0], t2 = evt.touches[1];
+        pinchStart = {
+          dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
+          angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
+          initScale: live.scale,
+          initRotation: live.rotation,
+        };
         dragStart = null;
       } else {
         const t = evt.touches ? evt.touches[0] : evt;
-        dragStart = { mapPx: screenToMapPx(t.clientX, t.clientY), center: [...live.center] };
+        dragStart = { sx: t.clientX, sy: t.clientY, cx: live.center[0], cy: live.center[1] };
         pinchStart = null;
       }
       el.style.cursor = 'grabbing';
@@ -765,25 +760,34 @@ export default function MapTab({ navPadding = 80 }) {
 
     const onMove = (evt) => {
       evt.preventDefault();
+      // Two-finger: pinch + rotate
       if (evt.touches && evt.touches.length >= 2) {
         if (!pinchStart) {
-          pinchStart = { ...twoFingerInfo(evt.touches), initScale: live.scale, initRotation: live.rotation };
+          const t1 = evt.touches[0], t2 = evt.touches[1];
+          pinchStart = {
+            dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
+            angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
+            initScale: live.scale,
+            initRotation: live.rotation,
+          };
           dragStart = null;
           return;
         }
-        const info = twoFingerInfo(evt.touches);
-        live.scale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
-        live.rotation = ((pinchStart.initRotation + (info.angle - pinchStart.angle)) % 360 + 360) % 360;
+        const t1 = evt.touches[0], t2 = evt.touches[1];
+        const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        const angle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
+        live.scale = Math.max(0.05, Math.min(10, pinchStart.initScale * (dist / pinchStart.dist)));
+        live.rotation = ((pinchStart.initRotation + (angle - pinchStart.angle)) % 360 + 360) % 360;
         applyLive();
         return;
       }
+      // One-finger drag
       if (dragStart) {
         const t = evt.touches ? evt.touches[0] : evt;
-        const nowPx = screenToMapPx(t.clientX, t.clientY);
-        live.center = [
-          Math.round(dragStart.center[0] + (nowPx[0] - dragStart.mapPx[0])),
-          Math.round(dragStart.center[1] + (nowPx[1] - dragStart.mapPx[1])),
-        ];
+        const dxScreen = t.clientX - dragStart.sx;
+        const dyScreen = t.clientY - dragStart.sy;
+        const s = Math.pow(2, MAX_ZOOM - map.getZoom());
+        live.center = [Math.round(dragStart.cx + dxScreen * s), Math.round(dragStart.cy + dyScreen * s)];
         applyLive();
       }
     };
