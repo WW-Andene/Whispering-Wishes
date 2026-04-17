@@ -432,15 +432,29 @@ export default function MapTab({ navPadding = 80 }) {
 
       const el = overlay.getElement?.();
       if (el) {
-        // Use CSS `rotate` property — independent from Leaflet's
-        // `transform: translate3d(...)` positioning so they don't conflict.
         el.style.transformOrigin = 'center center';
-        el.style.rotate = ov.rotation ? `${ov.rotation}deg` : '';
         el.style.cursor = ov.locked ? 'default' : 'grab';
         if (ov.id === activeOverlayId) {
           el.style.outline = '2px solid #edaf18';
           el.style.outlineOffset = '2px';
         }
+      }
+      // Append rotation to Leaflet's transform so it's applied AFTER
+      // translate3d positioning. Patch _reset so rotation survives zoom/pan.
+      if (ov.rotation) {
+        const appendRotation = () => {
+          const img = overlay.getElement();
+          if (img) {
+            img.style.transformOrigin = 'center center';
+            img.style.transform += ` rotate(${ov.rotation}deg)`;
+          }
+        };
+        appendRotation();
+        const origReset = overlay._reset;
+        overlay._reset = function () {
+          origReset.call(this);
+          appendRotation();
+        };
       }
 
       // Click to select in author mode
@@ -482,7 +496,10 @@ export default function MapTab({ navPadding = 80 }) {
           const swLL = pxToLL([liveCenter[0] - hw, liveCenter[1] + hh]);
           const neLL = pxToLL([liveCenter[0] + hw, liveCenter[1] - hh]);
           overlay.setBounds(L.latLngBounds(swLL, neLL));
-          el.style.rotate = liveRotation ? `${Math.round(liveRotation)}deg` : '';
+          if (liveRotation) {
+            el.style.transformOrigin = 'center center';
+            el.style.transform += ` rotate(${Math.round(liveRotation)}deg)`;
+          }
         };
 
         const cleanup = () => {
@@ -703,7 +720,13 @@ export default function MapTab({ navPadding = 80 }) {
     const applyLive = () => {
       overlay.setBounds(recomputeBounds());
       overlay.setOpacity(live.opacity);
-      el.style.rotate = live.rotation ? `${Math.round(live.rotation)}deg` : '';
+      // Append rotation to Leaflet's transform (setBounds sets translate3d,
+      // we add rotate AFTER so it rotates in place, not before positioning).
+      const img = overlay.getElement();
+      if (img && live.rotation) {
+        img.style.transformOrigin = 'center center';
+        img.style.transform += ` rotate(${Math.round(live.rotation)}deg)`;
+      }
     };
 
     const url = (BASE + data.imageUrl).replace(/\/\//g, '/');
@@ -716,7 +739,9 @@ export default function MapTab({ navPadding = 80 }) {
     const el = overlay.getElement();
     if (!el) { setImplementMode(null); return; }
     el.style.transformOrigin = 'center center';
-    el.style.rotate = live.rotation ? `${live.rotation}deg` : '';
+    if (live.rotation) {
+      el.style.transform += ` rotate(${live.rotation}deg)`;
+    }
     el.style.cursor = 'grab';
     el.style.outline = '2px dashed #edaf18';
     el.style.outlineOffset = '4px';
