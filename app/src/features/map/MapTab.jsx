@@ -571,6 +571,20 @@ export default function MapTab({ navPadding = 80 }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
 
+      // Dark mask behind the sub-maps — each floor away from 0 adds 25%
+      // opacity (capped at 100%). Painted first so overlays sit on top of
+      // the dim and render at full clarity; the base tiles underneath the
+      // canvas show through at (1 − mask) opacity.
+      const floorDist = Math.abs(viewFloor);
+      if (floorDist > 0) {
+        const alpha = Math.min(1, floorDist * 0.25);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.restore();
+      }
+
       const currentVisible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
       const live = overlayLiveRef.current;
       currentVisible.forEach(rawOv => {
