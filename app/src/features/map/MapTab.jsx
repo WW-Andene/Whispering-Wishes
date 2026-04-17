@@ -515,14 +515,12 @@ export default function MapTab({ navPadding = 80 }) {
   }, [drafts, editingId, mapReady, authorMode]);
 
   // Sub-map overlay renderer. One <img> per placement on the current floor,
-  // mounted inside Leaflet's overlayPane so it inherits the pane's zoom
-  // animation transform — prevents drift/stretch relative to the base tiles.
-  // Position is recomputed via latLngToLayerPoint on move/zoom events.
+  // repositioned on every map move/zoom via latLngToContainerPoint. Renders
+  // above the Leaflet tile pane so the sub-map sits on top of the base map.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
-    const pane = map.getPane('overlayPane');
-    if (!pane) return;
+    const container = map.getContainer();
     const imgs = overlayImgsRef.current;
     const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
     const visibleIds = new Set(visible.map(o => o.id));
@@ -543,8 +541,8 @@ export default function MapTab({ navPadding = 80 }) {
         const img = document.createElement('img');
         img.src = (BASE + cat.imageUrl).replace(/\/\//g, '/');
         img.draggable = false;
-        img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;will-change:transform;';
-        pane.appendChild(img);
+        img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:400;will-change:transform;';
+        container.appendChild(img);
         inst = { img, update: null, current: ov };
         imgs.set(ov.id, inst);
       }
@@ -554,8 +552,8 @@ export default function MapTab({ navPadding = 80 }) {
         const s = inst.current.scale ?? 1;
         const [cx, cy] = inst.current.center;
         const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
-        const nwPt = map.latLngToLayerPoint(map.unproject([cx - halfW, cy - halfH], NATIVE_ZOOM));
-        const sePt = map.latLngToLayerPoint(map.unproject([cx + halfW, cy + halfH], NATIVE_ZOOM));
+        const nwPt = map.latLngToContainerPoint(map.unproject([cx - halfW, cy - halfH], NATIVE_ZOOM));
+        const sePt = map.latLngToContainerPoint(map.unproject([cx + halfW, cy + halfH], NATIVE_ZOOM));
         const w = sePt.x - nwPt.x, h = sePt.y - nwPt.y;
         inst.img.style.width = w + 'px';
         inst.img.style.height = h + 'px';
