@@ -1253,33 +1253,48 @@ export default function MapTab({ navPadding = 80 }) {
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
         .floor-picker {
-          position: absolute; top: 56px; left: 12px; z-index: 20;
-          display: flex; flex-direction: column; align-items: stretch; gap: 6px;
-          padding: 6px;
-          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
-          border-radius: 4px;
-          box-shadow: 0 0 16px rgba(6, 10, 24, 0.6);
-          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          /* Float the picker var(--space-md) (12 px) below the kuro-header
+             and var(--space-md) from the card's left edge — same gap on
+             top and sides. */
+          position: absolute;
+          top: calc(var(--card-padding, 14px) * 2 + 1rem + var(--space-md, 12px));
+          left: var(--space-md, 12px);
+          z-index: 20;
+          display: flex; flex-direction: column; align-items: stretch;
+          gap: var(--space-xs, 4px);
+          padding: var(--space-sm, 8px);
+          background: var(--bg-card);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-lg, 11px);
+          box-shadow: var(--shadow-md);
+          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
         }
         .floor-picker button {
-          background: rgba(8, 12, 20, 0.85); color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.45);
-          border-radius: 3px; padding: 3px 0;
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          font-size: 11px; letter-spacing: 0.06em;
+          background: var(--bg-btn);
+          color: var(--text-heading);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          font-weight: 500;
+          letter-spacing: 0.02em;
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms;
+          transition: background 160ms, border-color 160ms, color var(--transition-fast, 120ms);
         }
-        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); border-color: ${COLOR_CANON}; }
+        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
         .floor-picker input {
-          width: 44px; padding: 3px 4px; font-size: 11px; color: ${COLOR_CANON};
-          background: rgba(8, 12, 20, 0.85);
-          border: 1px solid rgba(237, 175, 24, 0.45);
-          border-radius: 3px;
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          letter-spacing: 0.04em;
+          width: 44px;
+          background: var(--bg-btn);
+          color: var(--text-heading);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          font-weight: 500;
+          letter-spacing: 0.02em;
           text-align: center; outline: none; -moz-appearance: textfield;
         }
         .floor-picker input:focus { border-color: ${COLOR_CANON}; }
