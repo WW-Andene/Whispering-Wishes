@@ -394,22 +394,23 @@ export default function MapTab({ navPadding = 80 }) {
 
   const floorDist = Math.abs(viewFloor);
 
-  // Persistent overlay instances — L.imageOverlay, created once, updated in place.
-  // Uses Leaflet's overlay pane (correct z-index). Combined with transition:none
-  // on all panes, the pane reset is instant (no animation glitch).
+  // Overlay renderer: raw <img> elements in the map container.
+  // Bypasses Leaflet's pane system entirely — no pane reset, no position jump.
+  // Position updated via latLngToContainerPoint on every map 'move' event.
   useEffect(() => {
     const map = mapRef.current;
     const L = leafletRef.current;
     if (!map || !L || !mapReady) return;
 
     const instances = overlayInstancesRef.current;
-    const pxToLL = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
+    const container = map.getContainer();
     const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
     const visibleIds = new Set(visible.map(ov => ov.id));
 
-    for (const [id, overlay] of instances) {
+    for (const [id, inst] of instances) {
       if (!visibleIds.has(id)) {
-        map.removeLayer(overlay);
+        inst.imgs.forEach(img => img.remove());
+        map.off('move zoom viewreset zoomend', inst.update);
         instances.delete(id);
       }
     }
@@ -418,42 +419,63 @@ export default function MapTab({ navPadding = 80 }) {
       if (!ov.center) return;
       const nw = ov.naturalWidth || 8192;
       const nh = ov.naturalHeight || 8192;
-      const s = ov.scale || 1;
-      const hw = (nw * s) / 2, hh = (nh * s) / 2;
-      const [cx, cy] = ov.center;
-      const bounds = L.latLngBounds(
-        pxToLL([cx - hw, cy + hh]),
-        pxToLL([cx + hw, cy - hh])
-      );
+      const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+      const tiles = cat?.tiles || [{ url: cat?.imageUrl || ov.imageUrl || '', col: 0, row: 0 }];
+      const tileCols = cat?.tileCols || 1;
+      const tileRows = cat?.tileRows || 1;
 
-      let overlay = instances.get(ov.id);
-      if (!overlay) {
-        const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
-        const url = (BASE + (cat?.imageUrl || ov.imageUrl || '')).replace(/\/\//g, '/');
-        overlay = L.imageOverlay(url, bounds, {
-          interactive: false,
-          className: 'map-overlay-img',
-          opacity: ov.opacity ?? 1,
-        }).addTo(map);
-        instances.set(ov.id, overlay);
+      let inst = instances.get(ov.id);
+      if (!inst) {
+        const imgs = tiles.map(tile => {
+          const img = document.createElement('img');
+          img.src = (BASE + tile.url).replace(/\/\//g, '/');
+          img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;transform-origin:0 0;z-index:2;';
+          img.dataset.col = tile.col;
+          img.dataset.row = tile.row;
+          img.draggable = false;
+          container.appendChild(img);
+          return img;
+        });
+
+        const update = () => {
+          const s = inst.scale;
+          const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
+          const [cx, cy] = inst.center;
+          const twPx = nw * s / tileCols, thPx = nh * s / tileRows;
+          imgs.forEach(img => {
+            const col = +img.dataset.col, row = +img.dataset.row;
+            const tl = cx - halfW + col * twPx, tt = cy - halfH + row * thPx;
+            const nwLL = map.unproject([tl, tt], NATIVE_ZOOM);
+            const seLL = map.unproject([tl + twPx, tt + thPx], NATIVE_ZOOM);
+            const nwPt = map.latLngToContainerPoint(nwLL);
+            const sePt = map.latLngToContainerPoint(seLL);
+            img.style.transform = `translate(${nwPt.x}px,${nwPt.y}px)`;
+            img.style.width = (sePt.x - nwPt.x) + 'px';
+            img.style.height = (sePt.y - nwPt.y) + 'px';
+            img.style.opacity = inst.opacity;
+          });
+        };
+
+        inst = { imgs, update, center: [...ov.center], scale: ov.scale || 1, rotation: ov.rotation || 0, opacity: ov.opacity ?? 1 };
+        instances.set(ov.id, inst);
+        map.on('move zoom viewreset zoomend', update);
+        update();
       } else {
-        overlay.setBounds(bounds);
-        overlay.setOpacity(ov.opacity ?? 1);
-      }
-
-      const el = overlay.getElement?.();
-      if (el) {
-        el.style.pointerEvents = 'none';
+        inst.center = [...ov.center];
+        inst.scale = ov.scale || 1;
+        inst.rotation = ov.rotation || 0;
+        inst.opacity = ov.opacity ?? 1;
+        inst.update();
       }
     });
-  }, [overlayDrafts, viewFloor, mapReady, activeOverlayId]);
+  }, [overlayDrafts, viewFloor, mapReady]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      const map = mapRef.current;
-      if (map) {
-        for (const [, ov] of overlayInstancesRef.current) map.removeLayer(ov);
+      for (const [, inst] of overlayInstancesRef.current) {
+        inst.imgs.forEach(img => img.remove());
+        mapRef.current?.off('move zoom viewreset zoomend', inst.update);
       }
       overlayInstancesRef.current.clear();
     };
