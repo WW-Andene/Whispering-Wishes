@@ -392,23 +392,7 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode]);
 
-  // Scrim: dark overlay for floor dimming. Uses a full-viewport div
-  // inside the map container (not a Leaflet pane — simpler, no z-index issues).
-  const scrimRef = useRef(null);
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapReady) return;
-    if (!scrimRef.current) {
-      const div = document.createElement('div');
-      div.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:350;transition:background 300ms;';
-      map.getContainer().appendChild(div);
-      scrimRef.current = div;
-    }
-    const floorDist = Math.abs(viewFloor);
-    scrimRef.current.style.background = floorDist > 0
-      ? `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`
-      : 'transparent';
-  }, [viewFloor, mapReady]);
+  const floorDist = Math.abs(viewFloor);
 
   // Persistent overlay instances — L.imageOverlay, created once, updated in place.
   // Uses Leaflet's overlay pane (correct z-index). Combined with transition:none
@@ -1135,9 +1119,7 @@ export default function MapTab({ navPadding = 80 }) {
           letter-spacing: 0.06em; text-align: center; min-width: 48px;
         }
         .leaflet-map-pane, .leaflet-tile-pane, .leaflet-overlay-pane,
-        .leaflet-tile, .leaflet-image-layer { transition: none !important; }
-        .leaflet-map-pane { will-change: transform; }
-        .leaflet-overlay-pane svg { overflow: visible !important; }
+        .leaflet-tile, .leaflet-image-layer, .leaflet-zoom-animated { transition: none !important; }
         .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
         .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
         .overlay-row {
@@ -1174,6 +1156,16 @@ export default function MapTab({ navPadding = 80 }) {
               className="leaflet-map-bg"
               style={{ position: 'absolute', inset: 0, background: MAP_BG, zIndex: 1 }}
             />
+            {floorDist > 0 && (
+              <div
+                style={{
+                  position: 'absolute', inset: 0, zIndex: 2,
+                  background: `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`,
+                  pointerEvents: 'none',
+                  transition: 'background 300ms',
+                }}
+              />
+            )}
             {status && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                 {status}
