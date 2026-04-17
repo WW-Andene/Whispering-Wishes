@@ -464,7 +464,6 @@ export default function MapTab({ navPadding = 80 }) {
         };
         if (overlay._map) overlay._reset();
       }
-      });
 
       // Click to select in author mode (locked overlays are inert)
       if (!ov.locked) {
