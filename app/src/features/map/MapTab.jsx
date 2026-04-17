@@ -616,6 +616,136 @@ export default function MapTab({ navPadding = 80 }) {
     if (editingOverlayId === id) setEditingOverlayId(null);
   }, [overlayDrafts, editingOverlayId]);
 
+  // Finger-gesture placement for the currently-edited sub-map on the current floor:
+  //   1 finger drag → move center
+  //   2 fingers pinch → scale / rotate
+  // Live preview mutates the DOM directly; state is committed on release.
+  useEffect(() => {
+    if (!editingOverlayId || !mapReady) return;
+    const map = mapRef.current;
+    if (!map) return;
+    const ov = overlayDrafts.find(o => o.id === editingOverlayId);
+    if (!ov || (ov.floor ?? 0) !== viewFloor) return;
+    const inst = overlayImgsRef.current.get(editingOverlayId);
+    if (!inst) return;
+    const img = inst.img;
+
+    const prevCursor = img.style.cursor;
+    const prevPE = img.style.pointerEvents;
+    const prevOutline = img.style.outline;
+    const prevOutlineOffset = img.style.outlineOffset;
+    img.style.pointerEvents = 'auto';
+    img.style.cursor = 'grab';
+    img.style.outline = '2px dashed #edaf18';
+    img.style.outlineOffset = '2px';
+
+    const live = {
+      center: [...ov.center],
+      scale: ov.scale ?? 1,
+      rotation: ov.rotation ?? 0,
+    };
+    let dragStart = null, pinchStart = null;
+
+    const applyLive = () => {
+      inst.current = { ...inst.current, center: live.center, scale: live.scale, rotation: live.rotation };
+      inst.update();
+    };
+
+    const onMove = (evt) => {
+      evt.preventDefault();
+      if (evt.touches && evt.touches.length >= 2) {
+        if (!pinchStart) {
+          const t1 = evt.touches[0], t2 = evt.touches[1];
+          pinchStart = {
+            dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
+            angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
+            initScale: live.scale,
+            initRotation: live.rotation,
+          };
+          dragStart = null;
+          return;
+        }
+        const t1 = evt.touches[0], t2 = evt.touches[1];
+        const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        const angle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
+        live.scale = Math.max(0.05, Math.min(10, pinchStart.initScale * (dist / pinchStart.dist)));
+        live.rotation = ((pinchStart.initRotation + (angle - pinchStart.angle)) % 360 + 360) % 360;
+        applyLive();
+        return;
+      }
+      if (dragStart) {
+        const t = evt.touches ? evt.touches[0] : evt;
+        const dxScreen = t.clientX - dragStart.sx;
+        const dyScreen = t.clientY - dragStart.sy;
+        const s = Math.pow(2, NATIVE_ZOOM - map.getZoom());
+        live.center = [Math.round(dragStart.cx + dxScreen * s), Math.round(dragStart.cy + dyScreen * s)];
+        applyLive();
+      }
+    };
+
+    const onUp = (evt) => {
+      if (evt.touches && evt.touches.length > 0) return;
+      dragStart = null;
+      pinchStart = null;
+      img.style.cursor = 'grab';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      map.dragging?.enable();
+      if (map.touchZoom) map.touchZoom.enable();
+      handleUpdateOverlay(editingOverlayId, {
+        center: [Math.round(live.center[0]), Math.round(live.center[1])],
+        scale: +live.scale.toFixed(3),
+        rotation: Math.round(live.rotation),
+      });
+    };
+
+    const onDown = (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      map.dragging?.disable();
+      if (map.touchZoom) map.touchZoom.disable();
+      if (evt.touches && evt.touches.length >= 2) {
+        const t1 = evt.touches[0], t2 = evt.touches[1];
+        pinchStart = {
+          dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
+          angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
+          initScale: live.scale,
+          initRotation: live.rotation,
+        };
+        dragStart = null;
+      } else {
+        const t = evt.touches ? evt.touches[0] : evt;
+        dragStart = { sx: t.clientX, sy: t.clientY, cx: live.center[0], cy: live.center[1] };
+        pinchStart = null;
+      }
+      img.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onMove, { passive: false });
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    };
+
+    img.addEventListener('mousedown', onDown);
+    img.addEventListener('touchstart', onDown, { passive: false });
+
+    return () => {
+      img.removeEventListener('mousedown', onDown);
+      img.removeEventListener('touchstart', onDown);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      img.style.cursor = prevCursor;
+      img.style.pointerEvents = prevPE;
+      img.style.outline = prevOutline;
+      img.style.outlineOffset = prevOutlineOffset;
+      map.dragging?.enable();
+      if (map.touchZoom) map.touchZoom.enable();
+    };
+  }, [editingOverlayId, overlayDrafts, viewFloor, mapReady, handleUpdateOverlay]);
+
   // Triple-tap on header toggles author-enabled
   const handleHeaderTap = useCallback(() => {
     const now = Date.now();
@@ -967,7 +1097,7 @@ export default function MapTab({ navPadding = 80 }) {
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
         .floor-picker {
-          position: absolute; top: 56px; right: 12px; z-index: 20;
+          position: absolute; top: 56px; left: 12px; z-index: 20;
           display: flex; flex-direction: column; align-items: stretch; gap: 0;
           background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
           border-radius: 3px; overflow: hidden;
