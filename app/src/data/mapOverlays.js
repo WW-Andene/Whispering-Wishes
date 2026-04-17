@@ -46,44 +46,16 @@ export const OVERLAY_CATALOG = [
 //   naturalHeight: number,
 // }
 
-// Default overlay drafts — seeded on first load when localStorage is empty.
-// Once present in drafts, these are editable (position/scale/rotation/lock) like any other draft.
-const DEFAULT_OVERLAY_DRAFTS = [
-  {
-    id: 'lahai-roi-mo2fbv8m',
-    catalogId: 'lahai-roi',
-    name: 'Lahai Roi',
-    imageUrl: 'map-tiles/lahai_roi.webp',
-    center: [5076, 3302],
-    scale: 0.7,
-    rotation: 247,
-    floor: 0,
-    locked: true,
-    opacity: 1,
-    naturalWidth: 4096,
-    naturalHeight: 4096,
-  },
-];
-
 const OVERLAY_DRAFTS_KEY = 'ww-overlay-drafts';
 
 export function loadOverlayDrafts() {
-  if (typeof localStorage === 'undefined') return [...DEFAULT_OVERLAY_DRAFTS];
-  let list;
+  if (typeof localStorage === 'undefined') return [];
   try {
     const raw = localStorage.getItem(OVERLAY_DRAFTS_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    list = Array.isArray(parsed) ? parsed : [];
-  } catch { list = []; }
-
-  const existingIds = new Set(list.map(o => o && o.id));
-  const missing = DEFAULT_OVERLAY_DRAFTS.filter(d => !existingIds.has(d.id));
-  if (missing.length > 0) {
-    list = [...list, ...missing];
-    try { localStorage.setItem(OVERLAY_DRAFTS_KEY, JSON.stringify(list)); } catch {}
-  }
-
-  return list;
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
 }
 
 export function saveOverlayDrafts(list) {
