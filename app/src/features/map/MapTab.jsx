@@ -35,6 +35,41 @@ function slugify(s) {
   return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `zone-${Date.now().toString(36)}`;
 }
 
+// Ramer–Douglas–Peucker polyline simplification. Input/output: [[x,y], ...].
+// `epsilon` is the max perpendicular distance (same units as input) a dropped
+// point may lie from the kept segment.
+function rdpSimplify(points, epsilon) {
+  if (!Array.isArray(points) || points.length < 3) return points || [];
+  const sqSegDist = ([x, y], [x1, y1], [x2, y2]) => {
+    const dx = x2 - x1, dy = y2 - y1;
+    const lenSq = dx * dx + dy * dy;
+    let t = 0;
+    if (lenSq > 0) t = ((x - x1) * dx + (y - y1) * dy) / lenSq;
+    t = Math.max(0, Math.min(1, t));
+    const px = x1 + t * dx, py = y1 + t * dy;
+    const ex = x - px, ey = y - py;
+    return ex * ex + ey * ey;
+  };
+  const epsSq = epsilon * epsilon;
+  const keep = new Array(points.length).fill(false);
+  keep[0] = true;
+  keep[points.length - 1] = true;
+  const stack = [[0, points.length - 1]];
+  while (stack.length) {
+    const [first, last] = stack.pop();
+    let maxDist = 0, index = -1;
+    for (let i = first + 1; i < last; i++) {
+      const d = sqSegDist(points[i], points[first], points[last]);
+      if (d > maxDist) { maxDist = d; index = i; }
+    }
+    if (maxDist > epsSq && index !== -1) {
+      keep[index] = true;
+      stack.push([first, index], [index, last]);
+    }
+  }
+  return points.filter((_, i) => keep[i]);
+}
+
 export default function MapTab({ navPadding = 80 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -50,6 +85,8 @@ export default function MapTab({ navPadding = 80 }) {
     return localStorage.getItem(AUTHOR_FLAG_KEY) === '1';
   });
   const [authorMode, setAuthorMode] = useState(false);
+  const [freehandMode, setFreehandMode] = useState(false);
+  const freehandTraceRef = useRef(null);
   const [authorPoints, setAuthorPoints] = useState([]);
   const [drafts, setDrafts] = useState(loadDrafts);
   const [draftName, setDraftName] = useState('');
@@ -229,6 +266,7 @@ export default function MapTab({ navPadding = 80 }) {
     const map = mapRef.current;
     if (!map || !mapReady) return;
     if (!authorMode) return;
+    if (freehandMode) return;
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
       if (gestureActiveRef.current) return;
@@ -241,7 +279,117 @@ export default function MapTab({ navPadding = 80 }) {
       map.off('click', handler);
       if (map.doubleClickZoom) map.doubleClickZoom.enable();
     };
-  }, [authorMode, mapReady]);
+  }, [authorMode, freehandMode, mapReady]);
+
+  // Freehand draw mode: hold + drag on the map to trace a shape; on release
+  // the traced path is simplified (RDP) into polygon points that replace
+  // authorPoints. Map dragging/zoom is suspended while this mode is active.
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = leafletRef.current;
+    if (!map || !L || !mapReady || !authorMode || !freehandMode) return;
+    const container = map.getContainer();
+    const origCursor = container.style.cursor;
+    const origTouchAction = container.style.touchAction;
+    container.style.cursor = 'crosshair';
+    container.style.touchAction = 'none';
+    map.dragging?.disable();
+    map.touchZoom?.disable();
+    map.doubleClickZoom?.disable();
+    map.scrollWheelZoom?.disable();
+    map.boxZoom?.disable();
+
+    let drawing = false;
+    let pid = null;
+    let rawPts = [];
+
+    const ensureTrace = () => {
+      if (!freehandTraceRef.current) {
+        const line = L.polyline([], {
+          color: COLOR_ACTIVE, weight: 2, opacity: 0.95,
+          dashArray: '4 3', interactive: false, className: 'zone-freehand-trace',
+        });
+        line.addTo(map);
+        freehandTraceRef.current = line;
+      }
+      return freehandTraceRef.current;
+    };
+    const updateTrace = () => {
+      const line = freehandTraceRef.current;
+      if (!line) return;
+      line.setLatLngs(rawPts.map(([cx, cy]) => map.containerPointToLatLng([cx, cy])));
+    };
+    const removeTrace = () => {
+      if (freehandTraceRef.current) {
+        try { map.removeLayer(freehandTraceRef.current); } catch {}
+        freehandTraceRef.current = null;
+      }
+    };
+
+    const getXY = (e) => {
+      const rect = container.getBoundingClientRect();
+      return [e.clientX - rect.left, e.clientY - rect.top];
+    };
+
+    const onDown = (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      drawing = true;
+      pid = e.pointerId;
+      rawPts = [getXY(e)];
+      ensureTrace();
+      try { container.setPointerCapture(e.pointerId); } catch {}
+      e.preventDefault();
+    };
+    const onMove = (e) => {
+      if (!drawing || e.pointerId !== pid) return;
+      const [x, y] = getXY(e);
+      const last = rawPts[rawPts.length - 1];
+      const dx = x - last[0], dy = y - last[1];
+      if (dx * dx + dy * dy < 4) return; // 2px min spacing
+      rawPts.push([x, y]);
+      updateTrace();
+      e.preventDefault();
+    };
+    const finish = (e) => {
+      if (!drawing) return;
+      drawing = false;
+      try { container.releasePointerCapture(e.pointerId); } catch {}
+      removeTrace();
+      const pts = rawPts;
+      rawPts = [];
+      if (pts.length < 3) return;
+      const simplified = rdpSimplify(pts, 6);
+      const mapped = simplified.map(([cx, cy]) => {
+        const ll = map.containerPointToLatLng([cx, cy]);
+        const nat = map.project(ll, NATIVE_ZOOM);
+        return [
+          Math.max(0, Math.min(MAP_W, Math.round(nat.x))),
+          Math.max(0, Math.min(MAP_H, Math.round(nat.y))),
+        ];
+      });
+      setAuthorPoints(mapped);
+    };
+
+    container.addEventListener('pointerdown', onDown);
+    container.addEventListener('pointermove', onMove);
+    container.addEventListener('pointerup', finish);
+    container.addEventListener('pointercancel', finish);
+
+    return () => {
+      container.removeEventListener('pointerdown', onDown);
+      container.removeEventListener('pointermove', onMove);
+      container.removeEventListener('pointerup', finish);
+      container.removeEventListener('pointercancel', finish);
+      container.style.cursor = origCursor;
+      container.style.touchAction = origTouchAction;
+      map.dragging?.enable();
+      map.touchZoom?.enable();
+      map.doubleClickZoom?.enable();
+      map.scrollWheelZoom?.enable();
+      map.boxZoom?.enable();
+      removeTrace();
+    };
+  }, [mapReady, authorMode, freehandMode]);
 
   // Render live in-progress polygon with draggable points + midpoint inserters
   useEffect(() => {
@@ -1348,6 +1496,14 @@ export default function MapTab({ navPadding = 80 }) {
                   </div>
                 </div>
                 <div className="row">
+                  <button
+                    className={`zone-author-btn ${freehandMode ? 'is-active' : ''}`}
+                    type="button"
+                    aria-pressed={freehandMode}
+                    onClick={() => setFreehandMode(v => !v)}
+                  >
+                    {freehandMode ? 'Freehand: on' : 'Freehand'}
+                  </button>
                   <button className="zone-author-btn" type="button" onClick={handleUndo} disabled={authorPoints.length === 0}>Undo</button>
                   <button className="zone-author-btn" type="button" onClick={handleClear} disabled={authorPoints.length === 0}>Clear</button>
                   <button className="zone-author-btn is-active" type="button" onClick={handleSaveDraft} disabled={authorPoints.length < 3}>
