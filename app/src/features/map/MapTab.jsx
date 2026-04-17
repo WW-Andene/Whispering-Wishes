@@ -177,7 +177,11 @@ export default function MapTab({ navPadding = 80 }) {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
+    document.body.classList.add('map-tab-active');
+    return () => {
+      document.body.style.overflow = '';
+      document.body.classList.remove('map-tab-active');
+    };
   }, []);
 
   useEffect(() => {
@@ -1069,6 +1073,15 @@ export default function MapTab({ navPadding = 80 }) {
   return (
     <>
       <style>{`
+        /* While the map tab is mounted, hide every fixed full-viewport
+           background layer the rest of the app renders. The map card is
+           opaque and full-viewport, so these layers only cause stacking
+           conflicts and repaint noise. */
+        body.map-tab-active canvas.fixed[aria-hidden="true"][role="presentation"],
+        body.map-tab-active div.fixed.inset-0[aria-hidden="true"] {
+          display: none !important;
+        }
+
         .map-card .kuro-header { background: ${MAP_BG_TRANSPARENT} !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
         .zone-polygon { transition: fill-opacity 160ms cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
         .zone-polygon:hover { fill-opacity: 0.22 !important; }
