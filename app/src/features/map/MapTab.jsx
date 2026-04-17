@@ -552,14 +552,19 @@ export default function MapTab({ navPadding = 80 }) {
         const nw = cat.naturalWidth, nh = cat.naturalHeight;
         const s = inst.current.scale ?? 1;
         const [cx, cy] = inst.current.center;
-        const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
-        const nwPt = map.latLngToContainerPoint(map.unproject([cx - halfW, cy - halfH], NATIVE_ZOOM));
-        const sePt = map.latLngToContainerPoint(map.unproject([cx + halfW, cy + halfH], NATIVE_ZOOM));
-        const w = sePt.x - nwPt.x, h = sePt.y - nwPt.y;
+        // Size in display px = natural px × user scale × zoom factor relative
+        // to the native tile zoom. Using the natural aspect directly keeps the
+        // sub-map the same ratio at every zoom/rotation — no projection drift.
+        const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
+        const w = nw * s * zoomFactor;
+        const h = nh * s * zoomFactor;
+        const centerPt = map.latLngToContainerPoint(map.unproject([cx, cy], NATIVE_ZOOM));
+        const left = centerPt.x - w / 2;
+        const top = centerPt.y - h / 2;
         inst.img.style.width = w + 'px';
         inst.img.style.height = h + 'px';
         inst.img.style.transformOrigin = `${w / 2}px ${h / 2}px`;
-        inst.img.style.transform = `translate(${nwPt.x}px, ${nwPt.y}px) rotate(${inst.current.rotation || 0}deg)`;
+        inst.img.style.transform = `translate(${left}px, ${top}px) rotate(${inst.current.rotation || 0}deg)`;
         inst.img.style.opacity = inst.current.opacity ?? 1;
       };
       if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
