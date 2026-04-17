@@ -46,8 +46,9 @@ export const OVERLAY_CATALOG = [
 //   naturalHeight: number,
 // }
 
-// Hardcoded overlay placements — permanent, not editable from the UI.
-export const OVERLAY_PLACEMENTS = [
+// Default overlay drafts — seeded on first load when localStorage is empty.
+// Once present in drafts, these are editable (position/scale/rotation/lock) like any other draft.
+const DEFAULT_OVERLAY_DRAFTS = [
   {
     id: 'lahai-roi-mo2fbv8m',
     catalogId: 'lahai-roi',
@@ -56,7 +57,7 @@ export const OVERLAY_PLACEMENTS = [
     center: [5076, 3302],
     scale: 0.7,
     rotation: 247,
-    floor: -10,
+    floor: 0,
     locked: true,
     opacity: 1,
     naturalWidth: 4096,
@@ -67,13 +68,13 @@ export const OVERLAY_PLACEMENTS = [
 const OVERLAY_DRAFTS_KEY = 'ww-overlay-drafts';
 
 export function loadOverlayDrafts() {
-  if (typeof localStorage === 'undefined') return [];
+  if (typeof localStorage === 'undefined') return [...DEFAULT_OVERLAY_DRAFTS];
   try {
     const raw = localStorage.getItem(OVERLAY_DRAFTS_KEY);
-    if (!raw) return [];
+    if (!raw) return [...DEFAULT_OVERLAY_DRAFTS];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
+    return Array.isArray(parsed) ? parsed : [...DEFAULT_OVERLAY_DRAFTS];
+  } catch { return [...DEFAULT_OVERLAY_DRAFTS]; }
 }
 
 export function saveOverlayDrafts(list) {
