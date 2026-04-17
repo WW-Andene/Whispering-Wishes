@@ -175,15 +175,19 @@ export default function MapTab({ navPadding = 80 }) {
     return byParent;
   }, [drafts]);
 
+  const switchFloorForZone = useCallback((zone) => {
+    if (zone.overlayId) {
+      const ov = overlayDrafts.find(o => o.id === zone.overlayId);
+      if (ov && Number.isFinite(ov.floor)) setViewFloor(ov.floor);
+    }
+  }, [overlayDrafts]);
+
   const handleFlyToZone = useCallback((zone) => {
     const map = mapRef.current;
     const L = leafletRef.current;
     if (!map) return;
     // Switch to the zone's floor if it is linked to a placed sub-map overlay.
-    if (zone.overlayId) {
-      const ov = overlayDrafts.find(o => o.id === zone.overlayId);
-      if (ov && Number.isFinite(ov.floor)) setViewFloor(ov.floor);
-    }
+    switchFloorForZone(zone);
     if (!Array.isArray(zone.polygon) || zone.polygon.length < 2) return;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     zone.polygon.forEach(([x, y]) => {
@@ -211,7 +215,7 @@ export default function MapTab({ navPadding = 80 }) {
     } catch {
       map.fitBounds([nw, se], { padding: [40, 40] });
     }
-  }, [overlayDrafts]);
+  }, [switchFloorForZone]);
 
   const toggleZoneExpanded = useCallback((id) => {
     setExpandedZones(prev => {
@@ -1580,7 +1584,11 @@ export default function MapTab({ navPadding = 80 }) {
                             type="button"
                             className="zone-selector-item"
                             style={{ paddingLeft: `calc(var(--space-sm, 8px) + ${depth} * var(--space-md, 12px))` }}
-                            onClick={() => { if (hasChildren) toggleZoneExpanded(zone.id); else handleFlyToZone(zone); }}
+                            onClick={() => {
+                              switchFloorForZone(zone);
+                              if (hasChildren) toggleZoneExpanded(zone.id);
+                              else handleFlyToZone(zone);
+                            }}
                             onDoubleClick={() => handleFlyToZone(zone)}
                             aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
                           >
