@@ -542,7 +542,7 @@ export default function MapTab({ navPadding = 80 }) {
         const img = document.createElement('img');
         img.src = (BASE + cat.imageUrl).replace(/\/\//g, '/');
         img.draggable = false;
-        img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:400;will-change:transform;';
+        img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:400;transform-style:flat;backface-visibility:hidden;';
         container.appendChild(img);
         inst = { img, update: null, current: ov };
         imgs.set(ov.id, inst);
@@ -567,7 +567,7 @@ export default function MapTab({ navPadding = 80 }) {
         inst.img.style.width = wInt + 'px';
         inst.img.style.height = hInt + 'px';
         inst.img.style.transformOrigin = `${wInt / 2}px ${hInt / 2}px`;
-        inst.img.style.transform = `translate3d(${left}px, ${top}px, 0) rotate(${inst.current.rotation || 0}deg)`;
+        inst.img.style.transform = `translate(${left}px, ${top}px) rotate(${inst.current.rotation || 0}deg)`;
         inst.img.style.opacity = inst.current.opacity ?? 1;
       };
       if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
