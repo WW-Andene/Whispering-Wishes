@@ -682,7 +682,10 @@ export default function MapTab({ navPadding = 80 }) {
         const rotRad = ((ov.rotation || 0) * Math.PI) / 180;
         const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
         const displayScale = s * zoomFactor;
-        const nw = cat.naturalWidth, nh = cat.naturalHeight;
+        // Prefer the decoded image's real dimensions; fall back to the
+        // catalog entry if the image hasn't loaded yet.
+        const nw = img.naturalWidth || cat.naturalWidth;
+        const nh = img.naturalHeight || cat.naturalHeight;
         const centerPt = map.latLngToContainerPoint(map.unproject(ov.center, NATIVE_ZOOM));
 
         ctx.save();
@@ -859,8 +862,11 @@ export default function MapTab({ navPadding = 80 }) {
       const current = (live && live.id === ov.id) ? { ...ov, ...live } : ov;
       const centerPt = map.latLngToContainerPoint(map.unproject(current.center, NATIVE_ZOOM));
       const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
-      const halfW = (cat.naturalWidth * (current.scale ?? 1) * zoomFactor) / 2;
-      const halfH = (cat.naturalHeight * (current.scale ?? 1) * zoomFactor) / 2;
+      const cachedImg = overlayImagesRef.current.get(cat.id);
+      const nw = (cachedImg && cachedImg.naturalWidth) || cat.naturalWidth;
+      const nh = (cachedImg && cachedImg.naturalHeight) || cat.naturalHeight;
+      const halfW = (nw * (current.scale ?? 1) * zoomFactor) / 2;
+      const halfH = (nh * (current.scale ?? 1) * zoomFactor) / 2;
       const rot = -((current.rotation || 0) * Math.PI) / 180;
       const dx = px - centerPt.x, dy = py - centerPt.y;
       const lx = dx * Math.cos(rot) - dy * Math.sin(rot);
