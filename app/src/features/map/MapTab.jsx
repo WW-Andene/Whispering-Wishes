@@ -205,28 +205,6 @@ export default function MapTab({ navPadding = 80 }) {
       }).addTo(map);
       tileLayerRef.current = tileLayer;
 
-      // Canonical zone overlays — render parents first, then sub-zones on top
-      const pxToLatLng = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
-      const sorted = [...MAP_ZONES].sort((a, b) => (a.parentId ? 1 : 0) - (b.parentId ? 1 : 0));
-      sorted.forEach(zone => {
-        if (!Array.isArray(zone.polygon) || zone.polygon.length < 3) return;
-        const color = zone.color || COLOR_CANON;
-        const isSub = !!zone.parentId;
-        const poly = L.polygon(zone.polygon.map(pxToLatLng), {
-          color,
-          weight: isSub ? 1 : 1.5,
-          opacity: 0.85,
-          fillColor: color,
-          fillOpacity: isSub ? 0.06 : 0.10,
-          className: 'zone-polygon',
-        }).addTo(map);
-        const parentName = isSub ? (MAP_ZONES.find(z => z.id === zone.parentId)?.name || zone.parentId) : null;
-        const title = parentName ? `${parentName} › ${zone.name || zone.id}` : (zone.name || zone.id);
-        const popupBody = zone.note ? `<div class="zone-popup-note">${zone.note}</div>` : '';
-        poly.bindPopup(`<div class="zone-popup-title">${title}</div>${popupBody}`, { className: 'zone-popup', closeButton: false, autoPan: false });
-        poly.bindTooltip(title, { sticky: true, className: 'zone-tooltip' });
-      });
-
       setTimeout(() => { if (map) map.invalidateSize(); }, 200);
 
       mapRef.current = map;
