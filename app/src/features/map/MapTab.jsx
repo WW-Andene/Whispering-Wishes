@@ -58,6 +58,9 @@ export default function MapTab({ navPadding = 80 }) {
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+  const [implementMode, setImplementMode] = useState(null);
+  const [implementValues, setImplementValues] = useState(null);
+  const implementRef = useRef(null);
 
   // Overlay + floor state
   const [viewFloor, setViewFloor] = useState(0);
@@ -563,7 +566,7 @@ export default function MapTab({ navPadding = 80 }) {
     overlayLayerRef.current = group;
   }, [overlayDrafts, viewFloor, mapReady, authorMode, authorEnabled, activeOverlayId]);
 
-  // Overlay management helpers
+  // Overlay: enter implement mode
   const handleAddOverlay = (catalogId) => {
     const cat = OVERLAY_CATALOG.find(c => c.id === catalogId);
     if (!cat) return;
@@ -581,14 +584,13 @@ export default function MapTab({ navPadding = 80 }) {
       rotation: 0,
       floor: viewFloor,
       locked: false,
+      opacity: 0.75,
       naturalWidth: cat.naturalWidth,
       naturalHeight: cat.naturalHeight,
     };
-    const next = [...overlayDrafts, placement];
-    setOverlayDrafts(next);
-    saveOverlayDrafts(next);
-    setActiveOverlayId(placement.id);
-    showToast(`Added "${cat.name}"`);
+    implementRef.current = { data: placement };
+    setImplementMode(placement.id);
+    setImplementValues({ center, scale: 1.0, rotation: 0, floor: viewFloor, opacity: 0.75 });
   };
 
   const handleUpdateOverlay = (id, patch) => {
@@ -665,6 +667,190 @@ export default function MapTab({ navPadding = 80 }) {
     setDrafts(nextDrafts);
     saveDrafts(nextDrafts);
     showToast('Removed from tree');
+  };
+
+  // ── Implement mode: dedicated overlay placement ──
+  // Creates one overlay, disables everything else, gestures update DOM directly.
+  useEffect(() => {
+    if (!implementMode || !mapReady) return;
+    const map = mapRef.current;
+    const L = leafletRef.current;
+    if (!map || !L || !implementRef.current) { setImplementMode(null); return; }
+
+    const data = implementRef.current.data;
+    const nw = data.naturalWidth || 4096;
+    const nh = data.naturalHeight || 4096;
+    const live = {
+      center: [...data.center],
+      scale: data.scale || 1,
+      rotation: data.rotation || 0,
+      opacity: data.opacity ?? 0.75,
+      floor: data.floor ?? 0,
+    };
+
+    map.dragging.disable();
+    if (map.doubleClickZoom) map.doubleClickZoom.disable();
+    if (map.touchZoom) map.touchZoom.disable();
+
+    const pxToLL2 = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
+    const recomputeBounds = () => {
+      const hw = (nw * live.scale) / 2, hh = (nh * live.scale) / 2;
+      return L.latLngBounds(
+        pxToLL2([live.center[0] - hw, live.center[1] + hh]),
+        pxToLL2([live.center[0] + hw, live.center[1] - hh])
+      );
+    };
+    const applyLive = () => {
+      overlay.setBounds(recomputeBounds());
+      overlay.setOpacity(live.opacity);
+      el.style.rotate = live.rotation ? `${Math.round(live.rotation)}deg` : '';
+    };
+
+    const url = (BASE + data.imageUrl).replace(/\/\//g, '/');
+    const overlay = L.imageOverlay(url, recomputeBounds(), {
+      interactive: true,
+      opacity: live.opacity,
+      className: 'map-overlay-img map-overlay-implement',
+    }).addTo(map);
+
+    const el = overlay.getElement();
+    if (!el) { setImplementMode(null); return; }
+    el.style.transformOrigin = 'center center';
+    el.style.rotate = live.rotation ? `${live.rotation}deg` : '';
+    el.style.cursor = 'grab';
+    el.style.outline = '2px dashed #edaf18';
+    el.style.outlineOffset = '4px';
+
+    // Expose to sliders + lock handler
+    implementRef.current.updateLive = (patch) => {
+      Object.assign(live, patch);
+      applyLive();
+      setImplementValues(prev => ({ ...prev, ...patch }));
+    };
+    implementRef.current.getLive = () => ({ ...live });
+
+    // Gesture handlers
+    const screenToMapPx = (cx, cy) => {
+      const rect = map.getContainer().getBoundingClientRect();
+      const cp = L.point(cx - rect.left, cy - rect.top);
+      const ll = map.containerPointToLatLng(cp);
+      const mp = map.project(ll, MAX_ZOOM);
+      return [mp.x, mp.y];
+    };
+    const twoFingerInfo = (touches) => ({
+      dist: Math.hypot(touches[1].clientX - touches[0].clientX, touches[1].clientY - touches[0].clientY),
+      angle: Math.atan2(touches[1].clientY - touches[0].clientY, touches[1].clientX - touches[0].clientX) * 180 / Math.PI,
+    });
+
+    let dragStart = null, pinchStart = null;
+
+    const onDown = (evt) => {
+      evt.stopPropagation();
+      evt.preventDefault();
+      gestureActiveRef.current = true;
+      if (evt.touches && evt.touches.length >= 2) {
+        pinchStart = { ...twoFingerInfo(evt.touches), initScale: live.scale, initRotation: live.rotation };
+        dragStart = null;
+      } else {
+        const t = evt.touches ? evt.touches[0] : evt;
+        dragStart = { mapPx: screenToMapPx(t.clientX, t.clientY), center: [...live.center] };
+        pinchStart = null;
+      }
+      el.style.cursor = 'grabbing';
+      document.addEventListener('mousemove', onMove, { passive: false });
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    };
+
+    const onMove = (evt) => {
+      evt.preventDefault();
+      if (evt.touches && evt.touches.length >= 2) {
+        if (!pinchStart) {
+          pinchStart = { ...twoFingerInfo(evt.touches), initScale: live.scale, initRotation: live.rotation };
+          dragStart = null;
+          return;
+        }
+        const info = twoFingerInfo(evt.touches);
+        live.scale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
+        live.rotation = ((pinchStart.initRotation + (info.angle - pinchStart.angle)) % 360 + 360) % 360;
+        applyLive();
+        return;
+      }
+      if (dragStart) {
+        const t = evt.touches ? evt.touches[0] : evt;
+        const nowPx = screenToMapPx(t.clientX, t.clientY);
+        live.center = [
+          Math.round(dragStart.center[0] + (nowPx[0] - dragStart.mapPx[0])),
+          Math.round(dragStart.center[1] + (nowPx[1] - dragStart.mapPx[1])),
+        ];
+        applyLive();
+      }
+    };
+
+    const onUp = (evt) => {
+      if (evt.touches && evt.touches.length > 0) return;
+      dragStart = null;
+      pinchStart = null;
+      el.style.cursor = 'grab';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      setImplementValues({ ...live });
+      setTimeout(() => { gestureActiveRef.current = false; }, 80);
+    };
+
+    el.addEventListener('mousedown', onDown);
+    el.addEventListener('touchstart', onDown, { passive: false });
+
+    return () => {
+      el.removeEventListener('mousedown', onDown);
+      el.removeEventListener('touchstart', onDown);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      map.removeLayer(overlay);
+      map.dragging.enable();
+      if (map.doubleClickZoom) map.doubleClickZoom.enable();
+      if (map.touchZoom) map.touchZoom.enable();
+      gestureActiveRef.current = false;
+    };
+  }, [implementMode, mapReady]);
+
+  const handleImplementLockAndAdd = () => {
+    if (!implementRef.current) return;
+    const data = implementRef.current.data;
+    const live = implementRef.current.getLive();
+    const finalOverlay = {
+      ...data,
+      center: live.center,
+      scale: +live.scale.toFixed(3),
+      rotation: Math.round(live.rotation),
+      opacity: live.opacity,
+      floor: live.floor,
+      locked: true,
+    };
+    const nextOverlays = [...overlayDrafts, finalOverlay];
+    setOverlayDrafts(nextOverlays);
+    saveOverlayDrafts(nextOverlays);
+    const polygon = overlayBoundsPolygon(finalOverlay);
+    const zone = { id: `overlay-${finalOverlay.id}`, name: finalOverlay.name, polygon, overlayId: finalOverlay.id };
+    const nextDrafts = [...drafts, zone];
+    setDrafts(nextDrafts);
+    saveDrafts(nextDrafts);
+    setImplementMode(null);
+    setImplementValues(null);
+    implementRef.current = null;
+    showToast(`"${finalOverlay.name}" locked & added`);
+  };
+
+  const handleImplementCancel = () => {
+    setImplementMode(null);
+    setImplementValues(null);
+    implementRef.current = null;
+    showToast('Cancelled');
   };
 
   // Triple-tap on header toggles author-enabled
@@ -1029,6 +1215,8 @@ export default function MapTab({ navPadding = 80 }) {
           letter-spacing: 0.06em; text-align: center; min-width: 48px;
         }
         .map-overlay-img { transition: filter 300ms; }
+        .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
+        .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
         .overlay-row {
           background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
           border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
@@ -1098,7 +1286,56 @@ export default function MapTab({ navPadding = 80 }) {
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
 
-            {authorMode && panelCollapsed && (
+            {/* ── Implement mode panel ── */}
+            {implementMode && implementValues && (
+              <div className="zone-author-panel implement-panel" role="group" aria-label="Implement mode">
+                <div className="edit-banner" style={{ textAlign: 'center' }}>
+                  Placing <span className="edit-banner-name">{implementRef.current?.data?.name || 'sub-map'}</span>
+                </div>
+                <div className="hint" style={{ textAlign: 'center', fontSize: 9 }}>
+                  1 finger = drag · 2 fingers = pinch scale + twist rotate
+                </div>
+                <div className="row">
+                  <div className="field" style={{ flex: '0 0 70px' }}>
+                    <label>Floor</label>
+                    <div className="row" style={{ gap: 2 }}>
+                      <button className="zone-author-btn" type="button" onClick={() => implementRef.current?.updateLive({ floor: (implementValues.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
+                      <span style={{ minWidth: 24, textAlign: 'center' }}>{implementValues.floor ?? 0}</span>
+                      <button className="zone-author-btn" type="button" onClick={() => implementRef.current?.updateLive({ floor: (implementValues.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
+                    </div>
+                  </div>
+                  <div className="field" style={{ flex: '1 1 0' }}>
+                    <label>Scale ({(implementValues.scale ?? 1).toFixed(2)}×)</label>
+                    <input type="range" min="0.1" max="5" step="0.05" value={implementValues.scale ?? 1}
+                      onChange={(e) => implementRef.current?.updateLive({ scale: +e.target.value })}
+                      className="overlay-slider" />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="field" style={{ flex: '1 1 0' }}>
+                    <label>Rotation ({Math.round(implementValues.rotation ?? 0)}°)</label>
+                    <input type="range" min="0" max="360" step="1" value={implementValues.rotation ?? 0}
+                      onChange={(e) => implementRef.current?.updateLive({ rotation: +e.target.value })}
+                      className="overlay-slider" />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="field" style={{ flex: '1 1 0' }}>
+                    <label>Opacity ({Math.round((implementValues.opacity ?? 0.75) * 100)}%)</label>
+                    <input type="range" min="0.05" max="1" step="0.05" value={implementValues.opacity ?? 0.75}
+                      onChange={(e) => implementRef.current?.updateLive({ opacity: +e.target.value })}
+                      className="overlay-slider" />
+                  </div>
+                </div>
+                <div className="row">
+                  <button className="zone-author-btn is-active" type="button" onClick={handleImplementLockAndAdd} style={{ flex: 1 }}>Lock & Add to tree</button>
+                  <button className="zone-author-btn is-danger" type="button" onClick={handleImplementCancel}>Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Zone author panel (hidden during implement mode) ── */}
+            {!implementMode && authorMode && panelCollapsed && (
               <button
                 type="button"
                 className="zone-author-collapsed"
@@ -1111,7 +1348,7 @@ export default function MapTab({ navPadding = 80 }) {
                 <span className="caret">▲</span>
               </button>
             )}
-            {authorMode && !panelCollapsed && (
+            {!implementMode && authorMode && !panelCollapsed && (
               <div className="zone-author-panel" role="group" aria-label="Zone author controls">
                 <div className="panel-top-row">
                   {editingId ? (
@@ -1344,11 +1581,13 @@ export default function MapTab({ navPadding = 80 }) {
 
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
               <CardHeader>
-                {authorMode
-                  ? (editingId
-                      ? `Editing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · tap Update to save`
-                      : `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`)
-                  : 'Pinch to zoom · Drag to pan'}
+                {implementMode
+                  ? 'Implement mode · drag to place · Lock & Add when done'
+                  : authorMode
+                    ? (editingId
+                        ? `Editing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · tap Update to save`
+                        : `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`)
+                    : 'Pinch to zoom · Drag to pan'}
               </CardHeader>
             </div>
           </div>
