@@ -242,12 +242,12 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, []);
 
-  // Author mode: attach click handler and disable dragging
+  // Author mode: attach click handler. Map drag stays enabled (one-finger pan).
+  // Leaflet distinguishes click (tap) from drag automatically.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
     if (!authorMode) return;
-    map.dragging.disable();
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
       if (gestureActiveRef.current) return;
@@ -258,7 +258,6 @@ export default function MapTab({ navPadding = 80 }) {
     map.on('click', handler);
     return () => {
       map.off('click', handler);
-      if (map.dragging) map.dragging.enable();
       if (map.doubleClickZoom) map.doubleClickZoom.enable();
     };
   }, [authorMode, mapReady]);
@@ -388,8 +387,11 @@ export default function MapTab({ navPadding = 80 }) {
     const L = leafletRef.current;
     if (!map || !L || !mapReady) return;
 
-    // Clear previous overlay layers
+    // Clear previous overlay layers + disconnect observers
     if (overlayLayerRef.current) {
+      overlayLayerRef.current.eachLayer(l => {
+        if (l._ww_rotObserver) l._ww_rotObserver.disconnect();
+      });
       map.removeLayer(overlayLayerRef.current);
       overlayLayerRef.current = null;
     }
@@ -444,20 +446,26 @@ export default function MapTab({ navPadding = 80 }) {
           el.style.outlineOffset = '2px';
         }
       }
-      // Patch _reset to append rotation AFTER Leaflet's translate3d.
-      // Uses a mutable box so gesture code can update the rotation value.
-      const rotBox = { deg: ov.rotation || 0 };
+      // Rotation: use MutationObserver to re-append rotate() whenever
+      // Leaflet overwrites el.style.transform (on zoom/pan/_reset).
+      // This is the ONLY rotation mechanism — no _reset patch, no manual append.
+      const rotDeg = ov.rotation || 0;
+      if (el && rotDeg) {
+        const ensureRotation = () => {
+          if (el.style.transform && !el.style.transform.includes('rotate')) {
+            el.style.transformOrigin = 'center center';
+            el.style.transform += ` rotate(${rotDeg}deg)`;
+          }
+        };
+        ensureRotation();
+        const rotObserver = new MutationObserver(ensureRotation);
+        rotObserver.observe(el, { attributes: true, attributeFilter: ['style'] });
+        // Store for cleanup
+        overlay._ww_rotObserver = rotObserver;
+      }
+      // Mutable rotation box for gesture code (unlocked overlays only)
+      const rotBox = { deg: rotDeg };
       overlay._ww_rotBox = rotBox;
-      const origReset = overlay._reset;
-      overlay._reset = function () {
-        origReset.call(this);
-        const img = this._image || overlay.getElement();
-        if (img) {
-          img.style.transformOrigin = 'center center';
-          if (rotBox.deg) img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
-        }
-      };
-      if (overlay._map) overlay._reset();
 
       // Click to select in author mode (locked overlays are inert)
       if (!ov.locked) {
@@ -499,9 +507,18 @@ export default function MapTab({ navPadding = 80 }) {
           const hw = (nw * liveScale) / 2, hh = (nh * liveScale) / 2;
           const swLL = pxToLL([liveCenter[0] - hw, liveCenter[1] + hh]);
           const neLL = pxToLL([liveCenter[0] + hw, liveCenter[1] - hh]);
-          rotBox.deg = liveRotation;
-          // setBounds triggers _reset which appends rotation from rotBox
+          // Temporarily disconnect observer so setBounds doesn't trigger it
+          if (overlay._ww_rotObserver) overlay._ww_rotObserver.disconnect();
           overlay.setBounds(L.latLngBounds(swLL, neLL));
+          // Manually set rotation (observer is off, won't loop)
+          if (liveRotation && el) {
+            el.style.transformOrigin = 'center center';
+            el.style.transform += ` rotate(${Math.round(liveRotation)}deg)`;
+          }
+          // Reconnect observer
+          if (overlay._ww_rotObserver) {
+            overlay._ww_rotObserver.observe(el, { attributes: true, attributeFilter: ['style'] });
+          }
         };
 
         const cleanup = () => {
@@ -726,22 +743,15 @@ export default function MapTab({ navPadding = 80 }) {
       className: 'map-overlay-img map-overlay-implement',
     }).addTo(map);
 
-    // Patch _reset: single place for rotation, avoids stacking
-    const rotBox = { deg: live.rotation };
-    const origReset = overlay._reset;
-    overlay._reset = function () {
-      origReset.call(this);
-      const img = this._image;
-      if (img) {
-        img.style.transformOrigin = 'center center';
-        if (rotBox.deg) img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
-      }
-    };
-
     const applyLive = () => {
-      rotBox.deg = live.rotation;
       overlay.setBounds(recomputeBounds());
       overlay.setOpacity(live.opacity);
+      // Append rotation directly after setBounds
+      const img = overlay.getElement();
+      if (img && live.rotation) {
+        img.style.transformOrigin = 'center center';
+        img.style.transform += ` rotate(${Math.round(live.rotation)}deg)`;
+      }
     };
 
     const el = overlay.getElement();
