@@ -424,7 +424,7 @@ export default function MapTab({ navPadding = 80 }) {
       const bounds = L.latLngBounds(sw, ne);
       const url = (BASE + ov.imageUrl).replace(/\/\//g, '/');
       const overlay = L.imageOverlay(url, bounds, {
-        interactive: true,
+        interactive: !ov.locked,
         className: 'map-overlay-img',
         opacity: ov.opacity ?? 1,
       });
@@ -433,8 +433,13 @@ export default function MapTab({ navPadding = 80 }) {
       const el = overlay.getElement?.();
       if (el) {
         el.style.transformOrigin = 'center center';
-        el.style.cursor = ov.locked ? 'default' : 'grab';
-        if (ov.id === activeOverlayId) {
+        if (ov.locked) {
+          el.style.pointerEvents = 'none';
+          el.style.cursor = 'default';
+        } else {
+          el.style.cursor = 'grab';
+        }
+        if (!ov.locked && ov.id === activeOverlayId) {
           el.style.outline = '2px solid #edaf18';
           el.style.outlineOffset = '2px';
         }
