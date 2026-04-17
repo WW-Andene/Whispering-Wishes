@@ -22,7 +22,7 @@ import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } 
 import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Map, Sparkles, TrendingUp, User, Users, X } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
-import { CURRENT_BANNERS } from './data/banners.js';
+import { CURRENT_BANNERS, preloadBannerHistoryArt } from './data/banners.js';
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS, getServerOffset } from './data/constants.js';
 import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
 // --- extracted hooks ---
@@ -892,6 +892,9 @@ function WhisperingWishesInner() {
       } catch {}
     }
   }, [dispatch, setImageFraming]);
+
+  // Warm the browser cache for every BANNER_HISTORY banner art on mount, once.
+  useEffect(() => { preloadBannerHistoryArt(); }, []);
 
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>

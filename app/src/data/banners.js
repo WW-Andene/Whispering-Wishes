@@ -706,6 +706,24 @@ const VERSION_DATES = [
   { version: '1.0', start: '2024-05-23', end: '2024-06-27' },
 ];
 
+// Preload every BANNER_HISTORY.bannerArt URL once on app boot. Holds a module-
+// level reference to each HTMLImageElement so the GC can't drop the decoded
+// bitmap mid-session, and idempotent so repeat calls are free.
+const _preloadedBannerArt = new Map();
+let _bannerArtPreloaded = false;
+function preloadBannerHistoryArt() {
+  if (_bannerArtPreloaded || typeof Image === 'undefined') return;
+  _bannerArtPreloaded = true;
+  for (const b of BANNER_HISTORY) {
+    const url = b && b.bannerArt;
+    if (!url || _preloadedBannerArt.has(url)) continue;
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = url;
+    _preloadedBannerArt.set(url, img);
+  }
+}
+
 export {
   CURRENT_BANNERS,
   BANNER_HISTORY,
@@ -719,4 +737,5 @@ export {
   VERSION_SPLASH_SCREENS,
   OTHER_BACKGROUNDS,
   ANIMATED_BACKGROUNDS,
+  preloadBannerHistoryArt,
 };
