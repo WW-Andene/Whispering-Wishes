@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
-import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 
 const MAP_W = 16384;
 const MAP_H = 16384;
@@ -95,17 +94,8 @@ export default function MapTab({ navPadding = 80 }) {
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
-  const [implementMode, setImplementMode] = useState(null);
-  const [implementValues, setImplementValues] = useState(null);
-  const implementRef = useRef(null);
 
-  // Overlay + floor state
-  const [viewFloor, setViewFloor] = useState(0);
-  const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
-  const [activeOverlayId, setActiveOverlayId] = useState(null);
   const tileLayerRef = useRef(null);
-  const overlayLayerRef = useRef(null);
-  const overlayInstancesRef = useRef(new Map()); // id → L.imageOverlay (persistent)
   const gestureActiveRef = useRef(false);
 
   // Set of descendant ids of the zone being edited — used to forbid circular parenting.
@@ -517,403 +507,6 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode]);
 
-  const floorDist = Math.abs(viewFloor);
-
-  // Overlay renderer: raw <img> elements in the map container.
-  // Bypasses Leaflet's pane system entirely — no pane reset, no position jump.
-  // Position updated via latLngToContainerPoint on every map 'move' event.
-  useEffect(() => {
-    const map = mapRef.current;
-    const L = leafletRef.current;
-    if (!map || !L || !mapReady) return;
-
-    const instances = overlayInstancesRef.current;
-    const container = map.getContainer();
-    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
-    const visibleIds = new Set(visible.map(ov => ov.id));
-
-    for (const [id, inst] of instances) {
-      if (!visibleIds.has(id)) {
-        inst.imgs.forEach(img => img.remove());
-        map.off('move zoom viewreset zoomend', inst.update);
-        instances.delete(id);
-      }
-    }
-
-    visible.forEach(ov => {
-      if (!ov.center) return;
-      const nw = ov.naturalWidth || 8192;
-      const nh = ov.naturalHeight || 8192;
-      const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
-      const tiles = cat?.tiles || [{ url: cat?.imageUrl || ov.imageUrl || '', col: 0, row: 0 }];
-      const tileCols = cat?.tileCols || 1;
-      const tileRows = cat?.tileRows || 1;
-
-      let inst = instances.get(ov.id);
-      // Guard against stale entries from previous code versions
-      if (inst && !inst.imgs) {
-        try { map.removeLayer(inst); } catch {}
-        inst.imgs?.forEach(img => img.remove());
-        instances.delete(ov.id);
-        inst = undefined;
-      }
-      if (!inst) {
-        const imgs = tiles.map(tile => {
-          const img = document.createElement('img');
-          img.src = (BASE + tile.url).replace(/\/\//g, '/');
-          img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;transform-origin:0 0;z-index:2;';
-          img.dataset.col = tile.col;
-          img.dataset.row = tile.row;
-          img.draggable = false;
-          container.appendChild(img);
-          return img;
-        });
-
-        const update = () => {
-          const s = inst.scale;
-          const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
-          const [cx, cy] = inst.center;
-          const twPx = nw * s / tileCols, thPx = nh * s / tileRows;
-          imgs.forEach(img => {
-            const col = +img.dataset.col, row = +img.dataset.row;
-            const tl = cx - halfW + col * twPx, tt = cy - halfH + row * thPx;
-            const nwLL = map.unproject([tl, tt], NATIVE_ZOOM);
-            const seLL = map.unproject([tl + twPx, tt + thPx], NATIVE_ZOOM);
-            const nwPt = map.latLngToContainerPoint(nwLL);
-            const sePt = map.latLngToContainerPoint(seLL);
-            img.style.transform = `translate(${nwPt.x}px,${nwPt.y}px)`;
-            img.style.width = (sePt.x - nwPt.x) + 'px';
-            img.style.height = (sePt.y - nwPt.y) + 'px';
-            img.style.opacity = inst.opacity;
-          });
-        };
-
-        inst = { imgs, update, center: [...ov.center], scale: ov.scale || 1, rotation: ov.rotation || 0, opacity: ov.opacity ?? 1 };
-        instances.set(ov.id, inst);
-        map.on('move zoom viewreset zoomend', update);
-        update();
-      } else {
-        inst.center = [...ov.center];
-        inst.scale = ov.scale || 1;
-        inst.rotation = ov.rotation || 0;
-        inst.opacity = ov.opacity ?? 1;
-        inst.update();
-      }
-    });
-  }, [overlayDrafts, viewFloor, mapReady]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      for (const [, inst] of overlayInstancesRef.current) {
-        inst.imgs.forEach(img => img.remove());
-        mapRef.current?.off('move zoom viewreset zoomend', inst.update);
-      }
-      overlayInstancesRef.current.clear();
-    };
-  }, []);
-
-
-
-
-  // Overlay: enter implement mode
-  const handleAddOverlay = (catalogId) => {
-    const cat = OVERLAY_CATALOG.find(c => c.id === catalogId);
-    if (!cat) return;
-    const map = mapRef.current;
-    const center = map
-      ? (() => { const c = map.getCenter(); const pt = map.project(c, NATIVE_ZOOM); return [Math.round(pt.x), Math.round(pt.y)]; })()
-      : [MAP_W / 2, MAP_H / 2];
-    const placement = {
-      id: `${catalogId}-${Date.now().toString(36)}`,
-      catalogId: cat.id,
-      name: cat.name,
-      imageUrl: cat.imageUrl,
-      center,
-      scale: 1.0,
-      rotation: 0,
-      floor: viewFloor,
-      locked: false,
-      opacity: 0.75,
-      naturalWidth: cat.naturalWidth,
-      naturalHeight: cat.naturalHeight,
-    };
-    implementRef.current = { data: placement };
-    setImplementMode(placement.id);
-    setImplementValues({ center, scale: 1.0, rotation: 0, floor: viewFloor, opacity: 0.75 });
-  };
-
-  const handleUpdateOverlay = (id, patch) => {
-    const next = overlayDrafts.map(o => o.id === id ? { ...o, ...patch } : o);
-    setOverlayDrafts(next);
-    saveOverlayDrafts(next);
-  };
-
-  const handleDeleteOverlay = (id) => {
-    // Also remove any linked zone from the tree
-    const linkedZone = drafts.find(d => d.overlayId === id);
-    if (linkedZone) {
-      const nextDrafts = drafts.filter(d => d.id !== linkedZone.id);
-      setDrafts(nextDrafts);
-      saveDrafts(nextDrafts);
-    }
-    const next = overlayDrafts.filter(o => o.id !== id);
-    setOverlayDrafts(next);
-    saveOverlayDrafts(next);
-    if (activeOverlayId === id) setActiveOverlayId(null);
-  };
-
-  const overlayBoundsPolygon = (ov) => {
-    const nw = ov.naturalWidth || 4096;
-    const nh = ov.naturalHeight || 4096;
-    const s = ov.scale || 1;
-    const halfW = (nw * s) / 2;
-    const halfH = (nh * s) / 2;
-    const [cx, cy] = ov.center;
-    // Unrotated corners
-    const corners = [
-      [cx - halfW, cy - halfH],
-      [cx + halfW, cy - halfH],
-      [cx + halfW, cy + halfH],
-      [cx - halfW, cy + halfH],
-    ];
-    // Apply rotation around center
-    const rad = ((ov.rotation || 0) * Math.PI) / 180;
-    if (rad !== 0) {
-      const cos = Math.cos(rad), sin = Math.sin(rad);
-      return corners.map(([x, y]) => {
-        const dx = x - cx, dy = y - cy;
-        return [Math.round(cx + dx * cos - dy * sin), Math.round(cy + dx * sin + dy * cos)];
-      });
-    }
-    return corners.map(([x, y]) => [Math.round(x), Math.round(y)]);
-  };
-
-  const handleAddOverlayToTree = (ovId) => {
-    const ov = overlayDrafts.find(o => o.id === ovId);
-    if (!ov) return;
-    // Check if already linked
-    if (drafts.some(d => d.overlayId === ovId)) {
-      showToast('Already in tree');
-      return;
-    }
-    const polygon = overlayBoundsPolygon(ov);
-    const zoneId = `overlay-${ovId}`;
-    const zone = {
-      id: zoneId,
-      name: ov.name || 'Sub-map',
-      polygon,
-      overlayId: ovId,
-      level: ov.floor != null ? undefined : undefined,
-    };
-    const nextDrafts = [...drafts, zone];
-    setDrafts(nextDrafts);
-    saveDrafts(nextDrafts);
-    showToast(`"${zone.name}" added to tree`);
-  };
-
-  const handleRemoveOverlayFromTree = (ovId) => {
-    const nextDrafts = drafts.filter(d => d.overlayId !== ovId);
-    setDrafts(nextDrafts);
-    saveDrafts(nextDrafts);
-    showToast('Removed from tree');
-  };
-
-  // ── Implement mode: dedicated overlay placement ──
-  // Creates one overlay, disables everything else, gestures update DOM directly.
-  useEffect(() => {
-    if (!implementMode || !mapReady) return;
-    const map = mapRef.current;
-    const L = leafletRef.current;
-    if (!map || !L || !implementRef.current) { setImplementMode(null); return; }
-
-    const data = implementRef.current.data;
-    const nw = data.naturalWidth || 4096;
-    const nh = data.naturalHeight || 4096;
-    const live = {
-      center: [...data.center],
-      scale: data.scale || 1,
-      rotation: data.rotation || 0,
-      opacity: data.opacity ?? 0.75,
-      floor: data.floor ?? 0,
-    };
-
-    map.dragging.disable();
-    if (map.doubleClickZoom) map.doubleClickZoom.disable();
-    if (map.touchZoom) map.touchZoom.disable();
-
-    const pxToLL2 = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
-    const recomputeBounds = () => {
-      const hw = (nw * live.scale) / 2, hh = (nh * live.scale) / 2;
-      return L.latLngBounds(
-        pxToLL2([live.center[0] - hw, live.center[1] + hh]),
-        pxToLL2([live.center[0] + hw, live.center[1] - hh])
-      );
-    };
-    const url = (BASE + data.imageUrl).replace(/\/\//g, '/');
-    const overlay = L.imageOverlay(url, recomputeBounds(), {
-      interactive: true,
-      opacity: live.opacity,
-      className: 'map-overlay-img map-overlay-implement',
-    }).addTo(map);
-
-    const applyLive = () => {
-      overlay.setBounds(recomputeBounds());
-      overlay.setOpacity(live.opacity);
-      // Append rotation directly after setBounds
-      const img = overlay.getElement();
-      if (img && live.rotation) {
-        img.style.transformOrigin = 'center center';
-        img.style.transform += ` rotate(${Math.round(live.rotation)}deg)`;
-      }
-    };
-
-    const el = overlay.getElement();
-    if (!el) { setImplementMode(null); return; }
-    overlay._reset();
-    el.style.cursor = 'grab';
-    el.style.outline = '2px dashed #edaf18';
-    el.style.outlineOffset = '4px';
-
-    // Expose to sliders + lock handler
-    implementRef.current.updateLive = (patch) => {
-      Object.assign(live, patch);
-      applyLive();
-      setImplementValues(prev => ({ ...prev, ...patch }));
-      if (Object.prototype.hasOwnProperty.call(patch, 'floor') && Number.isFinite(patch.floor)) {
-        setViewFloor(patch.floor);
-      }
-    };
-    implementRef.current.getLive = () => ({ ...live });
-
-    // Gesture handlers — raw pixel math only, no Leaflet API during gesture.
-    // Screen px → map px: at zoom Z, 1 screen px = 2^(NATIVE_ZOOM - Z) map px.
-    let dragStart = null, pinchStart = null;
-
-    const onDown = (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-      gestureActiveRef.current = true;
-      if (evt.touches && evt.touches.length >= 2) {
-        const t1 = evt.touches[0], t2 = evt.touches[1];
-        pinchStart = {
-          dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
-          angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
-          initScale: live.scale,
-          initRotation: live.rotation,
-        };
-        dragStart = null;
-      } else {
-        const t = evt.touches ? evt.touches[0] : evt;
-        dragStart = { sx: t.clientX, sy: t.clientY, cx: live.center[0], cy: live.center[1] };
-        pinchStart = null;
-      }
-      el.style.cursor = 'grabbing';
-      document.addEventListener('mousemove', onMove, { passive: false });
-      document.addEventListener('mouseup', onUp);
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', onUp);
-    };
-
-    const onMove = (evt) => {
-      evt.preventDefault();
-      // Two-finger: pinch + rotate
-      if (evt.touches && evt.touches.length >= 2) {
-        if (!pinchStart) {
-          const t1 = evt.touches[0], t2 = evt.touches[1];
-          pinchStart = {
-            dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
-            angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
-            initScale: live.scale,
-            initRotation: live.rotation,
-          };
-          dragStart = null;
-          return;
-        }
-        const t1 = evt.touches[0], t2 = evt.touches[1];
-        const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-        const angle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
-        live.scale = Math.max(0.05, Math.min(10, pinchStart.initScale * (dist / pinchStart.dist)));
-        live.rotation = ((pinchStart.initRotation + (angle - pinchStart.angle)) % 360 + 360) % 360;
-        applyLive();
-        return;
-      }
-      // One-finger drag
-      if (dragStart) {
-        const t = evt.touches ? evt.touches[0] : evt;
-        const dxScreen = t.clientX - dragStart.sx;
-        const dyScreen = t.clientY - dragStart.sy;
-        const s = Math.pow(2, NATIVE_ZOOM - map.getZoom());
-        live.center = [Math.round(dragStart.cx + dxScreen * s), Math.round(dragStart.cy + dyScreen * s)];
-        applyLive();
-      }
-    };
-
-    const onUp = (evt) => {
-      if (evt.touches && evt.touches.length > 0) return;
-      dragStart = null;
-      pinchStart = null;
-      el.style.cursor = 'grab';
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onUp);
-      setImplementValues({ ...live });
-      setTimeout(() => { gestureActiveRef.current = false; }, 80);
-    };
-
-    el.addEventListener('mousedown', onDown);
-    el.addEventListener('touchstart', onDown, { passive: false });
-
-    return () => {
-      el.removeEventListener('mousedown', onDown);
-      el.removeEventListener('touchstart', onDown);
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onUp);
-      map.removeLayer(overlay);
-      map.dragging.enable();
-      if (map.doubleClickZoom) map.doubleClickZoom.enable();
-      if (map.touchZoom) map.touchZoom.enable();
-      gestureActiveRef.current = false;
-    };
-  }, [implementMode, mapReady]);
-
-  const handleImplementLockAndAdd = () => {
-    if (!implementRef.current) return;
-    const data = implementRef.current.data;
-    const live = implementRef.current.getLive();
-    const finalOverlay = {
-      ...data,
-      center: live.center,
-      scale: +live.scale.toFixed(3),
-      rotation: Math.round(live.rotation),
-      opacity: live.opacity,
-      floor: live.floor,
-      locked: true,
-    };
-    const nextOverlays = [...overlayDrafts, finalOverlay];
-    setOverlayDrafts(nextOverlays);
-    saveOverlayDrafts(nextOverlays);
-    const polygon = overlayBoundsPolygon(finalOverlay);
-    const zone = { id: `overlay-${finalOverlay.id}`, name: finalOverlay.name, polygon, overlayId: finalOverlay.id };
-    const nextDrafts = [...drafts, zone];
-    setDrafts(nextDrafts);
-    saveDrafts(nextDrafts);
-    setImplementMode(null);
-    setImplementValues(null);
-    implementRef.current = null;
-    showToast(`"${finalOverlay.name}" locked & added`);
-  };
-
-  const handleImplementCancel = () => {
-    setImplementMode(null);
-    setImplementValues(null);
-    implementRef.current = null;
-    showToast('Cancelled');
-  };
-
   // Triple-tap on header toggles author-enabled
   const handleHeaderTap = useCallback(() => {
     const now = Date.now();
@@ -1263,54 +856,6 @@ export default function MapTab({ navPadding = 80 }) {
           pointer-events: none;
         }
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .floor-picker {
-          position: absolute; top: 56px; left: 12px; z-index: 20;
-          display: flex; flex-direction: column; align-items: center; gap: 0;
-          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
-          border-radius: 3px; overflow: hidden;
-          box-shadow: 0 0 12px rgba(6, 10, 24, 0.6);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-        }
-        .floor-picker button {
-          background: transparent; border: none; color: ${COLOR_CANON};
-          padding: 4px 10px; cursor: pointer; font-size: 10px; width: 100%;
-          transition: background 120ms; -webkit-tap-highlight-color: transparent;
-        }
-        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); }
-        .floor-input {
-          width: 48px; padding: 2px 4px; font-size: 11px; color: #e8e8e8;
-          background: rgba(237, 175, 24, 0.08); border: none;
-          border-top: 1px solid rgba(237, 175, 24, 0.2);
-          border-bottom: 1px solid rgba(237, 175, 24, 0.2);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          text-align: center; outline: none;
-          -moz-appearance: textfield;
-        }
-        .floor-input::-webkit-inner-spin-button, .floor-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-        .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
-        .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
-        .overlay-row {
-          background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
-          border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
-        }
-        .overlay-row.is-active { border-color: ${COLOR_CANON}; background: rgba(237, 175, 24, 0.06); }
-        .overlay-row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-        .overlay-row .lock-badge {
-          font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
-          background: rgba(34, 197, 94, 0.18); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.4);
-          padding: 0 4px; border-radius: 2px;
-        }
-        .overlay-controls { display: flex; flex-direction: column; gap: 6px; }
-        .overlay-slider {
-          -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
-          background: rgba(237, 175, 24, 0.2); border-radius: 2px; outline: none;
-        }
-        .overlay-slider::-webkit-slider-thumb {
-          -webkit-appearance: none; appearance: none;
-          width: 14px; height: 14px; border-radius: 50%;
-          background: ${COLOR_CANON}; cursor: pointer;
-          border: 1.5px solid #080c14;
-        }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ position: 'relative', zIndex: 10 }}>
       <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
@@ -1321,16 +866,6 @@ export default function MapTab({ navPadding = 80 }) {
               className="leaflet-map-bg"
               style={{ position: 'absolute', inset: 0, background: MAP_BG, zIndex: 1 }}
             />
-            {floorDist > 0 && (
-              <div
-                style={{
-                  position: 'absolute', inset: 0, zIndex: 2,
-                  background: `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`,
-                  pointerEvents: 'none',
-                  transition: 'background 300ms',
-                }}
-              />
-            )}
             {status && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                 {status}
@@ -1357,71 +892,12 @@ export default function MapTab({ navPadding = 80 }) {
               </CardHeader>
             </div>
 
-            {/* Floor picker — always visible */}
-            <div className="floor-picker" role="group" aria-label="Floor level">
-              <button type="button" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
-              <input
-                type="number"
-                className="floor-input"
-                value={viewFloor}
-                onChange={(e) => { const v = parseInt(e.target.value, 10); if (Number.isFinite(v)) setViewFloor(v); }}
-                aria-label="Floor number"
-              />
-              <button type="button" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
-            </div>
-
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
 
-            {/* ── Implement mode panel ── */}
-            {implementMode && implementValues && (
-              <div className="zone-author-panel implement-panel" role="group" aria-label="Implement mode">
-                <div className="edit-banner" style={{ textAlign: 'center' }}>
-                  Placing <span className="edit-banner-name">{implementRef.current?.data?.name || 'sub-map'}</span>
-                </div>
-                <div className="hint" style={{ textAlign: 'center', fontSize: 9 }}>
-                  1 finger = drag · 2 fingers = pinch scale + twist rotate
-                </div>
-                <div className="row">
-                  <div className="field" style={{ flex: '0 0 70px' }}>
-                    <label>Floor</label>
-                    <div className="row" style={{ gap: 2 }}>
-                      <button className="zone-author-btn" type="button" onClick={() => implementRef.current?.updateLive({ floor: (implementValues.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
-                      <span style={{ minWidth: 24, textAlign: 'center' }}>{implementValues.floor ?? 0}</span>
-                      <button className="zone-author-btn" type="button" onClick={() => implementRef.current?.updateLive({ floor: (implementValues.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
-                    </div>
-                  </div>
-                  <div className="field" style={{ flex: '1 1 0' }}>
-                    <label>Scale ({(implementValues.scale ?? 1).toFixed(2)}×)</label>
-                    <input type="range" min="0.1" max="5" step="0.05" value={implementValues.scale ?? 1}
-                      onChange={(e) => implementRef.current?.updateLive({ scale: +e.target.value })}
-                      className="overlay-slider" />
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="field" style={{ flex: '1 1 0' }}>
-                    <label>Rotation ({Math.round(implementValues.rotation ?? 0)}°)</label>
-                    <input type="range" min="0" max="360" step="1" value={implementValues.rotation ?? 0}
-                      onChange={(e) => implementRef.current?.updateLive({ rotation: +e.target.value })}
-                      className="overlay-slider" />
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="field" style={{ flex: '1 1 0' }}>
-                    <label>Opacity ({Math.round((implementValues.opacity ?? 0.75) * 100)}%)</label>
-                    <input type="range" min="0.05" max="1" step="0.05" value={implementValues.opacity ?? 0.75}
-                      onChange={(e) => implementRef.current?.updateLive({ opacity: +e.target.value })}
-                      className="overlay-slider" />
-                  </div>
-                </div>
-                <div className="row">
-                  <button className="zone-author-btn is-active" type="button" onClick={handleImplementLockAndAdd} style={{ flex: 1 }}>Lock & Add to tree</button>
-                  <button className="zone-author-btn is-danger" type="button" onClick={handleImplementCancel}>Cancel</button>
-                </div>
-              </div>
             )}
 
-            {/* ── Zone author panel (hidden during implement mode) ── */}
-            {!implementMode && authorMode && panelCollapsed && (
+            {/* ── Zone author panel ── */}
+            {authorMode && panelCollapsed && (
               <button
                 type="button"
                 className="zone-author-collapsed"
@@ -1434,7 +910,7 @@ export default function MapTab({ navPadding = 80 }) {
                 <span className="caret">▲</span>
               </button>
             )}
-            {!implementMode && authorMode && !panelCollapsed && (
+            {authorMode && !panelCollapsed && (
               <div className="zone-author-panel" role="group" aria-label="Zone author controls">
                 <div className="panel-top-row">
                   {editingId ? (
@@ -1581,116 +1057,16 @@ export default function MapTab({ navPadding = 80 }) {
                   />
                 )}
 
-                {/* ── Overlays section ── */}
-                <div className="divider" />
-                <div className="drafts-head">
-                  <span>Sub-maps ({overlayDrafts.length})</span>
-                  <div className="row" style={{ gap: 4 }}>
-                    <button className="zone-author-btn" type="button" onClick={async () => {
-                      const data = { zones: drafts, overlays: overlayDrafts };
-                      const json = JSON.stringify(data, null, 2);
-                      try { await navigator.clipboard.writeText(json); showToast('Copied JSON'); }
-                      catch { showToast('Long-press textarea to copy'); }
-                      setJsonSnippet(json);
-                    }}>.JSON</button>
-                    <select
-                      className="zone-author-btn"
-                      value=""
-                      onChange={(e) => { if (e.target.value) handleAddOverlay(e.target.value); }}
-                      style={{ padding: '2px 8px', fontSize: 10, minWidth: 0 }}
-                    >
-                      <option value="">+ Add</option>
-                      {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
-                </div>
-                {overlayDrafts.map(ov => {
-                  const isActive = ov.id === activeOverlayId;
-                  return (
-                    <div key={ov.id} className={`overlay-row ${isActive ? 'is-active' : ''}`}>
-                      <div className="overlay-row-head">
-                        <span className="drname">
-                          <span className={`lvl-tag ${ov.floor === viewFloor ? '' : 'is-unset'}`}>F{ov.floor ?? 0}</span>
-                          <span className="drlabel">{ov.name}</span>
-                          {ov.locked && <span className="lock-badge">locked</span>}
-                        </span>
-                        <span className="row" style={{ gap: 4 }}>
-                          <button
-                            className="edit-btn"
-                            type="button"
-                            onClick={() => setActiveOverlayId(isActive ? null : ov.id)}
-                          >
-                            {isActive ? 'Close' : 'Edit'}
-                          </button>
-                          <button type="button" onClick={() => handleDeleteOverlay(ov.id)}>Del</button>
-                        </span>
-                      </div>
-                      {isActive && (
-                        <div className="overlay-controls">
-                          {!ov.locked && <div className="hint" style={{ fontSize: 9, marginBottom: 2 }}>1 finger = drag · 2 fingers = pinch scale + twist rotate</div>}
-                          <div className="row">
-                            <div className="field" style={{ flex: '0 0 70px' }}>
-                              <label>Floor</label>
-                              <div className="row" style={{ gap: 2 }}>
-                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
-                                <span style={{ minWidth: 24, textAlign: 'center' }}>{ov.floor ?? 0}</span>
-                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
-                              </div>
-                            </div>
-                            <div className="field" style={{ flex: '1 1 0' }}>
-                              <label>Scale ({(ov.scale ?? 1).toFixed(2)}×)</label>
-                              <input type="range" min="0.1" max="5" step="0.05" value={ov.scale ?? 1}
-                                onChange={(e) => handleUpdateOverlay(ov.id, { scale: +e.target.value })}
-                                className="overlay-slider" />
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="field" style={{ flex: '1 1 0' }}>
-                              <label>Rotation ({ov.rotation ?? 0}°)</label>
-                              <input type="range" min="0" max="360" step="1" value={ov.rotation ?? 0}
-                                onChange={(e) => handleUpdateOverlay(ov.id, { rotation: +e.target.value })}
-                                className="overlay-slider" />
-                            </div>
-                          </div>
-                          <div className="row">
-                            <div className="field" style={{ flex: '1 1 0' }}>
-                              <label>Opacity ({Math.round((ov.opacity ?? 1) * 100)}%)</label>
-                              <input type="range" min="0.05" max="1" step="0.05" value={ov.opacity ?? 1}
-                                onChange={(e) => handleUpdateOverlay(ov.id, { opacity: +e.target.value })}
-                                className="overlay-slider" />
-                            </div>
-                          </div>
-                          <div className="row">
-                            <button
-                              className={`zone-author-btn ${ov.locked ? 'is-active' : ''}`}
-                              type="button"
-                              onClick={() => handleUpdateOverlay(ov.id, { locked: !ov.locked })}
-                            >
-                              {ov.locked ? 'Unlock' : 'Lock'}
-                            </button>
-                            {ov.locked && (
-                              drafts.some(d => d.overlayId === ov.id)
-                                ? <button className="zone-author-btn is-danger" type="button" onClick={() => handleRemoveOverlayFromTree(ov.id)}>Remove from tree</button>
-                                : <button className="zone-author-btn is-active" type="button" onClick={() => handleAddOverlayToTree(ov.id)}>Add to tree</button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             )}
 
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
               <CardHeader>
-                {implementMode
-                  ? 'Implement mode · drag to place · Lock & Add when done'
-                  : authorMode
-                    ? (editingId
-                        ? `Editing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · tap Update to save`
-                        : `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`)
-                    : 'Pinch to zoom · Drag to pan'}
+                {authorMode
+                  ? (editingId
+                      ? `Editing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · tap Update to save`
+                      : `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`)
+                  : 'Pinch to zoom · Drag to pan'}
               </CardHeader>
             </div>
           </div>
