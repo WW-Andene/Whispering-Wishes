@@ -552,20 +552,22 @@ export default function MapTab({ navPadding = 80 }) {
         const nw = cat.naturalWidth, nh = cat.naturalHeight;
         const s = inst.current.scale ?? 1;
         const [cx, cy] = inst.current.center;
-        // Keep the <img> at its natural CSS size (nw × nh). Zoom is applied
-        // via transform: scale(). That way the compositor layer stays at the
-        // image's natural dimensions at every map zoom — well within GPU
-        // texture limits — so the browser never subdivides or reprojects the
-        // layer, and the picture stays perfectly flat.
+        // Size in display px = natural px × user scale × zoom factor relative
+        // to the native tile zoom. Aspect = natural aspect, always.
         const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
-        const totalScale = s * zoomFactor;
+        const w = nw * s * zoomFactor;
+        const h = nh * s * zoomFactor;
         const centerPt = map.latLngToContainerPoint(map.unproject([cx, cy], NATIVE_ZOOM));
-        const left = centerPt.x - nw / 2;
-        const top = centerPt.y - nh / 2;
-        inst.img.style.width = nw + 'px';
-        inst.img.style.height = nh + 'px';
-        inst.img.style.transformOrigin = `${nw / 2}px ${nh / 2}px`;
-        inst.img.style.transform = `translate(${left}px, ${top}px) rotate(${inst.current.rotation || 0}deg) scale(${totalScale})`;
+        // CSS width/height as integers so the browser rasterises on whole
+        // pixels; translate via translate3d so the transform lives on the GPU
+        // and sub-pixel precision doesn't smear the image at high zoom.
+        const wInt = Math.round(w), hInt = Math.round(h);
+        const left = centerPt.x - wInt / 2;
+        const top = centerPt.y - hInt / 2;
+        inst.img.style.width = wInt + 'px';
+        inst.img.style.height = hInt + 'px';
+        inst.img.style.transformOrigin = `${wInt / 2}px ${hInt / 2}px`;
+        inst.img.style.transform = `translate(${left}px, ${top}px) rotate(${inst.current.rotation || 0}deg)`;
         inst.img.style.opacity = inst.current.opacity ?? 1;
       };
       if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
