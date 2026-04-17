@@ -7,7 +7,7 @@ import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../dat
 const MAP_W = 16384;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
-const MAX_ZOOM = 6;
+const MAX_ZOOM = 10;
 const MAP_BG = '#062633';
 const MAP_BG_TRANSPARENT = 'rgba(6, 38, 51, 0.55)';
 const BASE = import.meta.env.BASE_URL || '/';
