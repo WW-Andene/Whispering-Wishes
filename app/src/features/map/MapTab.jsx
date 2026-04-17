@@ -439,31 +439,30 @@ export default function MapTab({ navPadding = 80 }) {
           el.style.outlineOffset = '2px';
         }
       }
-      // Append rotation to Leaflet's transform so it's applied AFTER
-      // translate3d positioning. Patch _reset so rotation survives zoom/pan.
-      if (ov.rotation) {
-        const appendRotation = () => {
-          const img = overlay.getElement();
-          if (img) {
-            img.style.transformOrigin = 'center center';
-            img.style.transform += ` rotate(${ov.rotation}deg)`;
-          }
-        };
-        appendRotation();
-        const origReset = overlay._reset;
-        overlay._reset = function () {
-          origReset.call(this);
-          appendRotation();
-        };
-      }
-
-      // Click to select in author mode
-      overlay.on('click', (e) => {
-        L.DomEvent.stopPropagation(e);
-        if (authorMode || authorEnabled) {
-          setActiveOverlayId(prev => prev === ov.id ? null : ov.id);
+      // Patch _reset to append rotation AFTER Leaflet's translate3d.
+      // Uses a mutable box so gesture code can update the rotation value.
+      const rotBox = { deg: ov.rotation || 0 };
+      overlay._ww_rotBox = rotBox;
+      const origReset = overlay._reset;
+      overlay._reset = function () {
+        origReset.call(this);
+        const img = this._image || overlay.getElement();
+        if (img) {
+          img.style.transformOrigin = 'center center';
+          if (rotBox.deg) img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
         }
-      });
+      };
+      if (overlay._map) overlay._reset();
+
+      // Click to select in author mode (locked overlays are inert)
+      if (!ov.locked) {
+        overlay.on('click', (e) => {
+          L.DomEvent.stopPropagation(e);
+          if (authorMode || authorEnabled) {
+            setActiveOverlayId(prev => prev === ov.id ? null : ov.id);
+          }
+        });
+      }
 
       // Gesture support — only the actively selected overlay.
       // DOM-only updates during gesture; state committed on finger-up.
@@ -495,11 +494,9 @@ export default function MapTab({ navPadding = 80 }) {
           const hw = (nw * liveScale) / 2, hh = (nh * liveScale) / 2;
           const swLL = pxToLL([liveCenter[0] - hw, liveCenter[1] + hh]);
           const neLL = pxToLL([liveCenter[0] + hw, liveCenter[1] - hh]);
+          rotBox.deg = liveRotation;
+          // setBounds triggers _reset which appends rotation from rotBox
           overlay.setBounds(L.latLngBounds(swLL, neLL));
-          if (liveRotation) {
-            el.style.transformOrigin = 'center center';
-            el.style.transform += ` rotate(${Math.round(liveRotation)}deg)`;
-          }
         };
 
         const cleanup = () => {
@@ -717,18 +714,6 @@ export default function MapTab({ navPadding = 80 }) {
         pxToLL2([live.center[0] + hw, live.center[1] - hh])
       );
     };
-    const applyLive = () => {
-      overlay.setBounds(recomputeBounds());
-      overlay.setOpacity(live.opacity);
-      // Append rotation to Leaflet's transform (setBounds sets translate3d,
-      // we add rotate AFTER so it rotates in place, not before positioning).
-      const img = overlay.getElement();
-      if (img && live.rotation) {
-        img.style.transformOrigin = 'center center';
-        img.style.transform += ` rotate(${Math.round(live.rotation)}deg)`;
-      }
-    };
-
     const url = (BASE + data.imageUrl).replace(/\/\//g, '/');
     const overlay = L.imageOverlay(url, recomputeBounds(), {
       interactive: true,
@@ -736,12 +721,27 @@ export default function MapTab({ navPadding = 80 }) {
       className: 'map-overlay-img map-overlay-implement',
     }).addTo(map);
 
+    // Patch _reset: single place for rotation, avoids stacking
+    const rotBox = { deg: live.rotation };
+    const origReset = overlay._reset;
+    overlay._reset = function () {
+      origReset.call(this);
+      const img = this._image;
+      if (img) {
+        img.style.transformOrigin = 'center center';
+        if (rotBox.deg) img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
+      }
+    };
+
+    const applyLive = () => {
+      rotBox.deg = live.rotation;
+      overlay.setBounds(recomputeBounds());
+      overlay.setOpacity(live.opacity);
+    };
+
     const el = overlay.getElement();
     if (!el) { setImplementMode(null); return; }
-    el.style.transformOrigin = 'center center';
-    if (live.rotation) {
-      el.style.transform += ` rotate(${live.rotation}deg)`;
-    }
+    overlay._reset();
     el.style.cursor = 'grab';
     el.style.outline = '2px dashed #edaf18';
     el.style.outlineOffset = '4px';
@@ -1519,7 +1519,7 @@ export default function MapTab({ navPadding = 80 }) {
                 {/* ── Overlays section ── */}
                 <div className="divider" />
                 <div className="drafts-head">
-                  <span>Sub-maps ({overlayDrafts.length})</span>
+                  <span>Sub-maps ({overlayDrafts.filter(o => !o.locked).length})</span>
                   <select
                     className="zone-author-btn"
                     value=""
@@ -1530,7 +1530,7 @@ export default function MapTab({ navPadding = 80 }) {
                     {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
-                {overlayDrafts.map(ov => {
+                {overlayDrafts.filter(ov => !ov.locked).map(ov => {
                   const isActive = ov.id === activeOverlayId;
                   return (
                     <div key={ov.id} className={`overlay-row ${isActive ? 'is-active' : ''}`}>
