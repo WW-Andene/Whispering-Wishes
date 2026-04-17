@@ -244,6 +244,29 @@ export default function MapTab({ navPadding = 80 }) {
     });
   }, []);
 
+  // Push a tree-promoted sub-map back into edit mode: remove the linked zone
+  // from drafts (so the overlay reappears in the Sub-maps list), unlock the
+  // overlay, turn on author mode + expand the panel, and mark the overlay as
+  // the one being edited so the user lands right in its edit controls.
+  const handlePushSubMapToEdit = useCallback((zone) => {
+    if (!zone || !zone.overlayId) return;
+    const ovId = zone.overlayId;
+    const nextDrafts = drafts.filter(d => d.id !== zone.id);
+    if (nextDrafts.length !== drafts.length) {
+      setDrafts(nextDrafts);
+      saveDrafts(nextDrafts);
+    }
+    const nextOverlays = overlayDrafts.map(o => o.id === ovId ? { ...o, locked: false } : o);
+    setOverlayDrafts(nextOverlays);
+    saveOverlayDrafts(nextOverlays);
+    setEditingOverlayId(ovId);
+    if (!authorMode) setAuthorMode(true);
+    setPanelCollapsed(false);
+    // Snap the view to the overlay's floor so the user sees what they're editing.
+    const ov = nextOverlays.find(o => o.id === ovId);
+    if (ov && Number.isFinite(ov.floor)) setViewFloor(ov.floor);
+  }, [drafts, overlayDrafts, authorMode]);
+
   // Tree of drafts only (canonical-parented drafts surface at root with breadcrumb).
   // Returns flat list in DFS traversal order, each node carrying { ...draft, depth, isLast }.
   const draftTree = useMemo(() => {
@@ -1489,6 +1512,23 @@ export default function MapTab({ navPadding = 80 }) {
           opacity: 0.7; flex-shrink: 0;
         }
         .zone-selector-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .zone-selector-row { display: flex; align-items: stretch; gap: var(--space-xs, 4px); }
+        .zone-selector-row .zone-selector-item { flex: 1 1 auto; }
+        .zone-selector-edit-btn {
+          flex: 0 0 auto;
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 28px;
+          background: var(--bg-btn);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          color: ${COLOR_CANON};
+          font-family: var(--font-display);
+          font-size: 14px;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 160ms, border-color 160ms;
+        }
+        .zone-selector-edit-btn:hover { background: rgba(237, 175, 24, 0.18); border-color: ${COLOR_CANON}; }
 
         .overlay-row {
           background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
@@ -1599,21 +1639,33 @@ export default function MapTab({ navPadding = 80 }) {
                       const expanded = expandedZones.has(zone.id);
                       return (
                         <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
-                          <button
-                            type="button"
-                            className="zone-selector-item"
-                            style={{ paddingLeft: `calc(var(--space-sm, 8px) + ${depth} * var(--space-md, 12px))` }}
-                            onClick={() => {
-                              switchFloorForZone(zone);
-                              if (hasChildren) toggleZoneExpanded(zone.id);
-                              else handleFlyToZone(zone);
-                            }}
-                            onDoubleClick={() => handleFlyToZone(zone)}
-                            aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
-                          >
-                            <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
-                            <span className="zone-selector-name">{zone.name || zone.id}</span>
-                          </button>
+                          <div className="zone-selector-row" style={{ paddingLeft: `calc(${depth} * var(--space-md, 12px))` }}>
+                            <button
+                              type="button"
+                              className="zone-selector-item"
+                              onClick={() => {
+                                switchFloorForZone(zone);
+                                if (hasChildren) toggleZoneExpanded(zone.id);
+                                else handleFlyToZone(zone);
+                              }}
+                              onDoubleClick={() => handleFlyToZone(zone)}
+                              aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
+                            >
+                              <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
+                              <span className="zone-selector-name">{zone.name || zone.id}</span>
+                            </button>
+                            {zone.overlayId && (
+                              <button
+                                type="button"
+                                className="zone-selector-edit-btn"
+                                onClick={(e) => { e.stopPropagation(); handlePushSubMapToEdit(zone); }}
+                                aria-label={`Push "${zone.name || zone.id}" back to sub-map editor`}
+                                title="Push back to sub-map editor"
+                              >
+                                ✎
+                              </button>
+                            )}
+                          </div>
                           {hasChildren && expanded && (
                             <div role="group">
                               {children.map(c => renderNode(c, depth + 1))}
