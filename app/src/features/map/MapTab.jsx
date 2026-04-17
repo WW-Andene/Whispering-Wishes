@@ -65,7 +65,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [activeOverlayId, setActiveOverlayId] = useState(null);
   const tileLayerRef = useRef(null);
   const overlayLayerRef = useRef(null);
-  const overlayDragRef = useRef(null);
+  const gestureActiveRef = useRef(false);
 
   // Set of descendant ids of the zone being edited — used to forbid circular parenting.
   const editingDescendants = useMemo(() => {
@@ -247,8 +247,7 @@ export default function MapTab({ navPadding = 80 }) {
     map.dragging.disable();
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
-      // If a canonical-zone popup opened from the same click, close it so it
-      // doesn't visually shift the view or cover the newly placed point.
+      if (gestureActiveRef.current) return;
       map.closePopup();
       const pt = map.project(e.latlng, MAX_ZOOM);
       setAuthorPoints(prev => [...prev, [Math.round(pt.x), Math.round(pt.y)]]);
@@ -449,10 +448,8 @@ export default function MapTab({ navPadding = 80 }) {
         }
       });
 
-      // Gesture support — only on the actively selected overlay.
-      // Updates the DOM directly (overlay.setBounds + el.style.rotate)
-      // during the gesture to avoid re-rendering the effect. State is
-      // committed once on release.
+      // Gesture support — only the actively selected overlay.
+      // DOM-only updates during gesture; state committed on finger-up.
       if (authorMode && !ov.locked && ov.id === activeOverlayId && el) {
         let dragStart = null;
         let pinchStart = null;
@@ -460,34 +457,48 @@ export default function MapTab({ navPadding = 80 }) {
         let liveScale = ov.scale || 1;
         let liveRotation = ov.rotation || 0;
 
-        const getTouchInfo = (touches) => {
+        // Convert screen point → map pixel coords via Leaflet's own math
+        const screenToMapPx = (clientX, clientY) => {
+          const rect = map.getContainer().getBoundingClientRect();
+          const cp = L.point(clientX - rect.left, clientY - rect.top);
+          const ll = map.containerPointToLatLng(cp);
+          const mp = map.project(ll, MAX_ZOOM);
+          return [mp.x, mp.y];
+        };
+
+        const getTwoFingerInfo = (touches) => {
           const t1 = touches[0], t2 = touches[1];
-          const dx2 = t2.clientX - t1.clientX, dy2 = t2.clientY - t1.clientY;
           return {
-            dist: Math.hypot(dx2, dy2),
-            angle: Math.atan2(dy2, dx2) * 180 / Math.PI,
+            dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
+            angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
           };
         };
 
         const applyLive = () => {
-          const halfW2 = (nw * liveScale) / 2;
-          const halfH2 = (nh * liveScale) / 2;
-          const sw2 = pxToLL([liveCenter[0] - halfW2, liveCenter[1] + halfH2]);
-          const ne2 = pxToLL([liveCenter[0] + halfW2, liveCenter[1] - halfH2]);
-          overlay.setBounds(L.latLngBounds(sw2, ne2));
+          const hw = (nw * liveScale) / 2, hh = (nh * liveScale) / 2;
+          const swLL = pxToLL([liveCenter[0] - hw, liveCenter[1] + hh]);
+          const neLL = pxToLL([liveCenter[0] + hw, liveCenter[1] - hh]);
+          overlay.setBounds(L.latLngBounds(swLL, neLL));
           el.style.rotate = liveRotation ? `${Math.round(liveRotation)}deg` : '';
+        };
+
+        const cleanup = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onUp);
         };
 
         const onDown = (evt) => {
           evt.stopPropagation();
           evt.preventDefault();
+          gestureActiveRef.current = true;
           if (evt.touches && evt.touches.length >= 2) {
-            const info = getTouchInfo(evt.touches);
-            pinchStart = { ...info, initScale: liveScale, initRotation: liveRotation };
+            pinchStart = { ...getTwoFingerInfo(evt.touches), initScale: liveScale, initRotation: liveRotation };
             dragStart = null;
           } else {
-            const touch = evt.touches ? evt.touches[0] : evt;
-            dragStart = { px: [touch.clientX, touch.clientY], center: [...liveCenter] };
+            const t = evt.touches ? evt.touches[0] : evt;
+            dragStart = { mapPx: screenToMapPx(t.clientX, t.clientY), center: [...liveCenter] };
             pinchStart = null;
           }
           el.style.cursor = 'grabbing';
@@ -499,29 +510,26 @@ export default function MapTab({ navPadding = 80 }) {
 
         const onMove = (evt) => {
           evt.preventDefault();
+          // Two-finger: pinch + rotate
           if (evt.touches && evt.touches.length >= 2) {
             if (!pinchStart) {
-              const info = getTouchInfo(evt.touches);
-              pinchStart = { ...info, initScale: liveScale, initRotation: liveRotation };
+              pinchStart = { ...getTwoFingerInfo(evt.touches), initScale: liveScale, initRotation: liveRotation };
               dragStart = null;
               return;
             }
-            const info = getTouchInfo(evt.touches);
+            const info = getTwoFingerInfo(evt.touches);
             liveScale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
-            const angleDelta = info.angle - pinchStart.angle;
-            liveRotation = ((pinchStart.initRotation + angleDelta) % 360 + 360) % 360;
+            liveRotation = ((pinchStart.initRotation + (info.angle - pinchStart.angle)) % 360 + 360) % 360;
             applyLive();
             return;
           }
+          // One-finger drag
           if (dragStart) {
-            const touch = evt.touches ? evt.touches[0] : evt;
-            const dx = touch.clientX - dragStart.px[0];
-            const dy = touch.clientY - dragStart.px[1];
-            const zoom = map.getZoom();
-            const scaleFactor = Math.pow(2, MAX_ZOOM - zoom);
+            const t = evt.touches ? evt.touches[0] : evt;
+            const nowPx = screenToMapPx(t.clientX, t.clientY);
             liveCenter = [
-              Math.round(dragStart.center[0] + dx * scaleFactor),
-              Math.round(dragStart.center[1] + dy * scaleFactor),
+              Math.round(dragStart.center[0] + (nowPx[0] - dragStart.mapPx[0])),
+              Math.round(dragStart.center[1] + (nowPx[1] - dragStart.mapPx[1])),
             ];
             applyLive();
           }
@@ -532,11 +540,9 @@ export default function MapTab({ navPadding = 80 }) {
           dragStart = null;
           pinchStart = null;
           el.style.cursor = 'grab';
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
-          document.removeEventListener('touchmove', onMove);
-          document.removeEventListener('touchend', onUp);
-          // Commit final values to state (single re-render)
+          cleanup();
+          // Brief delay so the click handler doesn't fire from this tap
+          setTimeout(() => { gestureActiveRef.current = false; }, 80);
           setOverlayDrafts(prev => {
             const next = prev.map(o => o.id === ov.id ? {
               ...o,
