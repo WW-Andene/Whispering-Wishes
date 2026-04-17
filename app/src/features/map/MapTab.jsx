@@ -1275,7 +1275,7 @@ export default function MapTab({ navPadding = 80 }) {
         .floor-picker {
           /* Float the picker var(--space-md) (12 px) below the kuro-header
              (actual height measured via ResizeObserver, applied as inline
-             `top`) and var(--space-md) from the card's left edge — same
+             top) and var(--space-md) from the card's left edge — same
              gap on top and sides. */
           position: absolute;
           left: var(--space-md, 12px);
