@@ -389,36 +389,24 @@ export default function MapTab({ navPadding = 80 }) {
     const L = leafletRef.current;
     if (!map || !L || !mapReady) return;
 
-    // Clear previous overlay layers + clear scrim
+    // Clear previous overlay layers
     if (overlayLayerRef.current) {
       map.removeLayer(overlayLayerRef.current);
       overlayLayerRef.current = null;
     }
-    // Clear any previous scrim rectangles
-    const scrimPane = map.getPane('scrim');
-    if (scrimPane) scrimPane.innerHTML = '';
 
-    // Floor scrim: dark rectangle OVER the map tiles, UNDER the overlays.
-    // Only the tile content darkens; the ocean/BG color stays unchanged.
+    // Floor scrim: CSS overlay between tiles and image overlays.
     const floorDist = Math.abs(viewFloor);
-    if (floorDist > 0) {
-      if (!map.getPane('scrim')) {
-        const sp = map.createPane('scrim');
-        sp.style.zIndex = '250';
-        sp.style.pointerEvents = 'none';
-      }
-      const tileBounds = L.latLngBounds(
-        map.unproject([0, MAP_H], NATIVE_ZOOM),
-        map.unproject([MAP_W, 0], NATIVE_ZOOM)
-      );
-      L.rectangle(tileBounds, {
-        pane: 'scrim',
-        stroke: false,
-        fillColor: '#000',
-        fillOpacity: Math.min(0.75, floorDist * 0.25),
-        interactive: false,
-      }).addTo(map);
-    }
+    const scrimPane = map.getPane('scrim') || (() => {
+      const sp = map.createPane('scrim');
+      sp.style.zIndex = '250';
+      sp.style.pointerEvents = 'none';
+      sp.style.transition = 'background 300ms';
+      return sp;
+    })();
+    scrimPane.style.background = floorDist > 0
+      ? `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`
+      : 'transparent';
 
     // Only show overlays on the current viewing floor
     const visibleOverlays = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
@@ -1257,8 +1245,7 @@ export default function MapTab({ navPadding = 80 }) {
           border-bottom: 1px solid rgba(237, 175, 24, 0.2);
           letter-spacing: 0.06em; text-align: center; min-width: 48px;
         }
-        .leaflet-overlay-pane { overflow: visible !important; }
-        .map-overlay-img { overflow: visible !important; }
+        .map-overlay-img { will-change: transform; }
         .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
         .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
         .overlay-row {
