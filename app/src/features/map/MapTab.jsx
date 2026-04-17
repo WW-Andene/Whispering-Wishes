@@ -205,6 +205,7 @@ export default function MapTab({ navPadding = 80 }) {
         zoomDelta: 0.5,
         attributionControl: false,
         zoomControl: false,
+        zoomAnimation: false,
       });
 
       const southWest = map.unproject([0, MAP_H], NATIVE_ZOOM);
