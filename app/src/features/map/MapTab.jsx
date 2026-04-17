@@ -1183,6 +1183,7 @@ export default function MapTab({ navPadding = 80 }) {
         .leaflet-map-pane, .leaflet-tile-pane, .leaflet-overlay-pane,
         .leaflet-tile, .leaflet-image-layer { transition: none !important; }
         .leaflet-map-pane { will-change: transform; }
+        .leaflet-overlay-pane svg { overflow: visible !important; }
         .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
         .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
         .overlay-row {

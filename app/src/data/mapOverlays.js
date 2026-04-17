@@ -16,6 +16,7 @@ export const OVERLAY_CATALOG = [
   {
     id: 'lahai-roi',
     name: 'Lahai Roi',
+    imageUrl: 'map-tiles/lahai_roi.webp',
     tiles: [
       { url: 'map-tiles/lahai_roi_0.0.webp', col: 0, row: 0 },
       { url: 'map-tiles/lahai_roi_1.0.webp', col: 1, row: 0 },
