@@ -49,7 +49,7 @@ export const OVERLAY_CATALOG = [
 // Hardcoded overlay placements — permanent, not editable from the UI.
 export const OVERLAY_PLACEMENTS = [
   {
-    id: 'lahai-roi-placed',
+    id: 'lahai-roi-mo2fbv8m',
     catalogId: 'lahai-roi',
     name: 'Lahai Roi',
     imageUrl: 'map-tiles/lahai_roi.webp',

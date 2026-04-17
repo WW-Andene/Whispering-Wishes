@@ -71,10 +71,10 @@ export const MAP_ZONES = [
     level: 1,
   },
   {
-    id: 'overlay-lahai-roi',
+    id: 'overlay-lahai-roi-mo2fbv8m',
     name: 'Lahai Roi',
     polygon: [[4317, 5182], [3196, 2543], [5835, 1422], [6956, 4061]],
-    overlayId: 'lahai-roi-placed',
+    overlayId: 'lahai-roi-mo2fbv8m',
     parentId: 'roya-frostlands',
     level: 2,
   },
