@@ -514,6 +514,7 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode]);
 
+  const floorDist = Math.abs(viewFloor);
 
   // Overlay renderer: raw <img> elements in the map container.
   // Bypasses Leaflet's pane system entirely — no pane reset, no position jump.
@@ -1307,6 +1308,16 @@ export default function MapTab({ navPadding = 80 }) {
               className="leaflet-map-bg"
               style={{ position: 'absolute', inset: 0, background: MAP_BG, zIndex: 1 }}
             />
+            {floorDist > 0 && (
+              <div
+                style={{
+                  position: 'absolute', inset: 0, zIndex: 2,
+                  background: `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`,
+                  pointerEvents: 'none',
+                  transition: 'background 300ms',
+                }}
+              />
+            )}
             {status && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                 {status}
