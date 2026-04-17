@@ -103,6 +103,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
   const [editingOverlayId, setEditingOverlayId] = useState(null);
   const [expandedZones, setExpandedZones] = useState(() => new Set());
+  const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
   const overlayImagesRef = useRef(new Map());      // catalogId → HTMLImageElement (decoded source)
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
@@ -176,6 +177,7 @@ export default function MapTab({ navPadding = 80 }) {
 
   const handleFlyToZone = useCallback((zone) => {
     const map = mapRef.current;
+    const L = leafletRef.current;
     if (!map) return;
     // Switch to the zone's floor if it is linked to a placed sub-map overlay.
     if (zone.overlayId) {
@@ -192,8 +194,20 @@ export default function MapTab({ navPadding = 80 }) {
     });
     const nw = map.unproject([minX, minY], NATIVE_ZOOM);
     const se = map.unproject([maxX, maxY], NATIVE_ZOOM);
+    // Zoom 25% tighter than the natural fit (scale × 1.25 → zoom + log2(1.25)).
+    const ZOOM_BOOST = Math.log2(1.25);
     try {
-      map.flyToBounds([nw, se], { duration: 0.6, padding: [40, 40] });
+      const bounds = L ? L.latLngBounds(nw, se) : null;
+      const fitZoom = bounds && typeof map.getBoundsZoom === 'function'
+        ? map.getBoundsZoom(bounds, false, [40, 40])
+        : null;
+      if (fitZoom != null) {
+        const targetZoom = Math.min(map.getMaxZoom(), fitZoom + ZOOM_BOOST);
+        const center = bounds.getCenter();
+        map.flyTo(center, targetZoom, { duration: 0.6 });
+      } else {
+        map.flyToBounds([nw, se], { duration: 0.6, padding: [40, 40] });
+      }
     } catch {
       map.fitBounds([nw, se], { padding: [40, 40] });
     }
@@ -1390,15 +1404,31 @@ export default function MapTab({ navPadding = 80 }) {
           box-shadow: var(--shadow-md);
           backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
         }
+        .zone-selector.is-collapsed { max-height: none; overflow: visible; }
         .zone-selector-head {
+          display: flex; align-items: center; gap: var(--space-xs, 4px);
+          width: 100%;
           font-family: var(--font-display);
           font-size: var(--font-base, 13px);
           color: var(--text-heading);
           letter-spacing: 0.04em;
           text-transform: uppercase;
-          padding: 0 var(--space-xs, 4px) var(--space-xs, 4px);
-          border-bottom: 1px solid var(--border-default);
-          margin-bottom: var(--space-xs, 4px);
+          background: var(--bg-btn);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 160ms, border-color 160ms, color 120ms;
+        }
+        .zone-selector-head:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
+        .zone-selector-count {
+          margin-left: auto;
+          font-size: 11px; opacity: 0.75;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-sm, 5px);
+          padding: 0 6px;
         }
         .zone-selector-list { display: flex; flex-direction: column; gap: 2px; }
         .zone-selector-empty {
@@ -1512,43 +1542,62 @@ export default function MapTab({ navPadding = 80 }) {
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
 
             {/* Zone selector — same var(--space-md) gap on top and right */}
-            <div className="zone-selector" role="tree" aria-label="Zones" style={{ top: `${headerHeight + 12}px` }}>
-              <div className="zone-selector-head">Zones</div>
-              <div className="zone-selector-list">
-                {(() => {
-                  const renderNode = (zone, depth) => {
-                    const children = zoneNav.get(zone.id) || [];
-                    const hasChildren = children.length > 0;
-                    const expanded = expandedZones.has(zone.id);
-                    return (
-                      <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
-                        <button
-                          type="button"
-                          className="zone-selector-item"
-                          style={{ paddingLeft: `calc(var(--space-sm, 8px) + ${depth} * var(--space-md, 12px))` }}
-                          onClick={() => { if (hasChildren) toggleZoneExpanded(zone.id); else handleFlyToZone(zone); }}
-                          onDoubleClick={() => handleFlyToZone(zone)}
-                          aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
-                        >
-                          <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
-                          {zone.level != null && <span className="lvl-tag">L{zone.level}</span>}
-                          <span className="zone-selector-name">{zone.name || zone.id}</span>
-                        </button>
-                        {hasChildren && expanded && (
-                          <div role="group">
-                            {children.map(c => renderNode(c, depth + 1))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  };
-                  const roots = zoneNav.get(null) || [];
-                  if (roots.length === 0) {
-                    return <div className="zone-selector-empty">No zones</div>;
-                  }
-                  return roots.map(z => renderNode(z, 0));
-                })()}
-              </div>
+            <div
+              className={`zone-selector ${zoneSelectorCollapsed ? 'is-collapsed' : ''}`}
+              role="tree"
+              aria-label="Zones"
+              aria-expanded={!zoneSelectorCollapsed}
+              style={{ top: `${headerHeight + 12}px` }}
+            >
+              <button
+                type="button"
+                className="zone-selector-head"
+                onClick={() => setZoneSelectorCollapsed(v => !v)}
+                aria-label={zoneSelectorCollapsed ? 'Expand zone selector' : 'Collapse zone selector'}
+              >
+                <span className="zone-selector-caret">{zoneSelectorCollapsed ? '▸' : '▾'}</span>
+                <span>Zones</span>
+                {zoneSelectorCollapsed && (zoneNav.get(null) || []).length > 0 && (
+                  <span className="zone-selector-count">{(zoneNav.get(null) || []).length}</span>
+                )}
+              </button>
+              {!zoneSelectorCollapsed && (
+                <div className="zone-selector-list">
+                  {(() => {
+                    const renderNode = (zone, depth) => {
+                      const children = zoneNav.get(zone.id) || [];
+                      const hasChildren = children.length > 0;
+                      const expanded = expandedZones.has(zone.id);
+                      return (
+                        <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
+                          <button
+                            type="button"
+                            className="zone-selector-item"
+                            style={{ paddingLeft: `calc(var(--space-sm, 8px) + ${depth} * var(--space-md, 12px))` }}
+                            onClick={() => { if (hasChildren) toggleZoneExpanded(zone.id); else handleFlyToZone(zone); }}
+                            onDoubleClick={() => handleFlyToZone(zone)}
+                            aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
+                          >
+                            <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
+                            {zone.level != null && <span className="lvl-tag">L{zone.level}</span>}
+                            <span className="zone-selector-name">{zone.name || zone.id}</span>
+                          </button>
+                          {hasChildren && expanded && (
+                            <div role="group">
+                              {children.map(c => renderNode(c, depth + 1))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    };
+                    const roots = zoneNav.get(null) || [];
+                    if (roots.length === 0) {
+                      return <div className="zone-selector-empty">No zones</div>;
+                    }
+                    return roots.map(z => renderNode(z, 0));
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* ── Zone author panel ── */}
