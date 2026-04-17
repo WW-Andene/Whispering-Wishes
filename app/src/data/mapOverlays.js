@@ -46,6 +46,24 @@ export const OVERLAY_CATALOG = [
 //   naturalHeight: number,
 // }
 
+// Hardcoded overlay placements — permanent, not editable from the UI.
+export const OVERLAY_PLACEMENTS = [
+  {
+    id: 'lahai-roi-placed',
+    catalogId: 'lahai-roi',
+    name: 'Lahai Roi',
+    imageUrl: 'map-tiles/lahai_roi.webp',
+    center: [5076, 3302],
+    scale: 0.7,
+    rotation: 247,
+    floor: -10,
+    locked: true,
+    opacity: 1,
+    naturalWidth: 4096,
+    naturalHeight: 4096,
+  },
+];
+
 const OVERLAY_DRAFTS_KEY = 'ww-overlay-drafts';
 
 export function loadOverlayDrafts() {

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
-import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
+import { OVERLAY_CATALOG, OVERLAY_PLACEMENTS, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 
 const MAP_W = 16384;
 const MAP_H = 16384;
@@ -400,7 +400,8 @@ export default function MapTab({ navPadding = 80 }) {
 
     const instances = overlayInstancesRef.current;
     const container = map.getContainer();
-    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
+    const allOverlays = [...OVERLAY_PLACEMENTS, ...overlayDrafts];
+    const visible = allOverlays.filter(ov => (ov.floor ?? 0) === viewFloor);
     const visibleIds = new Set(visible.map(ov => ov.id));
 
     for (const [id, inst] of instances) {
