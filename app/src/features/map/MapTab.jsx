@@ -7,7 +7,8 @@ import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../dat
 const MAP_W = 16384;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
-const MAX_ZOOM = 10;
+const NATIVE_ZOOM = 6;  // zoom level at which the 16384×16384 tile pyramid is defined
+const MAX_ZOOM = 10;    // how far the user can zoom in (tiles upscale beyond NATIVE_ZOOM)
 const MAP_BG = '#062633';
 const MAP_BG_TRANSPARENT = 'rgba(6, 38, 51, 0.55)';
 const BASE = import.meta.env.BASE_URL || '/';
@@ -155,7 +156,7 @@ export default function MapTab({ navPadding = 80 }) {
       const container = containerRef.current;
       const minZoom = Math.max(0, Math.ceil(Math.log2(
         Math.max(container.clientWidth / MAP_W, container.clientHeight / MAP_H)
-      ) + MAX_ZOOM));
+      ) + NATIVE_ZOOM));
 
       map = L.map(container, {
         crs: L.CRS.Simple,
@@ -168,16 +169,16 @@ export default function MapTab({ navPadding = 80 }) {
         zoomControl: false,
       });
 
-      const southWest = map.unproject([0, MAP_H], MAX_ZOOM);
-      const northEast = map.unproject([MAP_W, 0], MAX_ZOOM);
+      const southWest = map.unproject([0, MAP_H], NATIVE_ZOOM);
+      const northEast = map.unproject([MAP_W, 0], NATIVE_ZOOM);
       const bounds = L.latLngBounds(southWest, northEast);
 
       const cardInner = container.parentElement;
       const headerH = cardInner?.querySelector('.kuro-header')?.offsetHeight || 48;
       const footerH = cardInner?.querySelectorAll('.kuro-header')[1]?.offsetHeight || 48;
 
-      const scale = Math.pow(2, MAX_ZOOM - minZoom);
-      const pxToLat = (px) => map.unproject([0, 0], MAX_ZOOM).lat - map.unproject([0, px], MAX_ZOOM).lat;
+      const scale = Math.pow(2, NATIVE_ZOOM - minZoom);
+      const pxToLat = (px) => map.unproject([0, 0], NATIVE_ZOOM).lat - map.unproject([0, px], NATIVE_ZOOM).lat;
       const topPad = pxToLat(headerH) * scale;
       const bottomPad = pxToLat(footerH) * scale;
       // Extra breathing room on all four sides so edges aren't tight when
@@ -204,7 +205,7 @@ export default function MapTab({ navPadding = 80 }) {
       tileLayerRef.current = tileLayer;
 
       // Canonical zone overlays — render parents first, then sub-zones on top
-      const pxToLatLng = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
+      const pxToLatLng = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
       const sorted = [...MAP_ZONES].sort((a, b) => (a.parentId ? 1 : 0) - (b.parentId ? 1 : 0));
       sorted.forEach(zone => {
         if (!Array.isArray(zone.polygon) || zone.polygon.length < 3) return;
@@ -253,7 +254,7 @@ export default function MapTab({ navPadding = 80 }) {
     const handler = (e) => {
       if (gestureActiveRef.current) return;
       map.closePopup();
-      const pt = map.project(e.latlng, MAX_ZOOM);
+      const pt = map.project(e.latlng, NATIVE_ZOOM);
       setAuthorPoints(prev => [...prev, [Math.round(pt.x), Math.round(pt.y)]]);
     };
     map.on('click', handler);
@@ -274,7 +275,7 @@ export default function MapTab({ navPadding = 80 }) {
     }
     if (!authorMode || authorPoints.length === 0) return;
     const group = L.layerGroup();
-    const latLngs = authorPoints.map(([x, y]) => map.unproject([x, y], MAX_ZOOM));
+    const latLngs = authorPoints.map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
 
     // Outline
     if (latLngs.length >= 3) {
@@ -298,7 +299,7 @@ export default function MapTab({ navPadding = 80 }) {
       });
       const marker = L.marker(ll, { draggable: true, icon, autoPan: false, keyboard: false });
       marker.on('dragend', (e) => {
-        const np = map.project(e.target.getLatLng(), MAX_ZOOM);
+        const np = map.project(e.target.getLatLng(), NATIVE_ZOOM);
         const clamped = [
           Math.max(0, Math.min(MAP_W, Math.round(np.x))),
           Math.max(0, Math.min(MAP_H, Math.round(np.y))),
@@ -319,7 +320,7 @@ export default function MapTab({ navPadding = 80 }) {
         const a = authorPoints[i];
         const b = authorPoints[(i + 1) % authorPoints.length];
         const midPx = [Math.round((a[0] + b[0]) / 2), Math.round((a[1] + b[1]) / 2)];
-        const midLL = map.unproject(midPx, MAX_ZOOM);
+        const midLL = map.unproject(midPx, NATIVE_ZOOM);
         const ghostIcon = L.divIcon({
           className: 'zone-author-ghost-icon',
           html: '<span class="zone-author-ghost">+</span>',
@@ -360,7 +361,7 @@ export default function MapTab({ navPadding = 80 }) {
     sorted.forEach(z => {
       if (!Array.isArray(z.polygon) || z.polygon.length < 3) return;
       const isSub = !!z.parentId;
-      const latLngs = z.polygon.map(([x, y]) => map.unproject([x, y], MAX_ZOOM));
+      const latLngs = z.polygon.map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
       const poly = L.polygon(latLngs, {
         color: COLOR_DRAFT,
         weight: isSub ? 1 : 1.5,
@@ -410,8 +411,8 @@ export default function MapTab({ navPadding = 80 }) {
         sp.style.pointerEvents = 'none';
       }
       const tileBounds = L.latLngBounds(
-        map.unproject([0, MAP_H], MAX_ZOOM),
-        map.unproject([MAP_W, 0], MAX_ZOOM)
+        map.unproject([0, MAP_H], NATIVE_ZOOM),
+        map.unproject([MAP_W, 0], NATIVE_ZOOM)
       );
       L.rectangle(tileBounds, {
         pane: 'scrim',
@@ -429,7 +430,7 @@ export default function MapTab({ navPadding = 80 }) {
     // Add group to map FIRST so overlay.addTo(group) triggers onAdd
     // immediately, making getElement() available for style/gesture setup.
     const group = L.layerGroup().addTo(map);
-    const pxToLL = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
+    const pxToLL = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
 
     visibleOverlays.forEach(ov => {
       if (!ov.center || !ov.imageUrl) return;
@@ -509,7 +510,7 @@ export default function MapTab({ navPadding = 80 }) {
           const rect = map.getContainer().getBoundingClientRect();
           const cp = L.point(clientX - rect.left, clientY - rect.top);
           const ll = map.containerPointToLatLng(cp);
-          const mp = map.project(ll, MAX_ZOOM);
+          const mp = map.project(ll, NATIVE_ZOOM);
           return [mp.x, mp.y];
         };
 
@@ -626,7 +627,7 @@ export default function MapTab({ navPadding = 80 }) {
     if (!cat) return;
     const map = mapRef.current;
     const center = map
-      ? (() => { const c = map.getCenter(); const pt = map.project(c, MAX_ZOOM); return [Math.round(pt.x), Math.round(pt.y)]; })()
+      ? (() => { const c = map.getCenter(); const pt = map.project(c, NATIVE_ZOOM); return [Math.round(pt.x), Math.round(pt.y)]; })()
       : [MAP_W / 2, MAP_H / 2];
     const placement = {
       id: `${catalogId}-${Date.now().toString(36)}`,
@@ -746,7 +747,7 @@ export default function MapTab({ navPadding = 80 }) {
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     if (map.touchZoom) map.touchZoom.disable();
 
-    const pxToLL2 = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
+    const pxToLL2 = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
     const recomputeBounds = () => {
       const hw = (nw * live.scale) / 2, hh = (nh * live.scale) / 2;
       return L.latLngBounds(
@@ -788,7 +789,7 @@ export default function MapTab({ navPadding = 80 }) {
     implementRef.current.getLive = () => ({ ...live });
 
     // Gesture handlers — raw pixel math only, no Leaflet API during gesture.
-    // Screen px → map px: at zoom Z, 1 screen px = 2^(MAX_ZOOM - Z) map px.
+    // Screen px → map px: at zoom Z, 1 screen px = 2^(NATIVE_ZOOM - Z) map px.
     let dragStart = null, pinchStart = null;
 
     const onDown = (evt) => {
@@ -844,7 +845,7 @@ export default function MapTab({ navPadding = 80 }) {
         const t = evt.touches ? evt.touches[0] : evt;
         const dxScreen = t.clientX - dragStart.sx;
         const dyScreen = t.clientY - dragStart.sy;
-        const s = Math.pow(2, MAX_ZOOM - map.getZoom());
+        const s = Math.pow(2, NATIVE_ZOOM - map.getZoom());
         live.center = [Math.round(dragStart.cx + dxScreen * s), Math.round(dragStart.cy + dyScreen * s)];
         applyLive();
       }
