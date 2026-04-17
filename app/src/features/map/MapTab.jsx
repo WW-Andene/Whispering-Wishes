@@ -449,8 +449,8 @@ export default function MapTab({ navPadding = 80 }) {
         }
       });
 
-      // Gesture support: drag (1 finger) + pinch-to-scale + twist-to-rotate (2 fingers)
-      if (authorMode && !ov.locked && el) {
+      // Gesture support — only on the actively selected overlay
+      if (authorMode && !ov.locked && ov.id === activeOverlayId && el) {
         let dragStart = null;
         let pinchStart = null;
 
