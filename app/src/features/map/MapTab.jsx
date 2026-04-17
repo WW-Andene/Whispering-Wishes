@@ -69,6 +69,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [activeOverlayId, setActiveOverlayId] = useState(null);
   const tileLayerRef = useRef(null);
   const overlayLayerRef = useRef(null);
+  const overlayInstancesRef = useRef(new Map()); // id → L.imageOverlay (persistent)
   const gestureActiveRef = useRef(false);
 
   // Set of descendant ids of the zone being edited — used to forbid circular parenting.
@@ -384,19 +385,10 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady]);
 
-  // Render image overlays + apply floor-based brightness
+  // Scrim: CSS overlay for floor dimming (lightweight, separate from overlays)
   useEffect(() => {
     const map = mapRef.current;
-    const L = leafletRef.current;
-    if (!map || !L || !mapReady) return;
-
-    // Clear previous overlay layers
-    if (overlayLayerRef.current) {
-      map.removeLayer(overlayLayerRef.current);
-      overlayLayerRef.current = null;
-    }
-
-    // Floor scrim: CSS overlay between tiles and image overlays.
+    if (!map || !mapReady) return;
     const floorDist = Math.abs(viewFloor);
     const scrimPane = map.getPane('scrim') || (() => {
       const sp = map.createPane('scrim');
@@ -408,189 +400,93 @@ export default function MapTab({ navPadding = 80 }) {
     scrimPane.style.background = floorDist > 0
       ? `rgba(0, 0, 0, ${Math.min(0.75, floorDist * 0.25)})`
       : 'transparent';
+  }, [viewFloor, mapReady]);
 
-    // Only show overlays on the current viewing floor
-    const visibleOverlays = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
-    if (visibleOverlays.length === 0) return;
+  // Persistent overlay instances — created once, updated in place.
+  // Image is decoded once by the browser and stays in GPU memory.
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = leafletRef.current;
+    if (!map || !L || !mapReady) return;
 
-    // Add group to map FIRST so overlay.addTo(group) triggers onAdd
-    // immediately, making getElement() available for style/gesture setup.
-    const group = L.layerGroup().addTo(map);
+    const instances = overlayInstancesRef.current;
     const pxToLL = ([x, y]) => map.unproject([x, y], NATIVE_ZOOM);
+    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
+    const visibleIds = new Set(visible.map(ov => ov.id));
 
-    visibleOverlays.forEach(ov => {
+    // Remove overlays no longer visible (floor changed, deleted, etc.)
+    for (const [id, overlay] of instances) {
+      if (!visibleIds.has(id)) {
+        map.removeLayer(overlay);
+        instances.delete(id);
+      }
+    }
+
+    // Add or update visible overlays
+    visible.forEach(ov => {
       if (!ov.center) return;
       const nw = ov.naturalWidth || 8192;
       const nh = ov.naturalHeight || 8192;
       const s = ov.scale || 1;
-      const halfW = (nw * s) / 2;
-      const halfH = (nh * s) / 2;
+      const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
       const [cx, cy] = ov.center;
       const sw = pxToLL([cx - halfW, cy + halfH]);
       const ne = pxToLL([cx + halfW, cy - halfH]);
       const bounds = L.latLngBounds(sw, ne);
-      const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
-      const url = (BASE + (cat?.imageUrl || ov.imageUrl || cat?.tiles?.[0]?.url || '')).replace(/\/\//g, '/');
-      const overlay = L.imageOverlay(url, bounds, {
-        interactive: !ov.locked,
-        className: 'map-overlay-img',
-        opacity: ov.opacity ?? 1,
-      });
-      overlay.addTo(group);
 
-      const el = overlay.getElement?.();
-      if (el) {
-        if (ov.locked) {
-          el.style.pointerEvents = 'none';
-        } else {
-          el.style.cursor = 'grab';
-          if (ov.id === activeOverlayId) {
-            el.style.outline = '2px solid #edaf18';
-            el.style.outlineOffset = '2px';
-          }
-        }
-      }
+      let overlay = instances.get(ov.id);
+      if (!overlay) {
+        // Create once — browser decodes image once, keeps in GPU memory
+        const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+        const url = (BASE + (cat?.imageUrl || ov.imageUrl || '')).replace(/\/\//g, '/');
+        overlay = L.imageOverlay(url, bounds, {
+          interactive: !ov.locked,
+          className: 'map-overlay-img',
+          opacity: ov.opacity ?? 1,
+        }).addTo(map);
+        instances.set(ov.id, overlay);
 
-      // Rotation via _reset patch — synchronous, no frame gap.
-      const rotBox = { deg: ov.rotation || 0 };
-      if (rotBox.deg) {
+        // Patch _reset once — persists for overlay lifetime
         const origReset = overlay._reset;
+        overlay._ww_rotDeg = ov.rotation || 0;
         overlay._reset = function () {
           origReset.call(this);
           const img = this._image;
-          if (img) {
+          if (img && this._ww_rotDeg) {
             img.style.transformOrigin = 'center center';
-            img.style.transform += ` rotate(${Math.round(rotBox.deg)}deg)`;
+            img.style.transform += ` rotate(${Math.round(this._ww_rotDeg)}deg)`;
           }
         };
-        if (overlay._map) overlay._reset();
+        overlay._reset();
+      } else {
+        // Update in place — no DOM destruction, no image re-decode
+        overlay.setBounds(bounds);
+        overlay.setOpacity(ov.opacity ?? 1);
+        overlay._ww_rotDeg = ov.rotation || 0;
       }
 
-      // Click to select in author mode (locked overlays are inert)
-      if (!ov.locked) {
-        overlay.on('click', (e) => {
-          L.DomEvent.stopPropagation(e);
-          if (authorMode || authorEnabled) {
-            setActiveOverlayId(prev => prev === ov.id ? null : ov.id);
-          }
-        });
-      }
-
-      // Gesture support — only the actively selected overlay.
-      // DOM-only updates during gesture; state committed on finger-up.
-      if (authorMode && !ov.locked && ov.id === activeOverlayId && el) {
-        let dragStart = null;
-        let pinchStart = null;
-        let liveCenter = [...ov.center];
-        let liveScale = ov.scale || 1;
-        let liveRotation = ov.rotation || 0;
-
-        // Convert screen point → map pixel coords via Leaflet's own math
-        const screenToMapPx = (clientX, clientY) => {
-          const rect = map.getContainer().getBoundingClientRect();
-          const cp = L.point(clientX - rect.left, clientY - rect.top);
-          const ll = map.containerPointToLatLng(cp);
-          const mp = map.project(ll, NATIVE_ZOOM);
-          return [mp.x, mp.y];
-        };
-
-        const getTwoFingerInfo = (touches) => {
-          const t1 = touches[0], t2 = touches[1];
-          return {
-            dist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
-            angle: Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI,
-          };
-        };
-
-        const applyLive = () => {
-          const hw = (nw * liveScale) / 2, hh = (nh * liveScale) / 2;
-          const swLL = pxToLL([liveCenter[0] - hw, liveCenter[1] + hh]);
-          const neLL = pxToLL([liveCenter[0] + hw, liveCenter[1] - hh]);
-          rotBox.deg = liveRotation;
-          // setBounds calls patched _reset which appends rotation
-          overlay.setBounds(L.latLngBounds(swLL, neLL));
-        };
-
-        const cleanup = () => {
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
-          document.removeEventListener('touchmove', onMove);
-          document.removeEventListener('touchend', onUp);
-        };
-
-        const onDown = (evt) => {
-          evt.stopPropagation();
-          evt.preventDefault();
-          gestureActiveRef.current = true;
-          if (evt.touches && evt.touches.length >= 2) {
-            pinchStart = { ...getTwoFingerInfo(evt.touches), initScale: liveScale, initRotation: liveRotation };
-            dragStart = null;
-          } else {
-            const t = evt.touches ? evt.touches[0] : evt;
-            dragStart = { mapPx: screenToMapPx(t.clientX, t.clientY), center: [...liveCenter] };
-            pinchStart = null;
-          }
-          el.style.cursor = 'grabbing';
-          document.addEventListener('mousemove', onMove, { passive: false });
-          document.addEventListener('mouseup', onUp);
-          document.addEventListener('touchmove', onMove, { passive: false });
-          document.addEventListener('touchend', onUp);
-        };
-
-        const onMove = (evt) => {
-          evt.preventDefault();
-          // Two-finger: pinch + rotate
-          if (evt.touches && evt.touches.length >= 2) {
-            if (!pinchStart) {
-              pinchStart = { ...getTwoFingerInfo(evt.touches), initScale: liveScale, initRotation: liveRotation };
-              dragStart = null;
-              return;
-            }
-            const info = getTwoFingerInfo(evt.touches);
-            liveScale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
-            liveRotation = ((pinchStart.initRotation + (info.angle - pinchStart.angle)) % 360 + 360) % 360;
-            applyLive();
-            return;
-          }
-          // One-finger drag
-          if (dragStart) {
-            const t = evt.touches ? evt.touches[0] : evt;
-            const nowPx = screenToMapPx(t.clientX, t.clientY);
-            liveCenter = [
-              Math.round(dragStart.center[0] + (nowPx[0] - dragStart.mapPx[0])),
-              Math.round(dragStart.center[1] + (nowPx[1] - dragStart.mapPx[1])),
-            ];
-            applyLive();
-          }
-        };
-
-        const onUp = (evt) => {
-          if (evt.touches && evt.touches.length > 0) return;
-          dragStart = null;
-          pinchStart = null;
-          el.style.cursor = 'grab';
-          cleanup();
-          // Brief delay so the click handler doesn't fire from this tap
-          setTimeout(() => { gestureActiveRef.current = false; }, 80);
-          setOverlayDrafts(prev => {
-            const next = prev.map(o => o.id === ov.id ? {
-              ...o,
-              center: liveCenter,
-              scale: +liveScale.toFixed(3),
-              rotation: Math.round(liveRotation),
-            } : o);
-            saveOverlayDrafts(next);
-            return next;
-          });
-        };
-
-        el.addEventListener('mousedown', onDown);
-        el.addEventListener('touchstart', onDown, { passive: false });
+      // Style updates (lightweight, no layout change)
+      const el = overlay.getElement?.();
+      if (el) {
+        el.style.pointerEvents = ov.locked ? 'none' : '';
+        el.style.cursor = ov.locked ? 'default' : 'grab';
+        el.style.outline = (!ov.locked && ov.id === activeOverlayId) ? '2px solid #edaf18' : '';
+        el.style.outlineOffset = (!ov.locked && ov.id === activeOverlayId) ? '2px' : '';
       }
     });
+  }, [overlayDrafts, viewFloor, mapReady, activeOverlayId]);
 
-    overlayLayerRef.current = group;
-  }, [overlayDrafts, viewFloor, mapReady, authorMode, authorEnabled, activeOverlayId]);
+  // Cleanup persistent overlays on unmount only
+  useEffect(() => {
+    return () => {
+      const map = mapRef.current;
+      if (map) {
+        for (const [, ov] of overlayInstancesRef.current) map.removeLayer(ov);
+      }
+      overlayInstancesRef.current.clear();
+    };
+  }, []);
+
 
   // Overlay: enter implement mode
   const handleAddOverlay = (catalogId) => {
