@@ -404,7 +404,9 @@ export default function MapTab({ navPadding = 80 }) {
     const visibleOverlays = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
     if (visibleOverlays.length === 0) return;
 
-    const group = L.layerGroup();
+    // Add group to map FIRST so overlay.addTo(group) triggers onAdd
+    // immediately, making getElement() available for style/gesture setup.
+    const group = L.layerGroup().addTo(map);
     const pxToLL = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
 
     visibleOverlays.forEach(ov => {
@@ -428,8 +430,10 @@ export default function MapTab({ navPadding = 80 }) {
 
       const el = overlay.getElement?.();
       if (el) {
+        // Use CSS `rotate` property — independent from Leaflet's
+        // `transform: translate3d(...)` positioning so they don't conflict.
         el.style.transformOrigin = 'center center';
-        el.style.transform = ov.rotation ? `rotate(${ov.rotation}deg)` : '';
+        el.style.rotate = ov.rotation ? `${ov.rotation}deg` : '';
         el.style.cursor = ov.locked ? 'default' : 'grab';
         if (ov.id === activeOverlayId) {
           el.style.outline = '2px solid #edaf18';
@@ -537,7 +541,6 @@ export default function MapTab({ navPadding = 80 }) {
       }
     });
 
-    group.addTo(map);
     overlayLayerRef.current = group;
   }, [overlayDrafts, viewFloor, mapReady, authorMode, authorEnabled, activeOverlayId]);
 
