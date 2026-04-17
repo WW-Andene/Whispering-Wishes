@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
+import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 
 const MAP_W = 16384;
 const MAP_H = 16384;
@@ -94,6 +95,12 @@ export default function MapTab({ navPadding = 80 }) {
   const [jsonSnippet, setJsonSnippet] = useState('');
   const [toast, setToast] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+
+  // Sub-map overlay state
+  const [viewFloor, setViewFloor] = useState(0);
+  const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
+  const [editingOverlayId, setEditingOverlayId] = useState(null);
+  const overlayImgsRef = useRef(new Map()); // id → { img, update }
 
   const tileLayerRef = useRef(null);
   const gestureActiveRef = useRef(false);
@@ -507,6 +514,108 @@ export default function MapTab({ navPadding = 80 }) {
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode]);
 
+  // Sub-map overlay renderer. One <img> per placement on the current floor,
+  // repositioned on every map move/zoom via latLngToContainerPoint. Renders
+  // above the Leaflet tile pane so the sub-map sits on top of the base map.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const container = map.getContainer();
+    const imgs = overlayImgsRef.current;
+    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
+    const visibleIds = new Set(visible.map(o => o.id));
+
+    for (const [id, inst] of imgs) {
+      if (!visibleIds.has(id)) {
+        if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
+        inst.img.remove();
+        imgs.delete(id);
+      }
+    }
+
+    visible.forEach(ov => {
+      const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+      if (!cat) return;
+      let inst = imgs.get(ov.id);
+      if (!inst) {
+        const img = document.createElement('img');
+        img.src = (BASE + cat.imageUrl).replace(/\/\//g, '/');
+        img.draggable = false;
+        img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:400;will-change:transform;';
+        container.appendChild(img);
+        inst = { img, update: null, current: ov };
+        imgs.set(ov.id, inst);
+      }
+      inst.current = ov;
+      const update = () => {
+        const nw = cat.naturalWidth, nh = cat.naturalHeight;
+        const s = inst.current.scale ?? 1;
+        const [cx, cy] = inst.current.center;
+        const halfW = (nw * s) / 2, halfH = (nh * s) / 2;
+        const nwPt = map.latLngToContainerPoint(map.unproject([cx - halfW, cy - halfH], NATIVE_ZOOM));
+        const sePt = map.latLngToContainerPoint(map.unproject([cx + halfW, cy + halfH], NATIVE_ZOOM));
+        const w = sePt.x - nwPt.x, h = sePt.y - nwPt.y;
+        inst.img.style.width = w + 'px';
+        inst.img.style.height = h + 'px';
+        inst.img.style.transformOrigin = `${w / 2}px ${h / 2}px`;
+        inst.img.style.transform = `translate(${nwPt.x}px, ${nwPt.y}px) rotate(${inst.current.rotation || 0}deg)`;
+        inst.img.style.opacity = inst.current.opacity ?? 1;
+      };
+      if (inst.update) map.off('move zoom viewreset zoomend', inst.update);
+      inst.update = update;
+      map.on('move zoom viewreset zoomend', update);
+      update();
+    });
+  }, [overlayDrafts, viewFloor, mapReady]);
+
+  // Cleanup sub-map imgs on unmount
+  useEffect(() => {
+    return () => {
+      const map = mapRef.current;
+      for (const [, inst] of overlayImgsRef.current) {
+        if (inst.update && map) map.off('move zoom viewreset zoomend', inst.update);
+        inst.img.remove();
+      }
+      overlayImgsRef.current.clear();
+    };
+  }, []);
+
+  const handleAddOverlay = useCallback((catalogId) => {
+    const cat = OVERLAY_CATALOG.find(c => c.id === catalogId);
+    if (!cat) return;
+    const map = mapRef.current;
+    const center = map
+      ? (() => { const c = map.getCenter(); const pt = map.project(c, NATIVE_ZOOM); return [Math.round(pt.x), Math.round(pt.y)]; })()
+      : [MAP_W / 2, MAP_H / 2];
+    const ov = {
+      id: `${catalogId}-${Date.now().toString(36)}`,
+      catalogId: cat.id,
+      name: cat.name,
+      center,
+      scale: 1,
+      rotation: 0,
+      floor: viewFloor,
+      opacity: 1,
+    };
+    const next = [...overlayDrafts, ov];
+    setOverlayDrafts(next);
+    saveOverlayDrafts(next);
+    setEditingOverlayId(ov.id);
+  }, [overlayDrafts, viewFloor]);
+
+  const handleUpdateOverlay = useCallback((id, patch) => {
+    const next = overlayDrafts.map(o => o.id === id ? { ...o, ...patch } : o);
+    setOverlayDrafts(next);
+    saveOverlayDrafts(next);
+  }, [overlayDrafts]);
+
+  const handleDeleteOverlay = useCallback((id) => {
+    const next = overlayDrafts.filter(o => o.id !== id);
+    setOverlayDrafts(next);
+    saveOverlayDrafts(next);
+    if (editingOverlayId === id) setEditingOverlayId(null);
+  }, [overlayDrafts, editingOverlayId]);
+
   // Triple-tap on header toggles author-enabled
   const handleHeaderTap = useCallback(() => {
     const now = Date.now();
@@ -856,6 +965,47 @@ export default function MapTab({ navPadding = 80 }) {
           pointer-events: none;
         }
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+        .floor-picker {
+          position: absolute; top: 56px; right: 12px; z-index: 20;
+          display: flex; flex-direction: column; align-items: stretch; gap: 0;
+          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
+          border-radius: 3px; overflow: hidden;
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+        }
+        .floor-picker button {
+          background: transparent; border: none; color: ${COLOR_CANON};
+          padding: 4px 10px; cursor: pointer; font-size: 11px;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); }
+        .floor-picker input {
+          width: 56px; padding: 2px 4px; font-size: 11px; color: #e8e8e8;
+          background: rgba(237, 175, 24, 0.08); border: none;
+          border-top: 1px solid rgba(237, 175, 24, 0.2);
+          border-bottom: 1px solid rgba(237, 175, 24, 0.2);
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          text-align: center; outline: none; -moz-appearance: textfield;
+        }
+        .floor-picker input::-webkit-inner-spin-button,
+        .floor-picker input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+        .overlay-row {
+          background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
+          border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
+        }
+        .overlay-row.is-active { border-color: ${COLOR_CANON}; background: rgba(237, 175, 24, 0.06); }
+        .overlay-row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .overlay-controls { display: flex; flex-direction: column; gap: 6px; }
+        .overlay-slider {
+          -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
+          background: rgba(237, 175, 24, 0.2); border-radius: 2px; outline: none;
+        }
+        .overlay-slider::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none;
+          width: 14px; height: 14px; border-radius: 50%;
+          background: ${COLOR_CANON}; cursor: pointer; border: 1.5px solid #080c14;
+        }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ position: 'relative', zIndex: 10 }}>
       <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
@@ -890,6 +1040,18 @@ export default function MapTab({ navPadding = 80 }) {
               >
                 Interactive Map
               </CardHeader>
+            </div>
+
+            {/* Floor picker — always visible, top-right below header */}
+            <div className="floor-picker" role="group" aria-label="Floor">
+              <button type="button" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
+              <input
+                type="number"
+                value={viewFloor}
+                onChange={(e) => { const v = parseInt(e.target.value, 10); if (Number.isFinite(v)) setViewFloor(v); }}
+                aria-label="Floor"
+              />
+              <button type="button" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
             </div>
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
@@ -1056,6 +1218,89 @@ export default function MapTab({ navPadding = 80 }) {
                     aria-label="Zone JSON snippet"
                   />
                 )}
+
+                {/* ── Sub-maps section ── */}
+                <div className="divider" />
+                <div className="drafts-head">
+                  <span>Sub-maps ({overlayDrafts.length})</span>
+                  <select
+                    className="zone-author-btn"
+                    value=""
+                    onChange={(e) => { if (e.target.value) handleAddOverlay(e.target.value); }}
+                    style={{ padding: '2px 8px', fontSize: 10, minWidth: 0 }}
+                    aria-label="Add sub-map"
+                  >
+                    <option value="">+ Add</option>
+                    {OVERLAY_CATALOG.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                {overlayDrafts.map(ov => {
+                  const editing = editingOverlayId === ov.id;
+                  return (
+                    <div key={ov.id} className={`overlay-row ${editing ? 'is-active' : ''}`}>
+                      <div className="overlay-row-head">
+                        <span className="drname">
+                          <span className={`lvl-tag ${ov.floor === viewFloor ? '' : 'is-unset'}`}>F{ov.floor ?? 0}</span>
+                          <span className="drlabel">{ov.name}</span>
+                        </span>
+                        <span className="row" style={{ gap: 4 }}>
+                          <button className="edit-btn" type="button" onClick={() => setEditingOverlayId(editing ? null : ov.id)}>
+                            {editing ? 'Close' : 'Edit'}
+                          </button>
+                          <button type="button" onClick={() => handleDeleteOverlay(ov.id)}>Del</button>
+                        </span>
+                      </div>
+                      {editing && (
+                        <div className="overlay-controls">
+                          <div className="row">
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>X</label>
+                              <input type="number" value={ov.center[0]}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { center: [Math.round(+e.target.value) || 0, ov.center[1]] })} />
+                            </div>
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Y</label>
+                              <input type="number" value={ov.center[1]}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { center: [ov.center[0], Math.round(+e.target.value) || 0] })} />
+                            </div>
+                            <div className="field" style={{ flex: '0 0 80px' }}>
+                              <label>Floor</label>
+                              <div className="row" style={{ gap: 2 }}>
+                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) - 1 })} style={{ padding: '1px 6px' }}>−</button>
+                                <span style={{ minWidth: 28, textAlign: 'center' }}>{ov.floor ?? 0}</span>
+                                <button className="zone-author-btn" type="button" onClick={() => handleUpdateOverlay(ov.id, { floor: (ov.floor ?? 0) + 1 })} style={{ padding: '1px 6px' }}>+</button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Rotation ({Math.round(ov.rotation ?? 0)}°)</label>
+                              <input type="range" min="0" max="360" step="1" value={ov.rotation ?? 0}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { rotation: +e.target.value })}
+                                className="overlay-slider" />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Scale ({(ov.scale ?? 1).toFixed(2)}×)</label>
+                              <input type="range" min="0.1" max="5" step="0.05" value={ov.scale ?? 1}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { scale: +e.target.value })}
+                                className="overlay-slider" />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Opacity ({Math.round((ov.opacity ?? 1) * 100)}%)</label>
+                              <input type="range" min="0.1" max="1" step="0.05" value={ov.opacity ?? 1}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { opacity: +e.target.value })}
+                                className="overlay-slider" />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
               </div>
             )}
