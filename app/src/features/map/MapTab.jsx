@@ -392,20 +392,22 @@ export default function MapTab({ navPadding = 80 }) {
       overlayLayerRef.current = null;
     }
 
-    // Floor-based brightness on the base tile layer
+    // Floor-based brightness on the base tile layer (dimmer away from ground)
     const tileEl = tileLayerRef.current?.getContainer?.();
     if (tileEl) {
       const dist = Math.abs(viewFloor);
-      tileEl.style.filter = dist === 0 ? '' : `brightness(${Math.max(0.15, 1 - 0.25 * dist)})`;
+      tileEl.style.filter = dist === 0 ? '' : `brightness(${Math.max(0.25, 1 - 0.25 * dist)})`;
       tileEl.style.transition = 'filter 300ms';
     }
 
-    if (overlayDrafts.length === 0) return;
+    // Only show overlays on the current viewing floor
+    const visibleOverlays = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
+    if (visibleOverlays.length === 0) return;
 
     const group = L.layerGroup();
     const pxToLL = ([x, y]) => map.unproject([x, y], MAX_ZOOM);
 
-    overlayDrafts.forEach(ov => {
+    visibleOverlays.forEach(ov => {
       if (!ov.center || !ov.imageUrl) return;
       const nw = ov.naturalWidth || 4096;
       const nh = ov.naturalHeight || 4096;
@@ -417,23 +419,18 @@ export default function MapTab({ navPadding = 80 }) {
       const ne = pxToLL([cx + halfW, cy - halfH]);
       const bounds = L.latLngBounds(sw, ne);
       const url = (BASE + ov.imageUrl).replace(/\/\//g, '/');
-      const overlay = L.imageOverlay(url, bounds, { interactive: true, className: 'map-overlay-img' });
+      const overlay = L.imageOverlay(url, bounds, {
+        interactive: true,
+        className: 'map-overlay-img',
+        opacity: ov.opacity ?? 1,
+      });
       overlay.addTo(group);
 
-      // Rotation via CSS
       const el = overlay.getElement?.();
       if (el) {
-        if (ov.rotation) {
-          el.style.transformOrigin = 'center center';
-          el.style.transform = `rotate(${ov.rotation}deg)`;
-        }
-        // Floor brightness
-        const floorDist = Math.abs((ov.floor ?? 0) - viewFloor);
-        el.style.filter = floorDist === 0 ? '' : `brightness(${Math.max(0.15, 1 - 0.25 * floorDist)})`;
-        el.style.transition = 'filter 300ms';
-        // Lock cursor
+        el.style.transformOrigin = 'center center';
+        el.style.transform = ov.rotation ? `rotate(${ov.rotation}deg)` : '';
         el.style.cursor = ov.locked ? 'default' : 'grab';
-        // Active highlight
         if (ov.id === activeOverlayId) {
           el.style.outline = '2px solid #edaf18';
           el.style.outlineOffset = '2px';
@@ -448,50 +445,93 @@ export default function MapTab({ navPadding = 80 }) {
         }
       });
 
-      // Drag support for unlocked overlays in author mode
+      // Gesture support: drag (1 finger) + pinch-to-scale + twist-to-rotate (2 fingers)
       if (authorMode && !ov.locked && el) {
-        let startPx = null;
-        let startCenter = null;
+        let dragStart = null;
+        let pinchStart = null;
+
+        const getTouchInfo = (touches) => {
+          const t1 = touches[0], t2 = touches[1];
+          const dx = t2.clientX - t1.clientX, dy = t2.clientY - t1.clientY;
+          return {
+            center: [(t1.clientX + t2.clientX) / 2, (t1.clientY + t2.clientY) / 2],
+            dist: Math.hypot(dx, dy),
+            angle: Math.atan2(dy, dx) * 180 / Math.PI,
+          };
+        };
+
         const onDown = (evt) => {
           evt.stopPropagation();
           evt.preventDefault();
-          const touch = evt.touches ? evt.touches[0] : evt;
-          startPx = [touch.clientX, touch.clientY];
-          startCenter = [...ov.center];
+          if (evt.touches && evt.touches.length >= 2) {
+            const info = getTouchInfo(evt.touches);
+            pinchStart = { ...info, initScale: ov.scale || 1, initRotation: ov.rotation || 0 };
+            dragStart = null;
+          } else {
+            const touch = evt.touches ? evt.touches[0] : evt;
+            dragStart = { px: [touch.clientX, touch.clientY], center: [...ov.center] };
+            pinchStart = null;
+          }
+          el.style.cursor = 'grabbing';
           document.addEventListener('mousemove', onMove, { passive: false });
           document.addEventListener('mouseup', onUp);
           document.addEventListener('touchmove', onMove, { passive: false });
           document.addEventListener('touchend', onUp);
-          el.style.cursor = 'grabbing';
         };
+
         const onMove = (evt) => {
-          if (!startPx) return;
           evt.preventDefault();
-          const touch = evt.touches ? evt.touches[0] : evt;
-          const dx = touch.clientX - startPx[0];
-          const dy = touch.clientY - startPx[1];
-          // Convert CSS pixel delta to map pixel delta at current zoom
-          const zoom = map.getZoom();
-          const scaleFactor = Math.pow(2, MAX_ZOOM - zoom);
-          const newCenter = [
-            Math.round(startCenter[0] + dx * scaleFactor),
-            Math.round(startCenter[1] + dy * scaleFactor),
-          ];
-          setOverlayDrafts(prev => {
-            const next = prev.map(o => o.id === ov.id ? { ...o, center: newCenter } : o);
-            saveOverlayDrafts(next);
-            return next;
-          });
+          // Two-finger: pinch + rotate
+          if (evt.touches && evt.touches.length >= 2 && pinchStart) {
+            const info = getTouchInfo(evt.touches);
+            const newScale = Math.max(0.05, Math.min(10, pinchStart.initScale * (info.dist / pinchStart.dist)));
+            const angleDelta = info.angle - pinchStart.angle;
+            const newRotation = ((pinchStart.initRotation + angleDelta) % 360 + 360) % 360;
+            setOverlayDrafts(prev => {
+              const next = prev.map(o => o.id === ov.id ? { ...o, scale: +newScale.toFixed(3), rotation: Math.round(newRotation) } : o);
+              saveOverlayDrafts(next);
+              return next;
+            });
+            return;
+          }
+          // Single finger: drag
+          if (dragStart) {
+            // If a second finger arrives mid-drag, switch to pinch
+            if (evt.touches && evt.touches.length >= 2) {
+              const info = getTouchInfo(evt.touches);
+              pinchStart = { ...info, initScale: ov.scale || 1, initRotation: ov.rotation || 0 };
+              dragStart = null;
+              return;
+            }
+            const touch = evt.touches ? evt.touches[0] : evt;
+            const dx = touch.clientX - dragStart.px[0];
+            const dy = touch.clientY - dragStart.px[1];
+            const zoom = map.getZoom();
+            const scaleFactor = Math.pow(2, MAX_ZOOM - zoom);
+            const newCenter = [
+              Math.round(dragStart.center[0] + dx * scaleFactor),
+              Math.round(dragStart.center[1] + dy * scaleFactor),
+            ];
+            setOverlayDrafts(prev => {
+              const next = prev.map(o => o.id === ov.id ? { ...o, center: newCenter } : o);
+              saveOverlayDrafts(next);
+              return next;
+            });
+          }
         };
-        const onUp = () => {
-          startPx = null;
-          startCenter = null;
+
+        const onUp = (evt) => {
+          // If still touching (lifted one finger from a 2-finger gesture), keep listening
+          if (evt.touches && evt.touches.length > 0) return;
+          dragStart = null;
+          pinchStart = null;
           el.style.cursor = 'grab';
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
           document.removeEventListener('touchmove', onMove);
           document.removeEventListener('touchend', onUp);
         };
+
         el.addEventListener('mousedown', onDown);
         el.addEventListener('touchstart', onDown, { passive: false });
       }
@@ -1162,6 +1202,7 @@ export default function MapTab({ navPadding = 80 }) {
                       </div>
                       {isActive && (
                         <div className="overlay-controls">
+                          {!ov.locked && <div className="hint" style={{ fontSize: 9, marginBottom: 2 }}>1 finger = drag · 2 fingers = pinch scale + twist rotate</div>}
                           <div className="row">
                             <div className="field" style={{ flex: '0 0 70px' }}>
                               <label>Floor</label>
@@ -1183,6 +1224,14 @@ export default function MapTab({ navPadding = 80 }) {
                               <label>Rotation ({ov.rotation ?? 0}°)</label>
                               <input type="range" min="0" max="360" step="1" value={ov.rotation ?? 0}
                                 onChange={(e) => handleUpdateOverlay(ov.id, { rotation: +e.target.value })}
+                                className="overlay-slider" />
+                            </div>
+                          </div>
+                          <div className="row">
+                            <div className="field" style={{ flex: '1 1 0' }}>
+                              <label>Opacity ({Math.round((ov.opacity ?? 1) * 100)}%)</label>
+                              <input type="range" min="0.05" max="1" step="0.05" value={ov.opacity ?? 1}
+                                onChange={(e) => handleUpdateOverlay(ov.id, { opacity: +e.target.value })}
                                 className="overlay-slider" />
                             </div>
                           </div>
