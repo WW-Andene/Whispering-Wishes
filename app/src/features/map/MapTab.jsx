@@ -102,6 +102,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [viewFloor, setViewFloor] = useState(0);
   const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
   const [editingOverlayId, setEditingOverlayId] = useState(null);
+  const [expandedZones, setExpandedZones] = useState(() => new Set());
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
   const overlayImagesRef = useRef(new Map());      // catalogId → HTMLImageElement (decoded source)
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
@@ -154,6 +155,57 @@ export default function MapTab({ navPadding = 80 }) {
     walk(null, 0);
     return out;
   }, [drafts, editingId, editingDescendants]);
+
+  // Full zone catalogue (canonical + user drafts) for the read-only zone
+  // selector in the top-right. Indexed by parentId so the selector can
+  // lazily show children as the user expands each level.
+  const zoneNav = useMemo(() => {
+    const all = [...MAP_ZONES, ...drafts];
+    const byParent = new Map();
+    all.forEach(z => {
+      const pid = z.parentId || null;
+      if (!byParent.has(pid)) byParent.set(pid, []);
+      byParent.get(pid).push(z);
+    });
+    // Stable order: by level then name
+    for (const list of byParent.values()) {
+      list.sort((a, b) => (a.level ?? 99) - (b.level ?? 99) || (a.name || '').localeCompare(b.name || ''));
+    }
+    return byParent;
+  }, [drafts]);
+
+  const handleFlyToZone = useCallback((zone) => {
+    const map = mapRef.current;
+    if (!map) return;
+    // Switch to the zone's floor if it is linked to a placed sub-map overlay.
+    if (zone.overlayId) {
+      const ov = overlayDrafts.find(o => o.id === zone.overlayId);
+      if (ov && Number.isFinite(ov.floor)) setViewFloor(ov.floor);
+    }
+    if (!Array.isArray(zone.polygon) || zone.polygon.length < 2) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    zone.polygon.forEach(([x, y]) => {
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    });
+    const nw = map.unproject([minX, minY], NATIVE_ZOOM);
+    const se = map.unproject([maxX, maxY], NATIVE_ZOOM);
+    try {
+      map.flyToBounds([nw, se], { duration: 0.6, padding: [40, 40] });
+    } catch {
+      map.fitBounds([nw, se], { padding: [40, 40] });
+    }
+  }, [overlayDrafts]);
+
+  const toggleZoneExpanded = useCallback((id) => {
+    setExpandedZones(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
 
   // Tree of drafts only (canonical-parented drafts surface at root with breadcrumb).
   // Returns flat list in DFS traversal order, each node carrying { ...draft, depth, isLast }.
@@ -1321,6 +1373,64 @@ export default function MapTab({ navPadding = 80 }) {
         .floor-picker input::-webkit-inner-spin-button,
         .floor-picker input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
+        .zone-selector {
+          position: absolute;
+          right: var(--space-md, 12px);
+          z-index: 20;
+          display: flex; flex-direction: column;
+          gap: var(--space-xs, 4px);
+          padding: var(--space-sm, 8px);
+          min-width: 160px;
+          max-width: 240px;
+          max-height: 60vh;
+          overflow: auto;
+          background: var(--bg-card);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-lg, 11px);
+          box-shadow: var(--shadow-md);
+          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
+        }
+        .zone-selector-head {
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          color: var(--text-heading);
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          padding: 0 var(--space-xs, 4px) var(--space-xs, 4px);
+          border-bottom: 1px solid var(--border-default);
+          margin-bottom: var(--space-xs, 4px);
+        }
+        .zone-selector-list { display: flex; flex-direction: column; gap: 2px; }
+        .zone-selector-empty {
+          padding: var(--space-sm, 8px);
+          font-family: var(--font-display);
+          font-size: 11px;
+          color: var(--text-heading);
+          opacity: 0.55;
+          text-align: center;
+        }
+        .zone-selector-item {
+          display: flex; align-items: center; gap: var(--space-xs, 4px);
+          width: 100%;
+          background: var(--bg-btn);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          color: var(--text-heading);
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          text-align: left;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 160ms, border-color 160ms, color 120ms;
+        }
+        .zone-selector-item:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
+        .zone-selector-caret {
+          display: inline-block; width: 10px; text-align: center;
+          opacity: 0.7; flex-shrink: 0;
+        }
+        .zone-selector-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
         .overlay-row {
           background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
           border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
@@ -1401,7 +1511,45 @@ export default function MapTab({ navPadding = 80 }) {
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
 
-            )}
+            {/* Zone selector — same var(--space-md) gap on top and right */}
+            <div className="zone-selector" role="tree" aria-label="Zones" style={{ top: `${headerHeight + 12}px` }}>
+              <div className="zone-selector-head">Zones</div>
+              <div className="zone-selector-list">
+                {(() => {
+                  const renderNode = (zone, depth) => {
+                    const children = zoneNav.get(zone.id) || [];
+                    const hasChildren = children.length > 0;
+                    const expanded = expandedZones.has(zone.id);
+                    return (
+                      <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
+                        <button
+                          type="button"
+                          className="zone-selector-item"
+                          style={{ paddingLeft: `calc(var(--space-sm, 8px) + ${depth} * var(--space-md, 12px))` }}
+                          onClick={() => { if (hasChildren) toggleZoneExpanded(zone.id); else handleFlyToZone(zone); }}
+                          onDoubleClick={() => handleFlyToZone(zone)}
+                          aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
+                        >
+                          <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
+                          {zone.level != null && <span className="lvl-tag">L{zone.level}</span>}
+                          <span className="zone-selector-name">{zone.name || zone.id}</span>
+                        </button>
+                        {hasChildren && expanded && (
+                          <div role="group">
+                            {children.map(c => renderNode(c, depth + 1))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  };
+                  const roots = zoneNav.get(null) || [];
+                  if (roots.length === 0) {
+                    return <div className="zone-selector-empty">No zones</div>;
+                  }
+                  return roots.map(z => renderNode(z, 0));
+                })()}
+              </div>
+            </div>
 
             {/* ── Zone author panel ── */}
             {authorMode && panelCollapsed && (
