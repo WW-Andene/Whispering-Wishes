@@ -777,6 +777,9 @@ export default function MapTab({ navPadding = 80 }) {
       Object.assign(live, patch);
       applyLive();
       setImplementValues(prev => ({ ...prev, ...patch }));
+      if (Object.prototype.hasOwnProperty.call(patch, 'floor') && Number.isFinite(patch.floor)) {
+        setViewFloor(patch.floor);
+      }
     };
     implementRef.current.getLive = () => ({ ...live });
 
