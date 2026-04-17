@@ -571,13 +571,13 @@ export default function MapTab({ navPadding = 80 }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
 
-      // Dark mask behind the sub-maps — flat 50% whenever the view is off
+      // Dark mask behind the sub-maps — flat 75% whenever the view is off
       // floor 0, regardless of distance. Painted first so overlays sit on
       // top and render at full clarity; base tiles below show through at
-      // 50% opacity.
+      // 25% opacity.
       if (viewFloor !== 0) {
         ctx.save();
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.75;
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, cw, ch);
         ctx.restore();
