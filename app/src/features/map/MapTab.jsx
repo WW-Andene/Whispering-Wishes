@@ -169,6 +169,9 @@ export default function MapTab({ navPadding = 80 }) {
         attributionControl: false,
         zoomControl: false,
         inertia: false,
+        fadeAnimation: false,
+        zoomAnimation: false,
+        markerZoomAnimation: false,
       });
 
       const southWest = map.unproject([0, MAP_H], NATIVE_ZOOM);
@@ -441,7 +444,7 @@ export default function MapTab({ navPadding = 80 }) {
           const img = document.createElement('img');
           img.src = (BASE + tile.url).replace(/\/\//g, '/');
           img.className = 'map-overlay-direct';
-          img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;transform-origin:0 0;';
+          img.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;transform-origin:0 0;z-index:350;';
           img.dataset.col = tile.col;
           img.dataset.row = tile.row;
           img.draggable = false;
@@ -1177,7 +1180,9 @@ export default function MapTab({ navPadding = 80 }) {
           border-bottom: 1px solid rgba(237, 175, 24, 0.2);
           letter-spacing: 0.06em; text-align: center; min-width: 48px;
         }
-        .map-overlay-img { }
+        .leaflet-map-pane, .leaflet-tile-pane, .leaflet-overlay-pane,
+        .leaflet-tile, .leaflet-image-layer { transition: none !important; }
+        .leaflet-map-pane { will-change: transform; }
         .map-overlay-implement { pointer-events: auto !important; z-index: 500 !important; }
         .implement-panel { border-color: rgba(237, 175, 24, 0.6); box-shadow: 0 0 32px rgba(237, 175, 24, 0.12), 0 0 24px rgba(6, 10, 24, 0.7); }
         .overlay-row {
