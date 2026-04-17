@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CardHeader } from '../../shared/components/Card.jsx';
-import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 
@@ -1300,11 +1299,9 @@ export default function MapTab({ navPadding = 80 }) {
           border: 1.5px solid #080c14;
         }
       `}</style>
-      <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0">
-      <div className="kuro-calc space-y-3 tab-content">
-        <TabBackground id="map" />
-
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 5 }}>
+      <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ position: 'relative', zIndex: 10 }}>
+      <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
               ref={containerRef}
