@@ -175,12 +175,31 @@ export default function MapTab({ navPadding = 80 }) {
     return byParent;
   }, [drafts]);
 
-  const switchFloorForZone = useCallback((zone) => {
-    if (zone.overlayId) {
-      const ov = overlayDrafts.find(o => o.id === zone.overlayId);
-      if (ov && Number.isFinite(ov.floor)) setViewFloor(ov.floor);
+  // Walk the zone + its ancestor chain until we find one linked to a placed
+  // sub-map, and return that placement's floor. Lets zones drawn inside a
+  // sub-map inherit its floor without needing their own overlayId.
+  const resolveZoneFloor = useCallback((zone) => {
+    const allZones = [...MAP_ZONES, ...drafts];
+    const byId = new Map(allZones.map(z => [z.id, z]));
+    let cursor = zone;
+    const seen = new Set();
+    while (cursor && !seen.has(cursor.id)) {
+      seen.add(cursor.id);
+      if (cursor.overlayId) {
+        const ov = overlayDrafts.find(o => o.id === cursor.overlayId);
+        if (ov && Number.isFinite(ov.floor)) return ov.floor;
+      }
+      if (!cursor.parentId) break;
+      cursor = byId.get(cursor.parentId);
     }
-  }, [overlayDrafts]);
+    return null;
+  }, [drafts, overlayDrafts]);
+
+  const switchFloorForZone = useCallback((zone) => {
+    const floor = resolveZoneFloor(zone);
+    if (floor != null) setViewFloor(floor);
+    else setViewFloor(0); // fallback: any zone with no linked floor → ground
+  }, [resolveZoneFloor]);
 
   const handleFlyToZone = useCallback((zone) => {
     const map = mapRef.current;
@@ -1593,7 +1612,6 @@ export default function MapTab({ navPadding = 80 }) {
                             aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
                           >
                             <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
-                            {zone.level != null && <span className="lvl-tag">L{zone.level}</span>}
                             <span className="zone-selector-name">{zone.name || zone.id}</span>
                           </button>
                           {hasChildren && expanded && (
