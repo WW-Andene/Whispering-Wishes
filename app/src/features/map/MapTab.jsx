@@ -579,10 +579,73 @@ export default function MapTab({ navPadding = 80 }) {
   };
 
   const handleDeleteOverlay = (id) => {
+    // Also remove any linked zone from the tree
+    const linkedZone = drafts.find(d => d.overlayId === id);
+    if (linkedZone) {
+      const nextDrafts = drafts.filter(d => d.id !== linkedZone.id);
+      setDrafts(nextDrafts);
+      saveDrafts(nextDrafts);
+    }
     const next = overlayDrafts.filter(o => o.id !== id);
     setOverlayDrafts(next);
     saveOverlayDrafts(next);
     if (activeOverlayId === id) setActiveOverlayId(null);
+  };
+
+  const overlayBoundsPolygon = (ov) => {
+    const nw = ov.naturalWidth || 4096;
+    const nh = ov.naturalHeight || 4096;
+    const s = ov.scale || 1;
+    const halfW = (nw * s) / 2;
+    const halfH = (nh * s) / 2;
+    const [cx, cy] = ov.center;
+    // Unrotated corners
+    const corners = [
+      [cx - halfW, cy - halfH],
+      [cx + halfW, cy - halfH],
+      [cx + halfW, cy + halfH],
+      [cx - halfW, cy + halfH],
+    ];
+    // Apply rotation around center
+    const rad = ((ov.rotation || 0) * Math.PI) / 180;
+    if (rad !== 0) {
+      const cos = Math.cos(rad), sin = Math.sin(rad);
+      return corners.map(([x, y]) => {
+        const dx = x - cx, dy = y - cy;
+        return [Math.round(cx + dx * cos - dy * sin), Math.round(cy + dx * sin + dy * cos)];
+      });
+    }
+    return corners.map(([x, y]) => [Math.round(x), Math.round(y)]);
+  };
+
+  const handleAddOverlayToTree = (ovId) => {
+    const ov = overlayDrafts.find(o => o.id === ovId);
+    if (!ov) return;
+    // Check if already linked
+    if (drafts.some(d => d.overlayId === ovId)) {
+      showToast('Already in tree');
+      return;
+    }
+    const polygon = overlayBoundsPolygon(ov);
+    const zoneId = `overlay-${ovId}`;
+    const zone = {
+      id: zoneId,
+      name: ov.name || 'Sub-map',
+      polygon,
+      overlayId: ovId,
+      level: ov.floor != null ? undefined : undefined,
+    };
+    const nextDrafts = [...drafts, zone];
+    setDrafts(nextDrafts);
+    saveDrafts(nextDrafts);
+    showToast(`"${zone.name}" added to tree`);
+  };
+
+  const handleRemoveOverlayFromTree = (ovId) => {
+    const nextDrafts = drafts.filter(d => d.overlayId !== ovId);
+    setDrafts(nextDrafts);
+    saveDrafts(nextDrafts);
+    showToast('Removed from tree');
   };
 
   // Triple-tap on header toggles author-enabled
@@ -1246,6 +1309,11 @@ export default function MapTab({ navPadding = 80 }) {
                             >
                               {ov.locked ? 'Unlock' : 'Lock'}
                             </button>
+                            {ov.locked && (
+                              drafts.some(d => d.overlayId === ov.id)
+                                ? <button className="zone-author-btn is-danger" type="button" onClick={() => handleRemoveOverlayFromTree(ov.id)}>Remove from tree</button>
+                                : <button className="zone-author-btn is-active" type="button" onClick={() => handleAddOverlayToTree(ov.id)}>Add to tree</button>
+                            )}
                           </div>
                         </div>
                       )}
