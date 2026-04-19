@@ -842,6 +842,7 @@ export default function MapTab({ navPadding = 80 }) {
       ctx.lineJoin = 'round';
       ctx.fillStyle = MAP_BG;
       ctx.strokeStyle = MAP_BG;
+      ctx.globalAlpha = 1;
 
       allStrokes.forEach(stroke => {
         if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
@@ -850,21 +851,15 @@ export default function MapTab({ navPadding = 80 }) {
 
         const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
 
-        // Single pass, faded + blurry: narrow line, wide coloured shadow
-        // halo, low alpha. One stroke draws the core; the shadow extends
-        // past it as a soft colour gradient so the edge fades instead of
-        // terminating sharply.
-        ctx.globalAlpha = 0.45;
-        ctx.shadowColor = MAP_BG;
-        ctx.shadowBlur = Math.max(6, radiusPx * 1.8);
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.lineWidth = Math.max(1, radiusPx * 0.6);
+        // Single opaque pass — no multi-pass layering so strokes look flat,
+        // not embossed. Colour matches the ocean exactly, so painting over
+        // artefacts in ocean areas reads as erasing them.
+        ctx.lineWidth = Math.max(1, radiusPx * 2);
 
         if (pts.length === 1) {
           const c = pts[0];
           ctx.beginPath();
-          ctx.arc(c.x, c.y, Math.max(0.5, radiusPx * 0.3), 0, Math.PI * 2);
+          ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
           ctx.fill();
         } else {
           ctx.beginPath();
@@ -875,9 +870,6 @@ export default function MapTab({ navPadding = 80 }) {
           ctx.stroke();
         }
       });
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-      ctx.shadowColor = 'transparent';
     };
     paintDrawRef.current = draw;
     map.on('move zoom viewreset zoomend resize', draw);
