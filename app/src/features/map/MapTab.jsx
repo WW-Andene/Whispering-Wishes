@@ -1003,6 +1003,21 @@ export default function MapTab({ navPadding = 80 }) {
     savePaintStrokes([]);
   }, []);
 
+  // Copy all paint strokes as JSON to the clipboard. Use case: the user
+  // paints to mask map artefacts, then pastes this JSON in chat so I can
+  // bake the strokes into the source PNG + re-slice the tile pyramid.
+  const handleCopyPaintJson = useCallback(async () => {
+    const json = JSON.stringify(paintStrokes, null, 2);
+    try {
+      await navigator.clipboard.writeText(json);
+      showToast(`Copied ${paintStrokes.length} stroke${paintStrokes.length === 1 ? '' : 's'}`);
+    } catch {
+      // Fallback: dump into the existing zone-author JSON snippet textarea
+      setJsonSnippet(json);
+      showToast('Clipboard blocked — shown below, long-press to copy');
+    }
+  }, [paintStrokes]);
+
   // Export/import the entire editor state (zones + sub-maps + paint) as a
   // single JSON blob so it can be backed up, swapped between devices, or
   // shipped to me for hard-coding into the app as a seed.
@@ -2115,6 +2130,13 @@ export default function MapTab({ navPadding = 80 }) {
                     onClick={handlePaintUndo}
                     disabled={paintStrokes.length === 0}
                   >Undo stroke</button>
+                  <button
+                    className="zone-author-btn"
+                    type="button"
+                    onClick={handleCopyPaintJson}
+                    disabled={paintStrokes.length === 0}
+                    title="Copy stroke JSON to paste to Claude so paint can be baked into the tiles"
+                  >Copy JSON</button>
                   <button
                     className="zone-author-btn is-danger"
                     type="button"
