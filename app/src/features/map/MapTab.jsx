@@ -835,27 +835,32 @@ export default function MapTab({ navPadding = 80 }) {
         const radiusPx = (stroke.size || 20) * zoomFactor;
         if (radiusPx < 0.5) return;
 
+        // Project once per point
+        const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
+
+        // Soft airbrush via shadowBlur — universally supported (ctx.filter
+        // isn't reliable on Safari/older canvases). A narrow opaque stroke
+        // plus a wide coloured shadow gives a halo that reads as "soft blend".
         ctx.save();
-        // Soft blurry airbrush: Gaussian blur via canvas filter softens the
-        // stroke edge; low alpha lets overlaps layer to opaque without a
-        // hard-edged paintbrush look.
-        ctx.filter = `blur(${Math.max(2, radiusPx / 3)}px)`;
-        ctx.globalAlpha = 0.55;
+        ctx.globalAlpha = 0.95;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.strokeStyle = MAP_BG;
         ctx.fillStyle = MAP_BG;
-        ctx.lineWidth = radiusPx * 1.8;
+        ctx.shadowColor = MAP_BG;
+        ctx.shadowBlur = Math.max(6, radiusPx);
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.lineWidth = Math.max(1, radiusPx * 0.9);
 
-        if (stroke.points.length === 1) {
-          const c = map.latLngToContainerPoint(map.unproject(stroke.points[0], NATIVE_ZOOM));
+        if (pts.length === 1) {
+          const c = pts[0];
           ctx.beginPath();
-          ctx.arc(c.x, c.y, radiusPx * 0.9, 0, Math.PI * 2);
+          ctx.arc(c.x, c.y, Math.max(0.5, radiusPx * 0.5), 0, Math.PI * 2);
           ctx.fill();
         } else {
           ctx.beginPath();
-          stroke.points.forEach((pt, i) => {
-            const c = map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM));
+          pts.forEach((c, i) => {
             if (i === 0) ctx.moveTo(c.x, c.y);
             else ctx.lineTo(c.x, c.y);
           });
