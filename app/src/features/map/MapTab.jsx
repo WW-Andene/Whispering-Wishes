@@ -800,9 +800,10 @@ export default function MapTab({ navPadding = 80 }) {
     let canvas = paintCanvasRef.current;
     if (!canvas) {
       canvas = document.createElement('canvas');
-      // DEBUG: z-index 1000 + translucent red bg proves the canvas is mounted
-      // and sized. Remove once paint is confirmed visible.
-      canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:1000;background:rgba(255,0,0,0.18);outline:2px solid magenta;';
+      // z-index 450: above the Leaflet tile pane (200), above the sub-map
+      // overlay canvas (400). Paint covers both, which is what we want for
+      // an "erase artefacts" brush.
+      canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:450;';
       paintCanvasRef.current = canvas;
     }
     // Defensive: make sure the canvas is actually in the map container —
@@ -810,19 +811,6 @@ export default function MapTab({ navPadding = 80 }) {
     if (canvas.parentNode !== container) {
       container.appendChild(canvas);
     }
-    // Log once per mount so we can see in console if anything's weird.
-    // eslint-disable-next-line no-console
-    console.log('[paint] canvas mounted', {
-      inDom: document.body.contains(canvas),
-      parent: canvas.parentNode && canvas.parentNode.className,
-      clientW: container.clientWidth,
-      clientH: container.clientHeight,
-      canvasW: canvas.width,
-      canvasH: canvas.height,
-      computedZ: getComputedStyle(canvas).zIndex,
-      computedDisplay: getComputedStyle(canvas).display,
-      computedOpacity: getComputedStyle(canvas).opacity,
-    });
 
     const syncSize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -844,21 +832,6 @@ export default function MapTab({ navPadding = 80 }) {
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
-
-      // DEBUG beacon — magenta + label. Lets the user confirm the paint
-      // canvas is visible and receiving draw calls at all. If this dot is
-      // visible but strokes are not, paint == ocean colour and we have a
-      // contrast problem, not a rendering one. If this dot is ALSO invisible,
-      // the canvas is hidden/covered and we need to fix that first. Safe to
-      // delete once paint is confirmed working.
-      ctx.save();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#ff00ff';
-      ctx.fillRect(4, 4, 16, 16);
-      ctx.font = '11px monospace';
-      ctx.fillStyle = '#fff';
-      ctx.fillText(`paint canvas ${cw}×${ch} dpr=${dpr}`, 26, 16);
-      ctx.restore();
 
       const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
       const allStrokes = paintLiveRef.current
