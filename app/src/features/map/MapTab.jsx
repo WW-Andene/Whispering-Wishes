@@ -830,44 +830,46 @@ export default function MapTab({ navPadding = 80 }) {
         ? [...paintStrokes, paintLiveRef.current]
         : paintStrokes;
 
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.fillStyle = MAP_BG;
+      ctx.strokeStyle = MAP_BG;
+
       allStrokes.forEach(stroke => {
         if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
         const radiusPx = (stroke.size || 20) * zoomFactor;
         if (radiusPx < 0.5) return;
 
-        // Project once per point
         const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
 
-        // Soft airbrush via shadowBlur — universally supported (ctx.filter
-        // isn't reliable on Safari/older canvases). A narrow opaque stroke
-        // plus a wide coloured shadow gives a halo that reads as "soft blend".
-        ctx.save();
-        ctx.globalAlpha = 0.95;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = MAP_BG;
-        ctx.fillStyle = MAP_BG;
-        ctx.shadowColor = MAP_BG;
-        ctx.shadowBlur = Math.max(6, radiusPx);
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.lineWidth = Math.max(1, radiusPx * 0.9);
-
-        if (pts.length === 1) {
-          const c = pts[0];
-          ctx.beginPath();
-          ctx.arc(c.x, c.y, Math.max(0.5, radiusPx * 0.5), 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          pts.forEach((c, i) => {
-            if (i === 0) ctx.moveTo(c.x, c.y);
-            else ctx.lineTo(c.x, c.y);
-          });
-          ctx.stroke();
+        // Three-pass overlapping strokes fake an airbrush soft edge without
+        // relying on ctx.filter or shadowBlur (both have cross-browser quirks
+        // that previously made the stroke invisible). Wide faint pass → soft
+        // outer halo; narrow opaque pass → visible core. Always renders.
+        const passes = [
+          { widthMul: 2.6, alpha: 0.22 },
+          { widthMul: 2.0, alpha: 0.40 },
+          { widthMul: 1.4, alpha: 0.85 },
+        ];
+        for (const { widthMul, alpha } of passes) {
+          ctx.globalAlpha = alpha;
+          ctx.lineWidth = Math.max(1, radiusPx * widthMul);
+          if (pts.length === 1) {
+            const c = pts[0];
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, ctx.lineWidth / 2, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            pts.forEach((c, i) => {
+              if (i === 0) ctx.moveTo(c.x, c.y);
+              else ctx.lineTo(c.x, c.y);
+            });
+            ctx.stroke();
+          }
         }
-        ctx.restore();
       });
+      ctx.globalAlpha = 1;
     };
     paintDrawRef.current = draw;
     map.on('move zoom viewreset zoomend resize', draw);
@@ -947,9 +949,11 @@ export default function MapTab({ navPadding = 80 }) {
       const live = paintLiveRef.current;
       paintLiveRef.current = null;
       if (live && live.points.length > 0) {
-        const next = [...paintStrokes, live];
-        setPaintStrokes(next);
-        savePaintStrokes(next);
+        setPaintStrokes(prev => {
+          const next = [...prev, live];
+          savePaintStrokes(next);
+          return next;
+        });
       } else {
         paintDrawRef.current();
       }
