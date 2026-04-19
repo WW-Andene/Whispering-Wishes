@@ -13,6 +13,7 @@ const MAP_BG_TRANSPARENT = 'rgba(6, 38, 52, 0.55)';
 const BASE = import.meta.env.BASE_URL || '/';
 const AUTHOR_FLAG_KEY = 'ww-zone-author';
 const DRAFTS_KEY = 'ww-zone-drafts';
+const PAINT_KEY = 'ww-paint-strokes';
 
 const COLOR_CANON = '#edaf18';   // brand gold — canonical zones from mapZones.js
 const COLOR_DRAFT = '#38bdf8';   // cyan — session drafts
@@ -29,6 +30,18 @@ function loadDrafts() {
 }
 function saveDrafts(list) {
   try { localStorage.setItem(DRAFTS_KEY, JSON.stringify(list)); } catch {}
+}
+function loadPaintStrokes() {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(PAINT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+function savePaintStrokes(list) {
+  try { localStorage.setItem(PAINT_KEY, JSON.stringify(list)); } catch {}
 }
 function slugify(s) {
   return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `zone-${Date.now().toString(36)}`;
@@ -88,6 +101,13 @@ export default function MapTab({ navPadding = 80 }) {
   const [authorMode, setAuthorMode] = useState(false);
   const [freehandMode, setFreehandMode] = useState(false);
   const freehandTraceRef = useRef(null);
+  // Ocean-paint tool state — tap/drag to blot map artefacts with ocean color.
+  const [paintMode, setPaintMode] = useState(false);
+  const [paintBrushSize, setPaintBrushSize] = useState(40);       // radius in native px
+  const [paintStrokes, setPaintStrokes] = useState(loadPaintStrokes);
+  const paintCanvasRef = useRef(null);
+  const paintDrawRef = useRef(() => {});
+  const paintLiveRef = useRef(null); // { points: [[x,y]...], size } while drawing
   const [authorPoints, setAuthorPoints] = useState([]);
   const [drafts, setDrafts] = useState(loadDrafts);
   const [draftName, setDraftName] = useState('');
@@ -403,6 +423,7 @@ export default function MapTab({ navPadding = 80 }) {
     if (!map || !mapReady) return;
     if (!authorMode) return;
     if (freehandMode) return;
+    if (paintMode) return;
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
       if (gestureActiveRef.current) return;
@@ -415,7 +436,7 @@ export default function MapTab({ navPadding = 80 }) {
       map.off('click', handler);
       if (map.doubleClickZoom) map.doubleClickZoom.enable();
     };
-  }, [authorMode, freehandMode, mapReady]);
+  }, [authorMode, freehandMode, paintMode, mapReady]);
 
   // Freehand draw mode: hold + drag on the map to trace a shape; on release
   // the traced path is simplified (RDP) into polygon points that replace
@@ -762,6 +783,191 @@ export default function MapTab({ navPadding = 80 }) {
       }
       overlayImagesRef.current.clear();
     };
+  }, []);
+
+  // Ocean-paint renderer. Single viewport-sized canvas mounted below the
+  // sub-map overlay canvas so paint sits on top of the base tiles but under
+  // placed sub-maps. Each stroke is a polyline of native-px points with a
+  // radius; we stroke it with lineCap:'round' so overlapping discs form a
+  // continuous blob. Current in-progress stroke lives in paintLiveRef for
+  // smooth dragging without React rerenders.
+  useEffect(() => {
+    if (!mapReady) return;
+    const map = mapRef.current;
+    if (!map) return;
+    const container = map.getContainer();
+
+    let canvas = paintCanvasRef.current;
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:350;';
+      container.appendChild(canvas);
+      paintCanvasRef.current = canvas;
+    }
+
+    const syncSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      const wantW = Math.round(cw * dpr), wantH = Math.round(ch * dpr);
+      if (canvas.width !== wantW || canvas.height !== wantH) {
+        canvas.width = wantW;
+        canvas.height = wantH;
+        canvas.style.width = cw + 'px';
+        canvas.style.height = ch + 'px';
+      }
+      return { dpr, cw, ch };
+    };
+
+    const draw = () => {
+      const { dpr, cw, ch } = syncSize();
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.fillStyle = MAP_BG;
+      ctx.strokeStyle = MAP_BG;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
+      const allStrokes = paintLiveRef.current
+        ? [...paintStrokes, paintLiveRef.current]
+        : paintStrokes;
+
+      allStrokes.forEach(stroke => {
+        if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
+        const radiusPx = (stroke.size || 20) * zoomFactor;
+        if (radiusPx < 0.5) return;
+        ctx.lineWidth = radiusPx * 2;
+        ctx.beginPath();
+        stroke.points.forEach((pt, i) => {
+          const c = map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM));
+          if (i === 0) ctx.moveTo(c.x, c.y);
+          else ctx.lineTo(c.x, c.y);
+        });
+        // Single-point stroke still needs a dot
+        if (stroke.points.length === 1) {
+          const c = map.latLngToContainerPoint(map.unproject(stroke.points[0], NATIVE_ZOOM));
+          ctx.moveTo(c.x + radiusPx, c.y);
+          ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.stroke();
+        }
+      });
+    };
+    paintDrawRef.current = draw;
+    map.on('move zoom viewreset zoomend resize', draw);
+    draw();
+
+    return () => {
+      map.off('move zoom viewreset zoomend resize', draw);
+    };
+  }, [paintStrokes, mapReady]);
+
+  // Paint pointer handlers — only active when paintMode is on. Attached at
+  // the map container in capture phase so Leaflet's pan/zoom can be shut off
+  // while the user is drawing. Click or drag; released stroke appends to
+  // paintStrokes and persists.
+  useEffect(() => {
+    if (!paintMode || !mapReady) return;
+    const map = mapRef.current;
+    if (!map) return;
+    const container = map.getContainer();
+    const prevCursor = container.style.cursor;
+    container.style.cursor = 'crosshair';
+    map.dragging?.disable();
+    map.touchZoom?.disable();
+    map.doubleClickZoom?.disable();
+    map.scrollWheelZoom?.disable();
+
+    let drawing = false;
+    let pid = null;
+
+    const containerToNative = (clientX, clientY) => {
+      const rect = container.getBoundingClientRect();
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      const ll = map.containerPointToLatLng([px, py]);
+      const nat = map.project(ll, NATIVE_ZOOM);
+      return [
+        Math.max(0, Math.min(MAP_W, Math.round(nat.x))),
+        Math.max(0, Math.min(MAP_H, Math.round(nat.y))),
+      ];
+    };
+
+    const onDown = (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      drawing = true;
+      pid = e.pointerId;
+      paintLiveRef.current = {
+        points: [containerToNative(e.clientX, e.clientY)],
+        size: paintBrushSize,
+      };
+      paintDrawRef.current();
+      try { container.setPointerCapture(e.pointerId); } catch {}
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const onMove = (e) => {
+      if (!drawing || e.pointerId !== pid) return;
+      const live = paintLiveRef.current;
+      if (!live) return;
+      const pt = containerToNative(e.clientX, e.clientY);
+      const last = live.points[live.points.length - 1];
+      const dx = pt[0] - last[0], dy = pt[1] - last[1];
+      // min 4 native-px spacing so we don't bloat with duplicate points
+      if (dx * dx + dy * dy < 16) return;
+      live.points.push(pt);
+      paintDrawRef.current();
+      e.preventDefault();
+    };
+    const onUp = (e) => {
+      if (!drawing) return;
+      drawing = false;
+      try { container.releasePointerCapture(e.pointerId); } catch {}
+      const live = paintLiveRef.current;
+      paintLiveRef.current = null;
+      if (live && live.points.length > 0) {
+        const next = [...paintStrokes, live];
+        setPaintStrokes(next);
+        savePaintStrokes(next);
+      } else {
+        paintDrawRef.current();
+      }
+    };
+
+    container.addEventListener('pointerdown', onDown, true);
+    container.addEventListener('pointermove', onMove, true);
+    container.addEventListener('pointerup', onUp, true);
+    container.addEventListener('pointercancel', onUp, true);
+
+    return () => {
+      container.removeEventListener('pointerdown', onDown, true);
+      container.removeEventListener('pointermove', onMove, true);
+      container.removeEventListener('pointerup', onUp, true);
+      container.removeEventListener('pointercancel', onUp, true);
+      container.style.cursor = prevCursor;
+      map.dragging?.enable();
+      map.touchZoom?.enable();
+      map.doubleClickZoom?.enable();
+      map.scrollWheelZoom?.enable();
+      paintLiveRef.current = null;
+      paintDrawRef.current();
+    };
+  }, [paintMode, paintBrushSize, paintStrokes, mapReady]);
+
+  const handlePaintUndo = useCallback(() => {
+    setPaintStrokes(prev => {
+      const next = prev.slice(0, -1);
+      savePaintStrokes(next);
+      return next;
+    });
+  }, []);
+
+  const handlePaintClear = useCallback(() => {
+    setPaintStrokes([]);
+    savePaintStrokes([]);
   }, []);
 
   const handleAddOverlay = useCallback((catalogId) => {
@@ -1789,6 +1995,46 @@ export default function MapTab({ navPadding = 80 }) {
                   {editingId && (
                     <button className="zone-author-btn is-danger" type="button" onClick={handleCancelEdit}>Cancel edit</button>
                   )}
+                </div>
+
+                {/* ── Ocean paint tool — blot over map artefacts ── */}
+                <div className="divider" />
+                <div className="drafts-head"><span>Ocean paint ({paintStrokes.length})</span></div>
+                <div className="row">
+                  <button
+                    className={`zone-author-btn ${paintMode ? 'is-active' : ''}`}
+                    type="button"
+                    aria-pressed={paintMode}
+                    onClick={() => { setPaintMode(v => !v); if (!paintMode) { setFreehandMode(false); } }}
+                  >
+                    {paintMode ? 'Paint: on' : 'Paint'}
+                  </button>
+                  <button
+                    className="zone-author-btn"
+                    type="button"
+                    onClick={handlePaintUndo}
+                    disabled={paintStrokes.length === 0}
+                  >Undo stroke</button>
+                  <button
+                    className="zone-author-btn is-danger"
+                    type="button"
+                    onClick={handlePaintClear}
+                    disabled={paintStrokes.length === 0}
+                  >Clear all</button>
+                </div>
+                <div className="row">
+                  <div className="field" style={{ flex: '1 1 0' }}>
+                    <label>Brush ({paintBrushSize}px native)</label>
+                    <input
+                      type="range"
+                      min="4"
+                      max="200"
+                      step="1"
+                      value={paintBrushSize}
+                      onChange={(e) => setPaintBrushSize(+e.target.value || 40)}
+                      className="overlay-slider"
+                    />
+                  </div>
                 </div>
 
                 {drafts.length > 0 && (
