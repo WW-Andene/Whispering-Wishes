@@ -824,10 +824,6 @@ export default function MapTab({ navPadding = 80 }) {
       const ctx = canvas.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
-      ctx.fillStyle = MAP_BG;
-      ctx.strokeStyle = MAP_BG;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
 
       const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
       const allStrokes = paintLiveRef.current
@@ -838,22 +834,34 @@ export default function MapTab({ navPadding = 80 }) {
         if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
         const radiusPx = (stroke.size || 20) * zoomFactor;
         if (radiusPx < 0.5) return;
-        ctx.lineWidth = radiusPx * 2;
-        ctx.beginPath();
-        stroke.points.forEach((pt, i) => {
-          const c = map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM));
-          if (i === 0) ctx.moveTo(c.x, c.y);
-          else ctx.lineTo(c.x, c.y);
-        });
-        // Single-point stroke still needs a dot
+
+        ctx.save();
+        // Soft blurry airbrush: Gaussian blur via canvas filter softens the
+        // stroke edge; low alpha lets overlaps layer to opaque without a
+        // hard-edged paintbrush look.
+        ctx.filter = `blur(${Math.max(2, radiusPx / 3)}px)`;
+        ctx.globalAlpha = 0.55;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = MAP_BG;
+        ctx.fillStyle = MAP_BG;
+        ctx.lineWidth = radiusPx * 1.8;
+
         if (stroke.points.length === 1) {
           const c = map.latLngToContainerPoint(map.unproject(stroke.points[0], NATIVE_ZOOM));
-          ctx.moveTo(c.x + radiusPx, c.y);
-          ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, radiusPx * 0.9, 0, Math.PI * 2);
           ctx.fill();
         } else {
+          ctx.beginPath();
+          stroke.points.forEach((pt, i) => {
+            const c = map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM));
+            if (i === 0) ctx.moveTo(c.x, c.y);
+            else ctx.lineTo(c.x, c.y);
+          });
           ctx.stroke();
         }
+        ctx.restore();
       });
     };
     paintDrawRef.current = draw;
@@ -865,17 +873,22 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [paintStrokes, mapReady]);
 
-  // Paint pointer handlers — only active when paintMode is on. Attached at
-  // the map container in capture phase so Leaflet's pan/zoom can be shut off
-  // while the user is drawing. Click or drag; released stroke appends to
-  // paintStrokes and persists.
+  // Paint pointer handlers — attached directly to the paint canvas so they
+  // don't fight Leaflet's own event plumbing. The canvas is pointer-events:
+  // auto only while paintMode is on, so panning works normally otherwise.
   useEffect(() => {
     if (!paintMode || !mapReady) return;
     const map = mapRef.current;
-    if (!map) return;
+    const canvas = paintCanvasRef.current;
+    if (!map || !canvas) return;
     const container = map.getContainer();
     const prevCursor = container.style.cursor;
+    const prevCanvasPE = canvas.style.pointerEvents;
+    const prevCanvasTouchAction = canvas.style.touchAction;
     container.style.cursor = 'crosshair';
+    canvas.style.pointerEvents = 'auto';
+    canvas.style.touchAction = 'none';
+    canvas.style.cursor = 'crosshair';
     map.dragging?.disable();
     map.touchZoom?.disable();
     map.doubleClickZoom?.disable();
@@ -905,7 +918,7 @@ export default function MapTab({ navPadding = 80 }) {
         size: paintBrushSize,
       };
       paintDrawRef.current();
-      try { container.setPointerCapture(e.pointerId); } catch {}
+      try { canvas.setPointerCapture(e.pointerId); } catch {}
       e.preventDefault();
       e.stopPropagation();
     };
@@ -925,7 +938,7 @@ export default function MapTab({ navPadding = 80 }) {
     const onUp = (e) => {
       if (!drawing) return;
       drawing = false;
-      try { container.releasePointerCapture(e.pointerId); } catch {}
+      try { canvas.releasePointerCapture(e.pointerId); } catch {}
       const live = paintLiveRef.current;
       paintLiveRef.current = null;
       if (live && live.points.length > 0) {
@@ -937,16 +950,19 @@ export default function MapTab({ navPadding = 80 }) {
       }
     };
 
-    container.addEventListener('pointerdown', onDown, true);
-    container.addEventListener('pointermove', onMove, true);
-    container.addEventListener('pointerup', onUp, true);
-    container.addEventListener('pointercancel', onUp, true);
+    canvas.addEventListener('pointerdown', onDown);
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerup', onUp);
+    canvas.addEventListener('pointercancel', onUp);
 
     return () => {
-      container.removeEventListener('pointerdown', onDown, true);
-      container.removeEventListener('pointermove', onMove, true);
-      container.removeEventListener('pointerup', onUp, true);
-      container.removeEventListener('pointercancel', onUp, true);
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointermove', onMove);
+      canvas.removeEventListener('pointerup', onUp);
+      canvas.removeEventListener('pointercancel', onUp);
+      canvas.style.pointerEvents = prevCanvasPE;
+      canvas.style.touchAction = prevCanvasTouchAction;
+      canvas.style.cursor = '';
       container.style.cursor = prevCursor;
       map.dragging?.enable();
       map.touchZoom?.enable();
