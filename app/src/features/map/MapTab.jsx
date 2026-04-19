@@ -3,7 +3,7 @@ import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 
-const MAP_W = 16384;
+const MAP_W = 12288;
 const MAP_H = 16384;
 const TILE_SIZE = 256;
 const NATIVE_ZOOM = 6;  // zoom level at which the 16384×16384 tile pyramid is defined
