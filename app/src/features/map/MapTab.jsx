@@ -842,6 +842,7 @@ export default function MapTab({ navPadding = 80 }) {
       ctx.lineJoin = 'round';
       ctx.fillStyle = MAP_BG;
       ctx.strokeStyle = MAP_BG;
+      ctx.globalAlpha = 1;
 
       allStrokes.forEach(stroke => {
         if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
@@ -850,34 +851,25 @@ export default function MapTab({ navPadding = 80 }) {
 
         const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
 
-        // Three-pass overlapping strokes fake an airbrush soft edge without
-        // relying on ctx.filter or shadowBlur (both have cross-browser quirks
-        // that previously made the stroke invisible). Wide faint pass → soft
-        // outer halo; narrow opaque pass → visible core. Always renders.
-        const passes = [
-          { widthMul: 2.6, alpha: 0.22 },
-          { widthMul: 2.0, alpha: 0.40 },
-          { widthMul: 1.4, alpha: 0.85 },
-        ];
-        for (const { widthMul, alpha } of passes) {
-          ctx.globalAlpha = alpha;
-          ctx.lineWidth = Math.max(1, radiusPx * widthMul);
-          if (pts.length === 1) {
-            const c = pts[0];
-            ctx.beginPath();
-            ctx.arc(c.x, c.y, ctx.lineWidth / 2, 0, Math.PI * 2);
-            ctx.fill();
-          } else {
-            ctx.beginPath();
-            pts.forEach((c, i) => {
-              if (i === 0) ctx.moveTo(c.x, c.y);
-              else ctx.lineTo(c.x, c.y);
-            });
-            ctx.stroke();
-          }
+        // Single opaque pass — no multi-pass layering so strokes look flat,
+        // not embossed. Colour matches the ocean exactly, so painting over
+        // artefacts in ocean areas reads as erasing them.
+        ctx.lineWidth = Math.max(1, radiusPx * 2);
+
+        if (pts.length === 1) {
+          const c = pts[0];
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          pts.forEach((c, i) => {
+            if (i === 0) ctx.moveTo(c.x, c.y);
+            else ctx.lineTo(c.x, c.y);
+          });
+          ctx.stroke();
         }
       });
-      ctx.globalAlpha = 1;
     };
     paintDrawRef.current = draw;
     map.on('move zoom viewreset zoomend resize', draw);
