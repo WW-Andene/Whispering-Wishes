@@ -801,8 +801,12 @@ export default function MapTab({ navPadding = 80 }) {
     if (!canvas) {
       canvas = document.createElement('canvas');
       canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:350;';
-      container.appendChild(canvas);
       paintCanvasRef.current = canvas;
+    }
+    // Defensive: make sure the canvas is actually in the map container —
+    // some Leaflet flows (tileLayer reset, invalidateSize) could orphan it.
+    if (canvas.parentNode !== container) {
+      container.appendChild(canvas);
     }
 
     const syncSize = () => {
@@ -822,8 +826,24 @@ export default function MapTab({ navPadding = 80 }) {
     const draw = () => {
       const { dpr, cw, ch } = syncSize();
       const ctx = canvas.getContext('2d');
+      if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
+
+      // DEBUG beacon — magenta + label. Lets the user confirm the paint
+      // canvas is visible and receiving draw calls at all. If this dot is
+      // visible but strokes are not, paint == ocean colour and we have a
+      // contrast problem, not a rendering one. If this dot is ALSO invisible,
+      // the canvas is hidden/covered and we need to fix that first. Safe to
+      // delete once paint is confirmed working.
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#ff00ff';
+      ctx.fillRect(4, 4, 16, 16);
+      ctx.font = '11px monospace';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(`paint canvas ${cw}×${ch} dpr=${dpr}`, 26, 16);
+      ctx.restore();
 
       const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
       const allStrokes = paintLiveRef.current
