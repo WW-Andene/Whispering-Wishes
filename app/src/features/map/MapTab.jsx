@@ -800,7 +800,9 @@ export default function MapTab({ navPadding = 80 }) {
     let canvas = paintCanvasRef.current;
     if (!canvas) {
       canvas = document.createElement('canvas');
-      canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:350;';
+      // DEBUG: z-index 1000 + translucent red bg proves the canvas is mounted
+      // and sized. Remove once paint is confirmed visible.
+      canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:1000;background:rgba(255,0,0,0.18);outline:2px solid magenta;';
       paintCanvasRef.current = canvas;
     }
     // Defensive: make sure the canvas is actually in the map container —
@@ -808,6 +810,19 @@ export default function MapTab({ navPadding = 80 }) {
     if (canvas.parentNode !== container) {
       container.appendChild(canvas);
     }
+    // Log once per mount so we can see in console if anything's weird.
+    // eslint-disable-next-line no-console
+    console.log('[paint] canvas mounted', {
+      inDom: document.body.contains(canvas),
+      parent: canvas.parentNode && canvas.parentNode.className,
+      clientW: container.clientWidth,
+      clientH: container.clientHeight,
+      canvasW: canvas.width,
+      canvasH: canvas.height,
+      computedZ: getComputedStyle(canvas).zIndex,
+      computedDisplay: getComputedStyle(canvas).display,
+      computedOpacity: getComputedStyle(canvas).opacity,
+    });
 
     const syncSize = () => {
       const dpr = window.devicePixelRatio || 1;
