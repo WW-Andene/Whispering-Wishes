@@ -970,6 +970,73 @@ export default function MapTab({ navPadding = 80 }) {
     savePaintStrokes([]);
   }, []);
 
+  // Export/import the entire editor state (zones + sub-maps + paint) as a
+  // single JSON blob so it can be backed up, swapped between devices, or
+  // shipped to me for hard-coding into the app as a seed.
+  const configImportInputRef = useRef(null);
+
+  const handleExportConfig = useCallback(() => {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      zoneDrafts: drafts,
+      overlayDrafts: overlayDrafts,
+      paintStrokes: paintStrokes,
+    };
+    try {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      a.href = url;
+      a.download = `map-editor-config-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Exported');
+    } catch (err) {
+      showToast('Export failed: ' + err.message);
+    }
+  }, [drafts, overlayDrafts, paintStrokes]);
+
+  const handleImportConfigClick = useCallback(() => {
+    configImportInputRef.current?.click();
+  }, []);
+
+  const handleImportConfigFile = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      let applied = 0;
+      if (Array.isArray(data.zoneDrafts)) {
+        setDrafts(data.zoneDrafts);
+        saveDrafts(data.zoneDrafts);
+        applied++;
+      }
+      if (Array.isArray(data.overlayDrafts)) {
+        setOverlayDrafts(data.overlayDrafts);
+        saveOverlayDrafts(data.overlayDrafts);
+        applied++;
+      }
+      if (Array.isArray(data.paintStrokes)) {
+        setPaintStrokes(data.paintStrokes);
+        savePaintStrokes(data.paintStrokes);
+        applied++;
+      }
+      if (applied === 0) {
+        showToast('No valid sections found in file');
+      } else {
+        showToast(`Imported ${applied} section${applied === 1 ? '' : 's'}`);
+      }
+    } catch (err) {
+      showToast('Import failed: ' + err.message);
+    }
+  }, []);
+
   const handleAddOverlay = useCallback((catalogId) => {
     const cat = OVERLAY_CATALOG.find(c => c.id === catalogId);
     if (!cat) return;
@@ -2035,6 +2102,28 @@ export default function MapTab({ navPadding = 80 }) {
                       className="overlay-slider"
                     />
                   </div>
+                </div>
+
+                {/* ── Config export / import — backup & restore the whole editor state ── */}
+                <div className="divider" />
+                <div className="drafts-head"><span>Editor config</span></div>
+                <div className="row">
+                  <button className="zone-author-btn" type="button" onClick={handleExportConfig}>
+                    Export JSON
+                  </button>
+                  <button className="zone-author-btn" type="button" onClick={handleImportConfigClick}>
+                    Import JSON
+                  </button>
+                  <input
+                    ref={configImportInputRef}
+                    type="file"
+                    accept="application/json,.json"
+                    style={{ display: 'none' }}
+                    onChange={handleImportConfigFile}
+                  />
+                </div>
+                <div className="hint" style={{ fontSize: 10, opacity: 0.7 }}>
+                  Exports zones + sub-maps + paint as one JSON. Paste that file into chat and I can ship it as an app-wide seed.
                 </div>
 
                 {drafts.length > 0 && (
