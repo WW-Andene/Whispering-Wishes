@@ -9,9 +9,16 @@ export const OVERLAY_CATALOG = [
   {
     id: 'lahai-roi',
     name: 'Lahai Roi',
-    imageUrl: 'map-tiles/lahai_roi.webp',
-    naturalWidth: 4096,
-    naturalHeight: 4096,
+    imageUrl: 'map-tiles/lahai-roi/Lahai_roi.webp',
+    naturalWidth: 8192,
+    naturalHeight: 8192,
+  },
+  {
+    id: 'tethys-deep',
+    name: 'Tethys Deep',
+    imageUrl: 'map-tiles/Tethys_Deep/Tethys_Deep.webp',
+    naturalWidth: 8192,
+    naturalHeight: 8192,
   },
   {
     id: 'hualong-outlines',
