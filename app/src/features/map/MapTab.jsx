@@ -367,7 +367,7 @@ export default function MapTab({ navPadding = 80 }) {
       map.setMaxBounds(paddedBounds);
       map.fitBounds(bounds, { paddingTopLeft: [0, headerH], paddingBottomRight: [0, footerH] });
 
-      const tileLayer = L.tileLayer(BASE + 'map-tiles/{z}/{y}/{x}.webp', {
+      const tileLayer = L.tileLayer(BASE + 'map-tiles/Solaris_3/{z}/{y}/{x}.webp', {
         minZoom,
         maxZoom: MAX_ZOOM,
         maxNativeZoom: 6,
