@@ -189,9 +189,11 @@ export default function MapTab({ navPadding = 80 }) {
       if (!byParent.has(pid)) byParent.set(pid, []);
       byParent.get(pid).push(z);
     });
-    // Stable order: by level then name
+    // Sort siblings by level, then preserve insertion order (user-controlled
+    // via up/down arrows in the drafts list). Canonical zones come first
+    // within the same level since they're loaded before drafts.
     for (const list of byParent.values()) {
-      list.sort((a, b) => (a.level ?? 99) - (b.level ?? 99) || (a.name || '').localeCompare(b.name || ''));
+      list.sort((a, b) => (a.level ?? 99) - (b.level ?? 99));
     }
     return byParent;
   }, [drafts]);
@@ -298,17 +300,45 @@ export default function MapTab({ navPadding = 80 }) {
       if (!byParent.has(pid)) byParent.set(pid, []);
       byParent.get(pid).push(d);
     });
+    // Sort each sibling group by level (insertion order preserved within
+    // same level so up/down arrows give predictable reorders).
+    for (const list of byParent.values()) {
+      list.sort((a, b) => (a.level ?? 99) - (b.level ?? 99));
+    }
     const out = [];
     const walk = (pid, depth) => {
       const kids = byParent.get(pid) || [];
       kids.forEach((c, i) => {
-        out.push({ ...c, depth, isLast: i === kids.length - 1 });
+        out.push({ ...c, depth, isFirst: i === 0, isLast: i === kids.length - 1 });
         walk(c.id, depth + 1);
       });
     };
     walk(null, 0);
     return out;
   }, [drafts]);
+
+  const handleMoveDraft = (id, direction) => {
+    const idx = drafts.findIndex(d => d.id === id);
+    if (idx < 0) return;
+    const draft = drafts[idx];
+    const draftIds = new Set(drafts.map(d => d.id));
+    const myParent = draft.parentId && draftIds.has(draft.parentId) ? draft.parentId : null;
+    // Siblings (same parent) at the same level — only reorder within this group
+    const siblings = drafts
+      .map((d, i) => ({ d, i }))
+      .filter(x => {
+        const xp = x.d.parentId && draftIds.has(x.d.parentId) ? x.d.parentId : null;
+        return xp === myParent && (x.d.level ?? 99) === (draft.level ?? 99);
+      });
+    const sibPos = siblings.findIndex(x => x.d.id === id);
+    const targetSibPos = sibPos + direction;
+    if (targetSibPos < 0 || targetSibPos >= siblings.length) return;
+    const targetIdx = siblings[targetSibPos].i;
+    const next = [...drafts];
+    [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+    setDrafts(next);
+    saveDrafts(next);
+  };
 
   // Measure the map card's header so the floor picker sits the same visual
   // gap below it as it does from the card's left edge.
@@ -2232,8 +2262,6 @@ export default function MapTab({ navPadding = 80 }) {
                     <div className="draft-tree">
                       {draftTree.map(node => {
                         const isEditing = node.id === editingId;
-                        // Drafts whose parent is canonical (not in drafts) sit at root,
-                        // but we show the canonical parent name as a breadcrumb.
                         const canonicalParentName = node.depth === 0 && node.parentId
                           ? (MAP_ZONES.find(p => p.id === node.parentId)?.name || node.parentId)
                           : null;
@@ -2252,6 +2280,22 @@ export default function MapTab({ navPadding = 80 }) {
                               {canonicalParentName && <span className="drsub">› {canonicalParentName}</span>}
                             </span>
                             <span className="row" style={{ gap: 4 }}>
+                              <button
+                                className="edit-btn"
+                                type="button"
+                                onClick={() => handleMoveDraft(node.id, -1)}
+                                disabled={node.isFirst}
+                                aria-label={`Move ${node.name} up`}
+                                title="Move up"
+                              >▲</button>
+                              <button
+                                className="edit-btn"
+                                type="button"
+                                onClick={() => handleMoveDraft(node.id, 1)}
+                                disabled={node.isLast}
+                                aria-label={`Move ${node.name} down`}
+                                title="Move down"
+                              >▼</button>
                               {!isEditing && (
                                 <button className="edit-btn" type="button" onClick={() => handleEditDraft(node.id)} aria-label={`Edit ${node.name}`}>Edit</button>
                               )}
