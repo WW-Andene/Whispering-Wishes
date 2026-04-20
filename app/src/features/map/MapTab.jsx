@@ -189,12 +189,9 @@ export default function MapTab({ navPadding = 80 }) {
       if (!byParent.has(pid)) byParent.set(pid, []);
       byParent.get(pid).push(z);
     });
-    // Sort siblings by level, then preserve insertion order (user-controlled
-    // via up/down arrows in the drafts list). Canonical zones come first
-    // within the same level since they're loaded before drafts.
-    for (const list of byParent.values()) {
-      list.sort((a, b) => (a.level ?? 99) - (b.level ?? 99));
-    }
+    // Preserve user-defined order from the drafts array + MAP_ZONES order
+    // for canonical zones. The up/down arrows in the drafts panel drive
+    // both this tree and the drafts list, regardless of level.
     return byParent;
   }, [drafts]);
 
