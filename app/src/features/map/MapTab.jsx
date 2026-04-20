@@ -2001,7 +2001,6 @@ export default function MapTab({ navPadding = 80 }) {
               {!zoneSelectorCollapsed && (
                 <div className="zone-selector-list">
                   {(() => {
-                    const draftIds = new Set(drafts.map(d => d.id));
                     const renderNode = (zone, depth) => {
                       const children = zoneNav.get(zone.id) || [];
                       const hasChildren = children.length > 0;
@@ -2009,22 +2008,6 @@ export default function MapTab({ navPadding = 80 }) {
                       // Indent by level (L1 → 0, L2 → 1 unit, L3 → 2 …),
                       // falling back to tree depth when level is unset.
                       const indentLevel = (zone.level != null ? zone.level - 1 : depth);
-                      const isDraft = draftIds.has(zone.id);
-                      // Find siblings in the drafts array for up/down (same
-                      // parent). Only drafts can be reordered.
-                      let canMoveUp = false, canMoveDown = false;
-                      if (isDraft) {
-                        const myParent = zone.parentId && draftIds.has(zone.parentId) ? zone.parentId : null;
-                        const siblings = drafts
-                          .map((d, i) => ({ d, i }))
-                          .filter(x => {
-                            const xp = x.d.parentId && draftIds.has(x.d.parentId) ? x.d.parentId : null;
-                            return xp === myParent;
-                          });
-                        const pos = siblings.findIndex(x => x.d.id === zone.id);
-                        canMoveUp = pos > 0;
-                        canMoveDown = pos < siblings.length - 1;
-                      }
                       return (
                         <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
                           <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
@@ -2042,26 +2025,6 @@ export default function MapTab({ navPadding = 80 }) {
                               <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
                               <span className="zone-selector-name">{zone.name || zone.id}</span>
                             </button>
-                            {isDraft && (
-                              <>
-                                <button
-                                  type="button"
-                                  className="zone-selector-edit-btn"
-                                  onClick={(e) => { e.stopPropagation(); handleMoveDraft(zone.id, -1); }}
-                                  disabled={!canMoveUp}
-                                  aria-label={`Move ${zone.name} up`}
-                                  title="Move up"
-                                >▲</button>
-                                <button
-                                  type="button"
-                                  className="zone-selector-edit-btn"
-                                  onClick={(e) => { e.stopPropagation(); handleMoveDraft(zone.id, 1); }}
-                                  disabled={!canMoveDown}
-                                  aria-label={`Move ${zone.name} down`}
-                                  title="Move down"
-                                >▼</button>
-                              </>
-                            )}
                             {zone.overlayId && (
                               <button
                                 type="button"
