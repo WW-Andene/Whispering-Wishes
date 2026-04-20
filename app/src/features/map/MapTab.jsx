@@ -300,11 +300,6 @@ export default function MapTab({ navPadding = 80 }) {
       if (!byParent.has(pid)) byParent.set(pid, []);
       byParent.get(pid).push(d);
     });
-    // Sort each sibling group by level (insertion order preserved within
-    // same level so up/down arrows give predictable reorders).
-    for (const list of byParent.values()) {
-      list.sort((a, b) => (a.level ?? 99) - (b.level ?? 99));
-    }
     const out = [];
     const walk = (pid, depth) => {
       const kids = byParent.get(pid) || [];
@@ -317,18 +312,20 @@ export default function MapTab({ navPadding = 80 }) {
     return out;
   }, [drafts]);
 
+  // Move a draft up/down among ALL its siblings (same parent), regardless
+  // of level — gives the user full ordering control. The auto level sort
+  // happens in zoneNav for display in the top-right tree only.
   const handleMoveDraft = (id, direction) => {
     const idx = drafts.findIndex(d => d.id === id);
     if (idx < 0) return;
     const draft = drafts[idx];
     const draftIds = new Set(drafts.map(d => d.id));
     const myParent = draft.parentId && draftIds.has(draft.parentId) ? draft.parentId : null;
-    // Siblings (same parent) at the same level — only reorder within this group
     const siblings = drafts
       .map((d, i) => ({ d, i }))
       .filter(x => {
         const xp = x.d.parentId && draftIds.has(x.d.parentId) ? x.d.parentId : null;
-        return xp === myParent && (x.d.level ?? 99) === (draft.level ?? 99);
+        return xp === myParent;
       });
     const sibPos = siblings.findIndex(x => x.d.id === id);
     const targetSibPos = sibPos + direction;
@@ -2265,14 +2262,18 @@ export default function MapTab({ navPadding = 80 }) {
                         const canonicalParentName = node.depth === 0 && node.parentId
                           ? (MAP_ZONES.find(p => p.id === node.parentId)?.name || node.parentId)
                           : null;
+                        // Indent by level (L1 → 0, L2 → 14, L3 → 28). Falls
+                        // back to draft tree depth when level is unset so
+                        // every row still has SOME indentation.
+                        const indentLevel = (node.level != null ? node.level - 1 : node.depth);
                         return (
                           <div
                             key={node.id}
-                            className={`draft-row depth-${Math.min(node.depth, 9)} ${isEditing ? 'is-editing' : ''}`}
-                            style={{ paddingLeft: 4 + node.depth * 14 }}
+                            className={`draft-row depth-${Math.min(indentLevel, 9)} ${isEditing ? 'is-editing' : ''}`}
+                            style={{ paddingLeft: 4 + indentLevel * 14 }}
                           >
                             <span className="drname">
-                              {node.depth > 0 && <span className="tree-glyph">└─ </span>}
+                              {indentLevel > 0 && <span className="tree-glyph">└─ </span>}
                               <span className={`lvl-tag ${node.level == null ? 'is-unset' : ''}`}>
                                 {node.level != null ? `L${node.level}` : '—'}
                               </span>
