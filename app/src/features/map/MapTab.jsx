@@ -1403,6 +1403,31 @@ export default function MapTab({ navPadding = 80 }) {
     return Math.max(1, Math.min(50, Math.round(n)));
   };
 
+  const handleSaveSubzone = () => {
+    if (authorPoints.length < 3) return;
+    if (!editingId) return;
+    const level = parseLevel(draftLevel);
+    const parent = drafts.find(d => d.id === editingId)
+      || MAP_ZONES.find(z => z.id === editingId);
+    const baseName = parent?.name ? `${parent.name} / sub ${drafts.filter(d => d.parentId === editingId).length + 1}` : `Subzone ${drafts.length + 1}`;
+    const existingIds = new Set([...MAP_ZONES.map(z => z.id), ...drafts.map(z => z.id)]);
+    let id = slugify(baseName);
+    let suffix = 2;
+    while (existingIds.has(id)) { id = `${slugify(baseName)}-${suffix++}`; }
+    const next = {
+      id,
+      name: baseName,
+      polygon: authorPoints,
+      parentId: editingId,
+      ...(level ? { level } : {}),
+    };
+    const updated = [...drafts, next];
+    setDrafts(updated);
+    saveDrafts(updated);
+    setAuthorPoints([]);
+    showToast(`Saved subzone "${baseName}"`);
+  };
+
   const handleSaveDraft = () => {
     if (authorPoints.length < 3) return;
     const level = parseLevel(draftLevel);
@@ -2109,6 +2134,17 @@ export default function MapTab({ navPadding = 80 }) {
                   <button className="zone-author-btn is-active" type="button" onClick={handleSaveDraft} disabled={authorPoints.length < 3}>
                     {editingId ? 'Update zone' : 'Save zone'}
                   </button>
+                  {pointMode && editingId && (
+                    <button
+                      className="zone-author-btn"
+                      type="button"
+                      onClick={handleSaveSubzone}
+                      disabled={authorPoints.length < 3}
+                      title="Save current points as a child zone of the one being edited"
+                    >
+                      Save as subzone
+                    </button>
+                  )}
                   {editingId && (
                     <button className="zone-author-btn is-danger" type="button" onClick={handleCancelEdit}>Cancel edit</button>
                   )}
