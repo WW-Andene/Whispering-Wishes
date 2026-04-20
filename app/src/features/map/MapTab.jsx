@@ -100,6 +100,7 @@ export default function MapTab({ navPadding = 80 }) {
   });
   const [authorMode, setAuthorMode] = useState(false);
   const [freehandMode, setFreehandMode] = useState(false);
+  const [pointMode, setPointMode] = useState(false);
   const freehandTraceRef = useRef(null);
   // Ocean-paint tool state — tap/drag to blot map artefacts with ocean color.
   const [paintMode, setPaintMode] = useState(false);
@@ -424,6 +425,7 @@ export default function MapTab({ navPadding = 80 }) {
     if (!authorMode) return;
     if (freehandMode) return;
     if (paintMode) return;
+    if (!pointMode) return;
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
       if (gestureActiveRef.current) return;
@@ -436,7 +438,7 @@ export default function MapTab({ navPadding = 80 }) {
       map.off('click', handler);
       if (map.doubleClickZoom) map.doubleClickZoom.enable();
     };
-  }, [authorMode, freehandMode, paintMode, mapReady]);
+  }, [authorMode, freehandMode, paintMode, pointMode, mapReady]);
 
   // Freehand draw mode: hold + drag on the map to trace a shape; on release
   // the traced path is simplified (RDP) into polygon points that replace
@@ -2087,10 +2089,18 @@ export default function MapTab({ navPadding = 80 }) {
                 </div>
                 <div className="row">
                   <button
+                    className={`zone-author-btn ${pointMode ? 'is-active' : ''}`}
+                    type="button"
+                    aria-pressed={pointMode}
+                    onClick={() => { setPointMode(v => !v); if (!pointMode) { setFreehandMode(false); setPaintMode(false); } }}
+                  >
+                    {pointMode ? 'Point: on' : 'Point'}
+                  </button>
+                  <button
                     className={`zone-author-btn ${freehandMode ? 'is-active' : ''}`}
                     type="button"
                     aria-pressed={freehandMode}
-                    onClick={() => setFreehandMode(v => !v)}
+                    onClick={() => { setFreehandMode(v => !v); if (!freehandMode) { setPointMode(false); setPaintMode(false); } }}
                   >
                     {freehandMode ? 'Freehand: on' : 'Freehand'}
                   </button>
