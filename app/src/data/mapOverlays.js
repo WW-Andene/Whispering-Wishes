@@ -28,6 +28,13 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 9984,
   },
   {
+    id: 'vault-underground',
+    name: 'Vault Underground',
+    imageUrl: 'map-tiles/Vault Underground/Vault Underground.webp',
+    naturalWidth: 8192,
+    naturalHeight: 8192,
+  },
+  {
     id: 'hualong-outlines',
     name: 'Huanglong Outlines',
     imageUrl: 'map-tiles/hualong_outlines.png',
