@@ -21,6 +21,13 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 8192,
   },
   {
+    id: 'avinoleum',
+    name: 'Avinoleum',
+    imageUrl: 'map-tiles/Avinoleum/Avinoleum.webp',
+    naturalWidth: 9216,
+    naturalHeight: 9984,
+  },
+  {
     id: 'hualong-outlines',
     name: 'Huanglong Outlines',
     imageUrl: 'map-tiles/hualong_outlines.png',
