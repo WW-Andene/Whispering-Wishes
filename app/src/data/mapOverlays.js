@@ -3,7 +3,10 @@
 // Catalog entry: available sub-map image (id, name, imageUrl, natural dimensions).
 // Placement draft: where/how the user has placed one on the main map
 //   { id, catalogId, name, center: [x, y], scale, rotation, floor, opacity }.
-// Placements live in localStorage under ww-overlay-drafts.
+// Placements live in localStorage under ww-overlay-drafts; first visit is
+// seeded from DEFAULT_OVERLAY_DRAFTS in mapDefaults.js.
+
+import { DEFAULT_OVERLAY_DRAFTS } from './mapDefaults.js';
 
 export const OVERLAY_CATALOG = [
   {
@@ -53,13 +56,13 @@ export const OVERLAY_CATALOG = [
 const KEY = 'ww-overlay-drafts';
 
 export function loadOverlayDrafts() {
-  if (typeof localStorage === 'undefined') return [];
+  if (typeof localStorage === 'undefined') return DEFAULT_OVERLAY_DRAFTS;
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
+    if (raw === null) return DEFAULT_OVERLAY_DRAFTS;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
+    return Array.isArray(parsed) ? parsed : DEFAULT_OVERLAY_DRAFTS;
+  } catch { return DEFAULT_OVERLAY_DRAFTS; }
 }
 
 export function saveOverlayDrafts(list) {

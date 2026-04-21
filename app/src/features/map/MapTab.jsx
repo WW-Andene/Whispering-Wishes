@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
+import { DEFAULT_ZONE_DRAFTS } from '../../data/mapDefaults.js';
 
 const MAP_W = 12288;
 const MAP_H = 16384;
@@ -20,13 +21,13 @@ const COLOR_DRAFT = '#38bdf8';   // cyan — session drafts
 const COLOR_ACTIVE = '#edaf18';  // gold dashed — in-progress polygon
 
 function loadDrafts() {
-  if (typeof localStorage === 'undefined') return [];
+  if (typeof localStorage === 'undefined') return DEFAULT_ZONE_DRAFTS;
   try {
     const raw = localStorage.getItem(DRAFTS_KEY);
-    if (!raw) return [];
+    if (raw === null) return DEFAULT_ZONE_DRAFTS;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
+    return Array.isArray(parsed) ? parsed : DEFAULT_ZONE_DRAFTS;
+  } catch { return DEFAULT_ZONE_DRAFTS; }
 }
 function saveDrafts(list) {
   try { localStorage.setItem(DRAFTS_KEY, JSON.stringify(list)); } catch {}
