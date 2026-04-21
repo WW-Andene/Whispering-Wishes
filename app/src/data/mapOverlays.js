@@ -45,6 +45,20 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 8192,
   },
   {
+    id: 'honami-city',
+    name: 'Honami City',
+    imageUrl: 'map-tiles/Honami_City/Honami_City.webp',
+    naturalWidth: 8192,
+    naturalHeight: 8192,
+  },
+  {
+    id: 'chronorift-metropolis',
+    name: 'Chronorift Metropolis',
+    imageUrl: 'map-tiles/chronorift-metropolis/chronorift-metropolis.webp',
+    naturalWidth: 8192,
+    naturalHeight: 8192,
+  },
+  {
     id: 'hualong-outlines',
     name: 'Huanglong Outlines',
     imageUrl: 'map-tiles/hualong_outlines.png',
