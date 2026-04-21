@@ -35,6 +35,13 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 8192,
   },
   {
+    id: 'fabricatorium-of-the-deep',
+    name: 'Fabricatorium of the Deep',
+    imageUrl: 'map-tiles/Fabricatorium of the deep/Fabricatorium of the deep.webp',
+    naturalWidth: 13312,
+    naturalHeight: 8192,
+  },
+  {
     id: 'hualong-outlines',
     name: 'Huanglong Outlines',
     imageUrl: 'map-tiles/hualong_outlines.png',
