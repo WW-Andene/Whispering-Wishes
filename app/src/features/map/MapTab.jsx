@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pen } from 'lucide-react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -1519,7 +1520,10 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [editingOverlayId, overlayDrafts, viewFloor, mapReady, handleUpdateOverlay]);
 
-  // Triple-tap on header toggles author-enabled
+  // Triple-tap on header toggles author-enabled. Unlocking author also
+  // enters draw mode in one shot (opens the editor panel); locking fully
+  // exits — matches the "edition feature lives inside the editor panel"
+  // flow where the only entry/exit is the triple-tap.
   const handleHeaderTap = useCallback(() => {
     const now = Date.now();
     headerTapsRef.current = [...headerTapsRef.current.filter(t => now - t < 700), now];
@@ -1530,26 +1534,17 @@ export default function MapTab({ navPadding = 80 }) {
         try { localStorage.setItem(AUTHOR_FLAG_KEY, next ? '1' : ''); } catch {}
         setToast(next ? 'Zone author unlocked' : 'Zone author locked');
         setTimeout(() => setToast(''), 1800);
-        if (!next) { setAuthorMode(false); setAuthorPoints([]); setJsonSnippet(''); }
+        if (next) {
+          setAuthorMode(true);
+          setPanelCollapsed(false);
+        } else {
+          setAuthorMode(false); setAuthorPoints([]); setJsonSnippet('');
+        }
         return next;
       });
     }
   }, []);
 
-  const toggleAuthorMode = useCallback(() => {
-    setAuthorMode(prev => {
-      const next = !prev;
-      if (!next) {
-        setAuthorPoints([]);
-        setJsonSnippet('');
-        setEditingId(null);
-        setDraftName('');
-        setDraftParent('');
-        setDraftLevel('');
-      }
-      return next;
-    });
-  }, []);
 
   const handleUndo = () => setAuthorPoints(prev => prev.slice(0, -1));
   const handleClear = () => { setAuthorPoints([]); setJsonSnippet(''); };
@@ -2085,18 +2080,7 @@ export default function MapTab({ navPadding = 80 }) {
               onClick={handleHeaderTap}
               style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}
             >
-              <CardHeader
-                action={authorEnabled ? (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); toggleAuthorMode(); }}
-                    className={`zone-author-btn ${authorMode ? 'is-active' : ''}`}
-                    aria-pressed={authorMode}
-                  >
-                    {authorMode ? 'Exit draw' : `Draw zone${drafts.length ? ` (${drafts.length})` : ''}`}
-                  </button>
-                ) : null}
-              >
+              <CardHeader>
                 Interactive Map
               </CardHeader>
             </div>
@@ -2214,6 +2198,26 @@ export default function MapTab({ navPadding = 80 }) {
                       Editing <span className="edit-banner-name">{drafts.find(d => d.id === editingId)?.name || editingId}</span>
                     </div>
                   ) : <div style={{ flex: 1 }} />}
+                  <button
+                    type="button"
+                    className="zone-author-btn is-active"
+                    onClick={() => {
+                      // Exit the editor entirely — clears author-unlock so the
+                      // panel disappears. Triple-tap the card header to re-enter.
+                      try { localStorage.setItem(AUTHOR_FLAG_KEY, ''); } catch {}
+                      setAuthorEnabled(false);
+                      setAuthorMode(false);
+                      setAuthorPoints([]);
+                      setJsonSnippet('');
+                      setToast('Zone author locked');
+                      setTimeout(() => setToast(''), 1800);
+                    }}
+                    aria-label="Exit editor"
+                    title="Exit editor (triple-tap map header to re-open)"
+                    style={{ padding: '2px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Pen size={12} /> Exit
+                  </button>
                   <button
                     type="button"
                     className="zone-author-btn"
