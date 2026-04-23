@@ -2026,7 +2026,7 @@ export default function MapTab({ navPadding = 80 }) {
           border-color: ${COLOR_CANON};
         }
         .zone-author-panel .row {
-          display: flex; gap: var(--space-xs, 6px); flex-wrap: wrap; align-items: center;
+          display: flex; gap: var(--space-sm, 8px); flex-wrap: wrap; align-items: center;
         }
         .zone-author-panel .count { color: ${COLOR_CANON}; font-weight: 700; }
         .zone-author-panel .hint {
@@ -2035,7 +2035,7 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .zone-author-panel .field {
           display: flex; flex-direction: column;
-          gap: 2px; flex: 1 1 140px; min-width: 0;
+          gap: 2px; flex: 1 1 auto; min-width: 0;
         }
         .zone-author-panel .field label {
           color: var(--text-body); opacity: 0.6;
@@ -2050,7 +2050,8 @@ export default function MapTab({ navPadding = 80 }) {
           border-radius: var(--input-radius, var(--radius-md, 7px));
           font-family: var(--font-display);
           font-size: 12px;
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          padding: 8px 10px;
+          min-height: 28px;
           outline: none; min-width: 0; width: 100%;
           transition: border-color var(--transition-fast, 120ms);
         }
@@ -2069,7 +2070,7 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-panel .divider {
           height: 1px;
           background: var(--border-subtle);
-          margin: 2px 0;
+          margin: var(--space-md, 12px) 0;
         }
         .zone-author-panel .drafts-head {
           display: flex; justify-content: space-between; align-items: center;
@@ -2078,8 +2079,8 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .zone-author-panel .draft-row {
           display: flex; justify-content: space-between; align-items: center;
-          gap: var(--space-xs, 6px);
-          padding: 3px 0;
+          gap: var(--space-sm, 8px);
+          padding: 6px 0;
           border-bottom: 1px dashed rgba(var(--color-cyan), 0.15);
           font-size: 11px;
         }
@@ -2191,7 +2192,7 @@ export default function MapTab({ navPadding = 80 }) {
           color: var(--text-heading);
           border: 1px solid var(--border-medium);
           border-radius: var(--input-radius, var(--radius-md, 7px));
-          padding: 4px var(--space-sm, 8px);
+          padding: 6px var(--space-sm, 8px);
           font-family: var(--font-display);
           font-size: 12px;
           font-weight: 500;
@@ -2212,8 +2213,8 @@ export default function MapTab({ navPadding = 80 }) {
           display: flex; flex-direction: column;
           gap: var(--space-xs, 4px);
           padding: var(--space-sm, 8px);
-          min-width: 160px;
-          max-width: 240px;
+          min-width: 200px;
+          max-width: 300px;
           max-height: 60vh;
           overflow: auto;
           background: var(--bg-card);
@@ -2278,7 +2279,7 @@ export default function MapTab({ navPadding = 80 }) {
           overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .zone-selector-row {
-          display: flex; align-items: stretch; gap: var(--space-xs, 4px);
+          display: flex; align-items: stretch; gap: var(--space-sm, 8px);
         }
         .zone-selector-row .zone-selector-item { flex: 1 1 auto; }
 
@@ -2303,13 +2304,16 @@ export default function MapTab({ navPadding = 80 }) {
           gap: var(--space-xs, 6px);
         }
         .lock-badge, .tree-badge {
-          font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
-          padding: 0 4px;
+          font-size: 9px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          padding: 2px 6px;
           border-radius: var(--radius-xs, 3px);
           margin-left: var(--space-xs, 4px);
         }
         .lock-badge {
-          background: rgba(148, 163, 184, 0.18); color: #94a3b8;
+          background: rgba(148, 163, 184, 0.18);
+          color: #94a3b8;
           border: 1px solid rgba(148, 163, 184, 0.4);
         }
         .tree-badge {
