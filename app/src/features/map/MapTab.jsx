@@ -3532,28 +3532,62 @@ export default function MapTab({ navPadding = 80 }) {
                 <div className="divider" />
                 <div className="drafts-head">
                   <span>Map icons ({iconDrafts.length})</span>
-                  <button
-                    type="button"
-                    className="kuro-btn kuro-btn-sm"
-                    onClick={() => {
-                      const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
-                      const firstKind = MAP_ICON_CATALOG[0];
-                      const next = [...iconDrafts, {
-                        id,
-                        kind: firstKind?.id || '',
-                        category: firstKind?.category || 'Uncategorised',
-                        subcategory: firstKind?.subcategory || '',
-                        x: MAP_W / 2,
-                        y: MAP_H / 2,
-                        label: '',
-                        locked: false,
-                      }];
-                      saveIconDrafts(next);
-                    }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                  >
-                    <Plus size={12} /> Add
-                  </button>
+                  {(() => {
+                    const lockableCount = iconDrafts.filter(ic => !ic.locked).length;
+                    const treeAddableCount = iconDrafts.filter(ic => !ic.locked && ic.zoneId).length;
+                    const allLocked = iconDrafts.length > 0 && lockableCount === 0;
+                    return (
+                      <div className="row" style={{ gap: 4, flex: '0 0 auto' }}>
+                        <button
+                          type="button"
+                          className="kuro-btn kuro-btn-sm"
+                          disabled={iconDrafts.length === 0}
+                          title={allLocked ? 'Unlock every icon (restores editing)' : `Lock ${lockableCount} icon${lockableCount === 1 ? '' : 's'}`}
+                          onClick={() => {
+                            // Toggle: if everything is already locked,
+                            // unlock all; otherwise lock all.
+                            const nextLocked = !allLocked;
+                            saveIconDrafts(iconDrafts.map(ic => ({ ...ic, locked: nextLocked })));
+                          }}
+                        >
+                          {allLocked ? 'Unlock all' : 'Lock all'}
+                        </button>
+                        <button
+                          type="button"
+                          className="kuro-btn kuro-btn-sm"
+                          disabled={treeAddableCount === 0}
+                          title={`Lock + add ${treeAddableCount} icon${treeAddableCount === 1 ? '' : 's'} to the Regions tree (icons without a zone are skipped)`}
+                          onClick={() => {
+                            saveIconDrafts(iconDrafts.map(ic => ic.zoneId && !ic.locked ? { ...ic, locked: true } : ic));
+                          }}
+                        >
+                          Add all
+                        </button>
+                        <button
+                          type="button"
+                          className="kuro-btn kuro-btn-sm"
+                          onClick={() => {
+                            const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
+                            const firstKind = MAP_ICON_CATALOG[0];
+                            const next = [...iconDrafts, {
+                              id,
+                              kind: firstKind?.id || '',
+                              category: firstKind?.category || 'Uncategorised',
+                              subcategory: firstKind?.subcategory || '',
+                              x: MAP_W / 2,
+                              y: MAP_H / 2,
+                              label: '',
+                              locked: false,
+                            }];
+                            saveIconDrafts(next);
+                          }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <Plus size={12} /> Add
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
                 {iconDrafts.length === 0 && (
                   <div className="hint" style={{ fontSize: 10, padding: '4px 0' }}>
