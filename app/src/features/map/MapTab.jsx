@@ -1343,15 +1343,29 @@ export default function MapTab({ navPadding = 80 }) {
       [item.id]: { ...(prev[item.id] || {}), downloading: true, done: 0, total: prev[item.id]?.total || item.urls.length },
     }));
     try {
-      await downloadTiles(item, (done, total) => {
+      const { failed } = await downloadTiles(item, (done, total) => {
         setOverlayOffline(prev => ({ ...prev, [item.id]: { cached: done, total, downloading: true, done } }));
       });
       const { cached, total } = await queryTiles(item);
       setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: cached } }));
-      showToast(`Saved ${item.name} for offline (${total} tiles)`);
+      if (failed > 0) {
+        showToast(`Saved ${item.name} — ${cached}/${total} tiles (${failed} failed, retry to catch them)`, 3200);
+      } else {
+        showToast(`Saved ${item.name} for offline (${total} tiles)`);
+      }
     } catch (err) {
-      setOverlayOffline(prev => ({ ...prev, [item.id]: { ...(prev[item.id] || {}), downloading: false } }));
-      showToast('Download failed: ' + (err?.message || err));
+      // Refresh state from the SW so the UI reflects what was actually cached
+      // before the stall/error (partial progress).
+      try {
+        const { cached, total } = await queryTiles(item);
+        setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: cached } }));
+      } catch {
+        setOverlayOffline(prev => ({ ...prev, [item.id]: { ...(prev[item.id] || {}), downloading: false } }));
+      }
+      const msg = err?.message === 'service-worker-stalled'
+        ? 'Download stalled — browser may have paused the service worker. Retry to resume.'
+        : 'Download failed: ' + (err?.message || err);
+      showToast(msg, 3500);
     }
   }, []);
 

@@ -170,12 +170,19 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Handle messages
-self.addEventListener('message', async (event) => {
+// NOTE: any async work triggered from here MUST be wrapped in
+// event.waitUntil(), otherwise the browser can terminate the service worker
+// as soon as the synchronous portion of the handler returns — and the
+// pending fetches/cache writes are dropped on the floor. That was the root
+// cause of the "downloads stop at random" bug.
+self.addEventListener('message', (event) => {
   if (event.data === 'skipWaiting') self.skipWaiting();
   if (event.data === 'clearImageCache') {
-    caches.delete(IMG_CACHE).then(() => {
-      event.source?.postMessage('imageCacheCleared');
-    });
+    event.waitUntil(
+      caches.delete(IMG_CACHE).then(() => {
+        event.source?.postMessage('imageCacheCleared');
+      })
+    );
   }
   // Version sync from app — keeps cache names aligned with app version
   if (event.data?.type === 'SET_VERSION' && event.data.version) {
@@ -195,61 +202,97 @@ self.addEventListener('message', async (event) => {
   const reply = (msg) => event.source?.postMessage(msg);
 
   if (data.type === 'download-overlay' && Array.isArray(data.urls)) {
-    const { id, urls } = data;
-    try {
-      const cache = await caches.open(TILE_CACHE);
-      let done = 0;
-      const total = urls.length;
-      const CONCURRENCY = 6; // bound parallel fetches so we don't DoS the server
-      let cursor = 0;
-      const workers = Array.from({ length: CONCURRENCY }, async () => {
-        while (cursor < total) {
-          const idx = cursor++;
-          const url = urls[idx];
-          try {
-            const existing = await cache.match(url);
-            if (!existing) {
-              const resp = await fetch(url, { cache: 'no-cache' });
-              if (resp.ok) await cache.put(url, resp);
-            }
-          } catch {}
-          done++;
-          if (done % 8 === 0 || done === total) reply({ type: 'download-progress', id, done, total });
-        }
-      });
-      await Promise.all(workers);
-      reply({ type: 'download-done', id, total });
-    } catch (err) {
-      reply({ type: 'download-error', id, error: String(err) });
-    }
+    event.waitUntil(handleDownloadOverlay(data, reply));
     return;
   }
 
   if (data.type === 'purge-overlay' && Array.isArray(data.urls)) {
-    const { id, urls } = data;
-    try {
-      const cache = await caches.open(TILE_CACHE);
-      await Promise.all(urls.map((u) => cache.delete(u)));
-      reply({ type: 'purge-done', id });
-    } catch (err) {
-      reply({ type: 'purge-error', id, error: String(err) });
-    }
+    event.waitUntil(handlePurgeOverlay(data, reply));
     return;
   }
 
   if (data.type === 'query-overlay' && Array.isArray(data.urls)) {
-    const { id, urls } = data;
-    try {
-      const cache = await caches.open(TILE_CACHE);
-      let cached = 0;
-      for (const u of urls) {
-        if (await cache.match(u)) cached++;
-      }
-      reply({ type: 'query-result', id, cached, total: urls.length });
-    } catch (err) {
-      reply({ type: 'query-error', id, error: String(err) });
-    }
+    event.waitUntil(handleQueryOverlay(data, reply));
     return;
   }
 });
+
+// Download one tile with retries so a transient network blip doesn't leave
+// gaps in the cache. Returns true on success, false if all attempts failed.
+async function fetchTileWithRetry(cache, url, maxAttempts = 3) {
+  const existing = await cache.match(url);
+  if (existing) return true;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const resp = await fetch(url);
+      if (resp.ok) {
+        await cache.put(url, resp);
+        return true;
+      }
+      // 5xx is retryable; 4xx (tile doesn't exist) is not.
+      if (resp.status < 500) return false;
+    } catch {
+      /* network error — fall through to backoff */
+    }
+    // Exponential backoff: 200 ms, 600 ms, 1.4 s. Plus jitter.
+    if (attempt < maxAttempts - 1) {
+      const delay = 200 * Math.pow(3, attempt) + Math.floor(Math.random() * 150);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  return false;
+}
+
+async function handleDownloadOverlay(data, reply) {
+  const { id, urls } = data;
+  try {
+    const cache = await caches.open(TILE_CACHE);
+    let done = 0;
+    let failed = 0;
+    const total = urls.length;
+    const CONCURRENCY = 6; // bound parallel fetches so we don't DoS the server
+    let cursor = 0;
+    const workers = Array.from({ length: CONCURRENCY }, async () => {
+      while (cursor < total) {
+        const idx = cursor++;
+        const url = urls[idx];
+        const ok = await fetchTileWithRetry(cache, url);
+        if (!ok) failed++;
+        done++;
+        if (done % 8 === 0 || done === total) {
+          reply({ type: 'download-progress', id, done, total, failed });
+        }
+      }
+    });
+    await Promise.all(workers);
+    reply({ type: 'download-done', id, total, failed });
+  } catch (err) {
+    reply({ type: 'download-error', id, error: String(err) });
+  }
+}
+
+async function handlePurgeOverlay(data, reply) {
+  const { id, urls } = data;
+  try {
+    const cache = await caches.open(TILE_CACHE);
+    await Promise.all(urls.map((u) => cache.delete(u)));
+    reply({ type: 'purge-done', id });
+  } catch (err) {
+    reply({ type: 'purge-error', id, error: String(err) });
+  }
+}
+
+async function handleQueryOverlay(data, reply) {
+  const { id, urls } = data;
+  try {
+    const cache = await caches.open(TILE_CACHE);
+    let cached = 0;
+    for (const u of urls) {
+      if (await cache.match(u)) cached++;
+    }
+    reply({ type: 'query-result', id, cached, total: urls.length });
+  } catch (err) {
+    reply({ type: 'query-error', id, error: String(err) });
+  }
+}
 // BUILD: v3.5.0

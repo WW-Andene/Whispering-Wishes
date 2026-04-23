@@ -66,24 +66,42 @@ function nextId(itemId, prefix) {
   return `${prefix}:${itemId}:${Date.now().toString(36)}:${Math.floor(Math.random() * 1e6).toString(36)}`;
 }
 
+// Max time without ANY progress update before we assume the SW died
+// (e.g. browser evicted it) and reject the caller. The download itself can
+// run for minutes; this is a stall detector, not a total budget.
+const CALL_STALL_MS = 60_000;
+
 function callSW(message, { matchId, terminal, onProgress }) {
   return new Promise((resolve, reject) => {
     const sw = swController();
     if (!sw) { reject(new Error('no-service-worker')); return; }
+
+    let stallTimer = null;
+    const resetStall = () => {
+      if (stallTimer) clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        navigator.serviceWorker.removeEventListener('message', handler);
+        reject(new Error('service-worker-stalled'));
+      }, CALL_STALL_MS);
+    };
+
     const handler = (event) => {
       const msg = event.data;
       if (!msg || typeof msg !== 'object' || msg.id !== matchId) return;
+      resetStall();
       if (onProgress && msg.type === 'download-progress') {
-        onProgress(msg.done, msg.total);
+        onProgress(msg.done, msg.total, msg.failed || 0);
         return;
       }
       if (terminal.includes(msg.type)) {
+        if (stallTimer) clearTimeout(stallTimer);
         navigator.serviceWorker.removeEventListener('message', handler);
         if (msg.type.endsWith('-error')) reject(new Error(msg.error || msg.type));
         else resolve(msg);
       }
     };
     navigator.serviceWorker.addEventListener('message', handler);
+    resetStall();
     sw.postMessage(message);
   });
 }
@@ -96,7 +114,7 @@ export async function downloadTiles(item, onProgress) {
     { type: 'download-overlay', id, urls: item.urls },
     { matchId: id, terminal: ['download-done', 'download-error'], onProgress }
   );
-  return { total: res.total };
+  return { total: res.total, failed: res.failed || 0 };
 }
 
 export async function purgeTiles(item) {
