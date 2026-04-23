@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pen } from 'lucide-react';
+import { Pen, Settings, Download, Trash2 } from 'lucide-react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -138,6 +138,10 @@ export default function MapTab({ navPadding = 80 }) {
   // Populated on mount by querying the tile-cache service worker; updated
   // live during downloads so the UI can show a progress indicator.
   const [overlayOffline, setOverlayOffline] = useState({});
+  // Downloads popover (gear icon) — shown to all users.
+  const [downloadsOpen, setDownloadsOpen] = useState(false);
+  const downloadsAnchorRef = useRef(null);
+  const downloadsPanelRef = useRef(null);
   const [expandedZones, setExpandedZones] = useState(() => new Set());
   const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
@@ -1266,26 +1270,28 @@ export default function MapTab({ navPadding = 80 }) {
     }
   }, [overlayDrafts, drafts, overlayBoundsPolygon, editingOverlayId]);
 
-  // Query the service-worker tile cache on mount (and when the set of
-  // distinct catalog ids in use changes) so the UI can show "X/N cached"
-  // without the user having to click anything.
+  // Query the service-worker tile cache on mount for every tileable catalog
+  // entry (imageUrl ending in .webp — those are the ones we sliced into
+  // /lossless/ PNG tiles). Populates the gear-icon downloads panel with
+  // accurate "X/N cached" labels without any user action.
+  const tileableCatalog = useMemo(
+    () => OVERLAY_CATALOG.filter(c => c.imageUrl?.endsWith?.('.webp')),
+    [],
+  );
   useEffect(() => {
     if (!serviceWorkerAvailable()) return;
-    const cats = new Set(overlayDrafts.map(o => o.catalogId));
     let cancelled = false;
     (async () => {
-      for (const cid of cats) {
-        const cat = OVERLAY_CATALOG.find(c => c.id === cid);
-        if (!cat) continue;
+      for (const cat of tileableCatalog) {
         try {
           const { cached, total } = await queryOverlay(cat);
           if (cancelled) return;
-          setOverlayOffline(prev => ({ ...prev, [cid]: { ...(prev[cid] || {}), cached, total } }));
+          setOverlayOffline(prev => ({ ...prev, [cat.id]: { ...(prev[cat.id] || {}), cached, total } }));
         } catch {}
       }
     })();
     return () => { cancelled = true; };
-  }, [overlayDrafts]);
+  }, [tileableCatalog]);
 
   const handleDownloadOverlay = useCallback(async (cat) => {
     if (!serviceWorkerAvailable()) {
@@ -1308,6 +1314,14 @@ export default function MapTab({ navPadding = 80 }) {
       showToast('Download failed: ' + (err?.message || err));
     }
   }, []);
+
+  const handleDownloadAll = useCallback(async () => {
+    for (const cat of tileableCatalog) {
+      // Await sequentially so the SW isn't hammered and we don't spawn
+      // concurrent progress streams that'd overwrite each other.
+      await handleDownloadOverlay(cat);
+    }
+  }, [tileableCatalog, handleDownloadOverlay]);
 
   const handlePurgeOverlay = useCallback(async (cat) => {
     if (!serviceWorkerAvailable()) return;
@@ -1519,6 +1533,18 @@ export default function MapTab({ navPadding = 80 }) {
       overlayRedrawRef.current();
     };
   }, [editingOverlayId, overlayDrafts, viewFloor, mapReady, handleUpdateOverlay]);
+
+  // Close the downloads popover when clicking outside it.
+  useEffect(() => {
+    if (!downloadsOpen) return;
+    const onDown = (e) => {
+      if (downloadsPanelRef.current?.contains(e.target)) return;
+      if (downloadsAnchorRef.current?.contains(e.target)) return;
+      setDownloadsOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [downloadsOpen]);
 
   // Triple-tap on header toggles author-enabled. Unlocking author also
   // enters draw mode in one shot (opens the editor panel); locking fully
@@ -2080,10 +2106,141 @@ export default function MapTab({ navPadding = 80 }) {
               onClick={handleHeaderTap}
               style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}
             >
-              <CardHeader>
+              <CardHeader
+                action={
+                  <button
+                    ref={downloadsAnchorRef}
+                    type="button"
+                    className={`zone-author-btn ${downloadsOpen ? 'is-active' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => !v); }}
+                    aria-label="Offline downloads"
+                    aria-expanded={downloadsOpen}
+                    title="Offline downloads"
+                    style={{ padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <Settings size={14} />
+                  </button>
+                }
+              >
                 Interactive Map
               </CardHeader>
             </div>
+
+            {downloadsOpen && (
+              <div
+                ref={downloadsPanelRef}
+                className="map-downloads-panel"
+                role="dialog"
+                aria-label="Offline map downloads"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  top: `${headerHeight + 8}px`,
+                  right: 12,
+                  zIndex: 500,
+                  background: MAP_BG,
+                  border: '1px solid rgba(148, 163, 184, 0.3)',
+                  borderRadius: 8,
+                  padding: 10,
+                  width: 280,
+                  maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
+                  overflow: 'auto',
+                  boxShadow: '0 10px 28px rgba(0, 0, 0, 0.5)',
+                  fontSize: 12,
+                }}
+              >
+                {(() => {
+                  const anyDownloading = tileableCatalog.some(c => overlayOffline[c.id]?.downloading);
+                  const allCached = tileableCatalog.every(c => {
+                    const o = overlayOffline[c.id];
+                    return o && o.total > 0 && o.cached >= o.total;
+                  });
+                  return (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <strong style={{ fontSize: 12, letterSpacing: '0.04em' }}>Offline maps</strong>
+                        <button
+                          type="button"
+                          className="zone-author-btn"
+                          onClick={() => setDownloadsOpen(false)}
+                          aria-label="Close"
+                          style={{ padding: '2px 8px' }}
+                        >✕</button>
+                      </div>
+                      <button
+                        type="button"
+                        className="zone-author-btn"
+                        onClick={handleDownloadAll}
+                        disabled={anyDownloading || allCached}
+                        style={{ width: '100%', padding: '6px 8px', marginBottom: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      >
+                        <Download size={12} />
+                        {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${tileableCatalog.length} maps`}
+                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {tileableCatalog.map(cat => {
+                          const off = overlayOffline[cat.id] || {};
+                          const total = off.total || 0;
+                          const cached = off.cached || 0;
+                          const downloading = !!off.downloading;
+                          const full = total > 0 && cached >= total;
+                          const pct = total > 0 ? Math.round((off.done || cached) / total * 100) : 0;
+                          return (
+                            <div
+                              key={cat.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 6,
+                                padding: '4px 2px',
+                                borderTop: '1px solid rgba(148, 163, 184, 0.15)',
+                              }}
+                            >
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {cat.name}
+                                </div>
+                                <div style={{ fontSize: 10, opacity: 0.65 }}>
+                                  {downloading
+                                    ? `${pct}% · ${off.done || 0}/${total}`
+                                    : total > 0 ? `${cached}/${total} tiles` : '—'}
+                                </div>
+                              </div>
+                              {full ? (
+                                <button
+                                  type="button"
+                                  className="zone-author-btn"
+                                  onClick={() => handlePurgeOverlay(cat)}
+                                  disabled={downloading}
+                                  title={`Remove ${cat.name} from offline cache`}
+                                  aria-label={`Remove ${cat.name}`}
+                                  style={{ padding: '4px 6px', display: 'inline-flex', alignItems: 'center' }}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="zone-author-btn"
+                                  onClick={() => handleDownloadOverlay(cat)}
+                                  disabled={downloading}
+                                  title={`Download ${cat.name} for offline`}
+                                  aria-label={`Download ${cat.name}`}
+                                  style={{ padding: '4px 6px', display: 'inline-flex', alignItems: 'center' }}
+                                >
+                                  <Download size={12} />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
 
             {/* Floor picker — same var(--space-md) gap on top and sides */}
             <div className="floor-picker" role="group" aria-label="Floor" style={{ top: `${headerHeight + 12}px` }}>
