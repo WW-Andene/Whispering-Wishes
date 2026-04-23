@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Download, Trash2 } from 'lucide-react';
+import { Settings, Download, Trash2, LocateFixed, Pen } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -146,13 +146,6 @@ export default function MapTab({ navPadding = 80 }) {
   const downloadsPanelRef = useRef(null);
   const [expandedZones, setExpandedZones] = useState(() => new Set());
   const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
-  // Zone selector "click twice to confirm" arming — first click on a zone
-  // marks it pending; second click within ZONE_ARM_MS fires the navigation.
-  // Clicking a different zone re-arms on that one. Prevents accidentally
-  // yanking the user out of their current view while browsing the tree.
-  const [pendingZoneId, setPendingZoneId] = useState(null);
-  const pendingZoneTimerRef = useRef(null);
-  const ZONE_ARM_MS = 2500;
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
   const overlayRedrawRef = useRef(() => {});       // exposes draw() to the gesture effect
@@ -826,13 +819,13 @@ export default function MapTab({ navPadding = 80 }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
 
-      // Dark mask behind the sub-maps — flat 50% whenever the view is off
+      // Dark mask behind the sub-maps — flat 75% whenever the view is off
       // floor 0, regardless of distance. Painted first so overlays sit on
       // top and render at full clarity; base tiles below show through at
-      // 50% opacity.
+      // 25% opacity.
       if (viewFloor !== 0) {
         ctx.save();
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.75;
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, cw, ch);
         ctx.restore();
@@ -917,19 +910,14 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [overlayDrafts, viewFloor, mapReady]);
 
-  // Cleanup shared canvas + any pending zone-arm timer on unmount. The
-  // module-scoped tile cache is left in place on purpose so revisiting the
-  // Map tab reuses decoded tiles instead of re-fetching — the LRU cap keeps
-  // memory bounded.
+  // Cleanup shared canvas on unmount. The module-scoped tile cache is left
+  // in place on purpose so revisiting the Map tab reuses decoded tiles
+  // instead of re-fetching — the LRU cap keeps memory bounded.
   useEffect(() => {
     return () => {
       if (overlayCanvasRef.current) {
         overlayCanvasRef.current.remove();
         overlayCanvasRef.current = null;
-      }
-      if (pendingZoneTimerRef.current) {
-        clearTimeout(pendingZoneTimerRef.current);
-        pendingZoneTimerRef.current = null;
       }
     };
   }, []);
@@ -2195,34 +2183,17 @@ export default function MapTab({ navPadding = 80 }) {
           box-shadow: var(--shadow-md);
           backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
         }
-        .floor-picker button {
-          background: var(--bg-btn);
-          color: var(--text-heading);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius);
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
-          font-family: var(--font-display);
-          font-size: var(--font-base, 13px);
-          font-weight: 500;
-          letter-spacing: 0.02em;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
-        }
-        .floor-picker button:hover {
-          background: rgba(var(--color-gold), 0.15);
-          border-color: ${COLOR_CANON};
-          color: ${COLOR_CANON};
-        }
+        /* Floor picker buttons inherit size/shape/hover from .kuro-btn-sm */
+        .floor-picker .kuro-btn { width: 100%; }
         .floor-picker input {
-          width: 44px;
+          width: 44px; min-height: 28px;
           background: var(--bg-input);
           color: var(--text-heading);
           border: 1px solid var(--border-medium);
           border-radius: var(--input-radius, var(--radius-md, 7px));
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          padding: 4px var(--space-sm, 8px);
           font-family: var(--font-display);
-          font-size: var(--font-base, 13px);
+          font-size: 12px;
           font-weight: 500;
           letter-spacing: 0.02em;
           text-align: center; outline: none;
@@ -2252,27 +2223,15 @@ export default function MapTab({ navPadding = 80 }) {
           backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
         }
         .zone-selector.is-collapsed { max-height: none; overflow: visible; }
+        /* Head + items inherit full Kuro-button visuals (size, radius,
+           hover). We only add layout tweaks (left align, text-transform
+           for the head, disabled-but-not-ghosted for leaves) here. */
         .zone-selector-head {
-          display: flex; align-items: center; gap: var(--space-xs, 4px);
-          width: 100%;
-          font-family: var(--font-display);
-          font-size: var(--font-base, 13px);
-          color: var(--text-heading);
-          letter-spacing: 0;
           text-transform: uppercase;
+          letter-spacing: 0;
           font-kerning: none;
-          background: var(--bg-btn);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius);
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
-        }
-        .zone-selector-head:hover {
-          background: rgba(var(--color-gold), 0.12);
-          border-color: ${COLOR_CANON};
-          color: ${COLOR_CANON};
+          justify-content: flex-start;
+          gap: var(--space-xs, 4px);
         }
         .zone-selector-count {
           margin-left: auto;
@@ -2282,7 +2241,7 @@ export default function MapTab({ navPadding = 80 }) {
           border-radius: var(--radius-sm, 5px);
           padding: 0 6px;
         }
-        .zone-selector-list { display: flex; flex-direction: column; gap: 2px; }
+        .zone-selector-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
         .zone-selector-empty {
           padding: var(--space-sm, 8px);
           font-family: var(--font-display);
@@ -2292,34 +2251,23 @@ export default function MapTab({ navPadding = 80 }) {
           text-align: center;
         }
         .zone-selector-item {
-          display: flex; align-items: center; gap: var(--space-xs, 4px);
-          width: 100%;
-          background: var(--bg-btn);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius);
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
-          color: var(--text-heading);
-          font-family: var(--font-display);
-          font-size: var(--font-base, 13px);
+          justify-content: flex-start;
           text-align: left;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
+          gap: var(--space-xs, 4px);
         }
-        .zone-selector-item:hover {
-          background: rgba(var(--color-gold), 0.12);
-          border-color: ${COLOR_CANON};
-          color: ${COLOR_CANON};
+        /* Leaves are disabled-but-readable: no dim, just no hover affordance. */
+        .zone-selector-item[disabled] {
+          opacity: 1;
+          filter: none;
+          cursor: default;
+          pointer-events: auto;
         }
-        .zone-selector-item.is-armed {
-          background: rgba(var(--color-gold), 0.2);
-          border-color: ${COLOR_CANON};
-          color: ${COLOR_CANON};
-          animation: zone-armed-pulse 1s ease-in-out infinite;
-        }
-        @keyframes zone-armed-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-gold), 0.35); }
-          50% { box-shadow: 0 0 0 3px rgba(var(--color-gold), 0.08); }
+        .zone-selector-item[disabled]:hover {
+          background: var(--bg-btn);
+          border-color: var(--border-medium);
+          color: var(--text-heading);
+          transform: none;
+          box-shadow: var(--shadow-md);
         }
         .zone-selector-caret {
           display: inline-block; width: 10px; text-align: center;
@@ -2329,26 +2277,10 @@ export default function MapTab({ navPadding = 80 }) {
           flex: 1 1 auto;
           overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .zone-selector-row { display: flex; align-items: stretch; gap: var(--space-xs, 4px); }
+        .zone-selector-row {
+          display: flex; align-items: stretch; gap: var(--space-xs, 4px);
+        }
         .zone-selector-row .zone-selector-item { flex: 1 1 auto; }
-        .zone-selector-edit-btn {
-          flex: 0 0 auto;
-          display: inline-flex; align-items: center; justify-content: center;
-          width: 28px;
-          background: var(--bg-btn);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius);
-          color: ${COLOR_CANON};
-          font-family: var(--font-display);
-          font-size: 14px;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms);
-        }
-        .zone-selector-edit-btn:hover {
-          background: rgba(var(--color-gold), 0.18);
-          border-color: ${COLOR_CANON};
-        }
 
         /* ── Sub-map overlay rows (editor panel) ──────────────────────── */
         .overlay-row {
@@ -2538,14 +2470,14 @@ export default function MapTab({ navPadding = 80 }) {
 
             {/* Floor picker — same var(--space-md) gap on top and sides */}
             <div className="floor-picker" role="group" aria-label="Floor" style={{ top: `${headerHeight + 12}px` }}>
-              <button type="button" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
+              <button type="button" className="kuro-btn kuro-btn-sm kuro-btn-icon" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
               <input
                 type="number"
                 value={viewFloor}
                 onChange={(e) => { const v = parseInt(e.target.value, 10); if (Number.isFinite(v)) setViewFloor(v); }}
                 aria-label="Floor"
               />
-              <button type="button" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
+              <button type="button" className="kuro-btn kuro-btn-sm kuro-btn-icon" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
             </div>
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
@@ -2560,7 +2492,7 @@ export default function MapTab({ navPadding = 80 }) {
             >
               <button
                 type="button"
-                className="zone-selector-head"
+                className="kuro-btn kuro-btn-sm zone-selector-head"
                 onClick={() => setZoneSelectorCollapsed(v => !v)}
                 aria-label={zoneSelectorCollapsed ? 'Expand zone selector' : 'Collapse zone selector'}
               >
@@ -2585,38 +2517,33 @@ export default function MapTab({ navPadding = 80 }) {
                           <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
                             <button
                               type="button"
-                              className={`zone-selector-item ${pendingZoneId === zone.id ? 'is-armed' : ''}`}
-                              onClick={() => {
-                                // Parents: toggle expand on every click.
-                                if (hasChildren) toggleZoneExpanded(zone.id);
-                                // Second click on the same armed zone fires
-                                // the navigation. First click just arms.
-                                if (pendingZoneId === zone.id) {
-                                  if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
-                                  setPendingZoneId(null);
-                                  handleFlyToZone(zone);
-                                  return;
-                                }
-                                setPendingZoneId(zone.id);
-                                if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
-                                pendingZoneTimerRef.current = setTimeout(() => setPendingZoneId(null), ZONE_ARM_MS);
-                                showToast(`Tap again to open ${zone.name || zone.id}`, ZONE_ARM_MS);
-                              }}
-                              aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse, click again to open)' : ' (expand, click again to open)' : ' (click again to open)'}`}
-                              title={hasChildren ? 'Click to expand · click again to open' : 'Click to arm · click again to open'}
+                              className="kuro-btn kuro-btn-sm zone-selector-item"
+                              onClick={() => { if (hasChildren) toggleZoneExpanded(zone.id); }}
+                              disabled={!hasChildren}
+                              aria-label={hasChildren ? `${zone.name || zone.id} — ${expanded ? 'collapse' : 'expand'}` : zone.name || zone.id}
+                              title={hasChildren ? (expanded ? 'Collapse' : 'Expand') : zone.name || zone.id}
                             >
                               <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
                               <span className="zone-selector-name">{zone.name || zone.id}</span>
                             </button>
+                            <button
+                              type="button"
+                              className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                              onClick={() => handleFlyToZone(zone)}
+                              aria-label={`Go to ${zone.name || zone.id}`}
+                              title={`Go to ${zone.name || zone.id}`}
+                            >
+                              <LocateFixed size={14} />
+                            </button>
                             {zone.overlayId && authorMode && (
                               <button
                                 type="button"
-                                className="zone-selector-edit-btn"
+                                className="kuro-btn kuro-btn-sm kuro-btn-icon"
                                 onClick={(e) => { e.stopPropagation(); handlePushSubMapToEdit(zone); }}
                                 aria-label={`Push "${zone.name || zone.id}" back to sub-map editor`}
                                 title="Push back to sub-map editor"
                               >
-                                ✎
+                                <Pen size={14} />
                               </button>
                             )}
                           </div>
