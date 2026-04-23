@@ -208,6 +208,13 @@ export default function MapTab({ navPadding = 80 }) {
       return next;
     });
   }, []);
+  // Place-on-map mode — stores the id of the icon awaiting a map click.
+  // When non-null, the next map click sets its x/y and clears this state.
+  // Mirrored to a ref so the author-mode click handler can stand down
+  // (it'd otherwise add a zone-polygon vertex to the same click).
+  const [placingIconId, setPlacingIconId] = useState(null);
+  const placingIconIdRef = useRef(null);
+  useEffect(() => { placingIconIdRef.current = placingIconId; }, [placingIconId]);
   // L2-leaf confirm: first tap on a leaf arms it, second tap within
   // ZONE_ARM_MS fires handleFlyToZone. Leaves don't have an explicit
   // fly-to icon; this prevents accidental navigation when browsing.
@@ -320,6 +327,20 @@ export default function MapTab({ navPadding = 80 }) {
     if (floor != null) setViewFloor(floor);
     else setViewFloor(0); // fallback: any zone with no linked floor → ground
   }, [resolveZoneFloor]);
+
+  const handleFlyToIcon = useCallback((ic) => {
+    const map = mapRef.current;
+    if (!map) return;
+    // If the icon has a floor assignment, switch to it before flying.
+    if (ic.floor != null && Number.isFinite(ic.floor)) setViewFloor(ic.floor);
+    const target = map.unproject([ic.x, ic.y], NATIVE_ZOOM);
+    try {
+      const targetZoom = Math.min(map.getMaxZoom(), NATIVE_ZOOM + 1);
+      map.flyTo(target, targetZoom, { duration: 0.5 });
+    } catch {
+      map.panTo(target);
+    }
+  }, []);
 
   const handleFlyToZone = useCallback((zone) => {
     const map = mapRef.current;
@@ -571,6 +592,9 @@ export default function MapTab({ navPadding = 80 }) {
     if (map.doubleClickZoom) map.doubleClickZoom.disable();
     const handler = (e) => {
       if (gestureActiveRef.current) return;
+      // Icon-place mode preempts zone-point adds — the user is placing
+      // an icon, not drawing a polygon.
+      if (placingIconIdRef.current) return;
       map.closePopup();
       const pt = map.project(e.latlng, NATIVE_ZOOM);
       setAuthorPoints(prev => [...prev, [Math.round(pt.x), Math.round(pt.y)]]);
@@ -981,26 +1005,29 @@ export default function MapTab({ navPadding = 80 }) {
       });
 
       // ── Placed map icons. Drawn last so they sit on top of sub-maps,
-      // at a fixed screen size (so they don't shrink away at low zoom
-      // or grow huge at high zoom). Categories toggled off in the
-      // Hexagon filter are skipped. Icons are floor-agnostic for now.
-      const ICON_PX = 28;
+      // at a fixed base screen size (28 px) multiplied by the icon's
+      // scale. Icons whose floor is set and doesn't match viewFloor
+      // are hidden (icons with floor==null are "all floors"). Categories
+      // toggled off in the Hexagon filter are skipped.
+      const ICON_BASE_PX = 28;
       const trigger = () => overlayRedrawRef.current();
       iconDrafts.forEach((ic) => {
         const cat = getIconCatalogEntry(ic.kind);
         if (!cat) return;
         const category = ic.category || cat.category || 'Uncategorised';
         if (iconFiltersOff.has(category)) return;
+        if (ic.floor != null && ic.floor !== viewFloor) return;
         const img = getIconImage(ic.kind, trigger);
         if (!img || !img.complete || img.naturalWidth === 0) return;
         const pt = map.latLngToContainerPoint(map.unproject([ic.x, ic.y], NATIVE_ZOOM));
-        ctx.drawImage(
-          img,
-          Math.round(pt.x - ICON_PX / 2),
-          Math.round(pt.y - ICON_PX / 2),
-          ICON_PX,
-          ICON_PX,
-        );
+        const size = ICON_BASE_PX * (ic.scale ?? 1);
+        const rot = ((ic.rotation || 0) * Math.PI) / 180;
+        ctx.save();
+        ctx.globalAlpha = ic.opacity ?? 1;
+        ctx.translate(pt.x, pt.y);
+        if (rot) ctx.rotate(rot);
+        ctx.drawImage(img, -size / 2, -size / 2, size, size);
+        ctx.restore();
       });
     };
     overlayRedrawRef.current = draw;
@@ -1690,6 +1717,33 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [editingOverlayId, overlayDrafts, viewFloor, mapReady, handleUpdateOverlay]);
 
+  // Icon place-on-map: next map click writes x/y onto the pending icon
+  // and exits place mode. Cursor goes crosshair while armed.
+  useEffect(() => {
+    if (!placingIconId || !mapReady) return;
+    const map = mapRef.current;
+    if (!map) return;
+    const container = map.getContainer();
+    const prevCursor = container.style.cursor;
+    container.style.cursor = 'crosshair';
+    const onClick = (e) => {
+      const pt = map.project(e.latlng, NATIVE_ZOOM);
+      const x = Math.max(0, Math.min(MAP_W, Math.round(pt.x)));
+      const y = Math.max(0, Math.min(MAP_H, Math.round(pt.y)));
+      setIconDrafts((prev) => {
+        const next = prev.map((ic) => ic.id === placingIconId ? { ...ic, x, y } : ic);
+        try { localStorage.setItem('ww-icon-drafts', JSON.stringify(next)); } catch {}
+        return next;
+      });
+      setPlacingIconId(null);
+    };
+    map.on('click', onClick);
+    return () => {
+      map.off('click', onClick);
+      container.style.cursor = prevCursor;
+    };
+  }, [placingIconId, mapReady]);
+
   // Close the downloads popover when clicking outside it.
   useEffect(() => {
     if (!downloadsOpen) return;
@@ -2378,6 +2432,11 @@ export default function MapTab({ navPadding = 80 }) {
           border-radius: 8px;
         }
         .icon-row + .icon-row { margin-top: var(--space-xs, 6px); }
+        .icon-row.is-active {
+          border-color: ${COLOR_CANON};
+          background: rgba(var(--color-gold), 0.08);
+          box-shadow: 0 0 0 1px rgba(var(--color-gold), 0.25);
+        }
         .icon-preview {
           flex: 0 0 auto;
           width: 32px; height: 32px;
@@ -3312,8 +3371,11 @@ export default function MapTab({ navPadding = 80 }) {
                   const cat = getIconCatalogEntry(ic.kind);
                   const base = (import.meta.env.BASE_URL || '/');
                   const iconSrc = cat ? (base + cat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
+                  const patchIcon = (patch) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, ...patch } : x));
+                  const isPlacing = placingIconId === ic.id;
                   return (
-                    <div key={ic.id} className="icon-row">
+                    <div key={ic.id} className={`icon-row ${isPlacing ? 'is-active' : ''}`}>
+                      {/* Row 1 — preview, kind dropdown, per-icon actions */}
                       <div className="row">
                         <div className="icon-preview" aria-hidden="true">
                           {iconSrc && <img src={iconSrc} alt="" />}
@@ -3324,14 +3386,14 @@ export default function MapTab({ navPadding = 80 }) {
                             value={ic.kind || ''}
                             onChange={(e) => {
                               const nextCat = getIconCatalogEntry(e.target.value);
-                              saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? {
-                                ...x,
+                              const prevCat = getIconCatalogEntry(ic.kind);
+                              patchIcon({
                                 kind: e.target.value,
-                                // Auto-update category if user hadn't customised it.
-                                category: (x.category === getIconCatalogEntry(x.kind)?.category || !x.category)
+                                // Auto-sync category when user hadn't customised it.
+                                category: (!ic.category || ic.category === prevCat?.category)
                                   ? (nextCat?.category || 'Uncategorised')
-                                  : x.category,
-                              } : x));
+                                  : ic.category,
+                              });
                             }}
                           >
                             {MAP_ICON_CATALOG.map(c => (
@@ -3339,6 +3401,15 @@ export default function MapTab({ navPadding = 80 }) {
                             ))}
                           </select>
                         </div>
+                        <button
+                          type="button"
+                          className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                          onClick={() => handleFlyToIcon(ic)}
+                          title={`Zoom to ${ic.label || cat?.name || 'icon'}`}
+                          aria-label="Zoom to icon"
+                        >
+                          <LocateFixed size={14} />
+                        </button>
                         <button
                           type="button"
                           className="kuro-btn kuro-btn-sm kuro-btn-icon is-danger"
@@ -3349,32 +3420,94 @@ export default function MapTab({ navPadding = 80 }) {
                           <Trash2 size={14} />
                         </button>
                       </div>
+
+                      {/* Row 2 — category + label */}
                       <div className="row">
                         <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Category</label>
                           <input
                             type="text"
                             value={ic.category || ''}
-                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, category: e.target.value || 'Uncategorised' } : x))}
+                            onChange={(e) => patchIcon({ category: e.target.value || 'Uncategorised' })}
                             placeholder="Resonance"
                           />
                         </div>
                         <div className="field" style={{ flex: '2 1 0' }}>
                           <label>Label</label>
                           <input type="text" value={ic.label || ''}
-                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, label: e.target.value } : x))} />
+                            onChange={(e) => patchIcon({ label: e.target.value })} />
+                        </div>
+                      </div>
+
+                      {/* Row 3 — place-on-map + X/Y + floor */}
+                      <div className="row">
+                        <button
+                          type="button"
+                          className={`kuro-btn kuro-btn-sm ${isPlacing ? 'is-active' : ''}`}
+                          onClick={() => setPlacingIconId(isPlacing ? null : ic.id)}
+                          title={isPlacing ? 'Cancel placement' : 'Click on map to place'}
+                          style={{ flex: '1 1 auto' }}
+                        >
+                          {isPlacing ? 'Click on map…' : 'Place on map'}
+                        </button>
+                        <div className="field" style={{ flex: '0 0 64px' }}>
+                          <label>X</label>
+                          <input type="number" value={ic.x}
+                            onChange={(e) => patchIcon({ x: Math.round(+e.target.value) || 0 })} />
+                        </div>
+                        <div className="field" style={{ flex: '0 0 64px' }}>
+                          <label>Y</label>
+                          <input type="number" value={ic.y}
+                            onChange={(e) => patchIcon({ y: Math.round(+e.target.value) || 0 })} />
+                        </div>
+                        <div className="field" style={{ flex: '0 0 96px' }}>
+                          <label>Floor</label>
+                          <div className="row" style={{ gap: 2 }}>
+                            <button className="kuro-btn kuro-btn-sm" type="button"
+                              onClick={() => patchIcon({ floor: ic.floor == null ? 0 : ic.floor - 1 })}
+                              style={{ padding: '1px 6px', minHeight: 24 }}>−</button>
+                            <span style={{ minWidth: 28, textAlign: 'center', fontSize: 11 }}>
+                              {ic.floor == null ? 'All' : ic.floor}
+                            </span>
+                            <button className="kuro-btn kuro-btn-sm" type="button"
+                              onClick={() => patchIcon({ floor: ic.floor == null ? 0 : ic.floor + 1 })}
+                              style={{ padding: '1px 6px', minHeight: 24 }}>+</button>
+                            <button className="kuro-btn kuro-btn-sm" type="button"
+                              onClick={() => patchIcon({ floor: ic.floor == null ? 0 : null })}
+                              title={ic.floor == null ? 'Pin to current floor' : 'Show on all floors'}
+                              style={{ padding: '1px 6px', minHeight: 24 }}>
+                              {ic.floor == null ? '·' : '∞'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Row 4 — rotation / scale / opacity sliders */}
+                      <div className="row">
+                        <div className="field" style={{ flex: '1 1 0' }}>
+                          <label>Rotation ({Math.round(ic.rotation ?? 0)}°)</label>
+                          <input type="range" min="0" max="360" step="1"
+                            value={ic.rotation ?? 0}
+                            onChange={(e) => patchIcon({ rotation: +e.target.value })}
+                            className="overlay-slider" />
                         </div>
                       </div>
                       <div className="row">
                         <div className="field" style={{ flex: '1 1 0' }}>
-                          <label>X</label>
-                          <input type="number" value={ic.x}
-                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, x: Math.round(+e.target.value) || 0 } : x))} />
+                          <label>Scale ({(ic.scale ?? 1).toFixed(2)}×)</label>
+                          <input type="range" min="0.3" max="3" step="0.05"
+                            value={ic.scale ?? 1}
+                            onChange={(e) => patchIcon({ scale: +e.target.value })}
+                            className="overlay-slider" />
                         </div>
+                      </div>
+                      <div className="row">
                         <div className="field" style={{ flex: '1 1 0' }}>
-                          <label>Y</label>
-                          <input type="number" value={ic.y}
-                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, y: Math.round(+e.target.value) || 0 } : x))} />
+                          <label>Opacity ({Math.round((ic.opacity ?? 1) * 100)}%)</label>
+                          <input type="range" min="0.1" max="1" step="0.05"
+                            value={ic.opacity ?? 1}
+                            onChange={(e) => patchIcon({ opacity: +e.target.value })}
+                            className="overlay-slider" />
                         </div>
                       </div>
                     </div>
