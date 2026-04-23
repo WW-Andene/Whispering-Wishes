@@ -3,6 +3,7 @@ import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ZONE_DRAFTS } from '../../data/mapDefaults.js';
+import { downloadOverlay, purgeOverlay, queryOverlay, serviceWorkerAvailable } from '../../providers/tileSW.js';
 
 const MAP_W = 12288;
 const MAP_H = 16384;
@@ -18,6 +19,14 @@ const PAINT_KEY = 'ww-paint-strokes';
 
 const COLOR_CANON = '#edaf18';   // brand gold — canonical zones from mapZones.js
 const COLOR_DRAFT = '#38bdf8';   // cyan — session drafts
+
+// Module-scoped overlay tile cache — survives MapTab unmount / tab switches
+// so re-opening the Map instantly re-uses already-decoded tiles instead of
+// re-fetching. Capped LRU ~ keeps memory bounded on low-end devices. The
+// browser HTTP cache (and the offline service worker, when installed) cover
+// persistence across page reloads.
+const OVERLAY_TILE_CACHE = new Map();        // "catalogId:y:x" → HTMLImageElement
+const OVERLAY_TILE_CACHE_LIMIT = 400;
 const COLOR_ACTIVE = '#edaf18';  // gold dashed — in-progress polygon
 
 function loadDrafts() {
@@ -124,10 +133,13 @@ export default function MapTab({ navPadding = 80 }) {
   const [viewFloor, setViewFloor] = useState(0);
   const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
   const [editingOverlayId, setEditingOverlayId] = useState(null);
+  // Offline cache status per catalog id: { cached, total, downloading, done }.
+  // Populated on mount by querying the tile-cache service worker; updated
+  // live during downloads so the UI can show a progress indicator.
+  const [overlayOffline, setOverlayOffline] = useState({});
   const [expandedZones, setExpandedZones] = useState(() => new Set());
   const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
-  const overlayTilesRef = useRef(new Map());       // "catalogId:y:x" → HTMLImageElement (LRU, insertion-ordered)
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
   const overlayRedrawRef = useRef(() => {});       // exposes draw() to the gesture effect
 
@@ -706,12 +718,13 @@ export default function MapTab({ navPadding = 80 }) {
   // used. Keeps the full transform pipeline intact (rotation/scale/drag stay
   // live) while avoiding the 18 MB-per-overlay single-image decode.
   //
-  // Tile cache: a plain Map used as an LRU — re-insertion bumps to the end,
-  // and we drop the oldest when we exceed OVERLAY_TILE_CACHE_LIMIT. Browser
-  // HTTP cache handles cross-session persistence, so eviction here just caps
-  // in-memory decoded bitmaps for slow devices.
+  // Tile cache is module-scoped (OVERLAY_TILE_CACHE) so it survives tab
+  // switches — re-opening the Map tab paints already-decoded tiles without
+  // re-fetching. Re-insertion is used to implement LRU; the oldest tile is
+  // dropped when we exceed OVERLAY_TILE_CACHE_LIMIT. Browser HTTP cache (and
+  // the offline service worker, where installed) cover persistence across
+  // reloads.
   const OVERLAY_TILE_PX = 256;
-  const OVERLAY_TILE_CACHE_LIMIT = 400; // ~400 × 256² RGBA ≈ 100 MB worst case
   const OVERLAY_TILE_MARGIN = 1;        // prefetch 1 tile beyond viewport
 
   useEffect(() => {
@@ -728,7 +741,7 @@ export default function MapTab({ navPadding = 80 }) {
       overlayCanvasRef.current = canvas;
     }
 
-    const tileCache = overlayTilesRef.current;
+    const tileCache = OVERLAY_TILE_CACHE;
 
     const getTile = (cat, ty, tx) => {
       const key = `${cat.id}:${ty}:${tx}`;
@@ -781,13 +794,13 @@ export default function MapTab({ navPadding = 80 }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cw, ch);
 
-      // Dark mask behind the sub-maps — flat 75% whenever the view is off
+      // Dark mask behind the sub-maps — flat 50% whenever the view is off
       // floor 0, regardless of distance. Painted first so overlays sit on
       // top and render at full clarity; base tiles below show through at
-      // 25% opacity.
+      // 50% opacity.
       if (viewFloor !== 0) {
         ctx.save();
-        ctx.globalAlpha = 0.75;
+        ctx.globalAlpha = 0.5;
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, cw, ch);
         ctx.restore();
@@ -872,14 +885,15 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [overlayDrafts, viewFloor, mapReady]);
 
-  // Cleanup shared canvas + tile cache on unmount
+  // Cleanup shared canvas on unmount. The module-scoped tile cache is left
+  // in place on purpose so revisiting the Map tab reuses decoded tiles
+  // instead of re-fetching — the LRU cap keeps memory bounded.
   useEffect(() => {
     return () => {
       if (overlayCanvasRef.current) {
         overlayCanvasRef.current.remove();
         overlayCanvasRef.current = null;
       }
-      overlayTilesRef.current.clear();
     };
   }, []);
 
@@ -1250,6 +1264,61 @@ export default function MapTab({ navPadding = 80 }) {
       setEditingOverlayId(null);
     }
   }, [overlayDrafts, drafts, overlayBoundsPolygon, editingOverlayId]);
+
+  // Query the service-worker tile cache on mount (and when the set of
+  // distinct catalog ids in use changes) so the UI can show "X/N cached"
+  // without the user having to click anything.
+  useEffect(() => {
+    if (!serviceWorkerAvailable()) return;
+    const cats = new Set(overlayDrafts.map(o => o.catalogId));
+    let cancelled = false;
+    (async () => {
+      for (const cid of cats) {
+        const cat = OVERLAY_CATALOG.find(c => c.id === cid);
+        if (!cat) continue;
+        try {
+          const { cached, total } = await queryOverlay(cat);
+          if (cancelled) return;
+          setOverlayOffline(prev => ({ ...prev, [cid]: { ...(prev[cid] || {}), cached, total } }));
+        } catch {}
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [overlayDrafts]);
+
+  const handleDownloadOverlay = useCallback(async (cat) => {
+    if (!serviceWorkerAvailable()) {
+      showToast('Service worker not active — reload and try again');
+      return;
+    }
+    setOverlayOffline(prev => ({
+      ...prev,
+      [cat.id]: { ...(prev[cat.id] || {}), downloading: true, done: 0, total: prev[cat.id]?.total || 0 },
+    }));
+    try {
+      await downloadOverlay(cat, (done, total) => {
+        setOverlayOffline(prev => ({ ...prev, [cat.id]: { cached: done, total, downloading: true, done } }));
+      });
+      const { cached, total } = await queryOverlay(cat);
+      setOverlayOffline(prev => ({ ...prev, [cat.id]: { cached, total, downloading: false, done: cached } }));
+      showToast(`Saved ${cat.name} for offline (${total} tiles)`);
+    } catch (err) {
+      setOverlayOffline(prev => ({ ...prev, [cat.id]: { ...(prev[cat.id] || {}), downloading: false } }));
+      showToast('Download failed: ' + (err?.message || err));
+    }
+  }, []);
+
+  const handlePurgeOverlay = useCallback(async (cat) => {
+    if (!serviceWorkerAvailable()) return;
+    try {
+      await purgeOverlay(cat);
+      const { cached, total } = await queryOverlay(cat);
+      setOverlayOffline(prev => ({ ...prev, [cat.id]: { cached, total, downloading: false, done: 0 } }));
+      showToast(`Removed ${cat.name} offline copy`);
+    } catch (err) {
+      showToast('Remove failed: ' + (err?.message || err));
+    }
+  }, []);
 
   const handleDeleteOverlay = useCallback((id) => {
     // Also remove any linked zone from the tree
@@ -2413,6 +2482,18 @@ export default function MapTab({ navPadding = 80 }) {
                   const locked = !!ov.locked;
                   const inTree = drafts.some(d => d.overlayId === ov.id);
                   const disabled = locked;
+                  const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+                  const off = overlayOffline[ov.catalogId] || {};
+                  const offTotal = off.total || 0;
+                  const offCached = off.cached || 0;
+                  const downloading = !!off.downloading;
+                  const fullyCached = offTotal > 0 && offCached >= offTotal;
+                  const offlineLabel = downloading
+                    ? `${Math.round((off.done / Math.max(offTotal, 1)) * 100)}%`
+                    : fullyCached ? '✓ Offline' : 'Save offline';
+                  const offlineTitle = downloading
+                    ? `Downloading ${off.done}/${offTotal} tiles`
+                    : fullyCached ? `All ${offTotal} tiles cached — click to remove` : `Download ${offTotal || '?'} tiles for offline use`;
                   return (
                     <div key={ov.id} className={`overlay-row ${editing ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`}>
                       <div className="overlay-row-head">
@@ -2423,6 +2504,18 @@ export default function MapTab({ navPadding = 80 }) {
                           {inTree && <span className="tree-badge">tree</span>}
                         </span>
                         <span className="row" style={{ gap: 4 }}>
+                          {cat && (
+                            <button
+                              type="button"
+                              className="edit-btn"
+                              disabled={downloading}
+                              title={offlineTitle}
+                              onClick={() => fullyCached ? handlePurgeOverlay(cat) : handleDownloadOverlay(cat)}
+                              style={{ opacity: downloading ? 0.6 : 1 }}
+                            >
+                              {offlineLabel}
+                            </button>
+                          )}
                           <button className="edit-btn" type="button" onClick={() => setEditingOverlayId(editing ? null : ov.id)}>
                             {editing ? 'Close' : 'Edit'}
                           </button>

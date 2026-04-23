@@ -11,6 +11,14 @@ let IMG_CACHE = `ww-images-v${APP_VERSION}`;
 let CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
 const MAX_IMG_ENTRIES = 250;
 
+// Map-overlay tile cache — independent of APP_VERSION because tile URLs are
+// stable across app deploys. Bumping TILE_CACHE_VERSION is the manual opt-in
+// to force users to re-download tiles (e.g. if we re-slice an overlay).
+const TILE_CACHE_VERSION = 'v1';
+const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
+// A request is a tile iff it matches /<whatever>/lossless/{y}/{x}.png
+const TILE_RE = /\/lossless\/\d+\/\d+\.png$/i;
+
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg'];
@@ -30,9 +38,11 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate — purge old caches
+// Activate — purge old caches. Tile cache is preserved as long as its
+// version-suffixed name matches TILE_CACHE; older ww-tiles-* buckets get
+// cleaned so user-downloaded tiles aren't orphaned on the device.
 self.addEventListener('activate', (event) => {
-  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE];
+  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE, TILE_CACHE];
   event.waitUntil(
     caches.keys().then(names =>
       Promise.all(names.filter(n => !currentCaches.includes(n)).map(n => caches.delete(n)))
@@ -130,6 +140,15 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
+  // Map overlay tiles → dedicated persistent cache, cache-first. Matched
+  // BEFORE the generic image route so these don't get evicted by the
+  // 250-entry image LRU. Users can pre-warm via the "download" button
+  // (download-overlay message) and purge via the "remove" button.
+  if (TILE_RE.test(url.pathname)) {
+    event.respondWith(cacheFirst(event.request, TILE_CACHE));
+    return;
+  }
+
   // CDN assets → cache-first
   if (CDN_DOMAINS.some(d => url.hostname.includes(d))) {
     event.respondWith(cacheFirst(event.request, CDN_CACHE));
@@ -147,7 +166,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Handle messages
-self.addEventListener('message', (event) => {
+self.addEventListener('message', async (event) => {
   if (event.data === 'skipWaiting') self.skipWaiting();
   if (event.data === 'clearImageCache') {
     caches.delete(IMG_CACHE).then(() => {
@@ -160,6 +179,73 @@ self.addEventListener('message', (event) => {
     APP_CACHE = `ww-app-v${APP_VERSION}`;
     IMG_CACHE = `ww-images-v${APP_VERSION}`;
     CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
+  }
+
+  // ── Map overlay offline download API ─────────────────────────────────────
+  // The app sends the full list of tile URLs for one overlay and we bulk-
+  // fetch them into TILE_CACHE. Progress is posted back so the UI can show
+  // a percentage. Purge / query mirror the same shape so the UI can show
+  // "X / N cached" or wipe an overlay's tiles to free storage.
+  const data = event.data;
+  if (!data || typeof data !== 'object') return;
+  const reply = (msg) => event.source?.postMessage(msg);
+
+  if (data.type === 'download-overlay' && Array.isArray(data.urls)) {
+    const { id, urls } = data;
+    try {
+      const cache = await caches.open(TILE_CACHE);
+      let done = 0;
+      const total = urls.length;
+      const CONCURRENCY = 6; // bound parallel fetches so we don't DoS the server
+      let cursor = 0;
+      const workers = Array.from({ length: CONCURRENCY }, async () => {
+        while (cursor < total) {
+          const idx = cursor++;
+          const url = urls[idx];
+          try {
+            const existing = await cache.match(url);
+            if (!existing) {
+              const resp = await fetch(url, { cache: 'no-cache' });
+              if (resp.ok) await cache.put(url, resp);
+            }
+          } catch {}
+          done++;
+          if (done % 8 === 0 || done === total) reply({ type: 'download-progress', id, done, total });
+        }
+      });
+      await Promise.all(workers);
+      reply({ type: 'download-done', id, total });
+    } catch (err) {
+      reply({ type: 'download-error', id, error: String(err) });
+    }
+    return;
+  }
+
+  if (data.type === 'purge-overlay' && Array.isArray(data.urls)) {
+    const { id, urls } = data;
+    try {
+      const cache = await caches.open(TILE_CACHE);
+      await Promise.all(urls.map((u) => cache.delete(u)));
+      reply({ type: 'purge-done', id });
+    } catch (err) {
+      reply({ type: 'purge-error', id, error: String(err) });
+    }
+    return;
+  }
+
+  if (data.type === 'query-overlay' && Array.isArray(data.urls)) {
+    const { id, urls } = data;
+    try {
+      const cache = await caches.open(TILE_CACHE);
+      let cached = 0;
+      for (const u of urls) {
+        if (await cache.match(u)) cached++;
+      }
+      reply({ type: 'query-result', id, cached, total: urls.length });
+    } catch (err) {
+      reply({ type: 'query-error', id, error: String(err) });
+    }
+    return;
   }
 });
 // BUILD: v3.5.0
