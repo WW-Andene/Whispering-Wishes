@@ -2401,12 +2401,16 @@ export default function MapTab({ navPadding = 80 }) {
                               type="button"
                               className="zone-selector-item"
                               onClick={() => {
-                                switchFloorForZone(zone);
+                                // Single click is non-destructive: it just
+                                // expands/collapses for parents, and does
+                                // nothing for leaves (prevents accidentally
+                                // jumping out of the current view). Double-
+                                // click is required to actually navigate.
                                 if (hasChildren) toggleZoneExpanded(zone.id);
-                                else handleFlyToZone(zone);
                               }}
                               onDoubleClick={() => handleFlyToZone(zone)}
-                              aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse)' : ' (expand)' : ''}`}
+                              aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse, double-click to open)' : ' (expand, double-click to open)' : ' (double-click to open)'}`}
+                              title={hasChildren ? 'Click to expand / double-click to open' : 'Double-click to open'}
                             >
                               <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
                               <span className="zone-selector-name">{zone.name || zone.id}</span>
