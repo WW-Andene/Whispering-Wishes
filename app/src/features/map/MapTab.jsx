@@ -4,6 +4,7 @@ import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ZONE_DRAFTS } from '../../data/mapDefaults.js';
+import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog.js';
 import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../providers/tileSW.js';
 
 const MAP_W = 12288;
@@ -20,6 +21,26 @@ const PAINT_KEY = 'ww-paint-strokes';
 
 const COLOR_CANON = '#edaf18';   // brand gold — canonical zones from mapZones.js
 const COLOR_DRAFT = '#38bdf8';   // cyan — session drafts
+
+// Module-scoped cache of decoded HTMLImageElements for map icons.
+// Keyed by catalog id; one <img> per kind is shared across every placed
+// icon draft. Survives tab unmount so re-opening the Map is instant.
+const MAP_ICON_IMAGES = new Map();
+function getIconImage(kindId, onReady) {
+  const cat = getIconCatalogEntry(kindId);
+  if (!cat) return null;
+  const hit = MAP_ICON_IMAGES.get(cat.id);
+  if (hit) return hit;
+  const img = new Image();
+  img.decoding = 'async';
+  const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
+  // Encode each path segment so the "map icons" folder (with space) works.
+  const encoded = cat.imageUrl.split('/').map(encodeURIComponent).join('/');
+  img.src = (base + encoded).replace(/([^:])\/\//g, '$1/');
+  img.onload = () => onReady && onReady();
+  MAP_ICON_IMAGES.set(cat.id, img);
+  return img;
+}
 
 // Module-scoped overlay tile cache — survives MapTab unmount / tab switches
 // so re-opening the Map instantly re-uses already-decoded tiles instead of
@@ -958,6 +979,29 @@ export default function MapTab({ navPadding = 80 }) {
         }
         ctx.restore();
       });
+
+      // ── Placed map icons. Drawn last so they sit on top of sub-maps,
+      // at a fixed screen size (so they don't shrink away at low zoom
+      // or grow huge at high zoom). Categories toggled off in the
+      // Hexagon filter are skipped. Icons are floor-agnostic for now.
+      const ICON_PX = 28;
+      const trigger = () => overlayRedrawRef.current();
+      iconDrafts.forEach((ic) => {
+        const cat = getIconCatalogEntry(ic.kind);
+        if (!cat) return;
+        const category = ic.category || cat.category || 'Uncategorised';
+        if (iconFiltersOff.has(category)) return;
+        const img = getIconImage(ic.kind, trigger);
+        if (!img || !img.complete || img.naturalWidth === 0) return;
+        const pt = map.latLngToContainerPoint(map.unproject([ic.x, ic.y], NATIVE_ZOOM));
+        ctx.drawImage(
+          img,
+          Math.round(pt.x - ICON_PX / 2),
+          Math.round(pt.y - ICON_PX / 2),
+          ICON_PX,
+          ICON_PX,
+        );
+      });
     };
     overlayRedrawRef.current = draw;
 
@@ -967,7 +1011,7 @@ export default function MapTab({ navPadding = 80 }) {
     return () => {
       map.off('move zoom viewreset zoomend resize', draw);
     };
-  }, [overlayDrafts, viewFloor, mapReady]);
+  }, [overlayDrafts, viewFloor, mapReady, iconDrafts, iconFiltersOff]);
 
   // Cleanup shared canvas + any pending zone-arm timer on unmount.
   useEffect(() => {
@@ -2334,6 +2378,16 @@ export default function MapTab({ navPadding = 80 }) {
           border-radius: 8px;
         }
         .icon-row + .icon-row { margin-top: var(--space-xs, 6px); }
+        .icon-preview {
+          flex: 0 0 auto;
+          width: 32px; height: 32px;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--bg-card-inner);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--radius-sm, 5px);
+          overflow: hidden;
+        }
+        .icon-preview img { max-width: 100%; max-height: 100%; display: block; }
         .kuro-btn-sm.is-danger {
           color: #f87171;
           border-color: rgba(var(--color-red), 0.4);
@@ -3217,14 +3271,14 @@ export default function MapTab({ navPadding = 80 }) {
                   </>);
                 })()}
 
-                {/* ── Map icons section — admin-only placeholder for
-                    placing interactive icons (bosses/chests/waypoints/etc.)
-                    on the map. Each icon = { id, category, x, y, label? }.
-                    Data persists via localStorage (ww-icon-drafts).
-                    Visibility in the viewer is driven by the Hexagon
-                    filter popover (iconFiltersOff). Rendering to the
-                    canvas/Leaflet pane is not wired yet — this scaffolds
-                    the authoring surface first. */}
+                {/* ── Map icons section — admin-only authoring surface for
+                    placing interactive icons on the map. Each icon =
+                      { id, kind, category, x, y, label }
+                    where `kind` is an id from mapIconCatalog.js (drives
+                    which PNG renders at that location). `category`
+                    defaults from the catalog entry but can be overridden
+                    per-draft; it drives the Hexagon filter popover.
+                    Persists to localStorage 'ww-icon-drafts'. */}
                 <div className="divider" />
                 <div className="drafts-head">
                   <span>Map icons ({iconDrafts.length})</span>
@@ -3233,9 +3287,11 @@ export default function MapTab({ navPadding = 80 }) {
                     className="kuro-btn kuro-btn-sm"
                     onClick={() => {
                       const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
+                      const firstKind = MAP_ICON_CATALOG[0];
                       const next = [...iconDrafts, {
                         id,
-                        category: 'Uncategorised',
+                        kind: firstKind?.id || '',
+                        category: firstKind?.category || 'Uncategorised',
                         x: MAP_W / 2,
                         y: MAP_H / 2,
                         label: '',
@@ -3252,47 +3308,78 @@ export default function MapTab({ navPadding = 80 }) {
                     No icons yet. Add one to get started. Categories show up in the Hexagon filter menu.
                   </div>
                 )}
-                {iconDrafts.map((ic) => (
-                  <div key={ic.id} className="icon-row">
-                    <div className="row">
-                      <div className="field" style={{ flex: '1 1 0' }}>
-                        <label>Category</label>
-                        <input
-                          type="text"
-                          value={ic.category || ''}
-                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, category: e.target.value || 'Uncategorised' } : x))}
-                          placeholder="e.g. Boss, Chest, Waypoint"
-                        />
+                {iconDrafts.map((ic) => {
+                  const cat = getIconCatalogEntry(ic.kind);
+                  const base = (import.meta.env.BASE_URL || '/');
+                  const iconSrc = cat ? (base + cat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
+                  return (
+                    <div key={ic.id} className="icon-row">
+                      <div className="row">
+                        <div className="icon-preview" aria-hidden="true">
+                          {iconSrc && <img src={iconSrc} alt="" />}
+                        </div>
+                        <div className="field" style={{ flex: '1 1 0' }}>
+                          <label>Kind</label>
+                          <select
+                            value={ic.kind || ''}
+                            onChange={(e) => {
+                              const nextCat = getIconCatalogEntry(e.target.value);
+                              saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? {
+                                ...x,
+                                kind: e.target.value,
+                                // Auto-update category if user hadn't customised it.
+                                category: (x.category === getIconCatalogEntry(x.kind)?.category || !x.category)
+                                  ? (nextCat?.category || 'Uncategorised')
+                                  : x.category,
+                              } : x));
+                            }}
+                          >
+                            {MAP_ICON_CATALOG.map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          className="kuro-btn kuro-btn-sm kuro-btn-icon is-danger"
+                          onClick={() => saveIconDrafts(iconDrafts.filter(x => x.id !== ic.id))}
+                          title="Delete icon"
+                          aria-label="Delete icon"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="kuro-btn kuro-btn-sm kuro-btn-icon is-danger"
-                        onClick={() => saveIconDrafts(iconDrafts.filter(x => x.id !== ic.id))}
-                        title="Delete icon"
-                        aria-label="Delete icon"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="row">
+                        <div className="field" style={{ flex: '1 1 0' }}>
+                          <label>Category</label>
+                          <input
+                            type="text"
+                            value={ic.category || ''}
+                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, category: e.target.value || 'Uncategorised' } : x))}
+                            placeholder="Resonance"
+                          />
+                        </div>
+                        <div className="field" style={{ flex: '2 1 0' }}>
+                          <label>Label</label>
+                          <input type="text" value={ic.label || ''}
+                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, label: e.target.value } : x))} />
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="field" style={{ flex: '1 1 0' }}>
+                          <label>X</label>
+                          <input type="number" value={ic.x}
+                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, x: Math.round(+e.target.value) || 0 } : x))} />
+                        </div>
+                        <div className="field" style={{ flex: '1 1 0' }}>
+                          <label>Y</label>
+                          <input type="number" value={ic.y}
+                            onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, y: Math.round(+e.target.value) || 0 } : x))} />
+                        </div>
+                      </div>
                     </div>
-                    <div className="row">
-                      <div className="field" style={{ flex: '1 1 0' }}>
-                        <label>X</label>
-                        <input type="number" value={ic.x}
-                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, x: Math.round(+e.target.value) || 0 } : x))} />
-                      </div>
-                      <div className="field" style={{ flex: '1 1 0' }}>
-                        <label>Y</label>
-                        <input type="number" value={ic.y}
-                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, y: Math.round(+e.target.value) || 0 } : x))} />
-                      </div>
-                      <div className="field" style={{ flex: '2 1 0' }}>
-                        <label>Label</label>
-                        <input type="text" value={ic.label || ''}
-                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, label: e.target.value } : x))} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
 
               </div>
             )}

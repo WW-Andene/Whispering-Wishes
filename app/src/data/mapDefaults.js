@@ -3,364 +3,489 @@
 // localStorage becomes the source of truth and future seed updates won't
 // overwrite it (they'd need to clear localStorage to re-seed).
 //
-// Exported from the Map editor via "Export config" on 2026-04-23.
+// Exported from the Map editor via "Export config" on 2026-04-23 21:00.
 
 export const DEFAULT_ZONE_DRAFTS = [
   {
-    "id": "roya-frostlands-sub-1",
-    "name": "Roya Frostlands: Frostlands Surface",
-    "polygon": [
+    id: 'roya-frostlands-sub-1',
+    name: 'Roya Frostlands: Frostlands Surface',
+    polygon: [
       [3384, 5148], [3872, 4960], [4142, 4598], [4088, 4088], [4312, 3592],
       [4496, 3216], [4560, 2720], [4400, 2224], [4144, 1904], [3808, 1496],
       [3456, 1136], [3496, 696], [3352, 216], [3072, 0], [2408, 0],
       [1776, 0], [1200, 0], [744, 0], [456, 416], [224, 896],
       [200, 1480], [448, 2048], [840, 2536], [1108, 3004], [1328, 3616],
-      [1748, 4036], [1976, 4488], [2404, 4948], [2888, 5156]
+      [1748, 4036], [1976, 4488], [2404, 4948], [2888, 5156],
     ],
-    "parentId": "roya-frostlands",
-    "level": 2
+    parentId: 'roya-frostlands',
+    level: 2,
   },
   {
-    "id": "new-zone-2",
-    "name": "Huanglong",
-    "polygon": [
+    id: 'new-zone-2',
+    name: 'Huanglong',
+    polygon: [
       [3816, 8416], [3840, 7960], [3920, 7440], [4248, 7240], [4544, 7104],
       [4616, 6688], [4312, 6368], [3752, 6272], [3304, 6120], [2760, 6016],
       [2152, 6112], [1800, 6480], [1840, 6944], [1536, 7176], [1336, 7592],
       [1296, 8104], [1504, 8528], [1792, 8856], [2168, 9272], [2568, 9632],
       [3104, 9824], [3464, 9872], [3936, 9848], [4328, 9944], [4816, 10048],
       [5192, 9976], [5456, 9784], [5544, 9368], [5360, 9032], [4936, 8856],
-      [4552, 8856], [4184, 8636]
+      [4552, 8856], [4184, 8636],
     ],
-    "level": 1
+    level: 1,
   },
   {
-    "id": "overlay-tethys-deep-mo6i9a2z",
-    "name": "Tethys Deep",
-    "polygon": [
-      [5272, 7403], [5590, 8589], [4404, 8907], [4086, 7721]
+    id: 'overlay-tethys-deep-mo6i9a2z',
+    name: "Tethy's Deep",
+    polygon: [
+      [5272, 7403], [5590, 8589], [4404, 8907], [4086, 7721],
     ],
-    "overlayId": "tethys-deep-mo6i9a2z",
-    "parentId": "the-black-shores",
-    "level": 2
+    overlayId: 'tethys-deep-mo6i9a2z',
+    parentId: 'the-black-shores',
+    level: 2,
   },
   {
-    "id": "the-black-shores",
-    "name": "The Black Shores",
-    "polygon": [
+    id: 'the-black-shores',
+    name: 'The Black Shores',
+    polygon: [
       [5312, 8345], [5320, 8245], [5392, 8129], [5381, 8009], [5323, 7944],
       [5269, 7805], [5153, 7758], [5060, 7831], [4954, 7922], [4906, 8028],
-      [4895, 8143], [4940, 8267], [5032, 8347], [5165, 8406]
+      [4895, 8143], [4940, 8267], [5032, 8347], [5165, 8406],
     ],
-    "level": 1
+    level: 1,
   },
   {
-    "id": "rinascita",
-    "name": "Rinascita",
-    "polygon": [
+    id: 'rinascita',
+    name: 'Rinascita',
+    polygon: [
       [7528, 8592], [6968, 9160], [6808, 9856], [6848, 10720], [7064, 11480],
       [7160, 12208], [7764, 12552], [8368, 12896], [8768, 13512], [9328, 13856],
       [9488, 14640], [9552, 15408], [9160, 15944], [9512, 16384], [10376, 16384],
       [11296, 16384], [11760, 15864], [11792, 15184], [12192, 14576], [12288, 13896],
       [11856, 13424], [11200, 13520], [10768, 13056], [10560, 12336], [10048, 11832],
-      [9824, 11152], [9872, 10288], [9376, 9616], [8576, 9440], [8256, 8768]
+      [9824, 11152], [9872, 10288], [9376, 9616], [8576, 9440], [8256, 8768],
     ],
-    "level": 1
+    level: 1,
   },
   {
-    "id": "ragunna-city",
-    "name": "Ragunna City",
-    "polygon": [
+    id: 'ragunna-city',
+    name: 'Ragunna City',
+    polygon: [
       [7799, 11022], [7762, 11112], [7704, 11162], [7602, 11175], [7490, 11160],
       [7381, 11117], [7282, 11028], [7229, 10918], [7218, 10788], [7278, 10704],
       [7390, 10707], [7463, 10807], [7574, 10833], [7674, 10821], [7748, 10863],
-      [7794, 10932]
+      [7794, 10932],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "averardo-vault",
-    "name": "Averardo Vault",
-    "polygon": [
+    id: 'averardo-vault',
+    name: 'Averardo Vault',
+    polygon: [
       [9034, 10984], [9120, 10948], [9210, 10976], [9270, 11046], [9266, 11140],
       [9232, 11228], [9244, 11330], [9254, 11448], [9286, 11558], [9254, 11662],
       [9172, 11728], [9052, 11768], [8922, 11780], [8808, 11742], [8708, 11692],
       [8642, 11610], [8618, 11506], [8720, 11484], [8784, 11402], [8702, 11320],
       [8642, 11240], [8684, 11164], [8702, 11078], [8664, 10998], [8690, 10926],
-      [8758, 10966], [8860, 10978], [8944, 10998]
+      [8758, 10966], [8860, 10978], [8944, 10998],
     ],
-    "level": 2,
-    "parentId": "rinascita"
+    level: 2,
+    parentId: 'rinascita',
   },
   {
-    "id": "huanglong-sub-1",
-    "name": "Mt-Firmament",
-    "polygon": [
-      [4328, 9944], [4816, 10048], [5192, 9976], [5456, 9784], [5544, 9368],
-      [5360, 9032], [4936, 8856], [4552, 8856], [4184, 8636], [4096, 9340]
+    id: 'gorges-of-spirits',
+    name: 'Gorges of Spirits',
+    polygon: [
+      [2152, 7680], [2204, 7529], [2310, 7418], [2424, 7470], [2532, 7513],
+      [2447, 7552], [2550, 7622], [2554, 7786], [2468, 7894], [2452, 8046],
+      [2302, 8049], [2151, 8051], [2159, 7850],
     ],
-    "parentId": "new-zone-2",
-    "level": 2
+    parentId: 'new-zone-2',
+    level: 2,
   },
   {
-    "id": "penitent-s-end",
-    "name": "Penitent's End",
-    "polygon": [
+    id: 'penitent-s-end',
+    name: "Penitent's End",
+    polygon: [
       [8803, 9817], [8703, 9832], [8655, 9911], [8649, 10015], [8637, 10107],
       [8539, 10117], [8451, 10032], [8341, 10064], [8180, 10100], [8101, 10196],
       [8007, 10267], [8010, 10397], [8020, 10546], [8078, 10633], [8171, 10679],
       [8299, 10674], [8415, 10676], [8559, 10625], [8683, 10561], [8768, 10506],
       [8843, 10434], [8871, 10329], [8887, 10226], [8935, 10141], [8901, 10013],
-      [8869, 9888]
+      [8869, 9888],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "hallowed-reach",
-    "name": "Hallowed Reach",
-    "polygon": [
+    id: 'hallowed-reach',
+    name: 'Hallowed Reach',
+    polygon: [
       [8127, 10880], [8132, 10974], [8208, 11000], [8301, 11004], [8389, 10990],
       [8482, 11010], [8581, 11004], [8631, 10929], [8642, 10822], [8624, 10730],
-      [8535, 10714], [8426, 10723], [8318, 10714], [8221, 10717], [8146, 10785]
+      [8535, 10714], [8426, 10723], [8318, 10714], [8221, 10717], [8146, 10785],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "whisperwind-haven",
-    "name": "Whisperwind Haven",
-    "polygon": [
+    id: 'whisperwind-haven',
+    name: 'Whisperwind Haven',
+    polygon: [
       [7800, 11020], [7794, 10936], [7817, 10857], [7801, 10782], [7767, 10707],
       [7689, 10648], [7640, 10578], [7628, 10479], [7665, 10399], [7746, 10336],
       [7838, 10321], [7941, 10329], [8007, 10402], [8009, 10484], [8002, 10570],
       [8009, 10656], [8067, 10691], [8096, 10783], [8125, 10874], [8119, 10984],
       [8038, 11037], [7942, 11061], [7944, 11136], [8024, 11154], [8126, 11171],
       [8193, 11213], [8243, 11290], [8177, 11350], [8079, 11397], [7969, 11406],
-      [7879, 11352], [7833, 11267], [7818, 11194], [7799, 11109]
+      [7879, 11352], [7833, 11267], [7818, 11194], [7799, 11109],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "nimbus-sanctum",
-    "name": "Nimbus Sanctum",
-    "polygon": [
+    id: 'nimbus-sanctum',
+    name: 'Nimbus Sanctum',
+    polygon: [
       [8126, 10980], [8070, 11014], [7999, 11041], [7941, 11080], [7955, 11137],
       [8021, 11151], [8102, 11165], [8160, 11192], [8205, 11227], [8241, 11277],
       [8282, 11328], [8338, 11352], [8405, 11362], [8470, 11342], [8532, 11336],
       [8576, 11376], [8603, 11430], [8663, 11455], [8740, 11471], [8770, 11407],
       [8734, 11345], [8683, 11301], [8644, 11240], [8635, 11171], [8678, 11099],
       [8675, 11025], [8611, 11017], [8545, 11034], [8460, 11008], [8362, 10994],
-      [8270, 11018], [8198, 10999]
+      [8270, 11018], [8198, 10999],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "fagaceae-peninsula",
-    "name": "Fagaceae Peninsula",
-    "polygon": [
+    id: 'fagaceae-peninsula',
+    name: 'Fagaceae Peninsula',
+    polygon: [
       [9187, 9987], [9291, 10044], [9376, 10114], [9416, 10247], [9376, 10355],
       [9345, 10493], [9266, 10604], [9291, 10740], [9257, 10841], [9209, 10932],
       [9079, 10963], [8953, 10996], [8791, 10971], [8689, 10901], [8638, 10793],
       [8641, 10652], [8683, 10550], [8813, 10471], [8864, 10338], [8912, 10196],
-      [8989, 10075], [9085, 10001]
+      [8989, 10075], [9085, 10001],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "roya-frostlands",
-    "name": "Roya Frostlands",
-    "polygon": [
+    id: 'roya-frostlands',
+    name: 'Roya Frostlands',
+    polygon: [
       [3384, 5148], [3872, 4960], [4142, 4598], [4088, 4088], [4312, 3592],
       [4496, 3216], [4560, 2720], [4400, 2224], [4144, 1904], [3808, 1496],
       [3456, 1136], [3496, 696], [3352, 216], [3072, 0], [2408, 0],
       [1776, 0], [1200, 0], [744, 0], [456, 416], [224, 896],
       [200, 1480], [448, 2048], [840, 2536], [1108, 3004], [1328, 3616],
-      [1748, 4036], [1976, 4488], [2404, 4948], [2888, 5156]
+      [1748, 4036], [1976, 4488], [2404, 4948], [2888, 5156],
     ],
-    "level": 1
+    level: 1,
   },
   {
-    "id": "thessaleo-fell",
-    "name": "Thessaleo Fell",
-    "polygon": [
+    id: 'thessaleo-fell',
+    name: 'Thessaleo Fells',
+    polygon: [
       [7648, 12210], [7536, 12148], [7542, 12010], [7626, 11896], [7698, 11812],
       [7756, 11658], [7874, 11634], [7982, 11544], [8008, 11426], [8138, 11370],
       [8242, 11288], [8326, 11348], [8466, 11340], [8571, 11366], [8602, 11429],
       [8618, 11506], [8639, 11605], [8722, 11687], [8792, 11714], [8829, 11770],
       [8837, 11848], [8744, 11882], [8604, 11908], [8446, 11898], [8324, 11860],
       [8210, 11826], [8146, 11908], [8060, 11992], [7938, 12014], [7862, 12084],
-      [7774, 12176]
+      [7774, 12176],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "rinascita-sub-5",
-    "name": "Riccioli-island",
-    "polygon": [
+    id: 'rinascita-sub-5',
+    name: 'Riccioli-island',
+    polygon: [
       [7528, 8592], [6968, 9160], [6808, 9856], [6848, 10720], [7736, 10308],
-      [8266, 9776], [8576, 9440], [8256, 8768]
+      [8266, 9776], [8576, 9440], [8256, 8768],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "overlay-vault-underground-mo8pvh7x",
-    "name": "Vault Underground",
-    "polygon": [
-      [7482, 11731], [8182, 9807], [10106, 10507], [9406, 12431]
+    id: 'overlay-vault-underground-mo8pvh7x',
+    name: 'Vault Underground',
+    polygon: [
+      [7482, 11731], [8182, 9807], [10106, 10507], [9406, 12431],
     ],
-    "overlayId": "vault-underground-mo8pvh7x",
-    "parentId": "rinascita",
-    "level": 2
+    overlayId: 'vault-underground-mo8pvh7x',
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "overlay-avinoleum-mo7c3krn",
-    "name": "Avinoleum",
-    "polygon": [
-      [8718, 12055], [10100, 12055], [10100, 13553], [8718, 13553]
+    id: 'overlay-avinoleum-mo7c3krn',
+    name: 'Avinoleum',
+    polygon: [
+      [8718, 12055], [10100, 12055], [10100, 13553], [8718, 13553],
     ],
-    "overlayId": "avinoleum-mo7c3krn",
-    "parentId": "rinascita",
-    "level": 2
+    overlayId: 'avinoleum-mo7c3krn',
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "beohr-waters",
-    "name": "Beohr Waters",
-    "polygon": [
+    id: 'beohr-waters',
+    name: 'Beohr Waters',
+    polygon: [
       [8743, 11899], [8960, 11823], [9229, 11746], [9453, 11755], [9549, 11851],
       [9577, 11976], [9611, 12106], [9713, 12207], [9877, 12321], [10069, 12417],
       [10216, 12547], [10287, 12714], [10287, 12875], [10262, 13053], [10174, 13254],
       [9959, 13370], [9744, 13404], [9481, 13393], [9286, 13342], [9088, 13166],
       [8986, 12974], [8893, 12731], [8847, 12536], [8760, 12383], [8647, 12239],
-      [8627, 12066]
+      [8627, 12066],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "rinascita-sub-1",
-    "name": "Septimont",
-    "polygon": [
+    id: 'rinascita-sub-1',
+    name: 'Septimont',
+    polygon: [
       [9328, 13856], [9488, 14640], [9552, 15408], [10668, 15120], [11792, 15184],
       [12192, 14576], [12288, 13896], [11856, 13424], [11200, 13520], [10768, 13056],
-      [10143, 13503]
+      [10143, 13503],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "overlay-fabricatorium-of-the-deep-mo8qn4se",
-    "name": "Fabricatorium of the Deep",
-    "polygon": [
-      [5459, 10041], [8121, 10041], [8121, 11679], [5459, 11679]
+    id: 'overlay-fabricatorium-of-the-deep-mo8qn4se',
+    name: 'Fabricatorium of the Deep',
+    polygon: [
+      [5459, 10041], [8121, 10041], [8121, 11679], [5459, 11679],
     ],
-    "overlayId": "fabricatorium-of-the-deep-mo8qn4se",
-    "parentId": "rinascita",
-    "level": 2
+    overlayId: 'fabricatorium-of-the-deep-mo8qn4se',
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "rinascita-sub-2",
-    "name": "Sanguis Plateaus",
-    "polygon": [
+    id: 'rinascita-sub-2',
+    name: 'Sanguis Plateaus',
+    polygon: [
       [9552, 15408], [9160, 15944], [9512, 16384], [10376, 16384], [11296, 16384],
-      [11760, 15864], [11792, 15184], [10666, 15120]
+      [11760, 15864], [11792, 15184], [10666, 15120],
     ],
-    "parentId": "rinascita",
-    "level": 2
+    parentId: 'rinascita',
+    level: 2,
   },
   {
-    "id": "overlay-chronorift-metropolis-mobcexa9",
-    "name": "Chronorift Metropolis",
-    "polygon": [
-      [4566, 7689], [5386, 7689], [5386, 8509], [4566, 8509]
+    id: 'overlay-chronorift-metropolis-mobcexa9',
+    name: 'Chronorift Metropolis',
+    polygon: [
+      [4566, 7689], [5386, 7689], [5386, 8509], [4566, 8509],
     ],
-    "overlayId": "chronorift-metropolis-mobcexa9",
-    "parentId": "the-black-shores",
-    "level": 2
+    overlayId: 'chronorift-metropolis-mobcexa9',
+    parentId: 'the-black-shores',
+    level: 2,
   },
   {
-    "id": "overlay-lahai-roi-mo6gpzuw",
-    "name": "Lahai Roi",
-    "polygon": [
-      [2269, 5182], [1148, 2543], [3787, 1422], [4908, 4061]
+    id: 'overlay-lahai-roi-mo6gpzuw',
+    name: 'Lahai Roi',
+    polygon: [
+      [2269, 5182], [1148, 2543], [3787, 1422], [4908, 4061],
     ],
-    "overlayId": "lahai-roi-mo6gpzuw",
-    "parentId": "roya-frostlands",
-    "level": 2
-  }
+    overlayId: 'lahai-roi-mo6gpzuw',
+    parentId: 'roya-frostlands',
+    level: 2,
+  },
+  {
+    id: 'jinzhou',
+    name: 'Jinzhou',
+    polygon: [
+      [2956, 7887], [3045, 7917], [3094, 7973], [3185, 7986], [3254, 8033],
+      [3296, 8084], [3362, 8112], [3417, 8153], [3349, 8225], [3346, 8284],
+      [3263, 8297], [3193, 8299], [3168, 8372], [3127, 8433], [3046, 8410],
+      [2974, 8375], [2943, 8306], [2848, 8314], [2817, 8232], [2797, 8139],
+      [2787, 8040], [2806, 7975], [2844, 7931], [2894, 7897],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'central-plains',
+    name: 'Central Plains',
+    polygon: [
+      [3420, 8150], [3560, 8077], [3700, 8004], [3663, 7865], [3626, 7726],
+      [3508, 7642], [3390, 7558], [3229, 7511], [3068, 7464], [2907, 7463],
+      [2746, 7462], [2593, 7494], [2444, 7542], [2550, 7628], [2554, 7788],
+      [2468, 7900], [2456, 8051], [2300, 8051], [2144, 8050], [2140, 8170],
+      [2192, 8288], [2305, 8282], [2420, 8288], [2536, 8356], [2630, 8440],
+      [2755, 8433], [2840, 8302], [2796, 8161], [2788, 8012], [2850, 7924],
+      [2954, 7884], [3051, 7925], [3174, 7989], [3277, 8056],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'desorock-highland',
+    name: 'Desorock Highland',
+    polygon: [
+      [3382, 7558], [3522, 7468], [3632, 7312], [3668, 7136], [3506, 7134],
+      [3366, 7062], [3220, 6960], [3236, 6782], [3020, 6846], [2848, 6966],
+      [2684, 7140], [2540, 7320], [2316, 7424], [2520, 7514], [2762, 7454],
+      [2980, 7452], [3198, 7494],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'port-city-of-guixu',
+    name: 'Port City of Guixu',
+    polygon: [
+      [2406, 9080], [2282, 8950], [2172, 8798], [2116, 8618], [2130, 8454],
+      [2198, 8286], [2358, 8280], [2506, 8331], [2610, 8436], [2756, 8435],
+      [2860, 8568], [2940, 8720], [2832, 8848], [2658, 8888], [2516, 8966],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'dim-forest',
+    name: 'Dim Forest',
+    polygon: [
+      [2938, 8726], [2834, 8850], [2660, 8892], [2510, 8966], [2408, 9084],
+      [2454, 9274], [2534, 9442], [2712, 9460], [2864, 9530], [3022, 9594],
+      [3182, 9544], [3272, 9433], [3396, 9332], [3312, 9206], [3250, 9064],
+      [3196, 9106], [3064, 9024], [2984, 8908], [3015, 8775],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'wuming-bay',
+    name: 'Wuming Bay',
+    polygon: [
+      [3016, 8773], [2995, 8827], [2983, 8888], [3014, 8967], [3069, 9019],
+      [3129, 9069], [3192, 9100], [3244, 9061], [3262, 9008], [3311, 8969],
+      [3353, 8924], [3411, 8899], [3457, 8852], [3488, 8800], [3513, 8748],
+      [3480, 8658], [3412, 8595], [3433, 8500], [3452, 8384], [3399, 8336],
+      [3346, 8287], [3269, 8295], [3191, 8302], [3171, 8371], [3124, 8429],
+      [3113, 8542], [3086, 8663], [3075, 8751],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'norfall-barrens',
+    name: 'Norfall Barrens',
+    polygon: [
+      [3240, 6980], [3236, 6782], [3376, 6704], [3446, 6524], [3636, 6486],
+      [3786, 6536], [3820, 6386], [3992, 6414], [4068, 6560], [4236, 6634],
+      [4384, 6732], [4372, 6896], [4188, 6944], [3978, 6908], [3823, 7024],
+      [3668, 7140], [3484, 7124], [3364, 7046],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'whining-aix-s-mire',
+    name: "Whining Aix's Mire",
+    polygon: [
+      [3246, 9059], [3318, 9207], [3394, 9335], [3272, 9433], [3333, 9550],
+      [3470, 9591], [3620, 9617], [3784, 9608], [3909, 9540], [3995, 9427],
+      [4023, 9280], [4098, 9164], [4042, 9037], [4005, 8898], [3980, 8777],
+      [3833, 8753], [3693, 8771], [3516, 8745], [3442, 8880], [3323, 8948],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'tiger-s-maw',
+    name: "Tiger's Maw",
+    polygon: [
+      [3121, 8433], [3117, 8512], [3099, 8592], [3083, 8672], [3077, 8750],
+      [3012, 8772], [2939, 8727], [2916, 8638], [2860, 8567], [2810, 8495],
+      [2755, 8437], [2786, 8368], [2840, 8318], [2942, 8301], [2973, 8375],
+      [3045, 8410],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
+  {
+    id: 'huanglong-sub-1',
+    name: 'Mt-Firmament',
+    polygon: [
+      [4816, 10048], [5192, 9976], [5456, 9784], [5544, 9368], [5360, 9034],
+      [4936, 8856], [4552, 8856], [4136, 9024], [4056, 9432], [4180, 9808],
+      [4512, 9988],
+    ],
+    parentId: 'new-zone-2',
+    level: 2,
+  },
 ];
 
 export const DEFAULT_OVERLAY_DRAFTS = [
   {
-    "id": "lahai-roi-mo6gpzuw",
-    "catalogId": "lahai-roi",
-    "name": "Lahai Roi",
-    "center": [3028, 3302],
-    "scale": 0.35,
-    "rotation": 247,
-    "floor": -5,
-    "opacity": 1,
-    "locked": true
+    id: 'lahai-roi-mo6gpzuw',
+    catalogId: 'lahai-roi',
+    name: 'Lahai Roi',
+    center: [3028, 3302],
+    scale: 0.35,
+    rotation: 247,
+    floor: -5,
+    opacity: 1,
+    locked: true,
   },
   {
-    "id": "tethys-deep-mo6i9a2z",
-    "catalogId": "tethys-deep",
-    "name": "Tethys Deep",
-    "center": [4838, 8155],
-    "scale": 0.15,
-    "rotation": 75,
-    "floor": -1,
-    "opacity": 1,
-    "locked": true
+    id: 'tethys-deep-mo6i9a2z',
+    catalogId: 'tethys-deep',
+    name: 'Tethys Deep',
+    center: [4838, 8155],
+    scale: 0.15,
+    rotation: 75,
+    floor: -1,
+    opacity: 1,
+    locked: true,
   },
   {
-    "id": "avinoleum-mo7c3krn",
-    "catalogId": "avinoleum",
-    "name": "Avinoleum",
-    "center": [9409, 12804],
-    "scale": 0.15,
-    "rotation": 0,
-    "floor": 1,
-    "opacity": 1,
-    "locked": true
+    id: 'avinoleum-mo7c3krn',
+    catalogId: 'avinoleum',
+    name: 'Avinoleum',
+    center: [9409, 12804],
+    scale: 0.15,
+    rotation: 0,
+    floor: 1,
+    opacity: 1,
+    locked: true,
   },
   {
-    "id": "vault-underground-mo8pvh7x",
-    "catalogId": "vault-underground",
-    "name": "Vault Underground",
-    "center": [8794, 11119],
-    "scale": 0.25,
-    "rotation": 290,
-    "floor": -2,
-    "opacity": 1,
-    "locked": true
+    id: 'vault-underground-mo8pvh7x',
+    catalogId: 'vault-underground',
+    name: 'Vault Underground',
+    center: [8794, 11119],
+    scale: 0.25,
+    rotation: 290,
+    floor: -2,
+    opacity: 1,
+    locked: true,
   },
   {
-    "id": "fabricatorium-of-the-deep-mo8qn4se",
-    "catalogId": "fabricatorium-of-the-deep",
-    "name": "Fabricatorium of the Deep",
-    "center": [6790, 10860],
-    "scale": 0.2,
-    "rotation": 0,
-    "floor": -3,
-    "opacity": 1,
-    "locked": true
+    id: 'fabricatorium-of-the-deep-mo8qn4se',
+    catalogId: 'fabricatorium-of-the-deep',
+    name: 'Fabricatorium of the Deep',
+    center: [6790, 10860],
+    scale: 0.2,
+    rotation: 0,
+    floor: -3,
+    opacity: 1,
+    locked: true,
   },
   {
-    "id": "chronorift-metropolis-mobcexa9",
-    "catalogId": "chronorift-metropolis",
-    "name": "Chronorift Metropolis",
-    "center": [4976, 8099],
-    "scale": 0.1,
-    "rotation": 0,
-    "floor": -4,
-    "opacity": 1,
-    "locked": true
-  }
+    id: 'chronorift-metropolis-mobcexa9',
+    catalogId: 'chronorift-metropolis',
+    name: 'Chronorift Metropolis',
+    center: [4976, 8099],
+    scale: 0.1,
+    rotation: 0,
+    floor: -4,
+    opacity: 1,
+    locked: true,
+  },
 ];
