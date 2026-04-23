@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Download, Trash2, LocateFixed, Pen, List } from 'lucide-react';
+import { Settings, Download, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, Plus } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -149,6 +149,44 @@ export default function MapTab({ navPadding = 80 }) {
   const [zonesOpen, setZonesOpen] = useState(false);
   const zonesAnchorRef = useRef(null);
   const zonesPanelRef = useRef(null);
+  // Icon filters popover — toggles visibility of placed map-icon categories.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersAnchorRef = useRef(null);
+  const filtersPanelRef = useRef(null);
+  // Map icons (placed by admins via the author panel). Each entry:
+  //   { id, category, x, y, label? }
+  // Persisted to localStorage. Categories drive the filter popover.
+  const [iconDrafts, setIconDrafts] = useState(() => {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem('ww-icon-drafts');
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  });
+  const [iconFiltersOff, setIconFiltersOff] = useState(() => {
+    // Set of category keys currently hidden. Persisted.
+    if (typeof localStorage === 'undefined') return new Set();
+    try {
+      const raw = localStorage.getItem('ww-icon-filters-off');
+      if (!raw) return new Set();
+      const parsed = JSON.parse(raw);
+      return new Set(Array.isArray(parsed) ? parsed : []);
+    } catch { return new Set(); }
+  });
+  const saveIconDrafts = useCallback((next) => {
+    setIconDrafts(next);
+    try { localStorage.setItem('ww-icon-drafts', JSON.stringify(next)); } catch {}
+  }, []);
+  const toggleIconFilter = useCallback((cat) => {
+    setIconFiltersOff((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      try { localStorage.setItem('ww-icon-filters-off', JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }, []);
   // L2-leaf confirm: first tap on a leaf arms it, second tap within
   // ZONE_ARM_MS fires handleFlyToZone. Leaves don't have an explicit
   // fly-to icon; this prevents accidental navigation when browsing.
@@ -1632,6 +1670,18 @@ export default function MapTab({ navPadding = 80 }) {
     return () => document.removeEventListener('pointerdown', onDown);
   }, [zonesOpen]);
 
+  // Same for the icon-filters popover.
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const onDown = (e) => {
+      if (filtersPanelRef.current?.contains(e.target)) return;
+      if (filtersAnchorRef.current?.contains(e.target)) return;
+      setFiltersOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [filtersOpen]);
+
   // Triple-tap on header toggles author-enabled. Unlocking author also
   // enters draw mode in one shot (opens the editor panel); locking fully
   // exits — matches the "edition feature lives inside the editor panel"
@@ -1947,6 +1997,19 @@ export default function MapTab({ navPadding = 80 }) {
           border-color: #f87171;
         }
 
+        /* ── Header-anchored popovers (zones / filters / downloads) ───── */
+        /* The shared Kuro <Card> supplies shadow/border/backdrop; the tiny
+           corner-decoration pseudo-elements (.kuro-card-inner::before/after)
+           are meant for full-tab cards and look cluttered inside a 300 px
+           popover (they overlap the ✕ close button at top-right and clip
+           against the last list row at bottom-left) — hide them here. */
+        .map-zones-popover .kuro-card-inner::before,
+        .map-zones-popover .kuro-card-inner::after,
+        .map-filters-popover .kuro-card-inner::before,
+        .map-filters-popover .kuro-card-inner::after,
+        .map-downloads-popover .kuro-card-inner::before,
+        .map-downloads-popover .kuro-card-inner::after { display: none; }
+
         /* ── Offline downloads popover (gear icon, user-side) ─────────── */
         /* Wraps a real <Card>; Kuro card provides the visuals. Only layout
            + per-context paddings here. All interactive elements use
@@ -2237,6 +2300,49 @@ export default function MapTab({ navPadding = 80 }) {
           gap: var(--space-xs, 4px);
           max-height: 60vh; overflow-y: auto;
         }
+
+        /* ── Icon filters popover (hexagon button) ────────────────────── */
+        .map-filters-popover {
+          position: absolute;
+          right: var(--space-md, 12px);
+          z-index: var(--z-overlay, 1000);
+          width: 260px;
+          overflow: visible;
+        }
+        .map-filters-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
+        .map-filters-popover .kuro-header h3::before { display: none; }
+        .map-filters-popover .kuro-header h3 {
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          letter-spacing: 0.03em;
+        }
+        .map-filters-popover .kuro-body { padding: var(--space-sm, 8px) var(--space-md, 12px); }
+        .map-filters-popover .map-filters-body {
+          display: flex; flex-direction: column;
+          gap: var(--space-xs, 4px);
+          max-height: 60vh; overflow-y: auto;
+        }
+        .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
+
+        /* ── Map-icon editor row (admin-only, in author panel) ────────── */
+        .icon-row {
+          display: flex; flex-direction: column;
+          gap: var(--space-sm, 8px);
+          padding: var(--space-sm, 8px);
+          background: rgba(var(--color-cyan), 0.04);
+          border: 1px solid rgba(var(--color-cyan), 0.18);
+          border-radius: 8px;
+        }
+        .icon-row + .icon-row { margin-top: var(--space-xs, 6px); }
+        .kuro-btn-sm.is-danger {
+          color: #f87171;
+          border-color: rgba(var(--color-red), 0.4);
+        }
+        .kuro-btn-sm.is-danger:hover {
+          background: rgba(var(--color-red), 0.12);
+          border-color: #f87171;
+          color: #f87171;
+        }
         .zone-selector-empty {
           padding: var(--space-sm, 8px);
           font-family: var(--font-display);
@@ -2366,18 +2472,29 @@ export default function MapTab({ navPadding = 80 }) {
                       ref={zonesAnchorRef}
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${zonesOpen ? 'is-active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); setZonesOpen(v => { if (!v) setDownloadsOpen(false); return !v; }); }}
-                      aria-label="Zones"
+                      onClick={(e) => { e.stopPropagation(); setZonesOpen(v => { if (!v) { setDownloadsOpen(false); setFiltersOpen(false); } return !v; }); }}
+                      aria-label="Regions"
                       aria-expanded={zonesOpen}
-                      title="Zones"
+                      title="Regions"
                     >
-                      <List size={14} />
+                      <MapIcon size={14} />
+                    </button>
+                    <button
+                      ref={filtersAnchorRef}
+                      type="button"
+                      className={`kuro-btn kuro-btn-sm kuro-btn-icon ${filtersOpen ? 'is-active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); setFiltersOpen(v => { if (!v) { setZonesOpen(false); setDownloadsOpen(false); } return !v; }); }}
+                      aria-label="Icon filters"
+                      aria-expanded={filtersOpen}
+                      title="Icon filters"
+                    >
+                      <Hexagon size={14} />
                     </button>
                     <button
                       ref={downloadsAnchorRef}
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${downloadsOpen ? 'is-active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => { if (!v) setZonesOpen(false); return !v; }); }}
+                      onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => { if (!v) { setZonesOpen(false); setFiltersOpen(false); } return !v; }); }}
                       aria-label="Offline downloads"
                       aria-expanded={downloadsOpen}
                       title="Offline downloads"
@@ -2513,7 +2630,7 @@ export default function MapTab({ navPadding = 80 }) {
                       >✕</button>
                     }
                   >
-                    Zones
+                    Regions
                   </CardHeader>
                   <CardBody className="map-zones-body">
                     {(() => {
@@ -2596,6 +2713,75 @@ export default function MapTab({ navPadding = 80 }) {
                         return <div className="zone-selector-empty">No zones</div>;
                       }
                       return roots.map(z => renderNode(z, 0));
+                    })()}
+                  </CardBody>
+                </Card>
+              </div>
+            )}
+
+            {filtersOpen && (
+              <div
+                ref={filtersPanelRef}
+                className="map-filters-popover"
+                role="dialog"
+                aria-label="Icon filters"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  top: `${headerHeight + 8}px`,
+                  maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
+                }}
+              >
+                <Card>
+                  <CardHeader
+                    action={
+                      <button
+                        type="button"
+                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                        onClick={() => setFiltersOpen(false)}
+                        aria-label="Close"
+                      >✕</button>
+                    }
+                  >
+                    Icon filters
+                  </CardHeader>
+                  <CardBody className="map-filters-body">
+                    {(() => {
+                      // Group placed icons by category; fall back to
+                      // "Uncategorised" when a draft has no category.
+                      const counts = new Map();
+                      for (const ic of iconDrafts) {
+                        const cat = ic.category || 'Uncategorised';
+                        counts.set(cat, (counts.get(cat) || 0) + 1);
+                      }
+                      const cats = [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+                      if (cats.length === 0) {
+                        return (
+                          <div className="zone-selector-empty">
+                            No icons placed yet. Add icons from the editor panel.
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="map-filters-list">
+                          {cats.map(([cat, n]) => {
+                            const off = iconFiltersOff.has(cat);
+                            return (
+                              <button
+                                key={cat}
+                                type="button"
+                                className={`kuro-btn kuro-btn-sm zone-selector-item ${off ? '' : 'is-current'}`}
+                                onClick={() => toggleIconFilter(cat)}
+                                aria-pressed={!off}
+                                title={off ? `Show ${cat}` : `Hide ${cat}`}
+                              >
+                                <span className="zone-selector-caret">{off ? '▢' : '▣'}</span>
+                                <span className="zone-selector-name">{cat}</span>
+                                <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{n}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
                     })()}
                   </CardBody>
                 </Card>
@@ -3030,6 +3216,83 @@ export default function MapTab({ navPadding = 80 }) {
                 })}
                   </>);
                 })()}
+
+                {/* ── Map icons section — admin-only placeholder for
+                    placing interactive icons (bosses/chests/waypoints/etc.)
+                    on the map. Each icon = { id, category, x, y, label? }.
+                    Data persists via localStorage (ww-icon-drafts).
+                    Visibility in the viewer is driven by the Hexagon
+                    filter popover (iconFiltersOff). Rendering to the
+                    canvas/Leaflet pane is not wired yet — this scaffolds
+                    the authoring surface first. */}
+                <div className="divider" />
+                <div className="drafts-head">
+                  <span>Map icons ({iconDrafts.length})</span>
+                  <button
+                    type="button"
+                    className="kuro-btn kuro-btn-sm"
+                    onClick={() => {
+                      const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
+                      const next = [...iconDrafts, {
+                        id,
+                        category: 'Uncategorised',
+                        x: MAP_W / 2,
+                        y: MAP_H / 2,
+                        label: '',
+                      }];
+                      saveIconDrafts(next);
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Plus size={12} /> Add
+                  </button>
+                </div>
+                {iconDrafts.length === 0 && (
+                  <div className="hint" style={{ fontSize: 10, padding: '4px 0' }}>
+                    No icons yet. Add one to get started. Categories show up in the Hexagon filter menu.
+                  </div>
+                )}
+                {iconDrafts.map((ic) => (
+                  <div key={ic.id} className="icon-row">
+                    <div className="row">
+                      <div className="field" style={{ flex: '1 1 0' }}>
+                        <label>Category</label>
+                        <input
+                          type="text"
+                          value={ic.category || ''}
+                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, category: e.target.value || 'Uncategorised' } : x))}
+                          placeholder="e.g. Boss, Chest, Waypoint"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="kuro-btn kuro-btn-sm kuro-btn-icon is-danger"
+                        onClick={() => saveIconDrafts(iconDrafts.filter(x => x.id !== ic.id))}
+                        title="Delete icon"
+                        aria-label="Delete icon"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <div className="row">
+                      <div className="field" style={{ flex: '1 1 0' }}>
+                        <label>X</label>
+                        <input type="number" value={ic.x}
+                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, x: Math.round(+e.target.value) || 0 } : x))} />
+                      </div>
+                      <div className="field" style={{ flex: '1 1 0' }}>
+                        <label>Y</label>
+                        <input type="number" value={ic.y}
+                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, y: Math.round(+e.target.value) || 0 } : x))} />
+                      </div>
+                      <div className="field" style={{ flex: '2 1 0' }}>
+                        <label>Label</label>
+                        <input type="text" value={ic.label || ''}
+                          onChange={(e) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, label: e.target.value } : x))} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
               </div>
             )}
