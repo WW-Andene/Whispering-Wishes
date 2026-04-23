@@ -310,6 +310,48 @@ export default function MapTab({ navPadding = 80 }) {
     return null;
   }, [drafts, overlayDrafts]);
 
+  // Zone dropdown options for the icon editor, sorted by tree order
+  // ("Parent › Child" labels) so admins can pick the correct owning
+  // zone quickly.
+  const zoneOptions = useMemo(() => {
+    const all = [...MAP_ZONES, ...drafts];
+    const byId = new Map(all.map(z => [z.id, z]));
+    const labelFor = (z) => {
+      if (z.parentId) {
+        const parent = byId.get(z.parentId);
+        return `${parent?.name || z.parentId} › ${z.name || z.id}`;
+      }
+      return z.name || z.id;
+    };
+    return all.map(z => ({ id: z.id, label: labelFor(z), zone: z }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [drafts]);
+
+  // Find the deepest zone whose polygon encloses (x, y). Uses the standard
+  // ray-casting point-in-polygon test; iterates zones in descending level
+  // order so a child polygon wins over its parent. Returns the zone object
+  // or null.
+  const findEnclosingZone = useCallback((x, y) => {
+    const all = [...MAP_ZONES, ...drafts];
+    // Higher level = deeper nesting (L2 > L1). Zones without a level fall
+    // to the end (treated as shallowest).
+    const sorted = [...all].sort((a, b) => (b.level || 0) - (a.level || 0));
+    for (const z of sorted) {
+      if (!Array.isArray(z.polygon) || z.polygon.length < 3) continue;
+      let inside = false;
+      const poly = z.polygon;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i][0], yi = poly[i][1];
+        const xj = poly[j][0], yj = poly[j][1];
+        const intersect = ((yi > y) !== (yj > y)) &&
+          (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      if (inside) return z;
+    }
+    return null;
+  }, [drafts]);
+
   // Gold-highlight the zone that corresponds to the current floor: the
   // zone whose overlayId points at an overlay draft sitting on viewFloor.
   // Floor 0 has no single "current zone" (it's the base map) so we return
@@ -1730,8 +1772,22 @@ export default function MapTab({ navPadding = 80 }) {
       const pt = map.project(e.latlng, NATIVE_ZOOM);
       const x = Math.max(0, Math.min(MAP_W, Math.round(pt.x)));
       const y = Math.max(0, Math.min(MAP_H, Math.round(pt.y)));
+      // Auto-detect owning zone and inherit the zone's floor (if any)
+      // unless the user has already pinned a custom floor.
+      const zone = findEnclosingZone(x, y);
+      const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
       setIconDrafts((prev) => {
-        const next = prev.map((ic) => ic.id === placingIconId ? { ...ic, x, y } : ic);
+        const next = prev.map((ic) => {
+          if (ic.id !== placingIconId) return ic;
+          const patch = { x, y };
+          if (zone) patch.zoneId = zone.id;
+          // Only inherit floor when the draft didn't already have one
+          // OR the user hasn't customised it yet (floor === undefined).
+          if (inheritedFloor != null && (ic.floor === undefined || ic.floor === null)) {
+            patch.floor = inheritedFloor;
+          }
+          return { ...ic, ...patch };
+        });
         try { localStorage.setItem('ww-icon-drafts', JSON.stringify(next)); } catch {}
         return next;
       });
@@ -1742,7 +1798,7 @@ export default function MapTab({ navPadding = 80 }) {
       map.off('click', onClick);
       container.style.cursor = prevCursor;
     };
-  }, [placingIconId, mapReady]);
+  }, [placingIconId, mapReady, findEnclosingZone, resolveZoneFloor]);
 
   // Close the downloads popover when clicking outside it.
   useEffect(() => {
@@ -3421,7 +3477,34 @@ export default function MapTab({ navPadding = 80 }) {
                         </button>
                       </div>
 
-                      {/* Row 2 — category + label */}
+                      {/* Row 2a — zone attribution (auto-detected on place) */}
+                      <div className="row">
+                        <div className="field" style={{ flex: '1 1 auto' }}>
+                          <label>Zone</label>
+                          <select
+                            value={ic.zoneId || ''}
+                            onChange={(e) => {
+                              const zoneId = e.target.value || null;
+                              const zone = zoneId ? zoneOptions.find(o => o.id === zoneId)?.zone : null;
+                              const floor = zone ? resolveZoneFloor(zone) : null;
+                              patchIcon({
+                                zoneId,
+                                // Sync floor to the new zone's floor unless the user
+                                // has explicitly pinned a different one (ic.floor not
+                                // coming from this path — leave as-is).
+                                ...(floor != null ? { floor } : {}),
+                              });
+                            }}
+                          >
+                            <option value="">— None (free placement)</option>
+                            {zoneOptions.map(o => (
+                              <option key={o.id} value={o.id}>{o.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Row 2b — category + label */}
                       <div className="row">
                         <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Category</label>
