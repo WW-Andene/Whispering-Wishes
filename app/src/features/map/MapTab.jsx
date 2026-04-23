@@ -2563,6 +2563,13 @@ export default function MapTab({ navPadding = 80 }) {
           image-rendering: auto;
         }
         .zone-selector-item.is-icon-leaf { opacity: 0.88; }
+        /* Same thumbnail treatment inside the draft-tree (editor panel). */
+        .draft-row-icon-thumb {
+          width: 14px; height: 14px; object-fit: contain;
+          margin: 0 4px; vertical-align: middle;
+        }
+        .draft-row.is-icon-row { opacity: 0.9; }
+        .draft-row.is-icon-row .drlabel { font-size: 11px; }
         .icon-preview {
           flex: 0 0 auto;
           width: 32px; height: 32px;
@@ -3344,43 +3351,88 @@ export default function MapTab({ navPadding = 80 }) {
                         // back to draft tree depth when level is unset so
                         // every row still has SOME indentation.
                         const indentLevel = (node.level != null ? node.level - 1 : node.depth);
+                        // Icons that have been added-to-tree under this zone.
+                        // Rendered as rows directly below the zone row, indented
+                        // one level deeper, so admins can see their tree
+                        // composition from within the editor panel.
+                        const zoneIcons = iconDrafts.filter(ic => ic.inTree && ic.zoneId === node.id);
                         return (
-                          <div
-                            key={node.id}
-                            className={`draft-row depth-${Math.min(indentLevel, 9)} ${isEditing ? 'is-editing' : ''}`}
-                            style={{ paddingLeft: 4 + indentLevel * 14 }}
-                          >
-                            <span className="drname">
-                              {indentLevel > 0 && <span className="tree-glyph">└─ </span>}
-                              <span className={`lvl-tag ${node.level == null ? 'is-unset' : ''}`}>
-                                {node.level != null ? `L${node.level}` : '—'}
+                          <React.Fragment key={node.id}>
+                            <div
+                              className={`draft-row depth-${Math.min(indentLevel, 9)} ${isEditing ? 'is-editing' : ''}`}
+                              style={{ paddingLeft: 4 + indentLevel * 14 }}
+                            >
+                              <span className="drname">
+                                {indentLevel > 0 && <span className="tree-glyph">└─ </span>}
+                                <span className={`lvl-tag ${node.level == null ? 'is-unset' : ''}`}>
+                                  {node.level != null ? `L${node.level}` : '—'}
+                                </span>
+                                <span className="drlabel">{node.name}</span>
+                                {canonicalParentName && <span className="drsub">› {canonicalParentName}</span>}
+                                {zoneIcons.length > 0 && (
+                                  <span className="kuro-badge kuro-badge-emerald" style={{ marginLeft: 6 }}>
+                                    {zoneIcons.length} icon{zoneIcons.length === 1 ? '' : 's'}
+                                  </span>
+                                )}
                               </span>
-                              <span className="drlabel">{node.name}</span>
-                              {canonicalParentName && <span className="drsub">› {canonicalParentName}</span>}
-                            </span>
-                            <span className="row" style={{ gap: 4 }}>
-                              <button
-                                className="edit-btn"
-                                type="button"
-                                onClick={() => handleMoveDraft(node.id, -1)}
-                                disabled={node.isFirst}
-                                aria-label={`Move ${node.name} up`}
-                                title="Move up"
-                              >▲</button>
-                              <button
-                                className="edit-btn"
-                                type="button"
-                                onClick={() => handleMoveDraft(node.id, 1)}
-                                disabled={node.isLast}
-                                aria-label={`Move ${node.name} down`}
-                                title="Move down"
-                              >▼</button>
-                              {!isEditing && (
-                                <button className="edit-btn" type="button" onClick={() => handleEditDraft(node.id)} aria-label={`Edit ${node.name}`}>Edit</button>
-                              )}
-                              <button type="button" onClick={() => handleDeleteDraft(node.id)} aria-label={`Delete ${node.name}`}>Delete</button>
-                            </span>
-                          </div>
+                              <span className="row" style={{ gap: 4 }}>
+                                <button
+                                  className="edit-btn"
+                                  type="button"
+                                  onClick={() => handleMoveDraft(node.id, -1)}
+                                  disabled={node.isFirst}
+                                  aria-label={`Move ${node.name} up`}
+                                  title="Move up"
+                                >▲</button>
+                                <button
+                                  className="edit-btn"
+                                  type="button"
+                                  onClick={() => handleMoveDraft(node.id, 1)}
+                                  disabled={node.isLast}
+                                  aria-label={`Move ${node.name} down`}
+                                  title="Move down"
+                                >▼</button>
+                                {!isEditing && (
+                                  <button className="edit-btn" type="button" onClick={() => handleEditDraft(node.id)} aria-label={`Edit ${node.name}`}>Edit</button>
+                                )}
+                                <button type="button" onClick={() => handleDeleteDraft(node.id)} aria-label={`Delete ${node.name}`}>Delete</button>
+                              </span>
+                            </div>
+                            {zoneIcons.map(ic => {
+                              const icCat = getIconCatalogEntry(ic.kind);
+                              const iconSrc = icCat ? (BASE + icCat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
+                              const nameText = ic.label || icCat?.name || 'Icon';
+                              return (
+                                <div
+                                  key={`tree-ic-${ic.id}`}
+                                  className="draft-row is-icon-row"
+                                  style={{ paddingLeft: 4 + (indentLevel + 1) * 14 }}
+                                >
+                                  <span className="drname">
+                                    <span className="tree-glyph">└─ </span>
+                                    {iconSrc && <img src={iconSrc} alt="" className="draft-row-icon-thumb" />}
+                                    <span className="drlabel">{nameText}</span>
+                                  </span>
+                                  <span className="row" style={{ gap: 4 }}>
+                                    <button
+                                      className="edit-btn"
+                                      type="button"
+                                      onClick={() => handleFlyToIcon(ic)}
+                                      title="Fly to"
+                                      aria-label={`Fly to ${nameText}`}
+                                    >⊹</button>
+                                    <button
+                                      className="edit-btn"
+                                      type="button"
+                                      onClick={() => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, inTree: false, locked: false } : x))}
+                                      title="Push back to icon editor"
+                                      aria-label={`Push ${nameText} back to editor`}
+                                    >✎</button>
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </React.Fragment>
                         );
                       })}
                     </div>
