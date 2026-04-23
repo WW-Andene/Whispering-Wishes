@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pen, Settings, Download, Trash2 } from 'lucide-react';
+import { Settings, Download, Trash2 } from 'lucide-react';
 import { CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ZONE_DRAFTS } from '../../data/mapDefaults.js';
-import { downloadOverlay, purgeOverlay, queryOverlay, serviceWorkerAvailable } from '../../providers/tileSW.js';
+import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../providers/tileSW.js';
 
 const MAP_W = 12288;
 const MAP_H = 16384;
@@ -25,9 +25,11 @@ const COLOR_DRAFT = '#38bdf8';   // cyan — session drafts
 // so re-opening the Map instantly re-uses already-decoded tiles instead of
 // re-fetching. Capped LRU ~ keeps memory bounded on low-end devices. The
 // browser HTTP cache (and the offline service worker, when installed) cover
-// persistence across page reloads.
+// persistence across page reloads. Cap is set well above any single
+// overlay's tile count (Fabricatorium = 1664 tiles, the largest) so panning
+// inside one overlay never evicts tiles you just looked at.
 const OVERLAY_TILE_CACHE = new Map();        // "catalogId:y:x" → HTMLImageElement
-const OVERLAY_TILE_CACHE_LIMIT = 400;
+const OVERLAY_TILE_CACHE_LIMIT = 2000;
 const COLOR_ACTIVE = '#edaf18';  // gold dashed — in-progress polygon
 
 function loadDrafts() {
@@ -1270,70 +1272,87 @@ export default function MapTab({ navPadding = 80 }) {
     }
   }, [overlayDrafts, drafts, overlayBoundsPolygon, editingOverlayId]);
 
-  // Query the service-worker tile cache on mount for every tileable catalog
-  // entry (imageUrl ending in .webp — those are the ones we sliced into
-  // /lossless/ PNG tiles). Populates the gear-icon downloads panel with
-  // accurate "X/N cached" labels without any user action.
-  const tileableCatalog = useMemo(
-    () => OVERLAY_CATALOG.filter(c => c.imageUrl?.endsWith?.('.webp')),
-    [],
-  );
+  // Downloadables = base world map (Solaris_3) + every tileable overlay
+  // (imageUrl ending in .webp). The base map sits at the top so users see
+  // it first; overlays follow in catalog order.
+  const downloadables = useMemo(() => {
+    const items = [
+      { id: 'solaris_3', name: 'World Map', urls: tileUrlsForBaseMap() },
+    ];
+    for (const cat of OVERLAY_CATALOG) {
+      if (!cat.imageUrl?.endsWith?.('.webp')) continue;
+      items.push({ id: cat.id, name: cat.name, urls: tileUrlsForOverlay(cat) });
+    }
+    return items;
+  }, []);
+
+  // Query the service-worker tile cache on mount so the gear-icon downloads
+  // panel has accurate "X/N cached" labels without any user action.
   useEffect(() => {
     if (!serviceWorkerAvailable()) return;
     let cancelled = false;
     (async () => {
-      for (const cat of tileableCatalog) {
+      for (const item of downloadables) {
         try {
-          const { cached, total } = await queryOverlay(cat);
+          const { cached, total } = await queryTiles(item);
           if (cancelled) return;
-          setOverlayOffline(prev => ({ ...prev, [cat.id]: { ...(prev[cat.id] || {}), cached, total } }));
+          setOverlayOffline(prev => ({ ...prev, [item.id]: { ...(prev[item.id] || {}), cached, total } }));
         } catch {}
       }
     })();
     return () => { cancelled = true; };
-  }, [tileableCatalog]);
+  }, [downloadables]);
 
-  const handleDownloadOverlay = useCallback(async (cat) => {
+  const handleDownloadItem = useCallback(async (item) => {
     if (!serviceWorkerAvailable()) {
       showToast('Service worker not active — reload and try again');
       return;
     }
     setOverlayOffline(prev => ({
       ...prev,
-      [cat.id]: { ...(prev[cat.id] || {}), downloading: true, done: 0, total: prev[cat.id]?.total || 0 },
+      [item.id]: { ...(prev[item.id] || {}), downloading: true, done: 0, total: prev[item.id]?.total || item.urls.length },
     }));
     try {
-      await downloadOverlay(cat, (done, total) => {
-        setOverlayOffline(prev => ({ ...prev, [cat.id]: { cached: done, total, downloading: true, done } }));
+      await downloadTiles(item, (done, total) => {
+        setOverlayOffline(prev => ({ ...prev, [item.id]: { cached: done, total, downloading: true, done } }));
       });
-      const { cached, total } = await queryOverlay(cat);
-      setOverlayOffline(prev => ({ ...prev, [cat.id]: { cached, total, downloading: false, done: cached } }));
-      showToast(`Saved ${cat.name} for offline (${total} tiles)`);
+      const { cached, total } = await queryTiles(item);
+      setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: cached } }));
+      showToast(`Saved ${item.name} for offline (${total} tiles)`);
     } catch (err) {
-      setOverlayOffline(prev => ({ ...prev, [cat.id]: { ...(prev[cat.id] || {}), downloading: false } }));
+      setOverlayOffline(prev => ({ ...prev, [item.id]: { ...(prev[item.id] || {}), downloading: false } }));
       showToast('Download failed: ' + (err?.message || err));
     }
   }, []);
 
   const handleDownloadAll = useCallback(async () => {
-    for (const cat of tileableCatalog) {
+    for (const item of downloadables) {
       // Await sequentially so the SW isn't hammered and we don't spawn
       // concurrent progress streams that'd overwrite each other.
-      await handleDownloadOverlay(cat);
+      await handleDownloadItem(item);
     }
-  }, [tileableCatalog, handleDownloadOverlay]);
+  }, [downloadables, handleDownloadItem]);
 
-  const handlePurgeOverlay = useCallback(async (cat) => {
+  const handlePurgeItem = useCallback(async (item) => {
     if (!serviceWorkerAvailable()) return;
     try {
-      await purgeOverlay(cat);
-      const { cached, total } = await queryOverlay(cat);
-      setOverlayOffline(prev => ({ ...prev, [cat.id]: { cached, total, downloading: false, done: 0 } }));
-      showToast(`Removed ${cat.name} offline copy`);
+      await purgeTiles(item);
+      const { cached, total } = await queryTiles(item);
+      setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: 0 } }));
+      showToast(`Removed ${item.name} offline copy`);
     } catch (err) {
       showToast('Remove failed: ' + (err?.message || err));
     }
   }, []);
+
+  // Editor-side per-overlay handlers — wrap the generic ones so the existing
+  // Sub-maps editor row keeps working with a `cat` argument.
+  const handleDownloadOverlay = useCallback((cat) => {
+    return handleDownloadItem({ id: cat.id, name: cat.name, urls: tileUrlsForOverlay(cat) });
+  }, [handleDownloadItem]);
+  const handlePurgeOverlay = useCallback((cat) => {
+    return handlePurgeItem({ id: cat.id, name: cat.name, urls: tileUrlsForOverlay(cat) });
+  }, [handlePurgeItem]);
 
   const handleDeleteOverlay = useCallback((id) => {
     // Also remove any linked zone from the tree
@@ -1807,6 +1826,46 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-btn.is-active { background: rgba(237, 175, 24, 0.2); border-color: ${COLOR_CANON}; }
         .zone-author-btn.is-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.4); }
         .zone-author-btn.is-danger:hover { background: rgba(248, 113, 113, 0.12); border-color: #f87171; }
+
+        /* ── Offline downloads popover (gear icon, user-side) ─────────── */
+        .map-downloads-panel {
+          position: absolute; right: 12px; z-index: 500; width: 290px;
+          padding: 10px 12px;
+          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
+          border-radius: 4px;
+          box-shadow: 0 0 24px rgba(6, 10, 24, 0.7);
+          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          color: #e8e8e8; font-size: 12px;
+          display: flex; flex-direction: column; gap: 8px;
+          overflow-y: auto;
+        }
+        .map-downloads-head {
+          display: flex; align-items: center; justify-content: space-between;
+          color: ${COLOR_CANON}; font-size: 10px;
+          letter-spacing: 0.06em; text-transform: uppercase;
+        }
+        .map-downloads-all {
+          width: 100%;
+          padding: 6px 10px;
+          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .map-downloads-list { display: flex; flex-direction: column; gap: 0; }
+        .map-downloads-row {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 8px; padding: 6px 2px;
+          border-top: 1px solid rgba(237, 175, 24, 0.18);
+        }
+        .map-downloads-row:first-child { border-top: none; }
+        .map-downloads-meta { min-width: 0; flex: 1; }
+        .map-downloads-meta .name {
+          color: #e8e8e8; font-size: 12px; font-weight: 500;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .map-downloads-meta .hint {
+          color: #8a8a8a; font-size: 10px;
+          letter-spacing: 0.04em; text-transform: uppercase; margin-top: 2px;
+        }
         .zone-author-panel {
           position: absolute; left: 12px; right: 12px; bottom: 56px; z-index: 20;
           background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
@@ -2134,31 +2193,20 @@ export default function MapTab({ navPadding = 80 }) {
                 aria-label="Offline map downloads"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  position: 'absolute',
                   top: `${headerHeight + 8}px`,
-                  right: 12,
-                  zIndex: 500,
-                  background: MAP_BG,
-                  border: '1px solid rgba(148, 163, 184, 0.3)',
-                  borderRadius: 8,
-                  padding: 10,
-                  width: 280,
                   maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
-                  overflow: 'auto',
-                  boxShadow: '0 10px 28px rgba(0, 0, 0, 0.5)',
-                  fontSize: 12,
                 }}
               >
                 {(() => {
-                  const anyDownloading = tileableCatalog.some(c => overlayOffline[c.id]?.downloading);
-                  const allCached = tileableCatalog.every(c => {
-                    const o = overlayOffline[c.id];
+                  const anyDownloading = downloadables.some(it => overlayOffline[it.id]?.downloading);
+                  const allCached = downloadables.every(it => {
+                    const o = overlayOffline[it.id];
                     return o && o.total > 0 && o.cached >= o.total;
                   });
                   return (
                     <>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <strong style={{ fontSize: 12, letterSpacing: '0.04em' }}>Offline maps</strong>
+                      <div className="map-downloads-head">
+                        <span>Offline maps</span>
                         <button
                           type="button"
                           className="zone-author-btn"
@@ -2169,39 +2217,26 @@ export default function MapTab({ navPadding = 80 }) {
                       </div>
                       <button
                         type="button"
-                        className="zone-author-btn"
+                        className="zone-author-btn map-downloads-all"
                         onClick={handleDownloadAll}
                         disabled={anyDownloading || allCached}
-                        style={{ width: '100%', padding: '6px 8px', marginBottom: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                       >
                         <Download size={12} />
-                        {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${tileableCatalog.length} maps`}
+                        {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${downloadables.length} maps`}
                       </button>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {tileableCatalog.map(cat => {
-                          const off = overlayOffline[cat.id] || {};
+                      <div className="map-downloads-list">
+                        {downloadables.map(item => {
+                          const off = overlayOffline[item.id] || {};
                           const total = off.total || 0;
                           const cached = off.cached || 0;
                           const downloading = !!off.downloading;
                           const full = total > 0 && cached >= total;
                           const pct = total > 0 ? Math.round((off.done || cached) / total * 100) : 0;
                           return (
-                            <div
-                              key={cat.id}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                gap: 6,
-                                padding: '4px 2px',
-                                borderTop: '1px solid rgba(148, 163, 184, 0.15)',
-                              }}
-                            >
-                              <div style={{ minWidth: 0, flex: 1 }}>
-                                <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {cat.name}
-                                </div>
-                                <div style={{ fontSize: 10, opacity: 0.65 }}>
+                            <div key={item.id} className="map-downloads-row">
+                              <div className="map-downloads-meta">
+                                <div className="name">{item.name}</div>
+                                <div className="hint">
                                   {downloading
                                     ? `${pct}% · ${off.done || 0}/${total}`
                                     : total > 0 ? `${cached}/${total} tiles` : '—'}
@@ -2211,10 +2246,10 @@ export default function MapTab({ navPadding = 80 }) {
                                 <button
                                   type="button"
                                   className="zone-author-btn"
-                                  onClick={() => handlePurgeOverlay(cat)}
+                                  onClick={() => handlePurgeItem(item)}
                                   disabled={downloading}
-                                  title={`Remove ${cat.name} from offline cache`}
-                                  aria-label={`Remove ${cat.name}`}
+                                  title={`Remove ${item.name} from offline cache`}
+                                  aria-label={`Remove ${item.name}`}
                                   style={{ padding: '4px 6px', display: 'inline-flex', alignItems: 'center' }}
                                 >
                                   <Trash2 size={12} />
@@ -2223,10 +2258,10 @@ export default function MapTab({ navPadding = 80 }) {
                                 <button
                                   type="button"
                                   className="zone-author-btn"
-                                  onClick={() => handleDownloadOverlay(cat)}
+                                  onClick={() => handleDownloadItem(item)}
                                   disabled={downloading}
-                                  title={`Download ${cat.name} for offline`}
-                                  aria-label={`Download ${cat.name}`}
+                                  title={`Download ${item.name} for offline`}
+                                  aria-label={`Download ${item.name}`}
                                   style={{ padding: '4px 6px', display: 'inline-flex', alignItems: 'center' }}
                                 >
                                   <Download size={12} />
@@ -2369,11 +2404,11 @@ export default function MapTab({ navPadding = 80 }) {
                       setToast('Zone author locked');
                       setTimeout(() => setToast(''), 1800);
                     }}
-                    aria-label="Exit editor"
-                    title="Exit editor (triple-tap map header to re-open)"
-                    style={{ padding: '2px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    aria-label="Lock editor"
+                    title="Lock editor (triple-tap map header to re-open)"
+                    style={{ padding: '2px 8px' }}
                   >
-                    <Pen size={12} /> Exit
+                    Lock editor
                   </button>
                   <button
                     type="button"

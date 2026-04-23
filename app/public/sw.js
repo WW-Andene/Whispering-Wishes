@@ -16,8 +16,11 @@ const MAX_IMG_ENTRIES = 250;
 // to force users to re-download tiles (e.g. if we re-slice an overlay).
 const TILE_CACHE_VERSION = 'v1';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
-// A request is a tile iff it matches /<whatever>/lossless/{y}/{x}.png
-const TILE_RE = /\/lossless\/\d+\/\d+\.png$/i;
+// Match tiles for either:
+//   * sub-map overlays at /<dir>/lossless/{y}/{x}.png
+//   * the Solaris_3 base world map at /map-tiles/Solaris_3/{z}/{y}/{x}.webp
+const OVERLAY_TILE_RE = /\/lossless\/\d+\/\d+\.png$/i;
+const BASE_TILE_RE = /\/map-tiles\/Solaris_3\/\d+\/\d+\/\d+\.webp$/i;
 
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
@@ -140,11 +143,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // Map overlay tiles → dedicated persistent cache, cache-first. Matched
-  // BEFORE the generic image route so these don't get evicted by the
-  // 250-entry image LRU. Users can pre-warm via the "download" button
-  // (download-overlay message) and purge via the "remove" button.
-  if (TILE_RE.test(url.pathname)) {
+  // Map overlay tiles + base world map tiles → dedicated persistent cache,
+  // cache-first. Matched BEFORE the generic image route so these don't get
+  // evicted by the 250-entry image LRU. Users can pre-warm via the
+  // "download" button (download-overlay message) and purge via the
+  // "remove" button.
+  if (OVERLAY_TILE_RE.test(url.pathname) || BASE_TILE_RE.test(url.pathname)) {
     event.respondWith(cacheFirst(event.request, TILE_CACHE));
     return;
   }
