@@ -1797,34 +1797,59 @@ export default function MapTab({ navPadding = 80 }) {
         }
 
         .map-card .kuro-header { background: ${MAP_BG_TRANSPARENT} !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-        .zone-polygon { transition: fill-opacity 160ms cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
+        .zone-polygon { transition: fill-opacity var(--transition-normal, 160ms); cursor: pointer; }
         .zone-polygon:hover { fill-opacity: 0.22 !important; }
+
+        /* ── Leaflet tooltip / popup — Kuro-tokenised ─────────────────── */
         .leaflet-tooltip.zone-tooltip {
-          background: rgba(8, 12, 20, 0.92);
+          background: var(--bg-card);
           color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.4);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          border: 1px solid rgba(var(--color-gold), 0.4);
+          font-family: var(--font-data);
           font-size: 11px;
           letter-spacing: 0.04em;
           text-transform: uppercase;
-          padding: 4px 8px;
-          box-shadow: 0 0 12px rgba(6, 10, 24, 0.6);
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          border-radius: var(--radius-sm, 5px);
+          box-shadow: var(--shadow-md);
+          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
         }
-        .leaflet-tooltip.zone-tooltip-draft { color: ${COLOR_DRAFT}; border-color: rgba(56, 189, 248, 0.45); }
+        .leaflet-tooltip.zone-tooltip-draft { color: ${COLOR_DRAFT}; border-color: rgba(var(--color-cyan), 0.45); }
         .leaflet-tooltip.zone-tooltip::before { display: none; }
         .leaflet-popup.zone-popup .leaflet-popup-content-wrapper {
-          background: rgba(8, 12, 20, 0.95); color: #e8e8e8;
-          border: 1px solid rgba(237, 175, 24, 0.4);
-          border-radius: 4px;
-          box-shadow: 0 0 24px rgba(6, 10, 24, 0.7);
+          background: var(--bg-card); color: var(--text-body);
+          border: 1px solid rgba(var(--color-gold), 0.4);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-lg);
         }
-        .leaflet-popup.zone-popup .leaflet-popup-tip { background: rgba(8, 12, 20, 0.95); border: 1px solid rgba(237, 175, 24, 0.4); }
-        .leaflet-popup.zone-popup .zone-popup-title { font-family: 'Cinzel', serif; font-size: 14px; color: ${COLOR_CANON}; letter-spacing: 0.06em; margin-bottom: 4px; }
-        .leaflet-popup.zone-popup .zone-popup-note { font-size: 12px; color: #b8b8b8; line-height: 1.45; }
+        .leaflet-popup.zone-popup .leaflet-popup-tip {
+          background: var(--bg-card);
+          border: 1px solid rgba(var(--color-gold), 0.4);
+        }
+        .leaflet-popup.zone-popup .zone-popup-title {
+          font-family: var(--font-accent);
+          font-size: var(--font-md, 14px);
+          color: ${COLOR_CANON};
+          letter-spacing: 0.06em;
+          margin-bottom: var(--space-xs, 4px);
+        }
+        .leaflet-popup.zone-popup .zone-popup-note {
+          font-size: 12px;
+          color: var(--text-body);
+          opacity: 0.7;
+          line-height: 1.45;
+        }
+
+        /* ── Author-mode numbered vertex markers ─────────────────────── */
         .leaflet-tooltip.zone-author-label {
-          background: #080c14; color: ${COLOR_CANON}; border: 1px solid ${COLOR_CANON};
-          font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px;
-          padding: 1px 5px; box-shadow: 0 0 6px rgba(237, 175, 24, 0.35);
+          background: var(--bg-card-inner);
+          color: ${COLOR_CANON};
+          border: 1px solid ${COLOR_CANON};
+          font-family: var(--font-data);
+          font-size: 10px;
+          padding: 1px 5px;
+          border-radius: var(--radius-xs, 3px);
+          box-shadow: 0 0 6px rgba(var(--color-gold), 0.35);
         }
         .leaflet-tooltip.zone-author-label::before { display: none; }
         .zone-author-point-icon { background: transparent; border: none; cursor: grab; }
@@ -1832,211 +1857,335 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-point {
           display: flex; align-items: center; justify-content: center;
           width: 22px; height: 22px; border-radius: 50%;
-          background: #080c14; border: 1.5px solid ${COLOR_CANON};
-          box-shadow: 0 0 8px rgba(237, 175, 24, 0.5);
+          background: var(--bg-card-inner);
+          border: 1.5px solid ${COLOR_CANON};
+          box-shadow: 0 0 8px rgba(var(--color-gold), 0.5);
           color: ${COLOR_CANON};
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          font-family: var(--font-data);
           font-size: 10px; font-weight: 700;
           -webkit-tap-highlight-color: transparent;
-          transition: transform 140ms, box-shadow 140ms;
+          transition: transform var(--transition-fast, 140ms), box-shadow var(--transition-fast, 140ms);
         }
-        .zone-author-point-icon:hover .zone-author-point { transform: scale(1.15); box-shadow: 0 0 12px rgba(237, 175, 24, 0.75); }
+        .zone-author-point-icon:hover .zone-author-point {
+          transform: scale(1.15);
+          box-shadow: 0 0 12px rgba(var(--color-gold), 0.75);
+        }
         .zone-author-ghost-icon { background: transparent; border: none; cursor: pointer; }
         .zone-author-ghost {
           display: flex; align-items: center; justify-content: center;
           width: 16px; height: 16px; border-radius: 50%;
-          background: rgba(8, 12, 20, 0.8);
-          border: 1px dashed rgba(237, 175, 24, 0.6);
+          background: var(--bg-card);
+          border: 1px dashed rgba(var(--color-gold), 0.6);
           color: ${COLOR_CANON};
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          font-family: var(--font-data);
           font-size: 12px; line-height: 1; font-weight: 700;
           opacity: 0.55;
-          transition: opacity 140ms, transform 140ms, background 140ms;
+          transition: opacity var(--transition-fast, 140ms), transform var(--transition-fast, 140ms), background var(--transition-fast, 140ms);
           -webkit-tap-highlight-color: transparent;
         }
         .zone-author-ghost-icon:hover .zone-author-ghost {
-          opacity: 1; transform: scale(1.2); background: rgba(237, 175, 24, 0.15);
+          opacity: 1; transform: scale(1.2); background: rgba(var(--color-gold), 0.15);
         }
+
+        /* ── Legacy .zone-author-btn — kept as an alias that just maps
+             to Kuro tokens. New code should use .kuro-btn-sm directly. ─ */
         .zone-author-btn {
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-          padding: 4px 10px; border-radius: 3px; cursor: pointer;
-          background: rgba(8, 12, 20, 0.85); color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.45);
-          transition: background 160ms, border-color 160ms;
+          font-family: var(--font-display);
+          font-size: 12px;
+          font-weight: 500;
+          letter-spacing: 0.02em;
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          border-radius: var(--radius-sm, 5px);
+          cursor: pointer;
+          background: var(--bg-btn);
+          color: var(--text-heading);
+          border: 1px solid var(--border-medium);
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
+          -webkit-tap-highlight-color: transparent;
         }
-        .zone-author-btn:hover { background: rgba(237, 175, 24, 0.15); border-color: ${COLOR_CANON}; }
+        .zone-author-btn:hover {
+          background: rgba(var(--color-gold), 0.15);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
         .zone-author-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
-        .zone-author-btn.is-active { background: rgba(237, 175, 24, 0.2); border-color: ${COLOR_CANON}; }
-        .zone-author-btn.is-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.4); }
-        .zone-author-btn.is-danger:hover { background: rgba(248, 113, 113, 0.12); border-color: #f87171; }
+        .zone-author-btn.is-active {
+          background: rgba(var(--color-gold), 0.2);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
+        .zone-author-btn.is-danger {
+          color: #f87171;
+          border-color: rgba(var(--color-red), 0.4);
+        }
+        .zone-author-btn.is-danger:hover {
+          background: rgba(var(--color-red), 0.12);
+          border-color: #f87171;
+        }
 
         /* ── Offline downloads popover (gear icon, user-side) ─────────── */
-        /* The popover wraps a real Kuro <Card>; all interactive elements use
-           the canonical .kuro-btn / .kuro-btn-sm / .kuro-btn-icon classes
-           (kuro.css) so sizing and shape match the rest of the app. This
-           block just handles layout + tightening padding for a 300 px
-           popover. */
+        /* Wraps a real <Card>; Kuro card provides the visuals. Only layout
+           + per-context paddings here. All interactive elements use
+           canonical .kuro-btn / .kuro-btn-sm / .kuro-btn-icon. */
         .map-downloads-popover {
-          position: absolute; right: 12px; z-index: 500; width: 300px;
+          position: absolute;
+          right: var(--space-md, 12px);
+          z-index: var(--z-overlay, 1000);
+          width: 300px;
           overflow: visible;
         }
-        .map-downloads-popover .kuro-header { padding: 10px 14px; }
+        .map-downloads-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
         .map-downloads-popover .kuro-header h3::before { display: none; }
         .map-downloads-popover .kuro-header h3 {
           font-family: var(--font-display);
           font-size: var(--font-base, 13px);
           letter-spacing: 0.03em;
         }
-        .map-downloads-popover .kuro-body { padding: 10px 14px; }
+        .map-downloads-popover .kuro-body { padding: var(--space-sm, 8px) var(--space-md, 12px); }
         .map-downloads-popover .map-downloads-body {
-          display: flex; flex-direction: column; gap: 8px;
+          display: flex; flex-direction: column;
+          gap: var(--space-sm, 8px);
           max-height: 60vh; overflow-y: auto;
         }
         .map-downloads-all {
           width: 100%;
-          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+          display: inline-flex; align-items: center; justify-content: center;
+          gap: var(--space-xs, 6px);
         }
         .map-downloads-list { display: flex; flex-direction: column; gap: 0; }
         .map-downloads-row {
           display: flex; align-items: center; justify-content: space-between;
-          gap: 8px; padding: 8px 0;
+          gap: var(--space-sm, 8px);
+          padding: var(--space-sm, 8px) 0;
           border-top: 1px solid var(--border-subtle);
         }
         .map-downloads-row:first-child { border-top: none; padding-top: 0; }
         .map-downloads-row:last-child { padding-bottom: 0; }
         .map-downloads-meta { min-width: 0; flex: 1; }
         .map-downloads-meta .name {
-          color: var(--text-heading, #e8e8e8);
+          color: var(--text-heading);
           font-family: var(--font-display);
           font-size: var(--font-base, 13px);
           font-weight: 500;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .map-downloads-meta .hint {
-          color: var(--text-body, #8a8a8a);
+          color: var(--text-body);
           font-family: var(--font-data);
           font-size: 10px;
           letter-spacing: 0.04em;
           margin-top: 2px;
           opacity: 0.7;
         }
+
+        /* ── Zone author panel (bottom sheet when authoring) ──────────── */
         .zone-author-panel {
-          position: absolute; left: 12px; right: 12px; bottom: 56px; z-index: 20;
-          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
-          border-radius: 4px; padding: 10px 12px;
-          box-shadow: 0 0 24px rgba(6, 10, 24, 0.7);
-          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          color: #e8e8e8; font-size: 12px;
-          display: flex; flex-direction: column; gap: 8px;
+          position: absolute;
+          left: var(--space-md, 12px);
+          right: var(--space-md, 12px);
+          bottom: 56px;
+          z-index: var(--z-elevated, 10);
+          background: var(--bg-card);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-lg, 11px);
+          padding: var(--space-sm, 8px) var(--space-md, 12px);
+          box-shadow: var(--shadow-md);
+          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
+          font-family: var(--font-display);
+          color: var(--text-body);
+          font-size: 12px;
+          display: flex; flex-direction: column; gap: var(--space-sm, 8px);
           max-height: calc(100% - 120px); overflow-y: auto;
         }
-        .zone-author-panel .panel-top-row { display: flex; gap: 6px; align-items: center; justify-content: space-between; }
+        .zone-author-panel .panel-top-row {
+          display: flex; gap: var(--space-xs, 6px);
+          align-items: center; justify-content: space-between;
+        }
         .zone-author-collapsed {
-          position: absolute; right: 12px; bottom: 56px; z-index: 20;
-          display: inline-flex; align-items: center; gap: 6px;
-          background: rgba(8, 12, 20, 0.92); color: #e8e8e8;
-          border: 1px solid rgba(237, 175, 24, 0.4); border-radius: 3px;
-          padding: 4px 10px; cursor: pointer;
-          font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
-          letter-spacing: 0.05em; text-transform: uppercase;
-          box-shadow: 0 0 16px rgba(6, 10, 24, 0.6);
-          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          position: absolute;
+          right: var(--space-md, 12px);
+          bottom: 56px;
+          z-index: var(--z-elevated, 10);
+          display: inline-flex; align-items: center; gap: var(--space-xs, 6px);
+          background: var(--bg-card); color: var(--text-body);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-lg, 11px);
+          padding: var(--space-xs, 4px) var(--space-sm, 10px);
+          cursor: pointer;
+          font-family: var(--font-display);
+          font-size: 11px;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          box-shadow: var(--shadow-md);
+          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
           -webkit-tap-highlight-color: transparent;
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms);
         }
         .zone-author-collapsed .count { color: ${COLOR_CANON}; font-weight: 700; font-size: 13px; }
-        .zone-author-collapsed .hint { color: #8a8a8a; font-size: 10px; }
+        .zone-author-collapsed .hint { color: var(--text-body); opacity: 0.6; font-size: 10px; }
         .zone-author-collapsed .chip {
-          background: rgba(237, 175, 24, 0.18); color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.4); border-radius: 2px;
-          padding: 0 5px; font-size: 9px; letter-spacing: 0.06em;
+          background: rgba(var(--color-gold), 0.18);
+          color: ${COLOR_CANON};
+          border: 1px solid rgba(var(--color-gold), 0.4);
+          border-radius: var(--radius-xs, 3px);
+          padding: 0 5px;
+          font-size: 9px;
+          letter-spacing: 0.06em;
         }
         .zone-author-collapsed .caret { color: ${COLOR_CANON}; font-size: 10px; }
-        .zone-author-collapsed:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; }
-        .zone-author-panel .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .zone-author-collapsed:hover {
+          background: rgba(var(--color-gold), 0.12);
+          border-color: ${COLOR_CANON};
+        }
+        .zone-author-panel .row {
+          display: flex; gap: var(--space-xs, 6px); flex-wrap: wrap; align-items: center;
+        }
         .zone-author-panel .count { color: ${COLOR_CANON}; font-weight: 700; }
-        .zone-author-panel .hint { color: #8a8a8a; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; }
+        .zone-author-panel .hint {
+          color: var(--text-body); opacity: 0.6;
+          font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
+        }
         .zone-author-panel .field {
-          display: flex; flex-direction: column; gap: 2px; flex: 1 1 140px; min-width: 0;
+          display: flex; flex-direction: column;
+          gap: 2px; flex: 1 1 140px; min-width: 0;
         }
-        .zone-author-panel .field label { color: #8a8a8a; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; }
-        .zone-author-panel input, .zone-author-panel select {
-          background: #080c14; color: #e8e8e8;
-          border: 1px solid rgba(237, 175, 24, 0.3); border-radius: 3px;
-          font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
-          padding: 4px 6px; outline: none; min-width: 0; width: 100%;
+        .zone-author-panel .field label {
+          color: var(--text-body); opacity: 0.6;
+          font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
         }
-        .zone-author-panel input:focus, .zone-author-panel select:focus { border-color: ${COLOR_CANON}; }
-        .zone-author-panel .divider { height: 1px; background: rgba(237, 175, 24, 0.2); margin: 2px 0; }
-        .zone-author-panel .drafts-head { display: flex; justify-content: space-between; align-items: center; color: ${COLOR_DRAFT}; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .zone-author-panel input,
+        .zone-author-panel select,
+        .zone-author-panel textarea {
+          background: var(--bg-input);
+          color: var(--text-heading);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--input-radius, var(--radius-md, 7px));
+          font-family: var(--font-display);
+          font-size: 12px;
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          outline: none; min-width: 0; width: 100%;
+          transition: border-color var(--transition-fast, 120ms);
+        }
+        .zone-author-panel input:focus,
+        .zone-author-panel select:focus,
+        .zone-author-panel textarea:focus {
+          border-color: var(--border-focus);
+        }
+        .zone-author-panel textarea {
+          min-height: 80px; resize: vertical;
+          font-family: var(--font-data);
+          font-size: 11px;
+          padding: var(--space-xs, 6px) var(--space-sm, 8px);
+          -webkit-user-select: text; user-select: text;
+        }
+        .zone-author-panel .divider {
+          height: 1px;
+          background: var(--border-subtle);
+          margin: 2px 0;
+        }
+        .zone-author-panel .drafts-head {
+          display: flex; justify-content: space-between; align-items: center;
+          color: ${COLOR_DRAFT}; font-size: 10px;
+          letter-spacing: 0.06em; text-transform: uppercase;
+        }
         .zone-author-panel .draft-row {
-          display: flex; justify-content: space-between; align-items: center; gap: 6px;
-          padding: 3px 0; border-bottom: 1px dashed rgba(56, 189, 248, 0.15);
+          display: flex; justify-content: space-between; align-items: center;
+          gap: var(--space-xs, 6px);
+          padding: 3px 0;
+          border-bottom: 1px dashed rgba(var(--color-cyan), 0.15);
           font-size: 11px;
         }
         .zone-author-panel .draft-row:last-child { border-bottom: none; }
-        .zone-author-panel .draft-row.is-editing { background: rgba(237, 175, 24, 0.08); padding-left: 4px; padding-right: 4px; border-radius: 2px; }
+        .zone-author-panel .draft-row.is-editing {
+          background: rgba(var(--color-gold), 0.08);
+          padding-left: var(--space-xs, 4px);
+          padding-right: var(--space-xs, 4px);
+          border-radius: var(--radius-xs, 3px);
+        }
         .zone-author-panel .draft-tree { display: flex; flex-direction: column; }
-        .zone-author-panel .draft-row .drname { color: #e8e8e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1 1 auto; display: inline-flex; align-items: center; gap: 4px; }
-        .zone-author-panel .draft-row .drsub { color: #8a8a8a; margin-left: 4px; }
-        .zone-author-panel .draft-row .tree-glyph { color: rgba(56, 189, 248, 0.55); font-size: 10px; }
+        .zone-author-panel .draft-row .drname {
+          color: var(--text-heading);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          min-width: 0; flex: 1 1 auto;
+          display: inline-flex; align-items: center; gap: var(--space-xs, 4px);
+        }
+        .zone-author-panel .draft-row .drsub {
+          color: var(--text-body); opacity: 0.6;
+          margin-left: var(--space-xs, 4px);
+        }
+        .zone-author-panel .draft-row .tree-glyph {
+          color: rgba(var(--color-cyan), 0.55); font-size: 10px;
+        }
         .zone-author-panel .draft-row .lvl-tag {
           display: inline-block; min-width: 22px; text-align: center;
-          padding: 0 4px; border-radius: 2px; font-size: 9px;
-          background: rgba(237, 175, 24, 0.18); color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.35); letter-spacing: 0.04em;
+          padding: 0 4px;
+          border-radius: var(--radius-xs, 3px);
+          font-size: 9px;
+          background: rgba(var(--color-gold), 0.18);
+          color: ${COLOR_CANON};
+          border: 1px solid rgba(var(--color-gold), 0.35);
+          letter-spacing: 0.04em;
         }
         .zone-author-panel .draft-row .lvl-tag.is-unset {
-          background: rgba(138, 138, 138, 0.12); color: #8a8a8a;
+          background: rgba(138, 138, 138, 0.12);
+          color: var(--text-body); opacity: 0.7;
           border-color: rgba(138, 138, 138, 0.35);
         }
         .zone-author-panel .draft-row .drlabel { overflow: hidden; text-overflow: ellipsis; }
         .zone-author-panel .draft-row button {
-          background: transparent; border: 1px solid rgba(248, 113, 113, 0.4);
-          color: #f87171; padding: 1px 7px; border-radius: 2px; cursor: pointer;
-          font-family: inherit; font-size: 10px;
+          background: transparent;
+          border: 1px solid rgba(var(--color-red), 0.4);
+          color: #f87171;
+          padding: 1px 7px;
+          border-radius: var(--radius-xs, 3px);
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 10px;
+          transition: background var(--transition-normal, 160ms);
         }
-        .zone-author-panel .draft-row button:hover { background: rgba(248, 113, 113, 0.12); }
+        .zone-author-panel .draft-row button:hover { background: rgba(var(--color-red), 0.12); }
         .zone-author-panel .draft-row .edit-btn {
-          border-color: rgba(237, 175, 24, 0.45); color: ${COLOR_CANON};
+          border-color: rgba(var(--color-gold), 0.45);
+          color: ${COLOR_CANON};
         }
-        .zone-author-panel .draft-row .edit-btn:hover { background: rgba(237, 175, 24, 0.12); }
+        .zone-author-panel .draft-row .edit-btn:hover { background: rgba(var(--color-gold), 0.12); }
         .zone-author-panel .edit-banner {
-          background: rgba(237, 175, 24, 0.12);
-          border: 1px solid rgba(237, 175, 24, 0.35);
-          border-radius: 3px; padding: 4px 8px;
+          background: rgba(var(--color-gold), 0.12);
+          border: 1px solid rgba(var(--color-gold), 0.35);
+          border-radius: var(--radius-sm, 5px);
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
           font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
           color: ${COLOR_CANON};
         }
-        .zone-author-panel .edit-banner-name { color: #fff; font-weight: 700; letter-spacing: 0.03em; }
-        .zone-author-panel textarea {
-          width: 100%; min-height: 80px; resize: vertical;
-          background: #080c14; color: #e8e8e8;
-          border: 1px solid rgba(237, 175, 24, 0.3); border-radius: 3px;
-          font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
-          padding: 6px 8px; -webkit-user-select: text; user-select: text;
+        .zone-author-panel .edit-banner-name {
+          color: var(--text-heading); font-weight: 700; letter-spacing: 0.03em;
         }
+
+        /* Floating toast above the map */
         .zone-author-toast {
-          position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
-          z-index: 30; padding: 6px 12px; border-radius: 3px;
-          background: rgba(8, 12, 20, 0.95); color: ${COLOR_CANON};
-          border: 1px solid rgba(237, 175, 24, 0.45);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
-          box-shadow: 0 0 16px rgba(6, 10, 24, 0.6);
+          position: absolute; top: 56px; left: 50%;
+          transform: translateX(-50%);
+          z-index: var(--z-toast, 9500);
+          padding: var(--space-xs, 6px) var(--space-md, 12px);
+          border-radius: var(--radius-lg, 11px);
+          background: var(--bg-card);
+          color: ${COLOR_CANON};
+          border: 1px solid rgba(var(--color-gold), 0.45);
+          font-family: var(--font-display);
+          font-size: 11px;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          box-shadow: var(--shadow-md);
+          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
           pointer-events: none;
         }
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
+        /* ── Floor picker (left side) ─────────────────────────────────── */
         .floor-picker {
-          /* Float the picker var(--space-md) (12 px) below the kuro-header
-             (actual height measured via ResizeObserver, applied as inline
-             top) and var(--space-md) from the card's left edge — same
-             gap on top and sides. */
           position: absolute;
           left: var(--space-md, 12px);
-          z-index: 20;
+          z-index: var(--z-elevated, 10);
           display: flex; flex-direction: column; align-items: stretch;
           gap: var(--space-xs, 4px);
           padding: var(--space-sm, 8px);
@@ -2050,7 +2199,7 @@ export default function MapTab({ navPadding = 80 }) {
           background: var(--bg-btn);
           color: var(--text-heading);
           border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          border-radius: var(--btn-radius);
           padding: var(--space-xs, 4px) var(--space-sm, 8px);
           font-family: var(--font-display);
           font-size: var(--font-base, 13px);
@@ -2058,30 +2207,37 @@ export default function MapTab({ navPadding = 80 }) {
           letter-spacing: 0.02em;
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms, color var(--transition-fast, 120ms);
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
         }
-        .floor-picker button:hover { background: rgba(237, 175, 24, 0.15); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
+        .floor-picker button:hover {
+          background: rgba(var(--color-gold), 0.15);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
         .floor-picker input {
           width: 44px;
-          background: var(--bg-btn);
+          background: var(--bg-input);
           color: var(--text-heading);
           border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          border-radius: var(--input-radius, var(--radius-md, 7px));
           padding: var(--space-xs, 4px) var(--space-sm, 8px);
           font-family: var(--font-display);
           font-size: var(--font-base, 13px);
           font-weight: 500;
           letter-spacing: 0.02em;
-          text-align: center; outline: none; -moz-appearance: textfield;
+          text-align: center; outline: none;
+          transition: border-color var(--transition-fast, 120ms);
+          -moz-appearance: textfield;
         }
-        .floor-picker input:focus { border-color: ${COLOR_CANON}; }
+        .floor-picker input:focus { border-color: var(--border-focus); }
         .floor-picker input::-webkit-inner-spin-button,
         .floor-picker input::-webkit-outer-spin-button { -webkit-appearance: none; }
 
+        /* ── Zone selector (right side, tree of zones) ────────────────── */
         .zone-selector {
           position: absolute;
           right: var(--space-md, 12px);
-          z-index: 20;
+          z-index: var(--z-elevated, 10);
           display: flex; flex-direction: column;
           gap: var(--space-xs, 4px);
           padding: var(--space-sm, 8px);
@@ -2107,13 +2263,17 @@ export default function MapTab({ navPadding = 80 }) {
           font-kerning: none;
           background: var(--bg-btn);
           border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          border-radius: var(--btn-radius);
           padding: var(--space-xs, 4px) var(--space-sm, 8px);
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms, color 120ms;
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
         }
-        .zone-selector-head:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
+        .zone-selector-head:hover {
+          background: rgba(var(--color-gold), 0.12);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
         .zone-selector-count {
           margin-left: auto;
           font-size: 11px; opacity: 0.75;
@@ -2136,7 +2296,7 @@ export default function MapTab({ navPadding = 80 }) {
           width: 100%;
           background: var(--bg-btn);
           border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          border-radius: var(--btn-radius);
           padding: var(--space-xs, 4px) var(--space-sm, 8px);
           color: var(--text-heading);
           font-family: var(--font-display);
@@ -2144,24 +2304,31 @@ export default function MapTab({ navPadding = 80 }) {
           text-align: left;
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms, color 120ms;
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms), color var(--transition-fast, 120ms);
         }
-        .zone-selector-item:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
+        .zone-selector-item:hover {
+          background: rgba(var(--color-gold), 0.12);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
         .zone-selector-item.is-armed {
-          background: rgba(237, 175, 24, 0.2);
+          background: rgba(var(--color-gold), 0.2);
           border-color: ${COLOR_CANON};
           color: ${COLOR_CANON};
           animation: zone-armed-pulse 1s ease-in-out infinite;
         }
         @keyframes zone-armed-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(237, 175, 24, 0.35); }
-          50% { box-shadow: 0 0 0 3px rgba(237, 175, 24, 0.08); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-gold), 0.35); }
+          50% { box-shadow: 0 0 0 3px rgba(var(--color-gold), 0.08); }
         }
         .zone-selector-caret {
           display: inline-block; width: 10px; text-align: center;
           opacity: 0.7; flex-shrink: 0;
         }
-        .zone-selector-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .zone-selector-name {
+          flex: 1 1 auto;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
         .zone-selector-row { display: flex; align-items: stretch; gap: var(--space-xs, 4px); }
         .zone-selector-row .zone-selector-item { flex: 1 1 auto; }
         .zone-selector-edit-btn {
@@ -2170,44 +2337,68 @@ export default function MapTab({ navPadding = 80 }) {
           width: 28px;
           background: var(--bg-btn);
           border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          border-radius: var(--btn-radius);
           color: ${COLOR_CANON};
           font-family: var(--font-display);
           font-size: 14px;
           cursor: pointer;
           -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms;
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms);
         }
-        .zone-selector-edit-btn:hover { background: rgba(237, 175, 24, 0.18); border-color: ${COLOR_CANON}; }
+        .zone-selector-edit-btn:hover {
+          background: rgba(var(--color-gold), 0.18);
+          border-color: ${COLOR_CANON};
+        }
 
+        /* ── Sub-map overlay rows (editor panel) ──────────────────────── */
         .overlay-row {
-          background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2);
-          border-radius: 3px; padding: 6px 8px; display: flex; flex-direction: column; gap: 6px;
+          background: rgba(var(--color-cyan), 0.06);
+          border: 1px solid rgba(var(--color-cyan), 0.2);
+          border-radius: var(--radius-sm, 5px);
+          padding: var(--space-xs, 6px) var(--space-sm, 8px);
+          display: flex; flex-direction: column; gap: var(--space-xs, 6px);
         }
-        .overlay-row.is-active { border-color: ${COLOR_CANON}; background: rgba(237, 175, 24, 0.06); }
-        .overlay-row.is-locked { border-color: rgba(148, 163, 184, 0.35); background: rgba(148, 163, 184, 0.05); }
-        .overlay-row-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .overlay-row.is-active {
+          border-color: ${COLOR_CANON};
+          background: rgba(var(--color-gold), 0.06);
+        }
+        .overlay-row.is-locked {
+          border-color: rgba(148, 163, 184, 0.35);
+          background: rgba(148, 163, 184, 0.05);
+        }
+        .overlay-row-head {
+          display: flex; justify-content: space-between; align-items: center;
+          gap: var(--space-xs, 6px);
+        }
         .lock-badge, .tree-badge {
           font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
-          padding: 0 4px; border-radius: 2px; margin-left: 4px;
+          padding: 0 4px;
+          border-radius: var(--radius-xs, 3px);
+          margin-left: var(--space-xs, 4px);
         }
         .lock-badge {
           background: rgba(148, 163, 184, 0.18); color: #94a3b8;
           border: 1px solid rgba(148, 163, 184, 0.4);
         }
         .tree-badge {
-          background: rgba(34, 197, 94, 0.18); color: #22c55e;
-          border: 1px solid rgba(34, 197, 94, 0.4);
+          background: rgba(var(--color-emerald), 0.18);
+          color: #22c55e;
+          border: 1px solid rgba(var(--color-emerald), 0.4);
         }
-        .overlay-controls { display: flex; flex-direction: column; gap: 6px; }
+        .overlay-controls { display: flex; flex-direction: column; gap: var(--space-xs, 6px); }
         .overlay-slider {
-          -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
-          background: rgba(237, 175, 24, 0.2); border-radius: 2px; outline: none;
+          -webkit-appearance: none; appearance: none;
+          width: 100%; height: 4px;
+          background: rgba(var(--color-gold), 0.2);
+          border-radius: var(--radius-xs, 3px);
+          outline: none;
         }
         .overlay-slider::-webkit-slider-thumb {
           -webkit-appearance: none; appearance: none;
           width: 14px; height: 14px; border-radius: 50%;
-          background: ${COLOR_CANON}; cursor: pointer; border: 1.5px solid #080c14;
+          background: ${COLOR_CANON};
+          cursor: pointer;
+          border: 1.5px solid var(--bg-card-inner);
         }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ position: 'relative', zIndex: 10 }}>
