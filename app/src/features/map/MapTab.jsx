@@ -146,6 +146,13 @@ export default function MapTab({ navPadding = 80 }) {
   const downloadsPanelRef = useRef(null);
   const [expandedZones, setExpandedZones] = useState(() => new Set());
   const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
+  // Zone selector "click twice to confirm" arming — first click on a zone
+  // marks it pending; second click within ZONE_ARM_MS fires the navigation.
+  // Clicking a different zone re-arms on that one. Prevents accidentally
+  // yanking the user out of their current view while browsing the tree.
+  const [pendingZoneId, setPendingZoneId] = useState(null);
+  const pendingZoneTimerRef = useRef(null);
+  const ZONE_ARM_MS = 2500;
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
   const overlayRedrawRef = useRef(() => {});       // exposes draw() to the gesture effect
@@ -910,14 +917,19 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [overlayDrafts, viewFloor, mapReady]);
 
-  // Cleanup shared canvas on unmount. The module-scoped tile cache is left
-  // in place on purpose so revisiting the Map tab reuses decoded tiles
-  // instead of re-fetching — the LRU cap keeps memory bounded.
+  // Cleanup shared canvas + any pending zone-arm timer on unmount. The
+  // module-scoped tile cache is left in place on purpose so revisiting the
+  // Map tab reuses decoded tiles instead of re-fetching — the LRU cap keeps
+  // memory bounded.
   useEffect(() => {
     return () => {
       if (overlayCanvasRef.current) {
         overlayCanvasRef.current.remove();
         overlayCanvasRef.current = null;
+      }
+      if (pendingZoneTimerRef.current) {
+        clearTimeout(pendingZoneTimerRef.current);
+        pendingZoneTimerRef.current = null;
       }
     };
   }, []);
@@ -1845,31 +1857,12 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-btn.is-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.4); }
         .zone-author-btn.is-danger:hover { background: rgba(248, 113, 113, 0.12); border-color: #f87171; }
 
-        /* ── Gear icon in the map header — match Kuro floor-picker button ── */
-        .map-gear-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          width: 32px; height: 32px;
-          background: var(--bg-btn);
-          color: var(--text-heading);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms, color var(--transition-fast, 120ms);
-        }
-        .map-gear-btn:hover,
-        .map-gear-btn.is-active {
-          background: rgba(237, 175, 24, 0.15);
-          border-color: ${COLOR_CANON};
-          color: ${COLOR_CANON};
-        }
-
         /* ── Offline downloads popover (gear icon, user-side) ─────────── */
-        /* The popover wraps a real Kuro <Card>. We only position + size it
-           here; the card itself supplies the border, shadow, backdrop blur,
-           shimmer bar, and corner decorations that define "Kuro". Internal
-           buttons use the same --bg-btn/--border-medium/--radius-lg tokens
-           as the floor picker so everything feels like one visual family. */
+        /* The popover wraps a real Kuro <Card>; all interactive elements use
+           the canonical .kuro-btn / .kuro-btn-sm / .kuro-btn-icon classes
+           (kuro.css) so sizing and shape match the rest of the app. This
+           block just handles layout + tightening padding for a 300 px
+           popover. */
         .map-downloads-popover {
           position: absolute; right: 12px; z-index: 500; width: 300px;
           overflow: visible;
@@ -1886,32 +1879,10 @@ export default function MapTab({ navPadding = 80 }) {
           display: flex; flex-direction: column; gap: 8px;
           max-height: 60vh; overflow-y: auto;
         }
-
-        .map-downloads-btn {
-          display: inline-flex; align-items: center; justify-content: center;
-          gap: 6px;
-          padding: 6px 10px;
-          background: var(--bg-btn);
-          color: var(--text-heading);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--btn-radius, var(--radius-lg, 11px));
-          font-family: var(--font-display);
-          font-size: var(--font-base, 13px);
-          font-weight: 500;
-          letter-spacing: 0.02em;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-          transition: background 160ms, border-color 160ms, color var(--transition-fast, 120ms);
+        .map-downloads-all {
+          width: 100%;
+          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .map-downloads-btn:hover {
-          background: rgba(237, 175, 24, 0.15);
-          border-color: ${COLOR_CANON};
-          color: ${COLOR_CANON};
-        }
-        .map-downloads-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
-        .map-downloads-btn.is-full { width: 100%; padding: 8px 10px; }
-        .map-downloads-btn.is-icon { padding: 6px 8px; }
-
         .map-downloads-list { display: flex; flex-direction: column; gap: 0; }
         .map-downloads-row {
           display: flex; align-items: center; justify-content: space-between;
@@ -2162,6 +2133,16 @@ export default function MapTab({ navPadding = 80 }) {
           transition: background 160ms, border-color 160ms, color 120ms;
         }
         .zone-selector-item:hover { background: rgba(237, 175, 24, 0.12); border-color: ${COLOR_CANON}; color: ${COLOR_CANON}; }
+        .zone-selector-item.is-armed {
+          background: rgba(237, 175, 24, 0.2);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+          animation: zone-armed-pulse 1s ease-in-out infinite;
+        }
+        @keyframes zone-armed-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(237, 175, 24, 0.35); }
+          50% { box-shadow: 0 0 0 3px rgba(237, 175, 24, 0.08); }
+        }
         .zone-selector-caret {
           display: inline-block; width: 10px; text-align: center;
           opacity: 0.7; flex-shrink: 0;
@@ -2240,13 +2221,13 @@ export default function MapTab({ navPadding = 80 }) {
                   <button
                     ref={downloadsAnchorRef}
                     type="button"
-                    className={`map-gear-btn ${downloadsOpen ? 'is-active' : ''}`}
+                    className={`kuro-btn kuro-btn-sm kuro-btn-icon ${downloadsOpen ? 'is-active' : ''}`}
                     onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => !v); }}
                     aria-label="Offline downloads"
                     aria-expanded={downloadsOpen}
                     title="Offline downloads"
                   >
-                    <Settings size={16} />
+                    <Settings size={14} />
                   </button>
                 }
               >
@@ -2271,7 +2252,7 @@ export default function MapTab({ navPadding = 80 }) {
                     action={
                       <button
                         type="button"
-                        className="map-downloads-btn is-icon"
+                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
                         onClick={() => setDownloadsOpen(false)}
                         aria-label="Close"
                       >✕</button>
@@ -2290,7 +2271,7 @@ export default function MapTab({ navPadding = 80 }) {
                         <>
                           <button
                             type="button"
-                            className="map-downloads-btn is-full"
+                            className="kuro-btn kuro-btn-sm map-downloads-all"
                             onClick={handleDownloadAll}
                             disabled={anyDownloading || allCached}
                           >
@@ -2318,7 +2299,7 @@ export default function MapTab({ navPadding = 80 }) {
                               {full ? (
                                 <button
                                   type="button"
-                                  className="map-downloads-btn is-icon"
+                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
                                   onClick={() => handlePurgeItem(item)}
                                   disabled={downloading}
                                   title={`Remove ${item.name} from offline cache`}
@@ -2329,7 +2310,7 @@ export default function MapTab({ navPadding = 80 }) {
                               ) : (
                                 <button
                                   type="button"
-                                  className="map-downloads-btn is-icon"
+                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
                                   onClick={() => handleDownloadItem(item)}
                                   disabled={downloading}
                                   title={`Download ${item.name} for offline`}
@@ -2399,18 +2380,25 @@ export default function MapTab({ navPadding = 80 }) {
                           <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
                             <button
                               type="button"
-                              className="zone-selector-item"
+                              className={`zone-selector-item ${pendingZoneId === zone.id ? 'is-armed' : ''}`}
                               onClick={() => {
-                                // Single click is non-destructive: it just
-                                // expands/collapses for parents, and does
-                                // nothing for leaves (prevents accidentally
-                                // jumping out of the current view). Double-
-                                // click is required to actually navigate.
+                                // Parents: toggle expand on every click.
                                 if (hasChildren) toggleZoneExpanded(zone.id);
+                                // Second click on the same armed zone fires
+                                // the navigation. First click just arms.
+                                if (pendingZoneId === zone.id) {
+                                  if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
+                                  setPendingZoneId(null);
+                                  handleFlyToZone(zone);
+                                  return;
+                                }
+                                setPendingZoneId(zone.id);
+                                if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
+                                pendingZoneTimerRef.current = setTimeout(() => setPendingZoneId(null), ZONE_ARM_MS);
+                                showToast(`Tap again to open ${zone.name || zone.id}`, ZONE_ARM_MS);
                               }}
-                              onDoubleClick={() => handleFlyToZone(zone)}
-                              aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse, double-click to open)' : ' (expand, double-click to open)' : ' (double-click to open)'}`}
-                              title={hasChildren ? 'Click to expand / double-click to open' : 'Double-click to open'}
+                              aria-label={`${zone.name || zone.id}${hasChildren ? expanded ? ' (collapse, click again to open)' : ' (expand, click again to open)' : ' (click again to open)'}`}
+                              title={hasChildren ? 'Click to expand · click again to open' : 'Click to arm · click again to open'}
                             >
                               <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
                               <span className="zone-selector-name">{zone.name || zone.id}</span>
