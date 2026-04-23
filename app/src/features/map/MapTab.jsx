@@ -2558,12 +2558,10 @@ export default function MapTab({ navPadding = 80 }) {
 
         /* Locked icons appearing as leaves in the Regions tree — smaller
            caret slot replaced by a 14×14 thumbnail of the icon. */
-        .zone-selector-icon-thumb {
-          width: 14px; height: 14px; object-fit: contain;
-          image-rendering: auto;
-        }
-        .zone-selector-item.is-icon-leaf { opacity: 0.88; }
-        /* Same thumbnail treatment inside the draft-tree (editor panel). */
+        /* Icon thumbnail inside the draft-tree (editor panel). The
+           user-facing Regions popover intentionally does NOT render
+           icons — map icons are an admin-only concept surfaced only
+           inside the author panel's drafts tree. */
         .draft-row-icon-thumb {
           width: 14px; height: 14px; object-fit: contain;
           margin: 0 4px; vertical-align: middle;
@@ -2951,51 +2949,6 @@ export default function MapTab({ navPadding = 80 }) {
                                 {children.map(c => renderNode(c, depth + 1))}
                               </div>
                             )}
-                            {/* Icons locked to this zone appear as leaf rows
-                                under the zone, indented one level deeper.
-                                Click flies to the icon (includes floor switch). */}
-                            {(!hasChildren || expanded) && (() => {
-                              const zoneIcons = iconDrafts.filter(ic => ic.inTree && ic.zoneId === zone.id);
-                              if (zoneIcons.length === 0) return null;
-                              const iconIndent = ((zone.level != null ? zone.level - 1 : depth) + 1);
-                              return zoneIcons.map((ic) => {
-                                const icCat = getIconCatalogEntry(ic.kind);
-                                const iconSrc = icCat ? (BASE + icCat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
-                                const nameText = ic.label || icCat?.name || 'Icon';
-                                return (
-                                  <div key={`ic-${ic.id}`} className="zone-selector-row" style={{ paddingLeft: `calc(${iconIndent} * var(--space-md, 12px))` }}>
-                                    <button
-                                      type="button"
-                                      className="kuro-btn kuro-btn-sm zone-selector-item is-icon-leaf"
-                                      onClick={() => handleFlyToIcon(ic)}
-                                      title={`${nameText} — fly to`}
-                                    >
-                                      <span className="zone-selector-caret" aria-hidden="true">
-                                        {iconSrc ? <img src={iconSrc} alt="" className="zone-selector-icon-thumb" /> : '·'}
-                                      </span>
-                                      <span className="zone-selector-name">{nameText}</span>
-                                    </button>
-                                    {authorMode && (
-                                      <button
-                                        type="button"
-                                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          // Pull the icon back into the editor list:
-                                          // clear inTree AND unlock so admins can edit
-                                          // immediately without a second click.
-                                          saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, inTree: false, locked: false } : x));
-                                        }}
-                                        aria-label={`Push "${nameText}" back to icon editor`}
-                                        title="Push back to icon editor"
-                                      >
-                                        <Pen size={12} />
-                                      </button>
-                                    )}
-                                  </div>
-                                );
-                              });
-                            })()}
                           </div>
                         );
                       };
