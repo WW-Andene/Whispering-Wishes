@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Settings, Download, Trash2 } from 'lucide-react';
-import { CardHeader } from '../../shared/components/Card.jsx';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ZONE_DRAFTS } from '../../data/mapDefaults.js';
@@ -247,6 +247,24 @@ export default function MapTab({ navPadding = 80 }) {
     if (!map) return;
     // Switch to the zone's floor if it is linked to a placed sub-map overlay.
     switchFloorForZone(zone);
+
+    // If the zone points at a sub-map overlay, warm the browser HTTP cache
+    // for all its tiles BEFORE the fly-to animation begins — that way the
+    // canvas renderer has tiles ready as it passes over them instead of
+    // watching a patchwork fill in mid-flight. Fire-and-forget, low-stakes:
+    // the browser queues these (~6 concurrent per origin), cached responses
+    // are reused on the following Image() requests, failures are silent.
+    if (zone.overlayId) {
+      const ov = overlayDrafts.find(o => o.id === zone.overlayId);
+      const cat = ov && OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
+      if (cat?.imageUrl?.endsWith?.('.webp')) {
+        const urls = tileUrlsForOverlay(cat);
+        for (const url of urls) {
+          fetch(url).catch(() => {});
+        }
+      }
+    }
+
     if (!Array.isArray(zone.polygon) || zone.polygon.length < 2) return;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     zone.polygon.forEach(([x, y]) => {
@@ -274,7 +292,7 @@ export default function MapTab({ navPadding = 80 }) {
     } catch {
       map.fitBounds([nw, se], { padding: [40, 40] });
     }
-  }, [switchFloorForZone]);
+  }, [switchFloorForZone, overlayDrafts]);
 
   const toggleZoneExpanded = useCallback((id) => {
     setExpandedZones(prev => {
@@ -1827,27 +1845,40 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-btn.is-danger { color: #f87171; border-color: rgba(248, 113, 113, 0.4); }
         .zone-author-btn.is-danger:hover { background: rgba(248, 113, 113, 0.12); border-color: #f87171; }
 
-        /* ── Offline downloads popover (gear icon, user-side) ─────────── */
-        .map-downloads-panel {
-          position: absolute; right: 12px; z-index: 500; width: 290px;
-          padding: 10px 12px;
-          background: rgba(8, 12, 20, 0.92); border: 1px solid rgba(237, 175, 24, 0.4);
-          border-radius: 4px;
-          box-shadow: 0 0 24px rgba(6, 10, 24, 0.7);
-          backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          color: #e8e8e8; font-size: 12px;
-          display: flex; flex-direction: column; gap: 8px;
-          overflow-y: auto;
+        /* ── Gear icon in the map header — match Kuro floor-picker button ── */
+        .map-gear-btn {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 32px; height: 32px;
+          background: var(--bg-btn);
+          color: var(--text-heading);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 160ms, border-color 160ms, color var(--transition-fast, 120ms);
         }
-        .map-downloads-head {
-          display: flex; align-items: center; justify-content: space-between;
-          color: ${COLOR_CANON}; font-size: 10px;
-          letter-spacing: 0.06em; text-transform: uppercase;
+        .map-gear-btn:hover,
+        .map-gear-btn.is-active {
+          background: rgba(237, 175, 24, 0.15);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
+
+        /* ── Offline downloads popover (gear icon, user-side) ─────────── */
+        /* The popover wraps a real Kuro <Card>. We only position + size it
+           here; the card itself supplies the border, shadow, backdrop blur,
+           shimmer bar, and corner decorations that define "Kuro". */
+        .map-downloads-popover {
+          position: absolute; right: 12px; z-index: 500; width: 300px;
+          overflow: visible;
+        }
+        .map-downloads-popover .kuro-header h3::before { display: none; }
+        .map-downloads-popover .map-downloads-body {
+          display: flex; flex-direction: column; gap: 8px;
+          max-height: 60vh; overflow-y: auto;
         }
         .map-downloads-all {
-          width: 100%;
-          padding: 6px 10px;
+          width: 100%; padding: 6px 10px;
           display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
         .map-downloads-list { display: flex; flex-direction: column; gap: 0; }
@@ -1859,7 +1890,7 @@ export default function MapTab({ navPadding = 80 }) {
         .map-downloads-row:first-child { border-top: none; }
         .map-downloads-meta { min-width: 0; flex: 1; }
         .map-downloads-meta .name {
-          color: #e8e8e8; font-size: 12px; font-weight: 500;
+          color: var(--text-body, #e8e8e8); font-size: 12px; font-weight: 500;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .map-downloads-meta .hint {
@@ -2170,14 +2201,13 @@ export default function MapTab({ navPadding = 80 }) {
                   <button
                     ref={downloadsAnchorRef}
                     type="button"
-                    className={`zone-author-btn ${downloadsOpen ? 'is-active' : ''}`}
+                    className={`map-gear-btn ${downloadsOpen ? 'is-active' : ''}`}
                     onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => !v); }}
                     aria-label="Offline downloads"
                     aria-expanded={downloadsOpen}
                     title="Offline downloads"
-                    style={{ padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}
                   >
-                    <Settings size={14} />
+                    <Settings size={16} />
                   </button>
                 }
               >
@@ -2188,7 +2218,7 @@ export default function MapTab({ navPadding = 80 }) {
             {downloadsOpen && (
               <div
                 ref={downloadsPanelRef}
-                className="map-downloads-panel"
+                className="map-downloads-popover"
                 role="dialog"
                 aria-label="Offline map downloads"
                 onClick={(e) => e.stopPropagation()}
@@ -2197,35 +2227,40 @@ export default function MapTab({ navPadding = 80 }) {
                   maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
                 }}
               >
-                {(() => {
-                  const anyDownloading = downloadables.some(it => overlayOffline[it.id]?.downloading);
-                  const allCached = downloadables.every(it => {
-                    const o = overlayOffline[it.id];
-                    return o && o.total > 0 && o.cached >= o.total;
-                  });
-                  return (
-                    <>
-                      <div className="map-downloads-head">
-                        <span>Offline maps</span>
-                        <button
-                          type="button"
-                          className="zone-author-btn"
-                          onClick={() => setDownloadsOpen(false)}
-                          aria-label="Close"
-                          style={{ padding: '2px 8px' }}
-                        >✕</button>
-                      </div>
+                <Card>
+                  <CardHeader
+                    action={
                       <button
                         type="button"
-                        className="zone-author-btn map-downloads-all"
-                        onClick={handleDownloadAll}
-                        disabled={anyDownloading || allCached}
-                      >
-                        <Download size={12} />
-                        {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${downloadables.length} maps`}
-                      </button>
-                      <div className="map-downloads-list">
-                        {downloadables.map(item => {
+                        className="zone-author-btn"
+                        onClick={() => setDownloadsOpen(false)}
+                        aria-label="Close"
+                        style={{ padding: '2px 8px' }}
+                      >✕</button>
+                    }
+                  >
+                    Offline maps
+                  </CardHeader>
+                  <CardBody className="map-downloads-body">
+                    {(() => {
+                      const anyDownloading = downloadables.some(it => overlayOffline[it.id]?.downloading);
+                      const allCached = downloadables.every(it => {
+                        const o = overlayOffline[it.id];
+                        return o && o.total > 0 && o.cached >= o.total;
+                      });
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            className="zone-author-btn map-downloads-all"
+                            onClick={handleDownloadAll}
+                            disabled={anyDownloading || allCached}
+                          >
+                            <Download size={12} />
+                            {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${downloadables.length} maps`}
+                          </button>
+                          <div className="map-downloads-list">
+                            {downloadables.map(item => {
                           const off = overlayOffline[item.id] || {};
                           const total = off.total || 0;
                           const cached = off.cached || 0;
@@ -2270,10 +2305,12 @@ export default function MapTab({ navPadding = 80 }) {
                             </div>
                           );
                         })}
-                      </div>
-                    </>
-                  );
-                })()}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </CardBody>
+                </Card>
               </div>
             )}
 
@@ -2338,7 +2375,7 @@ export default function MapTab({ navPadding = 80 }) {
                               <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
                               <span className="zone-selector-name">{zone.name || zone.id}</span>
                             </button>
-                            {zone.overlayId && (
+                            {zone.overlayId && authorMode && (
                               <button
                                 type="button"
                                 className="zone-selector-edit-btn"
