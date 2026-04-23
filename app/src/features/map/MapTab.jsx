@@ -127,7 +127,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [expandedZones, setExpandedZones] = useState(() => new Set());
   const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
-  const overlayImagesRef = useRef(new Map());      // catalogId → HTMLImageElement (decoded source)
+  const overlayTilesRef = useRef(new Map());       // "catalogId:y:x" → HTMLImageElement (LRU, insertion-ordered)
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
   const overlayRedrawRef = useRef(() => {});       // exposes draw() to the gesture effect
 
@@ -699,10 +699,21 @@ export default function MapTab({ navPadding = 80 }) {
   }, [drafts, editingId, mapReady, authorMode]);
 
   // Sub-map overlay renderer — one shared <canvas>, sized to the map viewport.
-  // At every map move/zoom we clear and redraw each visible placement onto the
-  // canvas via ctx.drawImage with translate/rotate/scale. Because the canvas
-  // never exceeds viewport dimensions, the browser never has to subdivide an
-  // oversize compositor layer and the close-zoom perspective warp can't occur.
+  // For each visible placement we iterate the subset of the overlay's native
+  // 256-px PNG tile grid that intersects the viewport, fetch any missing
+  // tiles on demand (browser HTTP-caches), and draw loaded tiles via
+  // ctx.drawImage with the same translate/rotate/scale the editor has always
+  // used. Keeps the full transform pipeline intact (rotation/scale/drag stay
+  // live) while avoiding the 18 MB-per-overlay single-image decode.
+  //
+  // Tile cache: a plain Map used as an LRU — re-insertion bumps to the end,
+  // and we drop the oldest when we exceed OVERLAY_TILE_CACHE_LIMIT. Browser
+  // HTTP cache handles cross-session persistence, so eviction here just caps
+  // in-memory decoded bitmaps for slow devices.
+  const OVERLAY_TILE_PX = 256;
+  const OVERLAY_TILE_CACHE_LIMIT = 400; // ~400 × 256² RGBA ≈ 100 MB worst case
+  const OVERLAY_TILE_MARGIN = 1;        // prefetch 1 tile beyond viewport
+
   useEffect(() => {
     if (!mapReady) return;
     const map = mapRef.current;
@@ -717,19 +728,38 @@ export default function MapTab({ navPadding = 80 }) {
       overlayCanvasRef.current = canvas;
     }
 
-    // Pre-decode any source images we don't have yet
-    const visible = overlayDrafts.filter(ov => (ov.floor ?? 0) === viewFloor);
-    visible.forEach(ov => {
-      const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
-      if (!cat) return;
-      if (!overlayImagesRef.current.has(cat.id)) {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = (BASE + cat.imageUrl).replace(/\/\//g, '/');
-        img.onload = () => overlayRedrawRef.current();
-        overlayImagesRef.current.set(cat.id, img);
+    const tileCache = overlayTilesRef.current;
+
+    const getTile = (cat, ty, tx) => {
+      const key = `${cat.id}:${ty}:${tx}`;
+      const hit = tileCache.get(key);
+      if (hit) {
+        // Bump to most-recent by re-inserting.
+        tileCache.delete(key);
+        tileCache.set(key, hit);
+        return hit;
       }
-    });
+      const img = new Image();
+      img.decoding = 'async';
+      // Derive tile URL from the catalog's imageUrl: replace the filename
+      // with lossless/{y}/{x}.png and URL-encode each segment so spaces in
+      // folder names (Vault Underground, Fabricatorium of the deep) don't
+      // break the fetch.
+      const dir = cat.imageUrl.replace(/\/[^/]+$/, '');
+      const segs = dir.split('/').map(encodeURIComponent).join('/');
+      const url = (BASE + segs + `/lossless/${ty}/${tx}.png`).replace(/([^:])\/\//g, '$1/');
+      img.src = url;
+      img.onload = () => overlayRedrawRef.current();
+      img.onerror = () => { tileCache.delete(key); };
+      tileCache.set(key, img);
+      // Evict oldest when over cap.
+      while (tileCache.size > OVERLAY_TILE_CACHE_LIMIT) {
+        const firstKey = tileCache.keys().next().value;
+        if (firstKey === key) break;
+        tileCache.delete(firstKey);
+      }
+      return img;
+    };
 
     const syncSize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -769,25 +799,66 @@ export default function MapTab({ navPadding = 80 }) {
         const ov = (live && live.id === rawOv.id) ? { ...rawOv, ...live } : rawOv;
         const cat = OVERLAY_CATALOG.find(c => c.id === ov.catalogId);
         if (!cat) return;
-        const img = overlayImagesRef.current.get(cat.id);
-        if (!img || !img.complete || img.naturalWidth === 0) return;
 
         const s = ov.scale ?? 1;
         const rotRad = ((ov.rotation || 0) * Math.PI) / 180;
         const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
         const displayScale = s * zoomFactor;
-        // Prefer the decoded image's real dimensions; fall back to the
-        // catalog entry if the image hasn't loaded yet.
-        const nw = img.naturalWidth || cat.naturalWidth;
-        const nh = img.naturalHeight || cat.naturalHeight;
+        const nw = cat.naturalWidth;
+        const nh = cat.naturalHeight;
+        const cols = Math.ceil(nw / OVERLAY_TILE_PX);
+        const rows = Math.ceil(nh / OVERLAY_TILE_PX);
         const centerPt = map.latLngToContainerPoint(map.unproject(ov.center, NATIVE_ZOOM));
+
+        // Compute which tiles of the overlay are visible: inverse-transform
+        // the four viewport corners from screen space into overlay-local
+        // pixel space (origin at the overlay's top-left, 0..nw × 0..nh),
+        // take their AABB, and expand by a 1-tile prefetch margin.
+        const cosInv = Math.cos(-rotRad);
+        const sinInv = Math.sin(-rotRad);
+        const toLocal = (sx, sy) => {
+          const dx = (sx - centerPt.x) / displayScale;
+          const dy = (sy - centerPt.y) / displayScale;
+          return {
+            x: dx * cosInv - dy * sinInv + nw / 2,
+            y: dx * sinInv + dy * cosInv + nh / 2,
+          };
+        };
+        const c0 = toLocal(0, 0);
+        const c1 = toLocal(cw, 0);
+        const c2 = toLocal(cw, ch);
+        const c3 = toLocal(0, ch);
+        const minLx = Math.min(c0.x, c1.x, c2.x, c3.x);
+        const maxLx = Math.max(c0.x, c1.x, c2.x, c3.x);
+        const minLy = Math.min(c0.y, c1.y, c2.y, c3.y);
+        const maxLy = Math.max(c0.y, c1.y, c2.y, c3.y);
+        const tMinX = Math.max(0, Math.floor(minLx / OVERLAY_TILE_PX) - OVERLAY_TILE_MARGIN);
+        const tMaxX = Math.min(cols - 1, Math.floor(maxLx / OVERLAY_TILE_PX) + OVERLAY_TILE_MARGIN);
+        const tMinY = Math.max(0, Math.floor(minLy / OVERLAY_TILE_PX) - OVERLAY_TILE_MARGIN);
+        const tMaxY = Math.min(rows - 1, Math.floor(maxLy / OVERLAY_TILE_PX) + OVERLAY_TILE_MARGIN);
+        if (tMinX > tMaxX || tMinY > tMaxY) return; // overlay entirely off-screen
 
         ctx.save();
         ctx.globalAlpha = ov.opacity ?? 1;
         ctx.translate(centerPt.x, centerPt.y);
         ctx.rotate(rotRad);
         ctx.scale(displayScale, displayScale);
-        ctx.drawImage(img, -nw / 2, -nh / 2, nw, nh);
+
+        for (let ty = tMinY; ty <= tMaxY; ty++) {
+          for (let tx = tMinX; tx <= tMaxX; tx++) {
+            const tile = getTile(cat, ty, tx);
+            if (!tile.complete || tile.naturalWidth === 0) continue;
+            // Each tile covers overlay-local [tx·256..tx·256+256, ty·256..ty·256+256].
+            // The ctx was translated to the overlay's centre, so shift by -nw/2, -nh/2.
+            ctx.drawImage(
+              tile,
+              tx * OVERLAY_TILE_PX - nw / 2,
+              ty * OVERLAY_TILE_PX - nh / 2,
+              OVERLAY_TILE_PX,
+              OVERLAY_TILE_PX,
+            );
+          }
+        }
         ctx.restore();
       });
     };
@@ -801,14 +872,14 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [overlayDrafts, viewFloor, mapReady]);
 
-  // Cleanup shared canvas + image cache on unmount
+  // Cleanup shared canvas + tile cache on unmount
   useEffect(() => {
     return () => {
       if (overlayCanvasRef.current) {
         overlayCanvasRef.current.remove();
         overlayCanvasRef.current = null;
       }
-      overlayImagesRef.current.clear();
+      overlayTilesRef.current.clear();
     };
   }, []);
 
@@ -1248,9 +1319,8 @@ export default function MapTab({ navPadding = 80 }) {
       const current = (live && live.id === ov.id) ? { ...ov, ...live } : ov;
       const centerPt = map.latLngToContainerPoint(map.unproject(current.center, NATIVE_ZOOM));
       const zoomFactor = Math.pow(2, map.getZoom() - NATIVE_ZOOM);
-      const cachedImg = overlayImagesRef.current.get(cat.id);
-      const nw = (cachedImg && cachedImg.naturalWidth) || cat.naturalWidth;
-      const nh = (cachedImg && cachedImg.naturalHeight) || cat.naturalHeight;
+      const nw = cat.naturalWidth;
+      const nh = cat.naturalHeight;
       const halfW = (nw * (current.scale ?? 1) * zoomFactor) / 2;
       const halfH = (nh * (current.scale ?? 1) * zoomFactor) / 2;
       const rot = -((current.rotation || 0) * Math.PI) / 180;
