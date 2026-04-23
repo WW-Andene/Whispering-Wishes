@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Download, Trash2, LocateFixed, Pen } from 'lucide-react';
+import { Settings, Download, Trash2, LocateFixed, Pen, List } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -145,7 +145,10 @@ export default function MapTab({ navPadding = 80 }) {
   const downloadsAnchorRef = useRef(null);
   const downloadsPanelRef = useRef(null);
   const [expandedZones, setExpandedZones] = useState(() => new Set());
-  const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
+  // Zones tree is now a header-anchored popover (like downloads).
+  const [zonesOpen, setZonesOpen] = useState(false);
+  const zonesAnchorRef = useRef(null);
+  const zonesPanelRef = useRef(null);
   // L2-leaf confirm: first tap on a leaf arms it, second tap within
   // ZONE_ARM_MS fires handleFlyToZone. Leaves don't have an explicit
   // fly-to icon; this prevents accidental navigation when browsing.
@@ -240,6 +243,18 @@ export default function MapTab({ navPadding = 80 }) {
     }
     return null;
   }, [drafts, overlayDrafts]);
+
+  // Gold-highlight the zone that corresponds to the current floor: the
+  // zone whose overlayId points at an overlay draft sitting on viewFloor.
+  // Floor 0 has no single "current zone" (it's the base map) so we return
+  // null there — no highlight.
+  const currentZoneId = useMemo(() => {
+    if (viewFloor === 0) return null;
+    const ov = overlayDrafts.find(o => (o.floor ?? 0) === viewFloor);
+    if (!ov) return null;
+    const zone = drafts.find(z => z.overlayId === ov.id);
+    return zone?.id || null;
+  }, [viewFloor, overlayDrafts, drafts]);
 
   const switchFloorForZone = useCallback((zone) => {
     const floor = resolveZoneFloor(zone);
@@ -1605,6 +1620,18 @@ export default function MapTab({ navPadding = 80 }) {
     return () => document.removeEventListener('pointerdown', onDown);
   }, [downloadsOpen]);
 
+  // Same for the zones popover.
+  useEffect(() => {
+    if (!zonesOpen) return;
+    const onDown = (e) => {
+      if (zonesPanelRef.current?.contains(e.target)) return;
+      if (zonesAnchorRef.current?.contains(e.target)) return;
+      setZonesOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [zonesOpen]);
+
   // Triple-tap on header toggles author-enabled. Unlocking author also
   // enters draw mode in one shot (opens the editor panel); locking fully
   // exits — matches the "edition feature lives inside the editor panel"
@@ -2189,80 +2216,35 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .map-header-tap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-        /* ── Floor picker (left side) ─────────────────────────────────── */
-        .floor-picker {
-          position: absolute;
-          left: var(--space-md, 12px);
-          z-index: var(--z-elevated, 10);
-          display: flex; flex-direction: column; align-items: stretch;
-          gap: var(--space-xs, 4px);
-          padding: var(--space-sm, 8px);
-          background: var(--bg-card);
-          border: 1px solid var(--border-default);
-          border-radius: var(--radius-lg, 11px);
-          box-shadow: var(--shadow-md);
-          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
-        }
-        /* Floor picker buttons inherit size/shape/hover from .kuro-btn-sm */
-        .floor-picker .kuro-btn { width: 100%; }
-        .floor-picker input {
-          width: 48px; min-height: 28px;
-          background: var(--bg-input);
-          color: var(--text-heading);
-          border: 1px solid var(--border-medium);
-          border-radius: var(--input-radius);
-          /* Compact kuro-input padding (the mobile variant inside .kuro-calc) */
-          padding: 8px 10px;
-          font-family: var(--font-display);
-          font-size: 13px;
-          font-weight: 500;
-          letter-spacing: 0.02em;
-          text-align: center; outline: none;
-          transition: border-color var(--transition-fast, 120ms);
-          -moz-appearance: textfield;
-        }
-        .floor-picker input:focus { border-color: var(--border-focus); }
-        .floor-picker input::-webkit-inner-spin-button,
-        .floor-picker input::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-        /* ── Zone selector (right side, tree of zones) ────────────────── */
-        .zone-selector {
+        /* ── Zones popover (header-anchored, like downloads) ──────────── */
+        .map-zones-popover {
           position: absolute;
           right: var(--space-md, 12px);
-          z-index: var(--z-elevated, 10);
+          z-index: var(--z-overlay, 1000);
+          width: 300px;
+          overflow: visible;
+        }
+        .map-zones-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
+        .map-zones-popover .kuro-header h3::before { display: none; }
+        .map-zones-popover .kuro-header h3 {
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          letter-spacing: 0.03em;
+        }
+        .map-zones-popover .kuro-body { padding: var(--space-sm, 8px) var(--space-md, 12px); }
+        .map-zones-popover .map-zones-body {
           display: flex; flex-direction: column;
           gap: var(--space-xs, 4px);
+          max-height: 60vh; overflow-y: auto;
+        }
+        .zone-selector-empty {
           padding: var(--space-sm, 8px);
-          min-width: 200px;
-          max-width: 300px;
-          max-height: 60vh;
-          overflow: auto;
-          background: var(--bg-card);
-          border: 1px solid var(--border-default);
-          border-radius: var(--radius-lg, 11px);
-          box-shadow: var(--shadow-md);
-          backdrop-filter: blur(var(--blur-sm)); -webkit-backdrop-filter: blur(var(--blur-sm));
+          font-family: var(--font-display);
+          font-size: 11px;
+          color: var(--text-heading);
+          opacity: 0.55;
+          text-align: center;
         }
-        .zone-selector.is-collapsed { max-height: none; overflow: visible; }
-        /* Head + items inherit full Kuro-button visuals (size, radius,
-           hover). We only add layout tweaks (left align, text-transform
-           for the head, disabled-but-not-ghosted for leaves) here. */
-        .zone-selector-head {
-          text-transform: uppercase;
-          letter-spacing: 0;
-          font-kerning: none;
-          justify-content: flex-start;
-          gap: var(--space-xs, 4px);
-        }
-        .zone-selector-count {
-          margin-left: auto;
-          font-size: 11px; opacity: 0.75;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid var(--border-default);
-          border-radius: var(--radius-sm, 5px);
-          padding: 0 6px;
-        }
-        .zone-selector-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
         .zone-selector-empty {
           padding: var(--space-sm, 8px);
           font-family: var(--font-display);
@@ -2285,6 +2267,19 @@ export default function MapTab({ navPadding = 80 }) {
         @keyframes zone-armed-pulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-gold), 0.35); }
           50% { box-shadow: 0 0 0 3px rgba(var(--color-gold), 0.08); }
+        }
+        /* Gold highlight for the zone whose overlay matches the current
+           viewFloor — shows "you are here" in the tree. */
+        .zone-selector-item.is-current {
+          background: rgba(var(--color-gold), 0.14);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+          box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--color-gold), 0.35);
+        }
+        .zone-selector-item.is-current:hover {
+          background: rgba(var(--color-gold), 0.22);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
         }
         .zone-selector-caret {
           display: inline-block; width: 10px; text-align: center;
@@ -2366,17 +2361,30 @@ export default function MapTab({ navPadding = 80 }) {
             >
               <CardHeader
                 action={
-                  <button
-                    ref={downloadsAnchorRef}
-                    type="button"
-                    className={`kuro-btn kuro-btn-sm kuro-btn-icon ${downloadsOpen ? 'is-active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => !v); }}
-                    aria-label="Offline downloads"
-                    aria-expanded={downloadsOpen}
-                    title="Offline downloads"
-                  >
-                    <Settings size={14} />
-                  </button>
+                  <>
+                    <button
+                      ref={zonesAnchorRef}
+                      type="button"
+                      className={`kuro-btn kuro-btn-sm kuro-btn-icon ${zonesOpen ? 'is-active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); setZonesOpen(v => { if (!v) setDownloadsOpen(false); return !v; }); }}
+                      aria-label="Zones"
+                      aria-expanded={zonesOpen}
+                      title="Zones"
+                    >
+                      <List size={14} />
+                    </button>
+                    <button
+                      ref={downloadsAnchorRef}
+                      type="button"
+                      className={`kuro-btn kuro-btn-sm kuro-btn-icon ${downloadsOpen ? 'is-active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => { if (!v) setZonesOpen(false); return !v; }); }}
+                      aria-label="Offline downloads"
+                      aria-expanded={downloadsOpen}
+                      title="Offline downloads"
+                    >
+                      <Settings size={14} />
+                    </button>
+                  </>
                 }
               >
                 Interactive Map
@@ -2479,124 +2487,120 @@ export default function MapTab({ navPadding = 80 }) {
               </div>
             )}
 
-            {/* Floor picker — same var(--space-md) gap on top and sides */}
-            <div className="floor-picker" role="group" aria-label="Floor" style={{ top: `${headerHeight + 12}px` }}>
-              <button type="button" className="kuro-btn kuro-btn-sm kuro-btn-icon" onClick={() => setViewFloor(v => v + 1)} aria-label="Floor up">▲</button>
-              <input
-                type="number"
-                value={viewFloor}
-                onChange={(e) => { const v = parseInt(e.target.value, 10); if (Number.isFinite(v)) setViewFloor(v); }}
-                aria-label="Floor"
-              />
-              <button type="button" className="kuro-btn kuro-btn-sm kuro-btn-icon" onClick={() => setViewFloor(v => v - 1)} aria-label="Floor down">▼</button>
-            </div>
-
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
 
             {/* Zone selector — same var(--space-md) gap on top and right */}
-            <div
-              className={`zone-selector ${zoneSelectorCollapsed ? 'is-collapsed' : ''}`}
-              role="tree"
-              aria-label="Zones"
-              aria-expanded={!zoneSelectorCollapsed}
-              style={{ top: `${headerHeight + 12}px` }}
-            >
-              <button
-                type="button"
-                className="kuro-btn kuro-btn-sm zone-selector-head"
-                onClick={() => setZoneSelectorCollapsed(v => !v)}
-                aria-label={zoneSelectorCollapsed ? 'Expand zone selector' : 'Collapse zone selector'}
+            {zonesOpen && (
+              <div
+                ref={zonesPanelRef}
+                className="map-zones-popover"
+                role="dialog"
+                aria-label="Zones"
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  top: `${headerHeight + 8}px`,
+                  maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
+                }}
               >
-                <span className="zone-selector-caret">{zoneSelectorCollapsed ? '▸' : '▾'}</span>
-                <span>Zones</span>
-                {zoneSelectorCollapsed && (zoneNav.get(null) || []).length > 0 && (
-                  <span className="zone-selector-count">{(zoneNav.get(null) || []).length}</span>
-                )}
-              </button>
-              {!zoneSelectorCollapsed && (
-                <div className="zone-selector-list">
-                  {(() => {
-                    const renderNode = (zone, depth) => {
-                      const children = zoneNav.get(zone.id) || [];
-                      const hasChildren = children.length > 0;
-                      const expanded = expandedZones.has(zone.id);
-                      // Indent by level (L1 → 0, L2 → 1 unit, L3 → 2 …),
-                      // falling back to tree depth when level is unset.
-                      const indentLevel = (zone.level != null ? zone.level - 1 : depth);
-                      return (
-                        <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
-                          <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
-                            <button
-                              type="button"
-                              className={`kuro-btn kuro-btn-sm zone-selector-item ${!hasChildren && pendingZoneId === zone.id ? 'is-armed' : ''}`}
-                              onClick={() => {
-                                if (hasChildren) {
-                                  // L1 parent: single click toggles expand;
-                                  // the LocateFixed icon on the right fires
-                                  // fly-to separately.
-                                  toggleZoneExpanded(zone.id);
-                                  return;
-                                }
-                                // L2 leaf: arm-then-fire. No icon exists for
-                                // these; second tap on the same zone within
-                                // ZONE_ARM_MS fires handleFlyToZone.
-                                if (pendingZoneId === zone.id) {
+                <Card>
+                  <CardHeader
+                    action={
+                      <button
+                        type="button"
+                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                        onClick={() => setZonesOpen(false)}
+                        aria-label="Close"
+                      >✕</button>
+                    }
+                  >
+                    Zones
+                  </CardHeader>
+                  <CardBody className="map-zones-body">
+                    {(() => {
+                      const renderNode = (zone, depth) => {
+                        const children = zoneNav.get(zone.id) || [];
+                        const hasChildren = children.length > 0;
+                        const expanded = expandedZones.has(zone.id);
+                        // Indent by level (L1 → 0, L2 → 1 unit, …),
+                        // falling back to tree depth when level is unset.
+                        const indentLevel = (zone.level != null ? zone.level - 1 : depth);
+                        const isCurrent = zone.id === currentZoneId;
+                        return (
+                          <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
+                            <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
+                              <button
+                                type="button"
+                                className={`kuro-btn kuro-btn-sm zone-selector-item ${!hasChildren && pendingZoneId === zone.id ? 'is-armed' : ''} ${isCurrent ? 'is-current' : ''}`}
+                                onClick={() => {
+                                  if (hasChildren) {
+                                    // L1 parent: single click toggles expand;
+                                    // the LocateFixed icon on the right fires
+                                    // fly-to separately.
+                                    toggleZoneExpanded(zone.id);
+                                    return;
+                                  }
+                                  // L2 leaf: arm-then-fire. No icon for these;
+                                  // second tap on the same zone within
+                                  // ZONE_ARM_MS fires handleFlyToZone.
+                                  if (pendingZoneId === zone.id) {
+                                    if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
+                                    setPendingZoneId(null);
+                                    handleFlyToZone(zone);
+                                    return;
+                                  }
+                                  setPendingZoneId(zone.id);
                                   if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
-                                  setPendingZoneId(null);
-                                  handleFlyToZone(zone);
-                                  return;
-                                }
-                                setPendingZoneId(zone.id);
-                                if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
-                                pendingZoneTimerRef.current = setTimeout(() => setPendingZoneId(null), ZONE_ARM_MS);
-                                showToast(`Tap again to open ${zone.name || zone.id}`, ZONE_ARM_MS);
-                              }}
-                              aria-label={hasChildren ? `${zone.name || zone.id} — ${expanded ? 'collapse' : 'expand'}` : `${zone.name || zone.id} — tap again to open`}
-                              title={hasChildren ? (expanded ? 'Collapse' : 'Expand') : 'Tap · Tap again to open'}
-                            >
-                              <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
-                              <span className="zone-selector-name">{zone.name || zone.id}</span>
-                            </button>
-                            {hasChildren && (
-                              <button
-                                type="button"
-                                className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                onClick={() => handleFlyToZone(zone)}
-                                aria-label={`Go to ${zone.name || zone.id}`}
-                                title={`Go to ${zone.name || zone.id}`}
+                                  pendingZoneTimerRef.current = setTimeout(() => setPendingZoneId(null), ZONE_ARM_MS);
+                                  showToast(`Tap again to open ${zone.name || zone.id}`, ZONE_ARM_MS);
+                                }}
+                                aria-label={hasChildren ? `${zone.name || zone.id} — ${expanded ? 'collapse' : 'expand'}` : `${zone.name || zone.id} — tap again to open`}
+                                aria-current={isCurrent ? 'location' : undefined}
+                                title={hasChildren ? (expanded ? 'Collapse' : 'Expand') : 'Tap · Tap again to open'}
                               >
-                                <LocateFixed size={14} />
+                                <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
+                                <span className="zone-selector-name">{zone.name || zone.id}</span>
                               </button>
-                            )}
-                            {zone.overlayId && authorMode && (
-                              <button
-                                type="button"
-                                className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                onClick={(e) => { e.stopPropagation(); handlePushSubMapToEdit(zone); }}
-                                aria-label={`Push "${zone.name || zone.id}" back to sub-map editor`}
-                                title="Push back to sub-map editor"
-                              >
-                                <Pen size={14} />
-                              </button>
+                              {hasChildren && (
+                                <button
+                                  type="button"
+                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                                  onClick={() => handleFlyToZone(zone)}
+                                  aria-label={`Go to ${zone.name || zone.id}`}
+                                  title={`Go to ${zone.name || zone.id}`}
+                                >
+                                  <LocateFixed size={14} />
+                                </button>
+                              )}
+                              {zone.overlayId && authorMode && (
+                                <button
+                                  type="button"
+                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                                  onClick={(e) => { e.stopPropagation(); handlePushSubMapToEdit(zone); }}
+                                  aria-label={`Push "${zone.name || zone.id}" back to sub-map editor`}
+                                  title="Push back to sub-map editor"
+                                >
+                                  <Pen size={14} />
+                                </button>
+                              )}
+                            </div>
+                            {hasChildren && expanded && (
+                              <div role="group">
+                                {children.map(c => renderNode(c, depth + 1))}
+                              </div>
                             )}
                           </div>
-                          {hasChildren && expanded && (
-                            <div role="group">
-                              {children.map(c => renderNode(c, depth + 1))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    };
-                    const roots = zoneNav.get(null) || [];
-                    if (roots.length === 0) {
-                      return <div className="zone-selector-empty">No zones</div>;
-                    }
-                    return roots.map(z => renderNode(z, 0));
-                  })()}
-                </div>
-              )}
-            </div>
+                        );
+                      };
+                      const roots = zoneNav.get(null) || [];
+                      if (roots.length === 0) {
+                        return <div className="zone-selector-empty">No zones</div>;
+                      }
+                      return roots.map(z => renderNode(z, 0));
+                    })()}
+                  </CardBody>
+                </Card>
+              </div>
+            )}
 
             {/* ── Zone author panel ── */}
             {authorMode && panelCollapsed && (
