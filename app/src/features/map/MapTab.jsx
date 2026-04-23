@@ -1484,10 +1484,11 @@ export default function MapTab({ navPadding = 80 }) {
 
   const handleExportConfig = useCallback(() => {
     const payload = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       zoneDrafts: drafts,
       overlayDrafts: overlayDrafts,
+      iconDrafts: iconDrafts,
       paintStrokes: paintStrokes,
     };
     try {
@@ -1505,7 +1506,7 @@ export default function MapTab({ navPadding = 80 }) {
     } catch (err) {
       showToast('Export failed: ' + err.message);
     }
-  }, [drafts, overlayDrafts, paintStrokes]);
+  }, [drafts, overlayDrafts, iconDrafts, paintStrokes]);
 
   const handleImportConfigClick = useCallback(() => {
     configImportInputRef.current?.click();
@@ -1529,6 +1530,10 @@ export default function MapTab({ navPadding = 80 }) {
         saveOverlayDrafts(data.overlayDrafts);
         applied++;
       }
+      if (Array.isArray(data.iconDrafts)) {
+        saveIconDrafts(data.iconDrafts);
+        applied++;
+      }
       if (Array.isArray(data.paintStrokes)) {
         setPaintStrokes(data.paintStrokes);
         savePaintStrokes(data.paintStrokes);
@@ -1542,7 +1547,7 @@ export default function MapTab({ navPadding = 80 }) {
     } catch (err) {
       showToast('Import failed: ' + err.message);
     }
-  }, []);
+  }, [saveIconDrafts]);
 
   const handleAddOverlay = useCallback((catalogId) => {
     const cat = OVERLAY_CATALOG.find(c => c.id === catalogId);
@@ -2197,6 +2202,7 @@ export default function MapTab({ navPadding = 80 }) {
     const fmtZone = (z) => {
       const parts = [`  id: '${z.id}'`, `  name: '${String(z.name).replace(/'/g, "\\'")}'`];
       parts.push(`  polygon: [${z.polygon.map(([x, y]) => `[${x}, ${y}]`).join(', ')}]`);
+      if (z.overlayId) parts.push(`  overlayId: '${z.overlayId}'`);
       if (z.parentId) parts.push(`  parentId: '${z.parentId}'`);
       if (z.level != null) parts.push(`  level: ${z.level}`);
       return `{\n${parts.join(',\n')},\n}`;
