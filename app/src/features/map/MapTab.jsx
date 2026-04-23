@@ -2948,7 +2948,7 @@ export default function MapTab({ navPadding = 80 }) {
                                 under the zone, indented one level deeper.
                                 Click flies to the icon (includes floor switch). */}
                             {(!hasChildren || expanded) && (() => {
-                              const zoneIcons = iconDrafts.filter(ic => ic.locked && ic.zoneId === zone.id);
+                              const zoneIcons = iconDrafts.filter(ic => ic.inTree && ic.zoneId === zone.id);
                               if (zoneIcons.length === 0) return null;
                               const iconIndent = ((zone.level != null ? zone.level - 1 : depth) + 1);
                               return zoneIcons.map((ic) => {
@@ -2968,6 +2968,23 @@ export default function MapTab({ navPadding = 80 }) {
                                       </span>
                                       <span className="zone-selector-name">{nameText}</span>
                                     </button>
+                                    {authorMode && (
+                                      <button
+                                        type="button"
+                                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          // Pull the icon back into the editor list:
+                                          // clear inTree AND unlock so admins can edit
+                                          // immediately without a second click.
+                                          saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, inTree: false, locked: false } : x));
+                                        }}
+                                        aria-label={`Push "${nameText}" back to icon editor`}
+                                        title="Push back to icon editor"
+                                      >
+                                        <Pen size={12} />
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               });
@@ -3533,32 +3550,41 @@ export default function MapTab({ navPadding = 80 }) {
                 <div className="drafts-head">
                   <span>Map icons ({iconDrafts.length})</span>
                   {(() => {
-                    const lockableCount = iconDrafts.filter(ic => !ic.locked).length;
-                    const treeAddableCount = iconDrafts.filter(ic => !ic.locked && ic.zoneId).length;
-                    const allLocked = iconDrafts.length > 0 && lockableCount === 0;
+                    // "Visible" = still in the author list (inTree=false).
+                    const visible = iconDrafts.filter(ic => !ic.inTree);
+                    const lockableCount = visible.filter(ic => !ic.locked).length;
+                    const treeAddableCount = visible.filter(ic => ic.zoneId).length;
+                    const allVisibleLocked = visible.length > 0 && lockableCount === 0;
                     return (
                       <div className="row" style={{ gap: 4, flex: '0 0 auto' }}>
                         <button
                           type="button"
                           className="kuro-btn kuro-btn-sm"
-                          disabled={iconDrafts.length === 0}
-                          title={allLocked ? 'Unlock every icon (restores editing)' : `Lock ${lockableCount} icon${lockableCount === 1 ? '' : 's'}`}
+                          disabled={visible.length === 0}
+                          title={allVisibleLocked
+                            ? 'Unlock every visible icon (restores editing)'
+                            : `Lock ${lockableCount} icon${lockableCount === 1 ? '' : 's'} — stays in the list but fields disabled`}
                           onClick={() => {
-                            // Toggle: if everything is already locked,
-                            // unlock all; otherwise lock all.
-                            const nextLocked = !allLocked;
-                            saveIconDrafts(iconDrafts.map(ic => ({ ...ic, locked: nextLocked })));
+                            const nextLocked = !allVisibleLocked;
+                            // Toggle locked on visible (non-inTree) drafts only —
+                            // in-tree drafts already have locked=true implicitly.
+                            saveIconDrafts(iconDrafts.map(ic => ic.inTree ? ic : ({ ...ic, locked: nextLocked })));
                           }}
                         >
-                          {allLocked ? 'Unlock all' : 'Lock all'}
+                          {allVisibleLocked ? 'Unlock all' : 'Lock all'}
                         </button>
                         <button
                           type="button"
                           className="kuro-btn kuro-btn-sm"
                           disabled={treeAddableCount === 0}
-                          title={`Lock + add ${treeAddableCount} icon${treeAddableCount === 1 ? '' : 's'} to the Regions tree (icons without a zone are skipped)`}
+                          title={`Move ${treeAddableCount} icon${treeAddableCount === 1 ? '' : 's'} to the Regions tree (locks them + hides from this list). Icons without a zone are skipped.`}
                           onClick={() => {
-                            saveIconDrafts(iconDrafts.map(ic => ic.zoneId && !ic.locked ? { ...ic, locked: true } : ic));
+                            // Add-to-tree = set inTree=true AND locked=true on
+                            // every visible icon that has a zoneId. Orphans
+                            // (no zoneId) are left in the list untouched.
+                            saveIconDrafts(iconDrafts.map(ic => (!ic.inTree && ic.zoneId)
+                              ? { ...ic, inTree: true, locked: true }
+                              : ic));
                           }}
                         >
                           Add all
@@ -3594,7 +3620,7 @@ export default function MapTab({ navPadding = 80 }) {
                     No icons yet. Add one to get started. Categories show up in the Hexagon filter menu.
                   </div>
                 )}
-                {iconDrafts.map((ic) => {
+                {iconDrafts.filter(ic => !ic.inTree).map((ic) => {
                   const cat = getIconCatalogEntry(ic.kind);
                   const base = (import.meta.env.BASE_URL || '/');
                   const iconSrc = cat ? (base + cat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
@@ -3798,7 +3824,7 @@ export default function MapTab({ navPadding = 80 }) {
                         </div>
                       </div>
 
-                      {/* Row 5 — lock + add to tree */}
+                      {/* Row 5 — lock (edit-mode only) + add-to-tree (moves out of list) */}
                       <div className="row">
                         <button
                           type="button"
@@ -3806,17 +3832,23 @@ export default function MapTab({ navPadding = 80 }) {
                           onClick={() => patchIcon({ locked: !locked })}
                           title={locked
                             ? 'Unlock to edit this icon again'
-                            : 'Lock this icon and show it in the Regions tree under its zone'}
+                            : 'Lock editing fields — icon stays in the list but can\'t be changed'}
                           style={{ flex: '1 1 auto' }}
-                          disabled={!locked && !ic.zoneId}
                         >
-                          {locked ? 'Unlock' : 'Lock & add to tree'}
+                          {locked ? 'Unlock' : 'Lock'}
                         </button>
-                        {!locked && !ic.zoneId && (
-                          <span className="hint" style={{ fontSize: 10, opacity: 0.7 }}>
-                            pick a zone first
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          className="kuro-btn kuro-btn-sm"
+                          onClick={() => patchIcon({ locked: true, inTree: true })}
+                          disabled={!ic.zoneId}
+                          title={ic.zoneId
+                            ? 'Move this icon to the Regions tree (hides it from the editor list)'
+                            : 'Pick a zone first so the icon has a parent in the tree'}
+                          style={{ flex: '1 1 auto' }}
+                        >
+                          Add to tree
+                        </button>
                       </div>
                     </div>
                   );
