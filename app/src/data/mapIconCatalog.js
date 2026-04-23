@@ -5,18 +5,22 @@
 // with spaces ("map icons") survive the HTTP request.
 //
 // Entry shape:
-//   id:       stable key stored on icon drafts (iconDraft.kind)
-//   name:     UI label in the editor dropdown
-//   category: default filter category surfaced in the Hexagon popover;
-//             user can override per-draft on the icon row
-//   imageUrl: relative path under the app's BASE_URL
-//   size:     natural size on disk in px (square — both PNGs are 128²)
+//   id:          stable key stored on icon drafts (iconDraft.kind)
+//   name:        UI label in the editor dropdown
+//   category:    default top-level filter group surfaced in the Hexagon
+//                popover; user can override per-draft
+//   subcategory: default second-level filter group under the category
+//                (e.g. "Resonance › Nexus" vs "Resonance › Beacon");
+//                user can override per-draft
+//   imageUrl:    relative path under the app's BASE_URL
+//   size:        natural size on disk in px (square — both PNGs are 128²)
 
 export const MAP_ICON_CATALOG = [
   {
     id: 'resonance-nexus',
     name: 'Resonance Nexus',
     category: 'Resonance',
+    subcategory: 'Nexus',
     imageUrl: 'map icons/Resonance_Nexus.png',
     size: 128,
   },
@@ -24,6 +28,7 @@ export const MAP_ICON_CATALOG = [
     id: 'resonance-beacon',
     name: 'Resonance Beacon',
     category: 'Resonance',
+    subcategory: 'Beacon',
     imageUrl: 'map icons/Resonance_beacon.png',
     size: 128,
   },

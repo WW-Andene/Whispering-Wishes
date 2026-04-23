@@ -214,7 +214,15 @@ export default function MapTab({ navPadding = 80 }) {
   // (it'd otherwise add a zone-polygon vertex to the same click).
   const [placingIconId, setPlacingIconId] = useState(null);
   const placingIconIdRef = useRef(null);
-  useEffect(() => { placingIconIdRef.current = placingIconId; }, [placingIconId]);
+  // Multi-place mode — stores the id of the icon row acting as the
+  // template. While non-null, every map click CLONES the template at
+  // the click location (keeping the same kind / category / rotation /
+  // scale / opacity) instead of moving a single pending icon. Exits on
+  // re-click of the button, ESC, or leaving the map.
+  const [multiPlaceFromId, setMultiPlaceFromId] = useState(null);
+  useEffect(() => {
+    placingIconIdRef.current = placingIconId != null || multiPlaceFromId != null;
+  }, [placingIconId, multiPlaceFromId]);
   // L2-leaf confirm: first tap on a leaf arms it, second tap within
   // ZONE_ARM_MS fires handleFlyToZone. Leaves don't have an explicit
   // fly-to icon; this prevents accidental navigation when browsing.
@@ -1057,7 +1065,11 @@ export default function MapTab({ navPadding = 80 }) {
         const cat = getIconCatalogEntry(ic.kind);
         if (!cat) return;
         const category = ic.category || cat.category || 'Uncategorised';
+        const subcategory = ic.subcategory || cat.subcategory || '';
+        // Filter if either the category is hidden OR the specific
+        // category/subcategory pair is hidden.
         if (iconFiltersOff.has(category)) return;
+        if (subcategory && iconFiltersOff.has(`${category}/${subcategory}`)) return;
         if (ic.floor != null && ic.floor !== viewFloor) return;
         const img = getIconImage(ic.kind, trigger);
         if (!img || !img.complete || img.naturalWidth === 0) return;
@@ -1800,6 +1812,55 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [placingIconId, mapReady, findEnclosingZone, resolveZoneFloor]);
 
+  // Multi-place — each click spawns a clone of the template icon at the
+  // click location, keeping the same kind/category/subcategory/visual.
+  // Auto-detects zoneId + floor the same way single place-on-map does.
+  useEffect(() => {
+    if (!multiPlaceFromId || !mapReady) return;
+    const map = mapRef.current;
+    if (!map) return;
+    const container = map.getContainer();
+    const prevCursor = container.style.cursor;
+    container.style.cursor = 'crosshair';
+    const onClick = (e) => {
+      const pt = map.project(e.latlng, NATIVE_ZOOM);
+      const x = Math.max(0, Math.min(MAP_W, Math.round(pt.x)));
+      const y = Math.max(0, Math.min(MAP_H, Math.round(pt.y)));
+      const zone = findEnclosingZone(x, y);
+      const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
+      setIconDrafts((prev) => {
+        const tpl = prev.find((i) => i.id === multiPlaceFromId);
+        if (!tpl) return prev;
+        const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
+        const clone = {
+          id,
+          kind: tpl.kind,
+          category: tpl.category,
+          subcategory: tpl.subcategory,
+          label: '',
+          x, y,
+          rotation: tpl.rotation ?? 0,
+          scale: tpl.scale ?? 1,
+          opacity: tpl.opacity ?? 1,
+          zoneId: zone?.id || null,
+          floor: inheritedFloor ?? tpl.floor ?? null,
+          locked: false,
+        };
+        const next = [...prev, clone];
+        try { localStorage.setItem('ww-icon-drafts', JSON.stringify(next)); } catch {}
+        return next;
+      });
+    };
+    map.on('click', onClick);
+    const onKey = (e) => { if (e.key === 'Escape') setMultiPlaceFromId(null); };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      map.off('click', onClick);
+      document.removeEventListener('keydown', onKey);
+      container.style.cursor = prevCursor;
+    };
+  }, [multiPlaceFromId, mapReady, findEnclosingZone, resolveZoneFloor]);
+
   // Close the downloads popover when clicking outside it.
   useEffect(() => {
     if (!downloadsOpen) return;
@@ -2493,6 +2554,15 @@ export default function MapTab({ navPadding = 80 }) {
           background: rgba(var(--color-gold), 0.08);
           box-shadow: 0 0 0 1px rgba(var(--color-gold), 0.25);
         }
+        .icon-row.is-locked { border-style: dashed; opacity: 0.92; }
+
+        /* Locked icons appearing as leaves in the Regions tree — smaller
+           caret slot replaced by a 14×14 thumbnail of the icon. */
+        .zone-selector-icon-thumb {
+          width: 14px; height: 14px; object-fit: contain;
+          image-rendering: auto;
+        }
+        .zone-selector-item.is-icon-leaf { opacity: 0.88; }
         .icon-preview {
           flex: 0 0 auto;
           width: 32px; height: 32px;
@@ -2874,6 +2944,34 @@ export default function MapTab({ navPadding = 80 }) {
                                 {children.map(c => renderNode(c, depth + 1))}
                               </div>
                             )}
+                            {/* Icons locked to this zone appear as leaf rows
+                                under the zone, indented one level deeper.
+                                Click flies to the icon (includes floor switch). */}
+                            {(!hasChildren || expanded) && (() => {
+                              const zoneIcons = iconDrafts.filter(ic => ic.locked && ic.zoneId === zone.id);
+                              if (zoneIcons.length === 0) return null;
+                              const iconIndent = ((zone.level != null ? zone.level - 1 : depth) + 1);
+                              return zoneIcons.map((ic) => {
+                                const icCat = getIconCatalogEntry(ic.kind);
+                                const iconSrc = icCat ? (BASE + icCat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
+                                const nameText = ic.label || icCat?.name || 'Icon';
+                                return (
+                                  <div key={`ic-${ic.id}`} className="zone-selector-row" style={{ paddingLeft: `calc(${iconIndent} * var(--space-md, 12px))` }}>
+                                    <button
+                                      type="button"
+                                      className="kuro-btn kuro-btn-sm zone-selector-item is-icon-leaf"
+                                      onClick={() => handleFlyToIcon(ic)}
+                                      title={`${nameText} — fly to`}
+                                    >
+                                      <span className="zone-selector-caret" aria-hidden="true">
+                                        {iconSrc ? <img src={iconSrc} alt="" className="zone-selector-icon-thumb" /> : '·'}
+                                      </span>
+                                      <span className="zone-selector-name">{nameText}</span>
+                                    </button>
+                                  </div>
+                                );
+                              });
+                            })()}
                           </div>
                         );
                       };
@@ -2915,14 +3013,23 @@ export default function MapTab({ navPadding = 80 }) {
                   </CardHeader>
                   <CardBody className="map-filters-body">
                     {(() => {
-                      // Group placed icons by category; fall back to
-                      // "Uncategorised" when a draft has no category.
-                      const counts = new Map();
+                      // Build a nested category → subcategory tree from the
+                      // placed icons. A subcategory count rolls up into its
+                      // parent category. Keys use "Category/Subcategory"
+                      // form so iconFiltersOff can target either level; a
+                      // category-level hide cascades to all its subs via the
+                      // render-time filter.
+                      const tree = new Map(); // category → { total, subs: Map<sub, n> }
                       for (const ic of iconDrafts) {
-                        const cat = ic.category || 'Uncategorised';
-                        counts.set(cat, (counts.get(cat) || 0) + 1);
+                        const kind = getIconCatalogEntry(ic.kind);
+                        const cat = ic.category || kind?.category || 'Uncategorised';
+                        const sub = ic.subcategory || kind?.subcategory || '';
+                        if (!tree.has(cat)) tree.set(cat, { total: 0, subs: new Map() });
+                        const entry = tree.get(cat);
+                        entry.total++;
+                        if (sub) entry.subs.set(sub, (entry.subs.get(sub) || 0) + 1);
                       }
-                      const cats = [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+                      const cats = [...tree.entries()].sort((a, b) => a[0].localeCompare(b[0]));
                       if (cats.length === 0) {
                         return (
                           <div className="zone-selector-empty">
@@ -2932,21 +3039,49 @@ export default function MapTab({ navPadding = 80 }) {
                       }
                       return (
                         <div className="map-filters-list">
-                          {cats.map(([cat, n]) => {
-                            const off = iconFiltersOff.has(cat);
+                          {cats.map(([cat, entry]) => {
+                            const catOff = iconFiltersOff.has(cat);
+                            const subs = [...entry.subs.entries()].sort((a, b) => a[0].localeCompare(b[0]));
                             return (
-                              <button
-                                key={cat}
-                                type="button"
-                                className={`kuro-btn kuro-btn-sm zone-selector-item ${off ? '' : 'is-current'}`}
-                                onClick={() => toggleIconFilter(cat)}
-                                aria-pressed={!off}
-                                title={off ? `Show ${cat}` : `Hide ${cat}`}
-                              >
-                                <span className="zone-selector-caret">{off ? '▢' : '▣'}</span>
-                                <span className="zone-selector-name">{cat}</span>
-                                <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{n}</span>
-                              </button>
+                              <React.Fragment key={cat}>
+                                <button
+                                  type="button"
+                                  className={`kuro-btn kuro-btn-sm zone-selector-item ${catOff ? '' : 'is-current'}`}
+                                  onClick={() => toggleIconFilter(cat)}
+                                  aria-pressed={!catOff}
+                                  title={catOff ? `Show ${cat}` : `Hide ${cat}`}
+                                >
+                                  <span className="zone-selector-caret">{catOff ? '▢' : '▣'}</span>
+                                  <span className="zone-selector-name">{cat}</span>
+                                  <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{entry.total}</span>
+                                </button>
+                                {subs.map(([sub, n]) => {
+                                  const key = `${cat}/${sub}`;
+                                  const subOff = iconFiltersOff.has(key);
+                                  // A subcategory is effectively hidden if its
+                                  // parent category is hidden — reflect that
+                                  // visually without persisting state.
+                                  const effectiveOff = catOff || subOff;
+                                  return (
+                                    <button
+                                      key={key}
+                                      type="button"
+                                      className={`kuro-btn kuro-btn-sm zone-selector-item ${effectiveOff ? '' : 'is-current'}`}
+                                      onClick={() => toggleIconFilter(key)}
+                                      aria-pressed={!effectiveOff}
+                                      disabled={catOff}
+                                      title={catOff
+                                        ? `Parent category "${cat}" is hidden`
+                                        : (subOff ? `Show ${sub}` : `Hide ${sub}`)}
+                                      style={{ paddingLeft: 'calc(var(--space-md, 12px) + var(--space-sm, 8px))' }}
+                                    >
+                                      <span className="zone-selector-caret">{effectiveOff ? '▢' : '▣'}</span>
+                                      <span className="zone-selector-name">{sub}</span>
+                                      <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{n}</span>
+                                    </button>
+                                  );
+                                })}
+                              </React.Fragment>
                             );
                           })}
                         </div>
@@ -3407,9 +3542,11 @@ export default function MapTab({ navPadding = 80 }) {
                         id,
                         kind: firstKind?.id || '',
                         category: firstKind?.category || 'Uncategorised',
+                        subcategory: firstKind?.subcategory || '',
                         x: MAP_W / 2,
                         y: MAP_H / 2,
                         label: '',
+                        locked: false,
                       }];
                       saveIconDrafts(next);
                     }}
@@ -3429,26 +3566,33 @@ export default function MapTab({ navPadding = 80 }) {
                   const iconSrc = cat ? (base + cat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
                   const patchIcon = (patch) => saveIconDrafts(iconDrafts.map(x => x.id === ic.id ? { ...x, ...patch } : x));
                   const isPlacing = placingIconId === ic.id;
+                  const isMulti = multiPlaceFromId === ic.id;
+                  const locked = !!ic.locked;
+                  const disabled = locked;
                   return (
-                    <div key={ic.id} className={`icon-row ${isPlacing ? 'is-active' : ''}`}>
+                    <div key={ic.id} className={`icon-row ${isPlacing || isMulti ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`}>
                       {/* Row 1 — preview, kind dropdown, per-icon actions */}
                       <div className="row">
                         <div className="icon-preview" aria-hidden="true">
                           {iconSrc && <img src={iconSrc} alt="" />}
                         </div>
                         <div className="field" style={{ flex: '1 1 0' }}>
-                          <label>Kind</label>
+                          <label>Kind {locked && <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 4 }}>locked</span>}</label>
                           <select
                             value={ic.kind || ''}
+                            disabled={disabled}
                             onChange={(e) => {
                               const nextCat = getIconCatalogEntry(e.target.value);
                               const prevCat = getIconCatalogEntry(ic.kind);
                               patchIcon({
                                 kind: e.target.value,
-                                // Auto-sync category when user hadn't customised it.
+                                // Auto-sync category/subcategory when user hadn't customised.
                                 category: (!ic.category || ic.category === prevCat?.category)
                                   ? (nextCat?.category || 'Uncategorised')
                                   : ic.category,
+                                subcategory: (!ic.subcategory || ic.subcategory === prevCat?.subcategory)
+                                  ? (nextCat?.subcategory || '')
+                                  : ic.subcategory,
                               });
                             }}
                           >
@@ -3469,6 +3613,7 @@ export default function MapTab({ navPadding = 80 }) {
                         <button
                           type="button"
                           className="kuro-btn kuro-btn-sm kuro-btn-icon is-danger"
+                          disabled={disabled}
                           onClick={() => saveIconDrafts(iconDrafts.filter(x => x.id !== ic.id))}
                           title="Delete icon"
                           aria-label="Delete icon"
@@ -3483,15 +3628,13 @@ export default function MapTab({ navPadding = 80 }) {
                           <label>Zone</label>
                           <select
                             value={ic.zoneId || ''}
+                            disabled={disabled}
                             onChange={(e) => {
                               const zoneId = e.target.value || null;
                               const zone = zoneId ? zoneOptions.find(o => o.id === zoneId)?.zone : null;
                               const floor = zone ? resolveZoneFloor(zone) : null;
                               patchIcon({
                                 zoneId,
-                                // Sync floor to the new zone's floor unless the user
-                                // has explicitly pinned a different one (ic.floor not
-                                // coming from this path — leave as-is).
                                 ...(floor != null ? { floor } : {}),
                               });
                             }}
@@ -3504,58 +3647,85 @@ export default function MapTab({ navPadding = 80 }) {
                         </div>
                       </div>
 
-                      {/* Row 2b — category + label */}
+                      {/* Row 2b — category + subcategory + label */}
                       <div className="row">
                         <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Category</label>
                           <input
                             type="text"
                             value={ic.category || ''}
+                            disabled={disabled}
                             onChange={(e) => patchIcon({ category: e.target.value || 'Uncategorised' })}
                             placeholder="Resonance"
                           />
                         </div>
-                        <div className="field" style={{ flex: '2 1 0' }}>
+                        <div className="field" style={{ flex: '1 1 0' }}>
+                          <label>Subcategory</label>
+                          <input
+                            type="text"
+                            value={ic.subcategory || ''}
+                            disabled={disabled}
+                            onChange={(e) => patchIcon({ subcategory: e.target.value })}
+                            placeholder="e.g. Nexus"
+                          />
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Label</label>
                           <input type="text" value={ic.label || ''}
+                            disabled={disabled}
                             onChange={(e) => patchIcon({ label: e.target.value })} />
                         </div>
                       </div>
 
-                      {/* Row 3 — place-on-map + X/Y + floor */}
+                      {/* Row 3 — place-on-map single / multi + X/Y + floor */}
                       <div className="row">
                         <button
                           type="button"
                           className={`kuro-btn kuro-btn-sm ${isPlacing ? 'is-active' : ''}`}
+                          disabled={disabled || isMulti}
                           onClick={() => setPlacingIconId(isPlacing ? null : ic.id)}
                           title={isPlacing ? 'Cancel placement' : 'Click on map to place'}
                           style={{ flex: '1 1 auto' }}
                         >
                           {isPlacing ? 'Click on map…' : 'Place on map'}
                         </button>
-                        <div className="field" style={{ flex: '0 0 64px' }}>
+                        <button
+                          type="button"
+                          className={`kuro-btn kuro-btn-sm ${isMulti ? 'is-active' : ''}`}
+                          disabled={disabled || isPlacing}
+                          onClick={() => setMultiPlaceFromId(isMulti ? null : ic.id)}
+                          title={isMulti ? 'Stop placing (Esc)' : 'Every map click places a clone of this icon'}
+                          style={{ flex: '1 1 auto' }}
+                        >
+                          {isMulti ? 'Stop placing' : 'Place many'}
+                        </button>
+                      </div>
+                      <div className="row">
+                        <div className="field" style={{ flex: '0 0 72px' }}>
                           <label>X</label>
-                          <input type="number" value={ic.x}
+                          <input type="number" value={ic.x} disabled={disabled}
                             onChange={(e) => patchIcon({ x: Math.round(+e.target.value) || 0 })} />
                         </div>
-                        <div className="field" style={{ flex: '0 0 64px' }}>
+                        <div className="field" style={{ flex: '0 0 72px' }}>
                           <label>Y</label>
-                          <input type="number" value={ic.y}
+                          <input type="number" value={ic.y} disabled={disabled}
                             onChange={(e) => patchIcon({ y: Math.round(+e.target.value) || 0 })} />
                         </div>
-                        <div className="field" style={{ flex: '0 0 96px' }}>
+                        <div className="field" style={{ flex: '1 1 auto' }}>
                           <label>Floor</label>
                           <div className="row" style={{ gap: 2 }}>
-                            <button className="kuro-btn kuro-btn-sm" type="button"
+                            <button className="kuro-btn kuro-btn-sm" type="button" disabled={disabled}
                               onClick={() => patchIcon({ floor: ic.floor == null ? 0 : ic.floor - 1 })}
                               style={{ padding: '1px 6px', minHeight: 24 }}>−</button>
                             <span style={{ minWidth: 28, textAlign: 'center', fontSize: 11 }}>
                               {ic.floor == null ? 'All' : ic.floor}
                             </span>
-                            <button className="kuro-btn kuro-btn-sm" type="button"
+                            <button className="kuro-btn kuro-btn-sm" type="button" disabled={disabled}
                               onClick={() => patchIcon({ floor: ic.floor == null ? 0 : ic.floor + 1 })}
                               style={{ padding: '1px 6px', minHeight: 24 }}>+</button>
-                            <button className="kuro-btn kuro-btn-sm" type="button"
+                            <button className="kuro-btn kuro-btn-sm" type="button" disabled={disabled}
                               onClick={() => patchIcon({ floor: ic.floor == null ? 0 : null })}
                               title={ic.floor == null ? 'Pin to current floor' : 'Show on all floors'}
                               style={{ padding: '1px 6px', minHeight: 24 }}>
@@ -3570,7 +3740,7 @@ export default function MapTab({ navPadding = 80 }) {
                         <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Rotation ({Math.round(ic.rotation ?? 0)}°)</label>
                           <input type="range" min="0" max="360" step="1"
-                            value={ic.rotation ?? 0}
+                            value={ic.rotation ?? 0} disabled={disabled}
                             onChange={(e) => patchIcon({ rotation: +e.target.value })}
                             className="overlay-slider" />
                         </div>
@@ -3579,7 +3749,7 @@ export default function MapTab({ navPadding = 80 }) {
                         <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Scale ({(ic.scale ?? 1).toFixed(2)}×)</label>
                           <input type="range" min="0.3" max="3" step="0.05"
-                            value={ic.scale ?? 1}
+                            value={ic.scale ?? 1} disabled={disabled}
                             onChange={(e) => patchIcon({ scale: +e.target.value })}
                             className="overlay-slider" />
                         </div>
@@ -3588,10 +3758,31 @@ export default function MapTab({ navPadding = 80 }) {
                         <div className="field" style={{ flex: '1 1 0' }}>
                           <label>Opacity ({Math.round((ic.opacity ?? 1) * 100)}%)</label>
                           <input type="range" min="0.1" max="1" step="0.05"
-                            value={ic.opacity ?? 1}
+                            value={ic.opacity ?? 1} disabled={disabled}
                             onChange={(e) => patchIcon({ opacity: +e.target.value })}
                             className="overlay-slider" />
                         </div>
+                      </div>
+
+                      {/* Row 5 — lock + add to tree */}
+                      <div className="row">
+                        <button
+                          type="button"
+                          className={`kuro-btn kuro-btn-sm ${locked ? 'is-active' : ''}`}
+                          onClick={() => patchIcon({ locked: !locked })}
+                          title={locked
+                            ? 'Unlock to edit this icon again'
+                            : 'Lock this icon and show it in the Regions tree under its zone'}
+                          style={{ flex: '1 1 auto' }}
+                          disabled={!locked && !ic.zoneId}
+                        >
+                          {locked ? 'Unlock' : 'Lock & add to tree'}
+                        </button>
+                        {!locked && !ic.zoneId && (
+                          <span className="hint" style={{ fontSize: 10, opacity: 0.7 }}>
+                            pick a zone first
+                          </span>
+                        )}
                       </div>
                     </div>
                   );
