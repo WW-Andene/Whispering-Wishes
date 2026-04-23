@@ -146,6 +146,12 @@ export default function MapTab({ navPadding = 80 }) {
   const downloadsPanelRef = useRef(null);
   const [expandedZones, setExpandedZones] = useState(() => new Set());
   const [zoneSelectorCollapsed, setZoneSelectorCollapsed] = useState(false);
+  // L2-leaf confirm: first tap on a leaf arms it, second tap within
+  // ZONE_ARM_MS fires handleFlyToZone. Leaves don't have an explicit
+  // fly-to icon; this prevents accidental navigation when browsing.
+  const [pendingZoneId, setPendingZoneId] = useState(null);
+  const pendingZoneTimerRef = useRef(null);
+  const ZONE_ARM_MS = 2500;
   const overlayCanvasRef = useRef(null);           // single <canvas> shared by all overlays
   const overlayLiveRef = useRef(null);             // live override during gesture: { id, center?, scale?, rotation? }
   const overlayRedrawRef = useRef(() => {});       // exposes draw() to the gesture effect
@@ -910,14 +916,16 @@ export default function MapTab({ navPadding = 80 }) {
     };
   }, [overlayDrafts, viewFloor, mapReady]);
 
-  // Cleanup shared canvas on unmount. The module-scoped tile cache is left
-  // in place on purpose so revisiting the Map tab reuses decoded tiles
-  // instead of re-fetching — the LRU cap keeps memory bounded.
+  // Cleanup shared canvas + any pending zone-arm timer on unmount.
   useEffect(() => {
     return () => {
       if (overlayCanvasRef.current) {
         overlayCanvasRef.current.remove();
         overlayCanvasRef.current = null;
+      }
+      if (pendingZoneTimerRef.current) {
+        clearTimeout(pendingZoneTimerRef.current);
+        pendingZoneTimerRef.current = null;
       }
     };
   }, []);
@@ -1875,15 +1883,16 @@ export default function MapTab({ navPadding = 80 }) {
           opacity: 1; transform: scale(1.2); background: rgba(var(--color-gold), 0.15);
         }
 
-        /* ── Legacy .zone-author-btn — kept as an alias that just maps
-             to Kuro tokens. New code should use .kuro-btn-sm directly. ─ */
+        /* Legacy .zone-author-btn matches .kuro-btn-sm exactly now:
+           padding 4×10, 8px radius, 12px font, same bg/border tokens. */
         .zone-author-btn {
           font-family: var(--font-display);
           font-size: 12px;
           font-weight: 500;
           letter-spacing: 0.02em;
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
-          border-radius: var(--radius-sm, 5px);
+          padding: 4px 10px;
+          min-height: 28px;
+          border-radius: 8px;
           cursor: pointer;
           background: var(--bg-btn);
           color: var(--text-heading);
@@ -2106,10 +2115,14 @@ export default function MapTab({ navPadding = 80 }) {
           color: rgba(var(--color-cyan), 0.55); font-size: 10px;
         }
         .zone-author-panel .draft-row .lvl-tag {
-          display: inline-block; min-width: 22px; text-align: center;
-          padding: 0 4px;
-          border-radius: var(--radius-xs, 3px);
-          font-size: 9px;
+          display: inline-flex; align-items: center; justify-content: center;
+          min-width: 22px;
+          /* Matches .kuro-badge geometry (2×8 padding, 4px radius,
+             10px font) for one consistent inline-chip scale. */
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 10px;
+          line-height: 1.4;
           background: rgba(var(--color-gold), 0.18);
           color: ${COLOR_CANON};
           border: 1px solid rgba(var(--color-gold), 0.35);
@@ -2141,22 +2154,28 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-panel .edit-banner {
           background: rgba(var(--color-gold), 0.12);
           border: 1px solid rgba(var(--color-gold), 0.35);
-          border-radius: var(--radius-sm, 5px);
-          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          border-radius: 4px;
+          /* Match .kuro-badge padding (2×8) so inline chips across the
+             app share one scale. Gold variant isn't in the palette, so
+             styling stays custom. */
+          padding: 2px 8px;
           font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+          line-height: 1.4;
           color: ${COLOR_CANON};
         }
         .zone-author-panel .edit-banner-name {
           color: var(--text-heading); font-weight: 700; letter-spacing: 0.03em;
         }
 
-        /* Floating toast above the map */
+        /* Floating toast above the map. Padding matches the
+           canonical kuro-btn (10×12) so the chip reads as a button-
+           equivalent pill rather than a bespoke surface. */
         .zone-author-toast {
           position: absolute; top: 56px; left: 50%;
           transform: translateX(-50%);
           z-index: var(--z-toast, 9500);
-          padding: var(--space-xs, 6px) var(--space-md, 12px);
-          border-radius: var(--radius-lg, 11px);
+          padding: 10px 12px;
+          border-radius: var(--radius-lg);
           background: var(--bg-card);
           color: ${COLOR_CANON};
           border: 1px solid rgba(var(--color-gold), 0.45);
@@ -2187,14 +2206,15 @@ export default function MapTab({ navPadding = 80 }) {
         /* Floor picker buttons inherit size/shape/hover from .kuro-btn-sm */
         .floor-picker .kuro-btn { width: 100%; }
         .floor-picker input {
-          width: 44px; min-height: 28px;
+          width: 48px; min-height: 28px;
           background: var(--bg-input);
           color: var(--text-heading);
           border: 1px solid var(--border-medium);
-          border-radius: var(--input-radius, var(--radius-md, 7px));
-          padding: 6px var(--space-sm, 8px);
+          border-radius: var(--input-radius);
+          /* Compact kuro-input padding (the mobile variant inside .kuro-calc) */
+          padding: 8px 10px;
           font-family: var(--font-display);
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 500;
           letter-spacing: 0.02em;
           text-align: center; outline: none;
@@ -2256,19 +2276,15 @@ export default function MapTab({ navPadding = 80 }) {
           text-align: left;
           gap: var(--space-xs, 4px);
         }
-        /* Leaves are disabled-but-readable: no dim, just no hover affordance. */
-        .zone-selector-item[disabled] {
-          opacity: 1;
-          filter: none;
-          cursor: default;
-          pointer-events: auto;
+        .zone-selector-item.is-armed {
+          background: rgba(var(--color-gold), 0.2);
+          border-color: rgba(var(--color-gold), 1);
+          color: ${COLOR_CANON};
+          animation: zone-armed-pulse 1s ease-in-out infinite;
         }
-        .zone-selector-item[disabled]:hover {
-          background: var(--bg-btn);
-          border-color: var(--border-medium);
-          color: var(--text-heading);
-          transform: none;
-          box-shadow: var(--shadow-md);
+        @keyframes zone-armed-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-gold), 0.35); }
+          50% { box-shadow: 0 0 0 3px rgba(var(--color-gold), 0.08); }
         }
         .zone-selector-caret {
           display: inline-block; width: 10px; text-align: center;
@@ -2284,12 +2300,16 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-selector-row .zone-selector-item { flex: 1 1 auto; }
 
         /* ── Sub-map overlay rows (editor panel) ──────────────────────── */
+        /* Treat each row as a mini-card: 8px radius (matches kuro-btn-sm
+           + kuro-badge scale), 8×10 padding (aligns with mobile kuro-input
+           and nested button padding), 8px internal gap on the 8-px rhythm. */
         .overlay-row {
           background: rgba(var(--color-cyan), 0.06);
           border: 1px solid rgba(var(--color-cyan), 0.2);
-          border-radius: var(--radius-sm, 5px);
-          padding: var(--space-xs, 6px) var(--space-sm, 8px);
-          display: flex; flex-direction: column; gap: var(--space-xs, 6px);
+          border-radius: 8px;
+          padding: 8px 10px;
+          display: flex; flex-direction: column;
+          gap: var(--space-sm, 8px);
         }
         .overlay-row.is-active {
           border-color: ${COLOR_CANON};
@@ -2301,27 +2321,14 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .overlay-row-head {
           display: flex; justify-content: space-between; align-items: center;
-          gap: var(--space-xs, 6px);
+          gap: var(--space-sm, 8px);
         }
-        .lock-badge, .tree-badge {
-          font-size: 9px;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          padding: 2px 6px;
-          border-radius: var(--radius-xs, 3px);
-          margin-left: var(--space-xs, 4px);
-        }
-        .lock-badge {
-          background: rgba(148, 163, 184, 0.18);
-          color: #94a3b8;
-          border: 1px solid rgba(148, 163, 184, 0.4);
-        }
-        .tree-badge {
-          background: rgba(var(--color-emerald), 0.18);
-          color: #22c55e;
-          border: 1px solid rgba(var(--color-emerald), 0.4);
-        }
-        .overlay-controls { display: flex; flex-direction: column; gap: var(--space-xs, 6px); }
+        .overlay-controls { display: flex; flex-direction: column; gap: var(--space-sm, 8px); }
+        /* Badges inside overlay rows inherit canonical .kuro-badge
+           visuals (padding 2x8, radius 4, 10 px font) via JSX classes
+           kuro-badge kuro-badge-neutral / kuro-badge-emerald. Only add
+           a small left margin for inline placement. */
+        .overlay-row .kuro-badge { margin-left: var(--space-xs, 4px); text-transform: uppercase; letter-spacing: 0.06em; }
         .overlay-slider {
           -webkit-appearance: none; appearance: none;
           width: 100%; height: 4px;
@@ -2521,24 +2528,46 @@ export default function MapTab({ navPadding = 80 }) {
                           <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
                             <button
                               type="button"
-                              className="kuro-btn kuro-btn-sm zone-selector-item"
-                              onClick={() => { if (hasChildren) toggleZoneExpanded(zone.id); }}
-                              disabled={!hasChildren}
-                              aria-label={hasChildren ? `${zone.name || zone.id} — ${expanded ? 'collapse' : 'expand'}` : zone.name || zone.id}
-                              title={hasChildren ? (expanded ? 'Collapse' : 'Expand') : zone.name || zone.id}
+                              className={`kuro-btn kuro-btn-sm zone-selector-item ${!hasChildren && pendingZoneId === zone.id ? 'is-armed' : ''}`}
+                              onClick={() => {
+                                if (hasChildren) {
+                                  // L1 parent: single click toggles expand;
+                                  // the LocateFixed icon on the right fires
+                                  // fly-to separately.
+                                  toggleZoneExpanded(zone.id);
+                                  return;
+                                }
+                                // L2 leaf: arm-then-fire. No icon exists for
+                                // these; second tap on the same zone within
+                                // ZONE_ARM_MS fires handleFlyToZone.
+                                if (pendingZoneId === zone.id) {
+                                  if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
+                                  setPendingZoneId(null);
+                                  handleFlyToZone(zone);
+                                  return;
+                                }
+                                setPendingZoneId(zone.id);
+                                if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
+                                pendingZoneTimerRef.current = setTimeout(() => setPendingZoneId(null), ZONE_ARM_MS);
+                                showToast(`Tap again to open ${zone.name || zone.id}`, ZONE_ARM_MS);
+                              }}
+                              aria-label={hasChildren ? `${zone.name || zone.id} — ${expanded ? 'collapse' : 'expand'}` : `${zone.name || zone.id} — tap again to open`}
+                              title={hasChildren ? (expanded ? 'Collapse' : 'Expand') : 'Tap · Tap again to open'}
                             >
                               <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
                               <span className="zone-selector-name">{zone.name || zone.id}</span>
                             </button>
-                            <button
-                              type="button"
-                              className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                              onClick={() => handleFlyToZone(zone)}
-                              aria-label={`Go to ${zone.name || zone.id}`}
-                              title={`Go to ${zone.name || zone.id}`}
-                            >
-                              <LocateFixed size={14} />
-                            </button>
+                            {hasChildren && (
+                              <button
+                                type="button"
+                                className="kuro-btn kuro-btn-sm kuro-btn-icon"
+                                onClick={() => handleFlyToZone(zone)}
+                                aria-label={`Go to ${zone.name || zone.id}`}
+                                title={`Go to ${zone.name || zone.id}`}
+                              >
+                                <LocateFixed size={14} />
+                              </button>
+                            )}
                             {zone.overlayId && authorMode && (
                               <button
                                 type="button"
@@ -2897,8 +2926,8 @@ export default function MapTab({ navPadding = 80 }) {
                         <span className="drname">
                           <span className={`lvl-tag ${ov.floor === viewFloor ? '' : 'is-unset'}`}>F{ov.floor ?? 0}</span>
                           <span className="drlabel">{ov.name}</span>
-                          {locked && <span className="lock-badge">locked</span>}
-                          {inTree && <span className="tree-badge">tree</span>}
+                          {locked && <span className="kuro-badge kuro-badge-neutral">locked</span>}
+                          {inTree && <span className="kuro-badge kuro-badge-emerald">tree</span>}
                         </span>
                         <span className="row" style={{ gap: 4 }}>
                           {cat && (
