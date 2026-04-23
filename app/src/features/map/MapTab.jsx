@@ -1867,35 +1867,74 @@ export default function MapTab({ navPadding = 80 }) {
         /* ── Offline downloads popover (gear icon, user-side) ─────────── */
         /* The popover wraps a real Kuro <Card>. We only position + size it
            here; the card itself supplies the border, shadow, backdrop blur,
-           shimmer bar, and corner decorations that define "Kuro". */
+           shimmer bar, and corner decorations that define "Kuro". Internal
+           buttons use the same --bg-btn/--border-medium/--radius-lg tokens
+           as the floor picker so everything feels like one visual family. */
         .map-downloads-popover {
           position: absolute; right: 12px; z-index: 500; width: 300px;
           overflow: visible;
         }
+        .map-downloads-popover .kuro-header { padding: 10px 14px; }
         .map-downloads-popover .kuro-header h3::before { display: none; }
+        .map-downloads-popover .kuro-header h3 {
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          letter-spacing: 0.03em;
+        }
+        .map-downloads-popover .kuro-body { padding: 10px 14px; }
         .map-downloads-popover .map-downloads-body {
           display: flex; flex-direction: column; gap: 8px;
           max-height: 60vh; overflow-y: auto;
         }
-        .map-downloads-all {
-          width: 100%; padding: 6px 10px;
-          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+
+        .map-downloads-btn {
+          display: inline-flex; align-items: center; justify-content: center;
+          gap: 6px;
+          padding: 6px 10px;
+          background: var(--bg-btn);
+          color: var(--text-heading);
+          border: 1px solid var(--border-medium);
+          border-radius: var(--btn-radius, var(--radius-lg, 11px));
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          font-weight: 500;
+          letter-spacing: 0.02em;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 160ms, border-color 160ms, color var(--transition-fast, 120ms);
         }
+        .map-downloads-btn:hover {
+          background: rgba(237, 175, 24, 0.15);
+          border-color: ${COLOR_CANON};
+          color: ${COLOR_CANON};
+        }
+        .map-downloads-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+        .map-downloads-btn.is-full { width: 100%; padding: 8px 10px; }
+        .map-downloads-btn.is-icon { padding: 6px 8px; }
+
         .map-downloads-list { display: flex; flex-direction: column; gap: 0; }
         .map-downloads-row {
           display: flex; align-items: center; justify-content: space-between;
-          gap: 8px; padding: 6px 2px;
-          border-top: 1px solid rgba(237, 175, 24, 0.18);
+          gap: 8px; padding: 8px 0;
+          border-top: 1px solid var(--border-subtle);
         }
-        .map-downloads-row:first-child { border-top: none; }
+        .map-downloads-row:first-child { border-top: none; padding-top: 0; }
+        .map-downloads-row:last-child { padding-bottom: 0; }
         .map-downloads-meta { min-width: 0; flex: 1; }
         .map-downloads-meta .name {
-          color: var(--text-body, #e8e8e8); font-size: 12px; font-weight: 500;
+          color: var(--text-heading, #e8e8e8);
+          font-family: var(--font-display);
+          font-size: var(--font-base, 13px);
+          font-weight: 500;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .map-downloads-meta .hint {
-          color: #8a8a8a; font-size: 10px;
-          letter-spacing: 0.04em; text-transform: uppercase; margin-top: 2px;
+          color: var(--text-body, #8a8a8a);
+          font-family: var(--font-data);
+          font-size: 10px;
+          letter-spacing: 0.04em;
+          margin-top: 2px;
+          opacity: 0.7;
         }
         .zone-author-panel {
           position: absolute; left: 12px; right: 12px; bottom: 56px; z-index: 20;
@@ -2232,10 +2271,9 @@ export default function MapTab({ navPadding = 80 }) {
                     action={
                       <button
                         type="button"
-                        className="zone-author-btn"
+                        className="map-downloads-btn is-icon"
                         onClick={() => setDownloadsOpen(false)}
                         aria-label="Close"
-                        style={{ padding: '2px 8px' }}
                       >✕</button>
                     }
                   >
@@ -2252,11 +2290,11 @@ export default function MapTab({ navPadding = 80 }) {
                         <>
                           <button
                             type="button"
-                            className="zone-author-btn map-downloads-all"
+                            className="map-downloads-btn is-full"
                             onClick={handleDownloadAll}
                             disabled={anyDownloading || allCached}
                           >
-                            <Download size={12} />
+                            <Download size={14} />
                             {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${downloadables.length} maps`}
                           </button>
                           <div className="map-downloads-list">
@@ -2280,26 +2318,24 @@ export default function MapTab({ navPadding = 80 }) {
                               {full ? (
                                 <button
                                   type="button"
-                                  className="zone-author-btn"
+                                  className="map-downloads-btn is-icon"
                                   onClick={() => handlePurgeItem(item)}
                                   disabled={downloading}
                                   title={`Remove ${item.name} from offline cache`}
                                   aria-label={`Remove ${item.name}`}
-                                  style={{ padding: '4px 6px', display: 'inline-flex', alignItems: 'center' }}
                                 >
-                                  <Trash2 size={12} />
+                                  <Trash2 size={14} />
                                 </button>
                               ) : (
                                 <button
                                   type="button"
-                                  className="zone-author-btn"
+                                  className="map-downloads-btn is-icon"
                                   onClick={() => handleDownloadItem(item)}
                                   disabled={downloading}
                                   title={`Download ${item.name} for offline`}
                                   aria-label={`Download ${item.name}`}
-                                  style={{ padding: '4px 6px', display: 'inline-flex', alignItems: 'center' }}
                                 >
-                                  <Download size={12} />
+                                  <Download size={14} />
                                 </button>
                               )}
                             </div>
