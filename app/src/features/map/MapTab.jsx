@@ -208,6 +208,20 @@ export default function MapTab({ navPadding = 80 }) {
       return next;
     });
   }, []);
+
+  // ── Bulk selection in the author panel's draft tree ──────────────────
+  // Admins can tick zones, subzones, or in-tree icons to apply a rename /
+  // level / floor change to the lot at once. Ephemeral (not persisted) —
+  // selection clears on reload.
+  //   Zone    = draft with level == null || level === 1
+  //   Subzone = draft with level >= 2
+  //   Icon    = iconDraft with inTree === true
+  const [selectedDraftIds, setSelectedDraftIds] = useState(() => new Set());
+  const [selectedIconIds, setSelectedIconIds] = useState(() => new Set());
+  const [bulkFind, setBulkFind] = useState('');
+  const [bulkReplace, setBulkReplace] = useState('');
+  const [bulkLevel, setBulkLevel] = useState('');
+  const [bulkFloor, setBulkFloor] = useState('');
   // Place-on-map mode — stores the id of the icon awaiting a map click.
   // When non-null, the next map click sets its x/y and clears this state.
   // Mirrored to a ref so the author-mode click handler can stand down
@@ -521,6 +535,136 @@ export default function MapTab({ navPadding = 80 }) {
     [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
     setDrafts(next);
     saveDrafts(next);
+  };
+
+  // ── Bulk-select helpers ─────────────────────────────────────────────
+  const isZoneDraft = (d) => d.level == null || d.level === 1;
+  const isSubzoneDraft = (d) => d.level != null && d.level >= 2;
+  const toggleDraftSelection = (id) => setSelectedDraftIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const toggleIconSelectionId = (id) => setSelectedIconIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  // "Select all [type]" — toggles: if every matching item is already
+  // selected, deselect that set; otherwise add them all to the selection.
+  const toggleSelectAllZones = () => {
+    const ids = drafts.filter(isZoneDraft).map(d => d.id);
+    setSelectedDraftIds((prev) => {
+      const next = new Set(prev);
+      const allIn = ids.length > 0 && ids.every(id => next.has(id));
+      if (allIn) ids.forEach(id => next.delete(id));
+      else ids.forEach(id => next.add(id));
+      return next;
+    });
+  };
+  const toggleSelectAllSubzones = () => {
+    const ids = drafts.filter(isSubzoneDraft).map(d => d.id);
+    setSelectedDraftIds((prev) => {
+      const next = new Set(prev);
+      const allIn = ids.length > 0 && ids.every(id => next.has(id));
+      if (allIn) ids.forEach(id => next.delete(id));
+      else ids.forEach(id => next.add(id));
+      return next;
+    });
+  };
+  const toggleSelectAllIcons = () => {
+    const ids = iconDrafts.filter(ic => ic.inTree).map(ic => ic.id);
+    setSelectedIconIds((prev) => {
+      const next = new Set(prev);
+      const allIn = ids.length > 0 && ids.every(id => next.has(id));
+      if (allIn) ids.forEach(id => next.delete(id));
+      else ids.forEach(id => next.add(id));
+      return next;
+    });
+  };
+  const clearBulkSelection = () => {
+    setSelectedDraftIds(new Set());
+    setSelectedIconIds(new Set());
+  };
+  // Keep selection sets from accumulating ids for drafts/icons that have
+  // since been deleted — trim on every mutation.
+  useEffect(() => {
+    const live = new Set(drafts.map(d => d.id));
+    setSelectedDraftIds((prev) => {
+      let changed = false;
+      const next = new Set();
+      prev.forEach(id => { if (live.has(id)) next.add(id); else changed = true; });
+      return changed ? next : prev;
+    });
+  }, [drafts]);
+  useEffect(() => {
+    const live = new Set(iconDrafts.filter(ic => ic.inTree).map(ic => ic.id));
+    setSelectedIconIds((prev) => {
+      let changed = false;
+      const next = new Set();
+      prev.forEach(id => { if (live.has(id)) next.add(id); else changed = true; });
+      return changed ? next : prev;
+    });
+  }, [iconDrafts]);
+
+  const selectionTotal = selectedDraftIds.size + selectedIconIds.size;
+  const selectedDraftsHasDraft = selectedDraftIds.size > 0;
+  const selectedHasIcon = selectedIconIds.size > 0;
+
+  // Bulk rename — if `find` is non-empty we do a find/replace (all occurrences,
+  // case-sensitive). If `find` is empty we set the name to `replace` verbatim
+  // on every selected item. Drafts use .name, icons use .label.
+  const applyBulkRename = () => {
+    if (!selectionTotal) return;
+    const find = bulkFind;
+    const replace = bulkReplace;
+    if (!find && !replace) return;
+    const rename = (current) => {
+      const base = current || '';
+      if (!find) return replace;
+      return base.split(find).join(replace);
+    };
+    if (selectedDraftIds.size) {
+      const nextDrafts = drafts.map(d => selectedDraftIds.has(d.id)
+        ? { ...d, name: rename(d.name) || d.name }
+        : d);
+      setDrafts(nextDrafts);
+      saveDrafts(nextDrafts);
+    }
+    if (selectedIconIds.size) {
+      const nextIcons = iconDrafts.map(ic => selectedIconIds.has(ic.id)
+        ? { ...ic, label: rename(ic.label) }
+        : ic);
+      saveIconDrafts(nextIcons);
+    }
+    setBulkFind('');
+    setBulkReplace('');
+    showToast(`Renamed ${selectionTotal} item${selectionTotal === 1 ? '' : 's'}`);
+  };
+  // Bulk level — only applies to selected drafts (zones + subzones).
+  // Icons have no level. Empty string clears the level (sets undefined).
+  const applyBulkLevel = () => {
+    if (!selectedDraftIds.size) return;
+    const lvl = parseLevel(bulkLevel);
+    const nextDrafts = drafts.map(d => selectedDraftIds.has(d.id)
+      ? { ...d, level: lvl ?? undefined }
+      : d);
+    setDrafts(nextDrafts);
+    saveDrafts(nextDrafts);
+    showToast(`Set level ${lvl == null ? '—' : `L${lvl}`} on ${selectedDraftIds.size} draft${selectedDraftIds.size === 1 ? '' : 's'}`);
+  };
+  // Bulk floor — icons have an explicit .floor field; zones derive floor
+  // from overlays so this doesn't apply there. Empty string = "All" (null)
+  // for icons (show on every floor).
+  const applyBulkFloor = () => {
+    if (!selectedIconIds.size) return;
+    const raw = String(bulkFloor).trim();
+    const fl = raw === '' ? null : (Number.isFinite(+raw) ? Math.round(+raw) : null);
+    const nextIcons = iconDrafts.map(ic => selectedIconIds.has(ic.id)
+      ? { ...ic, floor: fl }
+      : ic);
+    saveIconDrafts(nextIcons);
+    showToast(`Set floor ${fl == null ? 'All' : fl} on ${selectedIconIds.size} icon${selectedIconIds.size === 1 ? '' : 's'}`);
   };
 
   // Measure the map card's header so the floor picker sits the same visual
@@ -2568,6 +2712,96 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .draft-row.is-icon-row { opacity: 0.9; }
         .draft-row.is-icon-row .drlabel { font-size: 11px; }
+
+        /* Bulk selection — "Select zones / subzones / icons" strip above the
+           draft tree, plus the bulk-action bar that appears once anything is
+           ticked. Uses the same Kuro tokens as the rest of the author panel. */
+        .zone-author-panel .bulk-select-bar {
+          padding: var(--space-xs, 4px) 0 var(--space-sm, 8px) 0;
+        }
+        .zone-author-panel .bulk-check {
+          appearance: none; -webkit-appearance: none;
+          width: 12px; height: 12px;
+          margin: 0 var(--space-xs, 4px) 0 0;
+          border: 1px solid rgba(var(--color-gold), 0.45);
+          border-radius: var(--radius-xs, 3px);
+          background: var(--bg-card-inner);
+          cursor: pointer;
+          position: relative;
+          flex: 0 0 auto;
+          vertical-align: middle;
+          transition: background var(--transition-normal, 160ms), border-color var(--transition-normal, 160ms);
+        }
+        .zone-author-panel .bulk-check:hover {
+          border-color: ${COLOR_CANON};
+          background: rgba(var(--color-gold), 0.1);
+        }
+        .zone-author-panel .bulk-check:checked {
+          background: rgba(var(--color-gold), 0.55);
+          border-color: ${COLOR_CANON};
+        }
+        .zone-author-panel .bulk-check:checked::after {
+          content: '';
+          position: absolute;
+          left: 3px; top: 0;
+          width: 4px; height: 7px;
+          border: solid var(--bg-card);
+          border-width: 0 1.5px 1.5px 0;
+          transform: rotate(45deg);
+        }
+        .zone-author-panel .draft-row.is-selected {
+          background: rgba(var(--color-gold), 0.08);
+          box-shadow: inset 2px 0 0 0 ${COLOR_CANON};
+        }
+        .zone-author-panel .bulk-action-bar {
+          margin-top: var(--space-sm, 8px);
+          padding: var(--space-sm, 8px);
+          background: rgba(var(--color-gold), 0.06);
+          border: 1px solid rgba(var(--color-gold), 0.35);
+          border-radius: var(--radius-sm, 5px);
+          display: flex; flex-direction: column;
+          gap: var(--space-xs, 6px);
+        }
+        .zone-author-panel .bulk-action-bar-head {
+          display: flex; align-items: center; justify-content: space-between;
+          font-family: var(--font-display);
+          font-size: 10px;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: ${COLOR_CANON};
+        }
+        .zone-author-panel .bulk-action-row {
+          display: flex; align-items: center;
+          gap: var(--space-xs, 6px);
+        }
+        .zone-author-panel .bulk-action-label {
+          flex: 0 0 48px;
+          font-family: var(--font-display);
+          font-size: 10px;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          color: var(--text-body);
+          opacity: 0.85;
+        }
+        .zone-author-panel .bulk-action-row input[type="text"],
+        .zone-author-panel .bulk-action-row input[type="number"],
+        .zone-author-panel .bulk-action-row select {
+          flex: 1 1 0;
+          min-width: 0;
+          background: var(--bg-card-inner);
+          border: 1px solid var(--border-medium);
+          color: var(--text-heading);
+          font-family: var(--font-data);
+          font-size: 11px;
+          padding: 4px 6px;
+          border-radius: var(--radius-xs, 3px);
+        }
+        .zone-author-panel .bulk-action-row input:focus,
+        .zone-author-panel .bulk-action-row select:focus {
+          outline: none;
+          border-color: ${COLOR_CANON};
+          box-shadow: 0 0 0 1px rgba(var(--color-gold), 0.25);
+        }
         .icon-preview {
           flex: 0 0 auto;
           width: 32px; height: 32px;
@@ -3294,6 +3528,47 @@ export default function MapTab({ navPadding = 80 }) {
                         <button className="zone-author-btn is-danger" type="button" onClick={handleClearDrafts}>Clear drafts</button>
                       </div>
                     </div>
+                    {/* Bulk-select buttons — tick every zone / subzone / in-tree
+                        icon in one click. Clicking again deselects that set. */}
+                    {(() => {
+                      const zoneIds = drafts.filter(isZoneDraft).map(d => d.id);
+                      const subIds = drafts.filter(isSubzoneDraft).map(d => d.id);
+                      const iconIds = iconDrafts.filter(ic => ic.inTree).map(ic => ic.id);
+                      const allZonesSelected = zoneIds.length > 0 && zoneIds.every(id => selectedDraftIds.has(id));
+                      const allSubsSelected = subIds.length > 0 && subIds.every(id => selectedDraftIds.has(id));
+                      const allIconsSelected = iconIds.length > 0 && iconIds.every(id => selectedIconIds.has(id));
+                      return (
+                        <div className="bulk-select-bar row" style={{ gap: 4, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            className={`kuro-btn kuro-btn-sm ${allZonesSelected ? 'is-active' : ''}`}
+                            disabled={zoneIds.length === 0}
+                            onClick={toggleSelectAllZones}
+                            title={`Select all zones (L1) — ${zoneIds.length} available`}
+                          >
+                            {allZonesSelected ? 'Unselect zones' : 'Select zones'} ({zoneIds.length})
+                          </button>
+                          <button
+                            type="button"
+                            className={`kuro-btn kuro-btn-sm ${allSubsSelected ? 'is-active' : ''}`}
+                            disabled={subIds.length === 0}
+                            onClick={toggleSelectAllSubzones}
+                            title={`Select all subzones (L2+) — ${subIds.length} available`}
+                          >
+                            {allSubsSelected ? 'Unselect subzones' : 'Select subzones'} ({subIds.length})
+                          </button>
+                          <button
+                            type="button"
+                            className={`kuro-btn kuro-btn-sm ${allIconsSelected ? 'is-active' : ''}`}
+                            disabled={iconIds.length === 0}
+                            onClick={toggleSelectAllIcons}
+                            title={`Select all in-tree icons — ${iconIds.length} available`}
+                          >
+                            {allIconsSelected ? 'Unselect icons' : 'Select icons'} ({iconIds.length})
+                          </button>
+                        </div>
+                      );
+                    })()}
                     <div className="draft-tree">
                       {draftTree.map(node => {
                         const isEditing = node.id === editingId;
@@ -3309,14 +3584,23 @@ export default function MapTab({ navPadding = 80 }) {
                         // one level deeper, so admins can see their tree
                         // composition from within the editor panel.
                         const zoneIcons = iconDrafts.filter(ic => ic.inTree && ic.zoneId === node.id);
+                        const isSelected = selectedDraftIds.has(node.id);
                         return (
                           <React.Fragment key={node.id}>
                             <div
-                              className={`draft-row depth-${Math.min(indentLevel, 9)} ${isEditing ? 'is-editing' : ''}`}
+                              className={`draft-row depth-${Math.min(indentLevel, 9)} ${isEditing ? 'is-editing' : ''} ${isSelected ? 'is-selected' : ''}`}
                               style={{ paddingLeft: 4 + indentLevel * 14 }}
                             >
                               <span className="drname">
                                 {indentLevel > 0 && <span className="tree-glyph">└─ </span>}
+                                <input
+                                  type="checkbox"
+                                  className="bulk-check"
+                                  checked={isSelected}
+                                  onChange={() => toggleDraftSelection(node.id)}
+                                  aria-label={`Select ${node.name}`}
+                                  title={`Select "${node.name}" for bulk edit`}
+                                />
                                 <span className={`lvl-tag ${node.level == null ? 'is-unset' : ''}`}>
                                   {node.level != null ? `L${node.level}` : '—'}
                                 </span>
@@ -3355,14 +3639,23 @@ export default function MapTab({ navPadding = 80 }) {
                               const icCat = getIconCatalogEntry(ic.kind);
                               const iconSrc = icCat ? (BASE + icCat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
                               const nameText = ic.label || icCat?.name || 'Icon';
+                              const iconSelected = selectedIconIds.has(ic.id);
                               return (
                                 <div
                                   key={`tree-ic-${ic.id}`}
-                                  className="draft-row is-icon-row"
+                                  className={`draft-row is-icon-row ${iconSelected ? 'is-selected' : ''}`}
                                   style={{ paddingLeft: 4 + (indentLevel + 1) * 14 }}
                                 >
                                   <span className="drname">
                                     <span className="tree-glyph">└─ </span>
+                                    <input
+                                      type="checkbox"
+                                      className="bulk-check"
+                                      checked={iconSelected}
+                                      onChange={() => toggleIconSelectionId(ic.id)}
+                                      aria-label={`Select ${nameText}`}
+                                      title={`Select "${nameText}" for bulk edit`}
+                                    />
                                     {iconSrc && <img src={iconSrc} alt="" className="draft-row-icon-thumb" />}
                                     <span className="drlabel">{nameText}</span>
                                   </span>
@@ -3389,6 +3682,110 @@ export default function MapTab({ navPadding = 80 }) {
                         );
                       })}
                     </div>
+                    {/* Bulk action bar — visible only when something is selected. */}
+                    {selectionTotal > 0 && (
+                      <div className="bulk-action-bar">
+                        <div className="bulk-action-bar-head">
+                          <span>
+                            {selectionTotal} selected
+                            {selectedDraftIds.size > 0 && ` · ${selectedDraftIds.size} draft${selectedDraftIds.size === 1 ? '' : 's'}`}
+                            {selectedIconIds.size > 0 && ` · ${selectedIconIds.size} icon${selectedIconIds.size === 1 ? '' : 's'}`}
+                          </span>
+                          <button
+                            type="button"
+                            className="kuro-btn kuro-btn-sm"
+                            onClick={clearBulkSelection}
+                            title="Clear selection"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                        {/* Rename — find/replace across every selected name
+                            (zone .name and icon .label). Empty "find" sets
+                            the name to "replace" verbatim. */}
+                        <div className="bulk-action-row">
+                          <label className="bulk-action-label">Rename</label>
+                          <input
+                            type="text"
+                            value={bulkFind}
+                            onChange={(e) => setBulkFind(e.target.value)}
+                            placeholder="find"
+                            aria-label="Text to find"
+                          />
+                          <input
+                            type="text"
+                            value={bulkReplace}
+                            onChange={(e) => setBulkReplace(e.target.value)}
+                            placeholder="replace"
+                            aria-label="Replacement text"
+                          />
+                          <button
+                            type="button"
+                            className="kuro-btn kuro-btn-sm"
+                            onClick={applyBulkRename}
+                            disabled={!bulkFind && !bulkReplace}
+                            title={bulkFind
+                              ? `Replace "${bulkFind}" with "${bulkReplace}" on ${selectionTotal} item${selectionTotal === 1 ? '' : 's'}`
+                              : `Set every name to "${bulkReplace}" on ${selectionTotal} item${selectionTotal === 1 ? '' : 's'}`}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        {/* Level — only zones/subzones have a level field. */}
+                        <div className="bulk-action-row">
+                          <label className="bulk-action-label">Level</label>
+                          <select
+                            value={bulkLevel}
+                            onChange={(e) => setBulkLevel(e.target.value)}
+                            aria-label="Bulk level"
+                          >
+                            <option value="">— Unset</option>
+                            {[1, 2, 3, 4, 5].map(n => (
+                              <option key={n} value={String(n)}>L{n}</option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            className="kuro-btn kuro-btn-sm"
+                            onClick={applyBulkLevel}
+                            disabled={!selectedDraftsHasDraft}
+                            title={selectedDraftsHasDraft
+                              ? `Set level on ${selectedDraftIds.size} draft${selectedDraftIds.size === 1 ? '' : 's'} (icons skipped)`
+                              : 'Select at least one zone or subzone'}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        {/* Floor — only icons have a direct .floor field.
+                            Zone floor is derived from the parent overlay and
+                            isn't settable here. Empty = "All floors". */}
+                        <div className="bulk-action-row">
+                          <label className="bulk-action-label">Floor</label>
+                          <input
+                            type="number"
+                            value={bulkFloor}
+                            onChange={(e) => setBulkFloor(e.target.value)}
+                            placeholder="All"
+                            aria-label="Bulk floor"
+                            style={{ width: 80 }}
+                          />
+                          <button
+                            type="button"
+                            className="kuro-btn kuro-btn-sm"
+                            onClick={applyBulkFloor}
+                            disabled={!selectedHasIcon}
+                            title={selectedHasIcon
+                              ? `Set floor on ${selectedIconIds.size} icon${selectedIconIds.size === 1 ? '' : 's'} (drafts skipped)`
+                              : 'Select at least one icon'}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        <div className="hint" style={{ fontSize: 10, opacity: 0.7 }}>
+                          Level applies to zones/subzones only. Floor applies to icons only — zone floors come from their parent sub-map.
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 
