@@ -2688,17 +2688,15 @@ export default function MapTab({ navPadding = 80 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
-        /* Badge top/bottom padding = 6 px; external gap (label→badge
-           and badge→button-edge) also 6 px so the chip has equal
-           breathing room on all four outside sides. */
-        .map-filters-popover .zone-selector-item {
-          padding-right: 6px;
-        }
+        /* Gap between label text and count badge (A) matches the
+           button's top/bottom padding (D/E = 4 px from .kuro-btn-sm)
+           so the badge sits with equal breathing room on its left
+           and above/below. Only flex gap contributes — no extra
+           padding-right on the label. */
         .map-filters-popover .zone-selector-item .zone-selector-name {
-          padding-right: 2px;
+          padding-right: 0;
         }
         .map-filters-popover .kuro-badge {
-          padding: 6px var(--space-sm, 8px);
           font-variant-numeric: tabular-nums;
         }
 
