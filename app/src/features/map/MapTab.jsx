@@ -2689,10 +2689,9 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
         .map-filters-popover .kuro-badge {
-          min-width: 24px;
-          min-height: 24px;
-          padding: 0 var(--space-sm, 8px);
-          line-height: 1;
+          padding: 6px 10px;
+          min-width: 30px;
+          line-height: 1.2;
           justify-content: center;
           align-items: center;
           box-sizing: border-box;
