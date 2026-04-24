@@ -19,7 +19,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
-import { useSpineTuning } from '../../hooks/useSpineTuning.js';
+import { useSpineTuning, useSpineFreeze } from '../../hooks/useSpineTuning.js';
 
 // Banner spine — tx/ty tuned per-character based on face offset from skeleton center.
 export const BANNER_SPINE_CHARACTERS = {
@@ -194,6 +194,8 @@ function SpinePlayerComponent({
   const [inView, setInView] = useState(!lazy);
   const [hasSlot, setHasSlot] = useState(false);
   const [spine41Ready, setSpine41Ready] = useState(() => !!window.spine41?.SpinePlayer);
+  const [frozen] = useSpineFreeze();
+  const effectivePaused = paused || frozen;
 
   // Wait for the namespaced 4.1 runtime to finish loading (see index.html).
   useEffect(() => {
@@ -285,7 +287,7 @@ function SpinePlayerComponent({
         premultipliedAlpha: false,
         showLoading: true,
         success: (player) => {
-          if (paused && player && player.animationState) {
+          if (effectivePaused && player && player.animationState) {
             try { player.animationState.timeScale = 0; } catch (_) {}
           }
         },
@@ -308,7 +310,16 @@ function SpinePlayerComponent({
       }
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, spine41Ready, hasSlot]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, effectivePaused, spine41Ready, hasSlot]);
+
+  // Toggle the running player's timeScale when freeze flips without tearing
+  // down the whole WebGL context — avoids the visible reload flicker and the
+  // cost of re-initializing 10 contexts when the user taps the toggle.
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player?.animationState) return;
+    try { player.animationState.timeScale = effectivePaused ? 0 : 1; } catch (_) {}
+  }, [effectivePaused]);
 
   const charData = SPINE_CHARACTERS[characterId] || {};
   // Resolution order: explicit *Override prop > live tuning (mini panel) > SPINE_CHARACTERS default.

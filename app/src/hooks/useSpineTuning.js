@@ -69,3 +69,55 @@ export function useSpineTuning(id) {
 export function getAllSpineTuning() {
   return readAll();
 }
+
+// ─── Global freeze toggle ────────────────────────────────────────────────────
+// Set to true to pause every live spine player's animation state (timeScale=0
+// after the first frame). Tuning-friendly: static frame to line up against
+// without RAF/GPU pressure. Same localStorage+listener pattern as tuning.
+
+const FREEZE_KEY = 'ww-spine-frozen';
+const freezeListeners = new Set();
+let freezeCache = null;
+
+function readFreeze() {
+  if (freezeCache !== null) return freezeCache;
+  try {
+    freezeCache = localStorage.getItem(FREEZE_KEY) === '1';
+  } catch {
+    freezeCache = false;
+  }
+  return freezeCache;
+}
+
+function writeFreeze(next) {
+  freezeCache = !!next;
+  try {
+    if (freezeCache) localStorage.setItem(FREEZE_KEY, '1');
+    else localStorage.removeItem(FREEZE_KEY);
+  } catch {}
+  freezeListeners.forEach((fn) => {
+    try { fn(freezeCache); } catch {}
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key !== FREEZE_KEY) return;
+    freezeCache = e.newValue === '1';
+    freezeListeners.forEach((fn) => {
+      try { fn(freezeCache); } catch {}
+    });
+  });
+}
+
+export function useSpineFreeze() {
+  const [frozen, setFrozen] = useState(() => readFreeze());
+  useEffect(() => {
+    const fn = (next) => setFrozen(next);
+    freezeListeners.add(fn);
+    return () => freezeListeners.delete(fn);
+  }, []);
+  const toggle = useCallback(() => writeFreeze(!readFreeze()), []);
+  const set = useCallback((v) => writeFreeze(v), []);
+  return [frozen, toggle, set];
+}

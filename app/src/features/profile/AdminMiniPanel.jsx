@@ -11,12 +11,13 @@ import { Card, CardBody } from '../../shared/components/Card.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
-import { useSpineTuning, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
+import { useSpineTuning, useSpineFreeze, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
 
 function SpineTuningSection() {
   const ids = Object.keys(SPINE_CHARACTERS);
   const [selected, setSelected] = useState(ids[0] || '');
   const [tuning, set, reset] = useSpineTuning(selected);
+  const [frozen, toggleFrozen] = useSpineFreeze();
   if (!selected) return null;
   const def = SPINE_CHARACTERS[selected] || {};
   const scale = tuning.scale ?? def.scale ?? 1;
@@ -39,7 +40,20 @@ function SpineTuningSection() {
   );
   return (
     <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded-lg space-y-1.5">
-      <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
+      <div className="flex items-center justify-between">
+        <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
+        <button
+          onClick={toggleFrozen}
+          className={`px-2 py-0.5 rounded text-2xs border transition-colors ${
+            frozen
+              ? 'bg-blue-500/30 text-blue-200 border-blue-500/50'
+              : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'
+          }`}
+          title="Pause all spine animations to line up framing without RAF/GPU pressure"
+        >
+          {frozen ? '❄ Frozen' : '▶ Live'}
+        </button>
+      </div>
       <select
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
