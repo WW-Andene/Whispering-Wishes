@@ -1,52 +1,141 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — shared/components/SpinePlayer.jsx
-// Animated Spine character renderer using spine-player 4.2 loaded from CDN.
+// Animated Spine character renderer. Two independent systems live here:
+//
+//   BANNER_SPINE_CHARACTERS — Spine 4.2 JSON, in-repo at /spine/role_<id>/,
+//     rendered by BannerCard on the tracker. Runtime: window.spine (4.2).
+//
+//   SPRITE_SPINE_CHARACTERS — Spine 4.1 binary .skel from static.nanoka.cc,
+//     placed under /portraits/<id>/, rendered in CollectionGridCard and the
+//     detail modals. Runtime: window.spine41 (4.1).
+//
+// The two systems share this file but NOT their keyspace: sprite keys derive
+// from nanoka's portrait codename (lowercased) and may collide with banner
+// codenames for unrelated characters (e.g. banner luokeke=Lumi, sprite
+// luokeke=Roccia). To keep the lookup unambiguous we expose a merged flat
+// map `SPINE_CHARACTERS` keyed by surface-prefixed ids (`banner:xigelika`,
+// `sprite:fuluoluo`). `getSpineId(name, {surface})` returns one of those
+// prefixed ids; downstream code treats the whole string as opaque.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
 import { useSpineTuning } from '../../hooks/useSpineTuning.js';
 
-// Each entry declares which surface(s) its spine data is valid on:
-//   surfaces: ['banner']     → banner-spine asset at /spine/role_<id>/c_<id>_1.{json,atlas,png}
-//                              renders on the tracker BannerCard only.
-//   surfaces: ['collection'] → sprite-spine asset at the declared skelUrl/atlasUrl
-//                              renders in the Collection grid / detail modals only.
-//   surfaces: ['banner', 'collection'] → character has both assets.
-// Banner spine and sprite spine are DIFFERENT files with different formats,
-// different folders, and different purposes. Don't cross-render them.
-export const SPINE_CHARACTERS = {
-  // --- Banner spine: tx/ty tuned per-character based on face offset from skeleton center ---
-  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: 3,   ty: 2.5, surfaces: ['banner'] },
-  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: 0.5, ty: 2.5, surfaces: ['banner'] },
-  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.0, tx: -0.5, ty: -7, surfaces: ['banner'] },
-  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.0, tx: 5.5,  ty: -10, surfaces: ['banner'] },
-  linnai:      { name: 'Lynae',        element: 'Spectro', scale: 2.0, tx: 9.5,  ty: -10.5, surfaces: ['banner'] },
-  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 1.5, ty: 2.5, surfaces: ['banner'] },
-  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: 1,   ty: 2.5, surfaces: ['banner'] },
-  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: 2,   ty: 2.5, surfaces: ['banner'] },
-  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.3, tx: 2.5, ty: 2.5, surfaces: ['banner'] },
-  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.3, tx: 3,   ty: 2.5, surfaces: ['banner'] },
-  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 1.5, ty: 2.5, surfaces: ['banner'] },
-  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0,   ty: 2.5, surfaces: ['banner'] },
-  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 2,   ty: 2.5, surfaces: ['banner'] },
-  // --- Sprite spine: binary .skel sourced from nanoka.cc, assets under /portraits/ ---
-  fuluoluo:    { name: 'Phrolova',     element: 'Havoc',   scale: 2.3, tx: -3,  ty: 27.5,
-                 skelUrl:  'portraits/fuluoluo/Portraits_Fuluoluo.skel',
-                 atlasUrl: 'portraits/fuluoluo/Portraits_Fuluoluo.atlas',
-                 surfaces: ['collection'] },
+// Banner spine — tx/ty tuned per-character based on face offset from skeleton center.
+export const BANNER_SPINE_CHARACTERS = {
+  xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: 3,    ty: 2.5 },
+  qiuyuan:     { name: 'Qiuyuan',      element: 'Aero',    scale: 2.3, tx: 0.5,  ty: 2.5 },
+  zanni:       { name: 'Zani',         element: 'Electro', scale: 2.0, tx: -0.5, ty: -7 },
+  feibi:       { name: 'Phoebe',       element: 'Spectro', scale: 2.0, tx: 5.5,  ty: -10 },
+  linnai:      { name: 'Lynae',        element: 'Spectro', scale: 2.0, tx: 9.5,  ty: -10.5 },
+  jinxi:       { name: 'Jinhsi',       element: 'Spectro', scale: 2.3, tx: 1.5,  ty: 2.5 },
+  luokeke:     { name: 'Lumi',         element: 'Glacio',  scale: 2.3, tx: 1,    ty: 2.5 },
+  yinlin:      { name: 'Yinlin',       element: 'Electro', scale: 2.3, tx: 2,    ty: 2.5 },
+  bulante:     { name: 'Brant',        element: 'Fusion',  scale: 2.3, tx: 2.5,  ty: 2.5 },
+  jiyan:       { name: 'Jiyan',        element: 'Aero',    scale: 2.3, tx: 3,    ty: 2.5 },
+  xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 1.5,  ty: 2.5 },
+  changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0,    ty: 2.5 },
+  chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 2,    ty: 2.5 },
 };
 
-const NAME_TO_SPINE_ID = Object.fromEntries(
-  Object.entries(SPINE_CHARACTERS).map(([id, { name }]) => [name.toLowerCase(), id])
+// Sprite spine — all skel/atlas/webp files live under app/public/portraits/<id>/.
+// `skelUrl`/`atlasUrl` are paths relative to app/public. Defaults of
+// scale: 2.3, tx: -3, ty: 27.5 are carried over from Phrolova; every
+// skeleton's root origin differs, so expect to tune each entry live in the
+// admin mini panel and paste the exported values back here as defaults.
+const SPRITE_DEF = { scale: 2.3, tx: -3, ty: 27.5 };
+const spriteEntry = (name, element, portrait, dir = null) => ({
+  name, element, ...SPRITE_DEF,
+  skelUrl:  `portraits/${dir || portrait.toLowerCase()}/Portraits_${portrait}.skel`,
+  atlasUrl: `portraits/${dir || portrait.toLowerCase()}/Portraits_${portrait}.atlas`,
+});
+
+export const SPRITE_SPINE_CHARACTERS = {
+  fuluoluo:        spriteEntry('Phrolova',                     'Havoc',   'Fuluoluo'),
+  kanteleila:      spriteEntry('Cantarella',                    'Havoc',   'Kanteleila'),
+  luokeke:         spriteEntry('Roccia',                        'Havoc',   'Luokeke'),
+  rover_havoc_m:   spriteEntry('Rover: Havoc (Male)',           'Havoc',   'Male',   'rover_male'),
+  rover_havoc_f:   spriteEntry('Rover: Havoc (Female)',         'Havoc',   'Female', 'rover_female'),
+  chun:            spriteEntry('Camellya',                      'Havoc',   'Chun'),
+  danjin:          spriteEntry('Danjin',                        'Havoc',   'Danjin'),
+  taoqi:           spriteEntry('Taoqi',                         'Havoc',   'Taoqi'),
+  luhesi:          spriteEntry('Luuk Herssen',                  'Spectro', 'Luhesi'),
+  linnai:          spriteEntry('Lynae',                         'Spectro', 'Linnai'),
+  qianxiao:        spriteEntry('Chisa',                         'Spectro', 'Qianxiao'),
+  zanni:           spriteEntry('Zani',                          'Electro', 'Zanni'),
+  feibi:           spriteEntry('Phoebe',                        'Spectro', 'Feibi'),
+  shouanren:       spriteEntry('Shorekeeper',                   'Spectro', 'Shouanren'),
+  dengdeng:        spriteEntry('Lumi',                          'Glacio',  'Dengdeng'),
+  weilinai:        spriteEntry('Verina',                        'Spectro', 'Weilinai'),
+  rover_spectro_f: spriteEntry('Rover: Spectro (Female)',       'Spectro', 'Female', 'rover_female'),
+  rover_spectro_m: spriteEntry('Rover: Spectro (Male)',         'Spectro', 'Male',   'rover_male'),
+  xigelika:        spriteEntry('Sigrika',                       'Aero',    'Xigelika'),
+  qiuyuan:         spriteEntry('Qiuyuan',                       'Aero',    'Qiuyuan'),
+  younuo:          spriteEntry('Iuno',                          'Aero',    'Younuo'),
+  katixiya:        spriteEntry('Cartethyia',                    'Aero',    'Katixiya'),
+  rover_aero_f:    spriteEntry('Rover: Aero (Female)',          'Aero',    'Female', 'rover_female'),
+  xiakong:         spriteEntry('Ciaccona',                      'Aero',    'Xiakong'),
+  rover_aero_m:    spriteEntry('Rover: Aero (Male)',            'Aero',    'Male',   'rover_male'),
+  jianxin:         spriteEntry('Jianxin',                       'Aero',    'Jianxin'),
+  jiyan:           spriteEntry('Jiyan',                         'Aero',    'Jiyan'),
+  qiushui:         spriteEntry('Aalto',                         'Aero',    'Qiushui'),
+  yangyang:        spriteEntry('Yangyang',                      'Aero',    'Yangyang'),
+  buling:          spriteEntry('Buling',                        'Havoc',   'Buling'),
+  aogusita:        spriteEntry('Augusta',                       'Electro', 'Aogusita'),
+  xiangliyao:      spriteEntry('Xiangli Yao',                   'Electro', 'Xiangliyao'),
+  jinxi:           spriteEntry('Jinhsi',                        'Spectro', 'Jinxi'),
+  yuanwu:          spriteEntry('Yuanwu',                        'Electro', 'Yuanwu'),
+  yinlin:          spriteEntry('Yinlin',                        'Electro', 'Yinlin'),
+  kakaluo:         spriteEntry('Calcharo',                      'Electro', 'Kakaluo'),
+  // Daniya's webp is stored on nanoka's CDN as Portraits_DaNiYa.webp (mixed
+  // case); the atlas references it verbatim and Spine resolves it relative to
+  // atlasUrl, so we preserve the exact casing on disk.
+  daniya:          spriteEntry('Denia',                         'Electro', 'Daniya'),
+  aimisi:          spriteEntry('Aemeath',                       'Electro', 'Aimisi'),
+  moning:          spriteEntry('Mornye',                        'Havoc',   'Moning'),
+  jiabeilina:      spriteEntry('Galbrena',                      'Fusion',  'Jiabeilina'),
+  lupa:            spriteEntry('Lupa',                          'Fusion',  'Lupa'),
+  bulante:         spriteEntry('Brant',                         'Fusion',  'Bulante'),
+  changli:         spriteEntry('Changli',                       'Fusion',  'Changli'),
+  motefei:         spriteEntry('Mortefi',                       'Fusion',  'Motefei'),
+  anke:            spriteEntry('Encore',                        'Fusion',  'Anke'),
+  feixue:          spriteEntry('Hiyuki',                        'Glacio',  'Feixue'),
+  kelaita:         spriteEntry('Carlotta',                      'Fusion',  'Kelaita'),
+  youhu:           spriteEntry('Youhu',                         'Glacio',  'Youhu'),
+  zhezhi:          spriteEntry('Zhezhi',                        'Glacio',  'Zhezhi'),
+  lingyang:        spriteEntry('Lingyang',                      'Glacio',  'Lingyang'),
+  baizhi:          spriteEntry('Baizhi',                        'Glacio',  'Baizhi'),
+  sanhua:          spriteEntry('Sanhua',                        'Glacio',  'Sanhua'),
+};
+
+// Merged view for lookup by surface-prefixed id. Keys collide between the two
+// source maps; prefixing disambiguates. `surface` attaches to each entry so
+// the player / admin panel can tell them apart without re-checking the map.
+export const SPINE_CHARACTERS = {
+  ...Object.fromEntries(
+    Object.entries(BANNER_SPINE_CHARACTERS).map(([k, v]) => [`banner:${k}`, { ...v, surface: 'banner' }]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(SPRITE_SPINE_CHARACTERS).map(([k, v]) => [`sprite:${k}`, { ...v, surface: 'collection' }]),
+  ),
+};
+
+const BANNER_NAME_TO_KEY = Object.fromEntries(
+  Object.entries(BANNER_SPINE_CHARACTERS).map(([k, v]) => [v.name.toLowerCase(), k]),
+);
+const SPRITE_NAME_TO_KEY = Object.fromEntries(
+  Object.entries(SPRITE_SPINE_CHARACTERS).map(([k, v]) => [v.name.toLowerCase(), k]),
 );
 
 export function getSpineId(displayName, { surface = 'banner' } = {}) {
   if (!displayName) return null;
-  const id = NAME_TO_SPINE_ID[displayName.toLowerCase()];
-  if (!id) return null;
-  const entry = SPINE_CHARACTERS[id];
-  if (!entry?.surfaces?.includes(surface)) return null;
-  return id;
+  const lc = displayName.toLowerCase();
+  if (surface === 'collection') {
+    const key = SPRITE_NAME_TO_KEY[lc];
+    return key ? `sprite:${key}` : null;
+  }
+  const key = BANNER_NAME_TO_KEY[lc];
+  return key ? `banner:${key}` : null;
 }
 
 function SpinePlayerComponent({
@@ -95,8 +184,10 @@ function SpinePlayerComponent({
     }
     containerRef.current.innerHTML = '';
 
-    const basePath = `spine/role_${characterId}`;
-    const prefix = `c_${characterId}_1`;
+    // Strip the surface prefix when constructing banner asset URLs.
+    const bareId = characterId.replace(/^(banner|sprite):/, '');
+    const basePath = `spine/role_${bareId}`;
+    const prefix = `c_${bareId}_1`;
     const assetUrls = charData.skelUrl
       ? { skelUrl: charData.skelUrl, atlasUrl: charData.atlasUrl }
       : { jsonUrl: `${basePath}/${prefix}.json`, atlasUrl: `${basePath}/${prefix}.atlas` };

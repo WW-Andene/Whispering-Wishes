@@ -47,7 +47,7 @@ function SpineTuningSection() {
       >
         {ids.map((id) => (
           <option key={id} value={id}>
-            {SPINE_CHARACTERS[id].name} ({SPINE_CHARACTERS[id].surfaces?.[0] || '?'})
+            {SPINE_CHARACTERS[id].name} ({SPINE_CHARACTERS[id].surface || '?'})
           </option>
         ))}
       </select>
