@@ -147,6 +147,28 @@ function WhisperingWishesInner() {
   const [adminMiniMode, setAdminMiniMode] = useState(false);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
 
+  // Dev access to the mini panel: visit /#spine-tune or press Ctrl+Alt+P to
+  // skip the 5-tap + password flow. Useful for visually tuning spine
+  // positioning on any tab. Keeps mini panel hoisted (persists across tabs).
+  useEffect(() => {
+    const openMini = () => {
+      setAdminUnlocked(true);
+      setAdminMiniMode(true);
+      setShowAdminPanel(true);
+    };
+    if (typeof window !== 'undefined' && window.location?.hash === '#spine-tune') {
+      openMini();
+    }
+    const onKey = (e) => {
+      if (e.ctrlKey && e.altKey && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        openMini();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
   // Google Auth + Cloud Storage — provided by CloudStorageProvider context

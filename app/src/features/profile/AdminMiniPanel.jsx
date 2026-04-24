@@ -3,13 +3,78 @@
 // and compact visual settings sliders
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ClipboardList, Settings, X } from 'lucide-react';
 import { APP_VERSION } from '../../data/constants.js';
 import { Card, CardBody } from '../../shared/components/Card.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
+import { useSpineTuning, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
+
+function SpineTuningSection() {
+  const ids = Object.keys(SPINE_CHARACTERS);
+  const [selected, setSelected] = useState(ids[0] || '');
+  const [tuning, set, reset] = useSpineTuning(selected);
+  if (!selected) return null;
+  const def = SPINE_CHARACTERS[selected] || {};
+  const scale = tuning.scale ?? def.scale ?? 1;
+  const tx = tuning.tx ?? def.tx ?? 0;
+  const ty = tuning.ty ?? def.ty ?? 0;
+  const row = (label, value, step, min, max, key) => (
+    <div className="flex items-center gap-2">
+      <span className="text-2xs text-gray-400 w-8">{label}</span>
+      <input
+        type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => set({ [key]: Number(e.target.value) })}
+        className="flex-1 accent-pink-500"
+      />
+      <input
+        type="number" step={step} value={value}
+        onChange={(e) => set({ [key]: Number(e.target.value) })}
+        className="w-14 px-1 py-0.5 bg-black/40 border border-[var(--border-medium)] rounded text-xs text-white text-right"
+      />
+    </div>
+  );
+  return (
+    <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded-lg space-y-1.5">
+      <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
+      <select
+        value={selected}
+        onChange={(e) => setSelected(e.target.value)}
+        className="w-full px-2 py-1 bg-black/40 border border-[var(--border-medium)] rounded text-xs text-white"
+      >
+        {ids.map((id) => (
+          <option key={id} value={id}>
+            {SPINE_CHARACTERS[id].name} ({SPINE_CHARACTERS[id].surfaces?.[0] || '?'})
+          </option>
+        ))}
+      </select>
+      {row('scale', scale, 0.05, 0.2, 6, 'scale')}
+      {row('tx', tx, 0.5, -50, 50, 'tx')}
+      {row('ty', ty, 0.5, -50, 50, 'ty')}
+      <div className="flex gap-1">
+        <button
+          onClick={reset}
+          className="flex-1 py-1 rounded text-2xs bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+        >
+          Reset {SPINE_CHARACTERS[selected].name}
+        </button>
+        <button
+          onClick={() => {
+            const json = JSON.stringify(getAllSpineTuning(), null, 2);
+            if (navigator.clipboard?.writeText) navigator.clipboard.writeText(json);
+            else window.prompt('Copy tuning JSON:', json);
+          }}
+          className="flex-1 py-1 rounded text-2xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30"
+        >
+          <ClipboardList size={10} className="inline mr-1" /> Export
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminMiniPanel({
   setShowAdminPanel, setAdminMiniMode,
@@ -48,6 +113,9 @@ export default function AdminMiniPanel({
       </div>
 
       <div className="p-3 space-y-3">
+        {/* Spine Tuning — live-binds to SpinePlayer via useSpineTuning */}
+        <SpineTuningSection />
+
         {/* Framing Mode Toggle */}
         <button
           onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}

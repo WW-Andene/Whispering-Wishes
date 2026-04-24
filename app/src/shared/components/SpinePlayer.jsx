@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
+import { useSpineTuning } from '../../hooks/useSpineTuning.js';
 
 // Each entry declares which surface(s) its spine data is valid on:
 //   surfaces: ['banner']     → banner-spine asset at /spine/role_<id>/c_<id>_1.{json,atlas,png}
@@ -138,9 +139,11 @@ function SpinePlayerComponent({
   if (failed) return null;
 
   const charData = SPINE_CHARACTERS[characterId] || {};
-  const scale = scaleOverride !== undefined ? scaleOverride : (charData.scale ?? 1);
-  const tx = txOverride !== undefined ? txOverride : (charData.tx ?? 0);
-  const ty = tyOverride !== undefined ? tyOverride : (charData.ty ?? 0);
+  // Resolution order: explicit *Override prop > live tuning (mini panel) > SPINE_CHARACTERS default.
+  const [tuning] = useSpineTuning(characterId);
+  const scale = scaleOverride !== undefined ? scaleOverride : (tuning.scale ?? charData.scale ?? 1);
+  const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? charData.tx ?? 0);
+  const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? charData.ty ?? 0);
 
   return (
     <div
