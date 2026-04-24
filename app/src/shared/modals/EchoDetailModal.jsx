@@ -12,6 +12,7 @@ import { ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, 
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
+import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 
 const ECHO_COST_COLORS = {
   4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', label: '4 Cost' },
@@ -29,7 +30,8 @@ const ECHO_BUFF_COLORS = {
   'Shield':       { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
   'Physical DMG': { bg: 'bg-slate-400/10',     text: 'text-slate-300',   border: 'border-slate-400/25' },
 };
-const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
+const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visualSettings }) => {
+  const isFullAnim = visualSettings?.animationsEnabled === 'full';
   const data = ECHO_DATA[name];
   const ownsChar = (n) => {
     if (!collectionData) return true;
@@ -254,13 +256,18 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData }) => {
                   const charImg = DEFAULT_COLLECTION_IMAGES[charName];
                   const is5Star = CHARACTER_DATA[charName]?.rarity === 5;
                   const owned = ownsChar(charName);
+                  const charSpineId = isFullAnim ? getSpineId(charName, { surface: 'collection' }) : null;
                   return (
                     <div key={charName} className={`flex flex-col items-center gap-1 ${!owned ? 'opacity-50' : ''}`}>
                       {charImg ? (
                         <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${owned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
-                          <div className="absolute inset-0 breath-zoom">
-                            <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
-                          </div>
+                          {charSpineId ? (
+                            <SpinePlayer characterId={charSpineId} className="w-full h-full" backgroundColor="#00000000" />
+                          ) : (
+                            <div className="absolute inset-0 breath-zoom">
+                              <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">

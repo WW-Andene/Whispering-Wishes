@@ -1499,6 +1499,7 @@ function WhisperingWishesInner() {
           imageUrl={detailModal.imageUrl}
           framing={detailModal.framing}
           infoFraming={getImageFraming(`info-${detailModal.name}`)}
+          visualSettings={visualSettings}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
           onViewInTeams={() => {
             const name = detailModal.name;
@@ -1526,6 +1527,7 @@ function WhisperingWishesInner() {
           name={detailModal.name}
           imageUrl={detailModal.imageUrl}
           cost={detailModal.cost}
+          visualSettings={visualSettings}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
           collectionData={collectionData}
         />

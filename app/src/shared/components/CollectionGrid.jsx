@@ -41,7 +41,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   const processedUrl = imgUrl;
   const [spineFailed, setSpineFailed] = useState(false);
   const spineId = isCharacter && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
-  const useSpine = !!spineId && owned && !spineFailed;
+  const useSpine = !!spineId && !spineFailed;
   const longPressHandlers = useLongPress(
     onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
     () => {
@@ -83,7 +83,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           <SpinePlayer
             characterId={spineId}
             className="w-full h-full pointer-events-none"
-            style={{ opacity: collOpacity }}
+            style={{ opacity: owned ? collOpacity : 0.3, filter: owned ? undefined : 'grayscale(100%)' }}
             backgroundColor="#00000000"
             onError={() => setSpineFailed(true)}
           />

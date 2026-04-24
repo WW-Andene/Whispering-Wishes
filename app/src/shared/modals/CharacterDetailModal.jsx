@@ -12,6 +12,7 @@ import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONAT
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
+import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 // Shared element color maps
@@ -27,7 +28,7 @@ const DETAIL_ELEMENT_COLORS = {
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
-const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData }) => {
+const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const data = CHARACTER_DATA[name];
   if (!data) return null;
@@ -54,6 +55,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   
   // Info framing: use info-specific framing, falling back to collection framing offset
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
+
+  const isFullAnim = visualSettings?.animationsEnabled === 'full';
+  const spineId = isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
   
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} Resonator details`} centered>
@@ -73,11 +77,17 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </div>
           )}
           {imageUrl && (
-            <div className="absolute inset-0 breath-zoom">
-              <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
-                transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
-                transformOrigin: 'right bottom'
-              }} />
+            <div className={`absolute inset-0 ${spineId ? '' : 'breath-zoom'}`}>
+              {spineId ? (
+                <div className="absolute right-0 bottom-0 h-48 w-48 pointer-events-none" style={{ opacity: 0.8 }}>
+                  <SpinePlayer characterId={spineId} className="w-full h-full" backgroundColor="#00000000" />
+                </div>
+              ) : (
+                <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
+                  transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                  transformOrigin: 'right bottom'
+                }} />
+              )}
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
