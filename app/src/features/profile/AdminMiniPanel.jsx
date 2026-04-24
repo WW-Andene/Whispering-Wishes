@@ -11,13 +11,13 @@ import { Card, CardBody } from '../../shared/components/Card.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
-import { useSpineTuning, useSpineFreeze, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
+import { useSpineTuning, useSpineUnfrozen, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
 
 function SpineTuningSection() {
   const ids = Object.keys(SPINE_CHARACTERS);
   const [selected, setSelected] = useState(ids[0] || '');
   const [tuning, set, reset] = useSpineTuning(selected);
-  const [frozen, toggleFrozen] = useSpineFreeze();
+  const [unfrozen, toggleUnfrozen] = useSpineUnfrozen(selected);
   if (!selected) return null;
   const def = SPINE_CHARACTERS[selected] || {};
   const scale = tuning.scale ?? def.scale ?? 1;
@@ -43,15 +43,15 @@ function SpineTuningSection() {
       <div className="flex items-center justify-between">
         <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
         <button
-          onClick={toggleFrozen}
+          onClick={toggleUnfrozen}
           className={`px-2 py-0.5 rounded text-2xs border transition-colors ${
-            frozen
-              ? 'bg-blue-500/30 text-blue-200 border-blue-500/50'
-              : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'
+            unfrozen
+              ? 'bg-emerald-500/30 text-emerald-200 border-emerald-500/50'
+              : 'bg-blue-500/20 text-blue-200 border-blue-500/40 hover:bg-blue-500/30'
           }`}
-          title="Pause all spine animations to line up framing without RAF/GPU pressure"
+          title={unfrozen ? 'Live — animating; toggle to freeze' : 'Frozen — static portrait; toggle to animate'}
         >
-          {frozen ? '❄ Frozen' : '▶ Live'}
+          {unfrozen ? '▶ Live' : '❄ Frozen'}
         </button>
       </div>
       <select
@@ -106,7 +106,7 @@ export default function AdminMiniPanel({
 
   return createPortal(
     <div
-      className={`fixed z-[9999] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md kuro-shadow-admin ${getMiniPanelPositionClasses()}`}
+      className={`fixed z-[10010] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md kuro-shadow-admin ${getMiniPanelPositionClasses()}`}
     >
       <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-2.5 flex items-center justify-between">
         <span className="text-cyan-300 text-sm font-bold flex items-center gap-1.5"><Settings size={14} /> Visual Settings</span>

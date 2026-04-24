@@ -70,54 +70,65 @@ export function getAllSpineTuning() {
   return readAll();
 }
 
-// ─── Global freeze toggle ────────────────────────────────────────────────────
-// Set to true to pause every live spine player's animation state (timeScale=0
-// after the first frame). Tuning-friendly: static frame to line up against
-// without RAF/GPU pressure. Same localStorage+listener pattern as tuning.
+// ─── Per-character unfreeze set ──────────────────────────────────────────────
+// Every sprite defaults to FROZEN (renders the static portrait instead of
+// spawning a WebGL context). Characters explicitly unfrozen in the admin
+// mini panel render the live spine animation. This caps concurrent WebGL
+// contexts at however many the user has chosen to animate — normally one or
+// two at tuning time — and prevents the 50-context crash.
 
-const FREEZE_KEY = 'ww-spine-frozen';
-const freezeListeners = new Set();
-let freezeCache = null;
+const UNFROZEN_KEY = 'ww-spine-unfrozen';
+const unfrozenListeners = new Set();
+let unfrozenCache = null;
 
-function readFreeze() {
-  if (freezeCache !== null) return freezeCache;
+function readUnfrozen() {
+  if (unfrozenCache) return unfrozenCache;
   try {
-    freezeCache = localStorage.getItem(FREEZE_KEY) === '1';
+    const arr = JSON.parse(localStorage.getItem(UNFROZEN_KEY) || '[]');
+    unfrozenCache = new Set(Array.isArray(arr) ? arr : []);
   } catch {
-    freezeCache = false;
+    unfrozenCache = new Set();
   }
-  return freezeCache;
+  return unfrozenCache;
 }
 
-function writeFreeze(next) {
-  freezeCache = !!next;
-  try {
-    if (freezeCache) localStorage.setItem(FREEZE_KEY, '1');
-    else localStorage.removeItem(FREEZE_KEY);
-  } catch {}
-  freezeListeners.forEach((fn) => {
-    try { fn(freezeCache); } catch {}
-  });
+function writeUnfrozen(next) {
+  unfrozenCache = next;
+  try { localStorage.setItem(UNFROZEN_KEY, JSON.stringify([...next])); } catch {}
+  unfrozenListeners.forEach((fn) => { try { fn(next); } catch {} });
 }
 
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
-    if (e.key !== FREEZE_KEY) return;
-    freezeCache = e.newValue === '1';
-    freezeListeners.forEach((fn) => {
-      try { fn(freezeCache); } catch {}
-    });
+    if (e.key !== UNFROZEN_KEY) return;
+    try {
+      const arr = JSON.parse(e.newValue || '[]');
+      unfrozenCache = new Set(Array.isArray(arr) ? arr : []);
+    } catch {
+      unfrozenCache = new Set();
+    }
+    unfrozenListeners.forEach((fn) => { try { fn(unfrozenCache); } catch {} });
   });
 }
 
-export function useSpineFreeze() {
-  const [frozen, setFrozen] = useState(() => readFreeze());
+export function useSpineUnfrozen(id) {
+  const [unfrozen, setUnfrozen] = useState(() => !!id && readUnfrozen().has(id));
   useEffect(() => {
-    const fn = (next) => setFrozen(next);
-    freezeListeners.add(fn);
-    return () => freezeListeners.delete(fn);
-  }, []);
-  const toggle = useCallback(() => writeFreeze(!readFreeze()), []);
-  const set = useCallback((v) => writeFreeze(v), []);
-  return [frozen, toggle, set];
+    const fn = (set) => setUnfrozen(!!id && set.has(id));
+    unfrozenListeners.add(fn);
+    return () => unfrozenListeners.delete(fn);
+  }, [id]);
+  const toggle = useCallback(() => {
+    if (!id) return;
+    const current = new Set(readUnfrozen());
+    if (current.has(id)) current.delete(id); else current.add(id);
+    writeUnfrozen(current);
+  }, [id]);
+  const set = useCallback((v) => {
+    if (!id) return;
+    const current = new Set(readUnfrozen());
+    if (v) current.add(id); else current.delete(id);
+    writeUnfrozen(current);
+  }, [id]);
+  return [unfrozen, toggle, set];
 }

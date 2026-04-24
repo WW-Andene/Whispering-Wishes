@@ -266,7 +266,6 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
                               characterId={charSpineId}
                               className="w-full h-full"
                               backgroundColor="#00000000"
-                              lazy
                               fallbackImgUrl={charImg}
                               fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'top' }}
                             />

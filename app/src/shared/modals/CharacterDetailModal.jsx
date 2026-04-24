@@ -82,7 +82,18 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 /* Spine spans the full header width: clipped top/bottom by the
                    parent's overflow-hidden, but NOT side-clipped. */
                 <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" style={{ opacity: 0.8 }}>
-                  <SpinePlayer characterId={spineId} className="w-full h-full" backgroundColor="#00000000" />
+                  <SpinePlayer
+                    characterId={spineId}
+                    className="w-full h-full"
+                    backgroundColor="#00000000"
+                    fallbackImgUrl={imageUrl}
+                    fallbackImgStyle={{
+                      objectFit: 'contain',
+                      objectPosition: 'right bottom',
+                      transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+                      transformOrigin: 'right bottom',
+                    }}
+                  />
                 </div>
               ) : (
                 <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{

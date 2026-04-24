@@ -19,7 +19,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
-import { useSpineTuning, useSpineFreeze } from '../../hooks/useSpineTuning.js';
+import { useSpineTuning, useSpineUnfrozen } from '../../hooks/useSpineTuning.js';
 
 // Banner spine — tx/ty tuned per-character based on face offset from skeleton center.
 export const BANNER_SPINE_CHARACTERS = {
@@ -138,36 +138,6 @@ export function getSpineId(displayName, { surface = 'banner' } = {}) {
   return key ? `banner:${key}` : null;
 }
 
-// ─── Concurrent-player budget ────────────────────────────────────────────────
-// Each SpinePlayer creates its own WebGL context + RAF loop. Browsers cap
-// concurrent WebGL contexts (typically 16) and drop the oldest on overflow,
-// and even under the cap the per-frame cost of dozens of skeletons tanks the
-// frame rate on mobile. We gate active instances on two axes:
-//   1. IntersectionObserver — only mount when the card is visible (lazy mode).
-//   2. A module-level slot pool — hard cap on simultaneously-live players.
-// When over budget, SpinePlayer renders the supplied fallback img instead and
-// subscribes to the wake list; it retries as soon as another instance frees
-// its slot.
-const MAX_CONCURRENT_SPINE = 10;
-const activeSlots = new Set();
-const slotWaiters = new Set();
-
-function acquireSlot(token) {
-  if (activeSlots.has(token)) return true;
-  if (activeSlots.size >= MAX_CONCURRENT_SPINE) return false;
-  activeSlots.add(token);
-  return true;
-}
-function releaseSlot(token) {
-  if (activeSlots.delete(token)) {
-    slotWaiters.forEach((fn) => { try { fn(); } catch (_) {} });
-  }
-}
-function subscribeSlot(fn) {
-  slotWaiters.add(fn);
-  return () => slotWaiters.delete(fn);
-}
-
 function SpinePlayerComponent({
   characterId,
   animation = 'idle',
@@ -181,21 +151,17 @@ function SpinePlayerComponent({
   scaleOverride,
   txOverride,
   tyOverride,
-  lazy = false,
   fallbackImgUrl = null,
   fallbackImgStyle = null,
-  rootMargin = '100px',
 }) {
-  const outerRef = useRef(null);
   const containerRef = useRef(null);
   const playerRef = useRef(null);
-  const slotTokenRef = useRef(null);
   const [failed, setFailed] = useState(false);
-  const [inView, setInView] = useState(!lazy);
-  const [hasSlot, setHasSlot] = useState(false);
   const [spine41Ready, setSpine41Ready] = useState(() => !!window.spine41?.SpinePlayer);
-  const [frozen] = useSpineFreeze();
-  const effectivePaused = paused || frozen;
+  // Per-character freeze: every sprite defaults to frozen (renders the static
+  // portrait). Only characters explicitly unfrozen in the admin mini panel
+  // spin up a WebGL context, which prevents the N-simultaneous-context crash.
+  const [unfrozen] = useSpineUnfrozen(characterId);
 
   // Wait for the namespaced 4.1 runtime to finish loading (see index.html).
   useEffect(() => {
@@ -205,52 +171,8 @@ function SpinePlayerComponent({
     return () => window.removeEventListener('spine41-ready', onReady);
   }, [spine41Ready]);
 
-  // IntersectionObserver gates the actual player on viewport visibility. When
-  // `lazy` is false (modals, banners — single instance) we skip this entirely.
   useEffect(() => {
-    if (!lazy) { setInView(true); return; }
-    if (!outerRef.current || typeof IntersectionObserver === 'undefined') {
-      setInView(true);
-      return;
-    }
-    const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) setInView(e.isIntersecting);
-      },
-      { rootMargin, threshold: 0 },
-    );
-    obs.observe(outerRef.current);
-    return () => obs.disconnect();
-  }, [lazy, rootMargin]);
-
-  // Slot acquisition. Per-mount token so two instances of the same characterId
-  // don't share a slot. Releases on unmount and whenever the dependencies flip
-  // us out of in-view state.
-  useEffect(() => {
-    if (!inView || failed || !characterId) { setHasSlot(false); return; }
-    const token = Symbol('spine-slot');
-    slotTokenRef.current = token;
-    let acquired = acquireSlot(token);
-    setHasSlot(acquired);
-    let unsubWake = null;
-    if (!acquired) {
-      unsubWake = subscribeSlot(() => {
-        if (slotTokenRef.current !== token) return;
-        if (acquireSlot(token)) {
-          acquired = true;
-          setHasSlot(true);
-        }
-      });
-    }
-    return () => {
-      if (unsubWake) unsubWake();
-      if (slotTokenRef.current === token) slotTokenRef.current = null;
-      releaseSlot(token);
-    };
-  }, [characterId, inView, failed]);
-
-  useEffect(() => {
-    if (!containerRef.current || !characterId || failed || !hasSlot) return;
+    if (!containerRef.current || !characterId || failed || !unfrozen) return;
     const charData = SPINE_CHARACTERS[characterId];
     if (!charData) { setFailed(true); return; }
     // Sprite-spine assets (skelUrl) are exported from Spine 4.1 and need the
@@ -287,7 +209,7 @@ function SpinePlayerComponent({
         premultipliedAlpha: false,
         showLoading: true,
         success: (player) => {
-          if (effectivePaused && player && player.animationState) {
+          if (paused && player && player.animationState) {
             try { player.animationState.timeScale = 0; } catch (_) {}
           }
         },
@@ -310,16 +232,7 @@ function SpinePlayerComponent({
       }
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed, effectivePaused, spine41Ready, hasSlot]);
-
-  // Toggle the running player's timeScale when freeze flips without tearing
-  // down the whole WebGL context — avoids the visible reload flicker and the
-  // cost of re-initializing 10 contexts when the user taps the toggle.
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player?.animationState) return;
-    try { player.animationState.timeScale = effectivePaused ? 0 : 1; } catch (_) {}
-  }, [effectivePaused]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, spine41Ready, unfrozen]);
 
   const charData = SPINE_CHARACTERS[characterId] || {};
   // Resolution order: explicit *Override prop > live tuning (mini panel) > SPINE_CHARACTERS default.
@@ -328,15 +241,14 @@ function SpinePlayerComponent({
   const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? charData.tx ?? 0);
   const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? charData.ty ?? 0);
 
-  // Player isn't active (failed / off-screen / waiting for a slot). Fall back
-  // to the static image if one was supplied; otherwise render an empty shell
-  // so the IntersectionObserver still has a target.
-  const showFallback = failed || !inView || !hasSlot;
+  // Frozen (default) or failed to load — render the static portrait if one
+  // was supplied. No WebGL context is created in this branch, so 50 frozen
+  // cards cost the same as 50 <img>s.
+  const showFallback = failed || !unfrozen;
   if (showFallback) {
     if (failed && !fallbackImgUrl) return null;
     return (
       <div
-        ref={outerRef}
         className={className}
         style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
       >
@@ -355,7 +267,6 @@ function SpinePlayerComponent({
 
   return (
     <div
-      ref={outerRef}
       className={className}
       style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
     >

@@ -86,7 +86,6 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
             style={{ opacity: owned ? collOpacity : 0.3, filter: owned ? undefined : 'grayscale(100%)' }}
             backgroundColor="#00000000"
             onError={() => setSpineFailed(true)}
-            lazy
             fallbackImgUrl={processedUrl || imgUrl}
             fallbackImgStyle={{
               transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
