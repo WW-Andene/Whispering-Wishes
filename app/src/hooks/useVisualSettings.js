@@ -38,6 +38,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   headerBg: null,
   navBg: null,
   appBg: { type: 'version', id: 'v3.3', url: 'https://i.ibb.co/KByqz7F/Reverbs-From-The-End-of-Galaxies.jpg', objectPosition: '52% 50%' },
+  animatedBgAudio: false,
   dyslexicFont: false,
   colorBlindMode: false,
 });

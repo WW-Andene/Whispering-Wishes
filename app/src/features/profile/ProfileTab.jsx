@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX, X } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
@@ -793,6 +793,29 @@ function ProfileTab({
                           {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
+                      {bgCategory === 'animated' && (
+                        <div className="col-span-full flex items-center justify-between p-2 rounded-lg border border-[var(--border-medium)] bg-white/5 mb-0.5">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-[24px] h-[24px] rounded-md flex items-center justify-center ${visualSettings.animatedBgAudio ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.animatedBgAudio ? { background: 'var(--bg-btn)' } : undefined}>
+                              {visualSettings.animatedBgAudio ? <Volume2 size={14} /> : <VolumeX size={14} />}
+                            </div>
+                            <div>
+                              <div className="text-white text-sm font-medium">Play audio</div>
+                              <div className="text-gray-400 text-xs">Unmute the video soundtrack</div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => saveVisualSettings({ ...visualSettings, animatedBgAudio: !visualSettings.animatedBgAudio })}
+                            className={`relative w-[44px] h-[22px] rounded-full transition-colors ${visualSettings.animatedBgAudio ? 'bg-cyan-500' : ''}`}
+                            style={!visualSettings.animatedBgAudio ? { background: 'var(--bg-btn)' } : undefined}
+                            role="switch"
+                            aria-checked={visualSettings.animatedBgAudio}
+                            aria-label="Toggle animated background audio"
+                          >
+                            <div className={`absolute top-[3px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.animatedBgAudio ? 'left-[25px] bg-white' : 'left-[3px] bg-gray-400'}`} />
+                          </button>
+                        </div>
+                      )}
                       {bgCategory === 'animated' && ANIMATED_BACKGROUNDS.map(a => (
                         <button
                           key={a.id}

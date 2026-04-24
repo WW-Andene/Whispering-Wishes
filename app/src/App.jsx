@@ -940,10 +940,19 @@ function WhisperingWishesInner() {
               src={appBgUrl}
               autoPlay
               loop
-              muted
+              muted={!visualSettings.animatedBgAudio}
               playsInline
               className="w-full h-full object-cover"
               style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
+              onCanPlay={(e) => {
+                // Browsers block unmuted autoplay without a prior user gesture.
+                // If play() rejects, fall back to muted so the loop still runs.
+                const v = e.currentTarget;
+                const p = v.play?.();
+                if (p && typeof p.catch === 'function') {
+                  p.catch(() => { v.muted = true; v.play?.().catch(() => {}); });
+                }
+              }}
             />
           ) : (
             <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
