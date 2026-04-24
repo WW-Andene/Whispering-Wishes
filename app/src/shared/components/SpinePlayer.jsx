@@ -39,73 +39,162 @@ export const BANNER_SPINE_CHARACTERS = {
 };
 
 // Sprite spine — all skel/atlas/webp files live under app/public/portraits/<id>/.
-// `skelUrl`/`atlasUrl` are paths relative to app/public. Defaults of
-// scale: 2.3, tx: -3, ty: 27.5 are carried over from Phrolova; every
-// skeleton's root origin differs, so expect to tune each entry live in the
-// admin mini panel and paste the exported values back here as defaults.
+// Each entry may carry per-surface tuning: the top-level scale/tx/ty apply on
+// the Collection grid card (the default `card` context); an optional `detail`
+// sub-object holds numbers for the CharacterDetailModal header surface, and
+// an optional `echo` sub-object for the EchoDetailModal 48×48 icon. Untuned
+// contexts fall back to SPRITE_DEF. Tune each surface live in the admin mini
+// panel (Ctrl+Alt+P) and paste the export back here to promote.
 const SPRITE_DEF = { scale: 2.3, tx: -3, ty: 27.5 };
-const spriteEntry = (name, element, portrait, dir = null) => ({
-  name, element, ...SPRITE_DEF,
-  skelUrl:  `portraits/${dir || portrait.toLowerCase()}/Portraits_${portrait}.skel`,
-  atlasUrl: `portraits/${dir || portrait.toLowerCase()}/Portraits_${portrait}.atlas`,
-});
+// `dir` overrides the folder (used for Rover variants that share a portrait
+// file across multiple entries). `detail` / `echo` carry per-surface defaults.
+const spriteEntry = (name, element, portrait, extras = {}) => {
+  const dir = extras.dir || portrait.toLowerCase();
+  return {
+    name, element,
+    scale: extras.scale ?? SPRITE_DEF.scale,
+    tx:    extras.tx    ?? SPRITE_DEF.tx,
+    ty:    extras.ty    ?? SPRITE_DEF.ty,
+    skelUrl:  `portraits/${dir}/Portraits_${portrait}.skel`,
+    atlasUrl: `portraits/${dir}/Portraits_${portrait}.atlas`,
+    ...(extras.detail ? { detail: extras.detail } : {}),
+    ...(extras.echo   ? { echo:   extras.echo   } : {}),
+  };
+};
 
 export const SPRITE_SPINE_CHARACTERS = {
-  fuluoluo:        spriteEntry('Phrolova',                     'Havoc',   'Fuluoluo'),
-  kanteleila:      spriteEntry('Cantarella',                    'Havoc',   'Kanteleila'),
-  luokeke:         spriteEntry('Roccia',                        'Havoc',   'Luokeke'),
-  rover_havoc_m:   spriteEntry('Rover: Havoc (Male)',           'Havoc',   'Male',   'rover_male'),
-  rover_havoc_f:   spriteEntry('Rover: Havoc (Female)',         'Havoc',   'Female', 'rover_female'),
-  chun:            spriteEntry('Camellya',                      'Havoc',   'Chun'),
-  danjin:          spriteEntry('Danjin',                        'Havoc',   'Danjin'),
-  taoqi:           spriteEntry('Taoqi',                         'Havoc',   'Taoqi'),
-  luhesi:          spriteEntry('Luuk Herssen',                  'Spectro', 'Luhesi'),
-  linnai:          spriteEntry('Lynae',                         'Spectro', 'Linnai'),
-  qianxiao:        spriteEntry('Chisa',                         'Spectro', 'Qianxiao'),
-  zanni:           spriteEntry('Zani',                          'Electro', 'Zanni'),
-  feibi:           spriteEntry('Phoebe',                        'Spectro', 'Feibi'),
-  shouanren:       spriteEntry('Shorekeeper',                   'Spectro', 'Shouanren'),
-  dengdeng:        spriteEntry('Lumi',                          'Glacio',  'Dengdeng'),
-  weilinai:        spriteEntry('Verina',                        'Spectro', 'Weilinai'),
-  rover_spectro_f: spriteEntry('Rover: Spectro (Female)',       'Spectro', 'Female', 'rover_female'),
-  rover_spectro_m: spriteEntry('Rover: Spectro (Male)',         'Spectro', 'Male',   'rover_male'),
-  xigelika:        spriteEntry('Sigrika',                       'Aero',    'Xigelika'),
-  qiuyuan:         spriteEntry('Qiuyuan',                       'Aero',    'Qiuyuan'),
-  younuo:          spriteEntry('Iuno',                          'Aero',    'Younuo'),
-  katixiya:        spriteEntry('Cartethyia',                    'Aero',    'Katixiya'),
-  rover_aero_f:    spriteEntry('Rover: Aero (Female)',          'Aero',    'Female', 'rover_female'),
-  xiakong:         spriteEntry('Ciaccona',                      'Aero',    'Xiakong'),
-  rover_aero_m:    spriteEntry('Rover: Aero (Male)',            'Aero',    'Male',   'rover_male'),
-  jianxin:         spriteEntry('Jianxin',                       'Aero',    'Jianxin'),
-  jiyan:           spriteEntry('Jiyan',                         'Aero',    'Jiyan'),
-  qiushui:         spriteEntry('Aalto',                         'Aero',    'Qiushui'),
-  yangyang:        spriteEntry('Yangyang',                      'Aero',    'Yangyang'),
-  buling:          spriteEntry('Buling',                        'Havoc',   'Buling'),
-  aogusita:        spriteEntry('Augusta',                       'Electro', 'Aogusita'),
-  xiangliyao:      spriteEntry('Xiangli Yao',                   'Electro', 'Xiangliyao'),
-  jinxi:           spriteEntry('Jinhsi',                        'Spectro', 'Jinxi'),
-  yuanwu:          spriteEntry('Yuanwu',                        'Electro', 'Yuanwu'),
-  yinlin:          spriteEntry('Yinlin',                        'Electro', 'Yinlin'),
-  kakaluo:         spriteEntry('Calcharo',                      'Electro', 'Kakaluo'),
+  // Per-surface tuning promoted from live adjustments on device:
+  //   top-level scale/tx/ty  → Collection grid card
+  //   detail: { ... }         → CharacterDetailModal header
+  fuluoluo:        spriteEntry('Phrolova',         'Havoc',   'Fuluoluo',
+                      { scale: 2.4, tx: -1,   ty: 23,
+                        detail: { scale: 3.1,  tx: 5,    ty: 32.5 } }),
+  kanteleila:      spriteEntry('Cantarella',       'Havoc',   'Kanteleila'),
+  luokeke:         spriteEntry('Roccia',           'Havoc',   'Luokeke',
+                      { tx: -4, ty: 15,
+                        detail: { scale: 2.5,  tx: 6,    ty: 20 } }),
+  rover_havoc_m:   spriteEntry('Rover: Havoc (Male)',   'Havoc', 'Male',   { dir: 'rover_male' }),
+  rover_havoc_f:   spriteEntry('Rover: Havoc (Female)', 'Havoc', 'Female', { dir: 'rover_female' }),
+  chun:            spriteEntry('Camellya',         'Havoc',   'Chun',
+                      { scale: 2.5,  tx: -2,  ty: 22.5,
+                        detail: { scale: 2.95, tx: 4,    ty: 29.5 } }),
+  danjin:          spriteEntry('Danjin',           'Havoc',   'Danjin',
+                      { tx: 1, ty: 21,
+                        detail: { scale: 2.55, tx: 8,    ty: 28 } }),
+  taoqi:           spriteEntry('Taoqi',            'Havoc',   'Taoqi',
+                      { scale: 2.15, tx: -1.5, ty: 20,
+                        detail: { scale: 2.5,  tx: 7,    ty: 29 } }),
+  luhesi:          spriteEntry('Luuk Herssen',     'Spectro', 'Luhesi',
+                      { scale: 2.95, tx: 0.5,  ty: 27.5,
+                        detail: { scale: 3.55, tx: 5,    ty: 32.5 } }),
+  linnai:          spriteEntry('Lynae',            'Spectro', 'Linnai'),
+  qianxiao:        spriteEntry('Chisa',            'Spectro', 'Qianxiao',
+                      { scale: 2.7,  tx: 3,    ty: 21.5,
+                        detail: { scale: 2.9,  tx: 7,    ty: 31 } }),
+  zanni:           spriteEntry('Zani',             'Spectro', 'Zanni'),
+  feibi:           spriteEntry('Phoebe',           'Spectro', 'Feibi',
+                      { tx: -11, ty: 21.5,
+                        detail: { scale: 2.55, tx: 3.5,  ty: 28.5 } }),
+  shouanren:       spriteEntry('Shorekeeper',      'Spectro', 'Shouanren',
+                      { scale: 2.5,  tx: -10,  ty: 17.5,
+                        detail: { scale: 2.9,  tx: 1.5,  ty: 24.5 } }),
+  dengdeng:        spriteEntry('Lumi',             'Glacio',  'Dengdeng',
+                      { ty: 21.5,
+                        detail: { scale: 3.15, tx: 4,    ty: 30.5 } }),
+  weilinai:        spriteEntry('Verina',           'Spectro', 'Weilinai',
+                      { scale: 1.85, tx: 1,    ty: 17,
+                        detail: { scale: 2.3,  tx: 8.5,  ty: 25 } }),
+  rover_spectro_f: spriteEntry('Rover: Spectro (Female)', 'Spectro', 'Female', { dir: 'rover_female' }),
+  rover_spectro_m: spriteEntry('Rover: Spectro (Male)',   'Spectro', 'Male',   { dir: 'rover_male' }),
+  xigelika:        spriteEntry('Sigrika',          'Aero',    'Xigelika',
+                      { ty: 22,
+                        detail: { scale: 2.7,  tx: 5,    ty: 28.5 } }),
+  qiuyuan:         spriteEntry('Qiuyuan',          'Aero',    'Qiuyuan',
+                      { scale: 2.85, tx: 7,    ty: 23.5,
+                        detail: { scale: 3.25, tx: 7,    ty: 28.5 } }),
+  younuo:          spriteEntry('Iuno',             'Aero',    'Younuo'),
+  katixiya:        spriteEntry('Cartethyia',       'Aero',    'Katixiya',
+                      { scale: 2.4,  tx: 3.5,  ty: 24.5,
+                        detail: { scale: 2.55, tx: 6,    ty: 30 } }),
+  rover_aero_f:    spriteEntry('Rover: Aero (Female)',    'Aero', 'Female', { dir: 'rover_female' }),
+  xiakong:         spriteEntry('Ciaccona',         'Aero',    'Xiakong'),
+  rover_aero_m:    spriteEntry('Rover: Aero (Male)',      'Aero', 'Male',   { dir: 'rover_male' }),
+  jianxin:         spriteEntry('Jianxin',          'Aero',    'Jianxin',
+                      { ty: 16.5,
+                        detail: { scale: 2.65, tx: 6.5,  ty: 22.5 } }),
+  jiyan:           spriteEntry('Jiyan',            'Aero',    'Jiyan',
+                      { scale: 3.7,  tx: -2.5, ty: 21.5,
+                        detail: { scale: 2.85, tx: 6,    ty: 29 } }),
+  qiushui:         spriteEntry('Aalto',            'Aero',    'Qiushui',
+                      { scale: 2.6,  ty: 18.5,
+                        detail: { scale: 3.2,  tx: 3,    ty: 24.5 } }),
+  yangyang:        spriteEntry('Yangyang',         'Aero',    'Yangyang',
+                      { scale: 2.1,  tx: 3.5,  ty: 20,
+                        detail: { scale: 2.55, tx: 7,    ty: 28 } }),
+  buling:          spriteEntry('Buling',           'Havoc',   'Buling',
+                      { scale: 2.3,  ty: 22.5,
+                        detail: { scale: 2.35, tx: 7.5,  ty: 28 } }),
+  aogusita:        spriteEntry('Augusta',          'Electro', 'Aogusita'),
+  xiangliyao:      spriteEntry('Xiangli Yao',      'Electro', 'Xiangliyao'),
+  jinxi:           spriteEntry('Jinhsi',           'Spectro', 'Jinxi',
+                      { ty: 23.5,
+                        detail: { scale: 2.8,  tx: 6,    ty: 30.5 } }),
+  yuanwu:          spriteEntry('Yuanwu',           'Electro', 'Yuanwu',
+                      { scale: 2.5,  tx: -7.5, ty: 23,
+                        detail: { scale: 2.7,  tx: 4.5,  ty: 28 } }),
+  yinlin:          spriteEntry('Yinlin',           'Electro', 'Yinlin',
+                      { scale: 2.55, tx: -0.5, ty: 22.5,
+                        detail: { scale: 2.75, tx: 7,    ty: 28.5 } }),
+  kakaluo:         spriteEntry('Calcharo',         'Electro', 'Kakaluo',
+                      { scale: 4.85, tx: -16,  ty: 13.5,
+                        detail: { scale: 2.75, tx: -3.5, ty: 29.5 } }),
   // Daniya's webp is stored on nanoka's CDN as Portraits_DaNiYa.webp (mixed
   // case); the atlas references it verbatim and Spine resolves it relative to
   // atlasUrl, so we preserve the exact casing on disk.
-  daniya:          spriteEntry('Denia',                         'Electro', 'Daniya'),
-  aimisi:          spriteEntry('Aemeath',                       'Electro', 'Aimisi'),
-  moning:          spriteEntry('Mornye',                        'Havoc',   'Moning'),
-  jiabeilina:      spriteEntry('Galbrena',                      'Fusion',  'Jiabeilina'),
-  lupa:            spriteEntry('Lupa',                          'Fusion',  'Lupa'),
-  bulante:         spriteEntry('Brant',                         'Fusion',  'Bulante'),
-  changli:         spriteEntry('Changli',                       'Fusion',  'Changli'),
-  motefei:         spriteEntry('Mortefi',                       'Fusion',  'Motefei'),
-  anke:            spriteEntry('Encore',                        'Fusion',  'Anke'),
-  feixue:          spriteEntry('Hiyuki',                        'Glacio',  'Feixue'),
-  kelaita:         spriteEntry('Carlotta',                      'Fusion',  'Kelaita'),
-  youhu:           spriteEntry('Youhu',                         'Glacio',  'Youhu'),
-  zhezhi:          spriteEntry('Zhezhi',                        'Glacio',  'Zhezhi'),
-  lingyang:        spriteEntry('Lingyang',                      'Glacio',  'Lingyang'),
-  baizhi:          spriteEntry('Baizhi',                        'Glacio',  'Baizhi'),
-  sanhua:          spriteEntry('Sanhua',                        'Glacio',  'Sanhua'),
+  daniya:          spriteEntry('Denia',            'Electro', 'Daniya'),
+  aimisi:          spriteEntry('Aemeath',          'Electro', 'Aimisi',
+                      { scale: 2.4,  tx: 10,   ty: 22,
+                        detail: { scale: 2.6,  tx: 7.5,  ty: 28.5 } }),
+  moning:          spriteEntry('Mornye',           'Havoc',   'Moning',
+                      { scale: 2.25, tx: -3,   ty: 19,
+                        detail: { scale: 2.55, tx: 6,    ty: 24 } }),
+  jiabeilina:      spriteEntry('Galbrena',         'Fusion',  'Jiabeilina',
+                      { scale: 2.7,  tx: -11.5, ty: 19,
+                        detail: { scale: 3.3,  tx: 0.5,  ty: 25.5 } }),
+  lupa:            spriteEntry('Lupa',             'Fusion',  'Lupa',
+                      { scale: 2.75, tx: -2,   ty: 11,
+                        detail: { scale: 2.9,  tx: 3.5,  ty: 19 } }),
+  bulante:         spriteEntry('Brant',            'Fusion',  'Bulante',
+                      { scale: 2.75, tx: 5.5,  ty: 20.5,
+                        detail: { scale: 2.8,  tx: 9,    ty: 25 } }),
+  changli:         spriteEntry('Changli',          'Fusion',  'Changli',
+                      { tx: -7.5, ty: 22.5,
+                        detail: { scale: 2.75, tx: 4.5,  ty: 30 } }),
+  motefei:         spriteEntry('Mortefi',          'Fusion',  'Motefei',
+                      { scale: 2.6,  tx: -1,   ty: 23.5,
+                        detail: { scale: 3.2,  tx: 4.5,  ty: 31 } }),
+  anke:            spriteEntry('Encore',           'Fusion',  'Anke',
+                      { scale: 1.8,  tx: 2,    ty: 18,
+                        detail: { scale: 2.1,  tx: 11,   ty: 24.5 } }),
+  feixue:          spriteEntry('Hiyuki',           'Glacio',  'Feixue'),
+  kelaita:         spriteEntry('Carlotta',         'Fusion',  'Kelaita',
+                      { scale: 2.2,  tx: -5,   ty: 23,
+                        detail: { scale: 2.35, tx: 6,    ty: 28.5 } }),
+  youhu:           spriteEntry('Youhu',            'Glacio',  'Youhu',
+                      { scale: 2.1,  tx: 4,    ty: 21.5,
+                        detail: { scale: 2.45, tx: 8,    ty: 26 } }),
+  zhezhi:          spriteEntry('Zhezhi',           'Glacio',  'Zhezhi',
+                      { scale: 2.75, tx: 2.5,  ty: 10.5,
+                        detail: { scale: 3.35, tx: 6.5,  ty: 19 } }),
+  lingyang:        spriteEntry('Lingyang',         'Glacio',  'Lingyang',
+                      { scale: 1.8,  tx: -3,   ty: 16,
+                        detail: { scale: 2,    tx: 7.5,  ty: 25.5 } }),
+  baizhi:          spriteEntry('Baizhi',           'Glacio',  'Baizhi',
+                      { tx: 1.5, ty: 21.5,
+                        detail: { scale: 2.9,  tx: 7,    ty: 31 } }),
+  sanhua:          spriteEntry('Sanhua',           'Glacio',  'Sanhua',
+                      { scale: 2.4,  tx: -8,   ty: 21,
+                        detail: { scale: 2.65, tx: 4,    ty: 30 } }),
 };
 
 // Merged view for lookup by surface-prefixed id. Keys collide between the two
@@ -244,9 +333,14 @@ function SpinePlayerComponent({
   const tuningKey = context && context !== 'card' ? `${characterId}#${context}` : characterId;
   const [tuning] = useSpineTuning(tuningKey);
   const isDefaultContext = !context || context === 'card';
-  const defScale = isDefaultContext ? (charData.scale ?? 1) : 1;
-  const defTx = isDefaultContext ? (charData.tx ?? 0) : 0;
-  const defTy = isDefaultContext ? (charData.ty ?? 0) : 0;
+  // Per-context defaults live in sub-objects on the registry entry
+  // (`charData.detail`, `charData.echo`). Fall back to 1 / 0 / 0 when a
+  // surface hasn't been tuned yet — the admin panel's sliders start neutral
+  // and the user can promote from there.
+  const ctxDefaults = isDefaultContext ? charData : (charData[context] || {});
+  const defScale = ctxDefaults.scale ?? 1;
+  const defTx = ctxDefaults.tx ?? 0;
+  const defTy = ctxDefaults.ty ?? 0;
   // Resolution order: explicit *Override prop > live tuning (mini panel) > registry default.
   const scale = scaleOverride !== undefined ? scaleOverride : (tuning.scale ?? defScale);
   const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? defTx);

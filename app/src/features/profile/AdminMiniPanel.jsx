@@ -59,12 +59,13 @@ function SpineTuningSection() {
   const [unfrozen, toggleUnfrozen] = useSpineUnfrozen(selected);
   if (!selected) return null;
   const def = SPINE_CHARACTERS[selected] || {};
-  // Card context picks up the registry defaults for scale/tx/ty; every other
-  // context starts neutral (1 / 0 / 0) so the sliders reflect "no override".
-  const isCard = context === 'card';
-  const defScale = isCard ? (def.scale ?? 1) : 1;
-  const defTx = isCard ? (def.tx ?? 0) : 0;
-  const defTy = isCard ? (def.ty ?? 0) : 0;
+  // Card context reads the top-level scale/tx/ty off the registry entry;
+  // other contexts read the matching sub-object (def.detail, def.echo) so
+  // the sliders start at whatever was promoted as the per-surface default.
+  const ctxDef = context === 'card' ? def : (def[context] || {});
+  const defScale = ctxDef.scale ?? 1;
+  const defTx = ctxDef.tx ?? 0;
+  const defTy = ctxDef.ty ?? 0;
   const scale = tuning.scale ?? defScale;
   const tx = tuning.tx ?? defTx;
   const ty = tuning.ty ?? defTy;
