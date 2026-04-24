@@ -84,6 +84,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" style={{ opacity: 0.8 }}>
                   <SpinePlayer
                     characterId={spineId}
+                    context="detail"
                     className="w-full h-full"
                     backgroundColor="#00000000"
                     fallbackImgUrl={imageUrl}

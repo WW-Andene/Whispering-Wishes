@@ -153,6 +153,7 @@ function SpinePlayerComponent({
   tyOverride,
   fallbackImgUrl = null,
   fallbackImgStyle = null,
+  context = 'card',
 }) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
@@ -235,11 +236,21 @@ function SpinePlayerComponent({
   }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, spine41Ready, unfrozen]);
 
   const charData = SPINE_CHARACTERS[characterId] || {};
-  // Resolution order: explicit *Override prop > live tuning (mini panel) > SPINE_CHARACTERS default.
-  const [tuning] = useSpineTuning(characterId);
-  const scale = scaleOverride !== undefined ? scaleOverride : (tuning.scale ?? charData.scale ?? 1);
-  const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? charData.tx ?? 0);
-  const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? charData.ty ?? 0);
+  // Tuning is stored per (characterId, context) pair so the grid card, the
+  // detail-modal header, and the echo "Recommended For" icon can each have
+  // independent scale/tx/ty. The `card` context is the backwards-compatible
+  // default — it inherits the numeric fields off the SPINE_CHARACTERS entry
+  // so existing Phrolova tuning promoted into the registry still applies.
+  const tuningKey = context && context !== 'card' ? `${characterId}#${context}` : characterId;
+  const [tuning] = useSpineTuning(tuningKey);
+  const isDefaultContext = !context || context === 'card';
+  const defScale = isDefaultContext ? (charData.scale ?? 1) : 1;
+  const defTx = isDefaultContext ? (charData.tx ?? 0) : 0;
+  const defTy = isDefaultContext ? (charData.ty ?? 0) : 0;
+  // Resolution order: explicit *Override prop > live tuning (mini panel) > registry default.
+  const scale = scaleOverride !== undefined ? scaleOverride : (tuning.scale ?? defScale);
+  const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? defTx);
+  const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? defTy);
 
   // Frozen (default) or failed to load — render the static portrait if one
   // was supplied. No WebGL context is created in this branch, so 50 frozen

@@ -3,26 +3,71 @@
 // and compact visual settings sliders
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ClipboardList, Settings, X } from 'lucide-react';
 import { APP_VERSION } from '../../data/constants.js';
+import { CHARACTER_DATA, RELEASE_ORDER } from '../../data/characters.js';
 import { Card, CardBody } from '../../shared/components/Card.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
 import { useSpineTuning, useSpineUnfrozen, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
 
+// Each tuning slot corresponds to a rendering surface on the app. The tuning
+// key SpinePlayer uses is `${characterId}#${context}` (the `card` context is
+// special-cased to the bare id, so existing promoted registry defaults keep
+// applying). Keep this list in sync with the `context` prop passed at each
+// SpinePlayer call site.
+const SPINE_CONTEXTS = [
+  { value: 'card',   label: 'Card' },    // CollectionGrid
+  { value: 'detail', label: 'Detail' },  // CharacterDetailModal header
+  { value: 'echo',   label: 'Echo' },    // EchoDetailModal "Recommended For"
+];
+
+// Sort sprite entries the way the Collection tab lists them: 5★ then 4★,
+// each group ordered newest-first by RELEASE_ORDER. Banner entries come
+// after all sprite entries. Ids not in either data source are dropped to
+// the bottom alphabetically so the panel never silently hides them.
+function orderSpineIds(ids) {
+  const releaseRank = new Map(RELEASE_ORDER.map((name, idx) => [name, idx]));
+  return [...ids].sort((a, b) => {
+    const ea = SPINE_CHARACTERS[a];
+    const eb = SPINE_CHARACTERS[b];
+    // Surface: sprite (collection) first, banner second.
+    if (ea.surface !== eb.surface) return ea.surface === 'collection' ? -1 : 1;
+    // Rarity: 5★ above 4★.
+    const ra = CHARACTER_DATA[ea.name]?.rarity ?? 0;
+    const rb = CHARACTER_DATA[eb.name]?.rarity ?? 0;
+    if (ra !== rb) return rb - ra;
+    // Release order: newer first (higher index).
+    const ia = releaseRank.has(ea.name) ? releaseRank.get(ea.name) : -1;
+    const ib = releaseRank.has(eb.name) ? releaseRank.get(eb.name) : -1;
+    if (ia !== ib) return ib - ia;
+    return ea.name.localeCompare(eb.name);
+  });
+}
+
 function SpineTuningSection() {
-  const ids = Object.keys(SPINE_CHARACTERS);
+  const ids = useMemo(() => orderSpineIds(Object.keys(SPINE_CHARACTERS)), []);
   const [selected, setSelected] = useState(ids[0] || '');
-  const [tuning, set, reset] = useSpineTuning(selected);
+  const [context, setContext] = useState('card');
+  const tuningKey = context === 'card' ? selected : `${selected}#${context}`;
+  const [tuning, set, reset] = useSpineTuning(tuningKey);
+  // Unfreeze is per-character (not per-context): a character either animates
+  // everywhere or nowhere. Context only segregates the tuning transform.
   const [unfrozen, toggleUnfrozen] = useSpineUnfrozen(selected);
   if (!selected) return null;
   const def = SPINE_CHARACTERS[selected] || {};
-  const scale = tuning.scale ?? def.scale ?? 1;
-  const tx = tuning.tx ?? def.tx ?? 0;
-  const ty = tuning.ty ?? def.ty ?? 0;
+  // Card context picks up the registry defaults for scale/tx/ty; every other
+  // context starts neutral (1 / 0 / 0) so the sliders reflect "no override".
+  const isCard = context === 'card';
+  const defScale = isCard ? (def.scale ?? 1) : 1;
+  const defTx = isCard ? (def.tx ?? 0) : 0;
+  const defTy = isCard ? (def.ty ?? 0) : 0;
+  const scale = tuning.scale ?? defScale;
+  const tx = tuning.tx ?? defTx;
+  const ty = tuning.ty ?? defTy;
   const row = (label, value, step, min, max, key) => (
     <div className="flex items-center gap-2">
       <span className="text-2xs text-gray-400 w-8">{label}</span>
@@ -59,12 +104,31 @@ function SpineTuningSection() {
         onChange={(e) => setSelected(e.target.value)}
         className="w-full px-2 py-1 bg-black/40 border border-[var(--border-medium)] rounded text-xs text-white"
       >
-        {ids.map((id) => (
-          <option key={id} value={id}>
-            {SPINE_CHARACTERS[id].name} ({SPINE_CHARACTERS[id].surface || '?'})
-          </option>
-        ))}
+        {ids.map((id) => {
+          const entry = SPINE_CHARACTERS[id];
+          const rarity = CHARACTER_DATA[entry.name]?.rarity;
+          return (
+            <option key={id} value={id}>
+              {rarity ? `${rarity}★ ` : ''}{entry.name} ({entry.surface || '?'})
+            </option>
+          );
+        })}
       </select>
+      <div className="flex gap-1">
+        {SPINE_CONTEXTS.map((c) => (
+          <button
+            key={c.value}
+            onClick={() => setContext(c.value)}
+            className={`flex-1 py-0.5 rounded text-2xs border transition-colors ${
+              context === c.value
+                ? 'bg-pink-500/30 text-pink-200 border-pink-500/50'
+                : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'
+            }`}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
       {row('scale', scale, 0.05, 0.2, 6, 'scale')}
       {row('tx', tx, 0.5, -50, 50, 'tx')}
       {row('ty', ty, 0.5, -50, 50, 'ty')}
@@ -72,8 +136,9 @@ function SpineTuningSection() {
         <button
           onClick={reset}
           className="flex-1 py-1 rounded text-2xs bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+          title={`Clear ${context} tuning overrides for ${SPINE_CHARACTERS[selected].name}`}
         >
-          Reset {SPINE_CHARACTERS[selected].name}
+          Reset {SPINE_CHARACTERS[selected].name} ({context})
         </button>
         <button
           onClick={() => {

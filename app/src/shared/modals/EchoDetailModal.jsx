@@ -264,6 +264,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
                           {charSpineId ? (
                             <SpinePlayer
                               characterId={charSpineId}
+                              context="echo"
                               className="w-full h-full"
                               backgroundColor="#00000000"
                               fallbackImgUrl={charImg}
