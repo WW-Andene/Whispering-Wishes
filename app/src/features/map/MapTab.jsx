@@ -2688,10 +2688,17 @@ export default function MapTab({ navPadding = 80 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
+        /* Badge top/bottom padding = 6 px; external gap (label→badge
+           and badge→button-edge) also 6 px so the chip has equal
+           breathing room on all four outside sides. */
+        .map-filters-popover .zone-selector-item {
+          padding-right: 6px;
+        }
         .map-filters-popover .zone-selector-item .zone-selector-name {
-          padding-right: var(--space-sm, 8px);
+          padding-right: 2px;
         }
         .map-filters-popover .kuro-badge {
+          padding: 6px var(--space-sm, 8px);
           font-variant-numeric: tabular-nums;
         }
 
