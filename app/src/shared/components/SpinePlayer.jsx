@@ -29,7 +29,7 @@ export const SPINE_CHARACTERS = {
   changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0,   ty: 2.5, surfaces: ['banner'] },
   chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 2,   ty: 2.5, surfaces: ['banner'] },
   // --- Sprite spine: binary .skel sourced from nanoka.cc, assets under /portraits/ ---
-  fuluoluo:    { name: 'Phrolova',     element: 'Havoc',   scale: 2.3, tx: 2,   ty: 2.5,
+  fuluoluo:    { name: 'Phrolova',     element: 'Havoc',   scale: 2.3, tx: -3,  ty: 27.5,
                  skelUrl:  'portraits/fuluoluo/Portraits_Fuluoluo.skel',
                  atlasUrl: 'portraits/fuluoluo/Portraits_Fuluoluo.atlas',
                  surfaces: ['collection'] },
