@@ -2688,32 +2688,11 @@ export default function MapTab({ navPadding = 80 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
-        /* Count badge on each filter row. Canonical .kuro-badge is
-           too cramped here (10 px text, 2×8 padding, 1.4 line-height
-           → digits crash into the border on narrow pills). Overrides
-           bump font-size + weight for legibility, force a ≥1:1
-           aspect ratio via min-width == min-height so one digit
-           renders as a real square and 2-3 digits grow into a
-           proportional pill; padding is 4 × 10 so text never touches
-           the border. Tabular-nums keeps 3 / 43 / 143 the same
-           optical column width. !important is scoped to this popover
-           only — it beats the canonical .kuro-badge + .kuro-btn-sm
-           cascade without hunting their specificity. */
         .map-filters-popover .kuro-badge {
-          min-width: 28px !important;
-          min-height: 28px !important;
-          height: auto !important;
-          padding: 4px 10px !important;
-          font-size: 12px !important;
-          font-weight: 600 !important;
-          line-height: 1 !important;
-          border-radius: 6px !important;
-          display: inline-flex !important;
-          justify-content: center !important;
-          align-items: center !important;
-          box-sizing: border-box !important;
-          font-variant-numeric: tabular-nums !important;
-          gap: 0 !important;
+          padding: var(--space-xs, 4px) var(--space-sm, 8px);
+          min-width: 22px;
+          justify-content: center;
+          font-variant-numeric: tabular-nums;
         }
 
         /* ── Map-icon editor row (admin-only, in author panel) ────────── */
