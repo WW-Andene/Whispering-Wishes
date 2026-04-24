@@ -1064,6 +1064,7 @@ export default React.memo(ProfileTab, (prev, next) =>
   prev.overallStats === next.overallStats && prev.trophies === next.trophies &&
   prev.collectionImages === next.collectionImages && prev.activeBanners === next.activeBanners &&
   prev.showAdminPanel === next.showAdminPanel && prev.adminMiniMode === next.adminMiniMode &&
+  prev.adminUnlocked === next.adminUnlocked &&
   prev.bgFramingMode === next.bgFramingMode && prev.editingBgTarget === next.editingBgTarget &&
   prev.detailModal === next.detailModal &&
   prev.luckRating === next.luckRating && prev.ownedCharNames === next.ownedCharNames &&
