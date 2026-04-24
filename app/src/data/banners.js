@@ -586,6 +586,7 @@ const CHARACTER_THEMES = [
 // VERSION SPLASH SCREENS — Official game version key art
 // ═══════════════════════════════════════════════════════════════════════════════
 const VERSION_SPLASH_SCREENS = [
+  { id: 'v3.3', version: '3.3', name: 'Reverbs From The End of Galaxies',  art: 'https://i.ibb.co/KByqz7F/Reverbs-From-The-End-of-Galaxies.jpg',                                 pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'v3.2', version: '3.2', name: 'Resolution to Illuminate the Shadows', art: 'https://i.ibb.co/7J4nf7jT/3-2-Resolution-to-Illuminate-the-Shadows.webp',                        pos: { header: '50% 26%', nav: '50% 22%', bg: '52% 50%' } },
   { id: 'v3.1', version: '3.1', name: 'For You Who Walk in Snow',              art: 'https://i.ibb.co/QvxjFT7f/3-1-For-You-Who-Walk-in-Snow.webp',                                     pos: { header: '50% 22%', nav: '50% 23%', bg: '50% 50%' } },
   { id: 'v3.0', version: '3.0', name: 'We Who See The Stars',                  art: 'https://i.ibb.co/wZ1YLZL3/3-0-We-Who-See-The-Stars.webp',                                         pos: { header: '50% 25%', nav: '50% 21%', bg: '24% 50%' } },
