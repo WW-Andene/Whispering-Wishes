@@ -20,12 +20,14 @@ export const SPINE_CHARACTERS = {
   xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 1.5, ty: 2.5 },
   changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0,   ty: 2.5 },
   chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 2,   ty: 2.5 },
-  // Binary .skel portrait sourced from nanoka.cc's Wuthering Waves asset set.
-  // collectionOnly: the sprite replaces the static Full-Sprite.webp in the
-  // Collection grid but does NOT overlay the tracker BannerCard.
+  // Binary .skel sprite sourced from nanoka.cc. This is sprite spine (a
+  // character portrait swapping the static Full-Sprite.webp in the Collection
+  // grid), NOT banner spine — so assets live under /portraits/ instead of
+  // /spine/role_*/. collectionOnly keeps BannerCard falling back to the
+  // static banner art.
   fuluoluo:    { name: 'Phrolova',     element: 'Havoc',   scale: 2.3, tx: 2,   ty: 2.5,
-                 skelUrl:  'spine/role_fuluoluo/Portraits_Fuluoluo.skel',
-                 atlasUrl: 'spine/role_fuluoluo/Portraits_Fuluoluo.atlas',
+                 skelUrl:  'portraits/fuluoluo/Portraits_Fuluoluo.skel',
+                 atlasUrl: 'portraits/fuluoluo/Portraits_Fuluoluo.atlas',
                  collectionOnly: true },
 };
 
