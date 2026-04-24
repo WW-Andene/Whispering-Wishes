@@ -869,6 +869,23 @@ function WhisperingWishesInner() {
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
+  // Animated-background <video> ref for imperatively syncing muted state —
+  // React's `muted` prop alone can leave the property out of sync on some
+  // browsers when toggled mid-playback. Effect below handles that + retries
+  // play() when unmuting (browser may gate unmuted playback on user gesture).
+  const animatedBgVideoRef = useRef(null);
+  useEffect(() => {
+    const v = animatedBgVideoRef.current;
+    if (!v || appBgType !== 'animated') return;
+    const want = !visualSettings.animatedBgAudio;
+    v.muted = want;
+    v.volume = 1;
+    const p = v.play?.();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => { v.muted = true; v.play?.().catch(() => {}); });
+    }
+  }, [visualSettings.animatedBgAudio, appBgType, appBgUrl]);
+
   // ── CloudStorageProvider callbacks ──────────────────────────────────────
   const getBackupPayload = useCallback(() => {
     const s = stateRef.current;
@@ -937,6 +954,7 @@ function WhisperingWishesInner() {
         <div className={`fixed inset-0 ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
+              ref={animatedBgVideoRef}
               src={appBgUrl}
               autoPlay
               loop
@@ -944,15 +962,6 @@ function WhisperingWishesInner() {
               playsInline
               className="w-full h-full object-cover"
               style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
-              onCanPlay={(e) => {
-                // Browsers block unmuted autoplay without a prior user gesture.
-                // If play() rejects, fall back to muted so the loop still runs.
-                const v = e.currentTarget;
-                const p = v.play?.();
-                if (p && typeof p.catch === 'function') {
-                  p.catch(() => { v.muted = true; v.play?.().catch(() => {}); });
-                }
-              }}
             />
           ) : (
             <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
