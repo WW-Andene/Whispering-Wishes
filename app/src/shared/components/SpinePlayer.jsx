@@ -20,6 +20,10 @@ export const SPINE_CHARACTERS = {
   xiangliyao:  { name: 'Xiangli Yao',  element: 'Electro', scale: 2.3, tx: 1.5, ty: 2.5 },
   changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0,   ty: 2.5 },
   chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 2,   ty: 2.5 },
+  // Binary .skel portrait sourced from nanoka.cc's Wuthering Waves asset set.
+  fuluoluo:    { name: 'Phrolova',     element: 'Havoc',   scale: 2.3, tx: 2,   ty: 2.5,
+                 skelUrl:  'spine/role_fuluoluo/Portraits_Fuluoluo.skel',
+                 atlasUrl: 'spine/role_fuluoluo/Portraits_Fuluoluo.atlas' },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
@@ -66,11 +70,13 @@ function SpinePlayerComponent({
 
     const basePath = `spine/role_${characterId}`;
     const prefix = `c_${characterId}_1`;
+    const assetUrls = charData.skelUrl
+      ? { skelUrl: charData.skelUrl, atlasUrl: charData.atlasUrl }
+      : { jsonUrl: `${basePath}/${prefix}.json`, atlasUrl: `${basePath}/${prefix}.atlas` };
 
     try {
       playerRef.current = new window.spine.SpinePlayer(containerRef.current, {
-        jsonUrl: `${basePath}/${prefix}.json`,
-        atlasUrl: `${basePath}/${prefix}.atlas`,
+        ...assetUrls,
         animation,
         loop,
         showControls,
