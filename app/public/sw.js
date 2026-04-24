@@ -75,9 +75,9 @@ async function cacheFirst(request, cacheName) {
   if (cached) return cached;
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && response.status !== 206 && request.method === 'GET') {
       const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
+      cache.put(request, response.clone()).catch(() => {});
     }
     return response;
   } catch {
@@ -91,8 +91,8 @@ async function staleWhileRevalidate(request, cacheName) {
   const cached = await cache.match(request);
 
   const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone());
+    if (response.ok && response.status !== 206 && request.method === 'GET') {
+      cache.put(request, response.clone()).catch(() => {});
       trimCache(cacheName, MAX_IMG_ENTRIES);
     }
     return response;
@@ -108,9 +108,11 @@ async function staleWhileRevalidate(request, cacheName) {
 async function networkFirst(request, cacheName) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    // Cache API rejects Partial (206) responses. Skip caching range
+    // requests (videos, large media streamed in chunks).
+    if (response.ok && response.status !== 206 && request.method === 'GET') {
       const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
+      cache.put(request, response.clone()).catch(() => {});
     }
     return response;
   } catch {
