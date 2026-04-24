@@ -649,21 +649,36 @@ const OTHER_BACKGROUNDS = [
   { id: 'here-come-the-woolies', name: 'Here Come the Woolies', art: 'https://i.ibb.co/8DMSZm1S/here-come-the-woolies.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
 ];
 
-// Animated (video) backgrounds — hosted on Cloudinary. `art` is the video URL,
-// `poster` is a JPG first-frame used as picker thumbnail and <video poster>.
+// Animated (video) backgrounds — self-hosted under /animated-bg/. `art` is
+// the mp4, `poster` is an extracted first-frame JPG used as picker thumbnail
+// and <video poster>.
 const ANIMATED_BACKGROUNDS = [
   {
-    id: 'bg-video-1',
+    id: 'v3-2',
     name: 'v3.2',
-    art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/bg-video_nvf8y9.mp4',
-    poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/bg-video_nvf8y9.jpg',
+    art: './animated-bg/3.2-animated.mp4',
+    poster: './animated-bg/3.2-animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v3-3',
+    name: 'v3.3',
+    art: './animated-bg/3.3-animated.mp4',
+    poster: './animated-bg/3.3-animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: '2nd-anniversary',
+    name: '2nd Anniversary',
+    art: './animated-bg/2nd-anniversary-animated.mp4',
+    poster: './animated-bg/2nd-anniversary-animated.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
     id: 'startorch-academy',
     name: 'Startorch Academy',
-    art: 'https://res.cloudinary.com/dyzz8edpf/video/upload/wm2id79usopllntxt7-1766736146258_g8ss4o.mp4',
-    poster: 'https://res.cloudinary.com/dyzz8edpf/video/upload/so_0/wm2id79usopllntxt7-1766736146258_g8ss4o.jpg',
+    art: './animated-bg/startorch-academy-animated.mp4',
+    poster: './animated-bg/startorch-academy-animated.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
 ];
