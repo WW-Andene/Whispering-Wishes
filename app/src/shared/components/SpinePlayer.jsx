@@ -21,18 +21,24 @@ export const SPINE_CHARACTERS = {
   changli:     { name: 'Changli',      element: 'Fusion',  scale: 2.3, tx: 0,   ty: 2.5 },
   chun:        { name: 'Chun',         element: 'Glacio',  scale: 2.3, tx: 2,   ty: 2.5 },
   // Binary .skel portrait sourced from nanoka.cc's Wuthering Waves asset set.
+  // collectionOnly: the sprite replaces the static Full-Sprite.webp in the
+  // Collection grid but does NOT overlay the tracker BannerCard.
   fuluoluo:    { name: 'Phrolova',     element: 'Havoc',   scale: 2.3, tx: 2,   ty: 2.5,
                  skelUrl:  'spine/role_fuluoluo/Portraits_Fuluoluo.skel',
-                 atlasUrl: 'spine/role_fuluoluo/Portraits_Fuluoluo.atlas' },
+                 atlasUrl: 'spine/role_fuluoluo/Portraits_Fuluoluo.atlas',
+                 collectionOnly: true },
 };
 
 const NAME_TO_SPINE_ID = Object.fromEntries(
   Object.entries(SPINE_CHARACTERS).map(([id, { name }]) => [name.toLowerCase(), id])
 );
 
-export function getSpineId(displayName) {
+export function getSpineId(displayName, { surface = 'banner' } = {}) {
   if (!displayName) return null;
-  return NAME_TO_SPINE_ID[displayName.toLowerCase()] || null;
+  const id = NAME_TO_SPINE_ID[displayName.toLowerCase()];
+  if (!id) return null;
+  if (surface === 'banner' && SPINE_CHARACTERS[id]?.collectionOnly) return null;
+  return id;
 }
 
 function SpinePlayerComponent({
