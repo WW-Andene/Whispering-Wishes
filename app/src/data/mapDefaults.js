@@ -3,7 +3,7 @@
 // localStorage becomes the source of truth and future seed updates won't
 // overwrite it (they'd need to clear localStorage to re-seed).
 //
-// Exported from the Map editor via "Export config" on 2026-04-23 21:00.
+// Exported from the Map editor via "Export config" on 2026-04-24 00:02.
 
 export const DEFAULT_ZONE_DRAFTS = [
   {
@@ -488,4 +488,54 @@ export const DEFAULT_OVERLAY_DRAFTS = [
     opacity: 1,
     locked: true,
   },
+];
+
+// Resonance Nexus beacons placed per sub-zone — surface in the user-facing
+// Regions tree only via iconFilters. Locked + in-tree so non-admins can't
+// accidentally nudge them; admin unlocks them via the "push back" pen in
+// the draft tree.
+export const DEFAULT_ICON_DRAFTS = [
+  { id: 'icon-moc036yt-3xr',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2960,  y: 7431,  floor: 0,  zoneId: 'desorock-highland',                    label: '', locked: true, inTree: true, scale: 1 },
+  { id: 'icon-moc0v0fs-1g7',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2895,  y: 7583,  floor: 0,  zoneId: 'central-plains',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc0vxps-4jw',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2430,  y: 7668,  floor: 0,  zoneId: 'gorges-of-spirits',                    label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc0wif4-5x4',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2933,  y: 8024,  floor: 0,  zoneId: 'jinzhou',                              label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc0xiuv-3lx',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3411,  y: 7889,  floor: 0,  zoneId: 'central-plains',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc1183b-4vd',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2718,  y: 8654,  floor: 0,  zoneId: 'port-city-of-guixu',                   label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc11p26-27v',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2915,  y: 8460,  floor: 0,  zoneId: 'tiger-s-maw',                          label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc12aie-ci',   kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2749,  y: 9211,  floor: 0,  zoneId: 'dim-forest',                           label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc13kpa-5xi',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3264,  y: 8587,  floor: 0,  zoneId: 'wuming-bay',                           label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc14ool-4zs',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3420,  y: 9117,  floor: 0,  zoneId: 'whining-aix-s-mire',                   label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc158m5-c0',   kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3661,  y: 8928,  floor: 0,  zoneId: 'whining-aix-s-mire',                   label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc1645x-5zv',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 4326,  y: 9126,  floor: 0,  zoneId: 'huanglong-sub-1',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc16dz1-6n8',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 4630,  y: 9311,  floor: 0,  zoneId: 'huanglong-sub-1',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc27jij-2nh',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 7503,  y: 10972, floor: 0,  zoneId: 'ragunna-city',                         label: '', locked: true, inTree: true },
+  { id: 'icon-moc2cg30-2j',   kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 7839,  y: 11028, floor: 0,  zoneId: 'whisperwind-haven',                    label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2db23-6f4',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 7928,  y: 10588, floor: 0,  zoneId: 'whisperwind-haven',                    label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2fbyq-170',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8441,  y: 10418, floor: 0,  zoneId: 'penitent-s-end',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2gpqq-1zf',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8192,  y: 10959, floor: 0,  zoneId: 'hallowed-reach',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2htoy-4d6',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8330,  y: 11134, floor: 0,  zoneId: 'nimbus-sanctum',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2j495-36z',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8321,  y: 11425, floor: 0,  zoneId: 'thessaleo-fell',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2k5i1-3ne',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8763,  y: 11134, floor: 0,  zoneId: 'averardo-vault',                       label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc2lyld-3cz',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8651,  y: 10799, floor: 0,  zoneId: 'fagaceae-peninsula',                   label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc331a5-5lt',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10182, y: 14294, floor: 0,  zoneId: 'rinascita-sub-1',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc36u64-2rc',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10679, y: 14127, floor: 0,  zoneId: 'rinascita-sub-1',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc37rqs-29g',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10601, y: 14531, floor: 0,  zoneId: 'rinascita-sub-1',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc3akrf-7ji',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10614, y: 15436, floor: 0,  zoneId: 'rinascita-sub-2',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc3buv7-65w',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10698, y: 15844, floor: 0,  zoneId: 'rinascita-sub-2',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc3d1mi-3vk',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10329, y: 15932, floor: 0,  zoneId: 'rinascita-sub-2',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc3gn8x-77c',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 10187, y: 15922, floor: 0,  zoneId: 'rinascita-sub-2',                      label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc3mqzj-1xe',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 8865,  y: 11959, floor: 0,  zoneId: 'beohr-waters',                         label: '', locked: true, inTree: true },
+  { id: 'icon-moc3yi04-255',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 4980,  y: 8118,  floor: -4, zoneId: 'overlay-chronorift-metropolis-mobcexa9', label: '', locked: true, inTree: true },
+  { id: 'icon-moc43xrn-1dl',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2576,  y: 3966,  floor: 0,  zoneId: 'roya-frostlands-sub-1',                label: '', locked: true, inTree: true },
+  { id: 'icon-moc4c8mr-78r',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2287,  y: 3493,  floor: 0,  zoneId: 'roya-frostlands-sub-1',                label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4erju-305',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3031,  y: 2540,  floor: 0,  zoneId: 'roya-frostlands-sub-1',                label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4i9eg-137',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2454,  y: 3475,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4kum1-5fw',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3408,  y: 3947,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4m69j-1np',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2765,  y: 3226,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4mw3b-5rc',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2932,  y: 2919,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4o79z-644',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3205,  y: 3212,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4pgun-1o8',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3663,  y: 3234,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4ql5q-433',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3570,  y: 2462,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4qxo6-3zd',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3252,  y: 2541,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4rrm6-1qz',  kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3246,  y: 2947,  floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw',            label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
 ];

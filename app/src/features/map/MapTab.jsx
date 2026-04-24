@@ -3,7 +3,7 @@ import { Settings, Download, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, 
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
-import { DEFAULT_ZONE_DRAFTS } from '../../data/mapDefaults.js';
+import { DEFAULT_ZONE_DRAFTS, DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
 import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog.js';
 import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../providers/tileSW.js';
 
@@ -178,13 +178,13 @@ export default function MapTab({ navPadding = 80 }) {
   //   { id, category, x, y, label? }
   // Persisted to localStorage. Categories drive the filter popover.
   const [iconDrafts, setIconDrafts] = useState(() => {
-    if (typeof localStorage === 'undefined') return [];
+    if (typeof localStorage === 'undefined') return DEFAULT_ICON_DRAFTS;
     try {
       const raw = localStorage.getItem('ww-icon-drafts');
-      if (!raw) return [];
+      if (raw === null) return DEFAULT_ICON_DRAFTS;
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch { return []; }
+      return Array.isArray(parsed) ? parsed : DEFAULT_ICON_DRAFTS;
+    } catch { return DEFAULT_ICON_DRAFTS; }
   });
   const [iconFiltersOff, setIconFiltersOff] = useState(() => {
     // Set of category keys currently hidden. Persisted.
@@ -2688,6 +2688,17 @@ export default function MapTab({ navPadding = 80 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
+        /* Count badge on each filter row. The canonical .kuro-badge (2×8)
+           reads cramped inside a kuro-btn-sm row (28px tall) — bump the
+           padding + min-width so digits breathe and short/long counts
+           share a baseline. Tabular-nums keeps "3" and "43" the same
+           optical width. */
+        .map-filters-popover .kuro-badge {
+          padding: 2px 10px;
+          min-width: 28px;
+          justify-content: center;
+          font-variant-numeric: tabular-nums;
+        }
 
         /* ── Map-icon editor row (admin-only, in author panel) ────────── */
         .icon-row {
