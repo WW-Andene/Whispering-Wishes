@@ -869,19 +869,6 @@ function WhisperingWishesInner() {
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
-  // Animated-background <video> ref + effect. The effect handles new-video
-  // mounts (setting toggled pre-mount) — it won't satisfy Chrome's "unmute
-  // requires user activation" if the toggle is flipped mid-session, so the
-  // profile toggle also calls an imperative unmute inside its click handler.
-  const animatedBgVideoRef = useRef(null);
-  useEffect(() => {
-    const v = animatedBgVideoRef.current;
-    if (!v || appBgType !== 'animated') return;
-    v.muted = !visualSettings.animatedBgAudio;
-    v.volume = 1;
-    v.play?.().catch(() => { v.muted = true; v.play?.().catch(() => {}); });
-  }, [visualSettings.animatedBgAudio, appBgType, appBgUrl]);
-
   // ── CloudStorageProvider callbacks ──────────────────────────────────────
   const getBackupPayload = useCallback(() => {
     const s = stateRef.current;
@@ -950,12 +937,10 @@ function WhisperingWishesInner() {
         <div className={`fixed inset-0 ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
-              ref={animatedBgVideoRef}
-              data-ww-animated-bg="1"
               src={appBgUrl}
               autoPlay
               loop
-              muted={!visualSettings.animatedBgAudio}
+              muted
               playsInline
               className="w-full h-full object-cover"
               style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
