@@ -8,6 +8,7 @@ import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
@@ -35,9 +36,12 @@ function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
 }
 
 // Internal: CollectionGridCard
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter }) => {
+const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter, isFullAnim }) => {
   // Pixel-level background removal for echo images (skip if pre-processed)
   const processedUrl = imgUrl;
+  const [spineFailed, setSpineFailed] = useState(false);
+  const spineId = isCharacter && isFullAnim && !framingMode ? getSpineId(name) : null;
+  const useSpine = !!spineId && owned && !spineFailed;
   const longPressHandlers = useLongPress(
     onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
     () => {
@@ -75,20 +79,30 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
           : isEcho ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
       }}>
-        <img
-          src={processedUrl || imgUrl}
-          alt={name}
-          loading="lazy"
-          className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
-          style={{
-            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-            opacity: owned ? collOpacity : 0.3,
-            filter: owned ? 'none' : 'grayscale(100%)',
-            maskImage: collMask,
-            WebkitMaskImage: collMask
-          }}
-          onError={hideOnError}
-        />
+        {useSpine ? (
+          <SpinePlayer
+            characterId={spineId}
+            className="w-full h-full pointer-events-none"
+            style={{ opacity: collOpacity }}
+            backgroundColor="#00000000"
+            onError={() => setSpineFailed(true)}
+          />
+        ) : (
+          <img
+            src={processedUrl || imgUrl}
+            alt={name}
+            loading="lazy"
+            className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
+            style={{
+              transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+              opacity: owned ? collOpacity : 0.3,
+              filter: owned ? 'none' : 'grayscale(100%)',
+              maskImage: collMask,
+              WebkitMaskImage: collMask
+            }}
+            onError={hideOnError}
+          />
+        )}
       </div>
     ) : (
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
@@ -135,7 +149,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
 CollectionGridCard.displayName = 'CollectionGridCard';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false, isFullAnim = false }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
@@ -182,6 +196,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               noBgProcess={dataType === 'echo' && dataLookup[name]?.noBgProcess}
               onLongPress={onLongPress}
               isCharacter={isCharacter}
+              isFullAnim={isFullAnim}
             />
           );
         })}

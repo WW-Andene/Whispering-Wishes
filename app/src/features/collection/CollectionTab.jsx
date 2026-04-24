@@ -725,6 +725,7 @@ function CollectionTab({
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
+                isFullAnim={visualSettings?.animationsEnabled === 'full'}
                 collapsible
               />
             </CardBody>
@@ -748,6 +749,7 @@ function CollectionTab({
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
+                isFullAnim={visualSettings?.animationsEnabled === 'full'}
                 collapsible
               />
             </CardBody>
