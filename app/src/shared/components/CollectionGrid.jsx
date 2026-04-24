@@ -86,6 +86,13 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
             style={{ opacity: owned ? collOpacity : 0.3, filter: owned ? undefined : 'grayscale(100%)' }}
             backgroundColor="#00000000"
             onError={() => setSpineFailed(true)}
+            lazy
+            fallbackImgUrl={processedUrl || imgUrl}
+            fallbackImgStyle={{
+              transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+              maskImage: collMask,
+              WebkitMaskImage: collMask,
+            }}
           />
         ) : (
           <img
@@ -143,7 +150,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
   prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
-  prev.isProfilePic === next.isProfilePic &&
+  prev.isProfilePic === next.isProfilePic && prev.isFullAnim === next.isFullAnim &&
   prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
 );
 CollectionGridCard.displayName = 'CollectionGridCard';

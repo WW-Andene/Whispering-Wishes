@@ -262,7 +262,14 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
                       {charImg ? (
                         <div className={`w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${owned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
                           {charSpineId ? (
-                            <SpinePlayer characterId={charSpineId} className="w-full h-full" backgroundColor="#00000000" />
+                            <SpinePlayer
+                              characterId={charSpineId}
+                              className="w-full h-full"
+                              backgroundColor="#00000000"
+                              lazy
+                              fallbackImgUrl={charImg}
+                              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'top' }}
+                            />
                           ) : (
                             <div className="absolute inset-0 breath-zoom">
                               <img src={charImg} alt={charName} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} />
