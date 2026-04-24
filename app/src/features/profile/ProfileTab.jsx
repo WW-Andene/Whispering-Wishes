@@ -805,7 +805,22 @@ function ProfileTab({
                             </div>
                           </div>
                           <button
-                            onClick={() => saveVisualSettings({ ...visualSettings, animatedBgAudio: !visualSettings.animatedBgAudio })}
+                            onClick={() => {
+                              const next = !visualSettings.animatedBgAudio;
+                              saveVisualSettings({ ...visualSettings, animatedBgAudio: next });
+                              // Chrome's autoplay policy requires the unmute
+                              // to happen inside a user-activation tick — do
+                              // it here synchronously, not in App's useEffect.
+                              const v = typeof document !== 'undefined' ? document.querySelector('video[data-ww-animated-bg="1"]') : null;
+                              if (v) {
+                                v.muted = !next;
+                                v.volume = 1;
+                                if (next) {
+                                  try { v.currentTime = v.currentTime; } catch (_) {}
+                                  v.play?.().catch(() => { v.muted = true; v.play?.().catch(() => {}); });
+                                }
+                              }
+                            }}
                             className={`relative w-[44px] h-[22px] rounded-full transition-colors ${visualSettings.animatedBgAudio ? 'bg-cyan-500' : ''}`}
                             style={!visualSettings.animatedBgAudio ? { background: 'var(--bg-btn)' } : undefined}
                             role="switch"

@@ -869,21 +869,17 @@ function WhisperingWishesInner() {
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
 
-  // Animated-background <video> ref for imperatively syncing muted state —
-  // React's `muted` prop alone can leave the property out of sync on some
-  // browsers when toggled mid-playback. Effect below handles that + retries
-  // play() when unmuting (browser may gate unmuted playback on user gesture).
+  // Animated-background <video> ref + effect. The effect handles new-video
+  // mounts (setting toggled pre-mount) — it won't satisfy Chrome's "unmute
+  // requires user activation" if the toggle is flipped mid-session, so the
+  // profile toggle also calls an imperative unmute inside its click handler.
   const animatedBgVideoRef = useRef(null);
   useEffect(() => {
     const v = animatedBgVideoRef.current;
     if (!v || appBgType !== 'animated') return;
-    const want = !visualSettings.animatedBgAudio;
-    v.muted = want;
+    v.muted = !visualSettings.animatedBgAudio;
     v.volume = 1;
-    const p = v.play?.();
-    if (p && typeof p.catch === 'function') {
-      p.catch(() => { v.muted = true; v.play?.().catch(() => {}); });
-    }
+    v.play?.().catch(() => { v.muted = true; v.play?.().catch(() => {}); });
   }, [visualSettings.animatedBgAudio, appBgType, appBgUrl]);
 
   // ── CloudStorageProvider callbacks ──────────────────────────────────────
@@ -955,6 +951,7 @@ function WhisperingWishesInner() {
           {appBgType === 'animated' ? (
             <video
               ref={animatedBgVideoRef}
+              data-ww-animated-bg="1"
               src={appBgUrl}
               autoPlay
               loop
