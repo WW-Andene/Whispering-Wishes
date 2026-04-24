@@ -79,7 +79,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {imageUrl && (
             <div className={`absolute inset-0 ${spineId ? '' : 'breath-zoom'}`}>
               {spineId ? (
-                <div className="absolute right-0 bottom-0 h-48 w-48 pointer-events-none" style={{ opacity: 0.8 }}>
+                /* Spine spans the full header width: clipped top/bottom by the
+                   parent's overflow-hidden, but NOT side-clipped. */
+                <div className="absolute inset-x-0 bottom-0 h-48 pointer-events-none" style={{ opacity: 0.8 }}>
                   <SpinePlayer characterId={spineId} className="w-full h-full" backgroundColor="#00000000" />
                 </div>
               ) : (

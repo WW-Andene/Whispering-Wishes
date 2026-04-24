@@ -48,6 +48,7 @@ import { OnboardingModal } from './providers/OnboardingModal.jsx';
 import { ImageFramingProvider, useImageFramingContext } from './providers/ImageFramingProvider.jsx';
 import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---
+import AdminMiniPanel from './features/profile/AdminMiniPanel.jsx';
 import { CharacterDetailModal } from './shared/modals/CharacterDetailModal.jsx';
 import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
 import { EchoDetailModal } from './shared/modals/EchoDetailModal.jsx';
@@ -144,6 +145,7 @@ function WhisperingWishesInner() {
   // Admin panel state lifted to App so mini panel survives tab switches
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [adminMiniMode, setAdminMiniMode] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
 
   const [exportData, setExportData] = useState('');
   const [restoreText, setRestoreText] = useState('');
@@ -1241,6 +1243,8 @@ function WhisperingWishesInner() {
             setShowAdminPanel={setShowAdminPanel}
             adminMiniMode={adminMiniMode}
             setAdminMiniMode={setAdminMiniMode}
+            adminUnlocked={adminUnlocked}
+            setAdminUnlocked={setAdminUnlocked}
             bgFramingMode={bgFramingMode}
             setBgFramingMode={setBgFramingMode}
             editingBgTarget={editingBgTarget}
@@ -1256,6 +1260,20 @@ function WhisperingWishesInner() {
         )}
 
       </main>
+
+      {/* Admin Mini Panel — rendered here (not inside ProfileTab) so it
+          persists across tab switches. ProfileTab still renders the full
+          AdminPanel modal; we only hoist the mini variant. */}
+      {showAdminPanel && adminMiniMode && adminUnlocked && (
+        <AdminMiniPanel
+          setShowAdminPanel={setShowAdminPanel} setAdminMiniMode={setAdminMiniMode}
+          visualSettings={visualSettings} saveVisualSettings={saveVisualSettings} DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
+          bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
+          editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}
+          updateBgPosition={updateBgPosition} getBgPositionLabel={getBgPositionLabel} exportBgPositions={exportBgPositions}
+          detailModal={detailModal} toast={toast} confirm={confirm}
+        />
+      )}
 
       {/* Server Selector Modal */}
       <FocusTrapModal isOpen={showServerDropdown} onClose={() => setShowServerDropdown(false)} className="" onClick={() => setShowServerDropdown(false)} ariaLabel="Select server region" centered>

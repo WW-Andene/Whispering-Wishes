@@ -94,6 +94,7 @@ function ProfileTab({
   // Admin panel state (lifted to App.jsx so mini panel survives tab switches)
   showAdminPanel, setShowAdminPanel,
   adminMiniMode, setAdminMiniMode,
+  adminUnlocked, setAdminUnlocked,
   bgFramingMode, setBgFramingMode, editingBgTarget, setEditingBgTarget,
   updateBgPosition, getBgPositionLabel, exportBgPositions, getCustomBgPosition,
 }) {
@@ -115,8 +116,7 @@ function ProfileTab({
   const [showIdCard, setShowIdCard] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
-  // ── Admin state (showAdminPanel + adminMiniMode from props — survives tab switches) ──
-  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  // ── Admin state (showAdminPanel + adminMiniMode + adminUnlocked from props — survive tab switches) ──
   const [adminPassword, setAdminPassword] = useState('');
   const [adminTapCount, setAdminTapCount] = useState(0);
   const adminTapTimerRef = useRef(null);

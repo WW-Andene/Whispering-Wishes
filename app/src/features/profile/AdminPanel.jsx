@@ -372,17 +372,7 @@ export default function AdminPanel({
           </div>
       </FocusTrapModal>
 
-      {/* Admin Mini Window — portaled to body */}
-      {showAdminPanel && adminMiniMode && adminUnlocked && (
-        <AdminMiniPanel
-          setShowAdminPanel={setShowAdminPanel} setAdminMiniMode={setAdminMiniMode}
-          visualSettings={visualSettings} saveVisualSettings={saveVisualSettings} DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
-          bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
-          editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}
-          updateBgPosition={updateBgPosition} getBgPositionLabel={getBgPositionLabel} exportBgPositions={exportBgPositions}
-          detailModal={detailModal} toast={toast} confirm={confirm}
-        />
-      )}
+      {/* Admin Mini Window — rendered by App.jsx (hoisted so it persists across tab switches). */}
     </>
   );
 }
