@@ -2688,13 +2688,10 @@ export default function MapTab({ navPadding = 80 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
+        .map-filters-popover .zone-selector-item .zone-selector-name {
+          padding-right: var(--space-sm, 8px);
+        }
         .map-filters-popover .kuro-badge {
-          padding: 6px 10px;
-          min-width: 30px;
-          line-height: 1.2;
-          justify-content: center;
-          align-items: center;
-          box-sizing: border-box;
           font-variant-numeric: tabular-nums;
         }
 
