@@ -65,12 +65,25 @@ function SpinePlayerComponent({
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   const [failed, setFailed] = useState(false);
+  const [spine41Ready, setSpine41Ready] = useState(() => !!window.spine41?.SpinePlayer);
+
+  // Wait for the namespaced 4.1 runtime to finish loading (see index.html).
+  useEffect(() => {
+    if (spine41Ready) return;
+    const onReady = () => setSpine41Ready(true);
+    window.addEventListener('spine41-ready', onReady);
+    return () => window.removeEventListener('spine41-ready', onReady);
+  }, [spine41Ready]);
 
   useEffect(() => {
     if (!containerRef.current || !characterId || failed) return;
     const charData = SPINE_CHARACTERS[characterId];
     if (!charData) { setFailed(true); return; }
-    if (!window.spine?.SpinePlayer) {
+    // Sprite-spine assets (skelUrl) are exported from Spine 4.1 and need the
+    // secondary runtime at window.spine41. Banner-spine JSONs run on 4.2.
+    const spineLib = charData.skelUrl ? window.spine41 : window.spine;
+    if (!spineLib?.SpinePlayer) {
+      if (charData.skelUrl && !spine41Ready) return; // wait for load event
       setFailed(true);
       return;
     }
@@ -88,7 +101,7 @@ function SpinePlayerComponent({
       : { jsonUrl: `${basePath}/${prefix}.json`, atlasUrl: `${basePath}/${prefix}.atlas` };
 
     try {
-      playerRef.current = new window.spine.SpinePlayer(containerRef.current, {
+      playerRef.current = new spineLib.SpinePlayer(containerRef.current, {
         ...assetUrls,
         animation,
         loop,
@@ -120,7 +133,7 @@ function SpinePlayerComponent({
         playerRef.current = null;
       }
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, spine41Ready]);
 
   if (failed) return null;
 

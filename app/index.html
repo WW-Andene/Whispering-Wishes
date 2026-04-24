@@ -51,6 +51,29 @@
     <script src="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/iife/spine-player.js"
             integrity="sha384-C2uhee9ZK7jve2lChHRuBQ0OqZjzZSNaxmRiBY9Y0fHA6yFLUZjPQyE7ogX3kJZg"
             crossorigin="anonymous"></script>
+    <!-- Secondary spine-player runtime @4.1.55 for Spine 4.1-exported assets
+         (e.g. sprite-spine portraits from nanoka). Spine runtimes are not
+         backward-compatible across minor versions, so the 4.2 runtime above
+         cannot read a 4.1 .skel. We capture 4.1's globals into window.spine41
+         and restore window.spine to the 4.2 runtime.
+         TODO: pin with SRI — regenerate via:
+           curl -sSL "https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js" | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <script>
+      (function () {
+        var spine42 = window.spine;
+        window.spine = undefined;
+        var s = document.createElement('script');
+        s.src = 'https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js';
+        s.crossOrigin = 'anonymous';
+        s.onload = function () {
+          window.spine41 = window.spine;
+          window.spine = spine42;
+          window.dispatchEvent(new Event('spine41-ready'));
+        };
+        s.onerror = function () { window.spine = spine42; };
+        document.head.appendChild(s);
+      })();
+    </script>
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
