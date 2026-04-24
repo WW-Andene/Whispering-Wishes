@@ -24,7 +24,7 @@ const BASE_TILE_RE = /\/map-tiles\/Solaris_3\/\d+\/\d+\/\d+\.webp$/i;
 
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
-const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/app_title_icon/favicon.svg'];
+const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/app-title-icon/favicon.svg'];
 
 // CDN domains — cache-first (these rarely change)
 const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];

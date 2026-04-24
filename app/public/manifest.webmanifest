@@ -11,31 +11,31 @@
   "categories": ["games", "utilities"],
   "icons": [
     {
-      "src": "./app_title_icon/favicon.svg",
+      "src": "./app-title-icon/favicon.svg",
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any"
     },
     {
-      "src": "./app_title_icon/apple_touch_icon.png",
+      "src": "./app-title-icon/apple-touch-icon.png",
       "type": "image/png",
       "sizes": "180x180",
       "purpose": "any"
     },
     {
-      "src": "./app_title_icon/icon_192x192.png",
+      "src": "./app-title-icon/icon-192x192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "./app_title_icon/icon_512x512.png",
+      "src": "./app-title-icon/icon-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "./app_title_icon/icon_maskable_512x512.png",
+      "src": "./app-title-icon/icon-maskable-512x512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"

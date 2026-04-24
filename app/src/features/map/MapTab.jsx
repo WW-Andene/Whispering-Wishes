@@ -34,7 +34,7 @@ function getIconImage(kindId, onReady) {
   const img = new Image();
   img.decoding = 'async';
   const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-  // Encode each path segment so the "map icons" folder (with space) works.
+  // Encode each path segment defensively.
   const encoded = cat.imageUrl.split('/').map(encodeURIComponent).join('/');
   img.src = (base + encoded).replace(/([^:])\/\//g, '$1/');
   img.onload = () => onReady && onReady();
@@ -1078,9 +1078,7 @@ export default function MapTab({ navPadding = 80 }) {
       const img = new Image();
       img.decoding = 'async';
       // Derive tile URL from the catalog's imageUrl: replace the filename
-      // with lossless/{y}/{x}.png and URL-encode each segment so spaces in
-      // folder names (Vault Underground, Fabricatorium of the deep) don't
-      // break the fetch.
+      // with lossless/{y}/{x}.png and URL-encode each segment defensively.
       const dir = cat.imageUrl.replace(/\/[^/]+$/, '');
       const segs = dir.split('/').map(encodeURIComponent).join('/');
       const url = (BASE + segs + `/lossless/${ty}/${tx}.png`).replace(/([^:])\/\//g, '$1/');

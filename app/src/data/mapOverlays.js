@@ -12,7 +12,7 @@ export const OVERLAY_CATALOG = [
   {
     id: 'lahai-roi',
     name: 'Lahai Roi',
-    imageUrl: 'map-tiles/lahai-roi/Lahai_roi.webp',
+    imageUrl: 'map-tiles/lahai-roi/Lahai-roi.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
   },
@@ -33,14 +33,14 @@ export const OVERLAY_CATALOG = [
   {
     id: 'vault-underground',
     name: 'Vault Underground',
-    imageUrl: 'map-tiles/Vault Underground/Vault Underground.webp',
+    imageUrl: 'map-tiles/Vault-Underground/Vault-Underground.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
   },
   {
     id: 'fabricatorium-of-the-deep',
     name: 'Fabricatorium of the Deep',
-    imageUrl: 'map-tiles/Fabricatorium of the deep/Fabricatorium of the deep.webp',
+    imageUrl: 'map-tiles/Fabricatorium-of-the-deep/Fabricatorium-of-the-deep.webp',
     naturalWidth: 13312,
     naturalHeight: 8192,
   },
@@ -61,7 +61,7 @@ export const OVERLAY_CATALOG = [
   {
     id: 'hualong-outlines',
     name: 'Huanglong Outlines',
-    imageUrl: 'map-tiles/hualong_outlines.png',
+    imageUrl: 'map-tiles/hualong-outlines.png',
     naturalWidth: 1156,
     naturalHeight: 1200,
   },

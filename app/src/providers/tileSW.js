@@ -14,8 +14,7 @@ const TILE_PX = 256;
 const BASE_URL = (import.meta.env.BASE_URL || '/');
 
 function encodeDir(imageUrl) {
-  // Strip the filename and URL-encode each path segment so folder names with
-  // spaces ("Vault Underground") become %20.
+  // Strip the filename and URL-encode each path segment for safety.
   const dir = imageUrl.replace(/\/[^/]+$/, '');
   return dir.split('/').map(encodeURIComponent).join('/');
 }

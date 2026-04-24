@@ -1,8 +1,7 @@
 // Catalog of placeable map icons. Each entry is an icon "kind" — the
 // editor's Map icons section lets admins pick one of these per placement.
-// Adding a new icon = drop a PNG under `app/public/map icons/` and add an
-// entry here. Path is passed through encodeURI at read time so filenames
-// with spaces ("map icons") survive the HTTP request.
+// Adding a new icon = drop a PNG under `app/public/map-icons/` and add an
+// entry here.
 //
 // Entry shape:
 //   id:          stable key stored on icon drafts (iconDraft.kind)
@@ -21,7 +20,7 @@ export const MAP_ICON_CATALOG = [
     name: 'Resonance Nexus',
     category: 'Resonance',
     subcategory: 'Nexus',
-    imageUrl: 'map icons/Resonance_Nexus.png',
+    imageUrl: 'map-icons/Resonance-Nexus.png',
     size: 128,
   },
   {
@@ -29,7 +28,7 @@ export const MAP_ICON_CATALOG = [
     name: 'Resonance Beacon',
     category: 'Resonance',
     subcategory: 'Beacon',
-    imageUrl: 'map icons/Resonance_beacon.png',
+    imageUrl: 'map-icons/Resonance-beacon.png',
     size: 128,
   },
 ];
