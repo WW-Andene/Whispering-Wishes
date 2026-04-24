@@ -2688,15 +2688,21 @@ export default function MapTab({ navPadding = 80 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
-        /* Count badge on each filter row. The canonical .kuro-badge (2×8)
-           reads cramped inside a kuro-btn-sm row (28px tall) — bump the
-           padding + min-width so digits breathe and short/long counts
-           share a baseline. Tabular-nums keeps "3" and "43" the same
-           optical width. */
+        /* Count badge on each filter row. The canonical .kuro-badge
+           (2×8 padding, line-height 1.4) makes digits hug the border
+           and renders as a flat rectangle. Fixed height + explicit
+           centering gives breathing room on both sides and a close-to-
+           square shape that scales naturally with digit count
+           (1 digit → square-ish, 2-3 digits → slight pill). Tabular-
+           nums locks column width so 3 / 43 / 143 share a baseline. */
         .map-filters-popover .kuro-badge {
-          padding: 2px 10px;
-          min-width: 28px;
+          min-width: 26px;
+          height: 20px;
+          padding: 0 8px;
+          line-height: 1;
           justify-content: center;
+          align-items: center;
+          box-sizing: border-box;
           font-variant-numeric: tabular-nums;
         }
 
