@@ -654,6 +654,62 @@ const OTHER_BACKGROUNDS = [
 // and <video poster>.
 const ANIMATED_BACKGROUNDS = [
   {
+    id: 'v2-0',
+    name: 'v2.0 All Silent Souls Can Sing',
+    art: './animated-bg/2.0-All-Silent-Souls-Can-Sing-Animated.mp4',
+    poster: './animated-bg/2.0-All-Silent-Souls-Can-Sing-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-2',
+    name: 'v2.2 Tangled Truth in Inverted Tower',
+    art: './animated-bg/2.2-Tangled-Truth-In-Inverted-Tower-Animated.mp4',
+    poster: './animated-bg/2.2-Tangled-Truth-In-Inverted-Tower-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-5',
+    name: 'v2.5 Unfading Melody of Life',
+    art: './animated-bg/2.5-Unfadind-Melody-Of-Life-Animated.mp4',
+    poster: './animated-bg/2.5-Unfadind-Melody-Of-Life-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-6',
+    name: "v2.6 By Sun's Scourge, By Moon's Revelation",
+    art: "./animated-bg/2.6-By-Sun's-Scourge,ByMoon's-Revelation-Animated.mp4",
+    poster: "./animated-bg/2.6-By-Sun's-Scourge,ByMoon's-Revelation-Animated.jpg",
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-7',
+    name: 'v2.7 Dawn Breaks on Dark Tides',
+    art: './animated-bg/2.7-Dawn-Breaks-On-Dark-Tides-Animated.mp4',
+    poster: './animated-bg/2.7-Dawn-Breaks-On-Dark-Tides-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-8',
+    name: 'v2.8 To the City Set in Amber',
+    art: './animated-bg/2.8-To-The-City-Set-In-Amber-Animated.mp4',
+    poster: './animated-bg/2.8-To-The-City-Set-In-Amber-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v3-0',
+    name: 'v3.0 We Who See the Stars',
+    art: './animated-bg/3.0-We-Who-See-The-Stars-Animated.mp4',
+    poster: './animated-bg/3.0-We-Who-See-The-Stars-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v3-1',
+    name: 'v3.1 For You Who Walk in the Snow',
+    art: './animated-bg/3.1-For-You-Who-Walk-In-The-Snow-Animated.mp4',
+    poster: './animated-bg/3.1-For-You-Who-Walk-In-The-Snow-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
     id: 'v3-2',
     name: 'v3.2',
     art: './animated-bg/3.2-animated.mp4',
