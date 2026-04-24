@@ -570,16 +570,45 @@ const DEFAULT_COLLECTION_IMAGES = {
 // CHARACTER THEMES — Curated theme presets based on character banner art & element
 // ═══════════════════════════════════════════════════════════════════════════════
 const CHARACTER_THEMES = [
+  // v3.3 (upcoming — element unconfirmed; falls back to neutral accent)
+  { id: 'denia',         name: 'Denia',         element: '',        bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg',        pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'hiyuki',        name: 'Hiyuki',        element: '',        bannerArt: 'https://i.ibb.co/Gf7F9h12/hiyuki-banner.jpg',       pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  // v3.2
+  { id: 'lynae',         name: 'Lynae',         element: 'Spectro', bannerArt: 'https://i.ibb.co/h1Kwq7Vj/lynae-banner.jpg',        pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'zani',          name: 'Zani',          element: 'Spectro', bannerArt: 'https://i.ibb.co/tMVkd4dg/zani-banner.jpg',         pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'phoebe',        name: 'Phoebe',        element: 'Spectro', bannerArt: 'https://i.ibb.co/Tq7pFMgp/phoebe-banner.jpg',       pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
   { id: 'sigrika',       name: 'Sigrika',       element: 'Aero',    bannerArt: 'https://i.ibb.co/DHJ2YMTM/sigrika-banner.jpg',      pos: { header: '50% 25%', nav: '50% 27%', bg: '64% 50%' } },
   { id: 'qiuyuan',       name: 'Qiuyuan',       element: 'Aero',    bannerArt: 'https://i.ibb.co/fd3D6QRx/qiuyuan-banner.jpg',      pos: { header: '50% 19%', nav: '50% 21%', bg: '55% 50%' } },
+  // v3.1
   { id: 'luuk-herssen',  name: 'Luuk Herssen',  element: 'Spectro', bannerArt: 'https://i.ibb.co/ZzqY6F9R/luuk-banner.jpg',         pos: { header: '50% 52%', nav: '50% 52%', bg: '64% 50%' } },
-  { id: 'aemeath',       name: 'Aemeath',       element: 'Fusion',  bannerArt: 'https://i.ibb.co/Y4SzJSxL/Aemeath-banner.jpg',      pos: { header: '50% 47%', nav: '50% 46%', bg: '73% 50%' } },
-  { id: 'mornye',        name: 'Mornye',        element: 'Fusion',  bannerArt: 'https://i.ibb.co/9mGJpYvb/morny-banner.jpg',        pos: { header: '50% 27%', nav: '50% 27%', bg: '72% 50%' } },
-  { id: 'chisa',         name: 'Chisa',         element: 'Havoc',   bannerArt: 'https://i.ibb.co/RTZ06knw/chisa-banner.jpg',        pos: { header: '50% 22%', nav: '50% 24%', bg: '68% 50%' } },
   { id: 'galbrena',      name: 'Galbrena',      element: 'Fusion',  bannerArt: 'https://i.ibb.co/MxSTSBX7/galbrena-banner.jpg',     pos: { header: '50% 31%', nav: '50% 35%', bg: '60% 50%' } },
-  { id: 'iuno',          name: 'Iuno',          element: 'Aero',    bannerArt: 'https://i.ibb.co/DPd6HgjH/iuno-banner.jpg',         pos: { header: '50% 27%', nav: '50% 29%', bg: '66% 50%' } },
-  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/4wbJgQGj/augusta-banner.jpg',      pos: { header: '50% 36%', nav: '50% 35%', bg: '62% 50%' } },
+  { id: 'aemeath',       name: 'Aemeath',       element: 'Fusion',  bannerArt: 'https://i.ibb.co/Y4SzJSxL/Aemeath-banner.jpg',      pos: { header: '50% 47%', nav: '50% 46%', bg: '73% 50%' } },
+  { id: 'chisa',         name: 'Chisa',         element: 'Havoc',   bannerArt: 'https://i.ibb.co/RTZ06knw/chisa-banner.jpg',        pos: { header: '50% 22%', nav: '50% 24%', bg: '68% 50%' } },
   { id: 'lupa',          name: 'Lupa',          element: 'Fusion',  bannerArt: 'https://i.ibb.co/9HBRhrjq/lupa-banner.jpg',         pos: { header: '52% 56%', nav: '50% 56%', bg: '62% 50%' } },
+  // v3.0
+  { id: 'mornye',        name: 'Mornye',        element: 'Fusion',  bannerArt: 'https://i.ibb.co/9mGJpYvb/morny-banner.jpg',        pos: { header: '50% 27%', nav: '50% 27%', bg: '72% 50%' } },
+  { id: 'augusta',       name: 'Augusta',       element: 'Electro', bannerArt: 'https://i.ibb.co/4wbJgQGj/augusta-banner.jpg',      pos: { header: '50% 36%', nav: '50% 35%', bg: '62% 50%' } },
+  { id: 'iuno',          name: 'Iuno',          element: 'Aero',    bannerArt: 'https://i.ibb.co/DPd6HgjH/iuno-banner.jpg',         pos: { header: '50% 27%', nav: '50% 29%', bg: '66% 50%' } },
+  { id: 'cartethyia',    name: 'Cartethyia',    element: 'Aero',    bannerArt: 'https://i.ibb.co/Ppt1BXc/carthetya-banner.jpg',     pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'ciaccona',      name: 'Ciaccona',      element: 'Aero',    bannerArt: 'https://i.ibb.co/prXLxMyw/ciaconna-banner.jpg',     pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  // v2.8 / v2.5
+  { id: 'phrolova',      name: 'Phrolova',      element: 'Havoc',   bannerArt: 'https://i.ibb.co/QvHKLCgt/phrolova-banner.jpg',     pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'cantarella',    name: 'Cantarella',    element: 'Havoc',   bannerArt: 'https://i.ibb.co/wZ85YQzF/cantarella-banner.jpg',   pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  // v2.6
+  { id: 'carlotta',      name: 'Carlotta',      element: 'Glacio',  bannerArt: 'https://i.ibb.co/67r6NbMf/carlotta-banner.png',     pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'shorekeeper',   name: 'Shorekeeper',   element: 'Spectro', bannerArt: 'https://i.ibb.co/cKTnnDWB/shore-keeper-banner.jpg', pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  // v2.5 / v2.1
+  { id: 'brant',         name: 'Brant',         element: 'Fusion',  bannerArt: 'https://i.ibb.co/vx8KGHcj/brant-banner.jpg',        pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'roccia',        name: 'Roccia',        element: 'Havoc',   bannerArt: 'https://i.ibb.co/YYWVfxt/roccia-banner.jpg',        pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  // v2.3 anniversary rerun lineup + v1.1/v1.3
+  { id: 'jinhsi',        name: 'Jinhsi',        element: 'Spectro', bannerArt: 'https://i.ibb.co/7xBSVRbQ/jinhsi-banner.jpg',       pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'changli',       name: 'Changli',       element: 'Fusion',  bannerArt: 'https://i.ibb.co/HDZ1LG4R/changli-banner.jpg',      pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'jiyan',         name: 'Jiyan',         element: 'Aero',    bannerArt: 'https://i.ibb.co/hFM8STLQ/jiyan-banner.jpg',        pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'yinlin',        name: 'Yinlin',        element: 'Electro', bannerArt: 'https://i.ibb.co/Y4SDqwg2/yinlin-banner.jpg',       pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'zhezhi',        name: 'Zhezhi',        element: 'Glacio',  bannerArt: 'https://i.ibb.co/XfkKS4dS/zhezhi-banner.jpg',       pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  { id: 'xiangli-yao',   name: 'Xiangli Yao',   element: 'Electro', bannerArt: 'https://i.ibb.co/CphXJs9L/xiangli-yao-banner.jpg',  pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
+  // v2.2 / v1.4
+  { id: 'camellya',      name: 'Camellya',      element: 'Havoc',   bannerArt: 'https://i.ibb.co/20xFP1B1/camellya-banner.png',     pos: { header: '50% 25%', nav: '50% 25%', bg: '65% 50%' } },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
