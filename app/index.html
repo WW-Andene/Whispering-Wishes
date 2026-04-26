@@ -54,27 +54,17 @@
     <!-- Secondary spine-player runtime @4.1.55 for Spine 4.1-exported assets
          (e.g. sprite-spine portraits from nanoka). Spine runtimes are not
          backward-compatible across minor versions, so the 4.2 runtime above
-         cannot read a 4.1 .skel. We capture 4.1's globals into window.spine41
-         and restore window.spine to the 4.2 runtime.
+         cannot read a 4.1 .skel. We stash 4.2's globals, let 4.1 install onto
+         window.spine, then capture as window.spine41 and restore 4.2. Both
+         runtimes are loaded synchronously so SpinePlayer never has to wait
+         for a "ready" signal.
          SRI regenerated via:
            curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
-    <script>
-      (function () {
-        var spine42 = window.spine;
-        window.spine = undefined;
-        var s = document.createElement('script');
-        s.src = 'https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js';
-        s.integrity = 'sha384-JmJJLCJBXRw87w7ce9AOcL7EqR8Km9mzuu0MDsbSaceHZEeB+0QstgcQ6a076u8Q';
-        s.crossOrigin = 'anonymous';
-        s.onload = function () {
-          window.spine41 = window.spine;
-          window.spine = spine42;
-          window.dispatchEvent(new Event('spine41-ready'));
-        };
-        s.onerror = function () { window.spine = spine42; };
-        document.head.appendChild(s);
-      })();
-    </script>
+    <script>window.__spine42 = window.spine; window.spine = undefined;</script>
+    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js"
+            integrity="sha384-JmJJLCJBXRw87w7ce9AOcL7EqR8Km9mzuu0MDsbSaceHZEeB+0QstgcQ6a076u8Q"
+            crossorigin="anonymous"></script>
+    <script>window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;</script>
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
