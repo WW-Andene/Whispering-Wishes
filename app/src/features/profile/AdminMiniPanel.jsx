@@ -3,7 +3,7 @@
 // and compact visual settings sliders
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ClipboardList, Settings, X } from 'lucide-react';
 import { APP_VERSION } from '../../data/constants.js';
@@ -13,6 +13,8 @@ import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/component
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
 import { useSpineTuning, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
+import { getSpineBudgetSnapshot } from '../../hooks/useSpineBudget.js';
+import { PRERENDERED_IDLE_URLS } from '../../shared/spinePrerenderManifest.js';
 
 // Each tuning slot corresponds to a rendering surface on the app. The tuning
 // key SpinePlayer uses is `${characterId}#${context}` (the `card` context is
@@ -46,6 +48,32 @@ function orderSpineIds(ids) {
     if (ia !== ib) return ib - ia;
     return ea.name.localeCompare(eb.name);
   });
+}
+
+// Lightweight live readout of the WebGL budget. Mounts a 1Hz poll only
+// while the panel is open, so it costs nothing the rest of the time.
+function SpineBudgetReadout() {
+  const [snap, setSnap] = useState(() => getSpineBudgetSnapshot());
+  useEffect(() => {
+    const id = setInterval(() => setSnap(getSpineBudgetSnapshot()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const prerendered = Object.keys(PRERENDERED_IDLE_URLS).length;
+  return (
+    <div className="text-2xs text-gray-400 flex flex-wrap gap-x-3 gap-y-0.5">
+      <span title="Live WebGL spine instances currently mounted">
+        WebGL: <span className="text-pink-300">{snap.active}</span> / {snap.max}
+      </span>
+      {snap.waiting > 0 && (
+        <span className="text-yellow-300" title="Instances waiting for a slot to open">
+          waiting: {snap.waiting}
+        </span>
+      )}
+      <span title="Sprite characters with a pre-rendered idle.webp on disk">
+        prerendered: <span className="text-emerald-300">{prerendered}</span>
+      </span>
+    </div>
+  );
 }
 
 function SpineTuningSection() {
@@ -84,6 +112,7 @@ function SpineTuningSection() {
   return (
     <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded-lg space-y-1.5">
       <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
+      <SpineBudgetReadout />
       <select
         value={selected}
         onChange={(e) => setSelected(e.target.value)}
