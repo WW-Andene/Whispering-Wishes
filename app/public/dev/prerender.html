@@ -33,7 +33,7 @@
   <header>
     <h1 style="font-size: 16px; color: #f1f5f9;">Spine Pre-render</h1>
     <label>Resolution <input type="number" id="resolution" value="1024" min="256" max="2048" step="128"></label>
-    <label>FPS <input type="number" id="fps" value="60" min="15" max="120" step="5"></label>
+    <label>Bitrate (Mbps) <input type="number" id="bitrate" value="5" min="1" max="20" step="1"></label>
     <label>Animation <input type="text" id="animName" value="idle" size="8"></label>
     <button id="probe" title="Mount the first sprite once and dump player API keys to the log. Run this first if Capture errors out.">Probe API</button>
     <button id="capture">Capture all</button>
@@ -46,7 +46,7 @@
     <div>
       <table>
         <thead>
-          <tr><th>#</th><th>Char</th><th>Anim</th><th>Duration</th><th>Frames</th><th>Seam Δ</th><th>Status</th></tr>
+          <tr><th>#</th><th>Char</th><th>Anim</th><th>Duration</th><th>Size</th><th>α</th><th>Status</th></tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
@@ -159,11 +159,65 @@
       return sum / n; // mean abs delta per channel byte (0..255)
     }
 
+    // Capture flow:
+    // - Mount spine-player so it plays the animation naturally on its own
+    //   rAF loop (fixes the "all frames identical" bug from the old loop —
+    //   when we set state.timeScale=0, spine-player short-circuits its
+    //   draw call entirely, so only frame 0 ever ended up on the canvas).
+    // - Tap canvas.captureStream() into a MediaRecorder.
+    // - Record for exactly `animation.duration` seconds, starting from
+    //   trackTime=0, which gives us one full cycle by definition.
+    // - Output one WebM file per character (~2-5 MB at 1024² VP9 alpha,
+    //   compared to ~500 KB × 240 PNG frames = 120 MB the old way).
+
+    function pickWebmMime() {
+      const candidates = [
+        'video/webm;codecs=vp9',  // alpha-capable on Chrome
+        'video/webm;codecs=vp8',  // no alpha
+        'video/webm',
+      ];
+      for (const t of candidates) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+      }
+      return null;
+    }
+
+    function recordCanvas(canvas, durationMs, mimeType, bitrate) {
+      return new Promise((resolve, reject) => {
+        const stream = canvas.captureStream(60);
+        let recorder;
+        try {
+          recorder = new MediaRecorder(stream, {
+            mimeType,
+            videoBitsPerSecond: bitrate,
+          });
+        } catch (err) {
+          reject(err);
+          return;
+        }
+        const chunks = [];
+        recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+        recorder.onerror = (e) => reject(e.error || new Error('MediaRecorder error'));
+        recorder.onstop = () => {
+          stream.getTracks().forEach((t) => t.stop());
+          resolve(new Blob(chunks, { type: mimeType }));
+        };
+        recorder.start();
+        setTimeout(() => {
+          if (recorder.state !== 'inactive') recorder.stop();
+        }, durationMs);
+      });
+    }
+
     async function captureChar(idx, entry, opts) {
       setRowStatus(idx, 'status-busy', 'mounting');
 
-      // Hidden host sized to target resolution; spine-player picks its
-      // canvas size from this container.
+      const mimeType = pickWebmMime();
+      if (!mimeType) {
+        throw new Error('MediaRecorder + WebM not supported in this browser');
+      }
+      const isAlphaCapable = mimeType.includes('vp9');
+
       const host = document.createElement('div');
       host.style.cssText = `position:fixed;left:-9999px;top:0;width:${opts.resolution}px;height:${opts.resolution}px;`;
       document.body.appendChild(host);
@@ -181,11 +235,14 @@
             skelUrl: entry.skelUrl,
             atlasUrl: entry.atlasUrl,
             animation: opts.animName,
-            loop: false,
+            // loop=true so the recording wraps cleanly if our setTimeout
+            // overshoots by a frame or two — the recorder stops on its
+            // own deadline regardless.
+            loop: true,
             backgroundColor: '#00000000',
             alpha: true,
             premultipliedAlpha: false,
-            preserveDrawingBuffer: true, // canvas.toBlob() needs this
+            preserveDrawingBuffer: true,
             showControls: false,
             showLoading: false,
             success: () => { resolved = true; resolve(inst); },
@@ -210,79 +267,54 @@
       setRowField(idx, 'anim', animation.name);
       setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
 
-      // Reset to a clean t=0. Then freeze the player's auto-advance —
-      // canvas.toBlob('image/png') at 1024² takes 100-300ms, so if we let
-      // the animation keep playing during encoding we'd only sample 3-7
-      // frames per second. Instead we set timeScale=0 and step trackTime
-      // manually each iteration; encoding latency no longer affects the
-      // sampled animation timing.
+      // Reset to t=0 right before recording so the first captured video
+      // frame matches the start of the cycle.
       state.clearTracks();
-      const track = state.setAnimation(0, animation.name, false);
-      state.timeScale = 0;
-      if (track) track.timeScale = 0;
+      const track = state.setAnimation(0, animation.name, true);
+      if (track) track.trackTime = 0;
       state.apply(skel);
       skel.updateWorldTransform();
-
-      // Two rAFs to make sure the first rendered frame is the t=0 pose.
+      // Let the player render the t=0 pose before we tap the stream.
       await new Promise((res) => requestAnimationFrame(res));
       await new Promise((res) => requestAnimationFrame(res));
 
-      const fps = opts.fps;
-      const dt = 1 / fps;
-      const frameCount = Math.max(1, Math.round(animation.duration * fps));
-      setRowField(idx, 'frames', String(frameCount));
-
-      const frames = [];
       const previewCtx = $('preview').getContext('2d');
-      const start = performance.now();
-      setRowStatus(idx, 'status-busy', `0 / ${frameCount + 1}`);
-
-      // Frame [0..frameCount] inclusive — the trailing wrap frame at
-      // trackTime=duration is used only for seam diff and dropped before
-      // emitting the ZIP.
-      for (let i = 0; i <= frameCount; i++) {
-        if (track) track.trackTime = i * dt;
-        // One rAF for the player to redraw its canvas with our trackTime.
-        // (The player's internal rAF still fires on every tick; with
-        // timeScale=0 its update() is a no-op and apply()+draw use whatever
-        // trackTime we just wrote.)
-        await new Promise((res) => requestAnimationFrame(res));
-        const blob = await canvasToPng(canvas);
-        frames.push(blob);
-
+      // Mirror the canvas onto the live preview at ~30Hz while recording.
+      let mirroring = true;
+      const mirror = () => {
+        if (!mirroring) return;
         previewCtx.clearRect(0, 0, 512, 512);
         previewCtx.drawImage(canvas, 0, 0, 512, 512);
+        requestAnimationFrame(mirror);
+      };
+      mirror();
 
-        if (i % 5 === 0) {
-          const wall = ((performance.now() - start) / 1000).toFixed(1);
-          setRowStatus(idx, 'status-busy', `${i} / ${frameCount + 1} (${wall}s)`);
-        }
-      }
+      const start = performance.now();
+      setRowStatus(idx, 'status-busy', 'recording…');
 
-      setRowField(idx, 'frames', String(frameCount));
+      const durationMs = animation.duration * 1000;
+      // VP9 at ~5 Mbps gives visually-lossless quality at 1024² — that's
+      // the same target bitrate YouTube uses for HD spine-style content.
+      // Increase via Bitrate input (default 5 Mbps).
+      const bitrate = opts.bitrate * 1_000_000;
+      const blob = await recordCanvas(canvas, durationMs, mimeType, bitrate);
 
-      // Seam delta: trackTime=0 vs trackTime=duration. Drop the wrap frame
-      // from the output — it's the same instant as frame[0] in a clean loop.
-      const seamDelta = await pixelDelta(frames[0], frames[frameCount]);
-      let seamCls = 'seam-good';
-      if (seamDelta > 5) seamCls = 'seam-warn';
-      if (seamDelta > 15) seamCls = 'seam-bad';
-      setRowField(idx, 'seam', seamDelta.toFixed(2), seamCls);
-
-      const outputFrames = frames.slice(0, frameCount);
-
+      mirroring = false;
       try { player.dispose(); } catch {}
       host.remove();
 
       const wallSec = (performance.now() - start) / 1000;
-      setRowStatus(idx, 'status-ok', `${outputFrames.length} frames in ${wallSec.toFixed(1)}s`);
+      setRowField(idx, 'frames', `${(blob.size / 1024).toFixed(0)} KB`);
+      setRowField(idx, 'seam', isAlphaCapable ? 'α' : 'no α', isAlphaCapable ? 'seam-good' : 'seam-warn');
+      setRowStatus(idx, 'status-ok', `webm ${(blob.size / 1024 / 1024).toFixed(2)} MB in ${wallSec.toFixed(1)}s`);
+
       return {
         entry,
-        frames: outputFrames,
+        blob,
+        mimeType,
         duration: animation.duration,
         animName: animation.name,
-        seamDelta,
-        fps,
+        alphaCapable: isAlphaCapable,
       };
     }
 
@@ -290,26 +322,28 @@
       log(`Packing ZIP for ${results.length} characters…`);
       const files = {};
       for (const r of results) {
-        const dirname = `${r.entry.dir}/Portraits_${r.entry.portrait}_idle`;
-        for (let i = 0; i < r.frames.length; i++) {
-          const buf = new Uint8Array(await r.frames[i].arrayBuffer());
-          files[`${dirname}/frame_${String(i + 1).padStart(4, '0')}.png`] = buf;
-        }
-        const meta = {
+        const name = `${r.entry.dir}/Portraits_${r.entry.portrait}_idle.webm`;
+        const buf = new Uint8Array(await r.blob.arrayBuffer());
+        files[name] = buf;
+      }
+      const manifest = {
+        format: 'webm',
+        codec: 'vp9',
+        captured: results.map((r) => ({
           key: r.entry.key,
           name: r.entry.name,
-          portrait: r.entry.portrait,
           dir: r.entry.dir,
-          animName: r.animName,
+          portrait: r.entry.portrait,
+          file: `${r.entry.dir}/Portraits_${r.entry.portrait}_idle.webm`,
           duration: r.duration,
-          fps: r.fps,
-          frameCount: r.frames.length,
-          resolution: opts.resolution,
-          seamDelta: r.seamDelta,
-        };
-        files[`${dirname}/meta.json`] = new TextEncoder().encode(JSON.stringify(meta, null, 2));
-      }
-      // PNGs are already deflate-compressed; level: 0 (store) keeps zip fast.
+          animName: r.animName,
+          mimeType: r.mimeType,
+          alphaCapable: r.alphaCapable,
+          sizeBytes: r.blob.size,
+        })),
+      };
+      files['manifest.json'] = new TextEncoder().encode(JSON.stringify(manifest, null, 2));
+      // WebM is already compressed; level 0 (store) keeps zip fast.
       const zipped = fflate.zipSync(files, { level: 0 });
       const blob = new Blob([zipped], { type: 'application/zip' });
       zipBuffer = blob;
@@ -325,7 +359,7 @@
     function readOpts() {
       return {
         resolution: parseInt($('resolution').value, 10) || 1024,
-        fps: parseInt($('fps').value, 10) || 60,
+        bitrate: parseInt($('bitrate').value, 10) || 5,
         animName: ($('animName').value || 'idle').trim(),
       };
     }

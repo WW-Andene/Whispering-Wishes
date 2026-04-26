@@ -2,19 +2,19 @@
 // Do not edit manually — re-run the script (or `npm run build`) to refresh.
 //
 // Maps each sprite character that has a pre-rendered idle loop on disk to
-// its public WebP URL. SpinePlayer consults this set to decide whether the
-// tier-0 (animated WebP) path is available; characters not listed here
-// skip straight to the live WebGL fallback.
+// the public asset URL plus a format hint (`video` for .webm, `image` for
+// animated .webp). SpinePlayer reads this to pick <video> vs <img> for the
+// tier-0 swap-in; characters not listed here skip straight to live WebGL.
 
-export const PRERENDERED_IDLE_URLS = Object.freeze({
+export const PRERENDERED_IDLE = Object.freeze({
 });
 
 // Lookup helper: resolves a SPRITE_SPINE_CHARACTERS entry to its
-// pre-rendered WebP URL (or null if no prerender exists).
-export function getPrerenderedIdleUrl(charData) {
+// pre-rendered idle asset, or null if no prerender exists.
+export function getPrerenderedIdle(charData) {
   if (!charData?.skelUrl) return null;
   // skelUrl is `portraits/<dir>/Portraits_<name>.skel`; strip the
   // leading "portraits/" and trailing ".skel" to form the lookup key.
   const key = charData.skelUrl.replace(/^portraits\//, '').replace(/\.skel$/, '');
-  return PRERENDERED_IDLE_URLS[key] || null;
+  return PRERENDERED_IDLE[key] || null;
 }

@@ -29,25 +29,39 @@ const outFile = path.join(repoRoot, 'app/src/shared/spinePrerenderManifest.js');
 // same dir, so the file path is enough to derive both the dir and the
 // portrait name without parsing the registry.
 
+// Scan order matters: when a character has both a .webm (preferred,
+// tiny + native video alpha) and a .webp (fallback for Safari), the .webm
+// wins. SpinePlayer reads the format hint to pick <video> vs <img>.
+const FORMATS = [
+  { ext: 'webm', tag: 'video' },
+  { ext: 'webp', tag: 'image' },
+];
+
 function scan() {
   if (!fs.existsSync(portraitsDir)) return [];
-  const entries = [];
+  const found = new Map(); // dir/portrait -> { dir, portrait, url, format }
   for (const dir of fs.readdirSync(portraitsDir, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
     const charDir = path.join(portraitsDir, dir.name);
-    for (const file of fs.readdirSync(charDir)) {
-      const m = file.match(/^Portraits_(.+)_idle\.webp$/);
-      if (!m) continue;
-      // Store the asset URL the runtime will use to load the WebP.
-      entries.push({
-        dir: dir.name,
-        portrait: m[1],
-        url: `portraits/${dir.name}/${file}`,
-      });
+    const files = fs.readdirSync(charDir);
+    for (const { ext, tag } of FORMATS) {
+      const re = new RegExp(`^Portraits_(.+)_idle\\.${ext}$`);
+      for (const file of files) {
+        const m = file.match(re);
+        if (!m) continue;
+        const key = `${dir.name}/${m[1]}`;
+        // Skip if a higher-priority format already claimed this slot.
+        if (found.has(key)) continue;
+        found.set(key, {
+          dir: dir.name,
+          portrait: m[1],
+          url: `portraits/${dir.name}/${file}`,
+          format: tag,
+        });
+      }
     }
   }
-  entries.sort((a, b) => a.url.localeCompare(b.url));
-  return entries;
+  return [...found.values()].sort((a, b) => a.url.localeCompare(b.url));
 }
 
 function emit(entries) {
@@ -56,25 +70,26 @@ function emit(entries) {
     '// Do not edit manually — re-run the script (or `npm run build`) to refresh.',
     '//',
     '// Maps each sprite character that has a pre-rendered idle loop on disk to',
-    '// its public WebP URL. SpinePlayer consults this set to decide whether the',
-    '// tier-0 (animated WebP) path is available; characters not listed here',
-    '// skip straight to the live WebGL fallback.',
+    '// the public asset URL plus a format hint (`video` for .webm, `image` for',
+    '// animated .webp). SpinePlayer reads this to pick <video> vs <img> for the',
+    '// tier-0 swap-in; characters not listed here skip straight to live WebGL.',
     '',
-    `export const PRERENDERED_IDLE_URLS = Object.freeze({`,
+    `export const PRERENDERED_IDLE = Object.freeze({`,
   ];
   for (const e of entries) {
-    lines.push(`  ${JSON.stringify(`${e.dir}/Portraits_${e.portrait}`)}: ${JSON.stringify(e.url)},`);
+    const k = JSON.stringify(`${e.dir}/Portraits_${e.portrait}`);
+    lines.push(`  ${k}: { url: ${JSON.stringify(e.url)}, format: ${JSON.stringify(e.format)} },`);
   }
   lines.push('});');
   lines.push('');
   lines.push('// Lookup helper: resolves a SPRITE_SPINE_CHARACTERS entry to its');
-  lines.push('// pre-rendered WebP URL (or null if no prerender exists).');
-  lines.push('export function getPrerenderedIdleUrl(charData) {');
+  lines.push('// pre-rendered idle asset, or null if no prerender exists.');
+  lines.push('export function getPrerenderedIdle(charData) {');
   lines.push('  if (!charData?.skelUrl) return null;');
   lines.push("  // skelUrl is `portraits/<dir>/Portraits_<name>.skel`; strip the");
   lines.push('  // leading "portraits/" and trailing ".skel" to form the lookup key.');
   lines.push("  const key = charData.skelUrl.replace(/^portraits\\//, '').replace(/\\.skel$/, '');");
-  lines.push('  return PRERENDERED_IDLE_URLS[key] || null;');
+  lines.push('  return PRERENDERED_IDLE[key] || null;');
   lines.push('}');
   lines.push('');
   fs.writeFileSync(outFile, lines.join('\n'));

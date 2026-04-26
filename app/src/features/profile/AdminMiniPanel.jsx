@@ -14,7 +14,7 @@ import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx
 import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
 import { useSpineTuning, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
 import { getSpineBudgetSnapshot } from '../../hooks/useSpineBudget.js';
-import { PRERENDERED_IDLE_URLS } from '../../shared/spinePrerenderManifest.js';
+import { PRERENDERED_IDLE } from '../../shared/spinePrerenderManifest.js';
 
 // Each tuning slot corresponds to a rendering surface on the app. The tuning
 // key SpinePlayer uses is `${characterId}#${context}` (the `card` context is
@@ -58,7 +58,7 @@ function SpineBudgetReadout() {
     const id = setInterval(() => setSnap(getSpineBudgetSnapshot()), 1000);
     return () => clearInterval(id);
   }, []);
-  const prerendered = Object.keys(PRERENDERED_IDLE_URLS).length;
+  const prerendered = Object.keys(PRERENDERED_IDLE).length;
   return (
     <div className="text-2xs text-gray-400 flex flex-wrap gap-x-3 gap-y-0.5">
       <span title="Live WebGL spine instances currently mounted">
