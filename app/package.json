@@ -8,11 +8,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node ../tools/build-prerender-manifest.mjs",
+    "prebuild": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "manifest": "node ../tools/build-prerender-manifest.mjs"
+    "manifest": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs"
   },
   "dependencies": {
     "@esotericsoftware/spine-player": "^4.2.109",
