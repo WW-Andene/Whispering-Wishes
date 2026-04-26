@@ -33,9 +33,8 @@
   <header>
     <h1 style="font-size: 16px; color: #f1f5f9;">Spine Pre-render</h1>
     <label>Resolution <input type="number" id="resolution" value="1024" min="256" max="2048" step="128"></label>
-    <label>FPS <input type="number" id="fps" value="60" min="15" max="120" step="5"></label>
-    <label>Padding <input type="number" id="padding" value="1.05" min="1.0" max="1.5" step="0.05"></label>
     <label>Animation <input type="text" id="animName" value="idle" size="8"></label>
+    <button id="probe" title="Mount the first sprite once and dump player API keys to the log. Run this first if Capture errors out.">Probe API</button>
     <button id="capture">Capture all</button>
     <button id="captureOne">Capture selected</button>
     <button id="downloadZip" disabled>Download ZIP</button>
@@ -310,10 +309,69 @@
     function readOpts() {
       return {
         resolution: parseInt($('resolution').value, 10) || 1024,
-        fps: parseInt($('fps').value, 10) || 60,
-        padding: parseFloat($('padding').value) || 1.05,
         animName: ($('animName').value || 'idle').trim(),
       };
+    }
+
+    // Diagnostic: mount the first sprite, wait for success, dump everything
+    // we expect captureChar to use. If a property is missing, the log shows
+    // exactly what's actually on the player object so we can adapt.
+    async function probeApi() {
+      log('--- API probe ---');
+      log('window.spine41: ' + (window.spine41 ? 'present' : 'missing'));
+      if (window.spine41) {
+        log('window.spine41 keys: ' + Object.keys(window.spine41).join(', '));
+        log('window.spine41.SpinePlayer: ' + (window.spine41.SpinePlayer ? 'present' : 'missing'));
+      }
+      if (!spriteList.length) { log('no sprite-list.json loaded'); return; }
+      const entry = spriteList[0];
+      log(`probing first entry: ${entry.key} (${entry.skelUrl})`);
+
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;left:-9999px;top:0;width:512px;height:512px;';
+      document.body.appendChild(host);
+
+      try {
+        const player = await new Promise((resolve, reject) => {
+          let done = false;
+          const inst = new window.spine41.SpinePlayer(host, {
+            skelUrl: entry.skelUrl,
+            atlasUrl: entry.atlasUrl,
+            animation: 'idle',
+            loop: false,
+            backgroundColor: '#00000000',
+            alpha: true,
+            premultipliedAlpha: false,
+            preserveDrawingBuffer: true,
+            showControls: false,
+            showLoading: false,
+            success: () => { done = true; resolve(inst); },
+            error: (p, msg) => { if (!done) reject(new Error(msg || 'spine-player error')); },
+          });
+          setTimeout(() => { if (!done) reject(new Error('mount timeout (10s)')); }, 10000);
+        });
+        log('mount: success');
+        log('player keys: ' + Object.keys(player).join(', '));
+        log('player.canvas: ' + (player.canvas ? `<canvas ${player.canvas.width}x${player.canvas.height}>` : 'missing'));
+        log('player.skeleton: ' + (player.skeleton ? 'present' : 'missing'));
+        log('player.animationState: ' + (player.animationState ? 'present' : 'missing'));
+        log('player.sceneRenderer: ' + (player.sceneRenderer ? 'present' : 'missing'));
+        log('player.assetManager: ' + (player.assetManager ? 'present' : 'missing'));
+        if (player.skeleton?.data) {
+          const anims = (player.skeleton.data.animations || []).map((a) => `${a.name}(${a.duration.toFixed(2)}s)`);
+          log('skeleton.data.animations: [' + anims.join(', ') + ']');
+        }
+        if (player.animationState) {
+          log('animationState methods: ' + Object.keys(player.animationState).join(', '));
+        }
+        try { player.dispose(); } catch (e) { log('dispose threw: ' + e.message); }
+      } catch (err) {
+        log('probe FAILED: ' + (err.message || err));
+        if (err.stack) log(err.stack);
+      } finally {
+        host.remove();
+      }
+      log('--- end probe ---');
     }
 
     async function captureMany(indices) {
@@ -343,6 +401,7 @@
       $('captureOne').disabled = false;
     }
 
+    $('probe').addEventListener('click', () => { probeApi().catch((e) => log('probe error: ' + e)); });
     $('capture').addEventListener('click', () => {
       const indices = spriteList.map((_, i) => i);
       captureMany(indices);
