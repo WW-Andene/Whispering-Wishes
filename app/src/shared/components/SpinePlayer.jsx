@@ -261,8 +261,21 @@ function SpinePlayerComponent({
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   const [failed, setFailed] = useState(false);
+  // Sprite-spine entries (skelUrl) get a pre-rendered idle WebP placed next
+  // to the .skel/.atlas. We try that first — a single decoded image costs
+  // basically nothing, so 50 cards animate fine. Only when the WebP is
+  // missing or fails to decode do we fall through to the live WebGL spine
+  // (which runs into the per-context cap once a few are mounted).
+  const charDataLookup = SPINE_CHARACTERS[characterId];
+  const idleWebpUrl = charDataLookup?.skelUrl
+    ? charDataLookup.skelUrl.replace(/\.skel$/, '_idle.webp')
+    : null;
+  const [prerenderFailed, setPrerenderFailed] = useState(false);
+  const useIdleWebp = !!idleWebpUrl && !prerenderFailed;
 
   useEffect(() => {
+    // Skip the WebGL pipeline entirely while the pre-rendered loop is in play.
+    if (useIdleWebp) return;
     if (!containerRef.current || !characterId || failed) return;
     const charData = SPINE_CHARACTERS[characterId];
     if (!charData) { setFailed(true); return; }
@@ -324,7 +337,7 @@ function SpinePlayerComponent({
       }
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, useIdleWebp]);
 
   const charData = SPINE_CHARACTERS[characterId] || {};
   // Tuning is stored per (characterId, context) pair so the grid card, the
@@ -365,6 +378,32 @@ function SpinePlayerComponent({
             style={{ objectFit: 'contain', ...fallbackImgStyle }}
           />
         ) : null}
+      </div>
+    );
+  }
+
+  // Pre-rendered idle loop — same scale/tx/ty transform as the live canvas,
+  // applied to an <img> instead. Animated WebPs decode lazily and play
+  // continuously; no WebGL context, no per-card budget.
+  if (useIdleWebp) {
+    return (
+      <div
+        className={className}
+        style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
+      >
+        <img
+          src={idleWebpUrl}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full pointer-events-none"
+          style={{
+            objectFit: 'contain',
+            transform: scale !== 1 || tx || ty ? `scale(${scale}) translate(${tx}%, ${ty}%)` : undefined,
+            transformOrigin: 'center center',
+          }}
+          onError={() => setPrerenderFailed(true)}
+        />
       </div>
     );
   }
