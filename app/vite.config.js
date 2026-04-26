@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { writeFileSync, readFileSync } from 'fs';
+import { devPrerenderSavePlugin } from './vite-dev-prerender-save.js';
 
 // P8-22 + P12-01 audit fixes:
 //   P8-22: the original stampSW plugin rewrote public/sw.js with a wall-clock
@@ -39,7 +40,7 @@ const stampSW = () => ({
 });
 
 export default defineConfig({
-  plugins: [react(), stampSW()],
+  plugins: [react(), stampSW(), devPrerenderSavePlugin()],
   test: {
     environment: 'jsdom',
     globals: true,

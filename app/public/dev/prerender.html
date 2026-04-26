@@ -9,10 +9,15 @@
     body { font-family: system-ui, sans-serif; background: #0a0a12; color: #cbd5e1; padding: 12px; }
     header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
     header label { display: flex; align-items: center; gap: 4px; font-size: 13px; }
-    header input[type="number"] { width: 70px; background: #0f172a; color: #cbd5e1; border: 1px solid #334155; border-radius: 4px; padding: 4px 6px; }
+    header input[type="number"], header input[type="text"], header select {
+      background: #0f172a; color: #cbd5e1; border: 1px solid #334155; border-radius: 4px; padding: 4px 6px;
+    }
+    header input[type="number"] { width: 70px; }
+    header select { padding: 4px 8px; }
     button { background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
     button:disabled { background: #475569; cursor: not-allowed; }
     button.danger { background: #b91c1c; }
+    button.success { background: #15803d; }
     main { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding-top: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
     th, td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #1e293b; }
@@ -24,21 +29,63 @@
     td.seam-good { color: #4ade80; }
     td.seam-warn { color: #facc15; }
     td.seam-bad { color: #f87171; }
+    .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; vertical-align: middle; }
+    .badge.sprite { background: #1e3a8a; color: #bfdbfe; }
+    .badge.banner { background: #5b21b6; color: #ddd6fe; }
     .preview { background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 8px; }
     .preview canvas { width: 100%; aspect-ratio: 1; background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 0 0/16px 16px; image-rendering: pixelated; }
     .log { font-family: ui-monospace, monospace; font-size: 11px; color: #94a3b8; max-height: 200px; overflow-y: auto; padding: 6px; background: #020617; border-radius: 4px; margin-top: 8px; white-space: pre-wrap; }
+    .group { display: flex; gap: 4px; align-items: center; padding: 2px 8px; border-left: 1px solid #1e293b; }
+    .hint { font-size: 11px; color: #64748b; }
   </style>
 </head>
 <body>
   <header>
     <h1 style="font-size: 16px; color: #f1f5f9;">Spine Pre-render</h1>
-    <label>Resolution <input type="number" id="resolution" value="1024" min="256" max="2048" step="128"></label>
-    <label>Bitrate (Mbps) <input type="number" id="bitrate" value="5" min="1" max="20" step="1"></label>
-    <label>Animation <input type="text" id="animName" value="idle" size="8"></label>
-    <button id="probe" title="Mount the first sprite once and dump player API keys to the log. Run this first if Capture errors out.">Probe API</button>
+
+    <div class="group">
+      <label>Format
+        <select id="format">
+          <option value="webm">WebM (alpha)</option>
+          <option value="mp4">MP4 (no alpha)</option>
+        </select>
+      </label>
+      <label>Bitrate (Mbps) <input type="number" id="bitrate" value="5" min="1" max="40" step="1"></label>
+    </div>
+
+    <div class="group">
+      <label>Native (px) <input type="number" id="nativeRes" value="512" min="128" max="2048" step="64" title="Base resolution that the multiplier scales from."></label>
+      <label>Resolution
+        <select id="resMul" title="Multiplier applied to the native size.">
+          <option value="0.5">×0.5</option>
+          <option value="1" selected>Native</option>
+          <option value="2">×2</option>
+          <option value="4">×4</option>
+        </select>
+      </label>
+      <span class="hint" id="resReadout">→ 512 px</span>
+    </div>
+
+    <div class="group">
+      <label>Animation <input type="text" id="animName" value="idle" size="8"></label>
+      <span class="hint">duration = native cycle (animation.duration)</span>
+    </div>
+
+    <div class="group">
+      <label>Filter
+        <select id="surfaceFilter">
+          <option value="all">all</option>
+          <option value="sprite">sprite only</option>
+          <option value="banner">banner only</option>
+        </select>
+      </label>
+    </div>
+
+    <button id="probe" title="Mount the first entry once and dump player API keys to the log. Run this first if Capture errors out.">Probe API</button>
     <button id="capture">Capture all</button>
     <button id="captureOne">Capture selected</button>
     <button id="downloadZip" disabled>Download ZIP</button>
+    <button id="sendRepo" class="success" disabled title="Saves captures into the repo (writes to app/public/<outDir>/<outBase>.<ext>). Requires `vite dev` running locally.">Send to repo</button>
     <span id="counter" style="margin-left: auto; font-size: 12px; color: #94a3b8;">0 / 0</span>
   </header>
 
@@ -58,12 +105,18 @@
     </div>
   </main>
 
-  <!-- Spine 4.1 runtime (matches what the app uses for sprite portraits). -->
+  <!-- Spine 4.2 runtime (banner JSONs). Captured to __spine42 first so the
+       4.1 script below doesn't shadow it permanently. -->
+  <script src="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/iife/spine-player.js"></script>
+  <script>window.__spine42 = window.spine; window.spine = undefined;</script>
+  <!-- Spine 4.1 runtime (sprite .skel binaries). Captured as window.spine41,
+       then 4.2 is restored to window.spine to mirror the main app. -->
   <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js"></script>
-  <!-- Capture as 4.1 namespace and clear window.spine so we don't shadow anything later. -->
   <script>
     window.spine41 = window.spine;
-    window.spine = undefined;
+    window.spine = window.__spine42;
+    window.spine42 = window.__spine42;
+    delete window.__spine42;
   </script>
   <!-- fflate for browser-side ZIPing without bundlers. -->
   <script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
@@ -80,17 +133,43 @@
 
     let spriteList = [];
     let zipBuffer = null;
+    let lastResults = []; // raw per-entry capture results, used by "Send to repo"
     let busy = false;
 
     async function init() {
       spriteList = await fetch('./sprite-list.json').then(r => r.json());
+      renderRows();
+      $('counter').textContent = `0 / ${spriteList.length}`;
+      const counts = spriteList.reduce((m, e) => { m[e.surface] = (m[e.surface] || 0) + 1; return m; }, {});
+      log(`Loaded ${spriteList.length} entries (${counts.sprite || 0} sprite, ${counts.banner || 0} banner).`);
+      // Probe whether the dev save endpoint is reachable; enable "Send to repo" if so.
+      try {
+        const r = await fetch('/api/dev-prerender-save', { method: 'GET' });
+        if (r.ok) {
+          $('sendRepo').disabled = false;
+          $('sendRepo').title = 'Save captures directly into the repo (vite dev endpoint detected).';
+          log('Save endpoint reachable: captures can be written to repo.');
+        } else {
+          log('Save endpoint not reachable — "Send to repo" disabled.');
+        }
+      } catch {
+        log('Save endpoint not reachable — "Send to repo" disabled.');
+      }
+      updateResReadout();
+    }
+
+    function renderRows() {
       const tbody = $('rows');
+      tbody.innerHTML = '';
+      const filter = $('surfaceFilter').value;
       spriteList.forEach((entry, i) => {
+        if (filter !== 'all' && entry.surface !== filter) return;
         const tr = document.createElement('tr');
         tr.dataset.idx = i;
+        const badge = `<span class="badge ${entry.surface}">${entry.surface}</span>`;
         tr.innerHTML = `
           <td>${i + 1}</td>
-          <td>${entry.name} <span style="color:#64748b;font-size:11px;">(${entry.key})</span></td>
+          <td>${badge} ${entry.name} <span style="color:#64748b;font-size:11px;">(${entry.key})</span></td>
           <td class="anim">—</td>
           <td class="duration">—</td>
           <td class="frames">—</td>
@@ -106,8 +185,6 @@
         });
         tbody.appendChild(tr);
       });
-      $('counter').textContent = `0 / ${spriteList.length}`;
-      log(`Loaded ${spriteList.length} sprite entries.`);
     }
 
     function setRowStatus(idx, cls, text) {
@@ -125,61 +202,39 @@
       td.textContent = value;
     }
 
+    function updateResReadout() {
+      const base = parseInt($('nativeRes').value, 10) || 512;
+      const mul = parseFloat($('resMul').value) || 1;
+      $('resReadout').textContent = `→ ${Math.round(base * mul)} px`;
+    }
+
     // ────────────────────────────────────────────────────────────────────────
-    // Spine asset loading + frame capture
-    //
-    // Uses spine-player's high-level widget (the same class the rest of the
-    // app uses) — the lower-level WebGL classes aren't on the IIFE global,
-    // they live in a separate spine-webgl bundle we don't load. We let the
-    // widget play the animation naturally and snapshot its canvas every
-    // requestAnimationFrame for `duration` seconds. Frame interval matches
-    // the display's refresh rate (typically 60 Hz).
+    // Codec selection — picks the best MediaRecorder mimeType for the chosen
+    // format. WebM/VP9 keeps alpha; MP4/H.264 doesn't (browser MediaRecorder
+    // MP4 encoders strip alpha unconditionally as of 2026).
     // ────────────────────────────────────────────────────────────────────────
-
-    function canvasToPng(canvas) {
-      return new Promise((res, rej) => canvas.toBlob(
-        (b) => b ? res(b) : rej(new Error('toBlob null')),
-        'image/png',
-      ));
-    }
-
-    async function pixelsFromBlob(blob) {
-      const img = await createImageBitmap(blob);
-      const c = new OffscreenCanvas(img.width, img.height);
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      return ctx.getImageData(0, 0, img.width, img.height).data;
-    }
-
-    async function pixelDelta(blobA, blobB) {
-      const [a, b] = await Promise.all([pixelsFromBlob(blobA), pixelsFromBlob(blobB)]);
-      let sum = 0;
-      const n = a.length;
-      for (let i = 0; i < n; i++) sum += Math.abs(a[i] - b[i]);
-      return sum / n; // mean abs delta per channel byte (0..255)
-    }
-
-    // Capture flow:
-    // - Mount spine-player so it plays the animation naturally on its own
-    //   rAF loop (fixes the "all frames identical" bug from the old loop —
-    //   when we set state.timeScale=0, spine-player short-circuits its
-    //   draw call entirely, so only frame 0 ever ended up on the canvas).
-    // - Tap canvas.captureStream() into a MediaRecorder.
-    // - Record for exactly `animation.duration` seconds, starting from
-    //   trackTime=0, which gives us one full cycle by definition.
-    // - Output one WebM file per character (~2-5 MB at 1024² VP9 alpha,
-    //   compared to ~500 KB × 240 PNG frames = 120 MB the old way).
-
-    function pickWebmMime() {
-      const candidates = [
-        'video/webm;codecs=vp9',  // alpha-capable on Chrome
-        'video/webm;codecs=vp8',  // no alpha
-        'video/webm',
-      ];
+    function pickMime(format) {
+      const candidates = format === 'mp4'
+        ? [
+            'video/mp4;codecs=avc1.42E01E',
+            'video/mp4;codecs=avc1',
+            'video/mp4;codecs=h264',
+            'video/mp4',
+          ]
+        : [
+            'video/webm;codecs=vp9',
+            'video/webm;codecs=vp8',
+            'video/webm',
+          ];
       for (const t of candidates) {
         if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
       }
       return null;
+    }
+
+    function fileExtFor(mimeType) {
+      if (mimeType.startsWith('video/mp4')) return 'mp4';
+      return 'webm';
     }
 
     function recordCanvas(canvas, durationMs, mimeType, bitrate) {
@@ -209,31 +264,46 @@
       });
     }
 
+    function spineLibFor(entry) {
+      // Sprite registry is exported from Spine 4.1, banner registry from 4.2.
+      // Mirror the runtime split the main app uses (SpinePlayer.jsx).
+      if (entry.runtime === '4.1') return window.spine41;
+      return window.spine42 || window.spine;
+    }
+
+    function assetUrlsFor(entry) {
+      if (entry.skelUrl) return { skelUrl: entry.skelUrl, atlasUrl: entry.atlasUrl };
+      return { jsonUrl: entry.jsonUrl, atlasUrl: entry.atlasUrl };
+    }
+
     async function captureChar(idx, entry, opts) {
       setRowStatus(idx, 'status-busy', 'mounting');
 
-      const mimeType = pickWebmMime();
+      const mimeType = pickMime(opts.format);
       if (!mimeType) {
-        throw new Error('MediaRecorder + WebM not supported in this browser');
+        throw new Error(`MediaRecorder + ${opts.format.toUpperCase()} not supported in this browser`);
       }
       const isAlphaCapable = mimeType.includes('vp9');
+      const ext = fileExtFor(mimeType);
+
+      const resolution = Math.round(opts.nativeRes * opts.resMul);
 
       const host = document.createElement('div');
-      host.style.cssText = `position:fixed;left:-9999px;top:0;width:${opts.resolution}px;height:${opts.resolution}px;`;
+      host.style.cssText = `position:fixed;left:-9999px;top:0;width:${resolution}px;height:${resolution}px;`;
       document.body.appendChild(host);
 
-      if (!window.spine41 || !window.spine41.SpinePlayer) {
+      const spineLib = spineLibFor(entry);
+      if (!spineLib || !spineLib.SpinePlayer) {
         host.remove();
-        throw new Error('window.spine41.SpinePlayer not available — check the script tag');
+        throw new Error(`spine runtime ${entry.runtime} (${entry.runtime === '4.1' ? 'window.spine41' : 'window.spine42'}) not available`);
       }
 
       let player;
       try {
         player = await new Promise((resolve, reject) => {
           let resolved = false;
-          const inst = new window.spine41.SpinePlayer(host, {
-            skelUrl: entry.skelUrl,
-            atlasUrl: entry.atlasUrl,
+          const inst = new spineLib.SpinePlayer(host, {
+            ...assetUrlsFor(entry),
             animation: opts.animName,
             // loop=true so the recording wraps cleanly if our setTimeout
             // overshoots by a frame or two — the recorder stops on its
@@ -267,19 +337,19 @@
       setRowField(idx, 'anim', animation.name);
       setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
 
-      // Reset to t=0 right before recording so the first captured video
-      // frame matches the start of the cycle.
+      // Reset to t=0 right before recording so the first captured video frame
+      // matches the start of the cycle. We always capture exactly one native
+      // animation cycle (animation.duration), never an arbitrary wall-clock
+      // window — that's what makes the resulting loop seamless.
       state.clearTracks();
       const track = state.setAnimation(0, animation.name, true);
       if (track) track.trackTime = 0;
       state.apply(skel);
       skel.updateWorldTransform();
-      // Let the player render the t=0 pose before we tap the stream.
       await new Promise((res) => requestAnimationFrame(res));
       await new Promise((res) => requestAnimationFrame(res));
 
       const previewCtx = $('preview').getContext('2d');
-      // Mirror the canvas onto the live preview at ~30Hz while recording.
       let mirroring = true;
       const mirror = () => {
         if (!mirroring) return;
@@ -290,12 +360,9 @@
       mirror();
 
       const start = performance.now();
-      setRowStatus(idx, 'status-busy', 'recording…');
+      setRowStatus(idx, 'status-busy', `recording @ ${resolution}px…`);
 
       const durationMs = animation.duration * 1000;
-      // VP9 at ~5 Mbps gives visually-lossless quality at 1024² — that's
-      // the same target bitrate YouTube uses for HD spine-style content.
-      // Increase via Bitrate input (default 5 Mbps).
       const bitrate = opts.bitrate * 1_000_000;
       const blob = await recordCanvas(canvas, durationMs, mimeType, bitrate);
 
@@ -306,44 +373,50 @@
       const wallSec = (performance.now() - start) / 1000;
       setRowField(idx, 'frames', `${(blob.size / 1024).toFixed(0)} KB`);
       setRowField(idx, 'seam', isAlphaCapable ? 'α' : 'no α', isAlphaCapable ? 'seam-good' : 'seam-warn');
-      setRowStatus(idx, 'status-ok', `webm ${(blob.size / 1024 / 1024).toFixed(2)} MB in ${wallSec.toFixed(1)}s`);
+      setRowStatus(idx, 'status-ok', `${ext} ${(blob.size / 1024 / 1024).toFixed(2)} MB in ${wallSec.toFixed(1)}s`);
 
       return {
         entry,
         blob,
         mimeType,
+        ext,
+        resolution,
         duration: animation.duration,
         animName: animation.name,
         alphaCapable: isAlphaCapable,
       };
     }
 
-    async function packZip(results, opts) {
-      log(`Packing ZIP for ${results.length} characters…`);
-      const files = {};
-      for (const r of results) {
-        const name = `${r.entry.dir}/Portraits_${r.entry.portrait}_idle.webm`;
-        const buf = new Uint8Array(await r.blob.arrayBuffer());
-        files[name] = buf;
-      }
-      const manifest = {
-        format: 'webm',
-        codec: 'vp9',
+    function manifestFor(results) {
+      return {
+        format: results[0]?.ext || 'webm',
+        codec: results[0]?.mimeType || '',
         captured: results.map((r) => ({
           key: r.entry.key,
+          surface: r.entry.surface,
           name: r.entry.name,
           dir: r.entry.dir,
-          portrait: r.entry.portrait,
-          file: `${r.entry.dir}/Portraits_${r.entry.portrait}_idle.webm`,
+          file: `${r.entry.outDir}/${r.entry.outBase}.${r.ext}`,
           duration: r.duration,
           animName: r.animName,
           mimeType: r.mimeType,
           alphaCapable: r.alphaCapable,
+          resolution: r.resolution,
           sizeBytes: r.blob.size,
         })),
       };
-      files['manifest.json'] = new TextEncoder().encode(JSON.stringify(manifest, null, 2));
-      // WebM is already compressed; level 0 (store) keeps zip fast.
+    }
+
+    async function packZip(results) {
+      log(`Packing ZIP for ${results.length} entries…`);
+      const files = {};
+      for (const r of results) {
+        const name = `${r.entry.outDir}/${r.entry.outBase}.${r.ext}`;
+        const buf = new Uint8Array(await r.blob.arrayBuffer());
+        files[name] = buf;
+      }
+      files['manifest.json'] = new TextEncoder().encode(JSON.stringify(manifestFor(results), null, 2));
+      // WebM/MP4 are already compressed; level 0 (store) keeps zip fast.
       const zipped = fflate.zipSync(files, { level: 0 });
       const blob = new Blob([zipped], { type: 'application/zip' });
       zipBuffer = blob;
@@ -356,38 +429,88 @@
       log(`ZIP ready (${(blob.size / 1024 / 1024).toFixed(1)} MB).`);
     }
 
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const s = String(reader.result || '');
+          const i = s.indexOf(',');
+          resolve(i >= 0 ? s.slice(i + 1) : s);
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function sendToRepo(results) {
+      if (!results.length) {
+        alert('No captures to send. Run a capture first.');
+        return;
+      }
+      log(`Encoding ${results.length} files for /api/dev-prerender-save…`);
+      const files = {};
+      for (const r of results) {
+        const name = `${r.entry.outDir}/${r.entry.outBase}.${r.ext}`;
+        files[name] = await blobToBase64(r.blob);
+      }
+      log('Posting to /api/dev-prerender-save…');
+      let resp;
+      try {
+        resp = await fetch('/api/dev-prerender-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ files }),
+        });
+      } catch (err) {
+        log(`Send failed: ${err.message || err}`);
+        alert(`Send failed: ${err.message || err}`);
+        return;
+      }
+      if (!resp.ok) {
+        const text = await resp.text();
+        log(`Send failed (${resp.status}): ${text}`);
+        alert(`Send failed (${resp.status}): ${text}`);
+        return;
+      }
+      const data = await resp.json();
+      log(`Wrote ${data.written.length} files under app/${data.root || 'public'}/`);
+      for (const w of data.written) log(`  ✓ ${w.path} (${(w.bytes / 1024).toFixed(0)} KB)`);
+      for (const s of data.skipped) log(`  ✗ ${s.path}: ${s.reason}`);
+      alert(`Wrote ${data.written.length} files into the repo. Run \`npm run manifest\` to refresh the runtime manifest.`);
+    }
+
     function readOpts() {
       return {
-        resolution: parseInt($('resolution').value, 10) || 1024,
+        nativeRes: parseInt($('nativeRes').value, 10) || 512,
+        resMul: parseFloat($('resMul').value) || 1,
         bitrate: parseInt($('bitrate').value, 10) || 5,
         animName: ($('animName').value || 'idle').trim(),
+        format: $('format').value || 'webm',
       };
     }
 
-    // Diagnostic: mount the first sprite, wait for success, dump everything
-    // we expect captureChar to use. If a property is missing, the log shows
-    // exactly what's actually on the player object so we can adapt.
     async function probeApi() {
       log('--- API probe ---');
       log('window.spine41: ' + (window.spine41 ? 'present' : 'missing'));
-      if (window.spine41) {
-        log('window.spine41 keys: ' + Object.keys(window.spine41).join(', '));
-        log('window.spine41.SpinePlayer: ' + (window.spine41.SpinePlayer ? 'present' : 'missing'));
-      }
+      log('window.spine42: ' + (window.spine42 ? 'present' : 'missing'));
+      const supportedFormats = ['webm', 'mp4'].map(
+        (f) => `${f}=${pickMime(f) ? 'YES' : 'NO'}`,
+      ).join(', ');
+      log('codec support: ' + supportedFormats);
       if (!spriteList.length) { log('no sprite-list.json loaded'); return; }
       const entry = spriteList[0];
-      log(`probing first entry: ${entry.key} (${entry.skelUrl})`);
+      log(`probing first entry: ${entry.key} (${entry.surface}, runtime ${entry.runtime})`);
 
       const host = document.createElement('div');
       host.style.cssText = 'position:fixed;left:-9999px;top:0;width:512px;height:512px;';
       document.body.appendChild(host);
 
       try {
+        const spineLib = spineLibFor(entry);
         const player = await new Promise((resolve, reject) => {
           let done = false;
-          const inst = new window.spine41.SpinePlayer(host, {
-            skelUrl: entry.skelUrl,
-            atlasUrl: entry.atlasUrl,
+          const inst = new spineLib.SpinePlayer(host, {
+            ...assetUrlsFor(entry),
             animation: 'idle',
             loop: false,
             backgroundColor: '#00000000',
@@ -402,18 +525,10 @@
           setTimeout(() => { if (!done) reject(new Error('mount timeout (10s)')); }, 10000);
         });
         log('mount: success');
-        log('player keys: ' + Object.keys(player).join(', '));
         log('player.canvas: ' + (player.canvas ? `<canvas ${player.canvas.width}x${player.canvas.height}>` : 'missing'));
-        log('player.skeleton: ' + (player.skeleton ? 'present' : 'missing'));
-        log('player.animationState: ' + (player.animationState ? 'present' : 'missing'));
-        log('player.sceneRenderer: ' + (player.sceneRenderer ? 'present' : 'missing'));
-        log('player.assetManager: ' + (player.assetManager ? 'present' : 'missing'));
         if (player.skeleton?.data) {
           const anims = (player.skeleton.data.animations || []).map((a) => `${a.name}(${a.duration.toFixed(2)}s)`);
           log('skeleton.data.animations: [' + anims.join(', ') + ']');
-        }
-        if (player.animationState) {
-          log('animationState methods: ' + Object.keys(player.animationState).join(', '));
         }
         try { player.dispose(); } catch (e) { log('dispose threw: ' + e.message); }
       } catch (err) {
@@ -431,13 +546,13 @@
       $('capture').disabled = true;
       $('captureOne').disabled = true;
       const opts = readOpts();
-      const results = [];
+      lastResults = [];
       let done = 0;
       $('counter').textContent = `0 / ${indices.length}`;
       for (const idx of indices) {
         try {
           const r = await captureChar(idx, spriteList[idx], opts);
-          results.push(r);
+          lastResults.push(r);
         } catch (err) {
           console.error(err);
           setRowStatus(idx, 'status-err', String(err.message || err).slice(0, 40));
@@ -446,7 +561,7 @@
         done++;
         $('counter').textContent = `${done} / ${indices.length}`;
       }
-      if (results.length) await packZip(results, opts);
+      if (lastResults.length) await packZip(lastResults);
       busy = false;
       $('capture').disabled = false;
       $('captureOne').disabled = false;
@@ -454,7 +569,10 @@
 
     $('probe').addEventListener('click', () => { probeApi().catch((e) => log('probe error: ' + e)); });
     $('capture').addEventListener('click', () => {
-      const indices = spriteList.map((_, i) => i);
+      const filter = $('surfaceFilter').value;
+      const indices = spriteList
+        .map((e, i) => (filter === 'all' || e.surface === filter ? i : -1))
+        .filter((i) => i >= 0);
       captureMany(indices);
     });
     $('captureOne').addEventListener('click', () => {
@@ -471,6 +589,16 @@
       a.href = URL.createObjectURL(zipBuffer);
       a.download = 'spine-prerender.zip';
       a.click();
+    });
+    $('sendRepo').addEventListener('click', () => { sendToRepo(lastResults); });
+    $('surfaceFilter').addEventListener('change', renderRows);
+    $('nativeRes').addEventListener('input', updateResReadout);
+    $('resMul').addEventListener('change', updateResReadout);
+    $('format').addEventListener('change', () => {
+      const f = $('format').value;
+      if (f === 'mp4' && !pickMime('mp4')) {
+        log('warning: this browser does not advertise MP4 support in MediaRecorder. Capture will fail.');
+      }
     });
 
     init().catch((e) => {
