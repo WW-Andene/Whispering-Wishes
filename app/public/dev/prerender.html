@@ -127,78 +127,14 @@
 
     // ────────────────────────────────────────────────────────────────────────
     // Spine asset loading + frame capture
+    //
+    // Uses spine-player's high-level widget (the same class the rest of the
+    // app uses) — the lower-level WebGL classes aren't on the IIFE global,
+    // they live in a separate spine-webgl bundle we don't load. We let the
+    // widget play the animation naturally and snapshot its canvas every
+    // requestAnimationFrame for `duration` seconds. Frame interval matches
+    // the display's refresh rate (typically 60 Hz).
     // ────────────────────────────────────────────────────────────────────────
-
-    async function loadAssets(gl, entry) {
-      const am = new spine41.webgl.AssetManager(gl);
-      // AssetManager handles atlas + texture-page resolution automatically.
-      am.loadBinary(entry.skelUrl);
-      am.loadTextureAtlas(entry.atlasUrl);
-      // Poll until loaded or errored.
-      const start = Date.now();
-      while (!am.isLoadingComplete()) {
-        if (Date.now() - start > 30000) throw new Error('asset load timeout');
-        await new Promise((r) => setTimeout(r, 50));
-      }
-      if (am.hasErrors && am.hasErrors()) {
-        const errs = am.getErrors ? am.getErrors() : am.errors;
-        throw new Error('asset errors: ' + JSON.stringify(errs));
-      }
-      return am;
-    }
-
-    function buildSkeleton(am, entry) {
-      const atlas = am.get(entry.atlasUrl);
-      const atlasLoader = new spine41.AtlasAttachmentLoader(atlas);
-      const skelBin = new spine41.SkeletonBinary(atlasLoader);
-      // Don't auto-scale; we set our own.
-      skelBin.scale = 1;
-      const skelData = skelBin.readSkeletonData(am.get(entry.skelUrl));
-      const skeleton = new spine41.Skeleton(skelData);
-      const stateData = new spine41.AnimationStateData(skelData);
-      const state = new spine41.AnimationState(stateData);
-      return { skeleton, state, skelData };
-    }
-
-    function fitSkeleton(skeleton, viewportSize, padding) {
-      // Apply once at t=0 so getBounds returns a sensible box.
-      skeleton.setToSetupPose();
-      skeleton.updateWorldTransform();
-      const offset = new spine41.Vector2();
-      const size = new spine41.Vector2();
-      skeleton.getBounds(offset, size);
-      if (size.x <= 0 || size.y <= 0) {
-        return { fit: 1, offset, size };
-      }
-      const fit = Math.min(viewportSize / size.x, viewportSize / size.y) / padding;
-      skeleton.scaleX = fit;
-      skeleton.scaleY = fit;
-      skeleton.updateWorldTransform();
-      skeleton.getBounds(offset, size);
-      // Center bounds on (0,0) world. With camera at (0,0) and viewport
-      // = canvas size, world units == pixel units.
-      skeleton.x = -(offset.x + size.x / 2);
-      skeleton.y = -(offset.y + size.y / 2);
-      return { fit, offset, size };
-    }
-
-    function setupRenderer(canvas, gl) {
-      const renderer = new spine41.webgl.SceneRenderer(canvas, gl);
-      renderer.camera.position.x = 0;
-      renderer.camera.position.y = 0;
-      renderer.camera.viewportWidth = canvas.width;
-      renderer.camera.viewportHeight = canvas.height;
-      return renderer;
-    }
-
-    function drawFrame(renderer, gl, skeleton) {
-      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      renderer.begin();
-      renderer.drawSkeleton(skeleton, true);
-      renderer.end();
-    }
 
     function canvasToPng(canvas) {
       return new Promise((res, rej) => canvas.toBlob(
@@ -224,84 +160,113 @@
     }
 
     async function captureChar(idx, entry, opts) {
-      setRowStatus(idx, 'status-busy', 'loading');
-      // Use a hidden offscreen canvas so we can also mirror to the live preview.
-      const offCanvas = document.createElement('canvas');
-      offCanvas.width = offCanvas.height = opts.resolution;
-      const gl = offCanvas.getContext('webgl', {
-        alpha: true,
-        premultipliedAlpha: false,
-        preserveDrawingBuffer: true,
-        antialias: true,
-      });
-      if (!gl) throw new Error('no WebGL');
+      setRowStatus(idx, 'status-busy', 'mounting');
 
-      const am = await loadAssets(gl, entry);
-      const { skeleton, state, skelData } = buildSkeleton(am, entry);
+      // Hidden host sized to target resolution; spine-player picks its
+      // canvas size from this container.
+      const host = document.createElement('div');
+      host.style.cssText = `position:fixed;left:-9999px;top:0;width:${opts.resolution}px;height:${opts.resolution}px;`;
+      document.body.appendChild(host);
 
-      const animName = opts.animName;
-      let animation = skelData.findAnimation(animName);
-      if (!animation && skelData.animations.length) animation = skelData.animations[0];
-      if (!animation) throw new Error('no animation');
+      if (!window.spine41 || !window.spine41.SpinePlayer) {
+        host.remove();
+        throw new Error('window.spine41.SpinePlayer not available — check the script tag');
+      }
+
+      let player;
+      try {
+        player = await new Promise((resolve, reject) => {
+          let resolved = false;
+          const inst = new window.spine41.SpinePlayer(host, {
+            skelUrl: entry.skelUrl,
+            atlasUrl: entry.atlasUrl,
+            animation: opts.animName,
+            loop: false,
+            backgroundColor: '#00000000',
+            alpha: true,
+            premultipliedAlpha: false,
+            preserveDrawingBuffer: true, // canvas.toBlob() needs this
+            showControls: false,
+            showLoading: false,
+            success: () => { resolved = true; resolve(inst); },
+            error: (p, msg) => { if (!resolved) reject(new Error(msg || 'spine-player error')); },
+          });
+          setTimeout(() => { if (!resolved) reject(new Error('mount timeout')); }, 30000);
+        });
+      } catch (err) {
+        host.remove();
+        throw err;
+      }
+
+      const canvas = player.canvas;
+      const skel = player.skeleton;
+      const state = player.animationState;
+      const animation = skel.data.findAnimation(opts.animName) || skel.data.animations[0];
+      if (!animation) {
+        try { player.dispose(); } catch {}
+        host.remove();
+        throw new Error('no animation');
+      }
       setRowField(idx, 'anim', animation.name);
       setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
 
-      const fps = opts.fps;
-      const dt = 1 / fps;
-      const frameCount = Math.max(1, Math.round(animation.duration * fps));
-      setRowField(idx, 'frames', String(frameCount));
-
-      // Fit skeleton with the setup pose so all chars sit cleanly in-frame.
-      fitSkeleton(skeleton, opts.resolution, opts.padding);
-      const renderer = setupRenderer(offCanvas, gl);
-
-      // Reset to t=0 with non-looping animation so the (frameCount+1)-th
-      // frame represents trackTime = duration (one full cycle elapsed).
+      // Reset to a clean t=0 with loop=false so the animation plays exactly
+      // one cycle. The player's internal rAF advances the state for us.
       state.clearTracks();
       state.setAnimation(0, animation.name, false);
+      state.apply(skel);
+      skel.updateWorldTransform();
 
-      setRowStatus(idx, 'status-busy', `0 / ${frameCount + 1}`);
+      // Two rAFs to make sure the first rendered frame is the t=0 pose.
+      await new Promise((res) => requestAnimationFrame(res));
+      await new Promise((res) => requestAnimationFrame(res));
 
       const frames = [];
+      const captureTimes = [];
       const previewCtx = $('preview').getContext('2d');
-      for (let i = 0; i <= frameCount; i++) {
-        if (i > 0) state.update(dt);
-        state.apply(skeleton);
-        skeleton.updateWorldTransform();
-        drawFrame(renderer, gl, skeleton);
-        const blob = await canvasToPng(offCanvas);
+      const start = performance.now();
+      setRowStatus(idx, 'status-busy', 'capturing');
+
+      // Capture every rAF until one full duration has elapsed.
+      while (true) {
+        const blob = await canvasToPng(canvas);
+        const t = (performance.now() - start) / 1000;
         frames.push(blob);
-        // Mirror to live preview (downscaled).
+        captureTimes.push(t);
+
         previewCtx.clearRect(0, 0, 512, 512);
-        previewCtx.drawImage(offCanvas, 0, 0, 512, 512);
-        if (i % 5 === 0) {
-          setRowStatus(idx, 'status-busy', `${i} / ${frameCount + 1}`);
-          await new Promise((r) => setTimeout(r, 0)); // yield UI
+        previewCtx.drawImage(canvas, 0, 0, 512, 512);
+
+        if (frames.length % 5 === 0) {
+          setRowStatus(idx, 'status-busy', `${frames.length} @ ${t.toFixed(2)}s`);
         }
+        if (t >= animation.duration) break;
+        await new Promise((res) => requestAnimationFrame(res));
       }
 
-      // Seam delta: frame[0] (trackTime=0) vs frame[frameCount] (trackTime=duration).
-      const seamDelta = await pixelDelta(frames[0], frames[frameCount]);
+      setRowField(idx, 'frames', String(frames.length));
+
+      const observedFps = frames.length / animation.duration;
+      const seamDelta = frames.length >= 2
+        ? await pixelDelta(frames[0], frames[frames.length - 1])
+        : 0;
       let seamCls = 'seam-good';
       if (seamDelta > 5) seamCls = 'seam-warn';
       if (seamDelta > 15) seamCls = 'seam-bad';
       setRowField(idx, 'seam', seamDelta.toFixed(2), seamCls);
 
-      // Output excludes the trailing wrap frame.
-      const outputFrames = frames.slice(0, frameCount);
+      try { player.dispose(); } catch {}
+      host.remove();
 
-      // Free GL resources before next character.
-      try { am.dispose && am.dispose(); } catch {}
-      const lose = gl.getExtension('WEBGL_lose_context');
-      if (lose) lose.loseContext();
-
-      setRowStatus(idx, 'status-ok', 'done');
+      setRowStatus(idx, 'status-ok', `${frames.length} frames @ ${observedFps.toFixed(0)}fps`);
       return {
         entry,
-        frames: outputFrames,
+        frames,
+        captureTimes,
         duration: animation.duration,
         animName: animation.name,
         seamDelta,
+        observedFps,
       };
     }
 
@@ -321,7 +286,8 @@
           dir: r.entry.dir,
           animName: r.animName,
           duration: r.duration,
-          fps: opts.fps,
+          fps: Math.round(r.observedFps),
+          observedFps: r.observedFps,
           frameCount: r.frames.length,
           resolution: opts.resolution,
           seamDelta: r.seamDelta,
