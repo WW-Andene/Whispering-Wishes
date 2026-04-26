@@ -374,7 +374,15 @@
       const track = state.setAnimation(0, animation.name, true);
       if (track) track.trackTime = 0;
       state.apply(skel);
-      skel.updateWorldTransform();
+      // Spine 4.2 added a physics simulator and made updateWorldTransform()
+      // require a Physics enum arg — calling it bare throws "physics is
+      // undefined" on banner skeletons. Spine 4.1 still takes no args, so
+      // we feature-detect via spineLib.Physics.
+      if (spineLib.Physics) {
+        skel.updateWorldTransform(spineLib.Physics.update);
+      } else {
+        skel.updateWorldTransform();
+      }
       await new Promise((res) => requestAnimationFrame(res));
       await new Promise((res) => requestAnimationFrame(res));
 
