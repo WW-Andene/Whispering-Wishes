@@ -1,12 +1,17 @@
 #!/usr/bin/env node
-// Scans app/public/portraits/<dir>/Portraits_*_idle.webp and emits the set
-// of sprite keys that have a pre-rendered idle loop on disk. SpinePlayer
-// reads this manifest to decide whether to attempt the tier-0 WebP swap-in
-// without 404ing — characters not in the set fall straight through to the
-// live WebGL spine path.
+// Scans for pre-rendered idle loops shipped in the repo and emits the lookup
+// SpinePlayer reads at runtime to short-circuit live WebGL.
+//
+// Two source shapes are scanned:
+//
+//   app/public/portraits/<dir>/Portraits_<name>_idle.{webm,mp4,webp}
+//     — sprite-spine prerenders captured from the 4.1 .skel registry.
+//
+//   app/public/spine/role_<id>/c_<id>_1_idle.{webm,mp4,webp}
+//     — banner-spine prerenders captured from the 4.2 .json registry.
 //
 // Auto-runs before each `vite build` (see package.json `prebuild`). Re-run
-// manually after dropping new pre-rendered WebPs into place during dev:
+// manually after dropping new pre-renders into place during dev:
 //
 //   node tools/build-prerender-manifest.mjs
 //
@@ -19,82 +24,112 @@ import url from 'node:url';
 
 const here = path.dirname(url.fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..');
-const portraitsDir = path.join(repoRoot, 'app/public/portraits');
+const publicDir = path.join(repoRoot, 'app/public');
 const outFile = path.join(repoRoot, 'app/src/shared/spinePrerenderManifest.js');
 
-// Reverse-lookup: portrait codename (e.g. "Linnai") -> registry key (e.g. "linnai").
-// We could read SPRITE_SPINE_CHARACTERS for this, but the registry uses key=dir
-// for everything except the rover variants which share dirs ("rover_male" /
-// "rover_female"). The on-disk Portraits_<Name>_idle.webp lives under the
-// same dir, so the file path is enough to derive both the dir and the
-// portrait name without parsing the registry.
-
-// Scan order matters: when a character has both a .webm (preferred,
-// tiny + native video alpha) and a .webp (fallback for Safari), the .webm
-// wins. SpinePlayer reads the format hint to pick <video> vs <img>.
+// Scan order matters: when a character has both a video-format prerender
+// (.webm or .mp4) and a .webp fallback, the video wins. SpinePlayer reads the
+// format hint to pick <video> vs <img>. WebM is preferred over MP4 because it
+// keeps alpha — MP4 only shows up when the dev panel was used in a browser
+// without WebM support.
 const FORMATS = [
   { ext: 'webm', tag: 'video' },
+  { ext: 'mp4',  tag: 'video' },
   { ext: 'webp', tag: 'image' },
 ];
 
-function scan() {
-  if (!fs.existsSync(portraitsDir)) return [];
-  const found = new Map(); // dir/portrait -> { dir, portrait, url, format }
-  for (const dir of fs.readdirSync(portraitsDir, { withFileTypes: true })) {
+// Each scanner contributes { key, url, format } records. `key` is the path
+// stem under app/public/ (no extension); the runtime lookup derives the same
+// stem from the spine asset URL or characterId, so the two sides always agree.
+function scanSprite() {
+  const root = path.join(publicDir, 'portraits');
+  if (!fs.existsSync(root)) return [];
+  const found = new Map();
+  for (const dir of fs.readdirSync(root, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
-    const charDir = path.join(portraitsDir, dir.name);
+    const charDir = path.join(root, dir.name);
     const files = fs.readdirSync(charDir);
     for (const { ext, tag } of FORMATS) {
       const re = new RegExp(`^Portraits_(.+)_idle\\.${ext}$`);
       for (const file of files) {
         const m = file.match(re);
         if (!m) continue;
-        const key = `${dir.name}/${m[1]}`;
-        // Skip if a higher-priority format already claimed this slot.
-        if (found.has(key)) continue;
-        found.set(key, {
-          dir: dir.name,
-          portrait: m[1],
-          url: `portraits/${dir.name}/${file}`,
-          format: tag,
-        });
+        const key = `portraits/${dir.name}/Portraits_${m[1]}`;
+        if (found.has(key)) continue; // higher-priority format already claimed it
+        found.set(key, { key, url: `portraits/${dir.name}/${file}`, format: tag });
       }
     }
   }
-  return [...found.values()].sort((a, b) => a.url.localeCompare(b.url));
+  return [...found.values()];
+}
+
+function scanBanner() {
+  const root = path.join(publicDir, 'spine');
+  if (!fs.existsSync(root)) return [];
+  const found = new Map();
+  for (const dir of fs.readdirSync(root, { withFileTypes: true })) {
+    if (!dir.isDirectory()) continue;
+    const m = dir.name.match(/^role_(.+)$/);
+    if (!m) continue;
+    const id = m[1];
+    const charDir = path.join(root, dir.name);
+    const files = fs.readdirSync(charDir);
+    for (const { ext, tag } of FORMATS) {
+      const target = `c_${id}_1_idle.${ext}`;
+      if (!files.includes(target)) continue;
+      const key = `spine/${dir.name}/c_${id}_1`;
+      if (found.has(key)) continue;
+      found.set(key, { key, url: `spine/${dir.name}/${target}`, format: tag });
+    }
+  }
+  return [...found.values()];
 }
 
 function emit(entries) {
+  entries.sort((a, b) => a.key.localeCompare(b.key));
   const lines = [
     '// AUTO-GENERATED by tools/build-prerender-manifest.mjs.',
     '// Do not edit manually — re-run the script (or `npm run build`) to refresh.',
     '//',
-    '// Maps each sprite character that has a pre-rendered idle loop on disk to',
-    '// the public asset URL plus a format hint (`video` for .webm, `image` for',
-    '// animated .webp). SpinePlayer reads this to pick <video> vs <img> for the',
-    '// tier-0 swap-in; characters not listed here skip straight to live WebGL.',
+    '// Maps each character (sprite or banner) that has a pre-rendered idle loop',
+    '// on disk to its public asset URL plus a format hint (`video` for .webm/.mp4,',
+    '// `image` for animated .webp). SpinePlayer reads this to pick <video> vs <img>',
+    '// for the tier-0 swap-in; characters not listed here skip straight to live WebGL.',
     '',
-    `export const PRERENDERED_IDLE = Object.freeze({`,
+    'export const PRERENDERED_IDLE = Object.freeze({',
   ];
   for (const e of entries) {
-    const k = JSON.stringify(`${e.dir}/Portraits_${e.portrait}`);
-    lines.push(`  ${k}: { url: ${JSON.stringify(e.url)}, format: ${JSON.stringify(e.format)} },`);
+    lines.push(`  ${JSON.stringify(e.key)}: { url: ${JSON.stringify(e.url)}, format: ${JSON.stringify(e.format)} },`);
   }
   lines.push('});');
   lines.push('');
-  lines.push('// Lookup helper: resolves a SPRITE_SPINE_CHARACTERS entry to its');
-  lines.push('// pre-rendered idle asset, or null if no prerender exists.');
-  lines.push('export function getPrerenderedIdle(charData) {');
-  lines.push('  if (!charData?.skelUrl) return null;');
-  lines.push("  // skelUrl is `portraits/<dir>/Portraits_<name>.skel`; strip the");
-  lines.push('  // leading "portraits/" and trailing ".skel" to form the lookup key.');
-  lines.push("  const key = charData.skelUrl.replace(/^portraits\\//, '').replace(/\\.skel$/, '');");
-  lines.push('  return PRERENDERED_IDLE[key] || null;');
+  lines.push('// Lookup helper. For sprite entries we derive the key from the .skel URL.');
+  lines.push('// For banner entries (no skelUrl on the registry) we derive it from the');
+  lines.push('// surface-prefixed characterId — same shape SpinePlayer.jsx uses to build');
+  lines.push('// the live JSON URL.');
+  lines.push('export function getPrerenderedIdle(charData, characterId) {');
+  lines.push('  if (charData?.skelUrl) {');
+  lines.push("    const key = charData.skelUrl.replace(/^\\/?/, '').replace(/\\.skel$/, '');");
+  lines.push('    return PRERENDERED_IDLE[key] || null;');
+  lines.push('  }');
+  lines.push("  if (typeof characterId === 'string' && characterId.startsWith('banner:')) {");
+  lines.push("    const id = characterId.slice('banner:'.length);");
+  lines.push('    const key = `spine/role_${id}/c_${id}_1`;');
+  lines.push('    return PRERENDERED_IDLE[key] || null;');
+  lines.push('  }');
+  lines.push('  return null;');
   lines.push('}');
   lines.push('');
   fs.writeFileSync(outFile, lines.join('\n'));
 }
 
-const entries = scan();
+const entries = [...scanSprite(), ...scanBanner()];
 emit(entries);
-console.log(`prerender manifest: ${entries.length} entries -> ${path.relative(repoRoot, outFile)}`);
+const counts = entries.reduce((m, e) => {
+  const surface = e.key.startsWith('spine/') ? 'banner' : 'sprite';
+  m[surface] = (m[surface] || 0) + 1;
+  return m;
+}, {});
+console.log(
+  `prerender manifest: ${entries.length} entries (${counts.sprite || 0} sprite, ${counts.banner || 0} banner) -> ${path.relative(repoRoot, outFile)}`,
+);
