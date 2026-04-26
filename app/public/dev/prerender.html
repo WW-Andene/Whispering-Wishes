@@ -33,6 +33,7 @@
   <header>
     <h1 style="font-size: 16px; color: #f1f5f9;">Spine Pre-render</h1>
     <label>Resolution <input type="number" id="resolution" value="1024" min="256" max="2048" step="128"></label>
+    <label>FPS <input type="number" id="fps" value="60" min="15" max="120" step="5"></label>
     <label>Animation <input type="text" id="animName" value="idle" size="8"></label>
     <button id="probe" title="Mount the first sprite once and dump player API keys to the log. Run this first if Capture errors out.">Probe API</button>
     <button id="capture">Capture all</button>
@@ -209,10 +210,16 @@
       setRowField(idx, 'anim', animation.name);
       setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
 
-      // Reset to a clean t=0 with loop=false so the animation plays exactly
-      // one cycle. The player's internal rAF advances the state for us.
+      // Reset to a clean t=0. Then freeze the player's auto-advance —
+      // canvas.toBlob('image/png') at 1024² takes 100-300ms, so if we let
+      // the animation keep playing during encoding we'd only sample 3-7
+      // frames per second. Instead we set timeScale=0 and step trackTime
+      // manually each iteration; encoding latency no longer affects the
+      // sampled animation timing.
       state.clearTracks();
-      state.setAnimation(0, animation.name, false);
+      const track = state.setAnimation(0, animation.name, false);
+      state.timeScale = 0;
+      if (track) track.timeScale = 0;
       state.apply(skel);
       skel.updateWorldTransform();
 
@@ -220,52 +227,62 @@
       await new Promise((res) => requestAnimationFrame(res));
       await new Promise((res) => requestAnimationFrame(res));
 
+      const fps = opts.fps;
+      const dt = 1 / fps;
+      const frameCount = Math.max(1, Math.round(animation.duration * fps));
+      setRowField(idx, 'frames', String(frameCount));
+
       const frames = [];
-      const captureTimes = [];
       const previewCtx = $('preview').getContext('2d');
       const start = performance.now();
-      setRowStatus(idx, 'status-busy', 'capturing');
+      setRowStatus(idx, 'status-busy', `0 / ${frameCount + 1}`);
 
-      // Capture every rAF until one full duration has elapsed.
-      while (true) {
+      // Frame [0..frameCount] inclusive — the trailing wrap frame at
+      // trackTime=duration is used only for seam diff and dropped before
+      // emitting the ZIP.
+      for (let i = 0; i <= frameCount; i++) {
+        if (track) track.trackTime = i * dt;
+        // One rAF for the player to redraw its canvas with our trackTime.
+        // (The player's internal rAF still fires on every tick; with
+        // timeScale=0 its update() is a no-op and apply()+draw use whatever
+        // trackTime we just wrote.)
+        await new Promise((res) => requestAnimationFrame(res));
         const blob = await canvasToPng(canvas);
-        const t = (performance.now() - start) / 1000;
         frames.push(blob);
-        captureTimes.push(t);
 
         previewCtx.clearRect(0, 0, 512, 512);
         previewCtx.drawImage(canvas, 0, 0, 512, 512);
 
-        if (frames.length % 5 === 0) {
-          setRowStatus(idx, 'status-busy', `${frames.length} @ ${t.toFixed(2)}s`);
+        if (i % 5 === 0) {
+          const wall = ((performance.now() - start) / 1000).toFixed(1);
+          setRowStatus(idx, 'status-busy', `${i} / ${frameCount + 1} (${wall}s)`);
         }
-        if (t >= animation.duration) break;
-        await new Promise((res) => requestAnimationFrame(res));
       }
 
-      setRowField(idx, 'frames', String(frames.length));
+      setRowField(idx, 'frames', String(frameCount));
 
-      const observedFps = frames.length / animation.duration;
-      const seamDelta = frames.length >= 2
-        ? await pixelDelta(frames[0], frames[frames.length - 1])
-        : 0;
+      // Seam delta: trackTime=0 vs trackTime=duration. Drop the wrap frame
+      // from the output — it's the same instant as frame[0] in a clean loop.
+      const seamDelta = await pixelDelta(frames[0], frames[frameCount]);
       let seamCls = 'seam-good';
       if (seamDelta > 5) seamCls = 'seam-warn';
       if (seamDelta > 15) seamCls = 'seam-bad';
       setRowField(idx, 'seam', seamDelta.toFixed(2), seamCls);
 
+      const outputFrames = frames.slice(0, frameCount);
+
       try { player.dispose(); } catch {}
       host.remove();
 
-      setRowStatus(idx, 'status-ok', `${frames.length} frames @ ${observedFps.toFixed(0)}fps`);
+      const wallSec = (performance.now() - start) / 1000;
+      setRowStatus(idx, 'status-ok', `${outputFrames.length} frames in ${wallSec.toFixed(1)}s`);
       return {
         entry,
-        frames,
-        captureTimes,
+        frames: outputFrames,
         duration: animation.duration,
         animName: animation.name,
         seamDelta,
-        observedFps,
+        fps,
       };
     }
 
@@ -285,8 +302,7 @@
           dir: r.entry.dir,
           animName: r.animName,
           duration: r.duration,
-          fps: Math.round(r.observedFps),
-          observedFps: r.observedFps,
+          fps: r.fps,
           frameCount: r.frames.length,
           resolution: opts.resolution,
           seamDelta: r.seamDelta,
@@ -309,6 +325,7 @@
     function readOpts() {
       return {
         resolution: parseInt($('resolution').value, 10) || 1024,
+        fps: parseInt($('fps').value, 10) || 60,
         animName: ($('animName').value || 'idle').trim(),
       };
     }
