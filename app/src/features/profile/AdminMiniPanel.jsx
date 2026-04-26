@@ -12,7 +12,7 @@ import { Card, CardBody } from '../../shared/components/Card.jsx';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
-import { useSpineTuning, useSpineUnfrozen, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
+import { useSpineTuning, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
 
 // Each tuning slot corresponds to a rendering surface on the app. The tuning
 // key SpinePlayer uses is `${characterId}#${context}` (the `card` context is
@@ -54,9 +54,6 @@ function SpineTuningSection() {
   const [context, setContext] = useState('card');
   const tuningKey = context === 'card' ? selected : `${selected}#${context}`;
   const [tuning, set, reset] = useSpineTuning(tuningKey);
-  // Unfreeze is per-character (not per-context): a character either animates
-  // everywhere or nowhere. Context only segregates the tuning transform.
-  const [unfrozen, toggleUnfrozen] = useSpineUnfrozen(selected);
   if (!selected) return null;
   const def = SPINE_CHARACTERS[selected] || {};
   // Card context reads the top-level scale/tx/ty off the registry entry;
@@ -86,20 +83,7 @@ function SpineTuningSection() {
   );
   return (
     <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded-lg space-y-1.5">
-      <div className="flex items-center justify-between">
-        <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
-        <button
-          onClick={toggleUnfrozen}
-          className={`px-2 py-0.5 rounded text-2xs border transition-colors ${
-            unfrozen
-              ? 'bg-emerald-500/30 text-emerald-200 border-emerald-500/50'
-              : 'bg-blue-500/20 text-blue-200 border-blue-500/40 hover:bg-blue-500/30'
-          }`}
-          title={unfrozen ? 'Live — animating; toggle to freeze' : 'Frozen — static portrait; toggle to animate'}
-        >
-          {unfrozen ? '▶ Live' : '❄ Frozen'}
-        </button>
-      </div>
+      <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
       <select
         value={selected}
         onChange={(e) => setSelected(e.target.value)}

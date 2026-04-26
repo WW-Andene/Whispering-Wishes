@@ -19,7 +19,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState, memo } from 'react';
-import { useSpineTuning, useSpineUnfrozen } from '../../hooks/useSpineTuning.js';
+import { useSpineTuning } from '../../hooks/useSpineTuning.js';
 
 // Banner spine — tx/ty tuned per-character based on face offset from skeleton center.
 export const BANNER_SPINE_CHARACTERS = {
@@ -262,10 +262,6 @@ function SpinePlayerComponent({
   const playerRef = useRef(null);
   const [failed, setFailed] = useState(false);
   const [spine41Ready, setSpine41Ready] = useState(() => !!window.spine41?.SpinePlayer);
-  // Per-character freeze: every sprite defaults to frozen (renders the static
-  // portrait). Only characters explicitly unfrozen in the admin mini panel
-  // spin up a WebGL context, which prevents the N-simultaneous-context crash.
-  const [unfrozen] = useSpineUnfrozen(characterId);
 
   // Wait for the namespaced 4.1 runtime to finish loading (see index.html).
   useEffect(() => {
@@ -276,7 +272,7 @@ function SpinePlayerComponent({
   }, [spine41Ready]);
 
   useEffect(() => {
-    if (!containerRef.current || !characterId || failed || !unfrozen) return;
+    if (!containerRef.current || !characterId || failed) return;
     const charData = SPINE_CHARACTERS[characterId];
     if (!charData) { setFailed(true); return; }
     // Sprite-spine assets (skelUrl) are exported from Spine 4.1 and need the
@@ -336,7 +332,7 @@ function SpinePlayerComponent({
       }
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, spine41Ready, unfrozen]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, spine41Ready]);
 
   const charData = SPINE_CHARACTERS[characterId] || {};
   // Tuning is stored per (characterId, context) pair so the grid card, the
@@ -360,12 +356,9 @@ function SpinePlayerComponent({
   const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? defTx);
   const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? defTy);
 
-  // Frozen (default) or failed to load — render the static portrait if one
-  // was supplied. No WebGL context is created in this branch, so 50 frozen
-  // cards cost the same as 50 <img>s.
-  const showFallback = failed || !unfrozen;
-  if (showFallback) {
-    if (failed && !fallbackImgUrl) return null;
+  // Failed to load — render the static portrait if one was supplied.
+  if (failed) {
+    if (!fallbackImgUrl) return null;
     return (
       <div
         className={className}
