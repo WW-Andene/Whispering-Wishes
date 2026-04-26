@@ -374,10 +374,34 @@ function SpinePlayerComponent({
   const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? defTx);
   const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? defTy);
 
-  const transformStyle =
-    scale !== 1 || tx || ty
-      ? { transform: `scale(${scale}) translate(${tx}%, ${ty}%)`, transformOrigin: 'center center' }
-      : undefined;
+  // Replace `transform: scale(N) translate(tx%, ty%)` with absolute
+  // positioning so the inner element gets actual width/height = N×100%.
+  // Why: spine-player creates its canvas at the container's CSS size, and
+  // a static <img> samples down to its layout box. CSS `transform: scale()`
+  // doesn't add pixels — it interpolates the existing rendered size, so
+  // anything tuned with scale > 1 was being upscaled with browser
+  // smoothing. Sizing the inner element directly to scale×parent makes
+  // the canvas (or img) physically larger, and modern browsers sample the
+  // skel/atlas/webp source at the higher target — same visual placement,
+  // crisp output.
+  //
+  // The visual placement math: CSS `scale(s) translate(tx%, ty%)` first
+  // scales, then translates by tx% of the SCALED element. To get the
+  // identical center using absolute positioning on an N×100% box:
+  //     left% = 50 × (1 − s) + tx × s
+  //     top%  = 50 × (1 − s) + ty × s
+  // (verified on paper: scale=2, tx=10 → left=−30%, identical visual
+  // center to the original transform.)
+  const isIdentityFit = scale === 1 && !tx && !ty;
+  const fitStyle = isIdentityFit
+    ? { width: '100%', height: '100%' }
+    : {
+        position: 'absolute',
+        width: `${scale * 100}%`,
+        height: `${scale * 100}%`,
+        left: `${50 * (1 - scale) + tx * scale}%`,
+        top: `${50 * (1 - scale) + ty * scale}%`,
+      };
 
   // Render branches all share the same outer wrapper so the IntersectionObserver
   // ref stays attached across tier transitions (otherwise the observer would
@@ -386,7 +410,8 @@ function SpinePlayerComponent({
 
   if (failed) {
     // Hard fail — neither tier 0 nor tier 1 worked. Show the static portrait
-    // if one was supplied, otherwise nothing.
+    // (which uses its own framing config from the call site, NOT spine
+    // tuning, because the static art is a different image than the spine).
     inner = fallbackImgUrl ? (
       <img
         src={fallbackImgUrl}
@@ -397,32 +422,31 @@ function SpinePlayerComponent({
       />
     ) : null;
   } else if (useIdleWebp) {
-    // Tier 0 — animated WebP loop. Single decode, no GPU per card.
+    // Tier 0 — animated WebP loop. Same content as the spine canvas, so the
+    // spine fit (scale/tx/ty) applies. Absolute-positioned at scale×100% so
+    // the img is sampled from its native 1024² source down to the larger
+    // target size, instead of being upscaled by CSS transform.
     inner = (
       <img
         src={idleWebpUrl}
         alt=""
         loading="lazy"
         decoding="async"
-        className="w-full h-full pointer-events-none"
-        style={{ objectFit: 'contain', ...transformStyle }}
+        className="pointer-events-none"
+        style={{ objectFit: 'contain', ...fitStyle }}
         onError={() => setPrerenderFailed(true)}
       />
     );
   } else if (useWebGL) {
-    // Tier 1 — live WebGL spine. Mounted only when on-screen and within
-    // the global concurrency budget; the useEffect above tears it down
-    // when either condition flips.
-    inner = (
-      <div
-        ref={containerRef}
-        className="w-full h-full"
-        style={{ ...transformStyle }}
-      />
-    );
+    // Tier 1 — live WebGL spine. Container sized to scale×100% so the
+    // canvas's pixel buffer scales with it (spine-player allocates
+    // canvas.width × devicePixelRatio pixels, so a bigger CSS box means
+    // a higher-resolution render — no CSS upscaling).
+    inner = <div ref={containerRef} style={fitStyle} />;
   } else if (fallbackImgUrl) {
     // Off-screen / waiting for a budget slot — show the static portrait
-    // until we can mount the live spine.
+    // until we can mount the live spine. Same as the `failed` branch:
+    // static config, not spine config.
     inner = (
       <img
         src={fallbackImgUrl}
@@ -440,7 +464,7 @@ function SpinePlayerComponent({
     <div
       ref={wrapRef}
       className={className}
-      style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
+      style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', ...style }}
     >
       {inner}
     </div>
