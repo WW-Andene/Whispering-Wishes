@@ -72,6 +72,18 @@
     </div>
 
     <div class="group">
+      <label>Background
+        <select id="bgMode" title="Solid backgrounds eliminate the white-fringe artifact VP9 alpha can produce on partly-transparent pixels. MP4 always forces an opaque background.">
+          <option value="transparent">Transparent (alpha)</option>
+          <option value="black">Black</option>
+          <option value="white">White</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </label>
+      <input type="color" id="bgColor" value="#000000" title="Used when Background = Custom.">
+    </div>
+
+    <div class="group">
       <label>Filter
         <select id="surfaceFilter">
           <option value="all">all</option>
@@ -237,6 +249,23 @@
       return 'webm';
     }
 
+    // Resolves the background option into a concrete fill style, or null when
+    // the output should keep the spine canvas's alpha channel.
+    function resolveBackground(opts, mimeType) {
+      // MP4 has no alpha — picking transparent there would just record the
+      // page background. Force an opaque fill so the user sees what they get.
+      if (mimeType.startsWith('video/mp4') && opts.bgMode === 'transparent') {
+        return '#000000';
+      }
+      switch (opts.bgMode) {
+        case 'transparent': return null;
+        case 'black':       return '#000000';
+        case 'white':       return '#ffffff';
+        case 'custom':      return opts.bgColor || '#000000';
+        default:            return null;
+      }
+    }
+
     function recordCanvas(canvas, durationMs, mimeType, bitrate) {
       return new Promise((resolve, reject) => {
         const stream = canvas.captureStream(60);
@@ -349,30 +378,66 @@
       await new Promise((res) => requestAnimationFrame(res));
       await new Promise((res) => requestAnimationFrame(res));
 
+      // Compositor canvas — every recorded frame is re-blitted onto a 2D
+      // context before MediaRecorder taps it. Two reasons:
+      //   1. WebGL canvases hand the browser premultiplied RGB, but VP9 alpha
+      //      assumes straight alpha when encoding. Drawing through a 2D
+      //      context with `alpha: true` un-premultiplies on read so the
+      //      encoded video matches what the user sees on screen — kills the
+      //      white speckle/halo artifact on partly-transparent pixels.
+      //   2. Lets us paint a solid background underneath, which sidesteps
+      //      VP9-alpha quantization noise entirely (and is the only valid
+      //      output for MP4, which has no alpha channel).
+      const bgFill = resolveBackground(opts, mimeType);
+      const composite = document.createElement('canvas');
+      composite.width = resolution;
+      composite.height = resolution;
+      const cctx = composite.getContext('2d', { alpha: bgFill === null });
+
       const previewCtx = $('preview').getContext('2d');
       let mirroring = true;
-      const mirror = () => {
+      const blit = () => {
         if (!mirroring) return;
+        if (bgFill !== null) {
+          cctx.fillStyle = bgFill;
+          cctx.fillRect(0, 0, resolution, resolution);
+        } else {
+          cctx.clearRect(0, 0, resolution, resolution);
+        }
+        cctx.drawImage(canvas, 0, 0, resolution, resolution);
+        // Mirror to live preview at the same cadence so what you see is what
+        // gets encoded.
         previewCtx.clearRect(0, 0, 512, 512);
-        previewCtx.drawImage(canvas, 0, 0, 512, 512);
-        requestAnimationFrame(mirror);
+        previewCtx.drawImage(composite, 0, 0, 512, 512);
+        requestAnimationFrame(blit);
       };
-      mirror();
+      blit();
+      // Let the compositor land at least one frame before the recorder taps it.
+      await new Promise((res) => requestAnimationFrame(res));
 
       const start = performance.now();
-      setRowStatus(idx, 'status-busy', `recording @ ${resolution}px…`);
+      const bgLabel = bgFill === null ? 'transparent' : bgFill;
+      setRowStatus(idx, 'status-busy', `recording @ ${resolution}px (${bgLabel})…`);
 
       const durationMs = animation.duration * 1000;
       const bitrate = opts.bitrate * 1_000_000;
-      const blob = await recordCanvas(canvas, durationMs, mimeType, bitrate);
+      const blob = await recordCanvas(composite, durationMs, mimeType, bitrate);
 
       mirroring = false;
       try { player.dispose(); } catch {}
       host.remove();
 
       const wallSec = (performance.now() - start) / 1000;
+      // The output keeps alpha only when (a) the codec supports it and
+      // (b) the compositor isn't filling a solid background underneath.
+      const alphaInOutput = isAlphaCapable && bgFill === null;
       setRowField(idx, 'frames', `${(blob.size / 1024).toFixed(0)} KB`);
-      setRowField(idx, 'seam', isAlphaCapable ? 'α' : 'no α', isAlphaCapable ? 'seam-good' : 'seam-warn');
+      setRowField(
+        idx,
+        'seam',
+        alphaInOutput ? 'α' : (bgFill !== null ? 'opaque' : 'no α'),
+        alphaInOutput ? 'seam-good' : 'seam-warn',
+      );
       setRowStatus(idx, 'status-ok', `${ext} ${(blob.size / 1024 / 1024).toFixed(2)} MB in ${wallSec.toFixed(1)}s`);
 
       return {
@@ -383,7 +448,8 @@
         resolution,
         duration: animation.duration,
         animName: animation.name,
-        alphaCapable: isAlphaCapable,
+        alphaCapable: alphaInOutput,
+        background: bgFill,
       };
     }
 
@@ -401,6 +467,7 @@
           animName: r.animName,
           mimeType: r.mimeType,
           alphaCapable: r.alphaCapable,
+          background: r.background,
           resolution: r.resolution,
           sizeBytes: r.blob.size,
         })),
@@ -486,6 +553,8 @@
         bitrate: parseInt($('bitrate').value, 10) || 5,
         animName: ($('animName').value || 'idle').trim(),
         format: $('format').value || 'webm',
+        bgMode: $('bgMode').value || 'transparent',
+        bgColor: $('bgColor').value || '#000000',
       };
     }
 
@@ -598,6 +667,15 @@
       const f = $('format').value;
       if (f === 'mp4' && !pickMime('mp4')) {
         log('warning: this browser does not advertise MP4 support in MediaRecorder. Capture will fail.');
+      }
+      if (f === 'mp4' && $('bgMode').value === 'transparent') {
+        log('note: MP4 has no alpha channel — captures will use a black background regardless of the Background setting.');
+      }
+    });
+    $('bgMode').addEventListener('change', () => {
+      const m = $('bgMode').value;
+      if (m === 'transparent' && pickMime('webm') && pickMime('webm').includes('vp9')) {
+        log('tip: VP9 alpha can produce mild edge fringing on partly-transparent pixels. Pick a solid background if you see white specks.');
       }
     });
 
