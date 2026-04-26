@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spine Pre-render</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #0a0a12; color: #cbd5e1; padding: 12px; }
+    header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid #1e293b; }
+    header label { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+    header input[type="number"] { width: 70px; background: #0f172a; color: #cbd5e1; border: 1px solid #334155; border-radius: 4px; padding: 4px 6px; }
+    button { background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
+    button:disabled { background: #475569; cursor: not-allowed; }
+    button.danger { background: #b91c1c; }
+    main { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding-top: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #1e293b; }
+    th { background: #0f172a; font-weight: 600; color: #94a3b8; }
+    td.status-ok { color: #4ade80; }
+    td.status-skip { color: #94a3b8; }
+    td.status-err { color: #f87171; }
+    td.status-busy { color: #facc15; }
+    td.seam-good { color: #4ade80; }
+    td.seam-warn { color: #facc15; }
+    td.seam-bad { color: #f87171; }
+    .preview { background: #0f172a; border: 1px solid #1e293b; border-radius: 6px; padding: 8px; }
+    .preview canvas { width: 100%; aspect-ratio: 1; background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 0 0/16px 16px; image-rendering: pixelated; }
+    .log { font-family: ui-monospace, monospace; font-size: 11px; color: #94a3b8; max-height: 200px; overflow-y: auto; padding: 6px; background: #020617; border-radius: 4px; margin-top: 8px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="font-size: 16px; color: #f1f5f9;">Spine Pre-render</h1>
+    <label>Resolution <input type="number" id="resolution" value="1024" min="256" max="2048" step="128"></label>
+    <label>FPS <input type="number" id="fps" value="60" min="15" max="120" step="5"></label>
+    <label>Padding <input type="number" id="padding" value="1.05" min="1.0" max="1.5" step="0.05"></label>
+    <label>Animation <input type="text" id="animName" value="idle" size="8"></label>
+    <button id="capture">Capture all</button>
+    <button id="captureOne">Capture selected</button>
+    <button id="downloadZip" disabled>Download ZIP</button>
+    <span id="counter" style="margin-left: auto; font-size: 12px; color: #94a3b8;">0 / 0</span>
+  </header>
+
+  <main>
+    <div>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Char</th><th>Anim</th><th>Duration</th><th>Frames</th><th>Seam Δ</th><th>Status</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="preview">
+      <div style="font-size: 13px; color: #f1f5f9; margin-bottom: 6px;">Live preview</div>
+      <canvas id="preview" width="512" height="512"></canvas>
+      <div class="log" id="log"></div>
+    </div>
+  </main>
+
+  <!-- Spine 4.1 runtime (matches what the app uses for sprite portraits). -->
+  <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js"></script>
+  <!-- Capture as 4.1 namespace and clear window.spine so we don't shadow anything later. -->
+  <script>
+    window.spine41 = window.spine;
+    window.spine = undefined;
+  </script>
+  <!-- fflate for browser-side ZIPing without bundlers. -->
+  <script src="https://unpkg.com/fflate@0.8.2/umd/index.js"></script>
+
+  <script>
+    'use strict';
+
+    const $ = (id) => document.getElementById(id);
+    const log = (msg) => {
+      const el = $('log');
+      el.textContent += msg + '\n';
+      el.scrollTop = el.scrollHeight;
+    };
+
+    let spriteList = [];
+    let zipBuffer = null;
+    let busy = false;
+
+    async function init() {
+      spriteList = await fetch('./sprite-list.json').then(r => r.json());
+      const tbody = $('rows');
+      spriteList.forEach((entry, i) => {
+        const tr = document.createElement('tr');
+        tr.dataset.idx = i;
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${entry.name} <span style="color:#64748b;font-size:11px;">(${entry.key})</span></td>
+          <td class="anim">—</td>
+          <td class="duration">—</td>
+          <td class="frames">—</td>
+          <td class="seam">—</td>
+          <td class="status status-skip">pending</td>
+        `;
+        tr.style.cursor = 'pointer';
+        tr.addEventListener('click', () => {
+          document.querySelectorAll('#rows tr').forEach((r) => (r.style.background = ''));
+          tr.style.background = '#1e293b';
+          tr.dataset.selected = '1';
+          document.querySelectorAll('#rows tr').forEach((r) => { if (r !== tr) delete r.dataset.selected; });
+        });
+        tbody.appendChild(tr);
+      });
+      $('counter').textContent = `0 / ${spriteList.length}`;
+      log(`Loaded ${spriteList.length} sprite entries.`);
+    }
+
+    function setRowStatus(idx, cls, text) {
+      const tr = document.querySelector(`#rows tr[data-idx="${idx}"]`);
+      if (!tr) return;
+      const td = tr.querySelector('.status');
+      td.className = `status ${cls}`;
+      td.textContent = text;
+    }
+    function setRowField(idx, field, value, cls) {
+      const tr = document.querySelector(`#rows tr[data-idx="${idx}"]`);
+      if (!tr) return;
+      const td = tr.querySelector(`.${field}`);
+      if (cls) td.className = `${field} ${cls}`;
+      td.textContent = value;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // Spine asset loading + frame capture
+    // ────────────────────────────────────────────────────────────────────────
+
+    async function loadAssets(gl, entry) {
+      const am = new spine41.webgl.AssetManager(gl);
+      // AssetManager handles atlas + texture-page resolution automatically.
+      am.loadBinary(entry.skelUrl);
+      am.loadTextureAtlas(entry.atlasUrl);
+      // Poll until loaded or errored.
+      const start = Date.now();
+      while (!am.isLoadingComplete()) {
+        if (Date.now() - start > 30000) throw new Error('asset load timeout');
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      if (am.hasErrors && am.hasErrors()) {
+        const errs = am.getErrors ? am.getErrors() : am.errors;
+        throw new Error('asset errors: ' + JSON.stringify(errs));
+      }
+      return am;
+    }
+
+    function buildSkeleton(am, entry) {
+      const atlas = am.get(entry.atlasUrl);
+      const atlasLoader = new spine41.AtlasAttachmentLoader(atlas);
+      const skelBin = new spine41.SkeletonBinary(atlasLoader);
+      // Don't auto-scale; we set our own.
+      skelBin.scale = 1;
+      const skelData = skelBin.readSkeletonData(am.get(entry.skelUrl));
+      const skeleton = new spine41.Skeleton(skelData);
+      const stateData = new spine41.AnimationStateData(skelData);
+      const state = new spine41.AnimationState(stateData);
+      return { skeleton, state, skelData };
+    }
+
+    function fitSkeleton(skeleton, viewportSize, padding) {
+      // Apply once at t=0 so getBounds returns a sensible box.
+      skeleton.setToSetupPose();
+      skeleton.updateWorldTransform();
+      const offset = new spine41.Vector2();
+      const size = new spine41.Vector2();
+      skeleton.getBounds(offset, size);
+      if (size.x <= 0 || size.y <= 0) {
+        return { fit: 1, offset, size };
+      }
+      const fit = Math.min(viewportSize / size.x, viewportSize / size.y) / padding;
+      skeleton.scaleX = fit;
+      skeleton.scaleY = fit;
+      skeleton.updateWorldTransform();
+      skeleton.getBounds(offset, size);
+      // Center bounds on (0,0) world. With camera at (0,0) and viewport
+      // = canvas size, world units == pixel units.
+      skeleton.x = -(offset.x + size.x / 2);
+      skeleton.y = -(offset.y + size.y / 2);
+      return { fit, offset, size };
+    }
+
+    function setupRenderer(canvas, gl) {
+      const renderer = new spine41.webgl.SceneRenderer(canvas, gl);
+      renderer.camera.position.x = 0;
+      renderer.camera.position.y = 0;
+      renderer.camera.viewportWidth = canvas.width;
+      renderer.camera.viewportHeight = canvas.height;
+      return renderer;
+    }
+
+    function drawFrame(renderer, gl, skeleton) {
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      renderer.begin();
+      renderer.drawSkeleton(skeleton, true);
+      renderer.end();
+    }
+
+    function canvasToPng(canvas) {
+      return new Promise((res, rej) => canvas.toBlob(
+        (b) => b ? res(b) : rej(new Error('toBlob null')),
+        'image/png',
+      ));
+    }
+
+    async function pixelsFromBlob(blob) {
+      const img = await createImageBitmap(blob);
+      const c = new OffscreenCanvas(img.width, img.height);
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return ctx.getImageData(0, 0, img.width, img.height).data;
+    }
+
+    async function pixelDelta(blobA, blobB) {
+      const [a, b] = await Promise.all([pixelsFromBlob(blobA), pixelsFromBlob(blobB)]);
+      let sum = 0;
+      const n = a.length;
+      for (let i = 0; i < n; i++) sum += Math.abs(a[i] - b[i]);
+      return sum / n; // mean abs delta per channel byte (0..255)
+    }
+
+    async function captureChar(idx, entry, opts) {
+      setRowStatus(idx, 'status-busy', 'loading');
+      // Use a hidden offscreen canvas so we can also mirror to the live preview.
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = offCanvas.height = opts.resolution;
+      const gl = offCanvas.getContext('webgl', {
+        alpha: true,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: true,
+        antialias: true,
+      });
+      if (!gl) throw new Error('no WebGL');
+
+      const am = await loadAssets(gl, entry);
+      const { skeleton, state, skelData } = buildSkeleton(am, entry);
+
+      const animName = opts.animName;
+      let animation = skelData.findAnimation(animName);
+      if (!animation && skelData.animations.length) animation = skelData.animations[0];
+      if (!animation) throw new Error('no animation');
+      setRowField(idx, 'anim', animation.name);
+      setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
+
+      const fps = opts.fps;
+      const dt = 1 / fps;
+      const frameCount = Math.max(1, Math.round(animation.duration * fps));
+      setRowField(idx, 'frames', String(frameCount));
+
+      // Fit skeleton with the setup pose so all chars sit cleanly in-frame.
+      fitSkeleton(skeleton, opts.resolution, opts.padding);
+      const renderer = setupRenderer(offCanvas, gl);
+
+      // Reset to t=0 with non-looping animation so the (frameCount+1)-th
+      // frame represents trackTime = duration (one full cycle elapsed).
+      state.clearTracks();
+      state.setAnimation(0, animation.name, false);
+
+      setRowStatus(idx, 'status-busy', `0 / ${frameCount + 1}`);
+
+      const frames = [];
+      const previewCtx = $('preview').getContext('2d');
+      for (let i = 0; i <= frameCount; i++) {
+        if (i > 0) state.update(dt);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+        drawFrame(renderer, gl, skeleton);
+        const blob = await canvasToPng(offCanvas);
+        frames.push(blob);
+        // Mirror to live preview (downscaled).
+        previewCtx.clearRect(0, 0, 512, 512);
+        previewCtx.drawImage(offCanvas, 0, 0, 512, 512);
+        if (i % 5 === 0) {
+          setRowStatus(idx, 'status-busy', `${i} / ${frameCount + 1}`);
+          await new Promise((r) => setTimeout(r, 0)); // yield UI
+        }
+      }
+
+      // Seam delta: frame[0] (trackTime=0) vs frame[frameCount] (trackTime=duration).
+      const seamDelta = await pixelDelta(frames[0], frames[frameCount]);
+      let seamCls = 'seam-good';
+      if (seamDelta > 5) seamCls = 'seam-warn';
+      if (seamDelta > 15) seamCls = 'seam-bad';
+      setRowField(idx, 'seam', seamDelta.toFixed(2), seamCls);
+
+      // Output excludes the trailing wrap frame.
+      const outputFrames = frames.slice(0, frameCount);
+
+      // Free GL resources before next character.
+      try { am.dispose && am.dispose(); } catch {}
+      const lose = gl.getExtension('WEBGL_lose_context');
+      if (lose) lose.loseContext();
+
+      setRowStatus(idx, 'status-ok', 'done');
+      return {
+        entry,
+        frames: outputFrames,
+        duration: animation.duration,
+        animName: animation.name,
+        seamDelta,
+      };
+    }
+
+    async function packZip(results, opts) {
+      log(`Packing ZIP for ${results.length} characters…`);
+      const files = {};
+      for (const r of results) {
+        const dirname = `${r.entry.dir}/Portraits_${r.entry.portrait}_idle`;
+        for (let i = 0; i < r.frames.length; i++) {
+          const buf = new Uint8Array(await r.frames[i].arrayBuffer());
+          files[`${dirname}/frame_${String(i + 1).padStart(4, '0')}.png`] = buf;
+        }
+        const meta = {
+          key: r.entry.key,
+          name: r.entry.name,
+          portrait: r.entry.portrait,
+          dir: r.entry.dir,
+          animName: r.animName,
+          duration: r.duration,
+          fps: opts.fps,
+          frameCount: r.frames.length,
+          resolution: opts.resolution,
+          seamDelta: r.seamDelta,
+        };
+        files[`${dirname}/meta.json`] = new TextEncoder().encode(JSON.stringify(meta, null, 2));
+      }
+      // PNGs are already deflate-compressed; level: 0 (store) keeps zip fast.
+      const zipped = fflate.zipSync(files, { level: 0 });
+      const blob = new Blob([zipped], { type: 'application/zip' });
+      zipBuffer = blob;
+      $('downloadZip').disabled = false;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'spine-prerender.zip';
+      a.click();
+      log(`ZIP ready (${(blob.size / 1024 / 1024).toFixed(1)} MB).`);
+    }
+
+    function readOpts() {
+      return {
+        resolution: parseInt($('resolution').value, 10) || 1024,
+        fps: parseInt($('fps').value, 10) || 60,
+        padding: parseFloat($('padding').value) || 1.05,
+        animName: ($('animName').value || 'idle').trim(),
+      };
+    }
+
+    async function captureMany(indices) {
+      if (busy) return;
+      busy = true;
+      $('capture').disabled = true;
+      $('captureOne').disabled = true;
+      const opts = readOpts();
+      const results = [];
+      let done = 0;
+      $('counter').textContent = `0 / ${indices.length}`;
+      for (const idx of indices) {
+        try {
+          const r = await captureChar(idx, spriteList[idx], opts);
+          results.push(r);
+        } catch (err) {
+          console.error(err);
+          setRowStatus(idx, 'status-err', String(err.message || err).slice(0, 40));
+          log(`✗ ${spriteList[idx].key}: ${err.message || err}`);
+        }
+        done++;
+        $('counter').textContent = `${done} / ${indices.length}`;
+      }
+      if (results.length) await packZip(results, opts);
+      busy = false;
+      $('capture').disabled = false;
+      $('captureOne').disabled = false;
+    }
+
+    $('capture').addEventListener('click', () => {
+      const indices = spriteList.map((_, i) => i);
+      captureMany(indices);
+    });
+    $('captureOne').addEventListener('click', () => {
+      const sel = document.querySelector('#rows tr[data-selected="1"]');
+      if (!sel) {
+        alert('Click a row first.');
+        return;
+      }
+      captureMany([parseInt(sel.dataset.idx, 10)]);
+    });
+    $('downloadZip').addEventListener('click', () => {
+      if (!zipBuffer) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(zipBuffer);
+      a.download = 'spine-prerender.zip';
+      a.click();
+    });
+
+    init().catch((e) => {
+      log('init error: ' + (e.message || e));
+    });
+  </script>
+</body>
+</html>

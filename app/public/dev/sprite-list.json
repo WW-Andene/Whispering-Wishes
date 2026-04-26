@@ -1,0 +1,470 @@
+[
+  {
+    "key": "fuluoluo",
+    "name": "Phrolova",
+    "element": "Havoc",
+    "portrait": "Fuluoluo",
+    "dir": "fuluoluo",
+    "skelUrl": "/portraits/fuluoluo/Portraits_Fuluoluo.skel",
+    "atlasUrl": "/portraits/fuluoluo/Portraits_Fuluoluo.atlas"
+  },
+  {
+    "key": "kanteleila",
+    "name": "Cantarella",
+    "element": "Havoc",
+    "portrait": "Kanteleila",
+    "dir": "kanteleila",
+    "skelUrl": "/portraits/kanteleila/Portraits_Kanteleila.skel",
+    "atlasUrl": "/portraits/kanteleila/Portraits_Kanteleila.atlas"
+  },
+  {
+    "key": "luokeke",
+    "name": "Roccia",
+    "element": "Havoc",
+    "portrait": "Luokeke",
+    "dir": "luokeke",
+    "skelUrl": "/portraits/luokeke/Portraits_Luokeke.skel",
+    "atlasUrl": "/portraits/luokeke/Portraits_Luokeke.atlas"
+  },
+  {
+    "key": "rover_havoc_m",
+    "name": "Rover: Havoc (Male)",
+    "element": "Havoc",
+    "portrait": "Male",
+    "dir": "rover_male",
+    "skelUrl": "/portraits/rover_male/Portraits_Male.skel",
+    "atlasUrl": "/portraits/rover_male/Portraits_Male.atlas"
+  },
+  {
+    "key": "rover_havoc_f",
+    "name": "Rover: Havoc (Female)",
+    "element": "Havoc",
+    "portrait": "Female",
+    "dir": "rover_female",
+    "skelUrl": "/portraits/rover_female/Portraits_Female.skel",
+    "atlasUrl": "/portraits/rover_female/Portraits_Female.atlas"
+  },
+  {
+    "key": "chun",
+    "name": "Camellya",
+    "element": "Havoc",
+    "portrait": "Chun",
+    "dir": "chun",
+    "skelUrl": "/portraits/chun/Portraits_Chun.skel",
+    "atlasUrl": "/portraits/chun/Portraits_Chun.atlas"
+  },
+  {
+    "key": "danjin",
+    "name": "Danjin",
+    "element": "Havoc",
+    "portrait": "Danjin",
+    "dir": "danjin",
+    "skelUrl": "/portraits/danjin/Portraits_Danjin.skel",
+    "atlasUrl": "/portraits/danjin/Portraits_Danjin.atlas"
+  },
+  {
+    "key": "taoqi",
+    "name": "Taoqi",
+    "element": "Havoc",
+    "portrait": "Taoqi",
+    "dir": "taoqi",
+    "skelUrl": "/portraits/taoqi/Portraits_Taoqi.skel",
+    "atlasUrl": "/portraits/taoqi/Portraits_Taoqi.atlas"
+  },
+  {
+    "key": "luhesi",
+    "name": "Luuk Herssen",
+    "element": "Spectro",
+    "portrait": "Luhesi",
+    "dir": "luhesi",
+    "skelUrl": "/portraits/luhesi/Portraits_Luhesi.skel",
+    "atlasUrl": "/portraits/luhesi/Portraits_Luhesi.atlas"
+  },
+  {
+    "key": "linnai",
+    "name": "Lynae",
+    "element": "Spectro",
+    "portrait": "Linnai",
+    "dir": "linnai",
+    "skelUrl": "/portraits/linnai/Portraits_Linnai.skel",
+    "atlasUrl": "/portraits/linnai/Portraits_Linnai.atlas"
+  },
+  {
+    "key": "qianxiao",
+    "name": "Chisa",
+    "element": "Spectro",
+    "portrait": "Qianxiao",
+    "dir": "qianxiao",
+    "skelUrl": "/portraits/qianxiao/Portraits_Qianxiao.skel",
+    "atlasUrl": "/portraits/qianxiao/Portraits_Qianxiao.atlas"
+  },
+  {
+    "key": "zanni",
+    "name": "Zani",
+    "element": "Spectro",
+    "portrait": "Zanni",
+    "dir": "zanni",
+    "skelUrl": "/portraits/zanni/Portraits_Zanni.skel",
+    "atlasUrl": "/portraits/zanni/Portraits_Zanni.atlas"
+  },
+  {
+    "key": "feibi",
+    "name": "Phoebe",
+    "element": "Spectro",
+    "portrait": "Feibi",
+    "dir": "feibi",
+    "skelUrl": "/portraits/feibi/Portraits_Feibi.skel",
+    "atlasUrl": "/portraits/feibi/Portraits_Feibi.atlas"
+  },
+  {
+    "key": "shouanren",
+    "name": "Shorekeeper",
+    "element": "Spectro",
+    "portrait": "Shouanren",
+    "dir": "shouanren",
+    "skelUrl": "/portraits/shouanren/Portraits_Shouanren.skel",
+    "atlasUrl": "/portraits/shouanren/Portraits_Shouanren.atlas"
+  },
+  {
+    "key": "dengdeng",
+    "name": "Lumi",
+    "element": "Glacio",
+    "portrait": "Dengdeng",
+    "dir": "dengdeng",
+    "skelUrl": "/portraits/dengdeng/Portraits_Dengdeng.skel",
+    "atlasUrl": "/portraits/dengdeng/Portraits_Dengdeng.atlas"
+  },
+  {
+    "key": "weilinai",
+    "name": "Verina",
+    "element": "Spectro",
+    "portrait": "Weilinai",
+    "dir": "weilinai",
+    "skelUrl": "/portraits/weilinai/Portraits_Weilinai.skel",
+    "atlasUrl": "/portraits/weilinai/Portraits_Weilinai.atlas"
+  },
+  {
+    "key": "rover_spectro_f",
+    "name": "Rover: Spectro (Female)",
+    "element": "Spectro",
+    "portrait": "Female",
+    "dir": "rover_female",
+    "skelUrl": "/portraits/rover_female/Portraits_Female.skel",
+    "atlasUrl": "/portraits/rover_female/Portraits_Female.atlas"
+  },
+  {
+    "key": "rover_spectro_m",
+    "name": "Rover: Spectro (Male)",
+    "element": "Spectro",
+    "portrait": "Male",
+    "dir": "rover_male",
+    "skelUrl": "/portraits/rover_male/Portraits_Male.skel",
+    "atlasUrl": "/portraits/rover_male/Portraits_Male.atlas"
+  },
+  {
+    "key": "xigelika",
+    "name": "Sigrika",
+    "element": "Aero",
+    "portrait": "Xigelika",
+    "dir": "xigelika",
+    "skelUrl": "/portraits/xigelika/Portraits_Xigelika.skel",
+    "atlasUrl": "/portraits/xigelika/Portraits_Xigelika.atlas"
+  },
+  {
+    "key": "qiuyuan",
+    "name": "Qiuyuan",
+    "element": "Aero",
+    "portrait": "Qiuyuan",
+    "dir": "qiuyuan",
+    "skelUrl": "/portraits/qiuyuan/Portraits_Qiuyuan.skel",
+    "atlasUrl": "/portraits/qiuyuan/Portraits_Qiuyuan.atlas"
+  },
+  {
+    "key": "younuo",
+    "name": "Iuno",
+    "element": "Aero",
+    "portrait": "Younuo",
+    "dir": "younuo",
+    "skelUrl": "/portraits/younuo/Portraits_Younuo.skel",
+    "atlasUrl": "/portraits/younuo/Portraits_Younuo.atlas"
+  },
+  {
+    "key": "katixiya",
+    "name": "Cartethyia",
+    "element": "Aero",
+    "portrait": "Katixiya",
+    "dir": "katixiya",
+    "skelUrl": "/portraits/katixiya/Portraits_Katixiya.skel",
+    "atlasUrl": "/portraits/katixiya/Portraits_Katixiya.atlas"
+  },
+  {
+    "key": "rover_aero_f",
+    "name": "Rover: Aero (Female)",
+    "element": "Aero",
+    "portrait": "Female",
+    "dir": "rover_female",
+    "skelUrl": "/portraits/rover_female/Portraits_Female.skel",
+    "atlasUrl": "/portraits/rover_female/Portraits_Female.atlas"
+  },
+  {
+    "key": "xiakong",
+    "name": "Ciaccona",
+    "element": "Aero",
+    "portrait": "Xiakong",
+    "dir": "xiakong",
+    "skelUrl": "/portraits/xiakong/Portraits_Xiakong.skel",
+    "atlasUrl": "/portraits/xiakong/Portraits_Xiakong.atlas"
+  },
+  {
+    "key": "rover_aero_m",
+    "name": "Rover: Aero (Male)",
+    "element": "Aero",
+    "portrait": "Male",
+    "dir": "rover_male",
+    "skelUrl": "/portraits/rover_male/Portraits_Male.skel",
+    "atlasUrl": "/portraits/rover_male/Portraits_Male.atlas"
+  },
+  {
+    "key": "jianxin",
+    "name": "Jianxin",
+    "element": "Aero",
+    "portrait": "Jianxin",
+    "dir": "jianxin",
+    "skelUrl": "/portraits/jianxin/Portraits_Jianxin.skel",
+    "atlasUrl": "/portraits/jianxin/Portraits_Jianxin.atlas"
+  },
+  {
+    "key": "jiyan",
+    "name": "Jiyan",
+    "element": "Aero",
+    "portrait": "Jiyan",
+    "dir": "jiyan",
+    "skelUrl": "/portraits/jiyan/Portraits_Jiyan.skel",
+    "atlasUrl": "/portraits/jiyan/Portraits_Jiyan.atlas"
+  },
+  {
+    "key": "qiushui",
+    "name": "Aalto",
+    "element": "Aero",
+    "portrait": "Qiushui",
+    "dir": "qiushui",
+    "skelUrl": "/portraits/qiushui/Portraits_Qiushui.skel",
+    "atlasUrl": "/portraits/qiushui/Portraits_Qiushui.atlas"
+  },
+  {
+    "key": "yangyang",
+    "name": "Yangyang",
+    "element": "Aero",
+    "portrait": "Yangyang",
+    "dir": "yangyang",
+    "skelUrl": "/portraits/yangyang/Portraits_Yangyang.skel",
+    "atlasUrl": "/portraits/yangyang/Portraits_Yangyang.atlas"
+  },
+  {
+    "key": "buling",
+    "name": "Buling",
+    "element": "Havoc",
+    "portrait": "Buling",
+    "dir": "buling",
+    "skelUrl": "/portraits/buling/Portraits_Buling.skel",
+    "atlasUrl": "/portraits/buling/Portraits_Buling.atlas"
+  },
+  {
+    "key": "aogusita",
+    "name": "Augusta",
+    "element": "Electro",
+    "portrait": "Aogusita",
+    "dir": "aogusita",
+    "skelUrl": "/portraits/aogusita/Portraits_Aogusita.skel",
+    "atlasUrl": "/portraits/aogusita/Portraits_Aogusita.atlas"
+  },
+  {
+    "key": "xiangliyao",
+    "name": "Xiangli Yao",
+    "element": "Electro",
+    "portrait": "Xiangliyao",
+    "dir": "xiangliyao",
+    "skelUrl": "/portraits/xiangliyao/Portraits_Xiangliyao.skel",
+    "atlasUrl": "/portraits/xiangliyao/Portraits_Xiangliyao.atlas"
+  },
+  {
+    "key": "jinxi",
+    "name": "Jinhsi",
+    "element": "Spectro",
+    "portrait": "Jinxi",
+    "dir": "jinxi",
+    "skelUrl": "/portraits/jinxi/Portraits_Jinxi.skel",
+    "atlasUrl": "/portraits/jinxi/Portraits_Jinxi.atlas"
+  },
+  {
+    "key": "yuanwu",
+    "name": "Yuanwu",
+    "element": "Electro",
+    "portrait": "Yuanwu",
+    "dir": "yuanwu",
+    "skelUrl": "/portraits/yuanwu/Portraits_Yuanwu.skel",
+    "atlasUrl": "/portraits/yuanwu/Portraits_Yuanwu.atlas"
+  },
+  {
+    "key": "yinlin",
+    "name": "Yinlin",
+    "element": "Electro",
+    "portrait": "Yinlin",
+    "dir": "yinlin",
+    "skelUrl": "/portraits/yinlin/Portraits_Yinlin.skel",
+    "atlasUrl": "/portraits/yinlin/Portraits_Yinlin.atlas"
+  },
+  {
+    "key": "kakaluo",
+    "name": "Calcharo",
+    "element": "Electro",
+    "portrait": "Kakaluo",
+    "dir": "kakaluo",
+    "skelUrl": "/portraits/kakaluo/Portraits_Kakaluo.skel",
+    "atlasUrl": "/portraits/kakaluo/Portraits_Kakaluo.atlas"
+  },
+  {
+    "key": "daniya",
+    "name": "Denia",
+    "element": "Electro",
+    "portrait": "Daniya",
+    "dir": "daniya",
+    "skelUrl": "/portraits/daniya/Portraits_Daniya.skel",
+    "atlasUrl": "/portraits/daniya/Portraits_Daniya.atlas"
+  },
+  {
+    "key": "aimisi",
+    "name": "Aemeath",
+    "element": "Electro",
+    "portrait": "Aimisi",
+    "dir": "aimisi",
+    "skelUrl": "/portraits/aimisi/Portraits_Aimisi.skel",
+    "atlasUrl": "/portraits/aimisi/Portraits_Aimisi.atlas"
+  },
+  {
+    "key": "moning",
+    "name": "Mornye",
+    "element": "Havoc",
+    "portrait": "Moning",
+    "dir": "moning",
+    "skelUrl": "/portraits/moning/Portraits_Moning.skel",
+    "atlasUrl": "/portraits/moning/Portraits_Moning.atlas"
+  },
+  {
+    "key": "jiabeilina",
+    "name": "Galbrena",
+    "element": "Fusion",
+    "portrait": "Jiabeilina",
+    "dir": "jiabeilina",
+    "skelUrl": "/portraits/jiabeilina/Portraits_Jiabeilina.skel",
+    "atlasUrl": "/portraits/jiabeilina/Portraits_Jiabeilina.atlas"
+  },
+  {
+    "key": "lupa",
+    "name": "Lupa",
+    "element": "Fusion",
+    "portrait": "Lupa",
+    "dir": "lupa",
+    "skelUrl": "/portraits/lupa/Portraits_Lupa.skel",
+    "atlasUrl": "/portraits/lupa/Portraits_Lupa.atlas"
+  },
+  {
+    "key": "bulante",
+    "name": "Brant",
+    "element": "Fusion",
+    "portrait": "Bulante",
+    "dir": "bulante",
+    "skelUrl": "/portraits/bulante/Portraits_Bulante.skel",
+    "atlasUrl": "/portraits/bulante/Portraits_Bulante.atlas"
+  },
+  {
+    "key": "changli",
+    "name": "Changli",
+    "element": "Fusion",
+    "portrait": "Changli",
+    "dir": "changli",
+    "skelUrl": "/portraits/changli/Portraits_Changli.skel",
+    "atlasUrl": "/portraits/changli/Portraits_Changli.atlas"
+  },
+  {
+    "key": "motefei",
+    "name": "Mortefi",
+    "element": "Fusion",
+    "portrait": "Motefei",
+    "dir": "motefei",
+    "skelUrl": "/portraits/motefei/Portraits_Motefei.skel",
+    "atlasUrl": "/portraits/motefei/Portraits_Motefei.atlas"
+  },
+  {
+    "key": "anke",
+    "name": "Encore",
+    "element": "Fusion",
+    "portrait": "Anke",
+    "dir": "anke",
+    "skelUrl": "/portraits/anke/Portraits_Anke.skel",
+    "atlasUrl": "/portraits/anke/Portraits_Anke.atlas"
+  },
+  {
+    "key": "feixue",
+    "name": "Hiyuki",
+    "element": "Glacio",
+    "portrait": "Feixue",
+    "dir": "feixue",
+    "skelUrl": "/portraits/feixue/Portraits_Feixue.skel",
+    "atlasUrl": "/portraits/feixue/Portraits_Feixue.atlas"
+  },
+  {
+    "key": "kelaita",
+    "name": "Carlotta",
+    "element": "Fusion",
+    "portrait": "Kelaita",
+    "dir": "kelaita",
+    "skelUrl": "/portraits/kelaita/Portraits_Kelaita.skel",
+    "atlasUrl": "/portraits/kelaita/Portraits_Kelaita.atlas"
+  },
+  {
+    "key": "youhu",
+    "name": "Youhu",
+    "element": "Glacio",
+    "portrait": "Youhu",
+    "dir": "youhu",
+    "skelUrl": "/portraits/youhu/Portraits_Youhu.skel",
+    "atlasUrl": "/portraits/youhu/Portraits_Youhu.atlas"
+  },
+  {
+    "key": "zhezhi",
+    "name": "Zhezhi",
+    "element": "Glacio",
+    "portrait": "Zhezhi",
+    "dir": "zhezhi",
+    "skelUrl": "/portraits/zhezhi/Portraits_Zhezhi.skel",
+    "atlasUrl": "/portraits/zhezhi/Portraits_Zhezhi.atlas"
+  },
+  {
+    "key": "lingyang",
+    "name": "Lingyang",
+    "element": "Glacio",
+    "portrait": "Lingyang",
+    "dir": "lingyang",
+    "skelUrl": "/portraits/lingyang/Portraits_Lingyang.skel",
+    "atlasUrl": "/portraits/lingyang/Portraits_Lingyang.atlas"
+  },
+  {
+    "key": "baizhi",
+    "name": "Baizhi",
+    "element": "Glacio",
+    "portrait": "Baizhi",
+    "dir": "baizhi",
+    "skelUrl": "/portraits/baizhi/Portraits_Baizhi.skel",
+    "atlasUrl": "/portraits/baizhi/Portraits_Baizhi.atlas"
+  },
+  {
+    "key": "sanhua",
+    "name": "Sanhua",
+    "element": "Glacio",
+    "portrait": "Sanhua",
+    "dir": "sanhua",
+    "skelUrl": "/portraits/sanhua/Portraits_Sanhua.skel",
+    "atlasUrl": "/portraits/sanhua/Portraits_Sanhua.atlas"
+  }
+]
