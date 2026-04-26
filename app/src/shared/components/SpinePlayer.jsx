@@ -18,8 +18,10 @@
 // prefixed ids; downstream code treats the whole string as opaque.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useRef, useState, memo } from 'react';
+import React, { useEffect, useId, useRef, useState, memo } from 'react';
 import { useSpineTuning } from '../../hooks/useSpineTuning.js';
+import { useSpineBudget } from '../../hooks/useSpineBudget.js';
+import { useInView } from '../../hooks/useInView.js';
 
 // Banner spine — tx/ty tuned per-character based on face offset from skeleton center.
 export const BANNER_SPINE_CHARACTERS = {
@@ -261,11 +263,11 @@ function SpinePlayerComponent({
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   const [failed, setFailed] = useState(false);
-  // Sprite-spine entries (skelUrl) get a pre-rendered idle WebP placed next
-  // to the .skel/.atlas. We try that first — a single decoded image costs
-  // basically nothing, so 50 cards animate fine. Only when the WebP is
-  // missing or fails to decode do we fall through to the live WebGL spine
-  // (which runs into the per-context cap once a few are mounted).
+
+  // Tier 0 — Pre-rendered animated WebP. Sprite entries (those with a
+  // .skel) get one alongside the .skel/.atlas. A single decoded <img> costs
+  // basically nothing, so 50 cards can animate side by side. Falls through
+  // to live WebGL only if the file is missing or fails to decode.
   const charDataLookup = SPINE_CHARACTERS[characterId];
   const idleWebpUrl = charDataLookup?.skelUrl
     ? charDataLookup.skelUrl.replace(/\.skel$/, '_idle.webp')
@@ -273,10 +275,20 @@ function SpinePlayerComponent({
   const [prerenderFailed, setPrerenderFailed] = useState(false);
   const useIdleWebp = !!idleWebpUrl && !prerenderFailed;
 
+  // Tier 1 gating — WebGL spine is expensive (one context per instance);
+  // browsers cap concurrent contexts. We only mount it when the wrapper is
+  // actually in the viewport AND a global concurrency-budget slot is free.
+  // Otherwise the static fallback img renders in its place until both
+  // conditions are satisfied.
+  const [wrapRef, inView] = useInView();
+  const slotId = useId();
+  const wantWebGL = !!charDataLookup && !useIdleWebp && !failed;
+  const granted = useSpineBudget(slotId, wantWebGL && inView);
+  const useWebGL = wantWebGL && inView && granted;
+
   useEffect(() => {
-    // Skip the WebGL pipeline entirely while the pre-rendered loop is in play.
-    if (useIdleWebp) return;
-    if (!containerRef.current || !characterId || failed) return;
+    if (!useWebGL) return undefined;
+    if (!containerRef.current || !characterId || failed) return undefined;
     const charData = SPINE_CHARACTERS[characterId];
     if (!charData) { setFailed(true); return; }
     // Sprite-spine assets (skelUrl) are exported from Spine 4.1 and need the
@@ -337,7 +349,7 @@ function SpinePlayerComponent({
       }
       if (containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, useIdleWebp]);
+  }, [characterId, animation, loop, showControls, backgroundColor, failed, paused, useWebGL]);
 
   const charData = SPINE_CHARACTERS[characterId] || {};
   // Tuning is stored per (characterId, context) pair so the grid card, the
@@ -361,67 +373,75 @@ function SpinePlayerComponent({
   const tx = txOverride !== undefined ? txOverride : (tuning.tx ?? defTx);
   const ty = tyOverride !== undefined ? tyOverride : (tuning.ty ?? defTy);
 
-  // Failed to load — render the static portrait if one was supplied.
+  const transformStyle =
+    scale !== 1 || tx || ty
+      ? { transform: `scale(${scale}) translate(${tx}%, ${ty}%)`, transformOrigin: 'center center' }
+      : undefined;
+
+  // Render branches all share the same outer wrapper so the IntersectionObserver
+  // ref stays attached across tier transitions (otherwise the observer would
+  // re-init on every state flip).
+  let inner = null;
+
   if (failed) {
-    if (!fallbackImgUrl) return null;
-    return (
+    // Hard fail — neither tier 0 nor tier 1 worked. Show the static portrait
+    // if one was supplied, otherwise nothing.
+    inner = fallbackImgUrl ? (
+      <img
+        src={fallbackImgUrl}
+        alt=""
+        loading="lazy"
+        className="w-full h-full pointer-events-none"
+        style={{ objectFit: 'contain', ...fallbackImgStyle }}
+      />
+    ) : null;
+  } else if (useIdleWebp) {
+    // Tier 0 — animated WebP loop. Single decode, no GPU per card.
+    inner = (
+      <img
+        src={idleWebpUrl}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className="w-full h-full pointer-events-none"
+        style={{ objectFit: 'contain', ...transformStyle }}
+        onError={() => setPrerenderFailed(true)}
+      />
+    );
+  } else if (useWebGL) {
+    // Tier 1 — live WebGL spine. Mounted only when on-screen and within
+    // the global concurrency budget; the useEffect above tears it down
+    // when either condition flips.
+    inner = (
       <div
-        className={className}
-        style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
-      >
-        {fallbackImgUrl ? (
-          <img
-            src={fallbackImgUrl}
-            alt=""
-            loading="lazy"
-            className="w-full h-full pointer-events-none"
-            style={{ objectFit: 'contain', ...fallbackImgStyle }}
-          />
-        ) : null}
-      </div>
+        ref={containerRef}
+        className="w-full h-full"
+        style={{ ...transformStyle }}
+      />
+    );
+  } else if (fallbackImgUrl) {
+    // Off-screen / waiting for a budget slot — show the static portrait
+    // until we can mount the live spine.
+    inner = (
+      <img
+        src={fallbackImgUrl}
+        alt=""
+        loading="lazy"
+        className="w-full h-full pointer-events-none"
+        style={{ objectFit: 'contain', ...fallbackImgStyle }}
+      />
     );
   }
 
-  // Pre-rendered idle loop — same scale/tx/ty transform as the live canvas,
-  // applied to an <img> instead. Animated WebPs decode lazily and play
-  // continuously; no WebGL context, no per-card budget.
-  if (useIdleWebp) {
-    return (
-      <div
-        className={className}
-        style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
-      >
-        <img
-          src={idleWebpUrl}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full pointer-events-none"
-          style={{
-            objectFit: 'contain',
-            transform: scale !== 1 || tx || ty ? `scale(${scale}) translate(${tx}%, ${ty}%)` : undefined,
-            transformOrigin: 'center center',
-          }}
-          onError={() => setPrerenderFailed(true)}
-        />
-      </div>
-    );
-  }
+  if (inner === null && (failed || !wantWebGL) && !fallbackImgUrl) return null;
 
   return (
     <div
+      ref={wrapRef}
       className={className}
       style={{ width: '100%', height: '100%', overflow: 'hidden', ...style }}
     >
-      <div
-        ref={containerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          transform: scale !== 1 || tx || ty ? `scale(${scale}) translate(${tx}%, ${ty}%)` : undefined,
-          transformOrigin: 'center center',
-        }}
-      />
+      {inner}
     </div>
   );
 }
