@@ -154,20 +154,49 @@
       $('counter').textContent = `0 / ${spriteList.length}`;
       const counts = spriteList.reduce((m, e) => { m[e.surface] = (m[e.surface] || 0) + 1; return m; }, {});
       log(`Loaded ${spriteList.length} entries (${counts.sprite || 0} sprite, ${counts.banner || 0} banner).`);
-      // Probe whether the dev save endpoint is reachable; enable "Send to repo" if so.
+      // Probe both save endpoints. Local Vite middleware wins when reachable
+      // (no auth, faster); otherwise fall back to the Vercel/GitHub-API route.
+      await detectSaveMode();
+      updateResReadout();
+    }
+
+    // Save-mode auto-detection. Two modes are supported:
+    //   'local'  — /api/dev-prerender-save (Vite middleware, writes to disk)
+    //   'github' — /api/dev-prerender-upload (Vercel route, commits via API)
+    // saveInfo carries mode-specific config (root for local; repo/branch for github).
+    let saveMode = null;
+    let saveInfo = null;
+
+    async function detectSaveMode() {
+      $('sendRepo').disabled = true;
       try {
         const r = await fetch('/api/dev-prerender-save', { method: 'GET' });
         if (r.ok) {
+          saveInfo = await r.json();
+          saveMode = 'local';
           $('sendRepo').disabled = false;
-          $('sendRepo').title = 'Save captures directly into the repo (vite dev endpoint detected).';
-          log('Save endpoint reachable: captures can be written to repo.');
-        } else {
-          log('Save endpoint not reachable — "Send to repo" disabled.');
+          $('sendRepo').title = `Local Vite endpoint — writes to app/${saveInfo.root || 'public'}/`;
+          log(`Save mode: LOCAL (vite dev). Files write to app/${saveInfo.root || 'public'}/.`);
+          return;
         }
-      } catch {
-        log('Save endpoint not reachable — "Send to repo" disabled.');
-      }
-      updateResReadout();
+      } catch {}
+      try {
+        const r = await fetch('/api/dev-prerender-upload', { method: 'GET' });
+        if (r.ok) {
+          const info = await r.json();
+          saveInfo = info;
+          if (info.ok) {
+            saveMode = 'github';
+            $('sendRepo').disabled = false;
+            $('sendRepo').title = `Vercel/GitHub mode — commits to ${info.repo}@${info.branch}`;
+            log(`Save mode: GITHUB. Commits to ${info.repo}@${info.branch}.`);
+            return;
+          }
+          log(`/api/dev-prerender-upload reachable but not configured. Missing env vars: ${(info.missing || []).join(', ')}`);
+        }
+      } catch {}
+      saveMode = null;
+      log('No save endpoint reachable — "Send to repo" disabled.');
     }
 
     function renderRows() {
@@ -522,6 +551,12 @@
         alert('No captures to send. Run a capture first.');
         return;
       }
+      if (saveMode === 'local')  return sendToRepoLocal(results);
+      if (saveMode === 'github') return sendToRepoGithub(results);
+      alert('No save endpoint reachable. Re-detect by reloading the page.');
+    }
+
+    async function sendToRepoLocal(results) {
       log(`Encoding ${results.length} files for /api/dev-prerender-save…`);
       const files = {};
       for (const r of results) {
@@ -552,6 +587,98 @@
       for (const w of data.written) log(`  ✓ ${w.path} (${(w.bytes / 1024).toFixed(0)} KB)`);
       for (const s of data.skipped) log(`  ✗ ${s.path}: ${s.reason}`);
       alert(`Wrote ${data.written.length} files into the repo. Run \`npm run manifest\` to refresh the runtime manifest.`);
+    }
+
+    // Vercel/GitHub-API path. Uploads each capture as a blob (one POST per
+    // file to stay under the 4.5 MB body cap), accumulates SHAs, then fires
+    // a single POST that turns them into one commit on the target branch.
+    async function sendToRepoGithub(results) {
+      let token = localStorage.getItem('prerenderAdminToken') || '';
+      if (!token) {
+        token = window.prompt('Enter PRERENDER_ADMIN_TOKEN (server-set secret).\nStored in localStorage on this device only.');
+        if (!token) return;
+        localStorage.setItem('prerenderAdminToken', token);
+      }
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+
+      log(`Uploading ${results.length} blobs → ${saveInfo.repo}@${saveInfo.branch}…`);
+      const fileEntries = [];
+      let i = 0;
+      for (const r of results) {
+        i++;
+        const path = `app/public/${r.entry.outDir}/${r.entry.outBase}.${r.ext}`;
+        const sizeKB = (r.blob.size / 1024).toFixed(0);
+        // Vercel gateway hard-caps request bodies at ~4.5 MB. base64 inflates
+        // payload by ~33%, so refuse uploads > ~3 MB raw before the round trip.
+        if (r.blob.size > 3.3 * 1024 * 1024) {
+          log(`  [${i}/${results.length}] ✗ ${path} (${sizeKB} KB) — exceeds 4.5 MB body cap; lower resolution/bitrate and re-capture.`);
+          continue;
+        }
+        const contentB64 = await blobToBase64(r.blob);
+        log(`  [${i}/${results.length}] ${path} (${sizeKB} KB)`);
+        let resp;
+        try {
+          resp = await fetch('/api/dev-prerender-upload', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ action: 'blob', path, contentB64 }),
+          });
+        } catch (err) {
+          log(`    ✗ network error: ${err.message || err}`);
+          alert(`Aborted at ${path}: ${err.message || err}`);
+          return;
+        }
+        if (resp.status === 401) {
+          localStorage.removeItem('prerenderAdminToken');
+          log('    ✗ 401 Unauthorized — wrong admin token. Stored token cleared.');
+          alert('Wrong admin token. Cleared from storage — click Send again to re-enter.');
+          return;
+        }
+        if (!resp.ok) {
+          const text = await resp.text();
+          log(`    ✗ ${resp.status}: ${text}`);
+          alert(`Upload failed at ${path} (${resp.status}): ${text}`);
+          return;
+        }
+        const data = await resp.json();
+        fileEntries.push({ path, sha: data.sha });
+        log(`    ✓ blob ${data.sha.slice(0, 7)}`);
+      }
+
+      if (!fileEntries.length) {
+        alert('No blobs uploaded — nothing to commit.');
+        return;
+      }
+
+      log(`Creating commit with ${fileEntries.length} files…`);
+      const message = `Add ${fileEntries.length} prerender ${results[0].ext} via dev panel`;
+      let commitResp;
+      try {
+        commitResp = await fetch('/api/dev-prerender-upload', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ action: 'commit', files: fileEntries, branch: saveInfo.branch, message }),
+        });
+      } catch (err) {
+        log(`✗ commit network error: ${err.message || err}`);
+        alert(`Commit failed: ${err.message || err}`);
+        return;
+      }
+      if (!commitResp.ok) {
+        const text = await commitResp.text();
+        log(`✗ commit failed (${commitResp.status}): ${text}`);
+        alert(`Commit failed (${commitResp.status}): ${text}`);
+        return;
+      }
+      const commitData = await commitResp.json();
+      log(`✓ committed ${commitData.files} files → ${commitData.htmlUrl}`);
+      alert(
+        `Committed ${commitData.files} files to ${commitData.branch}.\n${commitData.htmlUrl}\n\n` +
+        `Re-run \`npm run manifest\` (or trigger a new build) to pick them up at runtime.`,
+      );
     }
 
     function readOpts() {
