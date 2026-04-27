@@ -1,6 +1,5 @@
-// Dev-only Vite middleware that lets the prerender capture page
-// (public/dev/prerender.html) write the WebM/MP4 it just recorded straight
-// into the repo, instead of forcing a manual download → unzip → copy round
+// Dev-only Vite middleware that lets the prerender capture page (served at
+// /dev/) write the WebM/MP4 it just recorded straight into the repo, instead of forcing a manual download → unzip → copy round
 // trip. Wired up in vite.config.js, and only active during `vite dev` —
 // never exposed in the production bundle.
 //

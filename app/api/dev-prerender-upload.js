@@ -1,5 +1,5 @@
-// Vercel serverless route — accepts captures from app/public/dev/prerender.html
-// and commits them to the repo via the GitHub Git Data API. Used when the dev
+// Vercel serverless route — accepts captures from the dev panel served at
+// /dev/ and commits them to the repo via the GitHub Git Data API. Used when the dev
 // panel is opened on the deployed Vercel preview (the Vite-middleware path
 // only works under `vite dev`).
 //
