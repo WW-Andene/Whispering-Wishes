@@ -149,7 +149,11 @@
     let busy = false;
 
     async function init() {
-      spriteList = await fetch('./sprite-list.json').then(r => r.json());
+      // Absolute path so the fetch works whether the page was opened at
+      // /dev or /dev/ — the relative form would resolve to the site root
+      // when there's no trailing slash, fall through to the SPA's
+      // index.html, and trip a JSON.parse "Unexpected token <" error.
+      spriteList = await fetch('/dev/sprite-list.json').then(r => r.json());
       renderRows();
       $('counter').textContent = `0 / ${spriteList.length}`;
       const counts = spriteList.reduce((m, e) => { m[e.surface] = (m[e.surface] || 0) + 1; return m; }, {});
