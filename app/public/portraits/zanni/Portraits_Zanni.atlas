@@ -1,5 +1,5 @@
 Portraits_Zanni.webp
-size:2044,1748
+size:2048,2048
 filter:Linear,Linear
 scale:0.4
 zn_shenti10
@@ -160,7 +160,7 @@ bounds:1452,1403,170,188
 rotate:90
 
 Portraits_Zanni_2.webp
-size:1864,1608
+size:2048,2048
 filter:Linear,Linear
 scale:0.4
 zn_shenti12
@@ -178,7 +178,7 @@ bounds:1148,1091,512,711
 rotate:90
 
 Portraits_Zanni_3.webp
-size:1796,1540
+size:2048,2048
 filter:Linear,Linear
 scale:0.4
 zn_shenti1
