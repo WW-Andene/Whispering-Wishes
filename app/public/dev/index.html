@@ -399,6 +399,19 @@
       setRowField(idx, 'anim', animation.name);
       setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
 
+      // Warmup. spine-player's success callback fires when the asset manager
+      // reports all atlas pages downloaded, but multi-page atlases (e.g.
+      // Zani/Cantarella/Xiangli Yao have 3-4 WebP pages each) need an extra
+      // tick or two for every page texture to be bound to the GL context
+      // and for animation timelines to swap their first attachments. Without
+      // this the first ~100 ms of the recording shows partly-bound pages —
+      // visible as missing limbs / wrong-region artifacts on those chars.
+      // 16 rAFs ≈ 250 ms which is generous and barely affects total time.
+      setRowStatus(idx, 'status-busy', 'warmup');
+      for (let i = 0; i < 16; i++) {
+        await new Promise((res) => requestAnimationFrame(res));
+      }
+
       // Reset to t=0 right before recording so the first captured video frame
       // matches the start of the cycle. We always capture exactly one native
       // animation cycle (animation.duration), never an arbitrary wall-clock
@@ -416,8 +429,11 @@
       } else {
         skel.updateWorldTransform();
       }
-      await new Promise((res) => requestAnimationFrame(res));
-      await new Promise((res) => requestAnimationFrame(res));
+      // A few more rAFs after the t=0 reset so the player's render loop
+      // commits the reset pose to the canvas before captureStream taps it.
+      for (let i = 0; i < 4; i++) {
+        await new Promise((res) => requestAnimationFrame(res));
+      }
 
       // Compositor canvas — every recorded frame is re-blitted onto a 2D
       // context before MediaRecorder taps it. Two reasons:
