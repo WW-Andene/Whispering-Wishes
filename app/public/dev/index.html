@@ -400,15 +400,22 @@
       setRowField(idx, 'duration', animation.duration.toFixed(3) + 's');
 
       // Warmup. spine-player's success callback fires when the asset manager
-      // reports all atlas pages downloaded, but multi-page atlases (e.g.
-      // Zani/Cantarella/Xiangli Yao have 3-4 WebP pages each) need an extra
-      // tick or two for every page texture to be bound to the GL context
-      // and for animation timelines to swap their first attachments. Without
-      // this the first ~100 ms of the recording shows partly-bound pages —
-      // visible as missing limbs / wrong-region artifacts on those chars.
-      // 16 rAFs ≈ 250 ms which is generous and barely affects total time.
+      // reports all atlas pages downloaded, but WebGL only uploads each page's
+      // texture on first use during render. Multi-page atlases (Zani/
+      // Cantarella/Xiangli Yao have 3-4 WebP pages each, vs 1 for everyone
+      // else) put attachments on later pages — and animation timelines may
+      // swap to those attachments only at specific keyframes (e.g. the eye
+      // blinks at t=1s). If we start recording before that keyframe fires,
+      // the page texture hasn't been bound yet and the slot renders with
+      // garbage / wrong-region pixels (Zani's eye, Cantarella's hair tips).
+      //
+      // Letting the player run for at least one full animation cycle
+      // guarantees every keyframe has fired and every page texture is bound
+      // before the recorder taps the canvas.
       setRowStatus(idx, 'status-busy', 'warmup');
-      for (let i = 0; i < 16; i++) {
+      const warmupMs = Math.max(500, animation.duration * 1000 + 200);
+      const warmupDeadline = performance.now() + warmupMs;
+      while (performance.now() < warmupDeadline) {
         await new Promise((res) => requestAnimationFrame(res));
       }
 
