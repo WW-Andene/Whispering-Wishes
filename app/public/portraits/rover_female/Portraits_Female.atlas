@@ -1,5 +1,5 @@
 Portraits_Female.webp
-size:2048,2048
+size:2004,1532
 filter:Linear,Linear
 scale:0.4
 nv_1
@@ -166,7 +166,7 @@ bounds:519,1422,78,117
 rotate:90
 
 Portraits_Female_2.webp
-size:2048,2048
+size:1664,1844
 filter:Linear,Linear
 scale:0.4
 nv_25
@@ -175,7 +175,7 @@ nv_43
 bounds:1071,2,588,1839
 
 Portraits_Female_3.webp
-size:2048,2048
+size:1224,1172
 filter:Linear,Linear
 scale:0.4
 nv_47

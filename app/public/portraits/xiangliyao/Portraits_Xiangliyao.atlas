@@ -1,5 +1,5 @@
 Portraits_Xiangliyao.webp
-size:2048,2048
+size:2032,1872
 filter:Linear,Linear
 scale:0.4
 xly_shenti1
@@ -137,7 +137,7 @@ xly_shenti9
 bounds:413,1827,70,40
 
 Portraits_Xiangliyao_2.webp
-size:2048,2048
+size:1900,1304
 filter:Linear,Linear
 scale:0.4
 xly_shenti27
@@ -152,7 +152,7 @@ bounds:2,789,510,943
 rotate:90
 
 Portraits_Xiangliyao_3.webp
-size:2048,2048
+size:1264,1996
 filter:Linear,Linear
 scale:0.4
 xly_shenti42
@@ -162,7 +162,7 @@ xly_shenti43
 bounds:2,1214,1189,780
 
 Portraits_Xiangliyao_4.webp
-size:2048,2048
+size:1328,1236
 filter:Linear,Linear
 scale:0.4
 xly_shenti34
