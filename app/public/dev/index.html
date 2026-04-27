@@ -419,25 +419,33 @@
         await new Promise((res) => requestAnimationFrame(res));
       }
 
-      // Reset to t=0 right before recording so the first captured video frame
-      // matches the start of the cycle. We always capture exactly one native
-      // animation cycle (animation.duration), never an arbitrary wall-clock
-      // window — that's what makes the resulting loop seamless.
-      state.clearTracks();
-      const track = state.setAnimation(0, animation.name, true);
-      if (track) track.trackTime = 0;
-      state.apply(skel);
+      // We deliberately do NOT reset trackTime to 0 here. In normal
+      // playback the player's loop advances trackTime by `delta` each rAF,
+      // so it wraps from t=2.99 → t=0.01 and the t=0 instant is never
+      // actually rendered. Some skeletons (Cantarella's left eye is the
+      // canary) have a half-state mesh deform keyed AT t=0 as the
+      // wrap-around transition pose — visible only if the renderer is
+      // forced to land on t=0 exactly. A manual reset would catch that
+      // pose and bake it as the first frame of the recording.
+      //
+      // Since we record exactly animation.duration ms from whatever phase
+      // we're at, the resulting clip is still a seamless loop: end-frame
+      // and start-frame are the same cycle position by definition.
+      //
       // Spine 4.2 added a physics simulator and made updateWorldTransform()
       // require a Physics enum arg — calling it bare throws "physics is
       // undefined" on banner skeletons. Spine 4.1 still takes no args, so
-      // we feature-detect via spineLib.Physics.
+      // we feature-detect via spineLib.Physics. (We let the player's own
+      // loop drive this in steady state; this call is just a safety net
+      // in case the next render fires before the player ticks.)
+      state.apply(skel);
       if (spineLib.Physics) {
         skel.updateWorldTransform(spineLib.Physics.update);
       } else {
         skel.updateWorldTransform();
       }
-      // A few more rAFs after the t=0 reset so the player's render loop
-      // commits the reset pose to the canvas before captureStream taps it.
+      // A few rAFs so the player's render loop commits a fresh frame to
+      // the canvas before captureStream taps it.
       for (let i = 0; i < 4; i++) {
         await new Promise((res) => requestAnimationFrame(res));
       }
