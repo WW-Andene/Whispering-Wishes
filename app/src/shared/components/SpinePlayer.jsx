@@ -431,12 +431,6 @@ function SpinePlayerComponent({
     // scale×100% so the asset renders at native source resolution instead
     // of being CSS-upscaled.
     if (prerenderEntry.format === 'video') {
-      // MP4 prerenders have no alpha channel — they were captured against a
-      // black background. The app UI is dark (#080c14), so `mix-blend-mode:
-      // screen` keys the black out at composite time: black pixels contribute
-      // nothing, character pixels stay. WebM (VP9) carries real alpha and
-      // doesn't need the blend trick. We discriminate by URL extension.
-      const isMp4 = /\.mp4(?:$|\?)/i.test(prerenderEntry.url);
       inner = (
         <video
           src={prerenderEntry.url}
@@ -446,11 +440,7 @@ function SpinePlayerComponent({
           playsInline
           preload="auto"
           className="pointer-events-none"
-          style={{
-            objectFit: 'contain',
-            ...(isMp4 ? { mixBlendMode: 'screen' } : null),
-            ...fitStyle,
-          }}
+          style={{ objectFit: 'contain', ...fitStyle }}
           onError={() => setPrerenderFailed(true)}
         />
       );
