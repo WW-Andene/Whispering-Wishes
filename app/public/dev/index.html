@@ -455,47 +455,25 @@
       return new Blob([out], { type: 'image/webp' });
     }
 
-    // Frame-by-frame canvas → animated WebP. The trick is tagging each frame
-    // with its ACTUAL elapsed wall time, not the intended frame interval —
-    // canvas.toBlob('image/webp') is slower at high resolution, so blindly
-    // tagging frames with (1000/fps) ms makes the captured frames span more
-    // animation cycles than the playback duration, producing fast-forward
-    // playback (e.g. ×2 resolution → ~2× speed).
-    //
-    // Approach:
-    //  - capture as fast as we can, but no faster than the fps target
-    //  - record each frame's wall-time start
-    //  - backfill the previous frame's durationMs with the actual delta
-    //  - the final frame uses the remainder of the target window
-    // Result: total WebP playback duration ≈ requested durationMs, no matter
-    // how slow toBlob runs.
+    // Frame-by-frame canvas → animated WebP. Uses requestAnimationFrame as
+    // the wall-clock source so the spine animation drives itself naturally;
+    // we just sample at fps intervals. canvas.toBlob('image/webp', q) does
+    // each frame's encoding (browser-native libwebp call).
     async function captureAnimatedWebP(canvas, durationMs, fps, quality, onProgress) {
-      const minInterval = 1000 / fps;
-      const expectedFrames = Math.max(1, Math.round(durationMs / minInterval));
-      const startTime = performance.now();
+      const frameInterval = 1000 / fps;
+      const totalFrames = Math.max(1, Math.round(durationMs / frameInterval));
       const frames = [];
-      let lastCaptureStart = startTime;
-      while (performance.now() - startTime < durationMs) {
-        // Throttle: don't capture faster than fps. Tick rAF so the spine
-        // canvas keeps animating while we wait.
-        while (performance.now() - lastCaptureStart < minInterval) {
+      const startTime = performance.now();
+      for (let i = 0; i < totalFrames; i++) {
+        const targetTime = startTime + i * frameInterval;
+        // Wait past the target time, ticking rAF so the spine canvas updates.
+        while (performance.now() < targetTime) {
           await new Promise((res) => requestAnimationFrame(res));
         }
-        const captureStart = performance.now();
         const blob = await new Promise((res) => canvas.toBlob(res, 'image/webp', quality));
         if (!blob) throw new Error('canvas.toBlob returned null (image/webp not supported?)');
-        if (frames.length > 0) {
-          const actualDelta = Math.max(1, Math.round(captureStart - lastCaptureStart));
-          frames[frames.length - 1].durationMs = actualDelta;
-        }
-        frames.push({ blob, durationMs: Math.max(1, Math.round(minInterval)) });
-        lastCaptureStart = captureStart;
-        if (onProgress) onProgress(frames.length, expectedFrames);
-      }
-      // Last frame: fill remaining time so total duration matches the request.
-      if (frames.length > 0) {
-        const tailMs = Math.max(1, Math.round((startTime + durationMs) - lastCaptureStart));
-        frames[frames.length - 1].durationMs = tailMs;
+        frames.push({ blob, durationMs: Math.round(frameInterval) });
+        if (onProgress) onProgress(i + 1, totalFrames);
       }
       return await muxAnimatedWebP(frames, canvas.width, canvas.height);
     }
