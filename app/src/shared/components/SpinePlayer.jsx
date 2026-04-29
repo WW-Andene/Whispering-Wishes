@@ -430,24 +430,39 @@ function SpinePlayerComponent({
     // canvas, so spine fit (scale/tx/ty) applies. Absolute-positioned at
     // scale×100% so the asset renders at native source resolution instead
     // of being CSS-upscaled.
+    //
+    // Manifest URLs are stored relative (no leading '/') so the build
+    // script stays path-agnostic. Coerce to absolute here so the browser
+    // resolves them against the app root, not the current SPA route.
+    const rawUrl = prerenderEntry.url;
+    const absUrl = rawUrl.startsWith('/') ? rawUrl : '/' + rawUrl;
     if (prerenderEntry.format === 'video') {
+      // MP4 prerenders have no alpha — captured against a solid background.
+      // The app UI is dark (#080c14 per the design system), so
+      // 'mix-blend-mode: screen' keys black out at composite time without
+      // needing alpha. WebM (VP9) carries real alpha and skips the blend.
+      const isMp4 = /\.mp4(?:$|\?)/i.test(rawUrl);
       inner = (
         <video
-          src={prerenderEntry.url}
+          src={absUrl}
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
           className="pointer-events-none"
-          style={{ objectFit: 'contain', ...fitStyle }}
+          style={{
+            objectFit: 'contain',
+            ...(isMp4 ? { mixBlendMode: 'screen' } : null),
+            ...fitStyle,
+          }}
           onError={() => setPrerenderFailed(true)}
         />
       );
     } else {
       inner = (
         <img
-          src={prerenderEntry.url}
+          src={absUrl}
           alt=""
           loading="lazy"
           decoding="async"
