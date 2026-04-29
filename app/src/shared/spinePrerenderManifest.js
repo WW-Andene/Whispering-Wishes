@@ -7,7 +7,6 @@
 // for the tier-0 swap-in; characters not listed here skip straight to live WebGL.
 
 export const PRERENDERED_IDLE = Object.freeze({
-  "portraits/zanni/Portraits_Zanni": { url: "portraits/zanni/Portraits_Zanni_idle.mp4", format: "video" },
 });
 
 // Lookup helper. For sprite entries we derive the key from the .skel URL.
