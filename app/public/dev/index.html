@@ -48,6 +48,7 @@
         <select id="format">
           <option value="webm">WebM (alpha)</option>
           <option value="mp4">MP4 (no alpha)</option>
+          <option value="webp">WebP (animated, alpha)</option>
         </select>
       </label>
       <label>Bitrate (Mbps) <input type="number" id="bitrate" value="5" min="1" max="40" step="1"></label>
@@ -275,6 +276,10 @@
     // pick a higher-quality preset than the generic 'vp9' string in Chrome.
     // ────────────────────────────────────────────────────────────────────────
     function pickMime(format) {
+      // Animated WebP is built via a frame-by-frame muxer, not MediaRecorder.
+      // We still slot it into the same code path by returning a synthetic
+      // mimeType the rest of the pipeline treats as "image".
+      if (format === 'webp') return 'image/webp';
       const candidates = format === 'mp4'
         ? [
             'video/mp4;codecs="avc1.640028"',   // H.264 High @ Level 4.0
@@ -297,6 +302,7 @@
     }
 
     function fileExtFor(mimeType) {
+      if (mimeType === 'image/webp') return 'webp';
       if (mimeType.startsWith('video/mp4')) return 'mp4';
       return 'webm';
     }
@@ -345,6 +351,128 @@
       });
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Animated WebP encoder — frame-by-frame canvas capture, then mux into a
+    // single animated WebP container. Sidesteps MediaRecorder entirely:
+    //  - no real-time encoder pressure (each frame encodes independently)
+    //  - per-frame alpha works correctly (no VP9 alpha edge fringing)
+    //  - playback in <img> is browser-native
+    // Larger files than VP9-video at equal quality, but no artifacts.
+    // ────────────────────────────────────────────────────────────────────────
+    async function readWebPChunks(blob) {
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      const tag = (i) => String.fromCharCode(buf[i], buf[i+1], buf[i+2], buf[i+3]);
+      if (tag(0) !== 'RIFF' || tag(8) !== 'WEBP') throw new Error('not a WebP blob');
+      const chunks = [];
+      let p = 12;
+      while (p + 8 <= buf.length) {
+        const fourcc = tag(p);
+        const size = buf[p+4] | (buf[p+5] << 8) | (buf[p+6] << 16) | (buf[p+7] << 24);
+        chunks.push({ fourcc, data: buf.subarray(p + 8, p + 8 + size) });
+        p += 8 + size;
+        if (size & 1) p++; // pad to even
+      }
+      return chunks;
+    }
+
+    // Concatenate a chunk's raw bytes (FourCC + size + data + pad).
+    function packChunk(fourcc, data) {
+      const s = data.length;
+      const padded = s + (s & 1);
+      const out = new Uint8Array(8 + padded);
+      out[0] = fourcc.charCodeAt(0); out[1] = fourcc.charCodeAt(1);
+      out[2] = fourcc.charCodeAt(2); out[3] = fourcc.charCodeAt(3);
+      out[4] = s & 0xff; out[5] = (s >> 8) & 0xff;
+      out[6] = (s >> 16) & 0xff; out[7] = (s >> 24) & 0xff;
+      out.set(data, 8);
+      return out;
+    }
+
+    // Extract the per-frame sub-image data from a single-frame WebP blob.
+    // ANMF expects the raw VP8L chunk OR (ALPH + VP8) chunks, with their
+    // FourCC/size headers preserved. Strip everything else.
+    function extractFrameData(chunks) {
+      const keep = chunks.filter((c) => c.fourcc === 'VP8 ' || c.fourcc === 'VP8L' || c.fourcc === 'ALPH');
+      const parts = keep.map((c) => packChunk(c.fourcc, c.data));
+      const total = parts.reduce((s, p) => s + p.length, 0);
+      const out = new Uint8Array(total);
+      let p = 0;
+      for (const part of parts) { out.set(part, p); p += part.length; }
+      return out;
+    }
+
+    function buildANMF(width, height, durationMs, frameData) {
+      // ANMF header is 16 bytes: x(3) y(3) w-1(3) h-1(3) duration(3) flags(1).
+      const head = new Uint8Array(16 + frameData.length);
+      let p = 0;
+      // X = 0, Y = 0
+      p += 6;
+      const w1 = width - 1, h1 = height - 1, d = Math.min(durationMs, 0xffffff);
+      head[p++] = w1 & 0xff;  head[p++] = (w1 >> 8) & 0xff;  head[p++] = (w1 >> 16) & 0xff;
+      head[p++] = h1 & 0xff;  head[p++] = (h1 >> 8) & 0xff;  head[p++] = (h1 >> 16) & 0xff;
+      head[p++] = d & 0xff;   head[p++] = (d >> 8) & 0xff;   head[p++] = (d >> 16) & 0xff;
+      head[p++] = 0; // flags: blend with previous, no dispose
+      head.set(frameData, p);
+      return head;
+    }
+
+    async function muxAnimatedWebP(frames, width, height) {
+      const anmfBodies = [];
+      for (const f of frames) {
+        const chunks = await readWebPChunks(f.blob);
+        const frameData = extractFrameData(chunks);
+        if (frameData.length === 0) throw new Error('frame produced no VP8/VP8L/ALPH chunks');
+        anmfBodies.push(buildANMF(width, height, f.durationMs, frameData));
+      }
+
+      // VP8X chunk body: 10 bytes. Flags byte: bit1 ANIM | bit4 ALPHA.
+      const w1 = width - 1, h1 = height - 1;
+      const vp8x = new Uint8Array(10);
+      vp8x[0] = 0x12; // ANIM (bit 1) + ALPHA (bit 4)
+      vp8x[4] = w1 & 0xff;  vp8x[5] = (w1 >> 8) & 0xff;  vp8x[6] = (w1 >> 16) & 0xff;
+      vp8x[7] = h1 & 0xff;  vp8x[8] = (h1 >> 8) & 0xff;  vp8x[9] = (h1 >> 16) & 0xff;
+
+      // ANIM chunk body: 4 bytes BG color (BGRA, transparent black) + 2 bytes loop count (0 = infinite).
+      const anim = new Uint8Array(6);
+
+      const parts = [packChunk('VP8X', vp8x), packChunk('ANIM', anim)];
+      for (const a of anmfBodies) parts.push(packChunk('ANMF', a));
+
+      const inner = parts.reduce((s, p) => s + p.length, 0);
+      const fileSize = 4 + inner; // "WEBP" + chunks
+      const out = new Uint8Array(8 + fileSize);
+      out[0] = 0x52; out[1] = 0x49; out[2] = 0x46; out[3] = 0x46; // RIFF
+      out[4] = fileSize & 0xff;       out[5] = (fileSize >> 8) & 0xff;
+      out[6] = (fileSize >> 16) & 0xff; out[7] = (fileSize >> 24) & 0xff;
+      out[8] = 0x57; out[9] = 0x45; out[10] = 0x42; out[11] = 0x50; // WEBP
+      let p = 12;
+      for (const part of parts) { out.set(part, p); p += part.length; }
+      return new Blob([out], { type: 'image/webp' });
+    }
+
+    // Frame-by-frame canvas → animated WebP. Uses requestAnimationFrame as
+    // the wall-clock source so the spine animation drives itself naturally;
+    // we just sample at fps intervals. canvas.toBlob('image/webp', q) does
+    // each frame's encoding (browser-native libwebp call).
+    async function captureAnimatedWebP(canvas, durationMs, fps, quality, onProgress) {
+      const frameInterval = 1000 / fps;
+      const totalFrames = Math.max(1, Math.round(durationMs / frameInterval));
+      const frames = [];
+      const startTime = performance.now();
+      for (let i = 0; i < totalFrames; i++) {
+        const targetTime = startTime + i * frameInterval;
+        // Wait past the target time, ticking rAF so the spine canvas updates.
+        while (performance.now() < targetTime) {
+          await new Promise((res) => requestAnimationFrame(res));
+        }
+        const blob = await new Promise((res) => canvas.toBlob(res, 'image/webp', quality));
+        if (!blob) throw new Error('canvas.toBlob returned null (image/webp not supported?)');
+        frames.push({ blob, durationMs: Math.round(frameInterval) });
+        if (onProgress) onProgress(i + 1, totalFrames);
+      }
+      return await muxAnimatedWebP(frames, canvas.width, canvas.height);
+    }
+
     function spineLibFor(entry) {
       // Sprite registry is exported from Spine 4.1, banner registry from 4.2.
       // Mirror the runtime split the main app uses (SpinePlayer.jsx).
@@ -364,7 +492,7 @@
       if (!mimeType) {
         throw new Error(`MediaRecorder + ${opts.format.toUpperCase()} not supported in this browser`);
       }
-      const isAlphaCapable = mimeType.includes('vp9');
+      const isAlphaCapable = mimeType.includes('vp9') || mimeType === 'image/webp';
       const ext = fileExtFor(mimeType);
 
       const resolution = Math.round(opts.nativeRes * opts.resMul);
@@ -512,7 +640,17 @@
 
       const durationMs = animation.duration * 1000;
       const bitrate = opts.bitrate * 1_000_000;
-      const blob = await recordCanvas(composite, durationMs, mimeType, bitrate, opts.fps);
+      let blob;
+      if (mimeType === 'image/webp') {
+        // Bitrate is meaningless for animated WebP — translate the same UI
+        // value into a per-frame quality (1..40 Mbps maps roughly to .65..1.0).
+        const quality = Math.max(0.65, Math.min(1.0, 0.65 + (opts.bitrate - 1) * 0.009));
+        blob = await captureAnimatedWebP(composite, durationMs, opts.fps, quality, (i, n) => {
+          setRowStatus(idx, 'status-busy', `encoding webp ${i}/${n}`);
+        });
+      } else {
+        blob = await recordCanvas(composite, durationMs, mimeType, bitrate, opts.fps);
+      }
 
       mirroring = false;
       try { player.dispose(); } catch {}
@@ -752,7 +890,7 @@
       log('--- API probe ---');
       log('window.spine41: ' + (window.spine41 ? 'present' : 'missing'));
       log('window.spine42: ' + (window.spine42 ? 'present' : 'missing'));
-      const supportedFormats = ['webm', 'mp4'].map(
+      const supportedFormats = ['webm', 'mp4', 'webp'].map(
         (f) => `${f}=${pickMime(f) ? 'YES' : 'NO'}`,
       ).join(', ');
       log('codec support: ' + supportedFormats);
