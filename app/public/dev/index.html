@@ -411,7 +411,12 @@
       head[p++] = w1 & 0xff;  head[p++] = (w1 >> 8) & 0xff;  head[p++] = (w1 >> 16) & 0xff;
       head[p++] = h1 & 0xff;  head[p++] = (h1 >> 8) & 0xff;  head[p++] = (h1 >> 16) & 0xff;
       head[p++] = d & 0xff;   head[p++] = (d >> 8) & 0xff;   head[p++] = (d >> 16) & 0xff;
-      head[p++] = 0; // flags: blend with previous, no dispose
+      // Flags byte: [reserved(6) | B | D]. B=1 means "overwrite the rect"
+      // (don't alpha-blend with previous frame). With B=0 every transparent
+      // pixel in the new frame would let the OLD frame show through, stacking
+      // every previous pose visibly — looks like a strobe trail. We always
+      // emit full-canvas frames, so overwrite is the correct semantics.
+      head[p++] = 0x02;
       head.set(frameData, p);
       return head;
     }
