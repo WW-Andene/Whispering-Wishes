@@ -437,13 +437,9 @@ function SpinePlayerComponent({
       // nothing, character pixels stay. WebM (VP9) carries real alpha and
       // doesn't need the blend trick. We discriminate by URL extension.
       const isMp4 = /\.mp4(?:$|\?)/i.test(prerenderEntry.url);
-      // Manifest URLs are stored relative (no leading slash) so the build
-      // tool stays path-agnostic. Make them absolute for the browser to
-      // resolve correctly regardless of which SPA route is active.
-      const absUrl = prerenderEntry.url.startsWith('/') ? prerenderEntry.url : '/' + prerenderEntry.url;
       inner = (
         <video
-          src={absUrl}
+          src={prerenderEntry.url}
           autoPlay
           loop
           muted
@@ -459,10 +455,9 @@ function SpinePlayerComponent({
         />
       );
     } else {
-      const absUrl = prerenderEntry.url.startsWith('/') ? prerenderEntry.url : '/' + prerenderEntry.url;
       inner = (
         <img
-          src={absUrl}
+          src={prerenderEntry.url}
           alt=""
           loading="lazy"
           decoding="async"
