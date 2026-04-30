@@ -24,6 +24,29 @@ import { useSpineBudget } from '../../hooks/useSpineBudget.js';
 import { useInView } from '../../hooks/useInView.js';
 import { getPrerenderedIdle } from '../spinePrerenderManifest.js';
 
+// SVG color-matrix filter used to chroma-key black out of MP4 prerenders.
+// MP4/H.264 has no alpha channel, so the capture pipeline bakes a solid
+// black background. The matrix's last row sets the output alpha to
+// 3 * (R + G + B), so pixels at or near pure black drop to alpha=0 while
+// any non-black pixel (down to mid-gray) clamps to alpha=1. Antialiased
+// edges between black and character get a smooth alpha gradient.
+//
+// Injected once into <body> on module load so the filter URL is always
+// resolvable. Skipped on the server side (ssr) and on hot-reload re-imports.
+const SVG_FILTER_ID = 'spine-prerender-drop-black';
+if (typeof document !== 'undefined' && !document.getElementById(SVG_FILTER_ID)) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+  wrap.setAttribute('aria-hidden', 'true');
+  wrap.innerHTML =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0">' +
+    `<filter id="${SVG_FILTER_ID}" color-interpolation-filters="sRGB">` +
+    '<feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  3 3 3 0 0"/>' +
+    '</filter>' +
+    '</svg>';
+  document.body.appendChild(wrap);
+}
+
 // Banner spine — tx/ty tuned per-character based on face offset from skeleton center.
 export const BANNER_SPINE_CHARACTERS = {
   xigelika:    { name: 'Sigrika',      element: 'Aero',    scale: 2.3, tx: 3,    ty: 2.5 },
@@ -437,10 +460,10 @@ function SpinePlayerComponent({
     const rawUrl = prerenderEntry.url;
     const absUrl = rawUrl.startsWith('/') ? rawUrl : '/' + rawUrl;
     if (prerenderEntry.format === 'video') {
-      // MP4 prerenders have no alpha — captured against a solid background.
-      // The app UI is dark (#080c14 per the design system), so
-      // 'mix-blend-mode: screen' keys black out at composite time without
-      // needing alpha. WebM (VP9) carries real alpha and skips the blend.
+      // MP4 prerenders have no alpha — captured against pure black. The SVG
+      // filter injected at module top maps black → transparent at decode
+      // time, with smooth alpha on antialiased edges. WebM (VP9) carries
+      // real alpha and skips the filter.
       const isMp4 = /\.mp4(?:$|\?)/i.test(rawUrl);
       inner = (
         <video
@@ -453,7 +476,7 @@ function SpinePlayerComponent({
           className="pointer-events-none"
           style={{
             objectFit: 'contain',
-            ...(isMp4 ? { mixBlendMode: 'screen' } : null),
+            ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
             ...fitStyle,
           }}
           onError={() => setPrerenderFailed(true)}
