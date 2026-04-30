@@ -464,6 +464,15 @@ function SpinePlayerComponent({
       // filter injected at module top maps black → transparent at decode
       // time, with smooth alpha on antialiased edges. WebM (VP9) carries
       // real alpha and skips the filter.
+      //
+      // objectFit: 'cover' rather than 'contain' — captures are square
+      // (1024×1024 typical) but BannerCard is rectangular. With 'contain'
+      // the square video gets letterboxed inside the wide rectangle, the
+      // transparent margins reveal the static banner art beneath, and the
+      // character looks small + obscured. 'cover' fills the container by
+      // cropping the top/bottom of the square — those are transparent
+      // margins anyway since the character is centered, so nothing visible
+      // is lost.
       const isMp4 = /\.mp4(?:$|\?)/i.test(rawUrl);
       inner = (
         <video
@@ -475,7 +484,7 @@ function SpinePlayerComponent({
           preload="auto"
           className="pointer-events-none"
           style={{
-            objectFit: 'contain',
+            objectFit: 'cover',
             ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
             ...fitStyle,
           }}
