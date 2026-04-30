@@ -459,7 +459,26 @@ function SpinePlayerComponent({
     // resolves them against the app root, not the current SPA route.
     const rawUrl = prerenderEntry.url;
     const absUrl = rawUrl.startsWith('/') ? rawUrl : '/' + rawUrl;
-    if (prerenderEntry.format === 'video') {
+    if (prerenderEntry.format === 'tmf') {
+      // TMF prerender — vendored player at /vendor/tmf/. Element is
+      // registered on first import (idempotent inside the module). Lazy-
+      // imported so the player module only loads when a TMF asset is
+      // actually requested.
+      if (typeof document !== 'undefined' && !customElements.get('tmf-player')) {
+        import('/vendor/tmf/tmf-player-element.mjs').catch(() => setPrerenderFailed(true));
+      }
+      inner = (
+        <tmf-player
+          src={absUrl}
+          autoplay=""
+          loop=""
+          muted=""
+          class="pointer-events-none"
+          style={{ objectFit: 'cover', width: '100%', height: '100%', ...fitStyle }}
+          onError={() => setPrerenderFailed(true)}
+        />
+      );
+    } else if (prerenderEntry.format === 'video') {
       // MP4 prerenders have no alpha — captured against pure black. The SVG
       // filter injected at module top maps black → transparent at decode
       // time, with smooth alpha on antialiased edges. WebM (VP9) carries

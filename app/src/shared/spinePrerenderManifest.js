@@ -2,9 +2,10 @@
 // Do not edit manually — re-run the script (or `npm run build`) to refresh.
 //
 // Maps each character (sprite or banner) that has a pre-rendered idle loop
-// on disk to its public asset URL plus a format hint (`video` for .webm/.mp4,
-// `image` for animated .webp). SpinePlayer reads this to pick <video> vs <img>
-// for the tier-0 swap-in; characters not listed here skip straight to live WebGL.
+// on disk to its public asset URL plus a format hint (`tmf` for .tmf,
+// `video` for .webm/.mp4, `image` for animated .webp). SpinePlayer reads
+// this to pick <tmf-player> / <video> / <img> for the tier-0 swap-in;
+// characters not listed here skip straight to live WebGL.
 
 export const PRERENDERED_IDLE = Object.freeze({
   "portraits/zanni/Portraits_Zanni": { url: "portraits/zanni/Portraits_Zanni_idle.mp4", format: "video" },

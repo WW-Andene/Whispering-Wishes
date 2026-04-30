@@ -27,12 +27,13 @@ const repoRoot = path.resolve(here, '..');
 const publicDir = path.join(repoRoot, 'app/public');
 const outFile = path.join(repoRoot, 'app/src/shared/spinePrerenderManifest.js');
 
-// Scan order matters: when a character has both a video-format prerender
-// (.webm or .mp4) and a .webp fallback, the video wins. SpinePlayer reads the
-// format hint to pick <video> vs <img>. WebM is preferred over MP4 because it
-// keeps alpha — MP4 only shows up when the dev panel was used in a browser
-// without WebM support.
+// Scan order matters: when a character has multiple prerender formats on
+// disk, the first match wins. TMF is highest priority (native alpha, no
+// chroma-key hack), then video (.webm/.mp4 — WebM preferred for alpha),
+// then animated WebP as last-resort fallback. SpinePlayer reads the
+// format hint to pick <tmf-player> / <video> / <img>.
 const FORMATS = [
+  { ext: 'tmf',  tag: 'tmf'   },
   { ext: 'webm', tag: 'video' },
   { ext: 'mp4',  tag: 'video' },
   { ext: 'webp', tag: 'image' },
@@ -92,9 +93,10 @@ function emit(entries) {
     '// Do not edit manually — re-run the script (or `npm run build`) to refresh.',
     '//',
     '// Maps each character (sprite or banner) that has a pre-rendered idle loop',
-    '// on disk to its public asset URL plus a format hint (`video` for .webm/.mp4,',
-    '// `image` for animated .webp). SpinePlayer reads this to pick <video> vs <img>',
-    '// for the tier-0 swap-in; characters not listed here skip straight to live WebGL.',
+    '// on disk to its public asset URL plus a format hint (`tmf` for .tmf,',
+    '// `video` for .webm/.mp4, `image` for animated .webp). SpinePlayer reads',
+    '// this to pick <tmf-player> / <video> / <img> for the tier-0 swap-in;',
+    '// characters not listed here skip straight to live WebGL.',
     '',
     'export const PRERENDERED_IDLE = Object.freeze({',
   ];
