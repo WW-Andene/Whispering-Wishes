@@ -103,6 +103,7 @@
     </div>
 
     <button id="probe" title="Mount the first entry once and dump player API keys to the log. Run this first if Capture errors out.">Probe API</button>
+    <button id="probeEvents" title="Mount the SELECTED row's character and dump animation durations + named events (cycle markers).">Probe events</button>
     <button id="capture">Capture all</button>
     <button id="captureOne">Capture selected</button>
     <button id="downloadZip" disabled>Download ZIP</button>
@@ -964,6 +965,89 @@
       log('--- end probe ---');
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // Probe events for a selected character — mounts its spine, walks every
+    // animation's timelines, and prints any EventTimeline keyframes (named
+    // markers the rigger dropped). Useful for finding "loop_complete" /
+    // "breath_apex" style cycle markers that could cap the capture duration.
+    // ────────────────────────────────────────────────────────────────────────
+    async function probeEvents(idx) {
+      const entry = spriteList[idx];
+      if (!entry) { log('probe events: no entry at idx ' + idx); return; }
+      log(`--- events probe: ${entry.key} (${entry.surface}, runtime ${entry.runtime}) ---`);
+
+      const host = document.createElement('div');
+      host.style.cssText = 'position:fixed;left:-9999px;top:0;width:512px;height:512px;';
+      document.body.appendChild(host);
+
+      try {
+        const spineLib = spineLibFor(entry);
+        const player = await new Promise((resolve, reject) => {
+          let done = false;
+          const inst = new spineLib.SpinePlayer(host, {
+            ...assetUrlsFor(entry),
+            animation: 'idle',
+            loop: false,
+            backgroundColor: '#00000000',
+            alpha: true,
+            premultipliedAlpha: false,
+            preserveDrawingBuffer: true,
+            showControls: false,
+            showLoading: false,
+            success: () => { done = true; resolve(inst); },
+            error: (p, msg) => { if (!done) reject(new Error(msg || 'spine-player error')); },
+          });
+          setTimeout(() => { if (!done) reject(new Error('mount timeout (10s)')); }, 10000);
+        });
+
+        const data = player.skeleton?.data;
+        if (!data) { log('no skeleton.data on player'); return; }
+
+        const anims = data.animations || [];
+        log(`animations: ${anims.length}`);
+        for (const anim of anims) {
+          // Walk every timeline; an EventTimeline has frames=[time, time, ...]
+          // and events=[Event, ...] keyed by frame index. Both spine 4.1 and
+          // 4.2 expose this shape (spine-runtimes-ts/core/EventTimeline.ts).
+          const events = [];
+          for (const tl of (anim.timelines || [])) {
+            // Duck-type: EventTimeline has .events array AND .frames array.
+            if (Array.isArray(tl.events) && (tl.frames || tl.frames === 0)) {
+              const frames = tl.frames;
+              const evs = tl.events;
+              const n = evs.length;
+              for (let i = 0; i < n; i++) {
+                const t = (typeof frames === 'object' && 'length' in frames) ? frames[i] : null;
+                const ev = evs[i];
+                if (!ev) continue;
+                events.push({ t, name: ev.data?.name || '?', stringValue: ev.stringValue, intValue: ev.intValue, floatValue: ev.floatValue });
+              }
+            }
+          }
+          const eventStr = events.length
+            ? events.map((e) => `${e.name}@${e.t?.toFixed(3) ?? '?'}s`).join(', ')
+            : '(no events)';
+          log(`  ${anim.name}: ${anim.duration.toFixed(3)}s  [${eventStr}]`);
+          if (events.some((e) => e.stringValue || e.intValue || e.floatValue)) {
+            // Dump payloads if any exist — sometimes the cycle info is in
+            // a string/int/float on the event rather than the event name.
+            for (const e of events) {
+              if (e.stringValue || e.intValue || e.floatValue) {
+                log(`     ${e.name}@${e.t?.toFixed(3)}s str=${e.stringValue ?? ''} int=${e.intValue ?? ''} float=${e.floatValue ?? ''}`);
+              }
+            }
+          }
+        }
+        try { player.dispose(); } catch (e) { log('dispose threw: ' + e.message); }
+      } catch (err) {
+        log('probe events FAILED: ' + (err.message || err));
+        if (err.stack) log(err.stack);
+      } finally {
+        host.remove();
+      }
+      log('--- end events probe ---');
+    }
+
     async function captureMany(indices) {
       if (busy) return;
       busy = true;
@@ -992,6 +1076,12 @@
     }
 
     $('probe').addEventListener('click', () => { probeApi().catch((e) => log('probe error: ' + e)); });
+    $('probeEvents').addEventListener('click', () => {
+      const sel = document.querySelector('#rows tr[data-selected="1"]');
+      if (!sel) { alert('Click a row first.'); return; }
+      const idx = parseInt(sel.dataset.idx, 10);
+      probeEvents(idx).catch((e) => log('probe events error: ' + e));
+    });
     $('capture').addEventListener('click', () => {
       const filter = $('surfaceFilter').value;
       const indices = spriteList
