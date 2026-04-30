@@ -514,6 +514,7 @@ function SpinePlayerComponent({
           className="pointer-events-none"
           style={{
             objectFit: 'cover',
+            objectPosition: 'center 50%',
             ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
             ...fitStyle,
           }}
