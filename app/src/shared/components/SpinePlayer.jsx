@@ -461,13 +461,21 @@ function SpinePlayerComponent({
     const absUrl = rawUrl.startsWith('/') ? rawUrl : '/' + rawUrl;
     if (prerenderEntry.format === 'tmf') {
       // TMF prerender — vendored player at /vendor/tmf/. Element is
-      // registered on first import (idempotent inside the module). Lazy-
-      // imported so the player module only loads when a TMF asset is
-      // actually requested. The @vite-ignore hint keeps Rollup from trying
-      // to resolve the public-folder URL at build time — the file is a
-      // static asset, not a bundled module.
-      if (typeof document !== 'undefined' && !customElements.get('tmf-player')) {
-        import(/* @vite-ignore */ '/vendor/tmf/tmf-player-element.mjs').catch(() => setPrerenderFailed(true));
+      // registered on first script load (idempotent inside the module).
+      // We inject a <script type="module"> rather than a dynamic import()
+      // because Rollup tries to statically resolve leading-`/` import
+      // specifiers at build time and fails (the file is a public-folder
+      // asset, not a bundled module). The script tag is a pure runtime
+      // load — the bundler never sees it.
+      if (typeof document !== 'undefined'
+          && !customElements.get('tmf-player')
+          && !document.querySelector('script[data-tmf-player]')) {
+        const s = document.createElement('script');
+        s.type = 'module';
+        s.src = '/vendor/tmf/tmf-player-element.mjs';
+        s.dataset.tmfPlayer = '1';
+        s.onerror = () => setPrerenderFailed(true);
+        document.head.appendChild(s);
       }
       inner = (
         <tmf-player
