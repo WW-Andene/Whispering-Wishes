@@ -459,6 +459,13 @@ function SpinePlayerComponent({
     // resolves them against the app root, not the current SPA route.
     const rawUrl = prerenderEntry.url;
     const absUrl = rawUrl.startsWith('/') ? rawUrl : '/' + rawUrl;
+    // Prerenders are captured WITH the spine fit transform already baked
+    // in (the dev panel records the live spine canvas after scale/tx/ty
+    // have been applied). Re-applying `fitStyle` to the prerendered media
+    // would double-position it — pushing the character out of the visible
+    // band when the original tuning included a non-zero ty (e.g. Zani
+    // banner ty=-7). Use a plain fill-the-wrapper style instead.
+    const prerenderFill = { width: '100%', height: '100%' };
     if (prerenderEntry.format === 'tmf') {
       // TMF prerender — vendored player at /vendor/tmf/. Element is
       // registered on first script load (idempotent inside the module).
@@ -484,7 +491,7 @@ function SpinePlayerComponent({
           loop=""
           muted=""
           class="pointer-events-none"
-          style={{ objectFit: 'cover', width: '100%', height: '100%', ...fitStyle }}
+          style={{ objectFit: 'cover', ...prerenderFill }}
           onError={() => setPrerenderFailed(true)}
         />
       );
@@ -516,7 +523,7 @@ function SpinePlayerComponent({
             objectFit: 'cover',
             objectPosition: 'center 50%',
             ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
-            ...fitStyle,
+            ...prerenderFill,
           }}
           onError={() => setPrerenderFailed(true)}
         />
@@ -529,7 +536,7 @@ function SpinePlayerComponent({
           loading="lazy"
           decoding="async"
           className="pointer-events-none"
-          style={{ objectFit: 'contain', ...fitStyle }}
+          style={{ objectFit: 'contain', ...prerenderFill }}
           onError={() => setPrerenderFailed(true)}
         />
       );
