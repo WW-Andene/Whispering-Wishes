@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "deployview": {
+      "type": "http",
+      "url": "https://freedom-yippee-bloating.ngrok-free.dev/mcp"
+    }
+  }
+}
