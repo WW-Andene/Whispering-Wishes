@@ -491,7 +491,7 @@ function SpinePlayerComponent({
           loop=""
           muted=""
           class="pointer-events-none"
-          style={{ objectFit: 'cover', ...prerenderFill }}
+          style={{ objectFit: 'contain', ...prerenderFill }}
           onError={() => setPrerenderFailed(true)}
         />
       );
@@ -520,8 +520,7 @@ function SpinePlayerComponent({
           preload="auto"
           className="pointer-events-none"
           style={{
-            objectFit: 'cover',
-            objectPosition: 'center 50%',
+            objectFit: 'contain',
             ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
             ...prerenderFill,
           }}
