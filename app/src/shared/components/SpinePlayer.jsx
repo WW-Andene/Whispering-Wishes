@@ -521,9 +521,12 @@ function SpinePlayerComponent({
           className="pointer-events-none"
           style={{
             objectFit: 'contain',
+            transform: 'scale(1.5)',
+            transformOrigin: 'center',
             ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
             ...prerenderFill,
           }}
+          onLoadedMetadata={(e) => { e.currentTarget.playbackRate = 0.5; }}
           onError={() => setPrerenderFailed(true)}
         />
       );
