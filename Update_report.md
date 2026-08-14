@@ -6,7 +6,28 @@
 **Version 3.6 releases:** August 20, 2026 (6 days from today) — new characters Qingxiao and Jingran confirmed
 **Gap:** 2 full shipped versions (3.4, 3.5) plus a 3rd about to land (3.6)
 
-Sources used: `tethys.gg` (resonator roster), `encore.moe` (character wiki, version-diff tool), `ww.nanoka.cc` (character wiki with full kit data, current live-version banner), `game8.co` (patch notes, current/upcoming banners, hidden-trophy lists confirming per-version content). Prydwen.gg is still blocked by a Cloudflare bot-check; not used this pass.
+Sources used: `tethys.gg` (resonator roster), `encore.moe` (character wiki, version-diff tool), `ww.nanoka.cc` (character wiki with full kit data, current live-version banner), `game8.co` (patch notes, current/upcoming banners, hidden-trophy lists confirming per-version content), `prydwen.gg` (tier lists, build guides, real signature weapons/echo sets — Cloudflare block bypassed with a real browser UA, a Google referer, and enough render time for the JS challenge to clear; see §9).
+
+---
+
+## 9. Prydwen tier/build data — confirmed (2026-08-14, later pass)
+
+Cloudflare no longer blocks `prydwen.gg` (bypassed via realistic browser fingerprint). Pulled full Review + Build tabs for all 8 characters still missing/partial in `CHARACTER_DATA`. This supersedes any earlier weapon/echo *guesses* in §2 with confirmed data — Rover: Electro's best weapon in particular was previously guessed wrong.
+
+| Character | Role | Tier (ToA / WW) | Confirmed signature weapon | Confirmed best echo set | Notes |
+|---|---|---|---|---|---|
+| **Rebecca** | Hybrid | T0.5 / T1 | Skull Thrasher ✅ (guess confirmed) | Moonlit Clouds | Free character (collab). Best with Lucy. |
+| **Lucilla** | Hybrid | **T0 / T0** | Freeze Frame ✅ (guess confirmed) | Wishes of Quiet Snowfall (Chafe) / Moonlit Clouds (Echo) | Dual Resonance Mode — needs 2-3 different echo builds depending on team. |
+| **Lucy** | DPS | T1 / T2 | Spectral Trigger ✅ (guess confirmed) | Shadow of Shattered Dreams | Collab DPS — "lower damage ceiling than every modern release before her" per Prydwen; below Hiyuki/Aemeath/Luuk/Sigrika. |
+| **Rover: Electro** | Hybrid | **T4 / T4** | **Blazing Brilliance** (NOT Emerald of Genesis — my earlier guess was wrong) | Moonlit Clouds | Prydwen: "basically a useless character right now," awaiting a future Electro Flare DPS to pair with. |
+| **Yangyang: Xuanling** | DPS | **T0 / T0** | Azure Oath ✅ (confirmed) | Song of Feathered Trace (5P; main echo **Thousand-Puppet Pavilion** — confirms the Xuanfang-region echo set guessed in §4) | "One of the most meta releases... if not the most meta DPS to ever release." Best team: Chisa + Suisui. |
+| **Suisui** | Support/Healer | T0 / T0.5 | Firstlight's Herald ✅ (already added) | Not captured in this pass (page truncated before Build tab) — needs one more fetch | Already fully in `CHARACTER_DATA`; **TIER_DATA row added this pass**. |
+| **Denia** | Hybrid | T0 / T0.5 | Not captured this pass | Not captured this pass | **Element confirmed: Fusion**, Rectifier. Dual Resonance Mode (Fusion Burst / Tune Strain), same as Lucilla's problem — 3 echo sets needed for full flexibility. |
+| **Hiyuki** | DPS | **T0 / T0.5** | Not captured this pass | Not captured this pass | **Element confirmed: Glacio**, Sword. Base stats confirmed: HP 10300 / ATK 463 / DEF 1112 / maxEnergy 125. "Best Glacio DPS by a huge margin... no competition since Carlotta." |
+
+**Correction to §2:** Rover: Electro's `bestWeapon` should be **Blazing Brilliance**, not Emerald of Genesis as originally guessed — fix when her `CHARACTER_DATA` entry is built in Step 2.
+
+**Still needed before Step 2 can fully build these 7 characters:** Suisui's echo set, Denia's and Hiyuki's signature weapons/echo sets (pages exist, just weren't fetched deep enough this pass), and full kit ascension/skill material names for all 7 (Prydwen shows "upgrade material information aren't available yet" for every one of them — will need `wiki.gg`/Fandom or wait for the game's own in-app data mine).
 
 ---
 

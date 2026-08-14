@@ -610,6 +610,8 @@ const CHARACTER_DATA = {
   ['Qiuyuan',       'T0',   'T0'],
   ['Mornye',        'T0',   'T0.5'],
   ['Shorekeeper',   'T0',   'T0'],
+  // Confirmed via prydwen.gg (last updated 01/Aug/2026)
+  ['Suisui',        'T0',   'T0.5'],
   ['Phrolova',      'T0.5', 'T0'],
   ['Augusta',       'T0.5', 'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
