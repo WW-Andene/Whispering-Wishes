@@ -46,15 +46,17 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 4. Echoes
+## 4. Echoes — ✅ DONE (this session, for Land of Xuanfang's confirmed set)
 
-**Main work:** Add the confirmed new Sonata Set from Land of Xuanfang to `echoes.js` — Kernel Puppet (Joy/Anger/Worry/Reflection/Grief/Fright, 6-piece), plus the individual enemy echoes (Smiter, Fog Lionarch, Forbidden Bastion, Myriad Snare: Rustfire Chassis, Thousand-Puppet Pavilion, etc.) confirmed by Game8 as the actual competitive set for Qingxiao (**Heart of Evil's Purge** — this is likely the retail name for the "Kernel Puppet" set nanoka.cc showed in beta/datamined form; reconcile the two names before writing data).
+**Main work:** Confirmed via nanoka.cc's live echo database (not "Kernel Puppet" — that name never shipped) that Land of Xuanfang actually introduced **three** new Sonata Sets, not one: **Song of Feathered Trace** (Support/Energy Regen, Havoc Bane + Glacio Chafe dual-trigger), **Heart of Evil's Purge** (Aero DMG, Tune Strain - Shifting trigger), and **Lamp of Nether Road** (Shield/HP, Shield-gain trigger). Added all three to `ECHO_SETS` with real p2/p5 bonus text, plus the 6 echoes that carry them: Thousand-Puppet Pavilion and Myriad Snare: Rustfire Chassis (4-cost), Forbidden Bastion and Fog Lionarch (3-cost).
 
-**Connected work:**
-- `ECHO_SETS` (set → bonus description), `ALL_4COST_ECHOES`/`ALL_3COST_ECHOES`/`ALL_1COST_ECHOES` (cost-tier buckets — need to know each echo's cost, not yet gathered), `ECHO_SKILL_BUFFS` (active-skill numbers for calculator use).
-- `ALL_ECHO_SONATA_SETS` / `ALL_ECHO_BUFF_TYPES` are auto-derived — no manual work, but again worth a post-add sanity check.
-- `CHARACTER_DATA[name].bestEchoes` — once echo data lands, revisit every new character's `bestEchoes` field (currently populated from nanoka/Game8's build recommendations, should be consistent with actual echo names once entered).
-- **3.4's echo set** (tied to Somnoire: Night City) was never inventoried — this step currently only covers 3.5/3.6's set. Needs a follow-up research pass before it's complete.
+**Connected work — completed:**
+- Also added **Voidwing Moth** and **Reminiscence: Denia** (Denia's paired signature Echoes) to `ECHO_DATA` — both were already referenced in `CHARACTER_DATA['Denia'].bestEchoes` from an earlier session but never actually defined, a dangling reference.
+- Discovered and fixed a **second dangling reference** in the process: `Reel of Spliced Memories` (Voidwing Moth's actual set) was cited in Denia's `bestEchoes` string but never existed in `ECHO_SETS` at all — added it with real bonus data.
+- `ALL_4COST_ECHOES`/`ALL_3COST_ECHOES` extended under new `// v3.5 — Land of Xuanfang` blocks.
+- Full test suite (96/96) passes, including the `ECHO_DATA`/`ECHO_SETS` cross-reference integrity checks.
+- **Not done — `ECHO_SKILL_BUFFS`** (active-skill timed-buff numbers for calculator use) and icon art — no licensed art source, same gap as characters/weapons.
+- **3.4's echo set** (tied to Somnoire: Night City) still not inventoried — nothing found for it in this pass; needs a dedicated research pass if the app should track it.
 
 ---
 

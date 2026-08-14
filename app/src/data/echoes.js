@@ -37,10 +37,23 @@ const ECHO_SETS = {
   'Trailblazing Star':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst/Tune Rupture → +20% Crit Rate, +20% Fusion DMG for 8s', p5val: { critRate: 20, fusionDmg: 20 } },
   'Chromatic Foam':        { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst → +10% Fusion DMG 15s; Outro → +25% Fusion DMG for next 15s', p5val: { fusionDmg: 35 } },
   'Sound of True Name':    { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Echo Skill DMG → +20% Echo Crit Rate, +15% Aero DMG for 5s', p5val: { critRate: 20, aeroDmg: 15 } },
+  // v3.5 — Land of Xuanfang sets, confirmed via nanoka.cc live echo pages (2026-08-14)
+  'Song of Feathered Trace': { element: 'Support', p2: '+10% Energy Regen', p2val: { energyRegen: 10 },
+    p5: "Havoc Bane → self +20% Crit Rate, +35% Heavy ATK DMG for 15s (Xuanling's Feather); Glacio Chafe → team ATK +0.1% per 1% Energy Regen, up to +25%, for 10s (Chongming's Feather)",
+    p5val: { critRate: 20, heavyDmg: 35, atkPct: 25 } },
+  "Heart of Evil's Purge": { element: 'Aero', p2: '+10% Aero DMG', p2val: { aeroDmg: 10 },
+    p5: 'Tune Strain - Shifting → +20% Crit DMG, +30% Aero DMG for 15s', p5val: { critDmg: 20, aeroDmg: 30 } },
+  'Lamp of Nether Road':  { element: 'Shield', p2: '+10% HP', p2val: { hpPct: 10 },
+    p5: 'Gaining a Shield → +5% Crit Rate for 5s (max x4, 0.5s CD); at max stacks → +15% Fusion DMG', p5val: { critRate: 20, fusionDmg: 15 } },
+  // Referenced by Denia's bestEchoes since her character entry was added, but never itemized here — confirmed via nanoka.cc
+  'Reel of Spliced Memories': { element: 'ATK', p2: '+10% ATK', p2val: { atkPct: 10 },
+    p5: 'Tune Rupture - Shifting or Tune Strain - Shifting → team Tune Break Boost +20 for 30s (same-name effects don\'t stack)', p5val: { atkPct: 10 } },
 };
 
 // [SECTION:ECHO_LISTS] — All echoes grouped by cost tier (newest first)
 const ALL_4COST_ECHOES = [
+  // v3.5 — Land of Xuanfang
+  'Thousand-Puppet Pavilion', 'Myriad Snare: Rustfire Chassis', 'Reminiscence: Denia',
   // v3.0+ — Lahai-Roi
   'Sigillum', 'Hyvatia', 'Reactor Husk', 'Nameless Explorer',
   // v2.8 — Chronorift
@@ -64,6 +77,8 @@ const ALL_4COST_ECHOES = [
 ];
 
 const ALL_3COST_ECHOES = [
+  // v3.5 — Land of Xuanfang
+  'Forbidden Bastion', 'Fog Lionarch', 'Voidwing Moth',
   // v3.0+ — Lahai-Roi
   'Twin Nova - Nebulous Cannon', 'Twin Nova - Collapsar Blade',
   'Sabercat Prowler', 'Sabercat Reaver', 'Spacetrek Explorer',
@@ -166,7 +181,14 @@ const ECHO_DATA = {
   'Nightmare: Kelpie':               { sets: ['Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Glacio DMG', desc: 'A nightmare variant of a water-horse Overlord wreathed in frozen mist. Skill transforms into Nightmare: Kelpie and charges forward for 205% Glacio DMG, then rears up and stomps for 248% Glacio DMG with a chance to freeze. Grants +12% Glacio DMG and +12% Basic ATK DMG.' , iconUrl: 'https://i.ibb.co/bjtwr7yr/Nightmare-Kelpie-Icon.webp' },
   'Hecate':                          { sets: ['Empyrean Anthem'], buff: 'Havoc DMG', desc: 'The three-headed witch Calamity of the deep. Skill transforms into Hecate and channels a tri-beam convergence dealing 135% Havoc DMG x3, then detonates the focal point for 148% Havoc DMG. Grants +12% Havoc DMG and +12% Resonance Skill DMG.' , iconUrl: 'https://i.ibb.co/DH0bCdYK/Hecate-Icon.webp' },
   'Reminiscence: Fenrico':           { sets: ['Dream of the Lost', 'Law of Harmony'], buff: 'Aero DMG', desc: 'A reminiscence of the wolf guardian Fenrico, howling with primordial wind. Skill transforms into Fenrico and lunges with 3 slashes dealing 91%/91%/182% Aero DMG, then howls to create a Wind Domain for 5s dealing 19% Aero DMG x5 to enemies inside. Grants +12% Aero DMG and +12% Resonance Liberation DMG.' , iconUrl: 'https://i.ibb.co/wZK2x483/Reminiscence-Fenrico-Icon.webp' },
+  // v3.5 — Land of Xuanfang echoes, confirmed via nanoka.cc live echo pages (2026-08-14)
+  'Thousand-Puppet Pavilion':        { sets: ['Song of Feathered Trace'], buff: 'Havoc DMG', desc: "A Calamity-class puppet-master construct from Land of Xuanfang. Skill attacks nearby enemies for 109.44% Havoc DMG and summons 4 Blades of Thousand Memories (15s); inflicting Havoc Bane consumes a Blade to deal 41.04% Havoc DMG (once per 1s). Main slot grants +12% Havoc DMG and +12% Heavy ATK DMG." },
+  'Myriad Snare: Rustfire Chassis':  { sets: ["Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Fusion DMG', desc: "An Overlord-class mechanical hazard from Land of Xuanfang. Skill summons a crushing chassis dealing 10.20% Max HP Fusion DMG on impact, then up to 19 more hits of 0.37% Max HP Fusion DMG each. Main slot grants +12% Fusion DMG and +12% Heavy ATK DMG." },
+  'Reminiscence: Denia':             { sets: ['Chromatic Foam'], buff: 'Fusion DMG', desc: "Denia's Calamity-class signature Echo. Skill summons \"Trickster\" for 273.60% Fusion DMG; within 15s, casting Outro Skill grants the incoming Resonator +12% Fusion DMG Bonus for 15s." },
   // ── 3-Cost Echoes ──
+  'Forbidden Bastion':               { sets: ['Song of Feathered Trace', "Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Healing', desc: 'An Elite-class fortified construct from Land of Xuanfang. Skill summons Forbidden Bastion to bash enemies for 237.60% Glacio DMG. Main slot grants +10% Healing Bonus.' },
+  'Fog Lionarch':                    { sets: ['Song of Feathered Trace', "Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Fusion DMG', desc: 'An Elite-class beast from Land of Xuanfang. Skill summons Fog Lionarch to spit fire at enemies, dealing 7 stages of 33.93% Fusion DMG.' },
+  'Voidwing Moth':                   { sets: ['Reel of Spliced Memories'], buff: 'Spectro DMG', desc: "Denia's paired Elite-class moth Echo. Skill transforms into Voidwing Moth for 405% Spectro DMG on cast, or hold for up to 12 hits of 49.33% Spectro DMG. Within 15s, casting Outro Skill grants the incoming Resonator +12% ATK for 15s." },
   'Capitaneus':                      { sets: ['Eternal Radiance', 'Gusts of Welkin'], buff: ['Spectro DMG', 'Aero DMG'], desc: 'The supreme commander of the Order, carrying out judgment on transgressors. Skill summons Capitaneus to jump and smash for 118% Spectro DMG, generating 4 Merciless Judgements at 59% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Heavy ATK DMG.' , iconUrl: 'https://i.ibb.co/VYbs2G44/Capitaneus-Icon.webp' },
   'Havoc Dreadmane':                 { sets: ['Molten Rift', 'Havoc Eclipse'], buff: 'Havoc DMG', desc: 'A dark-maned lion-like beast radiating Havoc energy. Skill transforms into Havoc Dreadmane for 2 tail strikes, each dealing 116% Havoc DMG plus 77% bonus Havoc DMG on hit.' , iconUrl: 'https://i.ibb.co/3y35jG2X/Havoc-Dreadmane-Icon.webp' },
   'Lumiscale Construct':             { sets: ['Freezing Frost', 'Void Thunder'], buff: 'Glacio DMG', desc: 'An armored construct with luminous scales. Skill transforms into a Parry Stance; slash deals 553% Glacio DMG, or counterattack on hit deals 553% + 276% Glacio DMG.' , iconUrl: 'https://i.ibb.co/YBYGBw70/Lumiscale-Construct-Icon.webp' },
