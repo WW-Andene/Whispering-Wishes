@@ -142,6 +142,9 @@ const BANNER_HISTORY = [
 // P9-FIX: UTC conversions must use the correct DST offset at the EVENT date, not a fixed UTC+1
 // Events that end at 03:59 are server-local (follow daily reset)
 // Events that end at other times are global (same UTC moment)
+// v3.5-cycle dates below (pioneerPodcast through chordCleansing) were pulled directly from
+// wuwatracker.com's embedded event JSON (fetched 2026-08-14) rather than the rendered page text,
+// which doesn't expose exact timestamps — all local times there are CEST (UTC+2), converted to UTC.
 const EVENTS = {
   dailyReset: {
     name: 'Daily Reset',
@@ -185,22 +188,23 @@ const EVENTS = {
     description: 'Limited-time event',
     resetType: 'Version update',
     color: 'yellow',
-    // Ends: Wed, 29 Apr 2026 — Europe 04:59 (UTC+1) | America 22:59 (UTC-5) | Asia 11:59 (UTC+8)
-    currentEnd: '2026-04-29T03:59:00Z',
+    // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
+    currentEnd: '2026-08-19T01:59:59Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
   },
   tacticalHologram: {
-    name: 'Tactical Hologram: Synchronization',
+    name: 'Tactical Hologram: Simulation',
     subtitle: 'Combat Challenge',
     description: 'Permanent combat challenge (Lahai-Roi)',
     resetType: 'Permanent',
     color: 'cyan',
     // Permanent content introduced in v3.0 — not a time-limited event
     // Showing with currentEnd for current version cycle display only
-    currentEnd: '2026-04-29T03:59:00Z',
+    // Jul 10, 10:00 CEST -> Aug 18, 13:59 CEST (UTC+2)
+    currentEnd: '2026-08-18T11:59:59Z',
     permanent: true,
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
@@ -208,14 +212,14 @@ const EVENTS = {
     imageUrl: 'https://i.ibb.co/CpjDZj8V/652896591-1275960654470518-5091818010205633369-n.jpg'
   },
   endstateMatrix: {
-    name: 'Endstate Matrix',
+    name: 'Endstate Matrix (Phase 1)',
     subtitle: 'Boss Rush',
     description: 'High difficulty boss rush — new in v3.2',
     resetType: 'Multi-version',
     color: 'pink',
-    // New in v3.2: First cycle (Doomsday) runs Mar 26 → Apr 30, spans v3.2–v3.4
-    currentStart: '2026-03-26T03:00:00Z', // Mar 26, 04:00 CET (UTC+1, pre-DST)
-    currentEnd: '2026-04-30T01:59:00Z',   // Apr 30, 03:59 CEST (UTC+2, post-DST)
+    // v3.5 cycle: Jul 17, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
+    currentStart: '2026-07-17T02:00:00Z',
+    currentEnd: '2026-08-19T01:59:59Z',
     introducedVersion: '3.2',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
@@ -223,14 +227,14 @@ const EVENTS = {
     imageUrl: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg'
   },
   towerOfAdversity: {
-    name: 'Tower of Adversity: Hazard Zone',
+    name: 'Tower of Adversity: Hazard Revisited',
     subtitle: 'Endgame Challenge',
     description: 'Endgame combat challenge',
     resetType: '28 days',
     color: 'orange',
-    // Mon, 30 Mar 2026 04:00 CEST - Mon, 27 Apr 2026 03:59 CEST (post-DST, UTC+2)
-    currentStart: '2026-03-30T02:00:00Z',
-    currentEnd: '2026-04-27T01:59:00Z',
+    // Jul 20, 04:00 CEST -> Aug 17, 03:59 CEST (UTC+2)
+    currentStart: '2026-07-20T02:00:00Z',
+    currentEnd: '2026-08-17T01:59:00Z',
     introducedVersion: '1.0', // Since launch
     rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
@@ -243,14 +247,110 @@ const EVENTS = {
     description: 'Combat challenge with token system',
     resetType: '28 days',
     color: 'cyan',
-    // Mon, 16 Mar 2026 04:00 CET - Mon, 13 Apr 2026 03:59 CEST (post-DST, UTC+2)
-    currentStart: '2026-03-16T03:00:00Z',
-    currentEnd: '2026-04-13T01:59:00Z',
+    // Aug 3, 04:00 CEST -> Aug 31, 03:59 CEST (UTC+2)
+    currentStart: '2026-08-03T02:00:00Z',
+    currentEnd: '2026-08-31T01:59:59Z',
     introducedVersion: '2.1', // Added in v2.1 (Feb 13, 2025)
     rewards: '800 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
     imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
+  },
+  versionSpecialCampaign: {
+    name: 'Version Special Campaign',
+    subtitle: 'Login Rewards',
+    description: 'Version-wide login/activity reward campaign for v3.5',
+    resetType: 'Version update',
+    color: 'yellow',
+    // Jul 10, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
+    currentStart: '2026-07-10T08:00:00Z',
+    currentEnd: '2026-08-19T09:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
+    accentColor: 'yellow',
+  },
+  giftsOfAftertune: {
+    name: 'Gifts of Aftertune',
+    subtitle: '7 Day Login Event',
+    description: 'Log in for 7 days to claim rewards',
+    resetType: 'Version update',
+    color: 'yellow',
+    // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
+    currentStart: '2026-07-10T08:00:00Z',
+    currentEnd: '2026-08-19T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
+    accentColor: 'yellow',
+  },
+  lamentReconTacetCrisis: {
+    name: 'Lament Recon: Tacet Crisis',
+    subtitle: 'Limited-Time Event',
+    description: 'Limited-time combat/exploration event',
+    resetType: 'Version update',
+    color: 'red',
+    // Jul 11, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
+    currentStart: '2026-07-11T08:00:00Z',
+    currentEnd: '2026-08-19T09:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
+    accentColor: 'red',
+  },
+  recapturedActionHighlights: {
+    name: 'Recaptured: Action Highlights',
+    subtitle: 'Combat Photography Event',
+    description: 'Limited-time combat photography event',
+    resetType: 'Limited-time',
+    color: 'purple',
+    // Jul 16, 10:00 CEST -> Aug 6, 03:59 CEST (UTC+2)
+    currentStart: '2026-07-16T08:00:00Z',
+    currentEnd: '2026-08-06T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
+    accentColor: 'purple',
+  },
+  bountifulCrescendo: {
+    name: 'Bountiful Crescendo',
+    subtitle: 'Limited-Time Material Double Drop Event',
+    description: 'Doubled ascension material drop rates',
+    resetType: 'Limited-time',
+    color: 'orange',
+    // Jul 23, 04:00 CEST -> Jul 30, 03:59 CEST (UTC+2)
+    currentStart: '2026-07-23T02:00:00Z',
+    currentEnd: '2026-07-30T01:59:00Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
+    accentColor: 'orange',
+  },
+  virtualCrisisQuadrantTrials: {
+    name: 'Virtual Crisis: Quadrant Trials',
+    subtitle: 'Limited-Time Event',
+    description: 'Limited-time combat trial event',
+    resetType: 'Version update',
+    color: 'cyan',
+    // Jul 30, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
+    currentStart: '2026-07-30T08:00:00Z',
+    currentEnd: '2026-08-19T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
+    accentColor: 'cyan',
+  },
+  lolloCampaignNewJourney: {
+    name: 'Lollo Campaign: New Journey',
+    subtitle: 'Limited-Time Event',
+    description: 'Limited-time login/activity campaign',
+    resetType: 'Limited-time',
+    color: 'lime',
+    // Aug 6, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
+    currentStart: '2026-08-06T02:00:00Z',
+    currentEnd: '2026-08-19T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
+    accentColor: 'lime',
+  },
+  chordCleansing: {
+    name: 'Chord Cleansing',
+    subtitle: 'Limited-Time Echo Double Drop Event',
+    description: 'Doubled Echo drop rates',
+    resetType: 'Limited-time',
+    color: 'pink',
+    // Aug 12, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
+    currentStart: '2026-08-12T02:00:00Z',
+    currentEnd: '2026-08-19T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
+    accentColor: 'pink',
   },
 };
 
