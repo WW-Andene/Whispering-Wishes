@@ -244,7 +244,7 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover breath-zoom" style={{ objectPosition: cImg === PLACEHOLDER_IMAGE ? 'center 15%' : 'center top' }} loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{c[0]}</div>
                                     )}
@@ -301,7 +301,7 @@ function TrackerTab({
                       type="text"
                       value={bannerHistorySearch}
                       onChange={e => setBannerHistorySearch(e.target.value)}
-                      placeholder="Search by name, version, or phase\u2026"
+                      placeholder={'Search by name, version, or phase\u2026'}
                       className="kuro-input w-full pl-8 text-base"
                       aria-label="Filter banner history"
                     />
@@ -342,7 +342,7 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover object-top breath-zoom" loading="lazy" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className="w-full h-full object-cover breath-zoom" style={{ objectPosition: cImg === PLACEHOLDER_IMAGE ? 'center 15%' : 'center top' }} loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{c[0]}</div>
                                     )}
