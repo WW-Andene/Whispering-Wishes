@@ -67,11 +67,12 @@ const BANNER_HISTORY = [
   { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
   { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', predicted: true },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
-  // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen. Lynae's
-  // "Undefined Spectrum" is a separate standalone Reverb Convene banner running continuously across
-  // both p1 and p2, not a phase-bound character banner, so it isn't itemized as its own history entry.
+  // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
+  // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously
+  // across both p1 and p2, on top of the phase-bound character banners — not itemized as its own
+  // history entry since it isn't a standard per-phase character/weapon banner.
   { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: PLACEHOLDER_IMAGE },
-  { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen'], weapons: ['Azure Oath', "Daybreaker's Spine"], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp' },
+  { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp' },
   // Version 3.4 (Somnoire: Night City region) — dates estimated from the 3.3->3.5 boundary
   // (3.3 ended ~June 10, 3.5 began July 10, giving 3.4 a ~30-day cycle vs. the usual ~40).
   // Characters, weapons, and materials all confirmed via prydwen.gg + game8.co (character-to-phase
