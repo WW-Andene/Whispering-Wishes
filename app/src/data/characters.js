@@ -507,11 +507,11 @@ const CHARACTER_DATA = {
   ['Sigrika',       10775, 437, 1136, 125],
   ['Rebecca',       11600, 400, 1173, 150],
   ['Lucy',          11025, 425, 1149, 150],
-  ['Yangyang: Xuanling', 11025, 425, 1149, 150],
+  ['Yangyang: Xuanling', 11025, 425, 1148, 150],
   ['Denia',         11025, 425, 1149, 150],
-  ['Lucilla',       12238, 375, 1198, 150],
+  ['Lucilla',       12237, 375, 1197, 150],
   ['Hiyuki',        10300, 463, 1112, 125],
-  ['Suisui',        16713, 288, 1100, 175],
+  ['Suisui',        16712, 287, 1099, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
   // Jingran: nanoka shows "Base DEF -" (his kit fixes combat DEF to 0); using a placeholder in
   // line with other Broadblade 5★ base DEF until his real stat page publishes at 3.6 launch.
