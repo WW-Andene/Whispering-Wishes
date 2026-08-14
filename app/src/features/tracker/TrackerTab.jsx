@@ -244,7 +244,7 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover breath-zoom" style={{ objectPosition: cImg === PLACEHOLDER_IMAGE ? 'center 15%' : 'center top' }} loading="lazy" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{c[0]}</div>
                                     )}
@@ -342,7 +342,7 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {cImg ? (
-                                      <img src={cImg} alt={c} className="w-full h-full object-cover breath-zoom" style={{ objectPosition: cImg === PLACEHOLDER_IMAGE ? 'center 15%' : 'center top' }} loading="lazy" onError={hideOnError} />
+                                      <img src={cImg} alt={c} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{c[0]}</div>
                                     )}
