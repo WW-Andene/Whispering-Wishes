@@ -13,7 +13,8 @@ const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 // wuwatracker.com/fr/timeline, user-clarified 2026-08-14 — Suisui/Aemeath is the current phase-2
 // pairing; Yangyang: Xuanling paired with Luuk Herssen in the prior phase, v3.5-p1, not with Aemeath).
 // bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file
-// (Suisui/Firstlight's Herald don't — no art asset available yet, using a neutral fallback pending upload).
+// (Suisui/Firstlight's Herald/Aemeath don't have real banner splash art yet — using the shared neutral
+// fallback pending upload; Everbright Polestar does have a real weapon art asset on file).
 const CURRENT_BANNERS = {
   version: '3.5', phase: 2, // Game version (not app version)
   // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
@@ -34,7 +35,7 @@ const CURRENT_BANNERS = {
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
     { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' },
-    { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp', imagePosition: 'center 15%' },
+    { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' }, // TODO: replace with real Aemeath banner splash art once available — was misusing the Collection-tab "Full Sprite" portrait asset, not real banner art
   ],
   weapons: [
     { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: PLACEHOLDER_IMAGE },
