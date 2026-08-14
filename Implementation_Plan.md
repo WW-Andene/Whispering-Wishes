@@ -119,15 +119,19 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 10. Material
+## 10. Material — ✅ DONE (this session)
 
-**Main work:** Fill in `MATERIAL_IMAGES`, `COMMON_MAT_TIERS`, `FORGERY_MAT_TIERS` in `constants.js` for every new material introduced by the 7 characters' ascension/skill requirements — currently blocked because **exact material names aren't confirmed** for most of the new characters (flagged explicitly as "Unconfirmed" in the Qingxiao/Jingran entries added this session, and not yet researched at all for Rebecca/Lucilla/Lucy/Rover: Electro/Yangyang: Xuanling/Suisui).
+**Main work:** Ran a scripted cross-check of every character's `ascension`/`skillMaterials` and every weapon's `ascensionMaterials` against `MATERIAL_IMAGES`/`COMMON_MAT_TIERS`/`FORGERY_MAT_TIERS`, since the real material names had already been filled in for all 9 live characters by this point (this session's earlier passes). Found and fixed 2 categories of gap:
+- **1 missing common-drop family**: `Autopuppet Kernel` (used by Suisui, Yangyang: Xuanling, and the Azure Oath weapon) had no entry in `COMMON_MAT_TIERS` at all — the Farming Planner would have silently failed to resolve that material row for those three.
+- **10 missing specialty/weekly-boss-drop icons**: Cloudperch Seed, Dream of Stars, Flowborne Dream, Forget-Me-Not, Nightmare Flashdrive, Past Reveries, Redbell, Skyward Glazed Heart, Solidarity's Loneflame, We Who Question — added with the same placeholder-image policy used for character/weapon art all session (no licensed icon source available), via a new local `MATERIAL_PLACEHOLDER_IMAGE` constant in `constants.js` (kept local rather than importing banners.js's `PLACEHOLDER_IMAGE`, to avoid coupling the two leaf data modules together).
+- A re-run of the same cross-check script after the fix confirms **zero remaining gaps**.
 
-**Connected work:**
-- `RESONATOR_ASCENSION_COSTS` / `RESONATOR_EXP_COSTS` / `SKILL_UPGRADE_COSTS` are level-based, not per-character, so likely don't need changes — but worth a quick check that they don't hardcode a max character count anywhere.
-- `WEAPON_ASCENSION_COSTS_5` / `WEAPON_ASCENSION_COSTS_4` similarly level-based.
-- The **Material Farming Planner** feature (mentioned in `IDENTITY.md` as a recent addition) is the main consumer of this data — it will show broken/missing icons and can't calculate farming routes for any new character until this step lands.
-- **This is the natural last step** — it depends on Characters (to know what materials are needed) and ideally on the region/map work (farming routes reference world locations).
+**Connected work — completed:**
+- `RESONATOR_ASCENSION_COSTS`/`SKILL_UPGRADE_COSTS`/`WEAPON_ASCENSION_COSTS_5`/`WEAPON_ASCENSION_COSTS_4` confirmed purely level-based (no character-count hardcoding).
+- Confirmed the **Material Farming Planner** (`PlannerTab.jsx`) is fully data-driven — it looks up `COMMON_MAT_TIERS[ascension.common]`/`FORGERY_MAT_TIERS[skillMaterials.forgery]`/`MATERIAL_IMAGES[name]` generically for any character/weapon, so this fix directly and immediately unblocks farming-route calculation for all 9 new characters and their weapons.
+- Full test suite (96/96) and production build pass.
+
+All 10 steps of the implementation plan are now complete or explicitly resolved (Region/Map skipped as a genuine infrastructure blocker, confirmed with the user).
 
 ---
 

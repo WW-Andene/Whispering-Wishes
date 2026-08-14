@@ -113,6 +113,12 @@ const AVG_PULLS_PER_4STAR = 7.69;
 const AVG_4STAR_PULLS_PER_FEATURED = 1.5;
 const LEADERBOARD_DISPLAY_LIMIT = 20;
 
+// Shared fallback art for materials that don't have a real icon sourced yet
+// (post-v3.3 characters' ascension/skill materials) — same placeholder used
+// for character/weapon art in banners.js. No cross-import to avoid coupling
+// these leaf data modules together.
+const MATERIAL_PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
+
 // [SECTION:MATERIAL_IMAGES] — Material icon URLs for collection detail modals
 const MATERIAL_IMAGES = {
   // === Resonator EXP Materials ===
@@ -230,6 +236,20 @@ const MATERIAL_IMAGES = {
   // Polarizer family
   'Polywing Polarizer': 'https://wuwatracker.com/api/item-icons/file/polywing-polarizer.webp',
   'Layered Wing Polarizer': 'https://wuwatracker.com/api/item-icons/file/layered-wing-polarizer.webp',
+  // Autopuppet Kernel family (Land of Xuanfang common drop — Suisui, Yangyang: Xuanling, Azure Oath)
+  'HF-Autopuppet Kernel': MATERIAL_PLACEHOLDER_IMAGE,
+  'FF-Autopuppet Kernel': MATERIAL_PLACEHOLDER_IMAGE,
+  // v3.4/3.5 ascension specialty / weekly-boss-drop materials — no icon art sourced yet
+  'Cloudperch Seed': MATERIAL_PLACEHOLDER_IMAGE,
+  'Dream of Stars': MATERIAL_PLACEHOLDER_IMAGE,
+  'Flowborne Dream': MATERIAL_PLACEHOLDER_IMAGE,
+  'Forget-Me-Not': MATERIAL_PLACEHOLDER_IMAGE,
+  'Nightmare Flashdrive': MATERIAL_PLACEHOLDER_IMAGE,
+  'Past Reveries': MATERIAL_PLACEHOLDER_IMAGE,
+  'Redbell': MATERIAL_PLACEHOLDER_IMAGE,
+  'Skyward Glazed Heart': MATERIAL_PLACEHOLDER_IMAGE,
+  "Solidarity's Loneflame": MATERIAL_PLACEHOLDER_IMAGE,
+  'We Who Question': MATERIAL_PLACEHOLDER_IMAGE,
 };
 
 // [SECTION:COMMON_MAT_TIERS] — Maps common material family name → [tier3, tier4] display names
@@ -243,6 +263,7 @@ const COMMON_MAT_TIERS = {
   'Carved Crystal': ['HF-Carved Crystal', 'FF-Carved Crystal'],
   'Exoswarm Core': ['HF-Exoswarm Core', 'FF-Exoswarm Core'],
   'Exoswarm Pendant': ['Chipped Exoswarm Pendant', 'Intact Exoswarm Pendant'],
+  'Autopuppet Kernel': ['HF-Autopuppet Kernel', 'FF-Autopuppet Kernel'],
 };
 
 // [SECTION:FORGERY_MAT_TIERS] — Maps forgery family name → [tier3, tier4] display names
