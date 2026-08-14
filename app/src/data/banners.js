@@ -257,10 +257,17 @@ const EVENTS = {
     accentColor: 'cyan',
     imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
+  // Real name/description/cover art below confirmed 2026-08-14 via wuwatracker.com/fr/timeline's
+  // embedded RSC data (same technique used for the achievements dataset — see achievements.js header).
+  // No official Astrite reward figures are published for these events (wuwatracker's own timeline data
+  // has no reward field either), so `rewards` is intentionally left unset rather than guessed —
+  // EventCard.jsx hides the reward badge cleanly when absent (see Events audit fix).
+  // recapturedActionHighlights (ended 2026-08-06) and bountifulCrescendo (ended 2026-07-30) removed —
+  // both were one-off limited-time events already over as of today (2026-08-14).
   versionSpecialCampaign: {
     name: 'Version Special Campaign',
     subtitle: 'Login Rewards',
-    description: 'Version-wide login/activity reward campaign for v3.5',
+    description: 'In Version 3.5, a special event will be available: your first 10x Convenes in Reverb Resonator Convene are free.',
     resetType: 'Version update',
     color: 'yellow',
     // Jul 10, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
@@ -268,11 +275,12 @@ const EVENTS = {
     currentEnd: '2026-08-19T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
+    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/3-5-version-special-campaign.png',
   },
   giftsOfAftertune: {
     name: 'Gifts of Aftertune',
     subtitle: '7 Day Login Event',
-    description: 'Log in for 7 days to claim rewards',
+    description: "During the event, log in to claim the day's login rewards from the event page.",
     resetType: 'Version update',
     color: 'yellow',
     // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
@@ -280,11 +288,12 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
+    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/gifts-of-aftertune.png',
   },
   lamentReconTacetCrisis: {
     name: 'Lament Recon: Tacet Crisis',
     subtitle: 'Limited-Time Event',
-    description: 'Limited-time combat/exploration event',
+    description: 'Under a special tactical view, use your weapons wisely to fend off waves of enemies. As you battle, power up your Resonator with new weapons, weapon upgrades, and boost items. To clear a drill, you must survive every wave of attack.',
     resetType: 'Version update',
     color: 'red',
     // Jul 11, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
@@ -292,35 +301,12 @@ const EVENTS = {
     currentEnd: '2026-08-19T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
-  },
-  recapturedActionHighlights: {
-    name: 'Recaptured: Action Highlights',
-    subtitle: 'Combat Photography Event',
-    description: 'Limited-time combat photography event',
-    resetType: 'Limited-time',
-    color: 'purple',
-    // Jul 16, 10:00 CEST -> Aug 6, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-16T08:00:00Z',
-    currentEnd: '2026-08-06T01:59:59Z',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
-    accentColor: 'purple',
-  },
-  bountifulCrescendo: {
-    name: 'Bountiful Crescendo',
-    subtitle: 'Limited-Time Material Double Drop Event',
-    description: 'Doubled ascension material drop rates',
-    resetType: 'Limited-time',
-    color: 'orange',
-    // Jul 23, 04:00 CEST -> Jul 30, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-23T02:00:00Z',
-    currentEnd: '2026-07-30T01:59:00Z',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
-    accentColor: 'orange',
+    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/lament-recon-tacet-crisis.png',
   },
   virtualCrisisQuadrantTrials: {
     name: 'Virtual Crisis: Quadrant Trials',
     subtitle: 'Limited-Time Event',
-    description: 'Limited-time combat trial event',
+    description: 'Take on Crisis Trial challenges and Disaster Trial high-difficulty challenges under various combinations of Stress Modules.',
     resetType: 'Version update',
     color: 'cyan',
     // Jul 30, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
@@ -328,11 +314,12 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
+    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/virtual-crisis-quadrant-trials.png',
   },
   lolloCampaignNewJourney: {
     name: 'Lollo Campaign: New Journey',
     subtitle: 'Limited-Time Event',
-    description: 'Limited-time login/activity campaign',
+    description: 'During the event, you can complete Lollo Campaigns to obtain a set number of Lollo Stamps. Each Lollo Stamp can be exchanged for a Lollo Helper special delivery.',
     resetType: 'Limited-time',
     color: 'lime',
     // Aug 6, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
@@ -340,11 +327,12 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
+    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/lollo-campaign-new-journey.png',
   },
   chordCleansing: {
     name: 'Chord Cleansing',
     subtitle: 'Limited-Time Echo Double Drop Event',
-    description: 'Doubled Echo drop rates',
+    description: 'Spend Waveplates to claim double rewards after completing a Tacet Suppression challenge.',
     resetType: 'Limited-time',
     color: 'pink',
     // Aug 12, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
@@ -352,6 +340,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
+    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/chord-cleansing-limited-time-double-drop-event.png',
   },
 };
 
