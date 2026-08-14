@@ -1,109 +1,121 @@
 # Whispering Wishes — Content Refresh Audit Report
 
 **Date of audit:** 2026-08-14
-**Current app data version:** 3.3 (partial — only banner stubs for Denia/Hiyuki)
-**Current live game version:** 3.6.0
-**Gap:** 3 full versions unaccounted for (3.4, 3.5, 3.6)
+**App's last data version:** 3.3 (partial — only banner stubs for Denia/Hiyuki)
+**Live game version:** 3.5 ("Blade of Past Resounds, Lingering Dream Hymns" — July 10 to August 19, 2026)
+**Version 3.6 releases:** August 20, 2026 (6 days from today) — new characters Qingxiao and Jingran confirmed
+**Gap:** 2 full shipped versions (3.4, 3.5) plus a 3rd about to land (3.6)
 
-Sources checked: `tethys.gg` (resonator roster), `encore.moe` (character wiki, version diff tool, news/changelog). `prydwen.gg` and `game8.co` were blocked by bot-protection (Cloudflare / CloudFront 403) during this pass — not yet checked.
+Sources used: `tethys.gg` (resonator roster), `encore.moe` (character wiki, version-diff tool), `ww.nanoka.cc` (character wiki with full kit data, current live-version banner), `game8.co` (patch notes, current/upcoming banners, hidden-trophy lists confirming per-version content). Prydwen.gg is still blocked by a Cloudflare bot-check; not used this pass.
 
 ---
 
 ## 1. Evidence of the gap
 
-- `app/src/data/banners.js` → `BANNER_HISTORY` ends at version 3.3, with the 3.3 entries themselves marked `// upcoming — dates approximate` and only guessed dates (through ~June 10, 2026).
-- `app/src/data/banners.js` → `VERSION_DATES`, `PIONEER_PODCAST_HISTORY`, `TACTICAL_HOLOGRAM_HISTORY`, `DOUBLED_PAWNS_MATRIX_HISTORY` all stop at 3.2/3.3.
-- `app/src/data/characters.js` → `CHARACTER_DATA` has 45 entries, last additions Aemeath/Sigrika (3.1/3.2 era). No entries for anyone from 3.3 onward.
-- `app/src/data/weapons.js` and `app/src/data/echoes.js` → zero entries referencing any post-3.3 character, weapon, or enemy.
-- `encore.moe/diff` version-comparison tool lists game versions up through **3.6.0** as selectable, confirming that's the current live version.
-- `encore.moe/news`: "Updated encore.moe to 3.5.0" — Jul 8, 2026. `encore.moe/new` (their "latest content" page) shows 3.6-era content already live (new region, new characters), meaning 3.6 has already shipped past that.
+- `app/src/data/banners.js` → `BANNER_HISTORY` ends at version 3.3, with the 3.3 entries themselves marked `// upcoming — dates approximate`.
+- `app/src/data/banners.js` → `CURRENT_BANNERS` still displays the **v3.2 Lynae/Zani/Phoebe rerun** as "live" — that banner phase ended April 29, 2026, over 3 months ago.
+- `VERSION_DATES`, `PIONEER_PODCAST_HISTORY`, `TACTICAL_HOLOGRAM_HISTORY`, `DOUBLED_PAWNS_MATRIX_HISTORY` all stop at 3.2/3.3.
+- `app/src/data/characters.js` → `CHARACTER_DATA` has 45 entries, last additions Aemeath/Sigrika (3.1/3.2 era). Nothing from 3.3 onward.
+- `app/src/data/weapons.js` / `echoes.js` → zero entries for anyone past 3.3.
+- nanoka.cc confirms the live game version is **3.5**, with 3.6 currently in beta (patches 3.6.1–3.6.7 visible as upcoming/datamined).
+- Game8's banner-tracker page (last updated Aug 10, 2026) confirms **3.5 Phase 2 is live now** (Suisui + Aemeath rerun banner), and **3.6 launches Aug 20, 2026** with Qingxiao and Jingran.
 
 ---
 
-## 2. Missing characters
+## 2. Missing characters — confirmed, with kit data pulled
 
-### Have banner stubs only, no character data at all (skills/ascension/tier/echoes/weapon/teams)
+### Version 3.4 — new region "Somnoire: Night City" (cyberpunk-themed, quest: *At Dream's Edge*)
+| Character | Rarity | Element | Weapon | Role | Recommended weapons | Notes |
+|---|---|---|---|---|---|---|
+| **Rebecca** | 5★ | Electro | Pistols | Hybrid DPS/Hack-response, mode-switching (Huntress/Guts stances) | Skull Thrasher, Phasic Homogenizer, Relativistic Jet | Fury-Type Arsenal. Full kit pulled (Forte Gauge, Fervor/Hot Hand mechanics, Resonance Chains). |
+| **Lucilla** | 5★ | Glacio | Rectifier | Support — dual mode (Glacio Chafe buffer / Echo Skill buffer) | Freeze Frame, Cosmic Ripples, Fusion Accretion | President of Startorch Academy. Full kit pulled (Focus Ring mechanic, Film Roll/Zoom stacks). |
+| **Lucy** | 5★ | Spectro | Pistols | Main DPS, Hack DMG specialist | Spectral Trigger, Phasic Homogenizer, Solar Flame | The "Netrunner." Full kit pulled (TCP/Root Access/Algorithm Compaction, Spoofing Program Resonance Liberation). |
+| **Rover: Electro** | 5★ | Electro | Sword | New Rover attunement — Resonance Skill DMG focus, multi-element Apex Resonance (Spectro/Havoc/Aero sub-hits) | Emerald of Genesis, Blazing Brilliance, Endless Collapse | App's `Rover` entry currently only lists `elements: ['Spectro','Havoc','Aero']` — the whole Rover data model needs an Electro branch added, not just a roster entry. Full kit pulled. |
+
+*(Weapon: **Firstlight's Herald** (Rectifier) confirmed as a 3.4/3.5-era signature weapon, currently rate-up alongside Suisui.)*
+
+### Version 3.5 — new region "Land of Xuanfang" (Mengzhou, Main Story Chapter IV)
+| Character | Rarity | Element | Weapon | Role | Recommended weapons | Notes |
+|---|---|---|---|---|---|---|
+| **Yangyang: Xuanling** | 5★ | Havoc | Sword | Main DPS — dual Sword Stance (Azure/Feather) system, Havoc Bane stacking | Azure Oath, Emerald Sentence, Commando of Conviction | New alternate form of Yangyang, distinct kit — NOT a reskin, needs own `CHARACTER_DATA` entry. Full kit pulled. Released 3.5 Phase 1 (July 10). |
+| **Suisui** | 5★ | Glacio | — (weapon type not captured this pass) | New Zephyr/Drizzle dual-stance kit | Firstlight's Herald (confirmed rate-up) | Suisui's sister-of-Yangyang character. Released 3.5 Phase 2 (July 30). Detailed Forte terms already captured in an earlier pass (Cloud Breath, Floral Epistle, Plume Step, Roaming Transcendent). Full nanoka kit page not yet pulled — do that before writing her `CHARACTER_DATA` entry. |
+
+### Already has banner stub, still needs real character data
 | Character | Notes |
 |---|---|
-| Denia | Banner entry in `BANNER_HISTORY` (v3.3-p2) with only an id/name/element placeholder (`element: ''`). Missing from `CHARACTER_DATA` entirely. |
-| Hiyuki | Banner entry in `BANNER_HISTORY` (v3.3-p1) with only an id/name/element placeholder (`element: ''`). Missing from `CHARACTER_DATA` entirely. |
+| Denia | Banner entry exists (v3.3-p2) with placeholder `element: ''`. Nanoka/Game8 list her as a Version 3.5 **boss/story character** too — confirm if she's also playable-relevant beyond the banner stub. |
+| Hiyuki | Banner entry exists (v3.3-p1) with placeholder `element: ''`. Needs full `CHARACTER_DATA` entry. |
 
-### Fully missing — no banner entry, no character data, nothing
-| Character | Likely version | Notes |
-|---|---|---|
-| Rebecca | ~3.4 | Confirmed via `encore.moe/character` roster and Tethys roster. |
-| Lucilla | ~3.4/3.5 | Confirmed via both sources. |
-| Lucy | ~3.5 | Confirmed via both sources. |
-| Rover: Electro | 3.6 | **New Rover attunement.** App's `Rover` entry only lists `elements: ['Spectro', 'Havoc', 'Aero']` — Electro attunement is not represented at all. This affects the Rover data model, not just a new roster entry. |
-| Yangyang: Xuanling | 3.6 | New alternate/awakened version of Yangyang tied to the new region's story (Land of Xuanfang). Distinct kit from base Yangyang — needs its own entry, not a reskin. |
-| Suisui | 3.6 | Brand new character, part of the 3.6 "Land of Xuanfang" release. Detailed kit terms already published (Zephyr/Drizzle Stance, Cloud Breath, Floral Epistle, Plume Step, etc. — see `encore.moe/new`). |
+### Confirmed upcoming (3.6, releases Aug 20, 2026 — 6 days out)
+| Character | Notes |
+|---|---|
+| Qingxiao | 5★, Aero (confirmed via Game8 banner tracker: "5★ Limited Rate-Up: Qingxiao (Aero)"). Debuts alongside a Denia rerun. |
+| Jingran | Confirmed releasing in 3.6, part of the ongoing Land of Xuanfang story. Element not yet confirmed. |
+| Suoming, Hsin | Confirmed by Game8 as "future patches" beyond 3.6 — not yet released, don't build for these yet. |
 
-**Total: 7 characters (2 stub-only + 5 fully missing) need full data cards** — description, skills, ascension materials, skill materials, best echoes, best weapon, recommended teams, tier placement.
+**Total to build now: 7 characters** (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, plus filling in Denia/Hiyuki's real data) — full kit data for 5 of them is already captured above from nanoka.cc and ready to transcribe into `CHARACTER_DATA` format. Qingxiao/Jingran should wait until 3.6 actually ships (Aug 20) since kit data may still change.
 
 ---
 
-## 3. Missing weapons
+## 3. Missing weapons (confirmed by name)
 
-Confirmed new weapons from the 3.6 "new content" listing:
-- **Azure Oath**
-- **Firstlight's Herald**
-
-(3.4/3.5 signature weapons for Rebecca/Lucilla/Lucy were not yet individually confirmed by name in this pass — needs a follow-up check, likely on Tethys or Prydwen once accessible.)
+- **Azure Oath** — signature for Yangyang: Xuanling (Sword)
+- **Firstlight's Herald** — signature for Suisui (Rectifier)
+- 3.5 weapon reruns confirmed live: Verdant Summit, Stringmaster, Ages of Harvest, Blazing Brilliance, Rime-Draped Sprouts, Verity's Handle
+- Rebecca/Lucilla/Lucy signature weapons not yet individually confirmed by exact name — likely need one more nanoka.cc `/weapon` pass (list call returned no readable content this time, page needs a retry or different selector).
 
 ---
 
 ## 4. Missing echoes / enemies
 
-New echo-able enemies from the 3.6 region, per `encore.moe/new`:
-- Smiter
-- Porcelain Picket / Stone Picket / Aureate Picket
-- Kernel Puppet: Joy / Anger / Worry / Reflection / Grief / Fright (6-echo set — likely a themed sonata set)
-- Fog Lionarch (+ Body/Head variants)
-- Smolder
-- Forbidden Bastion (+ Phantom variant)
-- Myriad Snare: Rustfire Chassis
-- Thousand-Puppet Pavilion
-- Phantom: Smiter
+From `encore.moe/new` (3.6 datamine) — a full new Sonata Set tied to the Land of Xuanfang region:
+- Smiter, Porcelain/Stone/Aureate Picket
+- Kernel Puppet: Joy / Anger / Worry / Reflection / Grief / Fright (6-piece — very likely a themed sonata set, needs registering in `ECHO_SETS`)
+- Fog Lionarch (+ Body/Head), Smolder, Forbidden Bastion (+ Phantom variant), Myriad Snare: Rustfire Chassis, Thousand-Puppet Pavilion, Phantom: Smiter
 
-None of these exist in `app/src/data/echoes.js`. Given the "Kernel Puppet" 6-piece emotion-themed set, this is very likely a new Sonata Set that also needs registering in `ECHO_SETS`.
+None of these exist in `app/src/data/echoes.js`. This is 3.6-era (not yet live) — lower priority than the 3.4/3.5 echoes tied to Somnoire: Night City and the first Xuanfang wave, which weren't separately inventoried this pass and need a follow-up check.
 
 ---
 
 ## 5. Missing region / world content
 
-- **New region: Land of Xuanfang (Mengzhou)** — Chapter IV of the main story ("The Wind Before the Storm," "Xuanling Sings, Storm Quelled," "The Chant of Unseen Ties," "A Promise," "Win or Lose," "Legacy," etc.). The app has no map data, zones, or overlays for this region (`mapZones.js`, `mapOverlays.js`, `mapDefaults.js` would all need extending — not yet audited in detail).
-- New world organizations/lore terms introduced: Xuanfang Wardens, Xuan Triad, Skyworks, Censure Court/Cage, Ministry of Foreign Affairs, Rafter Kite, Yuan Fortress — relevant only if the app tracks lore/terms; otherwise skip.
-- New namecards: Paths and Possibilities, Mountains and Waters Ring the Hold, Past the Endstate: Adversity Vanguard, Space and Blake Bloom Medal, Xuanfang Wonder, Starlit Encore.
+Two entire new regions are absent from the app's map data:
+- **Somnoire: Night City** (v3.4) — cyberpunk-themed region tied to Rebecca/Lucy/Lucilla's story (quest: *At Dream's Edge*). Confirmed via Game8's 3.4 hidden-trophy list (references to "David and Lucy's residence," "Cherry Blossom Market," "Startorch Academy," "Illusion's End").
+- **Land of Xuanfang / Mengzhou** (v3.5, ongoing into 3.6) — Main Story Chapter IV. New orgs/lore: Xuanfang Wardens, Xuan Triad, Skyworks, Censure Court/Cage, Ministry of Foreign Affairs.
+
+`mapZones.js`, `mapOverlays.js`, `mapDefaults.js`, `mapIconCatalog.js` need extending for both — not yet cross-checked in detail against what's actually missing.
 
 ---
 
 ## 6. Missing version metadata
 
-`banners.js` needs new entries for:
-- `VERSION_DATES`: 3.4, 3.5, 3.6 start/end dates
-- `PIONEER_PODCAST_HISTORY`: 3.4, 3.5, 3.6 entries
-- `TACTICAL_HOLOGRAM_HISTORY`: check if a new arena shipped with the new region (likely, given precedent of new arenas per new region)
-- `BANNER_HISTORY`: real (not approximate) banner phases for 3.3 p1/p2 onward, plus all of 3.4, 3.5, 3.6 — currently only Denia/Hiyuki exist as rough guesses
-- `CURRENT_BANNERS`: needs to be replaced entirely — it's still showing the 3.2 Lynae/Zani/Phoebe rerun banner as "current," which ended in-game back in April 2026
+`banners.js` needs:
+- **`CURRENT_BANNERS` replaced entirely** — highest-visibility issue, it's showing a banner that ended 3.5 months ago as "live." Correct current banner (confirmed via Game8, last updated Aug 10): **Phase 2 — Suisui (Glacio) + Aemeath (Fusion) rerun**, weapon banner **Firstlight's Herald + Everbright Polestar**, running until Aug 19, 2026.
+- `VERSION_DATES`: add 3.4 (approx. dates need confirming) and 3.5 (**confirmed: July 10 – August 19, 2026**)
+- `BANNER_HISTORY`: real (not "approximate") entries for all of 3.4 and 3.5's two phases each
+- `PIONEER_PODCAST_HISTORY` / `TACTICAL_HOLOGRAM_HISTORY` / `DOUBLED_PAWNS_MATRIX_HISTORY`: extend through 3.4/3.5, check if new arenas shipped with either new region
 
 ---
 
-## 7. Not yet checked (blocked or out of scope this pass)
+## 7. Not yet checked / needs a follow-up pass
 
-- **prydwen.gg** — Cloudflare bot-check blocked the fetch. Would normally provide tier list placement and build recommendations; worth retrying with a different fetch strategy or manual visit.
-- **game8.co** — CloudFront 403 blocked the fetch. Same purpose as Prydwen — tier lists, patch notes, build guides.
-- Exact release dates/version numbers for Rebecca, Lucilla, Lucy individually (only roster order was confirmed, not their precise version/date).
-- Detailed skill kits, ascension materials, and recommended teams for all 7 missing characters — only Suisui's kit terms were pulled in this pass; the rest need individual character-page visits.
-- Map/zone data for Land of Xuanfang (`mapZones.js`, `mapOverlays.js`, `mapDefaults.js`, `mapIconCatalog.js`) — not cross-checked against the new region yet.
-- Standard banner / permanent pool changes, if any, since 3.3.
+- Prydwen.gg — still Cloudflare-blocked; would add tier-list placement and community build consensus on top of the raw kit data already gathered.
+- Suisui's weapon type and full nanoka.cc kit page (only her Forte terms were captured, not the full character page like the other 5).
+- Exact signature weapons for Rebecca, Lucilla, Lucy by name.
+- Full echo/enemy list for 3.4 (Somnoire: Night City) — only 3.6's datamined list was inventoried.
+- Map/zone data specifics for both new regions.
+- Qingxiao and Jingran's kits — intentionally deferred until 3.6 ships Aug 20 to avoid building on beta data that may change.
+- Denia's apparent dual role as both a banner character (3.3) and a "Version 3.5 Boss" per Game8 — worth confirming what that boss reference actually means before assuming she needs two different data treatments.
 
 ---
 
 ## 8. Suggested priority order
 
-1. **`CURRENT_BANNERS`** in `banners.js` — currently displaying a banner that ended 4 months ago as "live." Highest-visibility bug, cheapest fix once 3.6's actual current banner is confirmed.
-2. **Version metadata** (`VERSION_DATES`, `BANNER_HISTORY`, event histories) for 3.4–3.6 — unlocks correct history views and countdown timers app-wide.
-3. **7 missing characters** — full `CHARACTER_DATA` entries, starting with whichever are actually meta-relevant (Suisui/Rover: Electro/Yangyang: Xuanling as newest are likely highest-demand).
-4. **Weapons + echoes** tied to those characters (Azure Oath, Firstlight's Herald, Kernel Puppet set, etc.).
-5. **New region map data**, if the app's map feature is meant to be current.
-6. Retry Prydwen/Game8 for tier-list and build data to enrich the character entries beyond bare kit descriptions.
+1. **`CURRENT_BANNERS`** — fix the banner that's been stale for 3.5 months. Cheapest, highest-visibility win. Data is already confirmed above.
+2. **Version metadata** for 3.4/3.5 (`VERSION_DATES`, `BANNER_HISTORY`, event histories).
+3. **5 characters with kit data already in hand**: Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling — can go straight into `CHARACTER_DATA` from the tables in section 2.
+4. **Denia & Hiyuki** — upgrade from placeholder stubs to real entries.
+5. **Suisui** — one more nanoka.cc fetch needed for her full kit before writing her entry.
+6. **Weapons + echoes** tied to all of the above.
+7. **New region map data** (Somnoire: Night City, Land of Xuanfang) if the app's map feature should reflect current content.
+8. **Wait for Aug 20** before touching Qingxiao/Jingran — build them once 3.6 is actually live, not off beta datamines.
