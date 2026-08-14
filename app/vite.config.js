@@ -40,6 +40,10 @@ const stampSW = () => ({
 });
 
 export default defineConfig({
+  // Relative base so built asset URLs resolve correctly regardless of the
+  // subpath the app is served from (e.g. preview deployments served under
+  // /preview/<org>/<repo>/<branch>--app/ instead of site root).
+  base: './',
   plugins: [react(), stampSW(), devPrerenderSavePlugin()],
   test: {
     environment: 'jsdom',
