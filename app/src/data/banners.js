@@ -132,7 +132,7 @@ const BANNER_HISTORY = [
   { id: 'v1.1-p2', version: '1.1', phase: 2, characters: ['Changli'], weapons: ['Blazing Brilliance'], startDate: '2024-07-22', endDate: '2024-08-14', bannerArt: 'https://i.ibb.co/HDZ1LG4R/changli-banner.jpg' },
   { id: 'v1.1-p1', version: '1.1', phase: 1, characters: ['Jinhsi'], weapons: ['Ages of Harvest'], startDate: '2024-06-28', endDate: '2024-07-22', bannerArt: 'https://i.ibb.co/7xBSVRbQ/jinhsi-banner.jpg' },
   // Version 1.0 — NOTE: p1 and p2 intentionally overlap (both ran concurrently at launch)
-  { id: 'v1.0-p2', version: '1.0', phase: 2, characters: ['Yinlin'], weapons: ['Stringmaster'], startDate: '2024-06-06', endDate: '2024-06-26', bannerArt: 'https://i.ibb.co/Y4SDqwg2/yinlin-banner.jpg' },
+  { id: 'v1.0-p2', version: '1.0', phase: 2, characters: ['Yinlin'], weapons: ['Stringmaster'], startDate: '2024-06-14', endDate: '2024-06-26', bannerArt: 'https://i.ibb.co/Y4SDqwg2/yinlin-banner.jpg' },
   { id: 'v1.0-p1', version: '1.0', phase: 1, characters: ['Jiyan'], weapons: ['Verdant Summit'], startDate: '2024-05-23', endDate: '2024-06-13', bannerArt: 'https://i.ibb.co/hFM8STLQ/jiyan-banner.jpg' },
 ];
 
