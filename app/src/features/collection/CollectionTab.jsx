@@ -33,7 +33,7 @@ function CollectionTab({
   const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
 
   // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
-  const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'copies');
+  const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'release');
   const [collectionSearch, setCollectionSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const searchTimerRef = useRef(null);

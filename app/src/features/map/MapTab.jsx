@@ -2962,13 +2962,16 @@ export default function MapTab({ navPadding = 80 }) {
               <X size={16} />
             </button>
           </div>
-          <img
-            src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
-            alt=""
-            className="w-full h-40 object-cover"
-            loading="eager"
-            onError={hideOnError}
-          />
+          <div className="w-full h-40 overflow-hidden">
+            <img
+              src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
+              alt=""
+              className="w-full h-full object-cover"
+              style={{ transform: 'scale(0.8)' }}
+              loading="eager"
+              onError={hideOnError}
+            />
+          </div>
           <div className="p-4 space-y-3 text-sm text-gray-300 leading-relaxed">
             <p>This tab is still under active development. Some zones, icons, or overlays may be incomplete, misplaced, or missing entirely.</p>
             <p>We apologize for the inconvenience and appreciate your patience while we continue improving it.</p>
