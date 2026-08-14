@@ -33,15 +33,16 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 3. Weapons — ✅ DONE (this session, for the 7 confirmed characters)
+## 3. Weapons — ✅ DONE, re-verified (this session)
 
 **Main work:** Added `WEAPON_DATA` entries for all 7 confirmed signature weapons: Skull Thrasher (Rebecca), Freeze Frame (Lucilla), Spectral Trigger (Lucy), Azure Oath (Yangyang: Xuanling), Frostburn (Hiyuki), Forged Dwarf Star (Denia), plus Glint of Clouds/Firstlight's Herald from the Version step. Names and `bestFor` all confirmed via prydwen.gg build guides.
 
+**Follow-up (this session):** The 6 weapons that previously used the app's per-archetype convention numbers (587/500 ATK guesses) have been replaced with real Lv.90 stats and full R1 passive text pulled directly from nanoka.cc's live weapon database pages — several were wrong (e.g. Skull Thrasher's real baseAtk is 500 with +72% Crit DMG, not 587/+48.6%; several passives buff different stats than originally guessed, like Azure Oath granting All-Attribute DMG rather than a Heavy-only buff). `pv` fields, `desc`, and `passive` text were all rewritten to match the real kit text.
+
 **Connected work — completed:**
 - `WEAPON_RELEASE_ORDER` in `constants.js`: all 6 new weapons added under `// 3.4` / `// 3.5` blocks.
-- `CHARACTER_DATA[name].bestWeapon` now resolves for every one of the 7 characters — confirmed by the passing test suite.
-- **Not done — exact baseAtk/substat values**: Prydwen doesn't publish the raw stat table for unreleased-to-Prydwen's-calculator weapons, so these 6 use the app's existing per-archetype convention (587 ATK for personal-damage sigs, 500 ATK for hybrid/support sigs) rather than confirmed real numbers — flagged in an inline comment. Contrast with Glint of Clouds/Firstlight's Herald from the Version step, which do have confirmed real numbers from nanoka.cc.
-- Banner weapon images still need matching art, same gap as character portraits.
+- `CHARACTER_DATA[name].bestWeapon` now resolves for every one of the 7 characters — confirmed by the passing test suite (96/96).
+- Banner weapon images still need matching art, same gap as character portraits — not addressed this pass.
 
 ---
 
