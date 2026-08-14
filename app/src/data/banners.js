@@ -4,6 +4,8 @@
 // and character themes.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { RELEASE_ORDER } from './characters.js';
+
 // Shared fallback art for any character/weapon that hasn't had a real portrait/icon
 // sourced yet (post-v3.3 additions). Swap out per-entry as real art becomes available.
 const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
@@ -257,8 +259,11 @@ const EVENTS = {
     accentColor: 'cyan',
     imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
-  // Real name/description/cover art below confirmed 2026-08-14 via wuwatracker.com/fr/timeline's
-  // embedded RSC data (same technique used for the achievements dataset — see achievements.js header).
+  // Real name/description below confirmed 2026-08-14 via wuwatracker.com/fr/timeline's embedded RSC
+  // data (same technique used for the achievements dataset — see achievements.js header). Cover art
+  // originally pointed at wuwatracker.com's own API, but that endpoint 403s for any foreign Referer
+  // (confirmed via curl), so it never loads as an <img src> from this app in production — using the
+  // shared PLACEHOLDER_IMAGE fallback until real ibb.co-hosted art is sourced.
   // No official Astrite reward figures are published for these events (wuwatracker's own timeline data
   // has no reward field either), so `rewards` is intentionally left unset rather than guessed —
   // EventCard.jsx hides the reward badge cleanly when absent (see Events audit fix).
@@ -275,7 +280,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
-    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/3-5-version-special-campaign.png',
+    imageUrl: PLACEHOLDER_IMAGE,
   },
   giftsOfAftertune: {
     name: 'Gifts of Aftertune',
@@ -288,7 +293,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
-    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/gifts-of-aftertune.png',
+    imageUrl: PLACEHOLDER_IMAGE,
   },
   lamentReconTacetCrisis: {
     name: 'Lament Recon: Tacet Crisis',
@@ -301,7 +306,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
-    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/lament-recon-tacet-crisis.png',
+    imageUrl: PLACEHOLDER_IMAGE,
   },
   virtualCrisisQuadrantTrials: {
     name: 'Virtual Crisis: Quadrant Trials',
@@ -314,7 +319,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/virtual-crisis-quadrant-trials.png',
+    imageUrl: PLACEHOLDER_IMAGE,
   },
   lolloCampaignNewJourney: {
     name: 'Lollo Campaign: New Journey',
@@ -327,7 +332,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/lollo-campaign-new-journey.png',
+    imageUrl: PLACEHOLDER_IMAGE,
   },
   chordCleansing: {
     name: 'Chord Cleansing',
@@ -340,7 +345,7 @@ const EVENTS = {
     currentEnd: '2026-08-19T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: 'https://wuwatracker.com/api/event-cover-images/file/chord-cleansing-limited-time-double-drop-event.png',
+    imageUrl: PLACEHOLDER_IMAGE,
   },
 };
 
@@ -387,8 +392,8 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Yangyang: Xuanling': 'https://i.ibb.co/tTrNVcJ2/Yangyang-Xuanling-Full-Sprite.webp',
   'Denia': 'https://i.ibb.co/B59KDGHZ/Denia-Full-Sprite.webp',
   'Hiyuki': 'https://i.ibb.co/Q5s9CMF/Hiyuki-Full-Sprite.webp',
-  // v3.5-3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
-  'Suisui': PLACEHOLDER_IMAGE,
+  'Suisui': 'https://i.ibb.co/Q7z2ZLGV/Suisui-Full-Sprite.webp',
+  // v3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
   'Qingxiao': PLACEHOLDER_IMAGE,
   'Jingran': PLACEHOLDER_IMAGE,
   // 4★ Resonators
@@ -766,6 +771,9 @@ const CHARACTER_THEMES = [
   { id: 'suisui',        name: 'Suisui',        element: 'Glacio',  bannerArt: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg' },
   { id: 'yangyang-xuanling', name: 'Yangyang: Xuanling', element: 'Havoc', bannerArt: 'https://i.ibb.co/QFHC5Y4h/Yangyang-Xuanling-banner.jpg' },
 ];
+// Sorted most-recently-released first, reusing the single source of truth for release order
+// (RELEASE_ORDER, characters.js) instead of relying on manual placement above.
+CHARACTER_THEMES.sort((a, b) => RELEASE_ORDER.indexOf(b.name) - RELEASE_ORDER.indexOf(a.name));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEAPON THEMES — Real "Featured Weapon Convene" splash art per 5★ weapon
@@ -847,6 +855,7 @@ const OTHER_BACKGROUNDS = [
 const ANIMATED_BACKGROUNDS = [
   {
     id: 'v2-0',
+    version: 2.0,
     name: 'v2.0 All Silent Souls Can Sing',
     art: './animated-bg/2.0-All-Silent-Souls-Can-Sing-Animated.mp4',
     poster: './animated-bg/2.0-All-Silent-Souls-Can-Sing-Animated.jpg',
@@ -854,6 +863,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v2-2',
+    version: 2.2,
     name: 'v2.2 Tangled Truth in Inverted Tower',
     art: './animated-bg/2.2-Tangled-Truth-In-Inverted-Tower-Animated.mp4',
     poster: './animated-bg/2.2-Tangled-Truth-In-Inverted-Tower-Animated.jpg',
@@ -861,6 +871,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v2-5',
+    version: 2.5,
     name: 'v2.5 Unfading Melody of Life',
     art: './animated-bg/2.5-Unfadind-Melody-Of-Life-Animated.mp4',
     poster: './animated-bg/2.5-Unfadind-Melody-Of-Life-Animated.jpg',
@@ -868,6 +879,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v2-6',
+    version: 2.6,
     name: "v2.6 By Sun's Scourge, By Moon's Revelation",
     art: "./animated-bg/2.6-By-Sun's-Scourge,ByMoon's-Revelation-Animated.mp4",
     poster: "./animated-bg/2.6-By-Sun's-Scourge,ByMoon's-Revelation-Animated.jpg",
@@ -875,6 +887,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v2-7',
+    version: 2.7,
     name: 'v2.7 Dawn Breaks on Dark Tides',
     art: './animated-bg/2.7-Dawn-Breaks-On-Dark-Tides-Animated.mp4',
     poster: './animated-bg/2.7-Dawn-Breaks-On-Dark-Tides-Animated.jpg',
@@ -882,6 +895,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v2-8',
+    version: 2.8,
     name: 'v2.8 To the City Set in Amber',
     art: './animated-bg/2.8-To-The-City-Set-In-Amber-Animated.mp4',
     poster: './animated-bg/2.8-To-The-City-Set-In-Amber-Animated.jpg',
@@ -889,6 +903,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v3-0',
+    version: 3.0,
     name: 'v3.0 We Who See the Stars',
     art: './animated-bg/3.0-We-Who-See-The-Stars-Animated.mp4',
     poster: './animated-bg/3.0-We-Who-See-The-Stars-Animated.jpg',
@@ -896,6 +911,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v3-1',
+    version: 3.1,
     name: 'v3.1 For You Who Walk in the Snow',
     art: './animated-bg/3.1-For-You-Who-Walk-In-The-Snow-Animated.mp4',
     poster: './animated-bg/3.1-For-You-Who-Walk-In-The-Snow-Animated.jpg',
@@ -903,6 +919,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v3-2',
+    version: 3.2,
     name: 'v3.2',
     art: './animated-bg/3.2-animated.mp4',
     poster: './animated-bg/3.2-animated.jpg',
@@ -910,6 +927,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'v3-3',
+    version: 3.3,
     name: 'v3.3',
     art: './animated-bg/3.3-animated.mp4',
     poster: './animated-bg/3.3-animated.jpg',
@@ -917,6 +935,7 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: '2nd-anniversary',
+    version: 3.2, // estimated: 1-year anniversary was the v2.3 anniversary rerun (~Apr 2025), so 2nd falls ~Apr 2026 = v3.2 window
     name: '2nd Anniversary',
     art: './animated-bg/2nd-anniversary-animated.mp4',
     poster: './animated-bg/2nd-anniversary-animated.jpg',
@@ -924,12 +943,15 @@ const ANIMATED_BACKGROUNDS = [
   },
   {
     id: 'startorch-academy',
+    version: 3.1, // estimated: Aemeath's introduction/Startorch Academy tie-in, released v3.1
     name: 'Startorch Academy',
     art: './animated-bg/startorch-academy-animated.mp4',
     poster: './animated-bg/startorch-academy-animated.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
 ];
+// Sorted most-recently-released first
+ANIMATED_BACKGROUNDS.sort((a, b) => b.version - a.version);
 
 
 // ══════════════════════════════════════════════════════════════════════════════
