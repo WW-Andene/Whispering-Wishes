@@ -78,7 +78,7 @@ const BANNER_HISTORY = [
   // Characters, weapons, and materials all confirmed via prydwen.gg + game8.co (character-to-phase
   // pairing below is a reasonable reconstruction — 2 chars/phase, matching the app's usual pattern —
   // exact phase split itself is not separately confirmed, only the overall v3.4 cast and their kits).
-  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover: Electro'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
+  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
   { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Rebecca', 'Lucilla'], weapons: ['Skull Thrasher', 'Freeze Frame'], startDate: '2026-06-10', endDate: '2026-06-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
   // Version 3.3
   { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia'],  weapons: [], startDate: '2026-05-20', endDate: '2026-06-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg' },
