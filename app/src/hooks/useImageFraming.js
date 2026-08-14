@@ -49,6 +49,15 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
   'collection-Lynae': { x: -12, y: -28, zoom: 190 },
   'collection-Sigrika': { x: 2, y: -26, zoom: 180 },
+  // New sprites without individual tuning yet — averaged from every other
+  // collection- entry above (avg x/y/zoom across all 46 tuned characters).
+  'collection-Lucy': { x: 1, y: -22, zoom: 207 },
+  'collection-Rebecca': { x: 1, y: -22, zoom: 207 },
+  'collection-Lucilla': { x: 1, y: -22, zoom: 207 },
+  'collection-Denia': { x: 1, y: -22, zoom: 207 },
+  'collection-Hiyuki': { x: 1, y: -22, zoom: 207 },
+  'collection-Suisui': { x: 1, y: -22, zoom: 207 },
+  'collection-Yangyang: Xuanling': { x: 1, y: -22, zoom: 207 },
   'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
   // 4-star Resonators
@@ -159,6 +168,15 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'info-Danjin': { x: -6, y: -64, zoom: 250 },
   'info-Sanhua': { x: 2, y: -68, zoom: 250 },
   'info-Buling': { x: 0, y: -64, zoom: 230 },
+  // New sprites without individual tuning yet — averaged from every other
+  // info- entry above (avg x/y/zoom across all 45 tuned characters).
+  'info-Lucy': { x: -4, y: -59, zoom: 233 },
+  'info-Rebecca': { x: -4, y: -59, zoom: 233 },
+  'info-Lucilla': { x: -4, y: -59, zoom: 233 },
+  'info-Denia': { x: -4, y: -59, zoom: 233 },
+  'info-Hiyuki': { x: -4, y: -59, zoom: 233 },
+  'info-Suisui': { x: -4, y: -59, zoom: 233 },
+  'info-Yangyang: Xuanling': { x: -4, y: -59, zoom: 233 },
 });
 
 const defaultFramingBase = Object.freeze({ x: 0, y: 0, zoom: 100 });
