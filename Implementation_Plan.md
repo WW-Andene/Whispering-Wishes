@@ -6,14 +6,17 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 1. Version
+## 1. Version — ✅ DONE (commit `2b0c557`)
 
-**Main work:** Extend `app/src/data/banners.js` → `VERSION_DATES` with real entries for 3.4, 3.5 (confirmed: **July 10 – Aug 19, 2026**), and 3.6 (**starts Aug 20, 2026**). Fix `CURRENT_BANNERS` to reflect the actual live banner (currently frozen on a v3.2 rerun that ended 4 months ago).
+**Main work:** Extended `VERSION_DATES` with real entries for 3.3 (backfilled), 3.4 (estimated — no source confirms exact dates), 3.5 (confirmed: **July 10 – Aug 19, 2026**), and 3.6 (confirmed start **Aug 20, 2026**, end estimated). Replaced `CURRENT_BANNERS`, which was frozen on a v3.2 rerun that ended ~4 months ago, with the real live banner: **v3.5 Phase 2 — Suisui + Aemeath rerun**, confirmed via Game8's banner tracker. Extended `BANNER_HISTORY` with all of 3.4/3.5/3.6's phases (genuinely-estimated ones flagged `predicted: true`, which the existing UI already knows how to render as "(est.)"). Extended `PIONEER_PODCAST_HISTORY` through 3.6.
 
-**Connected work:**
-- `constants.js` → `APP_VERSION` is already `'3.5.0'` — worth confirming this constant is meant to track *game* version or *app build* version; if the former, it needs bumping to 3.6 on launch day.
-- Every countdown/timer UI reading `CURRENT_BANNERS.startDate/endDate` or `VERSION_DATES` breaks silently (shows stale or negative countdowns) until this step lands — so this is the correctness-blocking step for almost everything else visible in the UI.
-- This step has no data dependencies itself — it's pure dates — so it can and should ship **first**, standalone, before any character/weapon work.
+**Connected work — what this pulled in:**
+- Populating `CURRENT_BANNERS.characters`/`.weapons` isn't just data — a test (`data-integrity.test.js`) asserts every name resolves against `CHARACTER_DATA`/`WEAPON_DATA`. That pulled in a full `CHARACTER_DATA` entry for **Suisui** (base stats, rotation data, buff table, skill multipliers, resonance chain) and new `WEAPON_DATA` entries for **Glint of Clouds** and **Firstlight's Herald** — this is Step 2/3 work done ahead of schedule, out of necessity rather than choice.
+- While in there, fixed 6 failing tests caused by last session's Qingxiao/Jingran addition, which had only the character-card fields and none of the calculator-linked data (base stats, rotation, buff table, resonance chain, skill multipliers, a resolvable `bestWeapon`). Jingran still has no confirmed signature weapon anywhere — using `Verdant Summit` as a clearly-commented placeholder.
+- `TACTICAL_HOLOGRAM_HISTORY` was **not** extended — new-arena names for 3.4/3.5 aren't confirmed by any source I could reach, so I left it rather than fabricate. Follow-up needed.
+- `APP_VERSION` in `constants.js` is still `'3.5.0'` — not touched, since it's ambiguous whether it tracks game version or app build version. Worth a decision before 3.6 ships.
+- Verified end-to-end with a headless Playwright pass (not just tests): Tracker tab shows the correct v3.5 Phase 2 banner and countdown, Collection tab's search/filter picks up Qingxiao, Planner's Chronology bar correctly plots the new banner history. Zero new console errors — only expected placeholder-art 404s (no portrait/banner images exist yet for Suisui/Qingxiao/Jingran) and one pre-existing unrelated DOM-nesting warning.
+- Full test suite (96 tests) passes; production build succeeds.
 
 ---
 
