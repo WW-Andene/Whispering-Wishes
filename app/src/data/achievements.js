@@ -1,51 +1,58 @@
 // @ts-check
-// Achievement data — sourced from wuwatracker.com's embedded Next.js RSC payload on
-// /fr/achievements (fetched 2026-08-14), which includes real per-achievement version
-// numbers and hidden-achievement flags — both confirmed exact, not inferred. Series/group
-// names AND their category (série) grouping are cross-checked against nanoka.cc's static
-// achievement.json (matched by shared numeric group id) — also real sourced data, not an
-// ID-prefix heuristic.
+// Achievement data — fused from two sources, fetched 2026-08-14:
+//  - wuwatracker.com's embedded Next.js RSC payload (/fr/achievements): real
+//    per-achievement version numbers + hidden flags for 1171 achievements.
+//  - nanoka.cc's static achievement.json: real série/category names, real group
+//    icon codes (converted to wuwatracker's own icon-hosting URL pattern, confirmed
+//    fetchable — fills gaps where wuwatracker's own iconSrc field is a generic
+//    placeholder), and 2 real achievements (Rover: Electro's "A Monkey Could Do It"
+//    / "Purple Flash") that were simply missing from wuwatracker's payload.
+//
+// The 2 nanoka-only achievements above have no confirmed version/hidden data from
+// either source (never appeared in wuwatracker's payload) — version is inferred from
+// Rover: Electro's known v3.4 release, hidden defaults to false absent evidence.
+// Everything else in ACHIEVEMENTS is real confirmed data, not inferred.
 //
 // points = in-game reward value (Astrite-equivalent trophy points). hidden = true for
 // achievements the game itself doesn't reveal the requirements for until unlocked.
 
 // [SECTION:ACHIEVEMENT_SERIES] — sub-series (group) metadata, keyed by numeric group id
 const ACHIEVEMENT_SERIES = {
-  1001: { name: 'Exploration: Huanglong', category: 'Exploration' },
-  1002: { name: 'Footprints in Huanglong I', category: 'Exploration' },
-  1003: { name: 'Footprints in Huanglong II', category: 'Exploration' },
-  1004: { name: 'Wilderness Calls', category: 'Exploration' },
-  1005: { name: 'Footprints on the Shores I', category: 'Exploration' },
-  1007: { name: 'Exploration: Rinascita', category: 'Exploration' },
-  1008: { name: 'Footprints in Rinascita I', category: 'Exploration' },
-  1009: { name: 'Footprints in Rinascita II', category: 'Exploration' },
-  1010: { name: 'Footprints in Rinascita III', category: 'Exploration' },
-  1011: { name: 'Exploration: Lahai-Roi', category: 'Exploration' },
-  1012: { name: 'Footprints in Lahai-Roi I', category: 'Exploration' },
-  1013: { name: 'Exploration: Roya Frostlands', category: 'Exploration' },
-  1014: { name: 'Exploration: Dimmr Plains', category: 'Exploration' },
-  1015: { name: 'Footprints in Huanglong III', category: 'Exploration' },
-  2001: { name: 'Rover\'s Journey I', category: 'Journey' },
-  2003: { name: 'Moments with You', category: 'Journey' },
-  2004: { name: 'World in All Its Variety I', category: 'Journey' },
-  2005: { name: 'Rover\'s Journey II', category: 'Journey' },
-  2006: { name: 'Rover\'s Journey III', category: 'Journey' },
-  2007: { name: 'World in All Its Variety II', category: 'Journey' },
-  3001: { name: 'Battle Memories', category: 'Battles' },
-  3002: { name: 'Battle Skills I', category: 'Battles' },
-  3003: { name: 'Battle Skills II', category: 'Battles' },
-  3004: { name: 'Unexpected Experience', category: 'Battles' },
-  3005: { name: 'From the Abyssal Tower I', category: 'Battles' },
-  3006: { name: 'Battle Skills III', category: 'Battles' },
-  3007: { name: 'Battle Skills IV', category: 'Battles' },
-  3008: { name: 'From the Abyssal Tower II', category: 'Battles' },
-  3009: { name: 'Resonance of Battle', category: 'Battles' },
-  3010: { name: 'Battle Skills V', category: 'Battles' },
-  3011: { name: 'From the Abyssal Tower III', category: 'Battles' },
-  4001: { name: 'Path of Growth', category: 'Voices' },
-  4002: { name: 'Echo Collection', category: 'Voices' },
-  4003: { name: 'Tidal Scenes', category: 'Voices' },
-  5001: { name: 'Cross-Realm Ties', category: 'Voices' },
+  1001: { name: 'Exploration: Huanglong', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-005.webp' },
+  1002: { name: 'Footprints in Huanglong I', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-005.webp' },
+  1003: { name: 'Footprints in Huanglong II', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-005.webp' },
+  1004: { name: 'Wilderness Calls', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-004.webp' },
+  1005: { name: 'Footprints on the Shores I', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-016.webp' },
+  1007: { name: 'Exploration: Rinascita', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-017.webp' },
+  1008: { name: 'Footprints in Rinascita I', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-017.webp' },
+  1009: { name: 'Footprints in Rinascita II', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-017.webp' },
+  1010: { name: 'Footprints in Rinascita III', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-017.webp' },
+  1011: { name: 'Exploration: Lahai-Roi', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-020.webp' },
+  1012: { name: 'Footprints in Lahai-Roi I', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-020.webp' },
+  1013: { name: 'Exploration: Roya Frostlands', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-020.webp' },
+  1014: { name: 'Exploration: Dimmr Plains', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-020.webp' },
+  1015: { name: 'Footprints in Huanglong III', category: 'Exploration', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-022.webp' },
+  2001: { name: 'Rover\'s Journey I', category: 'Journey', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-007.webp' },
+  2003: { name: 'Moments with You', category: 'Journey', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-012.webp' },
+  2004: { name: 'World in All Its Variety I', category: 'Journey', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-010.webp' },
+  2005: { name: 'Rover\'s Journey II', category: 'Journey', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-007.webp' },
+  2006: { name: 'Rover\'s Journey III', category: 'Journey', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-007.webp' },
+  2007: { name: 'World in All Its Variety II', category: 'Journey', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-010.webp' },
+  3001: { name: 'Battle Memories', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-014.webp' },
+  3002: { name: 'Battle Skills I', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-015.webp' },
+  3003: { name: 'Battle Skills II', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-015.webp' },
+  3004: { name: 'Unexpected Experience', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-011.webp' },
+  3005: { name: 'From the Abyssal Tower I', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-006.webp' },
+  3006: { name: 'Battle Skills III', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-015.webp' },
+  3007: { name: 'Battle Skills IV', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-015.webp' },
+  3008: { name: 'From the Abyssal Tower II', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-006.webp' },
+  3009: { name: 'Resonance of Battle', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-019.webp' },
+  3010: { name: 'Battle Skills V', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-015.webp' },
+  3011: { name: 'From the Abyssal Tower III', category: 'Battles', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-006.webp' },
+  4001: { name: 'Path of Growth', category: 'Voices', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-002.webp' },
+  4002: { name: 'Echo Collection', category: 'Voices', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-009.webp' },
+  4003: { name: 'Tidal Scenes', category: 'Voices', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-021.webp' },
+  5001: { name: 'Cross-Realm Ties', category: 'Voices', icon: 'https://wuwatracker.com/api/achievement-group-icons/file/t-icon-achv256-013.webp' },
 };
 
 // [SECTION:ACHIEVEMENTS] — individual achievements, keyed by numeric id
@@ -1128,6 +1135,8 @@ const ACHIEVEMENTS = {
   302103: { group: 3009, name: 'He Calls It Release', desc: 'Defeat Myriad Snare: Rustfire Chassis 50 times.', points: 10, hidden: false, version: '3.5' },
   302104: { group: 3009, name: 'Element Unleashed', desc: 'Deal a certain amount of damage with Rover: Electro\'s Thrum of All Sounds.', points: 5, hidden: false, version: '3.5' },
   302105: { group: 3009, name: 'Defensive Capabilities', desc: 'Block a set number of attacks while in Rover: Electro\'s Parry Stance.', points: 5, hidden: false, version: '3.5' },
+  302106: { group: 3009, name: 'A Monkey Could Do It', desc: 'Parry 20 attacks at the right moment with Rover: Electro.', points: 5, hidden: false, version: '3.4' },
+  302107: { group: 3009, name: 'Purple Flash', desc: 'Flash 20 times with Rover: Electro.', points: 5, hidden: false, version: '3.4' },
   302108: { group: 3009, name: 'Everything Can Be Parried', desc: 'Parry specific attacks from Myriad Snare: Rustfire Chassis at the right moment with Rover: Electro.', points: 5, hidden: false, version: '3.5' },
   400101: { group: 4001, name: '"Hero of Justice"', desc: 'Resonator Ascension reaches Rank 6.', points: 5, hidden: false, version: '1.0' },
   400102: { group: 4001, name: 'All Battles Won I', desc: 'Upgrade Data Bank to Lv.8.', points: 5, hidden: false, version: '1.0' },

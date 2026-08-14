@@ -204,7 +204,10 @@ function AchievementsTool({ onClose }) {
               <ChevronLeft size={13} /> Back to Séries
             </button>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">{selectedSeries.name}</span>
+              <span className="font-medium flex items-center gap-2">
+                {selectedSeries.icon && <img src={selectedSeries.icon} alt="" className="w-5 h-5" loading="lazy" />}
+                {selectedSeries.name}
+              </span>
               <span className="text-gray-400 text-xs">
                 {seriesProgress(seriesFilter).doneCount} / {seriesProgress(seriesFilter).total} · {seriesProgress(seriesFilter).donePts} / {seriesProgress(seriesFilter).pts} pts
               </span>
@@ -225,8 +228,11 @@ function AchievementsTool({ onClose }) {
                   className="w-full text-left p-2.5 rounded-lg border border-[var(--border-medium)] bg-black/20 hover:bg-black/30 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium">{s.name}</span>
-                    <span className="text-[10px] text-gray-500">{s.category}</span>
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      {s.icon && <img src={s.icon} alt="" className="w-5 h-5 flex-shrink-0" loading="lazy" />}
+                      {s.name}
+                    </span>
+                    <span className="text-[10px] text-gray-500 flex-shrink-0">{s.category}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
                     <span>{p.doneCount} / {p.total}</span>
