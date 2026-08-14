@@ -675,13 +675,13 @@ function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - All animations disabled, saves battery</p>
+                  <p className="text-gray-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - No animation at all</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - Background effects, transitions and glow</p>
+                  <p className="text-purple-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - All animation</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Double animation intensity, breathing on all characters</p>
+                  <p className="text-fuchsia-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Spine activated</p>
                 )}
 
                 {/* Background Picker */}
