@@ -813,11 +813,11 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
   },
   'Suisui': {
-    outroBuffs: [{ stat: 'allDmg', value: 25, target: 'team', duration: 30 }],
+    outroBuffs: [{ stat: 'allDmg', value: 12, target: 'team', duration: 6 }],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 25% All DMG Amp teamwide (30s). Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Roaming Transcendent (Liberation + Outro) grants stacking team buffs scaled by Floral Epistle consumed.',
+    note: 'At 400 Floral Epistle (Drizzle Stance Forte gauge), grants team up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Roaming Transcendent (Liberation + Outro Skill - Rippling Waters) extends negative-status stack caps for the team rather than granting a flat DMG buff.',
   },
   'Lynae': {
     outroBuffs: [
