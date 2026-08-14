@@ -2974,7 +2974,7 @@ export default function MapTab({ navPadding = 80 }) {
           </div>
           <div className="p-4 space-y-3 text-sm text-gray-300 leading-relaxed">
             <p>This tab is still under active development. Some zones, icons, or overlays may be incomplete, misplaced, or missing entirely.</p>
-            <p>We apologize for the inconvenience and appreciate your patience while we continue improving it.</p>
+            <p>I apologize for the inconvenience and appreciate your patience while I continue improving it.</p>
           </div>
           <div className="px-4 pb-4">
             <button onClick={dismissWipNotice} className="kuro-btn w-full">Got it</button>

@@ -286,7 +286,7 @@ const CHARACTER_DATA = {
     bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc (Tune Strain)', 'Voidwing Moth', 'Reel of Spliced Memories 5pc (Fusion Burst)'], bestWeapon: 'Forged Dwarf Star',
     teams: ['Denia + Luuk Herssen + Mornye', 'Denia + Aemeath + Chisa'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
-    desc: 'On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher. "The best Glacio DPS by a huge margin" per Prydwen, in her best team.',
+    desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Redbell' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
