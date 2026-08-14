@@ -355,7 +355,7 @@ const ALL_5STAR_WEAPONS = [
   "Bloodpact's Pledge", "Defier's Thorn", 'Wildfire Mark', 'Lethean Elegy',
   'Thunderflare Dominion', "Moongazer's Sigil", 'Solsworn Ciphers',
   'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
-  'Everbright Polestar', "Daybreaker's Spine",
+  'Everbright Polestar', "Daybreaker's Spine", "Firstlight's Herald",
   'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
   'Skull Thrasher', 'Freeze Frame', 'Spectral Trigger', 'Azure Oath', 'Frostburn', 'Forged Dwarf Star',
   'Thousandfold Deliverance', 'Glint of Clouds',
