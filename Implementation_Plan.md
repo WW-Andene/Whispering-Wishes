@@ -64,13 +64,17 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 6. Meta / Tier List *(not in your list — flagged as genuinely new, not a refresh)*
+## 6. Meta / Tier List
 
-**Main work:** There is currently **no tier-list or meta-ranking data structure anywhere in the codebase** — I checked. If "Meta" means adding one (character tier list, weapon tier list, echo tier list, team tier list, sourced from Game8/Prydwen/Tethys consensus), this isn't a refresh of stale data, it's a new feature and dataset.
+**Correction from the previous version of this plan:** this data structure already exists — I missed it. `characters.js` has a dedicated `[SECTION:TIER_DATA]` block (~line 579) sourced explicitly from Prydwen.gg, assigning `tier.toa` (Tower of Adversity) and `tier.ww` (Whimpering Waste) per character via `Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } })`. This is real, live infrastructure, not something to build.
+
+**Main work:** Add `TIER_DATA` rows for the 7 already-**live** characters (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, plus Denia/Hiyuki) once their community tier consensus is available on Prydwen (still Cloudflare-blocked as of this pass — needs a retry). **Qingxiao and Jingran should NOT get tier entries yet** — confirmed via Game8 that pre-release characters aren't tier-ranked anywhere; that data won't exist until after their Aug 20 launch and a few days of community play.
 
 **Connected work:**
-- Would need a new data file (e.g. `data/tierList.js`) and likely a new UI surface, since no `TierList`/`MetaTab` component currently exists.
-- If instead "Meta" means embedding tier info into existing character cards (e.g. an extra field on `CHARACTER_DATA`), that's much smaller — worth clarifying which you mean before scoping this step further.
+- `TeamsTab.jsx` reads `CHARACTER_DATA[name]?.tier?.toa` directly to compute team scores and assign "Meta"/"Strong" tags (≥115 pts = Meta, ≥95 = Strong, via `TIER_SCORES` lookup) — any character missing from `TIER_DATA` silently scores as if untiered (falls through the `?? 10`/`?? 5` defaults), which understates newly-added characters in team suggestions until this step lands.
+- `CollectionTab.jsx` reads the same `tier.toa`/`tier.ww` fields for the tier filter dropdown and tier-based sort (`tierOrder` map, T0→T4) — same gap applies there.
+- Game8's tier list is JS-rendered per-tab (Overall/Main DPS/Sub-DPS/Support × ToA/WW) and didn't yield a clean scrape in static text mode — extracting it will need either JS interaction (clicking each tab) or falling back to Prydwen once its Cloudflare block clears. Worth checking Tethys.gg too, since it's already confirmed accessible and has a "Discover Optimal Builds" section that may include rankings.
+- **Depends on Characters step** (obviously — can't tier something that doesn't have a `CHARACTER_DATA` entry) and is naturally the **last thing to add per character**, since tier consensus takes days to stabilize after a character's release.
 
 ---
 
@@ -129,7 +133,7 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 7. History            (needs 1+2)
 8. Event              (needs 1, otherwise independent)
 9. Material           (needs 2, ideally after 5)
-10. Meta              (new feature — scope separately, not a "refresh")
+10. Meta              (needs 2 + Prydwen access; skip Qingxiao/Jingran until post-launch)
 ```
 
 Character portraits/art assets are the practical bottleneck across almost every step — worth confirming those exist or can be sourced before committing to a start date on step 2.
