@@ -53,6 +53,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
 
   return (
     <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
+      {!imgUrl && event.gradient && <div className={`absolute inset-0 bg-gradient-to-br ${event.gradient}`} />}
       {imgUrl && (
         <img
           src={imgUrl}
@@ -95,7 +96,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
         </div>
 
         <div className="flex justify-between items-end">
-          <div className={`kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : isDone ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}`}>
+          <div className={event.rewards ? `kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : isDone ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}` : ''}>
             {event.rewards}
           </div>
           {onStatusChange && !isExpired && (
