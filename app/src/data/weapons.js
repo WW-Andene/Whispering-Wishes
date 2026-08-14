@@ -5,6 +5,18 @@
 /** @type {Record<string, import('../types.js').WeaponData>} */
 const WEAPON_DATA = {
   // 5★ Weapons
+  // v3.6 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
+  'Glint of Clouds': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
+    desc: "Qingxiao signature. Jade blade wreathed in mist and cloud. Stacking Aero DMG Bonus on inflicting Tune Strain - Shifting, ignoring DEF at max stacks.",
+    passive: 'ATK +12%. Inflicting Tune Strain - Shifting grants 11.2% Aero DMG Bonus (2s, stacks ×5, 0.5s ICD); at max stacks, duration extends to 30s and Aero DMG ignores 10% DEF',
+    pv: { atkPct: 12, elemDmg: 56, defIgnore: 10 }, bestFor: ['Qingxiao'],
+    ascensionMaterials: { forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)' } },
+  // v3.5 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
+  "Firstlight's Herald": { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 413, subStatValue: '+77.0%',
+    desc: "Suisui signature. Dawn-forged rectifier etched with the divine bird's legend. Grants Max HP and Liberation energy regen, culminating in a team ATK buff.",
+    passive: 'Max HP +12%. Liberation restores 8 Concerto Energy (20s ICD). Inflicting Glacio Chafe + applying healing while on-field grants the next Outro both effects (6s); with both active, team ATK +20%',
+    pv: { atkPct: 20 }, bestFor: ['Suisui'],
+    ascensionMaterials: { forgery: 'Unconfirmed (3.5 live — materials not yet catalogued)', common: 'Unconfirmed (3.5 live — materials not yet catalogued)' } },
   'Verdant Summit': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: 'Jiyan signature. Verdant blade that commands the wind. Heavy ATK hits boost Resonance Skill DMG.',
     passive: 'Heavy Attack hits grant Resonance Skill DMG +20%', pv: { heavyDmg: 20 }, bestFor: ['Jiyan'],

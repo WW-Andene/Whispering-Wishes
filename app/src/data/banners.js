@@ -6,15 +6,18 @@
 
 
 // [SECTION:BANNERS]
+// v3.5 Phase 2 — confirmed live via game8.co banner tracker (archive 453303, last updated Aug 10 2026):
+// "Phase 2 - Suisui and Aemeath Rerun", countdown July 30, 2026 - August 19, 2026.
+// bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file
+// (Suisui/Firstlight's Herald don't — no art asset available yet, using a neutral fallback pending upload).
 const CURRENT_BANNERS = {
-  version: '3.2', phase: 2, // Game version (not app version)
-  // Times from Fandom wiki (Server Time reference, converted to UTC)
-  // Apr 9 is CEST (UTC+2). Banner: Thu, 09 Apr 2026 10:00 CEST - Wed, 29 Apr 2026 11:59 CEST
-  startDate: '2026-04-09T08:00:00Z', // Apr 09, 10:00 CEST (UTC+2) = 08:00 UTC
-  endDate: '2026-04-29T09:59:00Z',   // Apr 29, 11:59 CEST (UTC+2) = 09:59 UTC
-  characterBannerImage: 'https://i.ibb.co/h1Kwq7Vj/lynae-banner.jpg',
-  weaponBannerImage: 'https://i.ibb.co/tMyRpwW9/spectrum-blaster-banner.jpg',
-  eventBannerImage: 'https://i.ibb.co/h1Kwq7Vj/lynae-banner.jpg',
+  version: '3.5', phase: 2, // Game version (not app version)
+  // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
+  startDate: '2026-07-30T08:00:00Z',
+  endDate: '2026-08-19T09:59:00Z',
+  characterBannerImage: 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp', // TODO: replace with Suisui banner art once available
+  weaponBannerImage: 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp', // TODO: replace with Firstlight's Herald banner art once available
+  eventBannerImage: 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp',
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
   endstateMatrixImage: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg',
   pioneerPodcastImage: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png',
@@ -26,14 +29,12 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'lynae', name: 'Lynae', title: 'Undefined Spectrum', element: 'Spectro', weaponType: 'Pistols', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/h1Kwq7Vj/lynae-banner.jpg', imagePosition: 'center 15%' },
-    { id: 'zani', name: 'Zani', title: 'Between Light and Shadow', element: 'Spectro', weaponType: 'Gauntlets', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/tMVkd4dg/zani-banner.jpg', imagePosition: 'center 15%' },
-    { id: 'phoebe', name: 'Phoebe', title: 'With Hushed Whispers', element: 'Spectro', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Taoqi', 'Youhu', 'Danjin'], imageUrl: 'https://i.ibb.co/Tq7pFMgp/phoebe-banner.jpg', imagePosition: 'center 15%' },
+    { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp', imagePosition: 'center 15%' },
+    { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp', imagePosition: 'center 15%' },
   ],
   weapons: [
-    { id: 'spectrum-blaster', name: 'Spectrum Blaster', title: 'Absolute Pulsation', type: 'Pistols', forCharacter: 'Lynae', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/tMyRpwW9/spectrum-blaster-banner.jpg' },
-    { id: 'blazing-justice', name: 'Blazing Justice', title: 'Absolute Pulsation', type: 'Gauntlets', forCharacter: 'Zani', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/rRqtbgtz/blazing-justice-banner.jpg' },
-    { id: 'luminous-hymn', name: 'Luminous Hymn', title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Phoebe', element: 'Spectro', isNew: false, featured4Stars: ['Endless Collapse', 'Celestial Spiral', 'Lunar Cutter'], imageUrl: 'https://i.ibb.co/qL32WZqz/luminous-hymn-banner.jpg' },
+    { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp' },
+    { id: 'everbright-polestar', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp' },
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -56,7 +57,26 @@ const CURRENT_BANNERS = {
 // [SECTION:HISTORY]
 
 const BANNER_HISTORY = [
-  // Version 3.3 (upcoming — dates approximate)
+  // Version 3.6 (upcoming — dates are Game8's own estimate: "based on the Version Update's confirmed
+  // release date, and the usual 21-day cycle for Version halves." Characters/weapons confirmed via
+  // game8.co archive 453303 (Aug 10 2026 update), kit data not final until release.)
+  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: 'https://i.ibb.co/QvyQ33zv/Mornye-Full-Sprite.webp', predicted: true },
+  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', predicted: true },
+  // Version 3.5 — p2 confirmed live (game8.co archive 453303). p1 dates/characters confirmed via
+  // game8.co WuWa hub "Version 3.5 Characters" summary; p1's exact weapon lineup is not separately
+  // itemized by Game8 (only the whole-patch Starpath/Tideforge Reverbs selector weapons are), so
+  // Azure Oath (Yangyang: Xuanling's confirmed signature) plus Luuk Herssen/Lynae's existing
+  // signatures are used here as the best-available reconstruction.
+  { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp' },
+  { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp' },
+  // Version 3.4 (Somnoire: Night City region) — dates estimated from the 3.3->3.5 boundary
+  // (3.3 ended ~June 10, 3.5 began July 10, giving 3.4 a ~30-day cycle vs. the usual ~40).
+  // Phase split and exact weapon signatures for Rebecca/Lucilla/Lucy/Rover: Electro are not yet
+  // confirmed by any accessible source — see Update_report.md §7. Character-to-phase pairing below
+  // is a reasonable reconstruction (2 chars/phase, matching the app's usual pattern), not verified.
+  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover: Electro'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: 'https://i.ibb.co/pjXgHN70/Tidal-Chorus-Banner-Art.webp', predicted: true },
+  { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Rebecca', 'Lucilla'], weapons: ['Skull Thrasher', 'Freeze Frame'], startDate: '2026-06-10', endDate: '2026-06-30', bannerArt: 'https://i.ibb.co/pjXgHN70/Tidal-Chorus-Banner-Art.webp', predicted: true },
+  // Version 3.3
   { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia'],  weapons: [], startDate: '2026-05-20', endDate: '2026-06-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg' },
   { id: 'v3.3-p1', version: '3.3', phase: 1, characters: ['Hiyuki'], weapons: [], startDate: '2026-04-29', endDate: '2026-05-20', bannerArt: 'https://i.ibb.co/Gf7F9h12/hiyuki-banner.jpg' },
   // Version 3.2
@@ -749,6 +769,10 @@ const ANIMATED_BACKGROUNDS = [
 // Pioneer Podcast runs every version. Dates = version P1 start → last phase end (from BANNER_HISTORY)
 // Cross-checked against Fandom wiki page URLs: Pioneer_Podcast/2024-05-23, /2024-06-28, etc.
 const PIONEER_PODCAST_HISTORY = [
+  { version: '3.6', startDate: '2026-08-20', endDate: '2026-09-30', rewards: 400 },
+  { version: '3.5', startDate: '2026-07-10', endDate: '2026-08-19', rewards: 400 },
+  { version: '3.4', startDate: '2026-06-10', endDate: '2026-07-10', rewards: 400 },
+  { version: '3.3', startDate: '2026-04-29', endDate: '2026-06-10', rewards: 400 },
   { version: '3.2', startDate: '2026-03-19', endDate: '2026-04-29', rewards: 400 },
   { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
   { version: '3.0', startDate: '2025-12-25', endDate: '2026-02-04', rewards: 400 },
@@ -788,6 +812,14 @@ const TACTICAL_HOLOGRAM_HISTORY = [
 
 // Version start dates (P1 start from BANNER_HISTORY) — used to derive event boundaries
 const VERSION_DATES = [
+  // 3.6 end date is Game8's own estimate (21-day-cycle-per-phase pattern); confirm once 3.7's start date is announced.
+  { version: '3.6', start: '2026-08-20', end: '2026-09-30' },
+  // Confirmed via game8.co WuWa hub: "Version 3.5 Schedule | July 10, 2026 - August 19, 2026"
+  { version: '3.5', start: '2026-07-10', end: '2026-08-19' },
+  // Estimated — see BANNER_HISTORY v3.4 comment for reasoning (3.3 end -> 3.5 start boundary)
+  { version: '3.4', start: '2026-06-10', end: '2026-07-10' },
+  // 3.3 was never added when it was the "upcoming" version — now backfilled since the game has moved past it.
+  { version: '3.3', start: '2026-04-29', end: '2026-06-10' },
   { version: '3.2', start: '2026-03-19', end: '2026-04-29' },
   { version: '3.1', start: '2026-02-05', end: '2026-03-18' },
   { version: '3.0', start: '2025-12-25', end: '2026-02-04' },

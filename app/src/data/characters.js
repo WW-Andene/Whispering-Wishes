@@ -245,6 +245,13 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
     teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Ciaccona + Shorekeeper'] },
+  'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
+    desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG + Chafe) via Resonance Skill, culminating in a team-wide All DMG Amplification through her Outro.',
+    skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
+    ascension: { boss: 'Unconfirmed (3.5 live — materials not yet catalogued)', common: 'Unconfirmed (3.5 live — materials not yet catalogued)', specialty: 'Unconfirmed (3.5 live — materials not yet catalogued)' },
+    skillMaterials: { weeklyDrop: 'Unconfirmed (3.5 live — materials not yet catalogued)', forgery: 'Unconfirmed (3.5 live — materials not yet catalogued)' },
+    bestEchoes: ['Unconfirmed (3.5 live — echo build not yet catalogued)'], bestWeapon: "Firstlight's Herald",
+    teams: ['Suisui + Yangyang: Xuanling + Mornye', 'Suisui + Aemeath + Lynae'] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'Swordswoman who wields a stringed blade of Aero. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
@@ -257,7 +264,9 @@ const CHARACTER_DATA = {
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
     ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
     skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
-    bestEchoes: ['Unconfirmed (releases 3.6, Aug 20 2026)'], bestWeapon: 'Unconfirmed (releases 3.6, Aug 20 2026)',
+    // bestWeapon: no signature weapon revealed yet (Game8/nanoka pre-release pages have no build section for Jingran,
+    // unlike Qingxiao). Using Verdant Summit (existing 5★ Broadblade) as a structurally-valid placeholder — replace once his signature ships Aug 20 2026.
+    bestEchoes: ['Unconfirmed (releases 3.6, Aug 20 2026)'], bestWeapon: 'Verdant Summit',
     teams: ['Unconfirmed (releases 3.6, Aug 20 2026)'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
@@ -370,6 +379,8 @@ const CHARACTER_DATA = {
   ['Aemeath',       ['Liberation', 'Skill'],         [],                                      ['Fusion Burst']],
   ['Sigrika',       ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
+  ['Qingxiao',      ['Heavy ATK', 'Liberation'],     [],                                      ['Tune Strain - Interfered']],
+  ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   // 5★ Sub DPS
   ['Rover',         ['Skill', 'Liberation'],         [],                                      []],
   ['Yinlin',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
@@ -395,6 +406,7 @@ const CHARACTER_DATA = {
   ['Shorekeeper',   ['Liberation'],                  ['Crit Buff', 'Heal'],                   []],
   ['Jianxin',       ['Skill'],                       ['Shield', 'Grouping', 'Aero Buff'],     []],
   ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
+  ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
   ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
   ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Deepen'],          []],
   ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK', 'Shield'],           []],
@@ -440,6 +452,11 @@ const CHARACTER_DATA = {
   ['Luuk Herssen',  10300, 462, 1112, 125],
   ['Aemeath',       11025, 425, 1148, 125],
   ['Sigrika',       10775, 437, 1136, 125],
+  ['Suisui',        16713, 288, 1100, 175],
+  ['Qingxiao',      10300, 463, 1112, 125],
+  // Jingran: nanoka shows "Base DEF -" (his kit fixes combat DEF to 0); using a placeholder in
+  // line with other Broadblade 5★ base DEF until his real stat page publishes at 3.6 launch.
+  ['Jingran',       15375, 313, 650,  125],
   // 4★
   ['Aalto',         9850,  262, 1075, 150],
   ['Baizhi',        12812, 212, 1002, 175],
@@ -479,6 +496,8 @@ const CHARACTER_DATA = {
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
   ['Sigrika',       2800, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
+  ['Qingxiao',      2900, 24, 17],  // Stance-builder into Ephemeral Transcendence burst
+  ['Jingran',       3000, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment
   // 5★ Sub DPS — moderate totalMult, short onField
   ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
   ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
@@ -500,6 +519,7 @@ const CHARACTER_DATA = {
   ['Verina',        600,  25, 4],   // Quick heal + ATK buff + deepen
   ['Jianxin',       800,  25, 6],   // Shield + grouping
   ['Shorekeeper',   500,  25, 3],   // Stellarealm crit buff + heal
+  ['Suisui',        700,  25, 6],   // Zephyr heal / Drizzle DMG stance swap + Outro All DMG Amp
   // 4★
   ['Aalto',         900,  25, 7],
   ['Baizhi',        400,  25, 3],
@@ -540,6 +560,8 @@ const CHARACTER_DATA = {
   ['Aemeath',        'ATK'],
   ['Sigrika',        'ATK'],
   ['Chixia',         'ATK'],
+  ['Qingxiao',       'ATK'],
+  ['Jingran',        'HP'],
   // 5★ Sub DPS
   ['Rover',          'ATK'],
   ['Yinlin',         'ATK'],
@@ -563,6 +585,7 @@ const CHARACTER_DATA = {
   // 5★ Support / Healer
   ['Verina',         'ATK'],
   ['Shorekeeper',    'HP'],
+  ['Suisui',         'HP'],
   ['Jianxin',        'ATK'],
   ['Mornye',         'DEF'],
   ['Baizhi',         'HP'],
@@ -707,6 +730,13 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'defShred', value: 15, duration: 10, condition: 'Shield active' }],
     note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
   },
+  'Suisui': {
+    outroBuffs: [{ stat: 'allDmg', value: 25, target: 'team', duration: 30 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Outro: 25% All DMG Amp teamwide (30s). Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Roaming Transcendent (Liberation + Outro) grants stacking team buffs scaled by Floral Epistle consumed.',
+  },
   'Lynae': {
     outroBuffs: [
       { stat: 'deepen', value: 15, target: 'next', duration: 14 },
@@ -723,6 +753,20 @@ const CHAR_BUFF_TABLE = {
       maxStrainStacks: 3, // base 2 + 1 from Lynae
     },
     note: 'Lib: 24% All DMG (30s). Outro: 15% Deepen + 25% Lib Amp (14s). Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
+  },
+  'Qingxiao': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' }],
+    debuffs: [{ stat: 'deepen', value: 40, duration: 999, condition: 'Resonance Chain 6 — targets w/ Mindlock take +40% DMG from key skills' }],
+    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic.',
+  },
+  'Jingran': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Pure HP-scaling DPS, no team buffs. Resonance Chain 4 grants team +20% All-Attribute DMG Bonus (30s) when any Resonator gains a Shield — conditional, not modeled as a base kit buff.',
   },
   'Mornye': {
     outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 30 }],
@@ -1091,6 +1135,37 @@ const CHAR_BUFF_TABLE = {
 // Format: { charName: [ [type, skillName, multString], ... ] }
 // Source: game8.co character pages
 const SKILL_MULTIPLIERS = {
+  'Suisui': [
+    ['Basic ATK', 'Zephyr Stance Stage 1-4', '63.15% → 61.00%×2 → 41.80%×2+55.74% → 79.53%+15.91%×5'],
+    ['Basic ATK', 'Drizzle Stance Stage 1-4', '19.57%×4 → 31.81%+15.91%×4+31.81% → 13.76%×12 → 159.05%'],
+    ['Skill', 'Awakening Spring', '28.63% Max HP'],
+    ['Skill', 'Drizzle Stance thrust', '11.93%×6+71.58%'],
+    ['Heavy ATK', 'Drizzle Stance', '11.93%×10+119.29%'],
+    ['Liberation', 'Song of Thoroughfare', 'Field effect — no direct DMG, team Negative Status stack cap +3'],
+    ['Intro', 'Tinkling Jade', '28.63% Max HP'],
+    ['Outro', 'Rippling Waters', '25% All DMG Amp (30s) + stance-consumption team buffs'],
+  ],
+  'Qingxiao': [
+    ['Basic ATK', 'Stringblade Stage 1-4', '30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4'],
+    ['Heavy ATK', 'Stringblade', '14.62%×3+21.92%×6+263.03%'],
+    ['Skill', 'Severing Note: Judgement', '20.88%×2+97.42%'],
+    ['Skill', 'Severing Note: Ascendant', '28.40%+33.13%×2'],
+    ['Forte', "Heaven's Reckoning: Ephemeral Transcendence", '27.84%×9+445.34%'],
+    ['Liberation', 'Billows Beneath Heaven', '33.41%×10+1336.01%'],
+    ['Intro', 'Tonality Shift', '39.79%+46.42%×2'],
+    ['Outro', 'Lingering Song', '800% ATK'],
+  ],
+  'Jingran': [
+    ['Basic ATK', "Drink Soul / Devil's Bane Stage 1-4", '44.74%→37.28%×2→27.33%×4→45.95%×2+30.63%×2 (Yin) / 39.82%→59.68%+39.79%→47.73%×2+63.64%→86.95%+12.43%×3 (Yang)'],
+    ['Skill', 'Encroaching Yin / Scorching Yang', '65.61%+32.81%×3'],
+    ['Skill', "Netherworld Traverse / Afterlife's Guide", '51.69%+25.85%×2+38.77%×4 / 65.87%×2+131.74%'],
+    ['Heavy ATK', 'Soul Raid', '16.40%×2+21.09%×3+138.22% (+ Max HP scaling)'],
+    ['Heavy ATK', 'Stardome Meander', '24.04%+24.04%+48.08%+144.22% (+ Max HP scaling)'],
+    ['Liberation', 'Burial of Thousand Souls', '93.15%×8'],
+    ['Forte', 'Chimei Wangliang', '83.51% (summon proc on Heavy ATK)'],
+    ['Intro', 'Question the Tombs', '198.81%'],
+    ['Outro', 'Rising Fortune and Ebbing Evil', '795% ATK'],
+  ],
   'Augusta': [
     ['Basic ATK', "Hunter's Path", '28.9% → 33.7%×2 → 33%×3 → 32.5%×3'],
     ['Heavy ATK', 'Steelclash', '23.3%×3'],
@@ -1548,6 +1623,12 @@ const SKILL_MULTIPLIERS = {
 // totalMult = rotation-averaged DPS contribution for utility/multiplier nodes
 // Sources: Game8 sequence nodes, Prydwen, wutheringlab, cross-verified Apr 2026
 const RESONANCE_CHAIN_DATA = {
+  // Suisui S2: team Crit DMG+50% conditional on negative-status/Havoc Bane trigger. S5: Drizzle Basic/Heavy DMG+100% (scaled down, secondary to healing role). S6: Crit DMG+500% on rare Intro/Skill triggers (scaled down)
+  'Suisui':       { s1: { totalMult: 5 }, s2: { critDmg: 30 }, s3: { totalMult: 5 }, s4: { deepen: 10 }, s5: { basicDmg: 25 }, s6: { critDmg: 25 } },
+  // Qingxiao S2: Heavy ATK mult+40% (confirmed). S3: Liberation Crit DMG+100% (confirmed). S4: ATK+20% on team Tune Strain trigger. S5: Skill mult+100% (confirmed)
+  'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
+  // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
+  'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Camellya S1: +28% CD after Intro (confirmed exact). S3: ATK+58% in Budding. S4: team Basic ATK DMG+25%
   'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 40 }, s3: { atkPct: 58, totalMult: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
   // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
@@ -1659,6 +1740,8 @@ const RELEASE_ORDER = [
   'Aemeath', 'Luuk Herssen',
   // 3.2
   'Sigrika',
+  // 3.5
+  'Suisui',
   // 3.6
   'Qingxiao', 'Jingran',
 ];

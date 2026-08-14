@@ -409,6 +409,10 @@ const WEAPON_RELEASE_ORDER = [
   'Everbright Polestar', "Daybreaker's Spine",
   // 3.2
   'Solsworn Ciphers',
+  // 3.5
+  "Firstlight's Herald",
+  // 3.6
+  'Glint of Clouds',
 ];
 
 // Tab navigation order for swipe gestures
