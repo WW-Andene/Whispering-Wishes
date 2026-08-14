@@ -97,13 +97,14 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 8. History
+## 8. History — ✅ DONE (this session)
 
-**Main work:** Extend `BANNER_HISTORY` with real (non-placeholder) entries for all 3.4 and 3.5 banner phases (currently only Denia/Hiyuki exist, marked "approximate"). Extend `PIONEER_PODCAST_HISTORY`, `TACTICAL_HOLOGRAM_HISTORY`, `DOUBLED_PAWNS_MATRIX_HISTORY` through 3.4/3.5 — check whether new arenas shipped with either new region (historically each new region has added one).
+**Main work:** `BANNER_HISTORY` and `PIONEER_PODCAST_HISTORY` were already extended through 3.6 by earlier work this session (banner chronology fixes + event-date pass). Checked `TACTICAL_HOLOGRAM_HISTORY`, which stopped at v3.2 ("Synchronization") — confirmed via wutheringwaves.fandom.com that a new arena, **"Sparring"** (bosses: Denia, Myriad Snare: Rustfire Chassis — both Land of Xuanfang additions from Step 4), released in v3.5. Added that entry, and fixed `EVENTS.tacticalHologram`'s name, which had been wrongly set to "Simulation" (a misread from the wuwatracker timeline scrape) — the real name is "Sparring".
 
-**Connected work:**
-- Any "banner archive" or "pull history" UI reads `BANNER_HISTORY` directly — this is what makes the Analytics/Collection tabs' historical views accurate.
-- **Depends on Version step** (needs the date ranges) and **Characters/Weapons steps** (each history entry references character/weapon names that need to already exist, or at minimum be spelled consistently for when they're added).
+**Connected work — completed:**
+- `DOUBLED_PAWNS_MATRIX_HISTORY` correctly stops at v3.1 — it was replaced by Endstate Matrix in v3.2, per its own comment; not a gap.
+- No dedicated version-history table exists for Endstate Matrix itself (unlike Pioneer Podcast/Tactical Hologram/Doubled Pawns) — its single-cycle dates were already corrected in the Event-date pass; introducing a new history table for it wasn't part of this step's scope.
+- Full test suite (96/96) and production build pass.
 
 ---
 

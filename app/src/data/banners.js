@@ -196,12 +196,12 @@ const EVENTS = {
     imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
   },
   tacticalHologram: {
-    name: 'Tactical Hologram: Simulation',
+    name: 'Tactical Hologram: Sparring',
     subtitle: 'Combat Challenge',
-    description: 'Permanent combat challenge (Lahai-Roi)',
+    description: 'Permanent combat challenge — Sparring arena, added in v3.5 (bosses: Denia, Myriad Snare: Rustfire Chassis)',
     resetType: 'Permanent',
     color: 'cyan',
-    // Permanent content introduced in v3.0 — not a time-limited event
+    // Permanent content, current active arena introduced in v3.5 — not a time-limited event
     // Showing with currentEnd for current version cycle display only
     // Jul 10, 10:00 CEST -> Aug 18, 13:59 CEST (UTC+2)
     currentEnd: '2026-08-18T11:59:59Z',
@@ -923,9 +923,12 @@ const DOUBLED_PAWNS_MATRIX_HISTORY = [
 ];
 
 // Tactical Hologram — permanent combat challenges, new arenas added with new regions
-// Source: Fandom wiki (Change History per page: Calamity=1.0, Phantom Pain=2.0, Synchronization=3.0)
+// Source: Fandom wiki (Change History per page: Calamity=1.0, Phantom Pain=2.0, Synchronization=3.0, Sparring=3.5)
 // One entry per version where a new Tactical Hologram arena was introduced
 const TACTICAL_HOLOGRAM_HISTORY = [
+  // Confirmed via wutheringwaves.fandom.com/wiki/Tactical_Hologram:_Sparring — "Released in Version 3.5",
+  // bosses Denia and Myriad Snare: Rustfire Chassis (both Land of Xuanfang additions).
+  { version: '3.5', name: 'Sparring — Denia / Myriad Snare: Rustfire Chassis', startDate: '2026-07-10', endDate: '2026-08-19' },
   { version: '3.2', name: 'Synchronization — Hyvatia',   startDate: '2026-03-19', endDate: '2026-04-29' },
   { version: '3.0', name: 'Synchronization (Lahai-Roi)',  startDate: '2025-12-25', endDate: '2026-02-04' },
   { version: '2.0', name: 'Phantom Pain (Rinascita)',     startDate: '2025-01-02', endDate: '2025-02-12' },
