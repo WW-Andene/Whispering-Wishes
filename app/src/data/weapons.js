@@ -39,6 +39,11 @@ const WEAPON_DATA = {
     pv: { atkPct: 12, libDmg: 36 }, bestFor: ['Denia'],
     ascensionMaterials: { forgery: 'String', common: 'Mech Core' } },
   // v3.6 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
+  'Thousandfold Deliverance': { rarity: 5, type: 'Broadblade', stat: 'HP', baseAtk: 413, subStatValue: '+72.2%',
+    desc: "Jingran signature (\"Hark, Spirits and Stars\"). Casting Intro Skill or gaining a Shield builds stacking self Crit DMG and Heavy ATK DEF Ignore, fitting his Shield-focused HP-scaling kit.",
+    passive: 'All-Attribute DMG +12%. Intro Skill or gaining a Shield: self Crit DMG +4% (up to 6 stacks/24%; at 6 stacks, Heavy ATK Crit Rate +12%). Casting Heavy Attack consumes up to 2 stacks for Heavy ATK DEF Ignore +15% each (up to 30%, 2s).',
+    pv: { allDmg: 12, critDmg: 24, defIgnore: 30 }, bestFor: ['Jingran'],
+    ascensionMaterials: { forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)' } },
   'Glint of Clouds': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
     desc: "Qingxiao signature. Jade blade wreathed in mist and cloud. Stacking Aero DMG Bonus on inflicting Tune Strain - Shifting, ignoring DEF at max stacks.",
     passive: 'ATK +12%. Inflicting Tune Strain - Shifting grants 11.2% Aero DMG Bonus (2s, stacks ×5, 0.5s ICD); at max stacks, duration extends to 30s and Aero DMG ignores 10% DEF',

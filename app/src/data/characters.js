@@ -311,9 +311,9 @@ const CHARACTER_DATA = {
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
     ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
     skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
-    // bestWeapon: no signature weapon revealed yet (Game8/nanoka pre-release pages have no build section for Jingran,
-    // unlike Qingxiao). Using Verdant Summit (existing 5★ Broadblade) as a structurally-valid placeholder — replace once his signature ships Aug 20 2026.
-    bestEchoes: ['Unconfirmed (releases 3.6, Aug 20 2026)'], bestWeapon: 'Verdant Summit',
+    // bestWeapon confirmed real via nanoka.cc: Thousandfold Deliverance (Broadblade, 413 ATK / +72.2% HP, "Hark, Spirits and Stars").
+    // No community build guide exists yet (unreleased) — bestEchoes/teams remain unconfirmed.
+    bestEchoes: ['Unconfirmed (releases 3.6, Aug 20 2026)'], bestWeapon: 'Thousandfold Deliverance',
     teams: ['Unconfirmed (releases 3.6, Aug 20 2026)'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',

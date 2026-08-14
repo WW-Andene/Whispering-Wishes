@@ -457,6 +457,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Frostburn': PLACEHOLDER_IMAGE,
   'Forged Dwarf Star': PLACEHOLDER_IMAGE,
   'Glint of Clouds': PLACEHOLDER_IMAGE,
+  'Thousandfold Deliverance': PLACEHOLDER_IMAGE,
   "Firstlight's Herald": PLACEHOLDER_IMAGE,
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',

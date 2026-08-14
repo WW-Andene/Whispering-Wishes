@@ -416,7 +416,7 @@ const WEAPON_RELEASE_ORDER = [
   // 3.5 rerun (Denia, Hiyuki signatures — real entries only just built out)
   'Forged Dwarf Star', 'Frostburn',
   // 3.6
-  'Glint of Clouds',
+  'Glint of Clouds', 'Thousandfold Deliverance',
 ];
 
 // Tab navigation order for swipe gestures
