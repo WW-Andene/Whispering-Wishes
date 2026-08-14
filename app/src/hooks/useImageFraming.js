@@ -58,6 +58,8 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Hiyuki': { x: 1, y: -22, zoom: 207 },
   'collection-Suisui': { x: 1, y: -22, zoom: 207 },
   'collection-Yangyang: Xuanling': { x: 1, y: -22, zoom: 207 },
+  'collection-Jingran': { x: 1, y: -22, zoom: 207 },
+  'collection-Qingxiao': { x: 1, y: -22, zoom: 207 },
   'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
   // 4-star Resonators
@@ -177,6 +179,9 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'info-Hiyuki': { x: -4, y: -59, zoom: 233 },
   'info-Suisui': { x: -4, y: -59, zoom: 233 },
   'info-Yangyang: Xuanling': { x: -4, y: -59, zoom: 233 },
+  'info-Jingran': { x: -4, y: -59, zoom: 233 },
+  'info-Qingxiao': { x: -4, y: -59, zoom: 233 },
+  'info-Rover': { x: -4, y: -59, zoom: 233 },
 });
 
 const defaultFramingBase = Object.freeze({ x: 0, y: 0, zoom: 100 });
