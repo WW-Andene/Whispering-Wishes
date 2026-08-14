@@ -13,8 +13,8 @@ const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 // wuwatracker.com/fr/timeline, user-clarified 2026-08-14 — Suisui/Aemeath is the current phase-2
 // pairing; Yangyang: Xuanling paired with Luuk Herssen in the prior phase, v3.5-p1, not with Aemeath).
 // bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file.
-// Suisui and Firstlight's Herald don't have real banner splash art yet — using the shared neutral
-// fallback (PLACEHOLDER_IMAGE) pending upload. Aemeath and Everbright Polestar both have real splash art.
+// Firstlight's Herald doesn't have real banner splash art yet — using the shared neutral fallback
+// (PLACEHOLDER_IMAGE) pending upload. Suisui, Aemeath, and Everbright Polestar all have real splash art.
 const CURRENT_BANNERS = {
   version: '3.5', phase: 2, // Game version (not app version)
   // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
@@ -34,7 +34,7 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' },
+    { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg', imagePosition: 'center 25%' }, // real splash art
     { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/Y4SzJSxL/Aemeath-banner.jpg', imagePosition: '50% 47%' }, // real splash art (same asset used in BANNER_HISTORY v3.1-p1 / CHARACTER_THEMES.aemeath, crop reused from CHARACTER_THEMES.aemeath.pos.header)
   ],
   weapons: [
@@ -73,14 +73,14 @@ const BANNER_HISTORY = [
   // across both p1 and p2, on top of the phase-bound character banners — not itemized as its own
   // history entry since it isn't a standard per-phase character/weapon banner.
   { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: PLACEHOLDER_IMAGE },
-  { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp' },
+  { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/QFHC5Y4h/Yangyang-Xuanling-banner.jpg' },
   // Version 3.4 (Somnoire: Night City region) — dates estimated from the 3.3->3.5 boundary
   // (3.3 ended ~June 10, 3.5 began July 10, giving 3.4 a ~30-day cycle vs. the usual ~40).
   // Characters, weapons, and materials all confirmed via prydwen.gg + game8.co (character-to-phase
   // pairing below is a reasonable reconstruction — 2 chars/phase, matching the app's usual pattern —
   // exact phase split itself is not separately confirmed, only the overall v3.4 cast and their kits).
-  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
-  { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Rebecca', 'Lucilla'], weapons: ['Skull Thrasher', 'Freeze Frame'], startDate: '2026-06-10', endDate: '2026-06-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
+  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: 'https://i.ibb.co/mC4xmBYY/Lucy-Banner.jpg', predicted: true },
+  { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Rebecca', 'Lucilla'], weapons: ['Skull Thrasher', 'Freeze Frame'], startDate: '2026-06-10', endDate: '2026-06-30', bannerArt: 'https://i.ibb.co/Ps7MZMhB/Rebecca-banner.jpg', predicted: true },
   // Version 3.3
   { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia'],  weapons: [], startDate: '2026-05-20', endDate: '2026-06-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg' },
   { id: 'v3.3-p1', version: '3.3', phase: 1, characters: ['Hiyuki'], weapons: [], startDate: '2026-04-29', endDate: '2026-05-20', bannerArt: 'https://i.ibb.co/Gf7F9h12/hiyuki-banner.jpg' },
@@ -381,13 +381,13 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Qiuyuan': 'https://i.ibb.co/JRvP5fnx/Qiuyuan-Full-Sprite.webp',
   'Lynae': 'https://i.ibb.co/Mym9KBBM/Lynae-Full-Sprite.webp',
   'Sigrika': 'https://i.ibb.co/TBhhKSk6/Sigrika-Full-Sprite.webp',
-  // v3.4-3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
-  'Rebecca': PLACEHOLDER_IMAGE,
-  'Lucilla': PLACEHOLDER_IMAGE,
-  'Lucy': PLACEHOLDER_IMAGE,
-  'Yangyang: Xuanling': PLACEHOLDER_IMAGE,
-  'Denia': PLACEHOLDER_IMAGE,
-  'Hiyuki': PLACEHOLDER_IMAGE,
+  'Rebecca': 'https://i.ibb.co/j9sMxT3Q/Rebecca-Full-Sprite.webp',
+  'Lucilla': 'https://i.ibb.co/FkFvMP3J/Lucilla-Full-Sprite.webp',
+  'Lucy': 'https://i.ibb.co/CKsNSBwg/Lucy-Full-Sprite.webp',
+  'Yangyang: Xuanling': 'https://i.ibb.co/tTrNVcJ2/Yangyang-Xuanling-Full-Sprite.webp',
+  'Denia': 'https://i.ibb.co/B59KDGHZ/Denia-Full-Sprite.webp',
+  'Hiyuki': 'https://i.ibb.co/Q5s9CMF/Hiyuki-Full-Sprite.webp',
+  // v3.5-3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
   'Suisui': PLACEHOLDER_IMAGE,
   'Qingxiao': PLACEHOLDER_IMAGE,
   'Jingran': PLACEHOLDER_IMAGE,
@@ -439,16 +439,16 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Everbright Polestar': 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp',
   "Daybreaker's Spine": 'https://i.ibb.co/tpn30Lrm/6982b58a79a3b099e1bd0d48i-CAFZ7lo03.webp',
   'Solsworn Ciphers': 'https://i.ibb.co/8n2cT6yR/Solsworn-Ciphers.webp',
-  // v3.4-3.6 weapons — no real art asset sourced yet, using shared placeholder
-  'Skull Thrasher': PLACEHOLDER_IMAGE,
-  'Freeze Frame': PLACEHOLDER_IMAGE,
-  'Spectral Trigger': PLACEHOLDER_IMAGE,
-  'Azure Oath': PLACEHOLDER_IMAGE,
-  'Frostburn': PLACEHOLDER_IMAGE,
-  'Forged Dwarf Star': PLACEHOLDER_IMAGE,
+  'Skull Thrasher': 'https://i.ibb.co/Zpyp8nP4/Skull-Trasher-sprite.webp',
+  'Freeze Frame': 'https://i.ibb.co/0VKCVGXD/Freeze-Frame-spritz.webp',
+  'Spectral Trigger': 'https://i.ibb.co/WW6vN5b7/Spectral-Trigger-sprite.webp',
+  'Azure Oath': 'https://i.ibb.co/chFNhPBH/Azure-Oath-Sprite.webp',
+  'Frostburn': 'https://i.ibb.co/29mMcRy/Frostburn-sprite.webp',
+  'Forged Dwarf Star': 'https://i.ibb.co/FLf2rmCB/Forged-Dwarf-Start.webp',
+  "Firstlight's Herald": 'https://i.ibb.co/PvkzS83F/First-s-Light-Herald-sprite.webp',
+  // v3.6 weapons — no real art asset sourced yet, using shared placeholder
   'Glint of Clouds': PLACEHOLDER_IMAGE,
   'Thousandfold Deliverance': PLACEHOLDER_IMAGE,
-  "Firstlight's Herald": PLACEHOLDER_IMAGE,
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',
@@ -759,6 +759,12 @@ const CHARACTER_THEMES = [
   { id: 'lingyang',      name: 'Lingyang',      element: 'Glacio',  bannerArt: 'https://i.ibb.co/KzKHgTLN/lingyang-banner.jpg' },
   { id: 'verina',        name: 'Verina',        element: 'Spectro', bannerArt: 'https://i.ibb.co/C3Wd3F32/verina-banner.jpg' },
   { id: 'buling',        name: 'Buling',        element: 'Havoc',   bannerArt: 'https://i.ibb.co/XkYLV2gC/buling-banner.jpg' },
+  // v3.4-3.5
+  { id: 'lucy',          name: 'Lucy',          element: 'Spectro', bannerArt: 'https://i.ibb.co/mC4xmBYY/Lucy-Banner.jpg' },
+  { id: 'rebecca',       name: 'Rebecca',       element: 'Electro', bannerArt: 'https://i.ibb.co/Ps7MZMhB/Rebecca-banner.jpg' },
+  { id: 'lucilla',       name: 'Lucilla',       element: 'Glacio',  bannerArt: 'https://i.ibb.co/zT91s0wt/Lucilla-banner.jpg' },
+  { id: 'suisui',        name: 'Suisui',        element: 'Glacio',  bannerArt: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg' },
+  { id: 'yangyang-xuanling', name: 'Yangyang: Xuanling', element: 'Havoc', bannerArt: 'https://i.ibb.co/QFHC5Y4h/Yangyang-Xuanling-banner.jpg' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
