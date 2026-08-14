@@ -1932,12 +1932,12 @@ const RELEASE_ORDER = [
   'Aemeath', 'Luuk Herssen',
   // 3.2
   'Sigrika',
+  // 3.3 (verified against game8.co's official character order 2026-08-14)
+  'Hiyuki', 'Denia',
   // 3.4
-  'Rebecca', 'Lucilla', 'Lucy',
+  'Lucy', 'Rebecca', 'Lucilla',
   // 3.5
   'Yangyang: Xuanling', 'Suisui',
-  // 3.5 rerun banner (Denia, Hiyuki were 3.3-era; their real CHARACTER_DATA entries were only just built out)
-  'Denia', 'Hiyuki',
   // 3.6
   'Qingxiao', 'Jingran',
 ];

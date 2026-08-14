@@ -2962,12 +2962,12 @@ export default function MapTab({ navPadding = 80 }) {
               <X size={16} />
             </button>
           </div>
-          <div className="w-full h-40 overflow-hidden">
+          <div className="w-full h-40 flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-btn)' }}>
             <img
               src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
               alt=""
-              className="w-full h-full object-cover"
-              style={{ transform: 'scale(0.8)' }}
+              className="object-cover"
+              style={{ width: '80%', height: '80%' }}
               loading="eager"
               onError={hideOnError}
             />
