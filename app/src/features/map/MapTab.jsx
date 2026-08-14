@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Download, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, Plus } from 'lucide-react';
+import { Settings, Download, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ZONE_DRAFTS, DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
 import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog.js';
 import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../providers/tileSW.js';
+import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+
+const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
 const MAP_W = 12288;
 const MAP_H = 16384;
@@ -128,6 +132,14 @@ export default function MapTab({ navPadding = 80 }) {
 
   const [status, setStatus] = useState('Loading map...');
   const [mapReady, setMapReady] = useState(false);
+  const [showWipNotice, setShowWipNotice] = useState(() => {
+    if (typeof localStorage === 'undefined') return false;
+    try { return localStorage.getItem(MAP_WIP_SEEN_KEY) !== '1'; } catch { return true; }
+  });
+  const dismissWipNotice = useCallback(() => {
+    setShowWipNotice(false);
+    try { localStorage.setItem(MAP_WIP_SEEN_KEY, '1'); } catch {}
+  }, []);
   const [authorEnabled, setAuthorEnabled] = useState(() => {
     if (typeof localStorage === 'undefined') return false;
     return localStorage.getItem(AUTHOR_FLAG_KEY) === '1';
@@ -2939,6 +2951,33 @@ export default function MapTab({ navPadding = 80 }) {
         }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ position: 'relative', zIndex: 10 }}>
+      <FocusTrapModal isOpen={showWipNotice} onClose={dismissWipNotice} className="" onClick={dismissWipNotice} ariaLabel="Map work in progress" centered>
+        <div className="kuro-card w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between" data-sheet-header>
+            <div className="flex items-center gap-2">
+              <Construction size={16} className="text-yellow-400" />
+              <h3 className="text-white font-semibold text-lg">Map — Work in Progress</h3>
+            </div>
+            <button onClick={dismissWipNotice} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close">
+              <X size={16} />
+            </button>
+          </div>
+          <img
+            src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
+            alt=""
+            className="w-full h-40 object-cover"
+            loading="eager"
+            onError={hideOnError}
+          />
+          <div className="p-4 space-y-3 text-sm text-gray-300 leading-relaxed">
+            <p>This tab is still under active development. Some zones, icons, or overlays may be incomplete, misplaced, or missing entirely.</p>
+            <p>We apologize for the inconvenience and appreciate your patience while we continue improving it.</p>
+          </div>
+          <div className="px-4 pb-4">
+            <button onClick={dismissWipNotice} className="kuro-btn w-full">Got it</button>
+          </div>
+        </div>
+      </FocusTrapModal>
       <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
         <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
