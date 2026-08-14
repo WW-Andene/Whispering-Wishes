@@ -13,6 +13,7 @@ import { BannerCard } from '../../shared/components/BannerCard.jsx';
 import { StandardBannerSection } from '../../shared/components/StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 const FOCUS_DELAY_MS = 0;
 const TRACKER_CATEGORIES = Object.freeze([
@@ -398,30 +399,34 @@ function TrackerTab({
                     />
                   </div>
                   <div className="flex gap-2">
-                    <select
+                    <KuroSelect
                       value={pullHistoryBannerFilter}
-                      onChange={e => setPullHistoryBannerFilter(e.target.value)}
-                      className="kuro-input flex-1 px-2 py-1.5 text-base"
-                      aria-label="Filter by banner type"
-                    >
-                      <option value="all">All Banners</option>
-                      <option value="Featured">Featured</option>
-                      <option value="Weapon">Weapon</option>
-                      <option value="Standard Resonator">Standard Resonator</option>
-                      <option value="Standard Weapon">Standard Weapon</option>
-                      <option value="Beginner">Beginner</option>
-                    </select>
-                    <select
+                      onChange={setPullHistoryBannerFilter}
+                      options={[
+                        { value: 'all', label: 'All Banners' },
+                        { value: 'Featured', label: 'Featured' },
+                        { value: 'Weapon', label: 'Weapon' },
+                        { value: 'Standard Resonator', label: 'Standard Resonator' },
+                        { value: 'Standard Weapon', label: 'Standard Weapon' },
+                        { value: 'Beginner', label: 'Beginner' },
+                      ]}
+                      className="flex-1"
+                      ariaLabel="Filter by banner type"
+                      small
+                    />
+                    <KuroSelect
                       value={pullHistoryRarityFilter}
-                      onChange={e => setPullHistoryRarityFilter(e.target.value)}
-                      className="kuro-input flex-1 px-2 py-1.5 text-base"
-                      aria-label="Filter by rarity"
-                    >
-                      <option value="all">All Rarities</option>
-                      <option value="5">5★</option>
-                      <option value="4">4★</option>
-                      <option value="3">3★</option>
-                    </select>
+                      onChange={setPullHistoryRarityFilter}
+                      options={[
+                        { value: 'all', label: 'All Rarities' },
+                        { value: '5', label: '5★' },
+                        { value: '4', label: '4★' },
+                        { value: '3', label: '3★' },
+                      ]}
+                      className="flex-1"
+                      ariaLabel="Filter by rarity"
+                      small
+                    />
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
