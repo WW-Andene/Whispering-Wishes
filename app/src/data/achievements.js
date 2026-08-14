@@ -2,7 +2,9 @@
 // Achievement data — sourced from wuwatracker.com's embedded Next.js RSC payload on
 // /fr/achievements (fetched 2026-08-14), which includes real per-achievement version
 // numbers and hidden-achievement flags — both confirmed exact, not inferred. Series/group
-// names cross-checked against nanoka.cc's static achievement.json (same group ids).
+// names AND their category (série) grouping are cross-checked against nanoka.cc's static
+// achievement.json (matched by shared numeric group id) — also real sourced data, not an
+// ID-prefix heuristic.
 //
 // points = in-game reward value (Astrite-equivalent trophy points). hidden = true for
 // achievements the game itself doesn't reveal the requirements for until unlocked.
