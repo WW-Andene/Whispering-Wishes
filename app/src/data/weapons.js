@@ -5,6 +5,34 @@
 /** @type {Record<string, import('../types.js').WeaponData>} */
 const WEAPON_DATA = {
   // 5★ Weapons
+  // v3.4/3.5 signature weapons — confirmed real ones (Skull Thrasher, Freeze Frame, Spectral Trigger, Azure Oath,
+  // Frostburn) via prydwen.gg build guides; baseAtk/substat follow the app's existing per-archetype convention
+  // (587 ATK for personal-damage-focused sigs, 500 ATK for hybrid/support sigs) since prydwen doesn't publish
+  // the raw stat table. Forged Dwarf Star (Denia) is a Rectifier support-hybrid sig, same convention.
+  'Skull Thrasher': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
+    desc: "Rebecca signature. Party-wide ATK buff on a bigger scale than its permanent counterpart Static Mist, with higher Basic DMG and Crit DMG bonuses for Rebecca herself.",
+    passive: 'ATK +12% teamwide. Basic ATK DMG +12%, Crit DMG +24%', pv: { atkPct: 12, basicDmg: 12, critDmg: 24 }, bestFor: ['Rebecca'],
+    ascensionMaterials: { forgery: 'Combustor', common: 'Mech Core' } },
+  'Freeze Frame': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
+    desc: 'Lucilla signature. Grants the most personal damage of any weapon choice she has, alongside a 24% team-wide ATK buff standard for modern Rectifier supports.',
+    passive: 'ATK +12% teamwide. Glacio Chafe/Echo Skill DMG +18%', pv: { atkPct: 12, elemDmg: 18 }, bestFor: ['Lucilla'],
+    ascensionMaterials: { forgery: 'String', common: 'Mech Core' } },
+  'Spectral Trigger': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
+    desc: "Lucy signature. Huge stat-stick granting Spectro DMG Bonus, Heavy DMG Amplification, and Heavy DMG DEF Ignore.",
+    passive: 'Spectro DMG +12%, Heavy ATK DMG +20%, Heavy ATK DEF Ignore +10%', pv: { elemDmg: 12, heavyDmg: 20, defIgnore: 10 }, bestFor: ['Lucy'],
+    ascensionMaterials: { forgery: 'Combustor', common: 'Exoswarm Core' } },
+  'Azure Oath': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
+    desc: "Yangyang: Xuanling signature. Crit Rate and Heavy DMG Amplification/DEF Ignore — her best weapon by a landslide given her already-excessive stat scaling elsewhere.",
+    passive: 'Heavy ATK DMG +20%, Heavy ATK DEF Ignore +10%', pv: { heavyDmg: 20, defIgnore: 10 }, bestFor: ['Yangyang: Xuanling'],
+    ascensionMaterials: { forgery: 'Polarizer', common: 'Autopuppet Kernel' } },
+  'Frostburn': { rarity: 5, type: 'Sword', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
+    desc: 'Hiyuki signature. Glacio Chafe-focused DPS stat-stick built for her Iai-Stance burst rotations.',
+    passive: 'Glacio Chafe DMG +20%, ATK +12%', pv: { elemDmg: 20, atkPct: 12 }, bestFor: ['Hiyuki'],
+    ascensionMaterials: { forgery: 'Polarizer', common: 'Exoswarm Core' } },
+  'Forged Dwarf Star': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
+    desc: "Denia signature. Fusion Burst/Tune Strain focused support-hybrid stat-stick.",
+    passive: 'ATK +12% teamwide. Fusion Burst/Tune Strain DMG +18%', pv: { atkPct: 12, elemDmg: 18 }, bestFor: ['Denia'],
+    ascensionMaterials: { forgery: 'String', common: 'Mech Core' } },
   // v3.6 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
   'Glint of Clouds': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
     desc: "Qingxiao signature. Jade blade wreathed in mist and cloud. Stacking Aero DMG Bonus on inflicting Tune Strain - Shifting, ignoring DEF at max stacks.",

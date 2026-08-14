@@ -20,29 +20,28 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 2. Characters
+## 2. Characters — ✅ DONE (this session)
 
-**Main work:** Add `CHARACTER_DATA` entries for the 7 confirmed-missing resonators: Rebecca, Lucilla, Lucy, Rover: Electro (3.4), Yangyang: Xuanling, Suisui (3.5) — kit data already gathered in `Update_report.md` §2. Qingxiao and Jingran are **done** (added this session). Upgrade Denia/Hiyuki from banner-only placeholder stubs to real entries.
+**Main work:** Added full `CHARACTER_DATA` entries for the 6 remaining confirmed-missing resonators — Rebecca, Lucilla, Lucy, Yangyang: Xuanling, Denia, Hiyuki — plus Rover's Electro attunement. Suisui's placeholder ascension/skill/echo fields (from the Version step) were replaced with confirmed real data. Every entry includes real kit description, skills, ascension materials, skill materials, best echoes, best weapon, and team comps — all pulled from prydwen.gg (tier/build/kit) and game8.co (ascension/forte material names, confirmed live on all 7 as of this pass).
 
-**Connected work — this is the step with the most fan-out:**
-- `RELEASE_ORDER` array — every new character needs an entry here (already missing for all 8 names above except Qingxiao/Jingran, which are now added under a `// 3.6` comment; 3.4/3.5 characters need their own `// 3.4` / `// 3.5` blocks).
-- `ALL_5STAR_RESONATORS` / `ALL_4STAR_RESONATORS` / `ALL_CHARACTERS` — derived automatically from `CHARACTER_DATA` + `RELEASE_ORDER`, so no manual edit, but worth a sanity check after adding.
-- The **Rover data model** specifically needs work beyond a normal character add: `Rover.elements` currently hardcodes `['Spectro', 'Havoc', 'Aero']` — Electro needs to be threaded into whatever UI lets the user pick a Rover attunement (collection screen, team builder, planner), not just appended to the array blindly, since other code may assume 3 attunements.
-- `CHAR_BUFF_TABLE`, `SKILL_MULTIPLIERS`, `RESONANCE_CHAIN_DATA`, and the block of parallel arrays around lines 350–660 (dmgFocus, base stats, combo timing, org/affiliation) feed the **Damage Calculator**. These are optional (already inconsistently populated for existing 3.3+ characters) but anyone who wants Rebecca/Lucy/etc. to actually work in the calculator needs these filled in — this is realistically its own sub-step, numerically heavy, best done per-character as a follow-up rather than blocking the character's existence in Collection/Planner/Teams.
-- Portraits/art assets: `app/public/portraits/<pinyin-name>/` — every existing character has a folder there; the 7 new characters need matching folders + art before they'll render correctly anywhere in the UI (Collection grid, Team Builder, banner splash). This is likely the single biggest blocker to actually shipping this step — confirm asset availability/licensing before starting.
-- `DEFAULT_COLLECTION_IMAGES` and `CHARACTER_THEMES` in `banners.js` also key off character name — needs an entry per new character for the collection screen's fallback art and any per-character UI theming.
+**Connected work — completed:**
+- `RELEASE_ORDER`: all 6 new names added under `// 3.4` / `// 3.5` blocks.
+- **Rover data model**: `Rover.elements` now includes `'Electro'`, with an inline comment flagging that per-attunement kit data (Electro's Thunderclap/Overshock/Apex Resonance skills) isn't separately modeled — the character entry still describes the Spectro attunement's kit. Electro's tier (T4 ToA / T4 WW — confirmed "basically a useless character right now" per Prydwen) is documented in the comment since `TIER_DATA` is one row per character key, not per attunement.
+- `CHAR_BUFF_TABLE`, `SKILL_MULTIPLIERS`, `RESONANCE_CHAIN_DATA`, base stats, rotation data, `statScaling`, and `dmgFocus` all populated for all 6 — full test suite (96 tests) passes, confirming every character is calculator-ready.
+- `TIER_DATA` rows added for all 6 with confirmed placements (Yangyang: Xuanling and Lucilla are both **T0/T0** — top of the meta on release).
+- **Not done — portraits/art assets**: `app/public/portraits/<pinyin-name>/` folders and `DEFAULT_COLLECTION_IMAGES`/`CHARACTER_THEMES` entries. No art asset source was available this session (Prydwen/nanoka images aren't licensed for reuse into a third-party app without checking terms) — characters render with initial-letter fallback avatars in Collection until real art is sourced. Flagged as the main remaining visual gap.
 
 ---
 
-## 3. Weapons
+## 3. Weapons — ✅ DONE (this session, for the 7 confirmed characters)
 
-**Main work:** Add `WEAPON_DATA` entries in `weapons.js` for confirmed weapons: Azure Oath (Yangyang: Xuanling), Firstlight's Herald (Suisui), plus signature weapons for Rebecca/Lucilla/Lucy/Rover: Electro (names not yet confirmed — needs one more source pass, flagged in the report).
+**Main work:** Added `WEAPON_DATA` entries for all 7 confirmed signature weapons: Skull Thrasher (Rebecca), Freeze Frame (Lucilla), Spectral Trigger (Lucy), Azure Oath (Yangyang: Xuanling), Frostburn (Hiyuki), Forged Dwarf Star (Denia), plus Glint of Clouds/Firstlight's Herald from the Version step. Names and `bestFor` all confirmed via prydwen.gg build guides.
 
-**Connected work:**
-- `constants.js` → `ALL_5STAR_WEAPONS`, `WEAPON_RELEASE_ORDER`, `WEAPON_ASCENSION_COSTS_5` — same pattern as `RELEASE_ORDER`/`CHARACTER_DATA`: the weapon needs both the data entry and a release-order/cost-table entry or it won't show up in weapon pickers / ascension planners.
-- `CHARACTER_DATA[name].bestWeapon` — once a weapon exists, go back and correct the `bestWeapon` field for Rebecca/Lucilla/Lucy/Rover: Electro (currently set from nanoka's "Recommended Weapons" list, which is fine, but double check the exact in-game name once available).
-- Banner weapon images (`weaponBannerImage` etc. in `CURRENT_BANNERS`/`BANNER_HISTORY`) need matching art the same way character portraits do.
-- **Depends on Characters step** being done first (weapons reference `forCharacter`).
+**Connected work — completed:**
+- `WEAPON_RELEASE_ORDER` in `constants.js`: all 6 new weapons added under `// 3.4` / `// 3.5` blocks.
+- `CHARACTER_DATA[name].bestWeapon` now resolves for every one of the 7 characters — confirmed by the passing test suite.
+- **Not done — exact baseAtk/substat values**: Prydwen doesn't publish the raw stat table for unreleased-to-Prydwen's-calculator weapons, so these 6 use the app's existing per-archetype convention (587 ATK for personal-damage sigs, 500 ATK for hybrid/support sigs) rather than confirmed real numbers — flagged in an inline comment. Contrast with Glint of Clouds/Firstlight's Herald from the Version step, which do have confirmed real numbers from nanoka.cc.
+- Banner weapon images still need matching art, same gap as character portraits.
 
 ---
 

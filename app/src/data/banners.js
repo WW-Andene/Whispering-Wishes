@@ -71,9 +71,9 @@ const BANNER_HISTORY = [
   { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/23dF1tWT/Luuk-Herssen-Full-Sprite.webp' },
   // Version 3.4 (Somnoire: Night City region) — dates estimated from the 3.3->3.5 boundary
   // (3.3 ended ~June 10, 3.5 began July 10, giving 3.4 a ~30-day cycle vs. the usual ~40).
-  // Phase split and exact weapon signatures for Rebecca/Lucilla/Lucy/Rover: Electro are not yet
-  // confirmed by any accessible source — see Update_report.md §7. Character-to-phase pairing below
-  // is a reasonable reconstruction (2 chars/phase, matching the app's usual pattern), not verified.
+  // Characters, weapons, and materials all confirmed via prydwen.gg + game8.co (character-to-phase
+  // pairing below is a reasonable reconstruction — 2 chars/phase, matching the app's usual pattern —
+  // exact phase split itself is not separately confirmed, only the overall v3.4 cast and their kits).
   { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover: Electro'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: 'https://i.ibb.co/pjXgHN70/Tidal-Chorus-Banner-Art.webp', predicted: true },
   { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Rebecca', 'Lucilla'], weapons: ['Skull Thrasher', 'Freeze Frame'], startDate: '2026-06-10', endDate: '2026-06-30', bannerArt: 'https://i.ibb.co/pjXgHN70/Tidal-Chorus-Banner-Art.webp', predicted: true },
   // Version 3.3

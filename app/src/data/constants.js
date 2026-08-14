@@ -409,8 +409,12 @@ const WEAPON_RELEASE_ORDER = [
   'Everbright Polestar', "Daybreaker's Spine",
   // 3.2
   'Solsworn Ciphers',
+  // 3.4
+  'Skull Thrasher', 'Freeze Frame', 'Spectral Trigger',
   // 3.5
-  "Firstlight's Herald",
+  'Azure Oath', "Firstlight's Herald",
+  // 3.5 rerun (Denia, Hiyuki signatures — real entries only just built out)
+  'Forged Dwarf Star', 'Frostburn',
   // 3.6
   'Glint of Clouds',
 ];

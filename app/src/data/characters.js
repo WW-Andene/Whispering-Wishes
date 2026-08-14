@@ -7,7 +7,12 @@
 
 const CHARACTER_DATA = {
   // 5★ Resonators
-  'Rover': { rarity: 5, element: 'Spectro', elements: ['Spectro', 'Havoc', 'Aero'], weapon: 'Sword', role: 'Sub DPS',
+  // NOTE: Electro attunement added to `elements` (confirmed via nanoka.cc + prydwen.gg, v3.4) but the `skills`/
+  // combat fields below still only describe the Spectro attunement — Rover's data model is one entry per
+  // Rover, not one per attunement, so full per-attunement kit data (Electro's Thunderclap/Overshock/Apex
+  // Resonance kit) isn't represented here. Tier confirmed separately: Electro is T4 ToA / T4 WW (prydwen.gg:
+  // "basically a useless character right now," awaiting a future Electro Flare DPS to pair with).
+  'Rover': { rarity: 5, element: 'Spectro', elements: ['Spectro', 'Havoc', 'Aero', 'Electro'], weapon: 'Sword', role: 'Sub DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Flexible sub-DPS who switches between Spectro, Havoc, and Aero attunements, each with distinct Resonance Skills and Liberations.',
     skills: ['Vibration Manifestation', 'Resonating Slashes', 'Echoing Orchestra', 'World in a Grain of Sand'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
@@ -245,13 +250,55 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
     teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Ciaccona + Shorekeeper'] },
+  'Rebecca': { rarity: 5, element: 'Electro', weapon: 'Pistols', role: 'Sub DPS',
+    desc: 'Edgerunner and Fury-Type Arsenal from the Cyberpunk: Edgerunners collab. Electro Hybrid who mode-switches between Huntress and Guts stances, buffing team Heavy ATK DMG and All DMG Amplification via her Outro turret.',
+    skills: ["Mix-'n'-Match", "Tactical Tweaks", "Party 'til Dawn!", "My Turn!"],
+    ascension: { boss: 'Nightmare Flashdrive', common: 'Mech Core', specialty: 'Past Reveries' },
+    skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Combustor' },
+    bestEchoes: ['Reminiscence: Nightmare Adam Smasher', 'Moonlit Clouds 5pc'], bestWeapon: 'Skull Thrasher',
+    teams: ['Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Verina', 'Rebecca + Augusta + Shorekeeper'] },
+  'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support',
+    desc: 'President of Startorch Academy. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
+    skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
+    ascension: { boss: "Suncoveter's Reach", common: 'Mech Core', specialty: 'Forget-Me-Not' },
+    skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
+    bestEchoes: ['Glommoth', 'Wishes of Quiet Snowfall 5pc (Chafe)', 'Impermanence Heron', 'Moonlit Clouds 5pc (Echo)'], bestWeapon: 'Freeze Frame',
+    teams: ['Lucilla + Hiyuki + Chisa', 'Lucilla + Sigrika + Shorekeeper', 'Lucilla + Phrolova + Qiuyuan'] },
+  'Lucy': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Main DPS',
+    desc: 'The Netrunner, from the Cyberpunk: Edgerunners collab. Spectro DPS who builds TCP/Root Access into an enhanced Heavy Attack and a battlefield-freezing Ultimate with selectable Spoofing Program debuffs, dealing bonus DMG via the Hack mechanic.',
+    skills: ['Locked Thread', 'Protocol Breach', 'Netrunner', 'Outdated Hallucination'],
+    ascension: { boss: 'Nightmare Flashdrive', common: 'Exoswarm Core', specialty: 'Past Reveries' },
+    skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Combustor' },
+    bestEchoes: ['Reminiscence: Nightmare Adam Smasher', 'Shadow of Shattered Dreams 5pc'], bestWeapon: 'Spectral Trigger',
+    teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper'] },
+  'Yangyang: Xuanling': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
+    desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG — one of the highest damage ceilings in the game at release.',
+    skills: ['Succor and Smite', "Feather's Edge", 'Hush of a Thousand Voices', 'Skybound Feather'],
+    ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Cloudperch Seed' },
+    skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Polarizer' },
+    bestEchoes: ['Thousand-Puppet Pavilion', 'Song of Feathered Trace 5pc'], bestWeapon: 'Azure Oath',
+    teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
+  'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
+    desc: 'Department of Voidmatters student at Startorch Academy. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
+    skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
+    ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Dream of Stars' },
+    skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
+    bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc (Tune Strain)', 'Voidwing Moth', 'Reel of Spliced Memories 5pc (Fusion Burst)'], bestWeapon: 'Forged Dwarf Star',
+    teams: ['Denia + Luuk Herssen + Mornye', 'Denia + Aemeath + Lynae'] },
+  'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
+    desc: 'On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher. "The best Glacio DPS by a huge margin" per Prydwen, in her best team.',
+    skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
+    ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Redbell' },
+    skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
+    bestEchoes: ['Reminiscence: Threnodian - Voidborne Construct', 'Wishes of Quiet Snowfall 5pc'], bestWeapon: 'Frostburn',
+    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG + Chafe) via Resonance Skill, culminating in a team-wide All DMG Amplification through her Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
-    ascension: { boss: 'Unconfirmed (3.5 live — materials not yet catalogued)', common: 'Unconfirmed (3.5 live — materials not yet catalogued)', specialty: 'Unconfirmed (3.5 live — materials not yet catalogued)' },
-    skillMaterials: { weeklyDrop: 'Unconfirmed (3.5 live — materials not yet catalogued)', forgery: 'Unconfirmed (3.5 live — materials not yet catalogued)' },
-    bestEchoes: ['Unconfirmed (3.5 live — echo build not yet catalogued)'], bestWeapon: "Firstlight's Herald",
-    teams: ['Suisui + Yangyang: Xuanling + Mornye', 'Suisui + Aemeath + Lynae'] },
+    ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Flowborne Dream' },
+    skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'String' },
+    bestEchoes: ['Forbidden Bastion', 'Song of Feathered Trace 5pc'], bestWeapon: "Firstlight's Herald",
+    teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Aemeath + Lynae'] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'Swordswoman who wields a stringed blade of Aero. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
@@ -381,6 +428,9 @@ const CHARACTER_DATA = {
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
   ['Qingxiao',      ['Heavy ATK', 'Liberation'],     [],                                      ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
+  ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
+  ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
+  ['Lucy',          ['Heavy ATK', 'Liberation'],     [],                                      ['Hack - Shifting']],
   // 5★ Sub DPS
   ['Rover',         ['Skill', 'Liberation'],         [],                                      []],
   ['Yinlin',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
@@ -406,6 +456,9 @@ const CHARACTER_DATA = {
   ['Shorekeeper',   ['Liberation'],                  ['Crit Buff', 'Heal'],                   []],
   ['Jianxin',       ['Skill'],                       ['Shield', 'Grouping', 'Aero Buff'],     []],
   ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
+  ['Rebecca',       ['Basic ATK', 'Heavy ATK'],      ['Heavy ATK Buff', 'All DMG Amp'],       ['Hack - Shifting']],
+  ['Denia',         ['Liberation', 'Skill'],         ['Fusion DMG Buff', 'Tune Break Boost'], ['Fusion Burst', 'Tune Strain - Shifting']],
+  ['Lucilla',       ['Liberation', 'Echo'],          ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
   ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
   ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
   ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Deepen'],          []],
@@ -452,6 +505,12 @@ const CHARACTER_DATA = {
   ['Luuk Herssen',  10300, 462, 1112, 125],
   ['Aemeath',       11025, 425, 1148, 125],
   ['Sigrika',       10775, 437, 1136, 125],
+  ['Rebecca',       11600, 400, 1173, 150],
+  ['Lucy',          11025, 425, 1149, 150],
+  ['Yangyang: Xuanling', 11025, 425, 1149, 150],
+  ['Denia',         11025, 425, 1149, 150],
+  ['Lucilla',       12238, 375, 1198, 150],
+  ['Hiyuki',        10300, 463, 1112, 125],
   ['Suisui',        16713, 288, 1100, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
   // Jingran: nanoka shows "Base DEF -" (his kit fixes combat DEF to 0); using a placeholder in
@@ -498,6 +557,9 @@ const CHARACTER_DATA = {
   ['Sigrika',       2800, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
   ['Qingxiao',      2900, 24, 17],  // Stance-builder into Ephemeral Transcendence burst
   ['Jingran',       3000, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment
+  ["Yangyang: Xuanling", 3600, 23, 18],  // Azure/Feather stance swap, Havoc Bane self-buff — T0/T0 ceiling
+  ['Hiyuki',        3400, 23, 17],  // Present/Foreclaimed Self, Iai burst finisher — best Glacio DPS
+  ['Lucy',          2000, 23, 12],  // TCP/Root Access into enhanced Heavy + Ultimate
   // 5★ Sub DPS — moderate totalMult, short onField
   ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
   ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
@@ -515,9 +577,12 @@ const CHARACTER_DATA = {
   ['Chisa',         1100, 25, 6],   // DEF Shred support
   ['Lynae',         1300, 25, 6],   // Tune Break support
   ['Mornye',        800,  25, 5],   // Healer + Off-Tune
+  ['Rebecca',       1900, 24, 9],   // Huntress/Guts stance swap, turret buff
+  ['Denia',         1700, 24, 8],   // Stagecraft/Breakdown Form swap, Fusion Burst/Tune Strain
   // 5★ Healers/Support — low totalMult
   ['Verina',        600,  25, 4],   // Quick heal + ATK buff + deepen
   ['Jianxin',       800,  25, 6],   // Shield + grouping
+  ['Lucilla',       700,  25, 5],   // Photo-consuming Ultimate, Glacio Chafe/Echo Skill buffer
   ['Shorekeeper',   500,  25, 3],   // Stellarealm crit buff + heal
   ['Suisui',        700,  25, 6],   // Zephyr heal / Drizzle DMG stance swap + Outro All DMG Amp
   // 4★
@@ -562,6 +627,11 @@ const CHARACTER_DATA = {
   ['Chixia',         'ATK'],
   ['Qingxiao',       'ATK'],
   ['Jingran',        'HP'],
+  ['Yangyang: Xuanling', 'ATK'],
+  ['Hiyuki',         'ATK'],
+  ['Lucy',           'ATK'],
+  ['Rebecca',        'ATK'],
+  ['Denia',          'ATK'],
   // 5★ Sub DPS
   ['Rover',          'ATK'],
   ['Yinlin',         'ATK'],
@@ -588,6 +658,7 @@ const CHARACTER_DATA = {
   ['Suisui',         'HP'],
   ['Jianxin',        'ATK'],
   ['Mornye',         'DEF'],
+  ['Lucilla',        'ATK'],
   ['Baizhi',         'HP'],
   ['Taoqi',          'DEF'],
   ['Yuanwu',         'ATK'],
@@ -612,6 +683,15 @@ const CHARACTER_DATA = {
   ['Shorekeeper',   'T0',   'T0'],
   // Confirmed via prydwen.gg (last updated 01/Aug/2026)
   ['Suisui',        'T0',   'T0.5'],
+  ['Yangyang: Xuanling', 'T0', 'T0'],
+  ['Lucilla',       'T0',   'T0'],
+  ['Hiyuki',        'T0',   'T0.5'],
+  ['Denia',         'T0',   'T0.5'],
+  ['Rebecca',       'T0.5', 'T1'],
+  ['Lucy',          'T1',   'T2'],
+  // NOTE: Rover's existing tier row below reflects the Spectro attunement (the one the character model
+  // otherwise describes). Electro attunement is separately confirmed at T4 ToA / T4 WW — not modeled here
+  // since TIER_DATA is one row per character key, not per attunement (see CHARACTER_DATA Rover comment).
   ['Phrolova',      'T0.5', 'T0'],
   ['Augusta',       'T0.5', 'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
@@ -769,6 +849,48 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [],
     debuffs: [],
     note: 'Pure HP-scaling DPS, no team buffs. Resonance Chain 4 grants team +20% All-Attribute DMG Bonus (30s) when any Resonator gains a Shield — conditional, not modeled as a base kit buff.',
+  },
+  'Yangyang: Xuanling': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'Havoc Bane appliers only, via As the Wind Wills' }],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'critDmg', value: 150, target: 'self', duration: 4, condition: 'Feathered Oath, up to 6 stacks' }],
+    debuffs: [],
+    note: 'Primarily a self-buffing DPS (huge personal Crit DMG scaling via Feathered Oath). Outro grants +20% Havoc DMG to other Havoc Bane appliers in the team (Chisa).',
+  },
+  'Hiyuki': {
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'vs. targets affected by Glacio Chafe' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'On-field Glacio DPS. Outro grants +20% Glacio DMG to the rest of the team against Glacio Chafe-affected targets (20s).',
+  },
+  'Lucy': {
+    outroBuffs: [{ stat: 'basicDmg', value: 25, target: 'next', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [{ stat: 'defShred', value: 5, duration: 30, condition: 'Spoofing Program: Breach Protocol' }],
+    note: 'Outro: 25% Basic ATK DMG Amp to next Resonator (14s) + team-wide Countermeasure Program (Hack - Shifting triggers +20% All DMG Amp).',
+  },
+  'Rebecca': {
+    outroBuffs: [{ stat: 'heavyDmg', value: 35, target: 'next', duration: 14 }, { stat: 'allDmg', value: 15, target: 'team', duration: 14 }],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'critDmg', value: 30, target: 'self', duration: 999, condition: 'Huntress mode' }],
+    debuffs: [{ stat: 'defShred', value: 15, duration: 999, condition: 'Guts mode' }],
+    note: 'Outro: turret + 15% All DMG Amp teamwide, ramping to 35% Heavy ATK DMG Amp for the incoming Resonator over 14s. Huntress/Guts mode swap grants self Crit DMG or DEF Ignore.',
+  },
+  'Denia': {
+    outroBuffs: [{ stat: 'allDmg', value: 40, target: 'next', duration: 16, condition: 'Tune Strain mode, after inflicting Tune Strain - Shifting' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
+    libBuffs: [],
+    selfBuffs: [],
+    debuffs: [],
+    note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s).',
+  },
+  'Lucilla': {
+    outroBuffs: [{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'critRate', value: 20, target: 'self', duration: 30, condition: 'Resonance Chain 1' }],
+    debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio mode, Inherent Skill' }],
+    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s).',
   },
   'Mornye': {
     outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 30 }],
@@ -1167,6 +1289,62 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Chimei Wangliang', '83.51% (summon proc on Heavy ATK)'],
     ['Intro', 'Question the Tombs', '198.81%'],
     ['Outro', 'Rising Fortune and Ebbing Evil', '795% ATK'],
+  ],
+  'Yangyang: Xuanling': [
+    ['Basic ATK', 'Azure/Feather Stance Stage 1-4', '47.72% → 20.14%×2+60.41% → 30.21%+70.48% → 18.57%×2+148.49% (Azure) / 39.77%×2 → 33.56%×3 → 14.86%+7.43%×3+37.14% → 71.58%×2+95.43% (Feather)'],
+    ['Skill', 'Sword Stance Switch', '69.95%+15.55%×3 (Azure) / 33.56%×3 (Feather)'],
+    ['Heavy ATK', 'Azure Sword Stance', '135.16%×2+180.21%'],
+    ['Heavy ATK', 'Feather Sword Stance', '21.71%+195.34%'],
+    ['Liberation', 'Hush of a Thousand Voices', '1988.10%'],
+    ['Forte', 'Shadow of Xuanling', '337.98% ATK (summon proc)'],
+    ['Intro', 'Skybound Feather', '116.59%'],
+    ['Outro', 'As the Wind Wills', '300% ATK + team Havoc DMG buff'],
+  ],
+  'Hiyuki': [
+    ['Basic ATK', 'Present Self Stage 1-3', '63.15% → 61.00%×2 → 41.80%×2+55.74%'],
+    ['Basic ATK', 'Foreclaimed Self Stage 1-5', '19.57%×4 → 31.81%+15.91%×4+31.81% → 13.76%×12 → 159.05%'],
+    ['Heavy ATK', 'Frost Splinter: Present Self', '3× arrow volley, considered Liberation DMG'],
+    ['Heavy ATK', 'Bitterfrost: Foreclaimed Self', 'Consumes 3 Whiteout Bitterfrost, considered Liberation DMG'],
+    ['Liberation', 'Foreclaiming: Inward Vision', 'Enters Foreclaimed Self, 4 stacks Glacio Chafe on hit'],
+    ['Liberation', 'Foreclaiming: Blade Liberation', 'Scales with Snowforged Blade consumed'],
+    ['Forte', 'Glacio Bite', 'Converts team Glacio Chafe into Glacio Bite procs'],
+    ['Intro', 'Frostedge', 'Considered Liberation DMG, 1 stack Glacio Chafe on hit'],
+    ['Outro', 'Snowlight Blessing', 'Team Glacio DMG +20% vs Chafe-affected targets (20s)'],
+  ],
+  'Lucy': [
+    ['Basic ATK', 'Locked Thread Stage 1-4', '12.15%×6+48.59% → 20.66%+20.05%×2 → 36.06%×2+48.08% → 31.02%+15.51%×3+38.77%×2'],
+    ['Heavy ATK', 'Multi-threading', '59.65%+59.65%×3 (+270% SQL bonus)'],
+    ['Skill', 'Payload / Pulse Interference / Deadlock', '20.05%+10.03%+40.09%+... / 30.86%×2+61.72%×3+61.72% / 51.70%+206.77%'],
+    ['Liberation', 'Netrunner: Override', '894.65% (up to 1789.29% as Old Net Deep Dive)'],
+    ['Forte', 'Hack Response - Data Crash', '1094.19%+68.39%×4 (Hack DMG)'],
+    ['Intro', 'Outdated Hallucination', '69.14%×2'],
+    ['Outro', 'Countermeasure Program', '25% Basic ATK DMG Amp to next + team Hack-Shifting response'],
+  ],
+  'Rebecca': [
+    ['Basic ATK', 'Mix-\'n\'-Match', '36.76%+36.76% → 19.13%×4+19.13% → 109.85%'],
+    ['Heavy ATK', 'Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts', '19.89%×3+318.10%+19.89% / 278.34%'],
+    ['Skill', "It's Big Boomin' Time! / Come 'n' Get Me!", '23.66%×4+35.49%×4 / 23.66%+4.74%+23.66%×2+137.22%+11.83%×2'],
+    ['Liberation', "Party 'til Dawn! / BOOM! Fireworks!", '24.30%→116.64% ramp / 63.62%+572.58%'],
+    ['Forte', 'Hack Response - Meltdown', '2358.89% (Hack DMG)'],
+    ['Intro', "Yo, It's Big Boomin' Time!", '27.04%×6+40.56%+67.60%'],
+    ['Outro', 'Preem Choom', 'Turret + Edgerunner Bonds (All DMG Amp) + Overlimit stacks'],
+  ],
+  'Denia': [
+    ['Basic ATK', 'Stagecraft/Breakdown Form Stage 1-4', 'Fusion DMG, applies Fusion Burst or Tune Strain - Shifting on Stage 3/4'],
+    ['Skill', 'Phantom Bubble / Beckon / Banish', 'Banish DMG Mult +150% per Dark Core consumed'],
+    ['Liberation', 'Final Act: Stagecraft Form', 'Grants Entropy Shift: Breakdown Form (12s), switches form'],
+    ['Liberation', 'Final Act: Breakdown Form', 'Consumes full Conformal Charge + Void Particle, switches form'],
+    ['Forte', 'Erosion Field', 'Pulls + damages every 4s for 30s, considered Liberation DMG'],
+    ['Intro', "It's Been A While! / Knock Knock", 'Grants Dark Core / Entropy Shift: Breakdown Form'],
+    ['Outro', 'Unfinished Lies', '60% Fusion Burst DMG Amp (Fusion mode) / 15-40% All DMG Amp (Tune Strain mode)'],
+  ],
+  'Lucilla': [
+    ['Basic ATK', 'Snapshot Stage 1-3', '59.29% → 26.89%+40.34% → 235.27% (Commendable) / 159.55% (Unremarkable)'],
+    ['Skill', 'Phantom Frame / Compensate / Spotlight', '13.26%×3 / 249.07% / 82.35%×2+274.48%+109.80%'],
+    ['Liberation', 'Clear As Day', '142.74%, enters Reminiscence'],
+    ['Forte', 'Oblivion', '285.48% (Glacio Chafe mode, Basic ATK DMG) / same value as Echo Skill DMG (Echo mode)'],
+    ['Intro', 'Clip It', '97.42% (149.41% as Clip It: Hard Cut)'],
+    ['Outro', 'Montage', '60% Glacio Chafe DMG Amp (Chafe mode) / 50% Echo Skill DMG Amp to next (Echo mode)'],
   ],
   'Augusta': [
     ['Basic ATK', "Hunter's Path", '28.9% → 33.7%×2 → 33%×3 → 32.5%×3'],
@@ -1631,6 +1809,18 @@ const RESONANCE_CHAIN_DATA = {
   'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
   // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
   'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Liberation DMG+175% (scaled)
+  'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit. S3: Heavy ATK mult+160% (confirmed), Glacio Bite scaling at 2 stacks (scaled down)
+  'Hiyuki':       { s1: { libDmg: 80 }, s2: { libDmg: 60 }, s3: { heavyDmg: 100 }, s4: { atkPct: 15 }, s5: { skillDmg: 60 }, s6: { critDmg: 100 } },
+  // Lucy S3: Override DMG Mult+50% + Crit DMG+100% on Liberation (confirmed exact). S4: team +20% All-Attr DMG on Hack-Shifting (confirmed)
+  'Lucy':         { s1: { atkPct: 20 }, s2: { heavyDmg: 60 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Rebecca S2: team +20% All-Attribute DMG on Intro/Lib (confirmed exact). S3: Liberation DMG Mult+60% (confirmed exact)
+  'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: { totalMult: 15 }, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
+  // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere)
+  'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 50 }, s6: { elemDmg: 60 } },
+  // Lucilla S2: Glacio Chafe DMG Amp+80% / Echo Skill DMG+40% depending on mode (averaged). S6: Letting It Go DMG+200%/stack up to 600% (scaled)
+  'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 60 }, s4: { atkPct: 20 }, s5: { basicDmg: 30 }, s6: { libDmg: 100 } },
   // Camellya S1: +28% CD after Intro (confirmed exact). S3: ATK+58% in Budding. S4: team Basic ATK DMG+25%
   'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 40 }, s3: { atkPct: 58, totalMult: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
   // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
@@ -1742,8 +1932,12 @@ const RELEASE_ORDER = [
   'Aemeath', 'Luuk Herssen',
   // 3.2
   'Sigrika',
+  // 3.4
+  'Rebecca', 'Lucilla', 'Lucy',
   // 3.5
-  'Suisui',
+  'Yangyang: Xuanling', 'Suisui',
+  // 3.5 rerun banner (Denia, Hiyuki were 3.3-era; their real CHARACTER_DATA entries were only just built out)
+  'Denia', 'Hiyuki',
   // 3.6
   'Qingxiao', 'Jingran',
 ];
