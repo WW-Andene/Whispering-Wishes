@@ -108,13 +108,13 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 9. Event
+## 9. Event — ✅ DONE (this session)
 
-**Main work:** Extend `EVENTS` in `banners.js` with 3.4/3.5/3.6 event periods (currently the `PIONEER_PODCAST_HISTORY` etc. tables are separate from a general `EVENTS` object — confirm what `EVENTS` currently tracks vs. the specialized history tables, since there may be overlap to reconcile rather than pure addition).
+**Main work:** `EVENTS` was extended earlier this session with real, exact-timestamped v3.5-cycle data pulled from wuwatracker.com's embedded event JSON (not the rendered page, which only shows relative countdowns) — 5 stale existing entries (Pioneer Podcast, Tactical Hologram, Endstate Matrix, Tower of Adversity, Whimpering Wastes) got real dates instead of leftover April-2026 ones, and 8 previously-missing events were added: Version Special Campaign, Gifts of Aftertune, Lament Recon: Tacet Crisis, Recaptured: Action Highlights, Bountiful Crescendo, Virtual Crisis: Quadrant Trials, Lollo Campaign: New Journey, Chord Cleansing.
 
-**Connected work:**
-- Same date-range dependency as History — needs Version step's confirmed dates first.
-- Somnoire: Night City and Land of Xuanfang likely each had their own limited-time story/exploration events beyond the recurring ones (Pioneer Podcast, Tactical Hologram) — not yet inventoried, needs a dedicated research pass.
+**Connected work — resolved:**
+- `EVENTS` vs. the specialized history tables (`PIONEER_PODCAST_HISTORY` etc.): confirmed no overlap needing reconciliation — `EVENTS` is a flat single-current-cycle structure (`EventsTab`/`PlannerTab` only ever read `currentStart`/`currentEnd` off it), while the `_HISTORY` arrays are the only place past cycles are tracked.
+- **Somnoire: Night City / Land of Xuanfang one-time events**: deliberately not backfilled. `EVENTS` has no history array and `EventsTab` only renders the live object's active/expired split — there's no surface in the app that would ever display a past version's one-off event, so sourcing that data wouldn't connect to anything, the same reasoning that ruled out other unused-data additions this session.
 
 ---
 
