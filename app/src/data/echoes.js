@@ -48,12 +48,20 @@ const ECHO_SETS = {
   // Referenced by Denia's bestEchoes since her character entry was added, but never itemized here — confirmed via nanoka.cc
   'Reel of Spliced Memories': { element: 'ATK', p2: '+10% ATK', p2val: { atkPct: 10 },
     p5: 'Tune Rupture - Shifting or Tune Strain - Shifting → team Tune Break Boost +20 for 30s (same-name effects don\'t stack)', p5val: { atkPct: 10 } },
+  // Referenced by Lucilla/Hiyuki's bestEchoes but never itemized here — confirmed via nanoka.cc
+  'Wishes of Quiet Snowfall': { element: 'Glacio', p2: '+10% Glacio DMG', p2val: { glacioDmg: 10 },
+    p5: 'Glacio Chafe → self +10% Glacio DMG (15s); Snowfall (25s CD): Liberation DMG → +25% Crit Rate (6s, extendable) or Outro → +25% Glacio DMG to incoming (15s)',
+    p5val: { glacioDmg: 10, critRate: 25 } },
+  // Referenced by Lucy's bestEchoes (as "5pc", incorrectly — it's actually a 1-piece set) but never itemized here — confirmed via nanoka.cc
+  'Shadow of Shattered Dreams': { element: 'Support', p2: '1-Pc: Hack - Shifting → self +35% Basic ATK DMG, +35% Heavy ATK DMG for 15s',
+    p2val: { basicDmg: 35, heavyDmg: 35 } },
 };
 
 // [SECTION:ECHO_LISTS] — All echoes grouped by cost tier (newest first)
 const ALL_4COST_ECHOES = [
   // v3.5 — Land of Xuanfang
   'Thousand-Puppet Pavilion', 'Myriad Snare: Rustfire Chassis', 'Reminiscence: Denia',
+  'Reminiscence: Threnodian - Voidborne Construct', 'Reminiscence - Nightmare: Adam Smasher',
   // v3.0+ — Lahai-Roi
   'Sigillum', 'Hyvatia', 'Reactor Husk', 'Nameless Explorer',
   // v2.8 — Chronorift
@@ -185,6 +193,8 @@ const ECHO_DATA = {
   'Thousand-Puppet Pavilion':        { sets: ['Song of Feathered Trace'], buff: 'Havoc DMG', desc: "A Calamity-class puppet-master construct from Land of Xuanfang. Skill attacks nearby enemies for 109.44% Havoc DMG and summons 4 Blades of Thousand Memories (15s); inflicting Havoc Bane consumes a Blade to deal 41.04% Havoc DMG (once per 1s). Main slot grants +12% Havoc DMG and +12% Heavy ATK DMG." },
   'Myriad Snare: Rustfire Chassis':  { sets: ["Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Fusion DMG', desc: "An Overlord-class mechanical hazard from Land of Xuanfang. Skill summons a crushing chassis dealing 10.20% Max HP Fusion DMG on impact, then up to 19 more hits of 0.37% Max HP Fusion DMG each. Main slot grants +12% Fusion DMG and +12% Heavy ATK DMG." },
   'Reminiscence: Denia':             { sets: ['Chromatic Foam'], buff: 'Fusion DMG', desc: "Denia's Calamity-class signature Echo. Skill summons \"Trickster\" for 273.60% Fusion DMG; within 15s, casting Outro Skill grants the incoming Resonator +12% Fusion DMG Bonus for 15s." },
+  'Reminiscence: Threnodian - Voidborne Construct': { sets: ['Wishes of Quiet Snowfall'], buff: 'Glacio DMG', desc: "Calamity-class Echo from Land of Xuanfang. Skill summons Aleph-1's Creation for 5 hits of 21.88% Glacio DMG plus one hit of 164.16% Glacio DMG. Main slot grants +12% Glacio DMG and +12% Resonance Liberation DMG." },
+  'Reminiscence - Nightmare: Adam Smasher': { sets: ['Shadow of Shattered Dreams'], buff: 'Physical DMG', desc: "Overlord-class Echo from the Cyberpunk: Edgerunners collab. Skill deals 16 hits of 10.26% ATK Physical DMG. When equipped by Lucy or Rebecca in the main slot, grants +15% Crit Rate and unlocks a character-specific enhanced Echo Skill (Lucy: Spectro burst; Rebecca: Electro missile barrage)." },
   // ── 3-Cost Echoes ──
   'Forbidden Bastion':               { sets: ['Song of Feathered Trace', "Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Healing', desc: 'An Elite-class fortified construct from Land of Xuanfang. Skill summons Forbidden Bastion to bash enemies for 237.60% Glacio DMG. Main slot grants +10% Healing Bonus.' },
   'Fog Lionarch':                    { sets: ['Song of Feathered Trace', "Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Fusion DMG', desc: 'An Elite-class beast from Land of Xuanfang. Skill summons Fog Lionarch to spit fire at enemies, dealing 7 stages of 33.93% Fusion DMG.' },
@@ -364,6 +374,12 @@ const ECHO_SKILL_BUFFS = {
   'Sigillum':                      { buffs: [{ stat: 'libDmg', value: 25 }], passive: true, condition: 'Aemeath' },
   'Reactor Husk':                  { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
   'Nameless Explorer':             { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], duration: 15 },
+  // ── v3.5 — Land of Xuanfang (confirmed via nanoka.cc live echo pages) ──
+  'Thousand-Puppet Pavilion':      { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
+  'Myriad Snare: Rustfire Chassis':{ buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
+  'Reminiscence: Denia':           { buffs: [{ stat: 'fusionDmg', value: 12 }], duration: 15, target: 'next' },
+  'Reminiscence: Threnodian - Voidborne Construct': { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
+  'Reminiscence - Nightmare: Adam Smasher': { buffs: [{ stat: 'critRate', value: 15 }], passive: true, condition: 'Lucy or Rebecca' },
 };
 
 // [SECTION:ECHO_DMG_DATA] — Per-echo active skill damage multipliers & enemy resistance
