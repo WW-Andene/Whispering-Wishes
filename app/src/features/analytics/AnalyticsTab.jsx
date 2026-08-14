@@ -11,9 +11,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
+import { Award, BarChart3, ChevronDown, Clover, Star, TrendingDown, TrendingUp, Trophy, X } from 'lucide-react';
 import PityHistogram from './PityHistogram.jsx';
 import ConveneHistoryChart from './ConveneHistoryChart.jsx';
+import AchievementsTool from './AchievementsTool.jsx';
 import { ALL_CHARACTERS } from '../../data/characters.js';
 import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
@@ -57,6 +58,7 @@ function AnalyticsTab({
   const [rateLimitCooldown, setRateLimitCooldown] = useState(0);
   const rateLimitTimerRef = useRef(null);
   const [leaderboardTab, setLeaderboardTab] = useState('rankings');
+  const [showAchievements, setShowAchievements] = useState(false);
   const [communityPulls, setCommunityPulls] = useState(null);
   const [allLeaderboardEntries, setAllLeaderboardEntries] = useState([]);
   const [hashedProfileUid, setHashedProfileUid] = useState(null);
@@ -355,6 +357,19 @@ function AnalyticsTab({
     <TabErrorBoundary tabName="Stats">
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="stats" />
+
+            {showAchievements ? (
+              <AchievementsTool onClose={() => setShowAchievements(false)} />
+            ) : (
+              <Card>
+                <CardHeader action={<button onClick={() => setShowAchievements(true)} className="text-yellow-400 text-sm flex items-center gap-1 hover:text-yellow-300 transition-colors" aria-label="Open achievements tracker"><Award size={12} /> Open</button>}>
+                  <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> Achievements
+                </CardHeader>
+                <CardBody>
+                  <p className="text-gray-400 text-sm">Track all 1200+ in-game Trophies — search by name, filter by version or série, and check off what you've completed.</p>
+                </CardBody>
+              </Card>
+            )}
 
             {!overallStats ? (
               <Card>
