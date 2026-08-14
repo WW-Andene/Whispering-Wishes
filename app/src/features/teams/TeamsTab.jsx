@@ -94,11 +94,11 @@ function TeamsTab({
           if (other === mainDps) return;
           const bt = CHAR_BUFF_TABLE[other];
           if (!bt) return;
-          (bt.outroBuffs || []).forEach(b => {
-            if (b.stat === 'deepen') score += 8;
+          [...(bt.outroBuffs || []), ...(bt.libBuffs || []).filter(b => b.target === 'team')].forEach(b => {
+            if (b.stat === 'deepen' || b.stat === 'allDmg') score += 8;
             else if (b.stat === 'elemDmg') { const cond = (b.condition || '').toLowerCase(); const mel = (mainEl || '').toLowerCase(); if (!cond || cond.includes(mel) || cond.includes('all')) score += 6; }
-            else if (b.stat === 'basicDmg' || b.stat === 'heavyDmg' || b.stat === 'skillDmg') score += 5;
-            else if (b.stat === 'critRate' || b.stat === 'critDmg') score += 4;
+            else if (b.stat === 'basicDmg' || b.stat === 'heavyDmg' || b.stat === 'skillDmg' || b.stat === 'libDmg' || b.stat === 'echoDmg') score += 5;
+            else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'atkPct') score += 4;
           });
           (bt.debuffs || []).forEach(db => { if (db.stat === 'defShred' || db.stat === 'resShred' || db.stat === 'defIgnore') score += 4; });
         });
