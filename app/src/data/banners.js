@@ -746,6 +746,42 @@ const CHARACTER_THEMES = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// WEAPON THEMES — Real "Featured Weapon Convene" splash art per 5★ weapon
+// (mirrors CHARACTER_THEMES; no per-asset crop `pos` supplied yet — add if a
+// consumer needs one, following the same header/nav/bg pattern as CHARACTER_THEMES)
+// ═══════════════════════════════════════════════════════════════════════════════
+const WEAPON_THEMES = [
+  { id: 'everbright-polestar',   name: 'Everbright Polestar',   bannerArt: 'https://i.ibb.co/cSVxJrz8/everbright-polestar-banner.jpg' },
+  { id: 'ages-of-harvest',       name: 'Ages of Harvest',       bannerArt: 'https://i.ibb.co/DD24rw6P/ages-of-harvest-banner.jpg' },
+  { id: 'blazing-brilliance',    name: 'Blazing Brilliance',    bannerArt: 'https://i.ibb.co/fby4FQc/blazing-brilliance-banner.jpg' },
+  { id: 'blazing-justice',       name: 'Blazing Justice',       bannerArt: 'https://i.ibb.co/rRqtbgtz/blazing-justice-banner.jpg' },
+  { id: 'daybreakers-spine',     name: "Daybreaker's Spine",    bannerArt: 'https://i.ibb.co/8gzzFgGx/daybreaker-s-spine-banner.jpg' },
+  { id: 'defiers-thorn',         name: "Defier's Thorn",        bannerArt: 'https://i.ibb.co/LzNywkKX/defier-s-thorn-banner.jpg' },
+  { id: 'emerald-sentence',      name: 'Emerald Sentence',      bannerArt: 'https://i.ibb.co/k2dDWSg3/emerald-sentence-banner.jpg' },
+  { id: 'kumokiri',              name: 'Kumokiri',              bannerArt: 'https://i.ibb.co/Dgs0qXnV/kumokiri-banner.jpg' },
+  { id: 'lethean-elegy',         name: 'Lethean Elegy',         bannerArt: 'https://i.ibb.co/MyPXz6m4/lethean-elegy-banner.jpg' },
+  { id: 'luminous-hymn',         name: 'Luminous Hymn',         bannerArt: 'https://i.ibb.co/qL32WZqz/luminous-hymn-banner.jpg' },
+  { id: 'lux-umbra',             name: 'Lux & Umbra',           bannerArt: 'https://i.ibb.co/cSH6dB9R/lux-umbra-banner.jpg' },
+  { id: 'moongazers-sigil',      name: "Moongazer's Sigil",     bannerArt: 'https://i.ibb.co/5Xf3j5w5/moongazer-s-sigil-banner.jpg' },
+  { id: 'red-spring',            name: 'Red Spring',            bannerArt: 'https://i.ibb.co/VYykPdpg/red-spring-banner.jpg' },
+  { id: 'rime-draped-sprouts',   name: 'Rime-Draped Sprouts',   bannerArt: 'https://i.ibb.co/xqtPLNJF/rime-draped-sprouts-banner.jpg' },
+  { id: 'solsworn-ciphers',      name: 'Solsworn Ciphers',      bannerArt: 'https://i.ibb.co/N2ZLZ07W/solsworn-ciphers-banner.jpg' },
+  { id: 'spectrum-blaster',      name: 'Spectrum Blaster',      bannerArt: 'https://i.ibb.co/tMyRpwW9/spectrum-blaster-banner.jpg' },
+  { id: 'starfield-calibrator',  name: 'Starfield Calibrator',  bannerArt: 'https://i.ibb.co/N6qwBGnv/starfield-calibrator-banner.jpg' },
+  { id: 'stellar-symphony',      name: 'Stellar Symphony',      bannerArt: 'https://i.ibb.co/DPBF1H0Q/stellar-symphony-banner.jpg' },
+  { id: 'stringmaster',          name: 'Stringmaster',          bannerArt: 'https://i.ibb.co/zhnR2MRT/stringmaster-banner.jpg' },
+  { id: 'the-last-dance',        name: 'The Last Dance',        bannerArt: 'https://i.ibb.co/k20XT27x/the-last-dance-banner.jpg' },
+  { id: 'thunderflare-dominion', name: 'Thunderflare Dominion', bannerArt: 'https://i.ibb.co/8QxTXtL/thunderflare-dominion-banner.jpg' },
+  { id: 'tragicomedy',           name: 'Tragicomedy',           bannerArt: 'https://i.ibb.co/xKwWBBBZ/tragicomedy-banner.jpg' },
+  { id: 'unflickering-valor',    name: 'Unflickering Valor',    bannerArt: 'https://i.ibb.co/5XP6J2XM/unflickering-valor-banner.jpg' },
+  { id: 'verdant-summit',        name: 'Verdant Summit',        bannerArt: 'https://i.ibb.co/Ngt5641y/verdant-summit-banner.jpg' },
+  { id: 'veritys-handle',        name: "Verity's Handle",       bannerArt: 'https://i.ibb.co/S4cvnxkq/verity-s-handle-banner.jpg' },
+  { id: 'whispers-of-sirens',    name: 'Whispers of Sirens',    bannerArt: 'https://i.ibb.co/23XqBXny/whispers-of-sirens-banner.jpg' },
+  { id: 'wildfire-mark',         name: 'Wildfire Mark',         bannerArt: 'https://i.ibb.co/yBgZw4jZ/wildfire-mark-banner.jpg' },
+  { id: 'woodland-aria',         name: 'Woodland Aria',         bannerArt: 'https://i.ibb.co/JWCTQ0CW/woodland-aria-banner.jpg' },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // VERSION SPLASH SCREENS — Official game version key art
 // ═══════════════════════════════════════════════════════════════════════════════
 const VERSION_SPLASH_SCREENS = [
@@ -985,6 +1021,7 @@ export {
   VERSION_DATES,
   DEFAULT_COLLECTION_IMAGES,
   CHARACTER_THEMES,
+  WEAPON_THEMES,
   VERSION_SPLASH_SCREENS,
   OTHER_BACKGROUNDS,
   ANIMATED_BACKGROUNDS,
