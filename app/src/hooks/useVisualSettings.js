@@ -37,7 +37,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   theme: 'default',
   headerBg: null,
   navBg: null,
-  appBg: { type: 'version', id: 'v3.3', url: 'https://i.ibb.co/KByqz7F/Reverbs-From-The-End-of-Galaxies.jpg', objectPosition: '52% 50%' },
+  appBg: { type: 'other', id: 'dream-team', url: 'https://i.ibb.co/Gfkn50Fk/The-dream-team.jpg', objectPosition: '40% 50%' },
   dyslexicFont: false,
   colorBlindMode: false,
 });

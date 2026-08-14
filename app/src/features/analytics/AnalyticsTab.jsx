@@ -358,17 +358,19 @@ function AnalyticsTab({
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="stats" />
 
-            {showAchievements ? (
-              <AchievementsTool onClose={() => setShowAchievements(false)} />
-            ) : (
-              <Card>
-                <CardHeader action={<button onClick={() => setShowAchievements(true)} className="text-yellow-400 text-sm flex items-center gap-1 hover:text-yellow-300 transition-colors" aria-label="Open achievements tracker"><Award size={12} /> Open</button>}>
-                  <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> Achievements
-                </CardHeader>
-                <CardBody>
-                  <p className="text-gray-400 text-sm">Track all 1200+ in-game Trophies — search by name, filter by version or série, and check off what you've completed.</p>
-                </CardBody>
-              </Card>
+            {state.profile.importedAt && (
+              showAchievements ? (
+                <AchievementsTool onClose={() => setShowAchievements(false)} />
+              ) : (
+                <Card>
+                  <CardHeader action={<button onClick={() => setShowAchievements(true)} className="text-yellow-400 text-sm flex items-center gap-1 hover:text-yellow-300 transition-colors" aria-label="Open achievements tracker"><Award size={12} /> Open</button>}>
+                    <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> Achievements
+                  </CardHeader>
+                  <CardBody>
+                    <p className="text-gray-400 text-sm">Track all 1200+ in-game Trophies — search by name, filter by version or série, and check off what you've completed.</p>
+                  </CardBody>
+                </Card>
+              )
             )}
 
             {!overallStats ? (
