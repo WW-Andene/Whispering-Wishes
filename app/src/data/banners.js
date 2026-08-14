@@ -698,6 +698,15 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Chop Chop': 'https://i.ibb.co/8LRFvBW4/Chop-Chop-Icon.webp',
   'Lightcrusher': 'https://i.ibb.co/RpYdQddL/Lightcrusher-Icon.webp',
   'Rocksteady Guardian': 'https://i.ibb.co/8LG9k4bn/Rocksteady-Guardian-Icon.webp',
+  // Land of Xuanfang echoes (v3.5) — no real icon sourced yet
+  'Thousand-Puppet Pavilion': PLACEHOLDER_IMAGE,
+  'Myriad Snare: Rustfire Chassis': PLACEHOLDER_IMAGE,
+  'Reminiscence: Denia': PLACEHOLDER_IMAGE,
+  'Reminiscence: Threnodian - Voidborne Construct': PLACEHOLDER_IMAGE,
+  'Reminiscence - Nightmare: Adam Smasher': PLACEHOLDER_IMAGE,
+  'Forbidden Bastion': PLACEHOLDER_IMAGE,
+  'Fog Lionarch': PLACEHOLDER_IMAGE,
+  'Voidwing Moth': PLACEHOLDER_IMAGE,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

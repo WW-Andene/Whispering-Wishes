@@ -1542,12 +1542,9 @@ function WhisperingWishesInner() {
           visualSettings={visualSettings}
           onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
           onViewInTeams={() => {
-            const name = detailModal.name;
-            const team = state.teams?.[state.activeTeamIndex] || { slots: [null, null, null] };
-            const emptySlot = team.slots.findIndex(s => s === null);
-            if (emptySlot !== -1 && !team.slots.includes(name)) {
-              dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: emptySlot, character: name });
-            }
+            // P-FIX: "View in Team Builder" must only navigate — it silently added the
+            // character to the active team's first empty slot before, contradicting its
+            // own label and equipping resonators the user only meant to look up.
             setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null });
             setActiveTab('teams');
           }}

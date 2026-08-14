@@ -357,6 +357,8 @@ const ALL_5STAR_WEAPONS = [
   'Lux & Umbra', 'Emerald Sentence', 'Kumokiri', 'Spectrum Blaster', 'Starfield Calibrator',
   'Everbright Polestar', "Daybreaker's Spine",
   'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
+  'Skull Thrasher', 'Freeze Frame', 'Spectral Trigger', 'Azure Oath', 'Frostburn', 'Forged Dwarf Star',
+  'Thousandfold Deliverance', 'Glint of Clouds',
 ];
 
 const ALL_4STAR_WEAPONS = [
