@@ -60,26 +60,25 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 5. Region / Map *(not in your list, but blocking — added)*
+## 5. Region / Map — ⏭️ SKIPPED (blocked, user-confirmed out of scope)
 
 **Main work:** Two entire regions are unrepresented: **Somnoire: Night City** (3.4) and **Land of Xuanfang / Mengzhou** (3.5, ongoing into 3.6). Add zone data to `mapZones.js` (currently an **empty array** — `export const MAP_ZONES = []`), plus draft entries in `mapDefaults.js`/`mapOverlays.js`/`mapIconCatalog.js` for points of interest, collectibles, bosses.
 
-**Connected work:**
-- This is entirely independent data-wise from Characters/Weapons/Echoes, so it can be built in parallel by someone else, but it's high-effort (POI-level detail for two full regions) and probably the single largest piece of work in this whole plan if the map feature is meant to be kept current. Worth explicitly deciding whether this is in scope for this refresh or deferred.
+**Why skipped:** This isn't a research gap like the other steps — it's a genuine infrastructure blocker. `MAP_ZONES` polygons are authored in *pixel coordinates on this app's own 16384×16384 tile image*, gathered by clicking the live rendered map in dev mode (per the authoring instructions in `mapZones.js`). There's no external source I can reasonably transplant coordinates from — a different site's interactive map uses its own coordinate space with no calibration mapping to this app's. Worse, the actual tile *images* for both regions don't exist yet in `public/map-tiles/` at all — there's nothing to click coordinates on even with browser access. Confirmed with the user (2026-08-14): skip rather than fabricate placeholder polygons, which would be actively misleading on a map feature.
+
+**To unblock in future:** needs either (a) the real map tile images for both regions sourced and dropped into `public/map-tiles/`, after which coordinates could be gathered via the app's own dev-mode click-to-log flow, or (b) someone hand-authoring the zone polygons directly.
 
 ---
 
-## 6. Meta / Tier List
+## 6. Meta / Tier List — ✅ DONE (already complete from an earlier session; re-verified this session)
 
-**Correction from the previous version of this plan:** this data structure already exists — I missed it. `characters.js` has a dedicated `[SECTION:TIER_DATA]` block (~line 579) sourced explicitly from Prydwen.gg, assigning `tier.toa` (Tower of Adversity) and `tier.ww` (Whimpering Waste) per character via `Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } })`. This is real, live infrastructure, not something to build.
+`characters.js` has a dedicated `[SECTION:TIER_DATA]` block (~line 673) sourced from Prydwen.gg, assigning `tier.toa` (Tower of Adversity) and `tier.ww` (Whimpering Waste) per character via `Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } })`.
 
-**Main work:** Add `TIER_DATA` rows for the 7 already-**live** characters (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, plus Denia/Hiyuki) once their community tier consensus is available on Prydwen (still Cloudflare-blocked as of this pass — needs a retry). **Qingxiao and Jingran should NOT get tier entries yet** — confirmed via Game8 that pre-release characters aren't tier-ranked anywhere; that data won't exist until after their Aug 20 launch and a few days of community play.
+**Verified this session:** all 7 live characters (Rebecca, Lucilla, Lucy, Yangyang: Xuanling, Suisui, Denia, Hiyuki) already have confirmed `TIER_DATA` rows (Prydwen, last updated 01/Aug/2026 — still current). Rover: Electro's T4/T4 placement remains documented in a comment rather than a separate row, per the existing one-row-per-character-key constraint. Qingxiao and Jingran correctly have **no** rows — they haven't released yet (v3.6, ~Aug 20).
 
 **Connected work:**
-- `TeamsTab.jsx` reads `CHARACTER_DATA[name]?.tier?.toa` directly to compute team scores and assign "Meta"/"Strong" tags (≥115 pts = Meta, ≥95 = Strong, via `TIER_SCORES` lookup) — any character missing from `TIER_DATA` silently scores as if untiered (falls through the `?? 10`/`?? 5` defaults), which understates newly-added characters in team suggestions until this step lands.
-- `CollectionTab.jsx` reads the same `tier.toa`/`tier.ww` fields for the tier filter dropdown and tier-based sort (`tierOrder` map, T0→T4) — same gap applies there.
-- Game8's tier list is JS-rendered per-tab (Overall/Main DPS/Sub-DPS/Support × ToA/WW) and didn't yield a clean scrape in static text mode — extracting it will need either JS interaction (clicking each tab) or falling back to Prydwen once its Cloudflare block clears. Worth checking Tethys.gg too, since it's already confirmed accessible and has a "Discover Optimal Builds" section that may include rankings.
-- **Depends on Characters step** (obviously — can't tier something that doesn't have a `CHARACTER_DATA` entry) and is naturally the **last thing to add per character**, since tier consensus takes days to stabilize after a character's release.
+- `TeamsTab.jsx`/`CollectionTab.jsx` both read `tier.toa`/`tier.ww` directly and are already wired — nothing further needed there.
+- Tethys.gg checked as a possible cross-reference source: it has no standalone tier-list page (only per-resonator guides/calculations), so it isn't usable for this. Prydwen remains the sole source.
 
 ---
 
