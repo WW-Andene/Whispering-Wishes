@@ -12,9 +12,9 @@ const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 // v3.5 Phase 2 — confirmed live: Suisui + Aemeath rerun, July 30, 2026 - August 19, 2026 (per
 // wuwatracker.com/fr/timeline, user-clarified 2026-08-14 — Suisui/Aemeath is the current phase-2
 // pairing; Yangyang: Xuanling paired with Luuk Herssen in the prior phase, v3.5-p1, not with Aemeath).
-// bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file
-// (Suisui/Firstlight's Herald/Aemeath don't have real banner splash art yet — using the shared neutral
-// fallback pending upload; Everbright Polestar does have a real weapon art asset on file).
+// bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file.
+// Suisui and Firstlight's Herald don't have real banner splash art yet — using the shared neutral
+// fallback (PLACEHOLDER_IMAGE) pending upload. Aemeath and Everbright Polestar both have real splash art.
 const CURRENT_BANNERS = {
   version: '3.5', phase: 2, // Game version (not app version)
   // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
@@ -35,11 +35,11 @@ const CURRENT_BANNERS = {
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
     { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' },
-    { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' }, // TODO: replace with real Aemeath banner splash art once available — was misusing the Collection-tab "Full Sprite" portrait asset, not real banner art
+    { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/Y4SzJSxL/Aemeath-banner.jpg', imagePosition: '50% 47%' }, // real splash art (same asset used in BANNER_HISTORY v3.1-p1 / CHARACTER_THEMES.aemeath, crop reused from CHARACTER_THEMES.aemeath.pos.header)
   ],
   weapons: [
-    { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: PLACEHOLDER_IMAGE },
-    { id: 'everbright-polestar', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/4g4RbTv7/Weapon-Everbright-Polestar.webp' },
+    { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' },
+    { id: 'everbright-polestar', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/cSVxJrz8/everbright-polestar-banner.jpg' }, // real "Featured Weapon Convene" splash art
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -975,6 +975,7 @@ function preloadBannerHistoryArt() {
 }
 
 export {
+  PLACEHOLDER_IMAGE,
   CURRENT_BANNERS,
   BANNER_HISTORY,
   EVENTS,
