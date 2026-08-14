@@ -743,6 +743,13 @@ const CHARACTER_THEMES = [
   { id: 'xiangli-yao',   name: 'Xiangli Yao',   element: 'Electro', bannerArt: 'https://i.ibb.co/CphXJs9L/xiangli-yao-banner.jpg',  pos: { header: '50% 19%', nav: '50% 19%', bg: '59% 50%' } },
   // v2.2 / v1.4
   { id: 'camellya',      name: 'Camellya',      element: 'Havoc',   bannerArt: 'https://i.ibb.co/20xFP1B1/camellya-banner.png',     pos: { header: '50% 71%', nav: '50% 73%', bg: '49% 50%' } },
+  // Standard Resonator pool (Tidal Chorus)
+  { id: 'jianxin',       name: 'Jianxin',       element: 'Aero',    bannerArt: 'https://i.ibb.co/tPD8Pj0p/jianxin-banner.jpg' },
+  { id: 'calcharo',      name: 'Calcharo',      element: 'Electro', bannerArt: 'https://i.ibb.co/sd5QMF3v/calcharo-banner.jpg' },
+  { id: 'encore',        name: 'Encore',        element: 'Fusion',  bannerArt: 'https://i.ibb.co/HTF05mrX/encore-banner.jpg' },
+  { id: 'lingyang',      name: 'Lingyang',      element: 'Glacio',  bannerArt: 'https://i.ibb.co/KzKHgTLN/lingyang-banner.jpg' },
+  { id: 'verina',        name: 'Verina',        element: 'Spectro', bannerArt: 'https://i.ibb.co/C3Wd3F32/verina-banner.jpg' },
+  { id: 'buling',        name: 'Buling',        element: 'Havoc',   bannerArt: 'https://i.ibb.co/XkYLV2gC/buling-banner.jpg' },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
