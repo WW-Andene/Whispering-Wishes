@@ -738,7 +738,7 @@ function ProfileTab({
 
                     {/* Category tabs */}
                     <div className="flex gap-1.5 mb-3">
-                      {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['animated', 'custom'] : [])].map(c => (
+                      {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['animated'] : [])].map(c => (
                         <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-sm ${bgCategory === c ? 'active-cyan' : ''}`}>
                           {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : c === 'animated' ? 'Animated' : 'Custom'}
                         </button>
