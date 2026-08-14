@@ -82,14 +82,18 @@ Dependency order matters here: **Version → Characters → Weapons/Echoes → T
 
 ---
 
-## 7. Team
+## 7. Team — ✅ DONE (this session)
 
-**Main work:** `CHARACTER_DATA[name].teams` recommendations are already populated for the 7 characters with kit data (from nanoka's Forte/Resonance Chain context + Game8's pre-release team suggestions for Qingxiao). Verify/extend these against Tethys.gg's dedicated team-building tool once Prydwen/Tethys access is confirmed stable.
+**Main work:** Cross-checked every one of the 7 live characters' `teams` entries against Prydwen's "Synergies"/"Example Teams" sections (re-fetched all 7 character pages directly, not relying on the earlier nanoka-sourced guesses). Found and fixed 3 real mismatches:
+- **Rebecca**: her own page explicitly says "Rebecca's best team is alongside [Yangyang: Xuanling]" (Lucy is only her *second*-best pairing) — the stored `teams` array never included Yangyang: Xuanling at all. Added it as the top entry.
+- **Denia**: paired with Lynae in her Aemeath team, but Lynae is never mentioned anywhere in Denia's synergy section — the confirmed 3rd slot for that team is Chisa or Lupa. Fixed to Chisa.
+- **Suisui**: was missing her explicitly named "Hiyuki Team" entirely (Prydwen calls Yangyang: Xuanling and Hiyuki her *two* best pairings, only Yangyang's was represented), and her Aemeath pairing also wrongly listed Lynae (same unconfirmed pick as Denia's). Added the Hiyuki team, fixed Aemeath's 3rd slot to Chisa.
+- Lucy, Lucilla, Hiyuki, and Yangyang: Xuanling's stored teams were all independently verified accurate — no changes needed there.
 
-**Connected work:**
-- `STANDARD_5STAR_CHARACTERS` set in `characters.js` — only relevant if any new character enters the standard/permanent banner pool (none do yet, but worth checking each version's patch notes for standard-pool additions going forward).
-- Team Builder feature (`features/teams/`) pulls from `CHARACTER_DATA` directly — no separate team-roster data structure exists beyond the `teams` array per character, so this step is really just "keep populating that field accurately," not a separate system.
-- **Depends on Characters + Weapons + Echoes** all being reasonably complete, since a team recommendation referencing a weapon/echo set that doesn't exist in the app yet will silently fail to resolve in the UI.
+**Connected work — completed:**
+- Verified every team member name across all 7 characters' `teams` arrays resolves against `CHARACTER_DATA` (no dangling references) via a scripted check.
+- `STANDARD_5STAR_CHARACTERS` — no new characters entered the standard pool this cycle, nothing to update.
+- Full test suite (96/96) and production build both pass.
 
 ---
 
