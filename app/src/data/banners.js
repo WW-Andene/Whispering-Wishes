@@ -767,7 +767,7 @@ const CHARACTER_THEMES = [
   // v3.4-3.5 — no individual header/nav/bg crop tuning yet; using the average pos across every
   // other tuned entry above (avg of 30: header 50%/36%, nav 50%/36%, bg 60%/50%)
   { id: 'lucy',          name: 'Lucy',          element: 'Spectro', bannerArt: 'https://i.ibb.co/mC4xmBYY/Lucy-Banner.jpg',        pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
-  { id: 'rebecca',       name: 'Rebecca',       element: 'Electro', bannerArt: 'https://i.ibb.co/Ps7MZMhB/Rebecca-banner.jpg',      pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
+  { id: 'rebecca',       name: 'Rebecca',       element: 'Electro', bannerArt: 'https://i.ibb.co/Ps7MZMhB/Rebecca-banner.jpg',      pos: { bg: '60% 50%' } },
   { id: 'lucilla',       name: 'Lucilla',       element: 'Glacio',  bannerArt: 'https://i.ibb.co/zT91s0wt/Lucilla-banner.jpg',      pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
   { id: 'suisui',        name: 'Suisui',        element: 'Glacio',  bannerArt: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg',       pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
   { id: 'yangyang-xuanling', name: 'Yangyang: Xuanling', element: 'Havoc', bannerArt: 'https://i.ibb.co/QFHC5Y4h/Yangyang-Xuanling-banner.jpg', pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
