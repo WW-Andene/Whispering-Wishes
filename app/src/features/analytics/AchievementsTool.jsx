@@ -1,14 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — AchievementsTool
 // Full in-game achievement (Trophy) tracker: search, Version filter, Série filter,
-// Completion filter, per-achievement checkbox persisted to localStorage.
+// Completion filter, Hidden ("Caché") filter, per-achievement checkbox persisted
+// to localStorage.
 //
-// Data source: nanoka.cc's static achievement.json (see data/achievements.js header
-// for full sourcing notes and the Version-approximation caveat).
+// Data source: wuwatracker.com's embedded RSC payload (real per-achievement version
+// + hidden flags). See data/achievements.js header for full sourcing notes.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Award, Check, ChevronLeft, Search, X } from 'lucide-react';
+import { Award, Check, ChevronLeft, EyeOff, Search, X } from 'lucide-react';
 import { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIEVEMENT_VERSIONS } from '../../data/achievements.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
@@ -45,6 +46,8 @@ function AchievementsTool({ onClose }) {
   const [versionFilter, setVersionFilter] = useState('all');
   const [seriesFilter, setSeriesFilter] = useState('all'); // series (group) id, or 'all'
   const [completionFilter, setCompletionFilter] = useState('all'); // all | complete | incomplete
+  const [hiddenFilter, setHiddenFilter] = useState('all'); // all | hidden | visible ("Caché")
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   useEffect(() => { saveDone(done); }, [done]);
 
@@ -65,19 +68,21 @@ function AchievementsTool({ onClose }) {
   const totalCount = Object.keys(ACHIEVEMENTS).length;
 
   const searchLower = search.trim().toLowerCase();
-  const isFiltering = searchLower.length > 0 || versionFilter !== 'all' || completionFilter !== 'all' || seriesFilter !== 'all';
+  const isFiltering = searchLower.length > 0 || versionFilter !== 'all' || completionFilter !== 'all' || hiddenFilter !== 'all' || seriesFilter !== 'all';
 
   const matchesFilters = useCallback((id) => {
     const a = ACHIEVEMENTS[id];
     if (!a) return false;
     if (searchLower && !a.name.toLowerCase().includes(searchLower) && !a.desc.toLowerCase().includes(searchLower)) return false;
-    if (versionFilter !== 'all' && ACHIEVEMENT_SERIES[a.group]?.version !== versionFilter) return false;
+    if (versionFilter !== 'all' && a.version !== versionFilter) return false;
     if (seriesFilter !== 'all' && a.group !== seriesFilter) return false;
+    if (hiddenFilter === 'hidden' && !a.hidden) return false;
+    if (hiddenFilter === 'visible' && a.hidden) return false;
     const isDone = done.has(id);
     if (completionFilter === 'complete' && !isDone) return false;
     if (completionFilter === 'incomplete' && isDone) return false;
     return true;
-  }, [searchLower, versionFilter, seriesFilter, completionFilter, done]);
+  }, [searchLower, versionFilter, seriesFilter, completionFilter, hiddenFilter, done]);
 
   const filteredIds = useMemo(() => {
     if (!isFiltering) return [];
@@ -99,10 +104,14 @@ function AchievementsTool({ onClose }) {
     { value: 'complete', label: 'Completed' },
     { value: 'incomplete', label: 'Not Completed' },
   ];
+  const hiddenOptions = [
+    { value: 'all', label: 'All (Caché: Tous)' },
+    { value: 'hidden', label: 'Hidden only' },
+    { value: 'visible', label: 'Visible only' },
+  ];
 
   // Série filter here operates at the category level (Exploration/Journey/etc.) for the
   // dropdown; clicking an individual series card drills into that specific group id.
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const visibleSeriesList = categoryFilter === 'all' ? ALL_SERIES_LIST : ALL_SERIES_LIST.filter(s => s.category === categoryFilter);
 
   const selectedSeries = seriesFilter !== 'all' ? ACHIEVEMENT_SERIES[seriesFilter] : null;
@@ -124,12 +133,15 @@ function AchievementsTool({ onClose }) {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-sm" style={{ color: isDone ? '#4ade80' : 'inherit' }}>{a.name}</span>
+            <span className="font-medium text-sm flex items-center gap-1.5" style={{ color: isDone ? '#4ade80' : 'inherit' }}>
+              {a.name}
+              {a.hidden && <EyeOff size={11} className="text-gray-500 flex-shrink-0" aria-label="Hidden achievement" />}
+            </span>
             <span className="text-xs text-yellow-400/80 flex-shrink-0">{a.points} pts</span>
           </div>
           <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
           {isFiltering && (
-            <p className="text-[10px] text-gray-500 mt-1">{s?.name} · v{s?.version}</p>
+            <p className="text-[10px] text-gray-500 mt-1">{s?.name} · v{a.version}</p>
           )}
         </div>
       </div>
@@ -163,10 +175,11 @@ function AchievementsTool({ onClose }) {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <KuroSelect ariaLabel="Version filter" small value={versionFilter} onChange={setVersionFilter} options={versionOptions} />
           <KuroSelect ariaLabel="Série filter" small value={categoryFilter} onChange={(v) => { setCategoryFilter(v); setSeriesFilter('all'); }} options={categoryOptions} />
           <KuroSelect ariaLabel="Completion filter" small value={completionFilter} onChange={setCompletionFilter} options={completionOptions} />
+          <KuroSelect ariaLabel="Caché (hidden) filter" small value={hiddenFilter} onChange={setHiddenFilter} options={hiddenOptions} />
         </div>
 
         {/* Flat filtered results (search active, or any filter narrowed beyond "pick a series") */}
@@ -174,7 +187,7 @@ function AchievementsTool({ onClose }) {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-400">{filteredIds.length} result{filteredIds.length === 1 ? '' : 's'}</span>
-              <button onClick={() => { setSearch(''); setVersionFilter('all'); setCategoryFilter('all'); setSeriesFilter('all'); setCompletionFilter('all'); }} className="text-xs text-yellow-400/80 hover:text-yellow-400">Clear filters</button>
+              <button onClick={() => { setSearch(''); setVersionFilter('all'); setCategoryFilter('all'); setSeriesFilter('all'); setCompletionFilter('all'); setHiddenFilter('all'); }} className="text-xs text-yellow-400/80 hover:text-yellow-400">Clear filters</button>
             </div>
             {filteredIds.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-6">No achievements match.</p>
@@ -213,7 +226,7 @@ function AchievementsTool({ onClose }) {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium">{s.name}</span>
-                    <span className="text-[10px] text-gray-500">v{s.version}</span>
+                    <span className="text-[10px] text-gray-500">{s.category}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
                     <span>{p.doneCount} / {p.total}</span>
