@@ -673,13 +673,13 @@ const CHARACTER_DATA = {
 // [SECTION:TIER_DATA] — Tier rankings from Prydwen.gg (ToA = Tower of Adversity, WW = Whimpering Waste)
 // Best placement across DPS/Hybrid/Support roles. T0 = best, T4 = worst.
 [
-  ['Aemeath',       'T0',   'T1.5'],
+  ['Aemeath',       'T0',   'T0.5'],
   ['Sigrika',       'T0',   'T0.5'],
   ['Ciaccona',      'T0',   'T1'],
   ['Lupa',          'T0',   'T0.5'],
   ['Lynae',         'T0',   'T0.5'],
   ['Qiuyuan',       'T0',   'T0'],
-  ['Mornye',        'T0',   'T0.5'],
+  ['Mornye',        'T0',   'T1'],
   ['Shorekeeper',   'T0',   'T0'],
   // Confirmed via prydwen.gg (last updated 01/Aug/2026)
   ['Suisui',        'T0',   'T0.5'],
@@ -697,7 +697,7 @@ const CHARACTER_DATA = {
   ['Cartethyia',    'T0.5', 'T1.5'],
   ['Galbrena',      'T0.5', 'T1'],
   ['Iuno',          'T0.5', 'T3'],
-  ['Luuk Herssen',  'T0.5', 'T3'],
+  ['Luuk Herssen',  'T0',   'T1.5'],
   ['Chisa',         'T0.5', 'T1.5'],
   ['Verina',        'T0.5', 'T0.5'],
   ['Carlotta',      'T1',   'T3'],
