@@ -10,6 +10,7 @@ import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, generateMaskGradient } from './BannerCard.jsx';
+import { PLACEHOLDER_IMAGE } from '../../data/banners.js';
 
 const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
@@ -62,6 +63,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           style={{
             zIndex: 1,
             opacity: pictureOpacity,
+            objectPosition: imgUrl === PLACEHOLDER_IMAGE ? 'center 15%' : undefined,
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient,
             filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
