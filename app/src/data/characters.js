@@ -698,7 +698,7 @@ const CHARACTER_DATA = {
   ['Galbrena',      'T0.5', 'T1'],
   ['Iuno',          'T0.5', 'T3'],
   ['Luuk Herssen',  'T0',   'T1.5'],
-  ['Chisa',         'T0.5', 'T1.5'],
+  ['Chisa',         'T0',   'T0.5'],
   ['Verina',        'T0.5', 'T0.5'],
   ['Carlotta',      'T1',   'T3'],
   ['Zani',          'T1',   'T1.5'],
