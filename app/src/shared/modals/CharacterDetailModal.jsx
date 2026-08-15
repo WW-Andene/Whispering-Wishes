@@ -401,7 +401,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
               <Zap size={14} className={colors.text} /> Skills
-              <span className="text-sm text-gray-500 font-normal ml-auto">Lv.10 - Scaling: (ATK%)</span>
+              <span className="text-sm text-gray-500 font-normal ml-auto">Lv.10 - Scaling: ({data.statScaling || 'ATK'}%)</span>
             </h3>
             {SKILL_MULTIPLIERS[name] ? (
               <div className="space-y-0.5">
