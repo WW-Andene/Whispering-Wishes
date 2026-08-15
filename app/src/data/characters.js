@@ -511,7 +511,7 @@ const CHARACTER_DATA = {
   ['Denia',         11025, 425, 1148, 150],
   ['Lucilla',       12237, 375, 1197, 150],
   ['Hiyuki',        10300, 462, 1112, 125],
-  ['Suisui',        16712, 287, 1099, 175],
+  ['Suisui',        16713, 288, 1100, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
   // Jingran: nanoka shows "Base DEF -" (his kit fixes combat DEF to 0); using a placeholder in
   // line with other Broadblade 5★ base DEF until his real stat page publishes at 3.6 launch.
@@ -813,11 +813,14 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
   },
   'Suisui': {
-    outroBuffs: [{ stat: 'allDmg', value: 12, target: 'team', duration: 6 }],
+    outroBuffs: [
+      { stat: 'allDmg', value: 25, target: 'team', duration: 30 },
+      { stat: 'allDmg', value: 12, target: 'team', duration: 6, condition: '400+ Floral Epistle consumed, Ceaseless Landscape active' },
+    ],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'At 400 Floral Epistle (Drizzle Stance Forte gauge), grants team up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Roaming Transcendent (Liberation + Outro Skill - Rippling Waters) extends negative-status stack caps for the team rather than granting a flat DMG buff.',
+    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff.',
   },
   'Lynae': {
     outroBuffs: [
@@ -1261,7 +1264,9 @@ const CHAR_BUFF_TABLE = {
 const SKILL_MULTIPLIERS = {
   'Suisui': [
     ['Basic ATK', 'Zephyr Stance Stage 1-4', '63.15% → 61.00%×2 → 41.80%×2+55.74% → 79.53%+15.91%×5'],
-    ['Basic ATK', 'Drizzle Stance Stage 1-4', '19.57%×4 → 31.81%+15.91%×4+31.81% → 13.76%×12 → 159.05%'],
+    ['Mid-air', 'Zephyr Stance', '70.72%'],
+    ['Basic ATK', 'Drizzle Stance Stage 1-4', '19.57%×4 → 31.81%×3+15.91%×4 → 13.76%×12 → 159.05%'],
+    ['Skill', 'Zephyr Stance thrust', '23.86%×6'],
     ['Skill', 'Awakening Spring', '28.63% Max HP'],
     ['Skill', 'Drizzle Stance thrust', '11.93%×6+71.58%'],
     ['Heavy ATK', 'Drizzle Stance', '11.93%×10+119.29%'],
