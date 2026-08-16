@@ -988,10 +988,11 @@ const CHAR_BUFF_TABLE = {
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },
       { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
     ],
-    libBuffs: [{ stat: 'atkPct', value: 18, target: 'team', duration: 40 }],
-    selfBuffs: [],
-    debuffs: [{ stat: 'resShred', value: 15, duration: 10, condition: 'Fusion RES' }],
-    note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: 18% ATK team. Fusion RES Shred.',
+    libBuffs: [{ stat: 'atkPct', value: 18, target: 'team', duration: 35, condition: 'Pack Hunt: 6% base +6%/Intro cast, up to 2 casts' }],
+    selfBuffs: [{ stat: 'atkPct', value: 12, target: 'self', duration: 8, condition: 'Wildfire Banner, from Skill/Forte/Liberation casts' }],
+    weaponBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30, condition: 'Sig weapon (Wildfire Mark): triggers on successful Heavy ATK extension of the Liberation buff' }],
+    debuffs: [{ stat: 'resShred', value: 15, duration: 35, condition: 'Fusion RES ignore, Glory (from Liberation): 3% base +3%/other Fusion Resonator up to 15% at 3 Fusion units' }],
+    note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: up to 18% ATK team (35s), enables Wild Hunt. Fusion RES ignore up to 15% (35s), needs a mono-Fusion team for max value (S3 removes the requirement). (Corrected 2026-08-16: fixed Lib buff and RES-ignore durations, which were listed far too short; added missing self-buff and weapon buff via Nanoka/Prydwen/Game8.)',
   },
   'Iuno': {
     outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }],
@@ -1201,11 +1202,13 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal. Weapon: Fusion DMG +12%.',
   },
   'Augusta': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'elemDmg', value: 15, target: 'next', duration: 14 }],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 15, target: 'self', duration: 99, condition: 'Crown of Wills: +15% Electro DMG Bonus per stack, max 1 stack at base kit (S0)' },
+    ],
     debuffs: [],
-    note: 'Heavy ATK AoE DPS. Shield. Outro: 15% All DMG Deepen.',
+    note: 'Heavy ATK AoE DPS with built-in self shields (Glory\'s Favor) and a Crown of Wills self-buff. Outro: +15% All DMG Amp to next Resonator (14s), not a "Deepen" multiplier. Liberation\'s Ruler\'s Realm grants teammates a shield on Intro cast — no direct DPS stat. (Corrected 2026-08-16: Outro was mislabeled as deepen instead of allDmg; added missing Crown of Wills self-buff.)',
   },
   'Galbrena': {
     outroBuffs: [],
@@ -1244,9 +1247,9 @@ const CHAR_BUFF_TABLE = {
       { stat: 'heavyDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Aftersound: +2.5% CD per stack, 24 stacks max' }],
+    selfBuffs: [{ stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Aftersound: +2.5% CD per stack up to 24 stacks (60%); beyond 24, +1%/stack up to a 100% total cap' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60% CD from Aftersound.',
+    note: 'Outro (Unfinished Piece): +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60-100% CD from Aftersound stacking. Intro is "Suite of Quietus" (base) / "Suite of Immortality" (Maestro-enhanced). (Corrected 2026-08-16: Outro skill name was wrong — file previously called it "Final Applause"; the real base Intro name "Suite of Quietus" was also missing, previously only the enhanced Maestro form was listed.)',
   },
   // ── Electro characters with Electro Flare ──
   'Xiangli Yao': {
@@ -1360,16 +1363,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Montage', '60% Glacio Chafe DMG Amp (Chafe mode) / 50% Echo Skill DMG Amp to next (Echo mode)', 'Buffs Glacio Chafe DMG or next ally Echo Skill DMG.'],
   ],
   'Augusta': [
-    ['Basic ATK', "Hunter's Path", '28.9% → 33.7%×2 → 33%×3 → 32.5%×3'],
-    ['Heavy ATK', 'Steelclash', '23.3%×3'],
-    ['Heavy ATK', 'Thunderoar', 'Backstep 27% / Spinslash 71.3%×3 / Uppercut 90%×2'],
-    ['Skill', "Warrior's Blade", '110%×3'],
-    ['Liberation', 'Sword of Eternal Oath', '16.6%×2 + 66.4%×3 + 16.6%×2 + 287.6%'],
-    ['Liberation', 'Sunborne', '60% ×9 slashes'],
-    ['Liberation', 'Everbright Protector', '120% + 450% + 3%×10'],
-    ['Forte', 'Undying Sunlight', 'Strike 70%×2 / Leap 112%+14%×2 / Plunge 43.6%+392%'],
-    ['Intro', 'Stride of Goldenflare', '50%×2'],
-    ['Outro', 'Oath of Radiance', '+15% All DMG Amp (14s)'],
+    ['Basic ATK', "Hunter's Path", '28.9% → 33.7%×2 → 33%×3 → 32.5%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
+    ['Heavy ATK', 'Steelclash', '23.3%×3', 'Base charged combo.'],
+    ['Heavy ATK', 'Thunderoar', 'Backstep 27% / Spinslash 71.3%×3 / Uppercut 90%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
+    ['Skill', "Warrior's Blade", '110%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
+    ['Liberation', 'Sword of Eternal Oath', '16.6%×2 + 66.4%×3 + 16.6%×2 + 287.6%', 'Standard Ultimate combo nuke.'],
+    ['Liberation', 'Sunborne', '60% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
+    ['Liberation', 'Everbright Protector', '120% + 450% + 3%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
+    ['Forte', 'Undying Sunlight', 'Strike 70%×2 / Leap 112%+14%×2 / Plunge 43.6%+392%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
+    ['Intro', 'Stride of Goldenflare', '50%×2', 'Swap-in opener strike.'],
+    ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Swap-out buff to the next Resonator; also grants Augusta stacks for her next rotation.'],
   ],
   'Aemeath': [
     ['Basic ATK', 'Aemeath Form Stage 1-4', '46.35% → 13.89%+20.84%+34.73% → 9.32%×3+18.63%+46.56% → 6.73%×5+100.94%', 'Standard human-form combo string, weaker but faster than Mech Form.'],
@@ -1555,16 +1558,17 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Feline Farewell', '+20% Glacio DMG + 25% Basic ATK DMG Amp (14s)'],
   ],
   'Lupa': [
-    ['Basic ATK', 'Stage 1-4', '45.3% → 45.3% → 79.3% → 89.9%'],
-    ['Basic ATK', "Wolf's Claw", '36.3% + 9.1%×4 + 48.4%'],
-    ['Mid-air', 'Starfall', '6.4%×4 + 59.4%'],
-    ['Skill', "Shewolf's Hunt", '70.8%'],
-    ['Skill', 'Feral Fang', '157.7%'],
-    ['Skill', 'Dance with the Wolf', '28.2% + 21.1%×4 + 169.1%'],
-    ['Liberation', 'Fire-Kissed Glory', '412.7%'],
-    ['Liberation', 'Foebreaker', '153.1%'],
-    ['Intro', 'Nowhere to Run!', '399.2% + 25%×4'],
-    ['Outro', 'Blazing Pack', '+20% Fusion DMG + 25% Basic ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-4', '45.3% → 45.3% → 79.3% → 89.9%', 'Standard combo string, builds Wolflame.'],
+    ['Basic ATK', "Wolf's Claw", '36.3% + 9.1%×4 + 48.4%', 'Alt combo follow-up.'],
+    ['Mid-air', 'Starfall', '6.4%×4 + 59.4%', 'Airborne attack chain.'],
+    ['Skill', "Shewolf's Hunt", '70.8%', 'Base Skill dash strike.'],
+    ['Skill', 'Feral Fang', '157.7%', 'Empowered Skill against marked targets, +50% DMG Mult.'],
+    ['Skill', 'Dance with the Wolf', '28.2% + 21.1%×4 + 169.1%', 'Forte finisher combo.'],
+    ['Liberation', 'Fire-Kissed Glory', '412.7%', 'Ultimate nuke that also grants the team ATK/Fusion DMG buffs and enables Wild Hunt.'],
+    ['Liberation', 'Foebreaker', '153.1%', 'Follow-up hit tied to her Ultimate.'],
+    ['Intro', 'Try Focusing, Eh?', '15% + 21.2%×4', 'Base swap-in opener. (Approx. base-level value scaled from Lv.10 via the kit\'s standard ~50% level ratio — exact base number not published.)'],
+    ['Intro', 'Nowhere to Run!', '399.2% + 25%×4', 'Much stronger Intro used only once per Liberation, while in Wild Hunt state.'],
+    ['Outro', 'Stand by Me, Warrior', '+20% Fusion DMG + 25% Basic ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator.'],
   ],
   'Luuk Herssen': [
     ['Basic ATK', 'Stage 1-4', '40.56%×2 → 60.16%+90.24% → 5.02%×30 → 96.33%', 'Standard ground combo; Stage 3 leaves a lingering blade.'],
@@ -1612,13 +1616,14 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Attentive Heart', '528.4%'],
   ],
   'Phrolova': [
-    ['Basic ATK', 'Stage 1-3', '53.8% → 48% → 98.6%'],
-    ['Heavy ATK', 'Scarlet Coda', '16.6%×2 + 6.2%×8 + 249% (+41.5% per stack)'],
-    ['Skill', 'Whispers in Fleeting Dream', '53.3%×2'],
-    ['Liberation', 'Maestro State: Hecate', 'Strings 175% / Winds 166.3% / Cadenza 175%'],
-    ['Liberation', 'Curtain Call', '234%'],
-    ['Intro', 'Suite of Immortality', '300%'],
-    ['Outro', 'Final Applause', '+20% Havoc DMG + 25% Heavy ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-3', '53.8% → 48% → 98.6%', 'Standard combo string, builds Aftersound/Notes.'],
+    ['Heavy ATK', 'Scarlet Coda', '16.6%×2 + 6.2%×8 + 249% (+41.5% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
+    ['Skill', 'Whispers in Fleeting Dream', '53.3%×2', 'Quick Skill strike that enters Reincarnate.'],
+    ['Intro', 'Suite of Quietus', '40.6% + 60.8%', 'Base swap-in opener strike. (Approx. base-level value scaled from Lv.10 via the kit\'s standard ~50% level ratio — exact base number not published.)'],
+    ['Intro', 'Suite of Immortality', '300%', 'Enhanced Intro used only while in Maestro state — much stronger than the base opener.'],
+    ['Liberation', 'Maestro State: Hecate', 'Strings 175% / Winds 166.3% / Cadenza 175%', 'Summons Hecate for sustained off-field Havoc DMG during Maestro.'],
+    ['Liberation', 'Curtain Call', '234%', 'Ultimate cast that ends Resolving Chord and enters Maestro.'],
+    ['Outro', 'Unfinished Piece', '+20% Havoc DMG + 25% Heavy ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator; grants Hecate 2 bonus attacks if cast during Maestro.'],
   ],
   'Qiuyuan': [
     ['Basic ATK', 'Stage 1-3', '21% → 35% → 82.6%', 'Standard combo before entering Inkwash form.'],
@@ -1946,6 +1951,34 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle burst phase' },
     { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator Heavy ATK DMG Amp' },
   ],
+  'Augusta': [
+    { type: 'Intro', skill: 'Stride of Goldenflare' },
+    { type: 'Skill', skill: "Warrior's Blade", note: 'time-stop dash strike' },
+    { type: 'Basic ATK', skill: "Hunter's Path", note: 'standard combo, builds Ascendancy' },
+    { type: 'Forte', skill: 'Undying Sunlight', note: 'Strike → Leap → Plunge finisher' },
+    { type: 'Heavy ATK', skill: 'Thunderoar', note: 'full Ascendancy Heavy ATK combo' },
+    { type: 'Liberation', skill: 'Sword of Eternal Oath', duration: 25, note: 'standard Ultimate; or hold for Sunborne into Everbright Protector at 2 Majesty' },
+    { type: 'Outro', skill: 'Battlesong of the Unyielding', duration: 14, note: 'grants next Resonator All-DMG Amp' },
+  ],
+  'Phrolova': [
+    { type: 'Intro', skill: 'Suite of Quietus' },
+    { type: 'Skill', skill: 'Whispers in Fleeting Dream', note: 'enters Reincarnate' },
+    { type: 'Basic ATK', skill: 'Stage 1-3', note: 'builds Notes toward Scarlet Coda' },
+    { type: 'Heavy ATK', skill: 'Scarlet Coda', note: 'scales with stacked Aftersound' },
+    { type: 'Skill', skill: 'Whispers in Fleeting Dream', note: 'repeat to refresh Reincarnate before Ultimate' },
+    { type: 'Liberation', skill: 'Curtain Call', duration: 24, note: 'enters Maestro state, summons Hecate' },
+    { type: 'Liberation', skill: 'Maestro State: Hecate', note: 'off-field Hecate attacks during Maestro' },
+    { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'grants next Resonator Havoc + Heavy ATK DMG Amp' },
+  ],
+  'Lupa': [
+    { type: 'Intro', skill: 'Try Focusing, Eh?' },
+    { type: 'Skill', skill: "Shewolf's Hunt", note: 'or Feral Fang against marked targets' },
+    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'builds Wolflame' },
+    { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher combo' },
+    { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'grants team ATK + Fusion RES ignore, enables Wild Hunt' },
+    { type: 'Intro', skill: 'Nowhere to Run!', note: 'stronger Wild Hunt Intro, once per Liberation' },
+    { type: 'Outro', skill: 'Stand by Me, Warrior', duration: 14, note: 'grants next Resonator Fusion + Basic ATK DMG Amp' },
+  ],
   'Qiuyuan': [
     { type: 'Intro', skill: 'Attack the Must-Defend' },
     { type: 'Skill', skill: 'Through the Groves', note: 'or hold for Undaunted Wayfarer' },
@@ -2020,11 +2053,19 @@ const RESONANCE_CHAIN_DATA = {
   // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
   'Phoebe':       { s1: { libDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
   // Phrolova S1: skill mult+80% (no CR). S2: Scarlet Coda+75% + Aftersound (no CR)
-  'Phrolova':     { s1: { totalMult: 15 }, s2: { totalMult: 40 }, s3: { totalMult: 15 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Phrolova':     { s1: { totalMult: 20 }, s2: { heavyDmg: 75 }, s3: { echoDmg: 80 }, s4: { allDmg: 20 }, s5: { totalMult: 10 }, s6: { elemDmg: 24 } },
+  // Phrolova R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +80% DMG to Forte Basic/Skill (was totalMult:15, no basis — kept totalMult, real number too broad to cleanly categorize);
+  // s2 Scarlet Coda DMG Mult +75% (was totalMult:40); s3 Echo Skill DMG Amp +80% (was totalMult:15, wrong category);
+  // s4 team +20% Attribute DMG on team Echo Skill cast (was echoDmg:40, wrong stat — only applies in support role); s5 Maestro DMG taken −30% + Stagnation field, no direct DPS stat, totalMult fallback (was totalMult:15);
+  // s6 +24% Enhanced Attack-Hecate DMG (was deepen:25, wrong category).
   // Brant S1: +20% DMG dealt per stack x3 (allDmg type). S2: CR+30% + explosions
   'Brant':        { s1: { allDmg: 20 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
   // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
-  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 20, critDmg: 40 }, s3: { totalMult: 15 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
+  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { heavyDmg: 200 } },
+  // Augusta R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +15%/Crown of Wills stack Crit DMG, max 2 stacks = 30% confirmed correct;
+  // s2 +20%/stack Crit Rate, max 2 stacks = 40% (was critRate:20 + an unfounded critDmg:40 — real S2 CR-over-100% → CD conversion is conditional, not a flat number, dropped);
+  // s3 +25% DMG Mult on Thunderoar/Plunge/Sublime is the Sun (was totalMult:15); s4 team +20% ATK on Intro cast (was heavyDmg:40, no basis);
+  // s5 Glory's Favor shield +50%, no direct DPS stat, totalMult fallback (was totalMult:15, kept as-is); s6 Thunder Rage: 2 extra Heavy ATK hits at 100% ATK each = 200% (was totalMult:25).
   // Cartethyia S1: +25% CD per 30 Conviction threshold (up to ~100%). S2: Basic/Heavy/etc DMG+50%, Mid-air+200%
   'Cartethyia':   { s1: { critDmg: 40 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
   'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
@@ -2052,7 +2093,11 @@ const RESONANCE_CHAIN_DATA = {
   // value). S6: Endnotes stacking grants Liberation DMG+40%/stack up to +120% — was defIgnore:15, no basis at all.
   'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { libDmg: 60 }, s3: { totalMult: 15 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { libDmg: 120 } },
   // Lupa S1: CR+20% for 10s (not elemDmg)
-  'Lupa':         { s1: { critRate: 20 }, s2: { totalMult: 40 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
+  'Lupa':         { s1: { critRate: 20 }, s2: { allDmg: 40 }, s3: { totalMult: 20 }, s4: { totalMult: 25 }, s5: { libDmg: 15 }, s6: { defIgnore: 30 } },
+  // Lupa R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 Fire-Kissed Glory +20% Crit Rate confirmed correct;
+  // s2 team +20% Fusion DMG on skill casts, stacks ×2 = 40% (was totalMult:40, wrong category); s3 Nowhere to Run! DMG Mult +100%, Intro-type with no direct schema stat, totalMult fallback (was atkPct:15, no basis);
+  // s4 Dance With the Wolf: Climax DMG Mult +125%, Forte-type with no direct schema stat, totalMult fallback (was deepen:12, no basis);
+  // s5 +15% Resonance Liberation DMG Bonus (was totalMult:15, wrong category); s6 Climax/Liberation/Nowhere to Run! ignore 30% DEF (was elemDmg:40, no basis).
   // Supports — utility nodes represented as small totalMult DPS contributions
   'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
   // Shorekeeper S1: utility (range/duration). S2: ATK+40% (confirmed). S6: CD+500% self after Intro (very short window, ≈25 averaged)
