@@ -975,13 +975,13 @@ const CHAR_BUFF_TABLE = {
   },
   'Ciaccona': {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
-    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30, condition: 'Solo Concert: Aero DMG +24%' }],
+    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 99, condition: 'Solo Concert: from Basic ATK Ensemble Sylph summons, not Liberation itself — near-permanent uptime' }],
     selfBuffs: [],
+    weaponBuffs: [{ stat: 'resShred', value: 10, target: 'team', duration: 20, condition: 'Sig weapon (Woodland Aria): Aero RES -10% on hitting Erosion targets' }],
     debuffs: [
       { stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' },
-      { stat: 'resShred', value: 16, duration: 20, condition: 'Weapon: Aero RES -16%' },
     ],
-    note: 'Solo Concert: +24% Aero DMG team. Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Weapon: Aero RES -16%.',
+    note: 'Solo Concert: +24% Aero DMG team (from Basic ATK passive, near-permanent uptime, not gated behind Liberation). Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Sig weapon: Aero RES -10%. (Corrected 2026-08-16: weapon RES shred was 16%, real value is 10%; Solo Concert duration/source corrected via Nanoka/Prydwen/Game8.)',
   },
   'Lupa': {
     outroBuffs: [
@@ -1045,14 +1045,15 @@ const CHAR_BUFF_TABLE = {
   },
   // Xiangli Yao: moved to Main DPS section below
   'Zani': {
-    outroBuffs: [],
+    outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'To allies hitting the Heliacal Ember-marked target' }],
     libBuffs: [],
     selfBuffs: [
+      { stat: 'elemDmg', value: 12, target: 'self', duration: 14, condition: 'Quick Response: Intro Skill cast grants +12% Spectro DMG Bonus' },
       { stat: 'atkPct', value: 24, target: 'self', duration: 20, condition: 'Weapon R1' },
       { stat: 'defIgnore', value: 16, target: 'self', duration: 14, condition: 'Weapon R1: During Lib + Frazzle Amp 50%' },
     ],
     debuffs: [],
-    note: 'Converts Frazzle→Heliacal Embers. Weapon: +24% ATK, 16% DEF Ignore, 50% Frazzle DMG in Lib.',
+    note: 'Converts Frazzle→Heliacal Embers. Outro grants allies hitting the marked target +20% Spectro DMG Amp (20s) — this was previously missing entirely. Weapon: +24% ATK, 16% DEF Ignore, 50% Frazzle DMG in Lib. (Corrected 2026-08-16: added the missing Outro team buff and Quick Response self-buff via Nanoka/Prydwen.)',
   },
   // ── 4★ ──
   'Sanhua': {
@@ -1184,12 +1185,14 @@ const CHAR_BUFF_TABLE = {
   'Cartethyia': {
     outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],
     libBuffs: [],
-    selfBuffs: [
-      { stat: 'elemDmg', value: 20, target: 'self', duration: 20, condition: 'Erosion stacks on target: Aero DMG amp' },
-      { stat: 'defIgnore', value: 16, target: 'self', duration: 8, condition: 'Weapon: DEF Ignore +16% on Aero Eroded targets' },
+    selfBuffs: [],
+    weaponBuffs: [{ stat: 'defIgnore', value: 8, target: 'self', duration: 15, condition: "Sig weapon (Defier's Thorn): 15s after Intro Skill or Basic ATK casts" }],
+    debuffs: [
+      { stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' },
+      { stat: 'elemDmg', value: 60, duration: 99, condition: "Wind's Indelible Imprint: targets at max (6) Erosion stacks take +60% more DMG from her (scales from +30% at 1-3 stacks, +10%/stack beyond)" },
+      { stat: 'elemDmg', value: 20, duration: 15, condition: "Sig weapon: Erosion-stacked targets take +20% more DMG (15s after Intro/Basic ATK)" },
     ],
-    debuffs: [{ stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' }],
-    note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Weapon: DEF Ignore +16%.',
+    note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Weapon: DEF Ignore 8% (not 16%) + Erosion targets take +20% more DMG. Wind\'s Indelible Imprint debuffs Erosion-stacked targets up to +60% DMG taken. (Corrected 2026-08-16: fixed weapon DEF Ignore value — was double the real number and conflated with a separate effect; the "self elemDmg" entries were actually enemy-side debuffs, moved to debuffs; added the missing Wind\'s Indelible Imprint debuff.)',
   },
   'Brant': {
     outroBuffs: [
@@ -1444,14 +1447,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Closing Remark', '794.2%'],
   ],
   'Cartethyia': [
-    ['Basic ATK', 'Base Form 1-4', '2.4%HP → 7%HP → 8.6%HP → 7.6%HP'],
-    ['Basic ATK', 'Fleurdelys 1-5', '3.3%HP → 4.6%HP → 6.3%HP → 6.9%HP → 126.7%HP'],
-    ['Heavy ATK', 'Fleurdelys Enhanced', '3.9%×2 + 2%HP'],
-    ['Skill', 'Base Form', '3.5%×3 + 4.5%HP'],
-    ['Skill', 'Fleurdelys 1-2', '12.5%HP / 14.2%HP'],
-    ['Liberation', 'Blade of Howling Squall', '6.6%×7 HP'],
-    ['Intro', 'Fleurdelys Intro', '2.2% + 5%HP'],
-    ['Outro', 'Gale\'s Verdict', '+17.5% Aero DMG vs Negative Status (20s)'],
+    ['Basic ATK', 'Base Form 1-4', '2.4%HP → 7%HP → 8.6%HP → 7.6%HP', 'Standard combo in her base sword form, scales off Max HP.'],
+    ['Basic ATK', 'Fleurdelys 1-5', '3.3%HP → 4.6%HP → 6.3%HP → 6.9%HP → 126.7%HP', 'Empowered combo used in Fleurdelys form.'],
+    ['Heavy ATK', 'Fleurdelys Enhanced', '3.9%×2 + 2%HP', 'Charged strike in Fleurdelys form.'],
+    ['Skill', 'Base Form', '3.5%×3 + 4.5%HP', 'Skill strike that applies Aero Erosion and summons a Sword Shadow.'],
+    ['Skill', 'Fleurdelys 1-2', '12.5%HP / 14.2%HP', 'Fleurdelys-form Skill variants.'],
+    ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP', 'Ultimate that transforms her into Fleurdelys form for 12s; no direct damage.'],
+    ['Liberation', 'Blade of Howling Squall', '6.6%×7 HP', 'Fleurdelys-form Ultimate finisher; removes Aero Erosion stacks from the target for bonus DMG.'],
+    ['Intro', "Sword to Mark Tide's Trace", '2.2% + 5%HP', 'Base-form swap-in opener.'],
+    ['Intro', "Sword to Call for Freedom", '4.28% + 9.97%HP', 'Fleurdelys-form swap-in opener.'],
+    ['Outro', "Wind's Divine Blessing", '+17.5% Aero DMG vs Negative Status (20s)', 'Swap-out buff to the active teammate against targets with a Negative Status.'],
   ],
   'Changli': [
     ['Basic ATK', 'Stage 1-4', '29.7% → 35.7% → 55% → 85%'],
@@ -1476,12 +1481,12 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Unraveling - Law Zero', '+3 max Negative Status stacks (15s)', 'Swap-out buff letting the next Resonator stack more Negative Status on enemies.'],
   ],
   'Ciaccona': [
-    ['Basic ATK', 'Stage 1-4', '28.7% → 81.7% → 66.4% → 123%'],
-    ['Skill', 'Harmonic Allegro', '20.3%×4'],
-    ['Forte', 'Quadruple Downbeat', '15.8%×10 + 158%'],
-    ['Liberation', "Singer's Triple Cadenza", '553.5% + Tonic 3.1%×20/tick'],
-    ['Intro', 'Roaming with the Wind', '95.1%'],
-    ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)'],
+    ['Basic ATK', 'Stage 1-4', '28.7% → 81.7% → 66.4% → 123%', 'Standard combo string; Stage 4 inflicts Aero Erosion.'],
+    ['Skill', 'Harmonic Allegro', '20.3%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
+    ['Forte', 'Quadruple Downbeat', '15.8%×10 + 158%', 'Forte finisher that consumes stacked Musical Essence.'],
+    ['Liberation', "Singer's Triple Cadenza", '553.5% + Tonic 3.1%×20/tick', 'Ultimate nuke followed by a lingering damage-over-time field.'],
+    ['Intro', 'Roaming with the Wind', '95.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
+    ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
   'Encore': [
     ['Basic ATK', 'Wooly Attack 1-4', '28% → 33.3% → 33.4%×2 → 19.3%×4'],
@@ -1703,17 +1708,17 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Strategist', '+20% Electro DMG + 25% Liberation DMG Amp (14s)'],
   ],
   'Zani': [
-    ['Basic ATK', 'Stage 1-4', '29.6% → 40% → 64% → 136%'],
-    ['Heavy ATK', 'Standard', '20.7%×4'],
-    ['Skill', 'Pinpoint Strike', '30.7% + 61.4%'],
-    ['Skill', 'Targeted Action', '43.4% + 14.5% + 86.7%'],
-    ['Forte', 'Heavy Slash Daybreak', '100%'],
-    ['Forte', 'Heavy Slash Dawning', '213.3%'],
-    ['Forte', 'Heavy Slash Nightfall', '68% + 132% (+5% per Blaze)'],
-    ['Liberation', 'Rekindle', '160.2%'],
-    ['Liberation', 'The Last Stand', '96.1% + 544.7%'],
-    ['Intro', 'Immediate Execution', '12.2%×5 + 40.6%'],
-    ['Outro', 'Beacon For the Future', '150% (+10% per Ember stack)'],
+    ['Basic ATK', 'Stage 1-4', '29.6% → 40% → 64% → 136%', 'Standard combo string.'],
+    ['Heavy ATK', 'Standard', '20.7%×4', 'Charged combo hit.'],
+    ['Skill', 'Pinpoint Strike', '30.7% + 61.4%', 'Base Skill counter-style strike.'],
+    ['Skill', 'Targeted Action', '43.4% + 14.5% + 86.7%', 'Counter follow-up, empowered by her Resonance Chain.'],
+    ['Forte', 'Heavy Slash Daybreak', '100%', 'First stage of her Forte-empowered Heavy ATK.'],
+    ['Forte', 'Heavy Slash Dawning', '213.3%', 'Second, stronger stage of the Forte Heavy ATK.'],
+    ['Forte', 'Heavy Slash Nightfall', '68% + 132% (+5% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
+    ['Liberation', 'Rekindle', '160.2%', 'Ultimate that raises max Blaze and enters Inferno state.'],
+    ['Liberation', 'The Last Stand', '96.1% + 544.7%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
+    ['Intro', 'Immediate Execution', '12.2%×5 + 40.6%', 'Swap-in opener strike.'],
+    ['Outro', 'Beacon For the Future', '150% (+10% per Ember stack)', 'Swap-out finisher that also grants allies hitting the marked target Spectro DMG Amp.'],
   ],
   'Zhezhi': [
     ['Basic ATK', 'Dimming Brush 1-3', '42% → 51.7% → 67.2%'],
@@ -1951,6 +1956,34 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle burst phase' },
     { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator Heavy ATK DMG Amp' },
   ],
+  'Cartethyia': [
+    { type: 'Intro', skill: "Sword to Mark Tide's Trace" },
+    { type: 'Skill', skill: 'Base Form', note: 'applies Aero Erosion, summons a Sword Shadow' },
+    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'builds Conviction toward transformation' },
+    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", note: 'transforms into Fleurdelys form for 12s' },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'empowered Fleurdelys-form combo' },
+    { type: 'Liberation', skill: 'Blade of Howling Squall', duration: 15, note: 'Fleurdelys finisher, removes stacked Erosion for bonus DMG' },
+    { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'boosts Aero DMG vs Negative Status targets' },
+  ],
+  'Ciaccona': [
+    { type: 'Intro', skill: 'Roaming with the Wind' },
+    { type: 'Skill', skill: 'Harmonic Allegro', note: 'inflicts Aero Erosion' },
+    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'builds Musical Essence' },
+    { type: 'Forte', skill: 'Quadruple Downbeat', note: 'consumes stacked Musical Essence' },
+    { type: 'Liberation', skill: "Singer's Triple Cadenza", duration: 20, note: 'nuke plus lingering DoT field' },
+    { type: 'Outro', skill: 'Windcalling Tune', duration: 30, note: 'amplifies Aero Erosion DMG near the active Resonator' },
+  ],
+  'Zani': [
+    { type: 'Intro', skill: 'Immediate Execution' },
+    { type: 'Skill', skill: 'Pinpoint Strike', note: 'or Targeted Action counter, empowered by Resonance Chain' },
+    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'standard combo before Forte' },
+    { type: 'Forte', skill: 'Heavy Slash Daybreak', note: 'first stage of Forte Heavy ATK' },
+    { type: 'Forte', skill: 'Heavy Slash Dawning', note: 'second stage, stronger' },
+    { type: 'Forte', skill: 'Heavy Slash Nightfall', note: 'Forte finisher, scales with Blaze' },
+    { type: 'Liberation', skill: 'Rekindle', note: 'enters Inferno state, raises max Blaze' },
+    { type: 'Liberation', skill: 'The Last Stand', duration: 8, note: 'second Ultimate inside Inferno, scales with Blaze consumed' },
+    { type: 'Outro', skill: 'Beacon For the Future', duration: 20, note: 'grants allies hitting the marked target Spectro DMG Amp' },
+  ],
   'Augusta': [
     { type: 'Intro', skill: 'Stride of Goldenflare' },
     { type: 'Skill', skill: "Warrior's Blade", note: 'time-stop dash strike' },
@@ -2049,7 +2082,11 @@ const RESONANCE_CHAIN_DATA = {
   // S6: Aemeath's Liberation DMG taken by targets +40% (confirmed exact value, recategorized from totalMult to libDmg)
   'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: { totalMult: 40 }, s6: { libDmg: 40 } },
   // Zani S1: +50% Spectro DMG (confirmed exact). S2: CR+20% + mult boost. S4: team ATK+20%
-  'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { totalMult: 40 }, s6: { totalMult: 40, heavyDmg: 40 } },
+  'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, skillDmg: 80 }, s3: { libDmg: 200 }, s4: { atkPct: 20 }, s5: { libDmg: 120 }, s6: { heavyDmg: 40 } },
+  // Zani R-chain corrected 2026-08-16 via Nanoka/Prydwen: s1 Targeted Action/Forcible Riposte +50% Spectro DMG confirmed correct;
+  // s2 +20% Crit Rate + Targeted Action/Forcible Riposte DMG Mult +80% (was critRate:20 + unfounded totalMult:25); s3 The Last Stand DMG Mult scales up to +1200% with full Blaze consumption,
+  // used a conservative rotation-representative libDmg:200 instead of the theoretical max (was totalMult:15, no basis); s4 team +20% ATK on Intro cast confirmed correct;
+  // s5 Rekindle DMG Mult +120% (was totalMult:40, wrong category); s6 Heavy Slash Daybreak/Dawning/Nightfall/Lightsmash Mult +40% (was totalMult:40 + duplicate heavyDmg:40, consolidated).
   // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
   'Phoebe':       { s1: { libDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
   // Phrolova S1: skill mult+80% (no CR). S2: Scarlet Coda+75% + Aftersound (no CR)
@@ -2067,7 +2104,11 @@ const RESONANCE_CHAIN_DATA = {
   // s3 +25% DMG Mult on Thunderoar/Plunge/Sublime is the Sun (was totalMult:15); s4 team +20% ATK on Intro cast (was heavyDmg:40, no basis);
   // s5 Glory's Favor shield +50%, no direct DPS stat, totalMult fallback (was totalMult:15, kept as-is); s6 Thunder Rage: 2 extra Heavy ATK hits at 100% ATK each = 200% (was totalMult:25).
   // Cartethyia S1: +25% CD per 30 Conviction threshold (up to ~100%). S2: Basic/Heavy/etc DMG+50%, Mid-air+200%
-  'Cartethyia':   { s1: { critDmg: 40 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
+  'Cartethyia':   { s1: { critDmg: 100 }, s2: { basicDmg: 50, totalMult: 30 }, s3: { libDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
+  // Cartethyia R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +25%/Conviction-level Crit DMG, max 4 stacks = 100% (was critDmg:40, quarter of real max);
+  // s2 Basic/Heavy/Dodge/Intro DMG Mult +50% confirmed, Mid-air Attack +200% has no direct schema stat, totalMult fallback (was totalMult:25); s3 Liberation2 DMG Mult +100% (was totalMult:15, wrong category);
+  // s4 team +20% All-Attribute DMG after inflicting any Bane/Burst/Frazzle/Flare/Chafe/Erosion (was atkPct:40, no basis); s5 fatal-blow immunity + Max HP shield, no direct DPS stat, totalMult fallback (kept as-is);
+  // s6 Fleurdelys attacks deal +40% more DMG to targets (was totalMult:25, wrong category).
   'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
   'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
@@ -2121,7 +2162,11 @@ const RESONANCE_CHAIN_DATA = {
   // no basis). S6: Unseen Snare-Finality: targets take 30% more Negative Status DMG (was deepen:15, wrong value)
   'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 100 }, s6: { deepen: 30 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
-  'Ciaccona':     { s1: { atkPct: 35 }, s2: { totalMult: 15 }, s3: { elemDmg: 10 }, s4: { deepen: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 15 } },
+  'Ciaccona':     { s1: { atkPct: 35 }, s2: { allDmg: 40 }, s3: { totalMult: 10 }, s4: { defIgnore: 45 }, s5: { libDmg: 40 }, s6: { libDmg: 220 } },
+  // Ciaccona R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 Basic ATK cast +35% ATK confirmed correct;
+  // s2 during Liberation, team +40% Aero DMG Bonus (was totalMult:15, wrong category); s3 +1 Musical Essence/+1 Skill charge, utility with no direct DPS stat, totalMult fallback (was elemDmg:10, no basis);
+  // s4 ignores 45% DEF on Quadruple Downbeat/Liberation DMG (was deepen:10, wrong category/value); s5 +40% Liberation DMG Bonus (was totalMult:10, wrong category);
+  // s6 Solo Concert pulse deals 220% ATK Aero DMG counted as Liberation DMG (was elemDmg:15, wrong category/value).
   // Cantarella S1: +50% Skill DMG mult + Trance recovery ≈ totalMult 20
   'Cantarella':   { s1: { totalMult: 20 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
   'Yinlin':       { s1: { elemDmg: 10 }, s2: { resShred: 10 }, s3: { totalMult: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 15 } },
