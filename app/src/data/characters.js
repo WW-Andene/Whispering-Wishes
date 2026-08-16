@@ -877,9 +877,9 @@ const CHAR_BUFF_TABLE = {
   'Rebecca': {
     outroBuffs: [{ stat: 'heavyDmg', value: 35, target: 'next', duration: 14 }, { stat: 'allDmg', value: 15, target: 'next', duration: 14 }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critDmg', value: 30, target: 'self', duration: 999, condition: 'Huntress mode' }],
-    debuffs: [{ stat: 'defShred', value: 15, duration: 999, condition: 'Guts mode' }],
-    note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress/Guts mode swap grants self Crit DMG or DEF Ignore.',
+    selfBuffs: [{ stat: 'critDmg', value: 30, target: 'self', duration: 999, condition: 'Huntress mode' }, { stat: 'defIgnore', value: 15, target: 'self', duration: 999, condition: 'Guts mode' }],
+    debuffs: [],
+    note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore (personal, not a team-wide DEF Shred debuff — fixed 2026-08-16, was miscategorized under debuffs as defShred).',
   },
   'Denia': {
     outroBuffs: [{ stat: 'allDmg', value: 40, target: 'next', duration: 16, condition: 'Tune Strain mode, after inflicting Tune Strain - Shifting' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
