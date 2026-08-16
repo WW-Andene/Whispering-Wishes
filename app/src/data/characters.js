@@ -188,7 +188,7 @@ const CHARACTER_DATA = {
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
     teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Yinlin + Verina', 'Augusta + Phrolova + Shorekeeper'] },
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro and grants herself a shield through Resonance Skill casts, cycling between Half Moon and New Moon combat states.',
+    desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro, heals the team through her New Moon attacks and Full Moon Domain, and self-shields on skill casts, cycling between Half Moon and New Moon combat states.',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -1000,7 +1000,7 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Derivation: Blessing of the Wan Light, max 10 stacks (+4%/stack)' },
     ],
     debuffs: [],
-    note: 'Outro: 50% Heavy ATK DMG Amp (14s). Self-shield via Waxing Ascent (32% ATK per skill cast), not a team heal/shield. Liberation activates Lunar Cycle burst phase, no team buff. (Corrected 2026-08-16: removed unfounded "Heal" claim — no heal skill in her kit per Prydwen/Game8.)',
+    note: 'Outro: 50% Heavy ATK DMG Amp (14s). Real team healing via New Moon Moonbow attacks/Dodge Counter/Arc Beyond the Edge (heal on hit) and Absolute Fullness + Full Moon Domain (team HP/STA regen). Self-shield via Waxing Ascent (32% ATK per skill cast, self only). Liberation activates Lunar Cycle burst phase, no team DMG buff. (Corrected 2026-08-16: restored the team-heal claim — confirmed via Nanoka live re-check after Prydwen/Game8 omitted her healing kit in the prior audit.)',
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
