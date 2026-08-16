@@ -6,7 +6,7 @@
 /**
  * @typedef {'Glacio'|'Fusion'|'Electro'|'Aero'|'Spectro'|'Havoc'} Element
  * @typedef {'Sword'|'Broadblade'|'Pistols'|'Gauntlets'|'Rectifier'} WeaponType
- * @typedef {'Main DPS'|'Sub DPS'|'Support'|'Healer'} CharacterRole
+ * @typedef {'Main DPS'|'Sub DPS'|'Support'|'Healer'|'Support/Healer'} CharacterRole
  * @typedef {'ATK'|'HP'|'DEF'} StatScaling
  */
 
@@ -129,8 +129,8 @@
  */
 
 /**
- * Skill multiplier entry: [type, skillName, multiplierString]
- * @typedef {[string, string, string]} SkillMultEntry
+ * Skill multiplier entry: [type, skillName, multiplierString, description?]
+ * @typedef {[string, string, string] | [string, string, string, string]} SkillMultEntry
  */
 
 /**

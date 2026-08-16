@@ -25,7 +25,7 @@ describe('CHARACTER_DATA integrity', () => {
       expect(data.weapon, `${name} missing weapon type`).toBeDefined();
       expect(['Sword', 'Broadblade', 'Pistols', 'Gauntlets', 'Rectifier']).toContain(data.weapon);
       expect(data.role, `${name} missing role`).toBeDefined();
-      expect(['Main DPS', 'Sub DPS', 'Support', 'Healer']).toContain(data.role);
+      expect(['Main DPS', 'Sub DPS', 'Support', 'Healer', 'Support/Healer']).toContain(data.role);
       expect(data.skills, `${name} missing skills`).toBeDefined();
       expect(data.skills.length, `${name} should have 4 skills`).toBe(4);
     });
@@ -194,15 +194,19 @@ describe('SKILL_MULTIPLIERS integrity', () => {
     });
   });
 
-  it('every entry is [type, name, mult] format', () => {
+  it('every entry is [type, name, mult, desc?] format', () => {
     Object.entries(SKILL_MULTIPLIERS).forEach(([charName, skills]) => {
       expect(Array.isArray(skills), `${charName} skills is not array`).toBe(true);
       skills.forEach((entry, i) => {
         expect(Array.isArray(entry), `${charName}[${i}] is not array`).toBe(true);
-        expect(entry.length, `${charName}[${i}] should have 3 elements`).toBe(3);
+        expect(entry.length, `${charName}[${i}] should have 3 or 4 elements`).toBeGreaterThanOrEqual(3);
+        expect(entry.length, `${charName}[${i}] should have 3 or 4 elements`).toBeLessThanOrEqual(4);
         expect(typeof entry[0], `${charName}[${i}][0] type`).toBe('string');
         expect(typeof entry[1], `${charName}[${i}][1] name`).toBe('string');
         expect(typeof entry[2], `${charName}[${i}][2] mult`).toBe('string');
+        if (entry.length === 4) {
+          expect(typeof entry[3], `${charName}[${i}][3] desc`).toBe('string');
+        }
       });
     });
   });
