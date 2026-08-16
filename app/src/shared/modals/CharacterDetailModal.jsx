@@ -405,7 +405,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </h3>
             {SKILL_MULTIPLIERS[name] ? (
               <div className="space-y-0.5">
-                {SKILL_MULTIPLIERS[name].map(([type, skillName, mult], i) => {
+                {SKILL_MULTIPLIERS[name].map(([type, skillName, mult, desc], i) => {
                   const typeColors = {
                     'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
                     'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
@@ -423,7 +423,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         <span className="text-sm text-gray-200 font-medium break-words">{skillName}</span>
                       </div>
                       <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
-                      {/* Skill description will be added here once character audits are complete */}
+                      {desc && <div className="text-xs text-gray-500 break-words mt-1 italic">{desc}</div>}
                     </div>
                   );
                 })}
