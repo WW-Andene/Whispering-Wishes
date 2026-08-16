@@ -1827,8 +1827,10 @@ const RESONANCE_CHAIN_DATA = {
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere)
   'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 50 }, s6: { elemDmg: 60 } },
   // Lucilla S2: Glacio Chafe DMG Amp+80% / Echo Skill DMG+40% depending on mode (averaged). S3: Letting It Go DMG+100% (confirmed exact).
-  // S4: ATK+10%/stack up to 3 stacks = +30% (confirmed exact). S5: Oblivion DMG+50% (confirmed exact). S6: Letting It Go DMG+200%/stack up to 600% (scaled)
-  'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 100 }, s4: { atkPct: 30 }, s5: { basicDmg: 50 }, s6: { libDmg: 100 } },
+  // S4: ATK+10%/stack up to 3 stacks = +30% (confirmed exact). S5: Oblivion DMG+50% (confirmed exact).
+  // S6: each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence
+  // reliably hits max, so using the max value +600% (confirmed via Nanoka/Game8/Prydwen cross-check 2026-08-16; was erroneously 100 — S3's value).
+  'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 100 }, s4: { atkPct: 30 }, s5: { basicDmg: 50 }, s6: { libDmg: 600 } },
   // Camellya S1: +28% CD after Intro (confirmed exact). S3: ATK+58% in Budding. S4: team Basic ATK DMG+25%
   'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 40 }, s3: { atkPct: 58, totalMult: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
   // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
