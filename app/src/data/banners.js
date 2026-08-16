@@ -15,15 +15,14 @@ const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 // wuwatracker.com/fr/timeline, user-clarified 2026-08-14 — Suisui/Aemeath is the current phase-2
 // pairing; Yangyang: Xuanling paired with Luuk Herssen in the prior phase, v3.5-p1, not with Aemeath).
 // bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file.
-// Firstlight's Herald doesn't have real banner splash art yet — using the shared neutral fallback
-// (PLACEHOLDER_IMAGE) pending upload. Suisui, Aemeath, and Everbright Polestar all have real splash art.
+// Suisui, Aemeath, Firstlight's Herald, and Everbright Polestar all have real splash art.
 const CURRENT_BANNERS = {
   version: '3.5', phase: 2, // Game version (not app version)
   // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
   startDate: '2026-07-30T08:00:00Z',
   endDate: '2026-08-19T09:59:00Z',
   characterBannerImage: PLACEHOLDER_IMAGE, // TODO: replace with real Suisui banner art once available
-  weaponBannerImage: PLACEHOLDER_IMAGE, // TODO: replace with real Firstlight's Herald banner art once available
+  weaponBannerImage: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg',
   eventBannerImage: PLACEHOLDER_IMAGE,
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
   endstateMatrixImage: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg',
@@ -40,7 +39,7 @@ const CURRENT_BANNERS = {
     { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/Y4SzJSxL/Aemeath-banner.jpg', imagePosition: '50% 47%' }, // real splash art (same asset used in BANNER_HISTORY v3.1-p1 / CHARACTER_THEMES.aemeath, crop reused from CHARACTER_THEMES.aemeath.pos.header)
   ],
   weapons: [
-    { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: PLACEHOLDER_IMAGE, imagePosition: 'center 15%' },
+    { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg', imagePosition: 'center 15%' },
     { id: 'everbright-polestar', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/cSVxJrz8/everbright-polestar-banner.jpg' }, // real "Featured Weapon Convene" splash art
   ],
   // Standard Resonator Banner (Lustrous Tide)
@@ -784,11 +783,16 @@ CHARACTER_THEMES.sort((a, b) => RELEASE_ORDER.indexOf(b.name) - RELEASE_ORDER.in
 const WEAPON_THEMES = [
   { id: 'everbright-polestar',   name: 'Everbright Polestar',   bannerArt: 'https://i.ibb.co/cSVxJrz8/everbright-polestar-banner.jpg' },
   { id: 'ages-of-harvest',       name: 'Ages of Harvest',       bannerArt: 'https://i.ibb.co/DD24rw6P/ages-of-harvest-banner.jpg' },
+  { id: 'azure-oath',            name: 'Azure Oath',            bannerArt: 'https://i.ibb.co/WWFdfpd2/Azure-Oath-Banner.webp' }, // Xuanling
   { id: 'blazing-brilliance',    name: 'Blazing Brilliance',    bannerArt: 'https://i.ibb.co/fby4FQc/blazing-brilliance-banner.jpg' },
   { id: 'blazing-justice',       name: 'Blazing Justice',       bannerArt: 'https://i.ibb.co/rRqtbgtz/blazing-justice-banner.jpg' },
   { id: 'daybreakers-spine',     name: "Daybreaker's Spine",    bannerArt: 'https://i.ibb.co/8gzzFgGx/daybreaker-s-spine-banner.jpg' },
   { id: 'defiers-thorn',         name: "Defier's Thorn",        bannerArt: 'https://i.ibb.co/LzNywkKX/defier-s-thorn-banner.jpg' },
   { id: 'emerald-sentence',      name: 'Emerald Sentence',      bannerArt: 'https://i.ibb.co/k2dDWSg3/emerald-sentence-banner.jpg' },
+  { id: 'firstlights-herald',    name: "Firstlight's Herald",   bannerArt: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg' }, // Suisui
+  { id: 'forged-dwarf-star',     name: 'Forged Dwarf Star',     bannerArt: 'https://i.ibb.co/Gv3c41jD/Forged-Dwarf-Star-Banner.webp' }, // Denia
+  { id: 'freeze-frame',          name: 'Freeze Frame',          bannerArt: 'https://i.ibb.co/5hWpCRrv/Freeze-Frame-Banner.jpg' }, // Lucilla
+  { id: 'frostburn',             name: 'Frostburn',             bannerArt: 'https://i.ibb.co/rRh3h5zR/Frostburn-Banner.webp' }, // Hiyuki
   { id: 'kumokiri',              name: 'Kumokiri',              bannerArt: 'https://i.ibb.co/Dgs0qXnV/kumokiri-banner.jpg' },
   { id: 'lethean-elegy',         name: 'Lethean Elegy',         bannerArt: 'https://i.ibb.co/MyPXz6m4/lethean-elegy-banner.jpg' },
   { id: 'luminous-hymn',         name: 'Luminous Hymn',         bannerArt: 'https://i.ibb.co/qL32WZqz/luminous-hymn-banner.jpg' },
@@ -796,7 +800,9 @@ const WEAPON_THEMES = [
   { id: 'moongazers-sigil',      name: "Moongazer's Sigil",     bannerArt: 'https://i.ibb.co/5Xf3j5w5/moongazer-s-sigil-banner.jpg' },
   { id: 'red-spring',            name: 'Red Spring',            bannerArt: 'https://i.ibb.co/VYykPdpg/red-spring-banner.jpg' },
   { id: 'rime-draped-sprouts',   name: 'Rime-Draped Sprouts',   bannerArt: 'https://i.ibb.co/xqtPLNJF/rime-draped-sprouts-banner.jpg' },
+  { id: 'skull-thrasher',        name: 'Skull Thrasher',        bannerArt: 'https://i.ibb.co/9m8z7x9R/Skull-Thrasher-Banner.webp' }, // Rebecca
   { id: 'solsworn-ciphers',      name: 'Solsworn Ciphers',      bannerArt: 'https://i.ibb.co/N2ZLZ07W/solsworn-ciphers-banner.jpg' },
+  { id: 'spectral-trigger',      name: 'Spectral Trigger',      bannerArt: 'https://i.ibb.co/yF2D9tKS/Spectral-trigger-Banner.png' }, // Lucy
   { id: 'spectrum-blaster',      name: 'Spectrum Blaster',      bannerArt: 'https://i.ibb.co/tMyRpwW9/spectrum-blaster-banner.jpg' },
   { id: 'starfield-calibrator',  name: 'Starfield Calibrator',  bannerArt: 'https://i.ibb.co/N6qwBGnv/starfield-calibrator-banner.jpg' },
   { id: 'stellar-symphony',      name: 'Stellar Symphony',      bannerArt: 'https://i.ibb.co/DPBF1H0Q/stellar-symphony-banner.jpg' },
