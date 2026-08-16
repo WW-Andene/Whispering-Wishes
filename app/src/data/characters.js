@@ -283,7 +283,7 @@ const CHARACTER_DATA = {
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Dream of Stars' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
-    bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc (Tune Strain)', 'Reminiscence: Denia', 'Chromatic Foam 5pc (Fusion Burst)'], bestWeapon: 'Forged Dwarf Star',
+    bestEchoes: ['Reminiscence: Denia', 'Chromatic Foam 5pc (Fusion Burst)', 'Voidwing Moth', 'Reel of Spliced Memories 5pc (Tune Strain)'], bestWeapon: 'Forged Dwarf Star',
     teams: ['Denia + Luuk Herssen + Mornye', 'Denia + Aemeath + Chisa'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
@@ -1306,8 +1306,8 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'As the Wind Wills', '300% ATK + team Havoc DMG buff'],
   ],
   'Hiyuki': [
-    ['Basic ATK', 'Present Self Stage 1-3', '63.15% → 61.00%×2 → 41.80%×2+55.74%'],
-    ['Basic ATK', 'Foreclaimed Self Stage 1-5', '19.57%×4 → 31.81%+15.91%×4+31.81% → 13.76%×12 → 159.05%'],
+    ['Basic ATK', 'Present Self Stage 1-3', '37.72%×2 → 90.25% → 4.92%×5+98.37%'],
+    ['Basic ATK', 'Foreclaimed Self Stage 1-5', '49.27% → 40.02%×2 → 25.16%×4+67.08% → 29.93%×5 → 12.17%+109.47%'],
     ['Heavy ATK', 'Frost Splinter: Present Self', '3× arrow volley, considered Liberation DMG'],
     ['Heavy ATK', 'Bitterfrost: Foreclaimed Self', 'Consumes 3 Whiteout Bitterfrost, considered Liberation DMG'],
     ['Liberation', 'Foreclaiming: Inward Vision', 'Enters Foreclaimed Self, 4 stacks Glacio Chafe on hit'],
@@ -1830,8 +1830,9 @@ const RESONANCE_CHAIN_DATA = {
   'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 30 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Rebecca S2: team +20% All-Attribute DMG on Intro/Lib (confirmed exact). S3: Liberation DMG Mult+60% (confirmed exact)
   'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: { totalMult: 15 }, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
-  // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere)
-  'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 50 }, s6: { elemDmg: 60 } },
+  // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere).
+  // S5: Final Act - Stagecraft Form DMG+100% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 50 previously)
+  'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 100 }, s6: { elemDmg: 60 } },
   // Lucilla S2: Glacio Chafe DMG Amp+80% / Echo Skill DMG+40% depending on mode (averaged). S3: Letting It Go DMG+100% (confirmed exact).
   // S4: ATK+10%/stack up to 3 stacks = +30% (confirmed exact). S5: Oblivion DMG+50% (confirmed exact).
   // S6: each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence
