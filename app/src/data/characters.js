@@ -210,21 +210,21 @@ const CHARACTER_DATA = {
     teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Support/Healer',
     desc: '"Just an ordinary student," she calmly introduces herself, a faint iridescent shimmer flickering in her eyes. Havoc support/healer who deals heavy Resonance Liberation DMG, heals and shields the team, and shreds enemy DEF via Unseen Snare + Havoc Bane.',
-    skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Sight of Unraveling - Oblivion'],
+    skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Reverberance - Return'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Kumokiri',
-    teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lynae'] },
+    teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who amplifies team All DMG and Resonance Liberation DMG via Outro, and boosts Tune Break Boost for Tune Strain team comps.',
-    skills: ['Chroma Drift', 'Lynae-Style Palettes', 'Prismatic Overblast', 'Chromaticity Modeling'],
+    skills: ['Chroma Drift', 'Lynae-Style Palettes', 'Prismatic Overblast', 'Time to Show Some Colors!'],
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Core', specialty: 'Rimewisp' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Combustor' },
     bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc'], bestWeapon: 'Spectrum Blaster',
     teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa'] },
   'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who restores HP via Resonance Skill and Liberation while boosting the team\'s Off-Tune Buildup Rate.',
-    skills: ['Ground State Calibration', 'Resolution', 'Critical Protocol', 'Mass-Energy Equivalence'],
+    skills: ['Ground State Calibration', 'Resolution', 'Critical Protocol', 'Convergence'],
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Gemini Spore' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Carved Crystal' },
     bestEchoes: ['Reactor Husk', 'Halo of Starry Radiance 5pc'], bestWeapon: 'Starfield Calibrator',
@@ -238,7 +238,7 @@ const CHARACTER_DATA = {
     teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between Tune Rupture and Fusion Burst Resonance Modes, dealing massive Resonance Liberation DMG through Seraphic Duet and Heavenfall Edict.',
-    skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'To Sculpt the Silence'],
+    skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'Overture of Departure'],
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Moss Amber' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Polarizer' },
     bestEchoes: ['Sigillum', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
@@ -824,10 +824,10 @@ const CHAR_BUFF_TABLE = {
   },
   'Lynae': {
     outroBuffs: [
-      { stat: 'deepen', value: 15, target: 'next', duration: 14 },
+      { stat: 'allDmg', value: 15, target: 'next', duration: 14 },
       { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
     ],
-    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 40 }],
+    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30 }],
     selfBuffs: [],
     debuffs: [],
     tuneBreak: {
@@ -837,7 +837,7 @@ const CHAR_BUFF_TABLE = {
       strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
       maxStrainStacks: 3, // base 2 + 1 from Lynae
     },
-    note: 'Lib: 24% All DMG (30s). Outro: 15% Deepen + 25% Lib Amp (14s). Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
+    note: 'Lib: 24% All DMG (30s, confirmed exact 2026-08-16). Outro: 15% All DMG + 25% Lib Amp to next (14s) — was miscategorized as deepen, no basis. Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
   },
   'Qingxiao': {
     outroBuffs: [],
@@ -896,11 +896,13 @@ const CHAR_BUFF_TABLE = {
     note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s).',
   },
   'Mornye': {
-    outroBuffs: [{ stat: 'deepen', value: 25, target: 'next', duration: 30 }],
-    libBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 40 }],
+    outroBuffs: [{ stat: 'allDmg', value: 25, target: 'team', duration: 30 }],
+    // Lib (Critical Protocol) generates a High Syntony Field: +20% team DEF (not DPS-relevant, no stat for it here) +
+    // healing + Off-Tune Buildup Rate — no "15% All DMG" anywhere in the real kit, cleared (confirmed via Nanoka/Prydwen 2026-08-16).
+    libBuffs: [],
     selfBuffs: [],
-    weaponBuffs: [{ stat: 'critDmg', value: 40, target: 'team', duration: 10, condition: 'Sig weapon: team Crit DMG +40% on heal' }],
-    debuffs: [{ stat: 'offTune', value: 15, duration: 20, condition: 'Off-Tune buildup' }],
+    weaponBuffs: [{ stat: 'critDmg', value: 20, target: 'team', duration: 10, condition: 'Sig weapon: team Crit DMG +20% on heal' }],
+    debuffs: [{ stat: 'offTune', value: 50, duration: 25, condition: 'Syntony Field: Off-Tune Buildup Rate +50%' }],
     tuneBreak: {
       boostToTeam: 0,
       baseTuneBreakBoost: 10,
@@ -909,7 +911,7 @@ const CHAR_BUFF_TABLE = {
       maxStrainStacks: 3, // base 2 + 1 from Mornye
       interferedDmgAmp: 40, // targets with Interfered Marker take up to 40% more DMG (0.25% per 1% ER over 100%)
     },
-    note: 'Outro: 25% Deepen. Lib: 15% All DMG. Interfered Marker: up to 40% DMG Amp on target. Rupture Response. Off-Tune buildup amplifier.',
+    note: 'Outro: 25% All DMG Amp to team (30s, confirmed exact 2026-08-16 — was miscategorized as deepen). Syntony Field: +50% Off-Tune Buildup Rate (25s), healing, DEF+20% via Ultimate. Interfered Marker: up to 40% DMG Amp on target. Rupture Response.',
   },
   'Roccia': {
     outroBuffs: [
@@ -1364,16 +1366,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Oath of Radiance', '+15% All DMG Amp (14s)'],
   ],
   'Aemeath': [
-    ['Basic ATK', 'Aemeath Form Stage 1-4', '46.35% → 13.89%+20.84%+34.73% → 9.32%×3+18.63%+46.56% → 6.73%×5+100.94%'],
-    ['Basic ATK', 'Mech Form Stage 1-4', '23.20%×3 → 18.57%+74.26% → 3.89%×6+81.54%+11.65% → 40.38%+94.21%'],
-    ['Charged ATK', 'Aemeath Charged I / II', '18.57%+74.26% / 11.60%×4+185.60%'],
-    ['Charged ATK', 'Mech Charged I / II', '92.83% / 232.00%'],
-    ['Skill', 'Sync Strikes', 'Armament Merge 26.92%+40.38%+67.29% / Call of Dawn 16.33%×3+114.28%'],
-    ['Skill', 'Seraphic Duet', 'Overture 17.90%+14.92%×6+23.86%×3+59.65%×3 / Encore 17.90%×4+35.79%×3+178.93%'],
-    ['Liberation', 'Heavenfall Edict', 'Overdrive 200.80%+267.74%×3 / Finale 1789.29%'],
-    ['Intro', 'Songs Across the Universe', '13.46%×2 + 107.66%'],
-    ['Intro', 'Debut of Meteoric Radiance', '65.30% + 97.95%'],
-    ['Outro', 'Silent Protection', '10-20% All-DMG Amp to team (20s), mode-dependent'],
+    ['Basic ATK', 'Aemeath Form Stage 1-4', '46.35% → 13.89%+20.84%+34.73% → 9.32%×3+18.63%+46.56% → 6.73%×5+100.94%', 'Standard human-form combo string, weaker but faster than Mech Form.'],
+    ['Basic ATK', 'Mech Form Stage 1-4', '23.20%×3 → 18.57%+74.26% → 3.89%×6+81.54%+11.65% → 40.38%+94.21%', 'Heavier Mech-form combo with bigger hits, entered via her Forte.'],
+    ['Charged ATK', 'Aemeath Charged I / II', '18.57%+74.26% / 11.60%×4+185.60%', 'Human-form charged strike, second stage hits much harder.'],
+    ['Charged ATK', 'Mech Charged I / II', '92.83% / 232.00%', 'Mech-form charged strike, very high single hits.'],
+    ['Skill', 'Sync Strikes', 'Armament Merge 26.92%+40.38%+67.29% / Call of Dawn 16.33%×3+114.28%', 'Skill triggers different follow-ups depending on which form she is in.'],
+    ['Skill', 'Seraphic Duet', 'Overture 17.90%+14.92%×6+23.86%×3+59.65%×3 / Encore 17.90%×4+35.79%×3+178.93%', 'Longer Skill combo, Encore variant hits when chained after Overture.'],
+    ['Liberation', 'Heavenfall Edict', 'Overdrive 200.80%+267.74%×3 / Finale 1789.29%', 'Ultimate; Finale is a massive burst that scales with team buffs.'],
+    ['Intro', 'Songs Across the Universe', '13.46%×2 + 107.66%', 'Intro Skill used when swapping in from human form.'],
+    ['Intro', 'Debut of Meteoric Radiance', '65.30% + 97.95%', 'Intro Skill used when swapping in from Mech Form.'],
+    ['Outro', 'Silent Protection', '10-20% All-DMG Amp to team (20s), mode-dependent', 'Swap-out buff to the whole team; strength depends on which form she left in.'],
   ],
   'Brant': [
     ['Basic ATK', 'Stage 1-4', '25.4% → 51% → 116.5% → 70.5%'],
@@ -1454,15 +1456,15 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Pyrospell', '+20% Fusion DMG Amp (14s)'],
   ],
   'Chisa': [
-    ['Basic ATK', 'Stage 1-2', '16.71%×2 → 9.55%+19.09%+66.81%'],
-    ['Basic ATK', 'Death Snip', '29.81% + 14.91% + 104.34%'],
-    ['Skill', 'Eye of Unraveling', '35.79%'],
-    ['Skill', 'Serrated Loop', '17.45%×8 (hold: 7.46%×16)'],
-    ['Forte', 'Sawring - Blitz 1-3', '11.49%×6 → 10.64%×8 → 15.98%×8'],
-    ['Forte', 'Sawring - Eradication', '51.54% + 206.13% (+2.59% per Ring of Chainsaw, up to 100)'],
-    ['Liberation', 'Moment of Nihility', '954.29% (+ heal 117.60% ATK)'],
-    ['Intro', 'Reverberance - Return', '95.43%'],
-    ['Outro', 'Unraveling - Law Zero', '+3 max Negative Status stacks (15s)'],
+    ['Basic ATK', 'Stage 1-2', '16.71%×2 → 9.55%+19.09%+66.81%', 'Standard combo string ending in a heavier chainsaw finisher.'],
+    ['Basic ATK', 'Death Snip', '29.81% + 14.91% + 104.34%', 'Alternate finisher available at a certain combo point.'],
+    ['Skill', 'Eye of Unraveling', '35.79%', 'Quick dash strike that marks the target for Negative Status.'],
+    ['Skill', 'Serrated Loop', '17.45%×8 (hold: 7.46%×16)', 'Multi-hit spin attack; holding the input adds even more hits.'],
+    ['Forte', 'Sawring - Blitz 1-3', '11.49%×6 → 10.64%×8 → 15.98%×8', '3-stage Forte combo that builds up Ring of Chainsaw stacks.'],
+    ['Forte', 'Sawring - Eradication', '51.54% + 206.13% (+2.59% per Ring of Chainsaw, up to 100)', 'Forte finisher whose damage scales with stacked Rings of Chainsaw.'],
+    ['Liberation', 'Moment of Nihility', '954.29% (+ heal 117.60% ATK)', 'Ultimate nuke that also heals her for a portion of the damage dealt.'],
+    ['Intro', 'Reverberance - Return', '95.43%', 'Swap-in opener strike.'],
+    ['Outro', 'Unraveling - Law Zero', '+3 max Negative Status stacks (15s)', 'Swap-out buff letting the next Resonator stack more Negative Status on enemies.'],
   ],
   'Ciaccona': [
     ['Basic ATK', 'Stage 1-4', '28.7% → 81.7% → 66.4% → 123%'],
@@ -1571,26 +1573,26 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Bow to the Last Light', '500%', 'Simple finishing nuke on swap-out.'],
   ],
   'Lynae': [
-    ['Basic ATK', 'Stage 1-3', '86.19% → 52.39%×3 → 123.37%'],
-    ['Heavy ATK', 'Spark Collision Lv.3', '277.78%×2'],
-    ['Basic ATK', 'Kaleidoscopic 1-5', '82.81% → 38.87%×2 → 37.75%×3 → 29.75%×2+44.62%×2 → 75.54%+15.11%×5+100.72%'],
-    ['Forte', 'Visual Impact', '1216.72%'],
-    ['Forte', 'Iridescent Splash', '304.18%'],
-    ['Skill', 'Lynae-Style Palettes', '139.31% + 46.44%×3'],
-    ['Skill', 'Additive Color', '116.31%×2'],
-    ['Liberation', 'Prismatic Overblast', '87.48%×10'],
-    ['Intro', 'Time to Show Some Colors!', '22.48%×10'],
-    ['Outro', "Let's Hit the Road!", '100% ATK + 15% All DMG / 25% Liberation DMG Amp'],
+    ['Basic ATK', 'Stage 1-3', '86.19% → 52.39%×3 → 123.37%', 'Standard combo before entering her Kaleidoscopic mode.'],
+    ['Heavy ATK', 'Spark Collision Lv.3', '277.78%×2', 'Fully-charged heavy hit, a big single burst of damage.'],
+    ['Basic ATK', 'Kaleidoscopic 1-5', '82.81% → 38.87%×2 → 37.75%×3 → 29.75%×2+44.62%×2 → 75.54%+15.11%×5+100.72%', 'Extended empowered combo used once her Kaleidoscopic mode is active.'],
+    ['Forte', 'Visual Impact', '1216.72%', 'Massive Forte finisher, her main source of burst damage.'],
+    ['Forte', 'Iridescent Splash', '304.18%', 'Secondary Forte follow-up hit.'],
+    ['Skill', 'Lynae-Style Palettes', '139.31% + 46.44%×3', 'Skill that builds up her paint/mode resource while dealing damage.'],
+    ['Skill', 'Additive Color', '116.31%×2', 'Quick follow-up Skill strike.'],
+    ['Liberation', 'Prismatic Overblast', '87.48%×10', 'Ultimate multi-hit barrage.'],
+    ['Intro', 'Time to Show Some Colors!', '22.48%×10', 'Swap-in opener with several rapid hits.'],
+    ['Outro', "Let's Hit the Road!", '100% ATK + 15% All DMG / 25% Liberation DMG Amp', 'Swap-out buff granting the next Resonator All-DMG or Liberation DMG Amp.'],
   ],
   'Mornye': [
-    ['Basic ATK', 'Stage 1-4', '22.27%+16.71%×2 → 23.86%×2+17.90%×4 → 41.36%+10.34%×6 → 135.20%'],
-    ['Skill', 'Optimal Solution', '179.73%'],
-    ['Skill', 'Distributed Array', '39.77%×4'],
-    ['Forte', 'Geopotential Shift', '44.14% + 99.02%'],
-    ['Forte', 'Inversion', '258.46%'],
-    ['Liberation', 'Critical Protocol', '522.33% DEF'],
-    ['Intro', 'Convergence', '202.79%'],
-    ['Outro', 'Recursion', '+25% All DMG Amp (30s)'],
+    ['Basic ATK', 'Stage 1-4', '22.27%+16.71%×2 → 23.86%×2+17.90%×4 → 41.36%+10.34%×6 → 135.20%', 'Standard combo string, scales off DEF like all her damage.'],
+    ['Skill', 'Optimal Solution', '179.73%', 'Marks an enemy and deals DEF-scaling damage.'],
+    ['Skill', 'Distributed Array', '39.77%×4', 'Multi-hit follow-up Skill.'],
+    ['Forte', 'Geopotential Shift', '44.14% + 99.02%', 'Forte strike that also fuels her healing/support kit.'],
+    ['Forte', 'Inversion', '258.46%', 'Stronger Forte finisher.'],
+    ['Liberation', 'Critical Protocol', '522.33% DEF', 'Ultimate; a DEF-scaling nuke that also empowers her buffs.'],
+    ['Intro', 'Convergence', '202.79%', 'Swap-in opener strike.'],
+    ['Outro', 'Recursion', '+25% All DMG Amp (30s)', 'Swap-out buff granting the team +25% All DMG for a long duration.'],
   ],
   'Phoebe': [
     ['Basic ATK', 'Stage 1-3', '14.9% → 24% → 7.2%×8'],
@@ -1885,6 +1887,41 @@ const CHARACTER_ROTATIONS = {
     { type: 'Heavy ATK', skill: 'Azure Sword Stance', note: 'swap back to Azure for a 2nd Heavy finisher' },
     { type: 'Outro', skill: 'As the Wind Wills', duration: 20 },
   ],
+  'Aemeath': [
+    { type: 'Intro', skill: 'Debut of Meteoric Radiance', note: 'swap-in from Mech Form' },
+    { type: 'Skill', skill: 'Seraphic Duet', note: 'Overture into Encore for extra hits' },
+    { type: 'Skill', skill: 'Sync Strikes', note: 'Armament Merge to swap between forms' },
+    { type: 'Basic ATK', skill: 'Mech Form Stage 1-4', note: 'heavy Mech-form combo' },
+    { type: 'Liberation', skill: 'Heavenfall Edict', duration: 20, note: 'Overdrive into Finale burst' },
+    { type: 'Outro', skill: 'Silent Protection', duration: 20, note: 'All-DMG Amp to team, stronger from Mech Form' },
+  ],
+  'Lynae': [
+    { type: 'Intro', skill: 'Time to Show Some Colors!' },
+    { type: 'Skill', skill: 'Lynae-Style Palettes', note: 'builds toward Kaleidoscopic mode' },
+    { type: 'Skill', skill: 'Additive Color', note: 'quick follow-up' },
+    { type: 'Basic ATK', skill: 'Kaleidoscopic 1-5', note: 'empowered combo once mode is active' },
+    { type: 'Forte', skill: 'Visual Impact', note: 'main burst finisher' },
+    { type: 'Liberation', skill: 'Prismatic Overblast', duration: 30, note: 'multi-hit Ultimate barrage' },
+    { type: 'Outro', skill: "Let's Hit the Road!", duration: 30, note: 'grants next Resonator All-DMG / Liberation DMG Amp' },
+  ],
+  'Mornye': [
+    { type: 'Intro', skill: 'Convergence' },
+    { type: 'Skill', skill: 'Optimal Solution', note: 'marks target, DEF-scaling damage' },
+    { type: 'Skill', skill: 'Distributed Array', note: 'multi-hit follow-up' },
+    { type: 'Forte', skill: 'Geopotential Shift', note: 'fuels support kit' },
+    { type: 'Forte', skill: 'Inversion', note: 'stronger Forte finisher' },
+    { type: 'Liberation', skill: 'Critical Protocol', duration: 30, note: 'DEF-scaling nuke, empowers team buffs' },
+    { type: 'Outro', skill: 'Recursion', duration: 30, note: '+25% All DMG Amp to team' },
+  ],
+  'Chisa': [
+    { type: 'Intro', skill: 'Reverberance - Return' },
+    { type: 'Skill', skill: 'Eye of Unraveling', note: 'marks target for Negative Status' },
+    { type: 'Skill', skill: 'Serrated Loop', note: 'hold for more hits' },
+    { type: 'Forte', skill: 'Sawring - Blitz 1-3', note: 'builds Ring of Chainsaw stacks' },
+    { type: 'Forte', skill: 'Sawring - Eradication', note: 'scales with stacked Rings of Chainsaw' },
+    { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'Ultimate nuke, heals on cast' },
+    { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 15, note: 'next Resonator can stack more Negative Status' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -1940,8 +1977,11 @@ const RESONANCE_CHAIN_DATA = {
   'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { totalMult: 10 }, s6: { atkPct: 25 } },
   // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
   'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { totalMult: 15 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
-  // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (conditional, no separate 30%). S3: DEF Ignore+20%, CD+60%
-  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { defIgnore: 20, critDmg: 60 }, s4: { totalMult: 15 }, s5: { totalMult: 40 }, s6: { totalMult: 40 } },
+  // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
+  // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
+  // no DEF Ignore effect). S4: team +20% All-Attr DMG on Intro/Sync Strike/Duet cast (was totalMult:15, no basis).
+  // S6: Aemeath's Liberation DMG taken by targets +40% (confirmed exact value, recategorized from totalMult to libDmg)
+  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: { totalMult: 40 }, s6: { libDmg: 40 } },
   // Zani S1: +50% Spectro DMG (confirmed exact). S2: CR+20% + mult boost. S4: team ATK+20%
   'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { totalMult: 40 }, s6: { totalMult: 40, heavyDmg: 40 } },
   // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
@@ -1976,14 +2016,24 @@ const RESONANCE_CHAIN_DATA = {
   'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
   // Shorekeeper S1: utility (range/duration). S2: ATK+40% (confirmed). S6: CD+500% self after Intro (very short window, ≈25 averaged)
   'Shorekeeper':  { s1: { totalMult: 5 }, s2: { atkPct: 40 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { critDmg: 25 } },
-  'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
-  'Mornye':       { s1: { allDmg: 15 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  // Lynae S2: team +25% All DMG Amp, self-gain portion (confirmed exact). S4: ATK+20% (was totalMult:10, no basis).
+  // S5: Prismatic Overblast Liberation DMG Mult+70% (was totalMult:15, no basis)
+  'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: { totalMult: 40 } },
+  // Mornye (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: interrupt immunity + Interfered Marker duration/
+  // condition changes, no flat % (was allDmg:15, no basis). S2: team Crit DMG+32% max vs Interfered Marker targets (was
+  // deepen:10, wrong stat+value). S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10, no basis).
+  // S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical Protocol DMG Mult+400%
+  // (was deepen:15, no basis)
+  'Mornye':       { s1: { totalMult: 15 }, s2: { critDmg: 32 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
   'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
   'Sanhua':       { s1: { atkPct: 10 }, s2: { basicDmg: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { basicDmg: 10 }, s6: { deepen: 15 } },
   'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 40 } },
   'Danjin':       { s1: { elemDmg: 8 }, s2: { atkPct: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { atkPct: 15, elemDmg: 10 } },
-  // Chisa S1: ATK+30% on Unseen Snare (not defShred). S4: improves Havoc Bane trigger rate (utility)
-  'Chisa':        { s1: { atkPct: 30 }, s2: { deepen: 10 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  // Chisa S1: ATK+30% on Unseen Snare (not defShred, confirmed exact). S2: team +50% All-Attr DMG for allies with
+  // Thread of Bane (was deepen:10, wrong stat+value — real 10% Havoc RES ignore is the smaller of two S2 effects).
+  // S4: improves Havoc Bane trigger rate (utility). S5: Moment of Nihility Liberation DMG Mult+100% (was totalMult:10,
+  // no basis). S6: Unseen Snare-Finality: targets take 30% more Negative Status DMG (was deepen:15, wrong value)
+  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 100 }, s6: { deepen: 30 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
   'Ciaccona':     { s1: { atkPct: 35 }, s2: { totalMult: 15 }, s3: { elemDmg: 10 }, s4: { deepen: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 15 } },
   // Cantarella S1: +50% Skill DMG mult + Trance recovery ≈ totalMult 20
