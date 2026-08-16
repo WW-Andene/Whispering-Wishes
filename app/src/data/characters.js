@@ -188,7 +188,7 @@ const CHARACTER_DATA = {
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
     teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Yinlin + Verina', 'Augusta + Phrolova + Shorekeeper'] },
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro while providing healing and shielding through Resonance Skill and Liberation.',
+    desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro and grants herself a shield through Resonance Skill casts, cycling between Half Moon and New Moon combat states.',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -996,16 +996,19 @@ const CHAR_BUFF_TABLE = {
   'Iuno': {
     outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [
+      { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Derivation: Blessing of the Wan Light, max 10 stacks (+4%/stack)' },
+    ],
     debuffs: [],
-    note: 'Outro: 50% Heavy ATK DMG Amp. Heal + Shield. Liberation DPS capable.',
+    note: 'Outro: 50% Heavy ATK DMG Amp (14s). Self-shield via Waxing Ascent (32% ATK per skill cast), not a team heal/shield. Liberation activates Lunar Cycle burst phase, no team buff. (Corrected 2026-08-16: removed unfounded "Heal" claim — no heal skill in her kit per Prydwen/Game8.)',
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
-    libBuffs: [{ stat: 'echoDmg', value: 30, target: 'team', duration: 40 }],
+    libBuffs: [{ stat: 'critDmg', value: 30, target: 'team', duration: 30, condition: 'Requires 65%+ Crit Rate for full value; +2% Crit DMG per 1% Crit Rate over 50%' }],
     selfBuffs: [],
+    weaponBuffs: [{ stat: 'echoDmg', value: 20, target: 'team', duration: 30, condition: 'Signature weapon (Emerald Sentence): triggers on Intro Skill cast' }],
     debuffs: [],
-    note: 'Outro: 50% Echo Skill DMG Amp. Lib: 30% Echo DMG. Sig weapon: 20% Echo DMG.',
+    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast. (Corrected 2026-08-16: Liberation buff was mislabeled as echoDmg — real effect is Crit DMG, confirmed via Prydwen/Game8.)',
   },
   'Chisa': {
     outroBuffs: [],
@@ -1207,9 +1210,12 @@ const CHAR_BUFF_TABLE = {
   'Galbrena': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [
+      { stat: 'allDmg', value: 85, target: 'self', duration: 14, condition: 'Liberation cast: +85% DMG Mult to Demon Hypostasis attacks' },
+      { stat: 'atkPct', value: 20, target: 'self', duration: 4, condition: 'Burning Drive: +20% ATK on certain casts' },
+    ],
     debuffs: [],
-    note: 'Echo Skill + Heavy ATK Fusion DPS.',
+    note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit.',
   },
   'Luuk Herssen': {
     outroBuffs: [],
@@ -1489,24 +1495,24 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Thermal Field', '176.8% ×4 ticks'],
   ],
   'Galbrena': [
-    ['Basic ATK', 'Stage 1-4', '29.8% → 66.2% → 71.9% → 89.5%'],
-    ['Heavy ATK', 'Volley of Death 1-3', '53.6% → 34.8% → 84.4%'],
-    ['Skill', 'Encroach', '5.4% + 12.6%'],
-    ['Skill', 'Ascent of Malice', '25.9%×2'],
-    ['Liberation', 'Hellfire Absolution', '55.8% + 45.6%×11'],
-    ['Intro', 'Hellflare Overload', '47.3%'],
-    ['Outro', 'Ashen Pursuit', '79.5%×3 + 556.5%'],
+    ['Basic ATK', 'Stage 1-4', '29.8% → 66.2% → 71.9% → 89.5%', 'Standard combo string, builds toward her Demon Hypostasis form.'],
+    ['Heavy ATK', 'Volley of Death 1-3', '53.6% → 34.8% → 84.4%', 'Charged shot combo, hits harder the longer it\'s held.'],
+    ['Skill', 'Encroach', '5.4% + 12.6%', 'Quick dash strike that builds Sinflame.'],
+    ['Skill', 'Ascent of Malice', '25.9%×2', 'Empowered Skill once Sinflame is maxed, transforms her into Demon Hypostasis.'],
+    ['Liberation', 'Hellfire Absolution', '55.8% + 45.6%×11', 'Ultimate barrage that also grants a big self DMG buff to her Demon Hypostasis attacks.'],
+    ['Intro', 'Hellflare Overload', '47.3%', 'Swap-in opener strike.'],
+    ['Outro', 'Ashen Pursuit', '79.5%×3 + 556.5%', 'Pure-damage swap-out finisher; no team buff, so she\'s free to quickswap.'],
   ],
   'Iuno': [
-    ['Basic ATK', 'Moonring 1-3', '44.1% → 70.2% → 134.1%'],
-    ['Basic ATK', 'Moonbow 1-3', '63.6% → 84% → 168%'],
-    ['Skill', 'Pulse of Origins', '9.4%×7 + 65.7%'],
-    ['Skill', 'Closing Refrain', '70.8%×2 + 72.9%'],
-    ['Skill', 'Arc Beyond the Edge', '110.6%×2'],
-    ['Heavy ATK', 'Absolute Fullness', '80%'],
-    ['Liberation', 'Beneath Lunar Tides', '550%'],
-    ['Intro', 'Illuminated Manifestation', '8%×7 + 24%'],
-    ['Outro', 'From Gloom to Gleam', '100%'],
+    ['Basic ATK', 'Moonring 1-3', '44.1% → 70.2% → 134.1%', 'Standard combo before entering the Lunar Cycle.'],
+    ['Basic ATK', 'Moonbow 1-3', '63.6% → 84% → 168%', 'Empowered combo used while inside the Lunar Cycle.'],
+    ['Skill', 'Pulse of Origins', '9.4%×7 + 65.7%', 'Base dash Skill, can transform into different follow-ups depending on her state.'],
+    ['Skill', 'Closing Refrain', '70.8%×2 + 72.9%', 'Flurry follow-up that activates the Lunar Cycle.'],
+    ['Skill', 'Arc Beyond the Edge', '110.6%×2', 'Follow-up Skill in New Moon state, has 2 charges.'],
+    ['Heavy ATK', 'Absolute Fullness', '80%', 'Forte-empowered Heavy ATK, scales hugely with her Resonance Chain.'],
+    ['Liberation', 'Beneath Lunar Tides', '550%', 'Ultimate strike that activates the Lunar Cycle; no team buff, purely personal damage.'],
+    ['Intro', 'Illuminated Manifestation', '8%×7 + 24%', 'Swap-in opener that also refills her Sentience meter.'],
+    ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator Heavy ATK DMG Amp.'],
   ],
   'Jiyan': [
     ['Basic ATK', 'Lone Lance 1-5', '36.8% → 22% → 91.5% → 66.6% → 237.5%'],
@@ -1615,15 +1621,15 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Final Applause', '+20% Havoc DMG + 25% Heavy ATK DMG Amp (14s)'],
   ],
   'Qiuyuan': [
-    ['Basic ATK', 'Stage 1-3', '21% → 35% → 82.6%'],
-    ['Heavy ATK', 'Standard', '83.3%'],
-    ['Skill', 'Through the Groves', '36.1%×3'],
-    ['Skill', 'Undaunted Wayfarer', '16.3% + 16.3%×3 + 43.4%'],
-    ['Forte', 'Inkwash 1-4', '60% → 93.3% → 73.6% → 86.7%'],
-    ['Forte', 'To Teach / To Save / To Sacrifice', '230% / 105.5% / 109.5%'],
-    ['Liberation', 'Sundering Strike', '400%'],
-    ['Intro', 'Attack the Must-Defend', '4.8%×5 + 24% + 72%'],
-    ['Outro', 'Ink Blessing', '+50% Echo Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-3', '21% → 35% → 82.6%', 'Standard combo before entering Inkwash form.'],
+    ['Heavy ATK', 'Standard', '83.3%', 'Charged strike, a solid single hit.'],
+    ['Skill', 'Through the Groves', '36.1%×3', 'Multi-hit Skill strike.'],
+    ['Skill', 'Undaunted Wayfarer', '16.3% + 16.3%×3 + 43.4%', 'Held version of her Skill, extended combo.'],
+    ['Forte', 'Inkwash 1-4', '60% → 93.3% → 73.6% → 86.7%', 'Forte-transformed combo string, her main damage form.'],
+    ['Forte', 'To Teach / To Save / To Sacrifice', '230% / 105.5% / 109.5%', 'Heavy ATK finishers in Inkwash form, each with a different follow-up effect.'],
+    ['Liberation', 'Sundering Strike', '400%', 'Ultimate nuke.'],
+    ['Intro', 'Attack the Must-Defend', '4.8%×5 + 24% + 72%', 'Swap-in opener, counted as Heavy ATK DMG.'],
+    ['Outro', 'Strike Before Ready', '100% ATK + 50% Echo Skill DMG Amp (14s)', 'Swap-out buff granting the next Resonator Echo Skill DMG Amp.'],
   ],
   'Roccia': [
     ['Basic ATK', 'Stage 1-4', '36.8% → 57.6% → 85% → 104.8%'],
@@ -1922,6 +1928,33 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'Ultimate nuke, heals on cast' },
     { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 15, note: 'next Resonator can stack more Negative Status' },
   ],
+  'Galbrena': [
+    { type: 'Intro', skill: 'Hellflare Overload' },
+    { type: 'Skill', skill: 'Encroach', note: 'builds Sinflame' },
+    { type: 'Skill', skill: 'Ascent of Malice', note: 'at max Sinflame, enters Demon Hypostasis' },
+    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'Demon Hypostasis combo' },
+    { type: 'Heavy ATK', skill: 'Volley of Death 1-3', note: 'charged combo finisher' },
+    { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'grants +85% DMG Mult to Demon Hypostasis attacks' },
+    { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
+  ],
+  'Iuno': [
+    { type: 'Intro', skill: 'Illuminated Manifestation' },
+    { type: 'Skill', skill: 'Pulse of Origins', note: 'or Closing Refrain to enter Lunar Cycle' },
+    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'empowered combo during Lunar Cycle' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'New Moon state follow-up, 2 charges' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'Forte-empowered finisher' },
+    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle burst phase' },
+    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator Heavy ATK DMG Amp' },
+  ],
+  'Qiuyuan': [
+    { type: 'Intro', skill: 'Attack the Must-Defend' },
+    { type: 'Skill', skill: 'Through the Groves', note: 'or hold for Undaunted Wayfarer' },
+    { type: 'Basic ATK', skill: 'Stage 1-3', note: 'transitions into Inkwash form' },
+    { type: 'Forte', skill: 'Inkwash 1-4', note: 'main Inkwash-form combo' },
+    { type: 'Forte', skill: 'To Teach / To Save / To Sacrifice', note: 'Heavy ATK finisher, pick based on situation' },
+    { type: 'Liberation', skill: 'Sundering Strike', duration: 30, note: 'Ultimate nuke' },
+    { type: 'Outro', skill: 'Strike Before Ready', duration: 14, note: 'grants next Resonator Echo Skill DMG Amp' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -1996,9 +2029,17 @@ const RESONANCE_CHAIN_DATA = {
   'Cartethyia':   { s1: { critDmg: 40 }, s2: { basicDmg: 50, totalMult: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 40 }, s5: { totalMult: 15 }, s6: { totalMult: 25 } },
   'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
-  'Galbrena':     { s1: { critDmg: 40 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
+  'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
+  // Galbrena R-chain corrected 2026-08-16 via Prydwen/Game8: s1 max Afterflame Crit DMG scaling (+2%/pt, cap 80%, was 40);
+  // s2 Burning Drive ATK Bonus amplified +350% more (20% base × 4.5 = 90% ATK while active, was unfounded totalMult:40);
+  // s3 Liberation DMG Mult +130% (was critRate:12, no basis); s4 team +20% All-Attr DMG on team Echo Skill cast (was heavyDmg:40, no basis);
+  // s5 Encroach/Ascent of Malice/Ravage DMG Mult +150% (was totalMult:15); s6 core Demon Hypostasis attacks DMG Mult +60% (was deepen:40).
   // Iuno S1: ATK+40% during Lunar Cycle (not heavyDmg)
-  'Iuno':         { s1: { atkPct: 40 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
+  'Iuno':         { s1: { atkPct: 40 }, s2: { allDmg: 40 }, s3: { libDmg: 65 }, s4: { totalMult: 15 }, s5: { libDmg: 20 }, s6: { heavyDmg: 1600 } },
+  // Iuno R-chain corrected 2026-08-16 via Prydwen/Game8: s1 +40% ATK in Lunar Cycle confirmed correct;
+  // s2 team +40% all DMG Amp at 10 Wan Light stacks (was atkPct:15, wrong stat/value); s3 +65% DMG Amp on Moonbow Basic/Arc Beyond the Edge (was libDmg:25);
+  // s4 Absolute Fullness grants team Shield = 160% ATK — no direct DPS stat, totalMult fallback (was heavyDmg:40, no basis);
+  // s5 +20% Liberation DMG Bonus (was totalMult:15); s6 Absolute Fullness DMG Multiplier +1600% (was deepen:25, no basis).
   // Sigrika (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +70% DMG mult to specific skills (rotation-averaged).
   // S2: Learn My True Name DMG Mult+120% (considered Echo Skill DMG) — was totalMult:40, no basis. S3: Innate Gift? stack
   // cap 2->4, no flat %, was critRate:12 with no basis — kept as totalMult. S4: team ATK+20% on ally Echo Skill cast —
@@ -2041,7 +2082,10 @@ const RESONANCE_CHAIN_DATA = {
   'Yinlin':       { s1: { elemDmg: 10 }, s2: { resShred: 10 }, s3: { totalMult: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 15 } },
   'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 40 } },
   'Zhezhi':       { s1: { coordDmg: 10 }, s2: { totalMult: 15 }, s3: { coordDmg: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { coordDmg: 40 } },
-  'Qiuyuan':      { s1: { echoDmg: 10 }, s2: { totalMult: 15 }, s3: { echoDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { echoDmg: 40 } },
+  'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
+  // Qiuyuan R-chain corrected 2026-08-16 via Prydwen/Game8: s1 +20% Crit Rate + uninterruptible Heavy ATKs (was echoDmg:10, wrong stat);
+  // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
+  // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
   // 4★ + missing characters
   'Jianxin':      { s1: { atkPct: 8 }, s2: { deepen: 8 }, s3: { defShred: 5 }, s4: { atkPct: 8 }, s5: { totalMult: 10 }, s6: { deepen: 12 } },
   'Rover':        { s1: { elemDmg: 8 }, s2: { skillDmg: 12 }, s3: { critRate: 8 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 10, deepen: 15 } },
