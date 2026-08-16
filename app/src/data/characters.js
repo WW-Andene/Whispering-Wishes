@@ -1820,8 +1820,14 @@ const RESONANCE_CHAIN_DATA = {
   'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit. S3: Heavy ATK mult+160% (confirmed), Glacio Bite scaling at 2 stacks (scaled down)
   'Hiyuki':       { s1: { libDmg: 80 }, s2: { libDmg: 60 }, s3: { heavyDmg: 100 }, s4: { atkPct: 15 }, s5: { skillDmg: 60 }, s6: { critDmg: 100 } },
-  // Lucy S3: Override DMG Mult+50% + Crit DMG+100% on Liberation (confirmed exact). S4: team +20% All-Attr DMG on Hack-Shifting (confirmed)
-  'Lucy':         { s1: { atkPct: 20 }, s2: { heavyDmg: 60 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Lucy S2 (confirmed via Nanoka/Prydwen 2026-08-16 cross-check, was an unverified heavyDmg:60 previously): raises
+  // Heavy Attack - Multi-threading's SQL DMG Mult from 270% to 560% (conditional, only on SQL-consuming casts), grants
+  // +32 starting RAM (from 24), and adds a separate flat extra hit worth 450% ATK as Heavy DMG after Pulse Interference.
+  // None of this reduces to a flat always-on heavyDmg% (calcEngine.js applies heavyDmg unconditionally to every Heavy
+  // ATK instance, which the real effect isn't), so it's modeled via totalMult like other complex/conditional S2 nodes.
+  // S3: Override DMG Mult+50% + Crit DMG+100% on Liberation (confirmed exact). S4: team +20% All-Attr DMG on
+  // Hack-Shifting (confirmed)
+  'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 30 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Rebecca S2: team +20% All-Attribute DMG on Intro/Lib (confirmed exact). S3: Liberation DMG Mult+60% (confirmed exact)
   'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: { totalMult: 15 }, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere)
