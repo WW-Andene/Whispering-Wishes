@@ -441,7 +441,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {CHARACTER_ROTATIONS[name] && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                <RotateCw size={14} className={colors.text} /> Rotation
+                <RotateCw size={14} className={colors.text} /> Standard Rotation
                 <span className="text-sm text-gray-500 font-normal ml-auto">Solo, one loop</span>
               </h3>
               <div className="space-y-0.5">
