@@ -417,10 +417,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
                   };
                   return (
-                    <div key={i} className={`flex items-start gap-1.5 px-2 py-1 rounded ${typeBg[type] || 'bg-white/5'}`}>
+                    <div key={i} className={`flex flex-wrap items-start gap-x-1.5 gap-y-0.5 px-2 py-1 rounded ${typeBg[type] || 'bg-white/5'}`}>
                       <span className={`text-sm font-medium w-14 shrink-0 pt-0.5 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
-                      <span className="text-sm text-gray-200 font-medium min-w-0 shrink-0">{skillName}</span>
-                      <span className="text-sm text-gray-400 ml-auto text-right pl-1">{mult}</span>
+                      <span className="text-sm text-gray-200 font-medium min-w-0 break-words">{skillName}</span>
+                      <span className="text-sm text-gray-400 ml-auto text-right pl-1 min-w-0 break-words">{mult}</span>
                     </div>
                   );
                 })}
