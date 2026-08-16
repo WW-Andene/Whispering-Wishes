@@ -292,7 +292,7 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Reminiscence: Threnodian - Voidborne Construct', 'Wishes of Quiet Snowfall 5pc'], bestWeapon: 'Frostburn',
     teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
-  'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
+  'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG + Chafe) via Resonance Skill, culminating in a team-wide All DMG Amplification through her Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Flowborne Dream' },
@@ -1811,7 +1811,7 @@ const SKILL_MULTIPLIERS = {
 // Sources: Game8 sequence nodes, Prydwen, wutheringlab, cross-verified Apr 2026
 const RESONANCE_CHAIN_DATA = {
   // Suisui S2: team Crit DMG+50% conditional on negative-status/Havoc Bane trigger. S5: Drizzle Basic/Heavy DMG+100% (scaled down, secondary to healing role). S6: Crit DMG+500% on rare Intro/Skill triggers (scaled down)
-  'Suisui':       { s1: { totalMult: 5 }, s2: { critDmg: 30 }, s3: { totalMult: 5 }, s4: { deepen: 10 }, s5: { basicDmg: 25 }, s6: { critDmg: 25 } },
+  'Suisui':       { s1: { totalMult: 5 }, s2: { critDmg: 50 }, s3: { totalMult: 5 }, s4: { deepen: 10 }, s5: { basicDmg: 25 }, s6: { critDmg: 25 } },
   // Qingxiao S2: Heavy ATK mult+40% (confirmed). S3: Liberation Crit DMG+100% (confirmed). S4: ATK+20% on team Tune Strain trigger. S5: Skill mult+100% (confirmed)
   'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
   // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
