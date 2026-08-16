@@ -257,7 +257,7 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Combustor' },
     bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'], bestWeapon: 'Skull Thrasher',
     teams: ['Rebecca + Yangyang: Xuanling + Suisui', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
-  'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support',
+  'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'President of Startorch Academy. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
     ascension: { boss: "Suncoveter's Reach", common: 'Mech Core', specialty: 'Forget-Me-Not' },
@@ -509,7 +509,7 @@ const CHARACTER_DATA = {
   ['Lucy',          11025, 425, 1148, 150],
   ['Yangyang: Xuanling', 11025, 425, 1149, 150],
   ['Denia',         11025, 425, 1148, 150],
-  ['Lucilla',       12237, 375, 1197, 150],
+  ['Lucilla',       12238, 375, 1198, 150],
   ['Hiyuki',        10300, 462, 1112, 125],
   ['Suisui',        16713, 288, 1100, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
@@ -891,7 +891,7 @@ const CHAR_BUFF_TABLE = {
   'Lucilla': {
     outroBuffs: [{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critRate', value: 20, target: 'self', duration: 30, condition: 'Resonance Chain 1' }],
+    selfBuffs: [{ stat: 'critRate', value: 20, target: 'self', duration: 10, condition: 'Resonance Chain 1' }],
     debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio mode, Inherent Skill' }],
     note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s).',
   },
@@ -1826,8 +1826,9 @@ const RESONANCE_CHAIN_DATA = {
   'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: { totalMult: 15 }, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere)
   'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 50 }, s6: { elemDmg: 60 } },
-  // Lucilla S2: Glacio Chafe DMG Amp+80% / Echo Skill DMG+40% depending on mode (averaged). S6: Letting It Go DMG+200%/stack up to 600% (scaled)
-  'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 60 }, s4: { atkPct: 20 }, s5: { basicDmg: 30 }, s6: { libDmg: 100 } },
+  // Lucilla S2: Glacio Chafe DMG Amp+80% / Echo Skill DMG+40% depending on mode (averaged). S3: Letting It Go DMG+100% (confirmed exact).
+  // S4: ATK+10%/stack up to 3 stacks = +30% (confirmed exact). S5: Oblivion DMG+50% (confirmed exact). S6: Letting It Go DMG+200%/stack up to 600% (scaled)
+  'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 100 }, s4: { atkPct: 30 }, s5: { basicDmg: 50 }, s6: { libDmg: 100 } },
   // Camellya S1: +28% CD after Intro (confirmed exact). S3: ATK+58% in Budding. S4: team Basic ATK DMG+25%
   'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 40 }, s3: { atkPct: 58, totalMult: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
   // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
