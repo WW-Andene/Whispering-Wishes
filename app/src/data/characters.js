@@ -1263,16 +1263,16 @@ const CHAR_BUFF_TABLE = {
 // Source: game8.co character pages (Aemeath/Luuk Herssen/Lynae/Mornye/Chisa cross-checked against ww.nanoka.cc "Skill Attributes (Lv.10)" 2026-08-15)
 const SKILL_MULTIPLIERS = {
   'Suisui': [
-    ['Basic ATK', 'Zephyr Stance Stage 1-4', '63.15% → 61.00%×2 → 41.80%×2+55.74% → 79.53%+15.91%×5'],
-    ['Mid-air', 'Zephyr Stance', '70.72%'],
-    ['Basic ATK', 'Drizzle Stance Stage 1-4', '19.57%×4 → 31.81%×3+15.91%×4 → 13.76%×12 → 159.05%'],
-    ['Skill', 'Zephyr Stance thrust', '23.86%×6'],
-    ['Skill', 'Awakening Spring', '28.63% Max HP'],
-    ['Skill', 'Drizzle Stance thrust', '11.93%×6+71.58%'],
-    ['Heavy ATK', 'Drizzle Stance', '11.93%×10+119.29%'],
-    ['Liberation', 'Song of Thoroughfare', 'Field effect — no direct DMG, team Negative Status stack cap +3'],
-    ['Intro', 'Tinkling Jade', '28.63% Max HP'],
-    ['Outro', 'Rippling Waters', '25% All DMG Amp (30s) + stance-consumption team buffs'],
+    ['Basic ATK', 'Zephyr Stance Stage 1-4', '63.15% → 61.00%×2 → 41.80%×2+55.74% → 79.53%+15.91%×5', 'Zephyr (healing stance) combo; builds Cloud Breath.'],
+    ['Mid-air', 'Zephyr Stance', '70.72%', 'Airborne plunge in Zephyr Stance.'],
+    ['Basic ATK', 'Drizzle Stance Stage 1-4', '19.57%×4 → 31.81%×3+15.91%×4 → 13.76%×12 → 159.05%', 'Drizzle (DMG stance) combo; builds Floral Epistle.'],
+    ['Skill', 'Zephyr Stance thrust', '23.86%×6', 'Restores Cloud Breath toward Awakening Spring.'],
+    ['Skill', 'Awakening Spring', '28.63% Max HP', 'At max Cloud Breath: switches to Drizzle Stance.'],
+    ['Skill', 'Drizzle Stance thrust', '11.93%×6+71.58%', 'Restores Floral Epistle toward her Outro payoff.'],
+    ['Heavy ATK', 'Drizzle Stance', '11.93%×10+119.29%', 'Drizzle Stance Heavy ATK, builds Floral Epistle.'],
+    ['Liberation', 'Song of Thoroughfare', 'Field effect — no direct DMG, team Negative Status stack cap +3', 'Ultimate: raises team Negative Status stack caps.'],
+    ['Intro', 'Tinkling Jade', '28.63% Max HP', 'Opener that enters Drizzle Stance.'],
+    ['Outro', 'Rippling Waters', '25% All DMG Amp (30s) + stance-consumption team buffs', 'Buffs team All DMG; more Floral Epistle = bigger payoff.'],
   ],
   'Qingxiao': [
     ['Basic ATK', 'Stringblade Stage 1-4', '30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4'],
@@ -1296,14 +1296,14 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Rising Fortune and Ebbing Evil', '795% ATK'],
   ],
   'Yangyang: Xuanling': [
-    ['Basic ATK', 'Azure/Feather Stance Stage 1-4', '47.72% → 20.14%×2+60.41% → 30.21%+70.48% → 18.57%×2+148.49% (Azure) / 39.77%×2 → 33.56%×3 → 14.86%+7.43%×3+37.14% → 71.58%×2+95.43% (Feather)'],
-    ['Skill', 'Sword Stance Switch', '69.95%+15.55%×3 (Azure) / 33.56%×3 (Feather)'],
-    ['Heavy ATK', 'Azure Sword Stance', '135.16%×2+180.21%'],
-    ['Heavy ATK', 'Feather Sword Stance', '21.71%+195.34%'],
-    ['Liberation', 'Hush of a Thousand Voices', '1988.10%'],
-    ['Forte', 'Shadow of Xuanling', '337.98% ATK (summon proc)'],
-    ['Intro', 'Skybound Feather', '116.59%'],
-    ['Outro', 'As the Wind Wills', '300% ATK + team Havoc DMG buff'],
+    ['Basic ATK', 'Azure/Feather Stance Stage 1-4', '47.72% → 20.14%×2+60.41% → 30.21%+70.48% → 18.57%×2+148.49% (Azure) / 39.77%×2 → 33.56%×3 → 14.86%+7.43%×3+37.14% → 71.58%×2+95.43% (Feather)', 'Combo in either stance; Stage 4 applies Havoc Bane.'],
+    ['Skill', 'Sword Stance Switch', '69.95%+15.55%×3 (Azure) / 33.56%×3 (Feather)', 'Swaps between Azure and Feather Sword Stance.'],
+    ['Heavy ATK', 'Azure Sword Stance', '135.16%×2+180.21%', 'Big cyclone hit once Azure Plume is maxed.'],
+    ['Heavy ATK', 'Feather Sword Stance', '21.71%+195.34%', 'Empowered hit once Azure Plume is maxed.'],
+    ['Liberation', 'Hush of a Thousand Voices', '1988.10%', 'Ultimate nuke, maxes Havoc Bane on hit.'],
+    ['Forte', 'Shadow of Xuanling', '337.98% ATK (summon proc)', 'Bonus summon hit on her next stance-swap Skill.'],
+    ['Intro', 'Skybound Feather', '116.59%', 'Opener that applies Havoc Bane.'],
+    ['Outro', 'As the Wind Wills', '300% ATK + team Havoc DMG buff', "Buffs other Havoc Bane appliers' DMG."],
   ],
   'Hiyuki': [
     ['Basic ATK', 'Present Self Stage 1-3', '37.72%×2 → 90.25% → 4.92%×5+98.37%', 'Standard combo; applies Glacio Chafe.'],
@@ -1869,6 +1869,22 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: "Rewritten in Winter's Margins", duration: 25, note: 'nuke, stronger with more Aureole stacks' },
     { type: 'Outro', skill: 'Bow to the Last Light' },
   ],
+  'Suisui': [
+    { type: 'Intro', skill: 'Tinkling Jade', note: 'enters Drizzle Stance' },
+    { type: 'Skill', skill: 'Drizzle Stance thrust', note: 'builds Floral Epistle' },
+    { type: 'Basic ATK', skill: 'Drizzle Stance Stage 1-4', note: 'full chain to max Floral Epistle' },
+    { type: 'Liberation', skill: 'Song of Thoroughfare', duration: 30, note: 'deploys Ceaseless Landscape' },
+    { type: 'Outro', skill: 'Rippling Waters', duration: 30, note: 'buffs team All DMG; scales with Floral Epistle spent' },
+  ],
+  'Yangyang: Xuanling': [
+    { type: 'Intro', skill: 'Skybound Feather' },
+    { type: 'Basic ATK', skill: 'Azure/Feather Stance Stage 1-4', note: 'Azure stance combo, applies Havoc Bane' },
+    { type: 'Skill', skill: 'Sword Stance Switch', note: 'swaps to Feather Stance' },
+    { type: 'Heavy ATK', skill: 'Feather Sword Stance', note: 'at max Azure Plume' },
+    { type: 'Liberation', skill: 'Hush of a Thousand Voices', note: 'consumes all Melody for a nuke' },
+    { type: 'Heavy ATK', skill: 'Azure Sword Stance', note: 'swap back to Azure for a 2nd Heavy finisher' },
+    { type: 'Outro', skill: 'As the Wind Wills', duration: 20 },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -1878,14 +1894,18 @@ const CHARACTER_ROTATIONS = {
 // totalMult = rotation-averaged DPS contribution for utility/multiplier nodes
 // Sources: Game8 sequence nodes, Prydwen, wutheringlab, cross-verified Apr 2026
 const RESONANCE_CHAIN_DATA = {
-  // Suisui S2: team Crit DMG+50% conditional on negative-status/Havoc Bane trigger. S5: Drizzle Basic/Heavy DMG+100% (scaled down, secondary to healing role). S6: Crit DMG+500% on rare Intro/Skill triggers (scaled down)
-  'Suisui':       { s1: { totalMult: 5 }, s2: { critDmg: 50 }, s3: { totalMult: 5 }, s4: { deepen: 10 }, s5: { basicDmg: 25 }, s6: { critDmg: 25 } },
+  // Suisui S2: team Crit DMG+50% conditional on negative-status/Havoc Bane trigger. S4: Enrichment/Spring's Birth healing
+  // +50% (not a DPS stat — was miscategorized as deepen:10 with no basis, kept as totalMult since no heal-bonus stat
+  // exists in this schema). S5: Drizzle Basic/Heavy DMG+100% (scaled down, secondary to healing role). S6: Crit DMG+500%
+  // on rare Intro/Skill triggers (scaled down)
+  'Suisui':       { s1: { totalMult: 5 }, s2: { critDmg: 50 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { basicDmg: 25 }, s6: { critDmg: 25 } },
   // Qingxiao S2: Heavy ATK mult+40% (confirmed). S3: Liberation Crit DMG+100% (confirmed). S4: ATK+20% on team Tune Strain trigger. S5: Skill mult+100% (confirmed)
   'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
   // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
   'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
-  // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Liberation DMG+175% (scaled)
-  'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Hush of a Thousand Voices
+  // Liberation DMG+175% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 80, didn't match comment or kit)
+  'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { libDmg: 175 }, s4: { atkPct: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit. S3: Heavy ATK mult+160% (confirmed), Glacio Bite scaling at 2 stacks (scaled down)
   'Hiyuki':       { s1: { libDmg: 80 }, s2: { libDmg: 60 }, s3: { heavyDmg: 100 }, s4: { atkPct: 15 }, s5: { skillDmg: 60 }, s6: { critDmg: 100 } },
   // Lucy S2 (confirmed via Nanoka/Prydwen 2026-08-16 cross-check, was an unverified heavyDmg:60 previously): raises
