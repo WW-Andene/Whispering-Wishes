@@ -75,16 +75,18 @@ const BANNER_HISTORY = [
   // history entry since it isn't a standard per-phase character/weapon banner.
   { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: PLACEHOLDER_IMAGE },
   { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/QFHC5Y4h/Yangyang-Xuanling-banner.jpg' },
-  // Version 3.4 (Somnoire: Night City region) — dates estimated from the 3.3->3.5 boundary
-  // (3.3 ended ~June 10, 3.5 began July 10, giving 3.4 a ~30-day cycle vs. the usual ~40).
-  // Characters, weapons, and materials all confirmed via prydwen.gg + game8.co (character-to-phase
-  // pairing below is a reasonable reconstruction — 2 chars/phase, matching the app's usual pattern —
-  // exact phase split itself is not separately confirmed, only the overall v3.4 cast and their kits).
-  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucy', 'Rover'], weapons: ['Spectral Trigger'], startDate: '2026-06-30', endDate: '2026-07-10', bannerArt: 'https://i.ibb.co/mC4xmBYY/Lucy-Banner.jpg', predicted: true },
-  { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Rebecca', 'Lucilla'], weapons: ['Skull Thrasher', 'Freeze Frame'], startDate: '2026-06-10', endDate: '2026-06-30', bannerArt: 'https://i.ibb.co/Ps7MZMhB/Rebecca-banner.jpg', predicted: true },
-  // Version 3.3
-  { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia'],  weapons: [], startDate: '2026-05-20', endDate: '2026-06-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg' },
-  { id: 'v3.3-p1', version: '3.3', phase: 1, characters: ['Hiyuki'], weapons: [], startDate: '2026-04-29', endDate: '2026-05-20', bannerArt: 'https://i.ibb.co/Gf7F9h12/hiyuki-banner.jpg' },
+  // Version 3.4 (Somnoire: Night City region) — corrected via game8.co archive 494979 (official Banner
+  // History, fetched 2026-08-16): Phase 1 was "Dreaming Upon the Moon"/"Rekindled Embers of Rage"
+  // (Lucy + Rebecca dual-debut, Jun 8 - Jul 9). Phase 2 ran two concurrent character banners: "Tomorrow
+  // in the Frame" (Lucilla debut, Jun 13 - Jul 9) and "Dance in The Storm's Wake" (Cartethyia rerun,
+  // Jun 18 - Jul 9) — merged into one entry below since both share the v3.4/phase-2 slot.
+  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucilla', 'Cartethyia'], weapons: ['Freeze Frame', "Defier's Thorn"], startDate: '2026-06-13', endDate: '2026-07-09', bannerArt: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg' },
+  { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Lucy', 'Rebecca'], weapons: ['Spectral Trigger', 'Skull Thrasher'], startDate: '2026-06-08', endDate: '2026-07-09', bannerArt: 'https://i.ibb.co/mC4xmBYY/Lucy-Banner.jpg' },
+  // Version 3.3 — corrected via game8.co archive 494979 (official Banner History, fetched 2026-08-16):
+  // Phase 1 debuted Hiyuki alongside Mornye + Iuno reruns; Phase 2 debuted Denia alongside Chisa +
+  // Phrolova reruns. Previously modeled as solo-character phases with no weapons, which was inaccurate.
+  { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia', 'Chisa', 'Phrolova'], weapons: ['Forged Dwarf Star', 'Kumokiri', 'Lethean Elegy'], startDate: '2026-05-21', endDate: '2026-06-07', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg' },
+  { id: 'v3.3-p1', version: '3.3', phase: 1, characters: ['Hiyuki', 'Mornye', 'Iuno'], weapons: ['Frostburn', 'Starfield Calibrator', "Moongazer's Sigil"], startDate: '2026-04-30', endDate: '2026-05-21', bannerArt: 'https://i.ibb.co/Gf7F9h12/hiyuki-banner.jpg' },
   // Version 3.2
   { id: 'v3.2-p2', version: '3.2', phase: 2, characters: ['Lynae', 'Zani', 'Phoebe'], weapons: ['Spectrum Blaster', 'Blazing Justice', 'Luminous Hymn'], startDate: '2026-04-09', endDate: '2026-04-29', bannerArt: 'https://i.ibb.co/h1Kwq7Vj/lynae-banner.jpg' },
   { id: 'v3.2-p1', version: '3.2', phase: 1, characters: ['Sigrika', 'Qiuyuan'], weapons: ['Solsworn Ciphers', 'Emerald Sentence'], startDate: '2026-03-19', endDate: '2026-04-09', bannerArt: 'https://i.ibb.co/DHJ2YMTM/sigrika-banner.jpg' },
