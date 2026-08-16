@@ -4,8 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
@@ -436,7 +436,46 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </div>
             )}
           </div>
-          
+
+          {/* Solo Rotation ("in a vacuum") — reusable base steps, adaptable later in the Team tab */}
+          {CHARACTER_ROTATIONS[name] && (
+            <div>
+              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+                <RotateCw size={14} className={colors.text} /> Rotation
+                <span className="text-sm text-gray-500 font-normal ml-auto">Solo, one loop</span>
+              </h3>
+              <div className="space-y-0.5">
+                {CHARACTER_ROTATIONS[name].map((step, i) => {
+                  const typeColors = {
+                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
+                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
+                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
+                  };
+                  // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
+                  // used above, so Team tab can resolve the same step against the same table later.
+                  const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
+                  const dmg = row?.[2];
+                  return (
+                    <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded bg-white/5">
+                      <span className="text-sm font-medium text-gray-600 shrink-0 w-4 text-right">{i + 1}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline gap-x-1.5">
+                          <span className={`text-sm font-medium shrink-0 ${typeColors[step.type] || 'text-gray-400'}`}>{step.type}</span>
+                          <span className="text-sm text-white font-semibold break-words">{step.skill}</span>
+                          {dmg && <span className={`text-sm font-semibold break-words ${colors.text}`}>{dmg}</span>}
+                          {step.duration != null && (
+                            <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
+                          )}
+                        </div>
+                        {step.note && <div className="text-xs text-gray-500 break-words mt-0.5 italic">{step.note}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Ascension Materials (Lv 1→90) */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">

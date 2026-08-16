@@ -1803,6 +1803,74 @@ const SKILL_MULTIPLIERS = {
   ],
 };
 
+// [SECTION:CHARACTER_ROTATIONS] — Solo ("in a vacuum") rotation, one loop, no team-specific cancels/swaps.
+// Each step's `type` + `skill` are matched against SKILL_MULTIPLIERS[name] (type === step.type, name.includes(step.skill))
+// to look up its DMG multiplier at render time — single source of truth, no duplicated numbers to drift out of sync.
+// `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
+// Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
+const CHARACTER_ROTATIONS = {
+  'Lucilla': [
+    { type: 'Intro', skill: 'Clip It' },
+    { type: 'Skill', skill: 'Phantom Frame', note: 'hold to perfect Spotlight' },
+    { type: 'Liberation', skill: 'Clear As Day', duration: 10, note: 'enters Reminiscence, +30% Basic ATK DMG' },
+    { type: 'Basic ATK', skill: 'Snapshot', note: 'Tracing Forms into Letting It Go finisher' },
+    { type: 'Outro', skill: 'Montage', duration: 30, note: 'Chafe mode: Glacio Chafe DMG Amp to team' },
+  ],
+  'Rebecca': [
+    { type: 'Intro', skill: "Yo, It's Big Boomin' Time!" },
+    { type: 'Basic ATK', skill: "Mix-'n'-Match", note: 'Guts stance combo, builds Fervor' },
+    { type: 'Skill', skill: "It's Big Boomin' Time!", note: 'swaps to Huntress stance' },
+    { type: 'Heavy ATK', skill: 'Rat-tat-tat!: Huntress', note: 'Forte finisher at max Fervor' },
+    { type: 'Liberation', skill: "Party 'til Dawn!", duration: 9.5, note: 'channeled Mk. 31 HMG into Boom! Fireworks' },
+    { type: 'Outro', skill: 'Preem Choom', duration: 14 },
+  ],
+  'Lucy': [
+    { type: 'Intro', skill: 'Outdated Hallucination' },
+    { type: 'Skill', skill: 'Payload', note: 'builds TCP' },
+    { type: 'Skill', skill: 'Deadlock', note: 'at max TCP, enters Algorithm Compaction' },
+    { type: 'Heavy ATK', skill: 'Multi-threading', note: 'consumes SQL for bonus DMG' },
+    { type: 'Liberation', skill: 'Netrunner: Override', duration: 10, note: 'mark + detonate with Spoofing Programs' },
+    { type: 'Outro', skill: 'Countermeasure Program', duration: 14 },
+  ],
+  'Denia': [
+    { type: 'Intro', skill: "It's Been A While!" },
+    { type: 'Skill', skill: 'Phantom Bubble', note: 'Stagecraft Form' },
+    { type: 'Liberation', skill: 'Final Act: Stagecraft Form', duration: 12, note: 'switches to Breakdown Form' },
+    { type: 'Skill', skill: 'Banish', note: 'Breakdown Form, consumes Dark Cores' },
+    { type: 'Liberation', skill: 'Final Act: Breakdown Form', note: '2nd Ultimate, switches back to Stagecraft' },
+    { type: 'Forte', skill: 'Erosion Field', duration: 30 },
+    { type: 'Outro', skill: 'Unfinished Lies', duration: 30, note: 'Fusion Burst mode' },
+  ],
+  'Hiyuki': [
+    { type: 'Intro', skill: 'Frostedge' },
+    { type: 'Basic ATK', skill: 'Present Self Stage 1-3', note: 'builds Dedication' },
+    { type: 'Heavy ATK', skill: 'Frost Splinter: Present Self', note: 'unlocks Ultimate at max Dedication' },
+    { type: 'Liberation', skill: 'Foreclaiming: Inward Vision', note: 'enters Foreclaimed Self' },
+    { type: 'Basic ATK', skill: 'Foreclaimed Self Stage 1-5', note: 'builds Frostheart, then Iai Stance' },
+    { type: 'Heavy ATK', skill: 'Bitterfrost: Foreclaimed Self', note: 'builds Snowforged Blade' },
+    { type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', note: '2nd Ultimate finisher' },
+    { type: 'Outro', skill: 'Snowlight Blessing', duration: 20 },
+  ],
+  'Sigrika': [
+    { type: 'Intro', skill: 'Solsworn Etymology' },
+    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'full chain generates a Rune' },
+    { type: 'Basic ATK', skill: 'Elucidated', note: 'Decipher-state finisher' },
+    { type: 'Forte', skill: 'Runic Outburst', note: 'Heavy ATK consuming 2 Runes' },
+    { type: 'Liberation', skill: 'Where Trust Leads Me!', note: 'grants a bonus Rune' },
+    { type: 'Forte', skill: 'Learn My True Name', note: 'at max Full Stop' },
+    { type: 'Outro', skill: 'In This Very Moment', duration: 30 },
+  ],
+  'Luuk Herssen': [
+    { type: 'Intro', skill: 'Before Injection of Dawn' },
+    { type: 'Mid-air', skill: 'Scythe: Resection Stage 2-3', note: 'airborne combo' },
+    { type: 'Skill', skill: 'Aureole of Execution', note: 'Ring → Breach → Glare over 3 casts' },
+    { type: 'Skill', skill: 'Basic Attack - Golden Impale', note: 'follow-up after Ring/Breach' },
+    { type: 'Forte', skill: 'Gavel of Earthshaker', note: 'plunge attack after Glare' },
+    { type: 'Liberation', skill: "Rewritten in Winter's Margins", duration: 25, note: 'nuke, stronger with more Aureole stacks' },
+    { type: 'Outro', skill: 'Bow to the Last Light' },
+  ],
+};
+
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
 // Format: { s1-s6: { stat: value } } — each level adds ON TOP of previous
 // Stat types must match damage formula: atkPct, critRate, critDmg, elemDmg, skillDmg,
@@ -1979,6 +2047,7 @@ export {
   CHARACTER_DATA,
   CHAR_BUFF_TABLE,
   SKILL_MULTIPLIERS,
+  CHARACTER_ROTATIONS,
   RESONANCE_CHAIN_DATA,
   RELEASE_ORDER,
   ALL_CHARACTERS,
