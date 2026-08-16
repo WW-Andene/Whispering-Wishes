@@ -231,11 +231,11 @@ const CHARACTER_DATA = {
     teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia'] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles Aureole of Execution's three enhanced forms and deals bonus Total DMG by responding to Tune Strain - Interfered.",
-    skills: ['Such is Light', 'Reunion of All the Fallen', 'Rewritten in Winter\'s Margins', 'Spark from the Frost'],
+    skills: ['Such is Light', 'Reunion of All the Fallen', 'Rewritten in Winter\'s Margins', 'Before Injection of Dawn'],
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Pendant', specialty: 'Edelschnee' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Twin Nova - Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
-    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Lynae + Sanhua'] },
+    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between Tune Rupture and Fusion Burst Resonance Modes, dealing massive Resonance Liberation DMG through Seraphic Duet and Heavenfall Edict.',
     skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'To Sculpt the Silence'],
@@ -245,11 +245,11 @@ const CHARACTER_DATA = {
     teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye'] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
-    skills: ['One, Two, Three', 'Royan Close Quarters Combat', 'Where Trust Leads Me!', 'Within Infinity\'s Embrace'],
+    skills: ['One, Two, Three', 'Royan Close Quarters Combat', 'Where Trust Leads Me!', 'Solsworn Etymology'],
     ascension: { boss: 'Our Choice', common: 'Exoswarm Pendant', specialty: 'Arithmetic Shell' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
-    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Ciaccona + Shorekeeper'] },
+    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Qiuyuan + Ciaccona'] },
   'Rebecca': { rarity: 5, element: 'Electro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Edgerunner and Fury-Type Arsenal from the Cyberpunk: Edgerunners collab. Electro Hybrid who mode-switches between Huntress and Guts stances, buffing team Heavy ATK DMG and All DMG Amplification via her Outro turret.',
     skills: ["Mix-'n'-Match", "Tactical Tweaks", "Party 'til Dawn!", "My Turn!"],
@@ -674,7 +674,7 @@ const CHARACTER_DATA = {
 // Best placement across DPS/Hybrid/Support roles. T0 = best, T4 = worst.
 [
   ['Aemeath',       'T0',   'T0.5'],
-  ['Sigrika',       'T0',   'T0.5'],
+  ['Sigrika',       'T0',   'T0'],
   ['Ciaccona',      'T0',   'T1'],
   ['Lupa',          'T0',   'T0.5'],
   ['Lynae',         'T0',   'T0.5'],
@@ -1650,14 +1650,14 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Binary Butterfly', '+15% All DMG Amp (30s)'],
   ],
   'Sigrika': [
-    ['Basic ATK', 'Stage 1-4', '26.6% → 50.6% → 56% → 104%'],
-    ['Basic ATK', 'Elucidated', '30.9%×3 + 61.9%'],
-    ['Skill', 'BOOMY BOOM!', '14.4%×3 + 28.8%'],
-    ['Skill', 'BIG BOOMY BOOM!', '14.5%×4 + 86.9%'],
-    ['Forte', 'Runic Outburst', '59.2% + 103.6% + 133.2%'],
-    ['Forte', 'Learn My True Name', '152.4% + 457%'],
-    ['Liberation', 'Where Trust Leads Me!', '433.3%'],
-    ['Intro', 'Solsworn Etymology', '82.2%'],
+    ['Basic ATK', 'Stage 1-4', '52.97% → 50.34%×2 → 33.41%×2+44.54% → 41.36%+51.70%×2+62.03%'],
+    ['Basic ATK', 'Elucidated', '61.56%×3+123.11%'],
+    ['Skill', 'BOOMY BOOM!', '28.63%×3+57.26%'],
+    ['Skill', 'BIG BOOMY BOOM!', '28.81%×4+172.85%'],
+    ['Forte', 'Runic Outburst', '117.67%+205.92%+264.75%'],
+    ['Forte', 'Learn My True Name', '302.87%+908.61%'],
+    ['Liberation', 'Where Trust Leads Me!', '861.43%'],
+    ['Intro', 'Solsworn Etymology', '163.42%'],
     ['Outro', 'In This Very Moment', '795%'],
   ],
   'Verina': [
@@ -1871,10 +1871,17 @@ const RESONANCE_CHAIN_DATA = {
   'Galbrena':     { s1: { critDmg: 40 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
   // Iuno S1: ATK+40% during Lunar Cycle (not heavyDmg)
   'Iuno':         { s1: { atkPct: 40 }, s2: { atkPct: 15 }, s3: { libDmg: 25 }, s4: { heavyDmg: 40 }, s5: { totalMult: 15 }, s6: { deepen: 25 } },
-  // Sigrika S1: +70% DMG mult to specific skills (rotation-averaged)
-  'Sigrika':      { s1: { totalMult: 15 }, s2: { totalMult: 40 }, s3: { critRate: 12 }, s4: { echoDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
-  // Luuk Herssen S1: +150% Mid-air ATK DMG. Simplified as basicDmg ~15 DPS impact
-  'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { totalMult: 40 }, s3: { critDmg: 25 }, s4: { basicDmg: 40 }, s5: { totalMult: 15 }, s6: { defIgnore: 15 } },
+  // Sigrika (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +70% DMG mult to specific skills (rotation-averaged).
+  // S2: Learn My True Name DMG Mult+120% (considered Echo Skill DMG) — was totalMult:40, no basis. S3: Innate Gift? stack
+  // cap 2->4, no flat %, was critRate:12 with no basis — kept as totalMult. S4: team ATK+20% on ally Echo Skill cast —
+  // was echoDmg:40 (wrong stat AND value). S5: Where Trust Leads Me! DMG Mult+30% (Liberation, counted as Echo Skill DMG) — was totalMult:15.
+  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 30 }, s6: { defIgnore: 15 } },
+  // Luuk Herssen (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +150% Mid-air ATK DMG, simplified as basicDmg
+  // ~15 DPS impact (documented approximation, kept). S2: Rewritten in Winter's Margins DMG Mult+60% — was totalMult:40, no basis.
+  // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
+  // basis, kept as totalMult. S4: team All DMG+20% (not Basic DMG) on ally Tune Break — was basicDmg:40 (wrong stat AND
+  // value). S6: Endnotes stacking grants Liberation DMG+40%/stack up to +120% — was defIgnore:15, no basis at all.
+  'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { libDmg: 60 }, s3: { totalMult: 15 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { libDmg: 120 } },
   // Lupa S1: CR+20% for 10s (not elemDmg)
   'Lupa':         { s1: { critRate: 20 }, s2: { totalMult: 40 }, s3: { atkPct: 15 }, s4: { deepen: 12 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
   // Supports — utility nodes represented as small totalMult DPS contributions
