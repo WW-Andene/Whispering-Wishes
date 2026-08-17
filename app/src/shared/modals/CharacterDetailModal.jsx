@@ -330,18 +330,38 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           })()}
 
           {/* Alternative Weapons — signature is data.bestWeapon above; this lists rarity-tiered fallbacks
-              when a character has weaponAlts (5★/4★/3★, each with at least one option). */}
+              when a character has weaponAlts (5★/4★/3★, each with at least one option). Same image +
+              stat-line treatment as the Recommended Weapon box above, just compact/row-based since there
+              can be several per tier. */}
           {data.weaponAlts && (
           <div className="kuro-detail-box">
             <div className="kuro-section-label mb-2">Alternative Weapons</div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {[['5★', data.weaponAlts.alt5], ['4★', data.weaponAlts.alt4], ['3★', data.weaponAlts.alt3]].filter(([, list]) => list?.length).map(([tier, list]) => (
-                <div key={tier} className="flex items-start gap-2">
-                  <span className="kuro-badge kuro-badge-neutral shrink-0 mt-0.5">{tier}</span>
-                  <div className="flex flex-wrap gap-1">
+                <div key={tier}>
+                  <div className="text-sm text-gray-500 mb-1.5">{tier}</div>
+                  <div className="space-y-1.5">
                     {list.map((w, i) => {
+                      const wd = WEAPON_DATA[w];
+                      const wImg = DEFAULT_COLLECTION_IMAGES[w];
                       const owned = ownsWeapon(w);
-                      return <span key={i} className={`kuro-badge ${owned ? 'kuro-badge-yellow' : 'kuro-badge-gray'}`}>{w}{!owned && ' ✗'}</span>;
+                      return (
+                        <div key={i} className={`flex items-center gap-2.5 p-1.5 rounded-lg ${owned ? 'bg-white/[0.03]' : 'bg-white/[0.015]'}`} style={!owned ? { opacity: 0.55 } : undefined}>
+                          {wImg ? (
+                            <div className={`w-10 h-10 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${owned && wd?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
+                              <img src={wImg} alt={w} className="w-full h-full object-cover" onError={hideOnError} />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center flex-shrink-0">
+                              <Sparkles size={12} className="text-gray-600" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-semibold truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{w}{!owned && ' (Not Owned)'}</div>
+                            {wd && <div className="text-xs text-gray-500 truncate">{wd.type} • {wd.stat}{wd.subStatValue ? ` ${wd.subStatValue}` : ''}</div>}
+                          </div>
+                        </div>
+                      );
                     })}
                   </div>
                 </div>
