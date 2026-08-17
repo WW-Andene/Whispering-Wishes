@@ -17,11 +17,10 @@ import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
-// Tags from data.combatRoles that duplicate other fields already shown in the Combat Profile box, so
-// they're hidden from the "Combat Role" badge row rather than repeating the same info twice.
-const COMBAT_ROLE_TAGS_HIDDEN = new Set([
-  'Main Damage Dealer', 'Support and Healer', // duplicate the data.role badge (Main DPS/Sub DPS/Healer)
-  'Basic Attack Damage', 'Heavy Attack Damage', 'Resonance Skill Damage', 'Resonance Liberation Damage', 'Echo Skill Damage', // duplicate Damage Focus
+// Damage-type tags in data.combatRoles that supersede the plain-text (iconless) data.dmgFocus badges —
+// when present, they replace Damage Focus entirely rather than being hidden behind it.
+const COMBAT_ROLE_DMG_TYPE_TAGS = new Set([
+  'Basic Attack Damage', 'Heavy Attack Damage', 'Resonance Skill Damage', 'Resonance Liberation Damage', 'Echo Skill Damage',
 ]);
 
 // Shared element color maps
@@ -231,49 +230,54 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           <div className="kuro-detail-box space-y-2">
             <div className="kuro-section-label">Combat Profile</div>
-            <div className="flex flex-wrap gap-1.5">
-              <span className={`kuro-badge font-medium border ${colors.border} ${colors.text} inline-flex items-center gap-1`} style={{ background: 'rgba(255,255,255,0.05)' }}>
-                {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                {data.element} DMG
-              </span>
-              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
-                {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                {data.weapon}
-              </span>
-              <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
-            </div>
-            {data.dmgFocus?.length > 0 && (
-              <div>
-                <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
-                <div className="flex flex-wrap gap-1">
-                  {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{df}</span>)}
-                </div>
-              </div>
-            )}
-            {/* Combat Role tags — DMG Amplification, Traction, Tune Rupture Response, Concerto Efficiency,
-                and similar mechanical/support tags from the character's infobox. Two categories from that
-                same raw tag list are deliberately excluded as redundant with fields already shown in this
-                box: "Main Damage Dealer"/"Support and Healer" duplicate the data.role badge above (Main
-                DPS/Sub DPS/Healer/...), and the raw damage-type tags ("Basic/Heavy Attack Damage",
-                "Resonance Skill/Liberation Damage", "Echo Skill Damage") duplicate Damage Focus above,
-                which already states which of the character's own actions deal damage. */}
+            {/* data.combatRoles (when audited) is the authoritative, iconed tag list straight from the
+                character's own infobox — it's a strict superset of the plain-text data.role/dmgFocus
+                fields below (e.g. "Main Damage Dealer" instead of the plain "Main DPS" role badge,
+                "Heavy Attack Damage"/"Resonance Liberation Damage" with icons instead of the plain
+                Damage Focus badges). So once combatRoles exists, it fully replaces those older iconless
+                duplicates rather than being hidden behind them — the plain fallbacks only render for
+                characters that haven't been audited into combatRoles yet. */}
             {(() => {
-              const roleTags = (data.combatRoles || []).filter(tag => !COMBAT_ROLE_TAGS_HIDDEN.has(tag));
-              return roleTags.length > 0 && (
-                <div>
-                  <div className="text-sm text-gray-400 mb-1">Combat Role</div>
+              const hasRoleTag = data.combatRoles?.some(t => t === 'Main Damage Dealer' || t === 'Support and Healer');
+              const hasDmgFocusTags = data.combatRoles?.some(t => COMBAT_ROLE_DMG_TYPE_TAGS.has(t));
+              return (
+                <>
                   <div className="flex flex-wrap gap-1.5">
-                    {roleTags.map((tag) => {
-                      const icon = getCombatRoleIcon(tag);
-                      return (
-                        <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
-                          {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
-                          {tag}
-                        </span>
-                      );
-                    })}
+                    <span className={`kuro-badge font-medium border ${colors.border} ${colors.text} inline-flex items-center gap-1`} style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                      {data.element} DMG
+                    </span>
+                    <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                      {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                      {data.weapon}
+                    </span>
+                    {!hasRoleTag && <span className="kuro-badge kuro-badge-neutral">{data.role}</span>}
                   </div>
-                </div>
+                  {!hasDmgFocusTags && data.dmgFocus?.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
+                      <div className="flex flex-wrap gap-1">
+                        {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{df}</span>)}
+                      </div>
+                    </div>
+                  )}
+                  {data.combatRoles?.length > 0 && (
+                    <div>
+                      <div className="text-sm text-gray-400 mb-1">Combat Role</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {data.combatRoles.map((tag) => {
+                          const icon = getCombatRoleIcon(tag);
+                          return (
+                            <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                              {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
+                              {tag}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
               );
             })()}
             {data.statScaling && (
