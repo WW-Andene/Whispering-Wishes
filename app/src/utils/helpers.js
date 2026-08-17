@@ -212,6 +212,11 @@ const FACTION_ICONS = {
   // Added 2026-08-17 for Augusta's audit: Septimont is a city-state region of Rinascita (see
   // REGION_DATA's fix in characters.js) but also has its own dedicated emblem, used as her organization.
   'Septimont':             'https://i.ibb.co/0pV0d4Yg/septimont-emblem.webp',
+  // Added 2026-08-17 for Lucy's audit: her organization field is the nation Lahai-Roi itself (see
+  // characters.js's IDENTITY_DATA comment) — reuses the same Roya Frostlands Emblem asset as the
+  // REGION_ICONS entry below, matching the Black Shores dual-use precedent (a name that's both a
+  // nation and a faction shares one emblem rather than needing two).
+  'Lahai-Roi':             'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // In-game nation/region emblem icons, re-hosted on ibb.co. Same convention as FACTION_ICONS but for

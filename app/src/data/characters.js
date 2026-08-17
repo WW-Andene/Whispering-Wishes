@@ -580,6 +580,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Nightmare Flashdrive', common: 'Mech Core', specialty: 'Past Reveries' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Combustor' },
     bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'], bestWeapon: 'Skull Thrasher',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Lucy+Mornye team average): Spectrum
+    // Blaster (96.3%) and Static Mist (93.3%) are the top non-signature 5★ Pistols (ahead of Phasic
+    // Homogenizer, Woodland Aria, The Last Dance, Spectral Trigger, Lux & Umbra); Solar Flame (79.1%)
+    // and Relativistic Jet (79.0%) are the best 4★s (ahead of the craftable Pistols#26); Pistols of Night
+    // is the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
+    // naming convention used elsewhere.
+    weaponAlts: { alt5: ['Spectrum Blaster', 'Static Mist'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Rebecca + Yangyang: Xuanling + Lucy', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'President of Startorch Academy. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
@@ -594,6 +601,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Nightmare Flashdrive', common: 'Exoswarm Core', specialty: 'Past Reveries' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Combustor' },
     bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Rite of Gilded Revelation 2pc'], bestWeapon: 'Spectral Trigger',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Rebecca+Mornye team average): Lux &
+    // Umbra (88.4%) and Skull Thrasher (83.5%) are the top non-signature 5★ Pistols (ahead of Phasic
+    // Homogenizer, The Last Dance, Spectrum Blaster, Static Mist, Woodland Aria); Solar Flame (67.5%)
+    // and Relativistic Jet (64.6%) are the best 4★s (ahead of the craftable Pistols#26); Pistols of Night
+    // is the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
+    // naming convention used elsewhere.
+    weaponAlts: { alt5: ['Lux & Umbra', 'Skull Thrasher'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Iuno + Shorekeeper'] },
   'Yangyang: Xuanling': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG — one of the highest damage ceilings in the game at release.',
@@ -1133,6 +1147,10 @@ const CHARACTER_DATA = {
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
   ['Hiyuki',       'Lahai-Roi'], ['Denia',        'Lahai-Roi'],
+  // Night City (Cyberpunk: Edgerunners collab, per both characters' own `nation` infobox field — a
+  // real-world-fiction location outside the Solaris-3 nations above, not a Solaris-3 error; no dedicated
+  // wiki emblem exists for it, same "no icon" convention as New Federation elsewhere in this table).
+  ['Lucy',         'Night City'], ['Rebecca',      'Night City'],
 ].forEach(([name, region]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { region });
 });
@@ -1292,6 +1310,17 @@ const CHARACTER_DATA = {
   // 'Lahai-Roi' (REGION_DATA above) is a separate infobox field from either affiliation. Birthday: blank
   // on the infobox, omitted from BIRTHDAY_DATA per the established 'Unknown' convention.
   ['Denia', 'Bubbles of Nihility', 'Redacted', 'Fractsidus', { en: 'Jodie Bell Cortez', cn: 'Ge Zinyu', jp: 'Itō Miku', kr: 'Park Si-yoon' }],
+  // Cyberpunk: Edgerunners collab characters, sourced via the MediaWiki API (action=parse&page=Lucy/
+  // Rebecca&prop=wikitext&section=0). birthplace: both infoboxes list 'Unknown'. organization: Lucy's
+  // primary affiliation is 'Lahai-Roi' itself (she's since settled there post-collab-arc, per "At
+  // Dream's Edge" — a specific in-world tie distinct from her REGION_DATA nation, Night City, above);
+  // Rebecca's primary affiliation is blank/'Unknown' on the infobox (she died before the game's events —
+  // per her own infobox `status` field — and never had one), so her affiliation2 'Collaboration
+  // Resonators' (a meta-tag, not an in-universe faction with its own emblem) is used instead, left
+  // icon-less rather than guessed. realname: Lucy's infobox lists 'Lucyna Kushinada' as `realname`, not
+  // surfaced as a separate field here since no other audited character's realname is tracked yet.
+  ['Lucy', 'Xeno-Domain Hacking', 'Unknown', 'Lahai-Roi', { en: 'Emi Lo', cn: 'Song Zhengnan', jp: 'Yūki Aoi', kr: 'Kim Ga-ryeong' }],
+  ['Rebecca', 'Fury-Type Arsenal', 'Unknown', 'Collaboration Resonators', { en: 'Alex Cazares', cn: 'Chen Zhang', jp: 'Kurosawa Tomoyo', kr: 'Park Si-yoon' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3737,6 +3766,31 @@ const SKILL_ICONS = {
     'Formal Greetings': 'https://i.ibb.co/hx2nmhpT/denia-intro.webp',
     'Unfinished Lies': 'https://i.ibb.co/BVB2jBsW/denia-outro.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lucy/Rebecca, pulled via the MediaWiki
+  // API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Lucy': {
+    'Locked Thread': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
+    'Payload': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp', // Resonance Skill — Protocol Breach
+    'Pulse Interference': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp',
+    'Deadlock': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp', // Max-TCP Resonance Skill upgrade, same wiki icon
+    'Netrunner': 'https://i.ibb.co/qFDfbxtV/lucy-liberation.webp', // Resonance Liberation
+    'Multi-threading': 'https://i.ibb.co/hJfyn0s6/lucy-forte.webp', // Forte-gated Heavy ATK — Depths of Blackwall
+    'Hack Response': 'https://i.ibb.co/hJfyn0s6/lucy-forte.webp', // Forte Circuit
+    'Outdated Hallucination': 'https://i.ibb.co/TBQxkbJy/lucy-intro.webp', // Intro Skill
+    'Countermeasure Program': 'https://i.ibb.co/gZT3x8g7/lucy-outro.webp', // Outro Skill
+  },
+  'Rebecca': {
+    "Mix-'n'-Match": 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
+    "Yo, It's Big Boomin' Time!": 'https://i.ibb.co/4RZv4Pks/rebecca-intro.webp', // Intro Skill — My Turn! (must precede the shorter Skill-row key below)
+    "Hey, Leadhead": 'https://i.ibb.co/4RZv4Pks/rebecca-intro.webp', // Guts-mode Intro alternative, same wiki icon
+    "It's Big Boomin' Time!": 'https://i.ibb.co/8n7M3D1K/rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks
+    "Come 'n' Get Me!": 'https://i.ibb.co/8n7M3D1K/rebecca-res-Skill.webp',
+    "Party 'til Dawn!": 'https://i.ibb.co/KcVy8tQW/rebecca-liberation.webp', // Resonance Liberation
+    'Rat-tat-tat': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte-gated Heavy ATK — Gloves Are Comin' Off!
+    'Bang-bang-bang': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp',
+    'Hack Response': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte Circuit
+    'Preem Choom': 'https://i.ibb.co/zhQshWzF/rebecca-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4101,6 +4155,13 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/gZBNkHMH/denia-s5.webp',
     s6: 'https://i.ibb.co/Zz5XhZzj/denia-s6.webp',
   },
+  // Lucy/Rebecca (2026-08-17): NOT populated — verified via direct MediaWiki titles queries (action=
+  // query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 12 node names on both
+  // characters) that wutheringwaves.fandom.com has not uploaded Sequence Node icon assets for either
+  // of them yet (their own Chain Table template renders an empty icon column on both /Combat pages —
+  // a genuine wiki content gap for these collab characters, not a fetch failure). Node NAMES are
+  // still populated below in CHAIN_NODE_NAMES since the modal renders names independently of icons;
+  // add icons here once fandom uploads them.
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4143,6 +4204,8 @@ const CHAIN_NODE_NAMES = {
   'Sigrika': { s1: 'The Gleam Meant for Radiance', s2: 'The Bitterness Steeped in Hope', s3: 'I Flee, Yet I Seek', s4: 'I Lose, Yet I Gain', s5: 'Until Submerged by the Dark', s6: 'True Names Resurfaced, Rising in Light' },
   'Hiyuki': { s1: 'Springless', s2: 'To Burn Cold in Silence', s3: 'No Self, No Bound', s4: 'Like Reeds on Tides', s5: 'Vessel of Thousand Wishes', s6: 'Into a Night Without End' },
   'Denia': { s1: 'Silent Glows in a Dimlit Dream', s2: 'Tossed in the Tides of Reality', s3: 'Through Dark and Wind, the Erlking Follows', s4: 'From the Far Beyond, to the Far Beyond', s5: 'If Lies Patch Up a Heart', s6: 'May You Find Your Sun in the Silence' },
+  'Lucy': { s1: 'The Moon, a Ticket, and a Dream', s2: 'The Blackwall, the Past, the Escape', s3: 'Cyberpunk', s4: 'No Living Legends in Night City', s5: 'A Broken Path to Hell', s6: 'I Really Want to Stay At Your House' },
+  'Rebecca': { s1: 'Try Not to Get in the Way!', s2: 'Oh, Hey Choom!', s3: "Don't Sweat Your Six!", s4: 'Got Ya Covered!', s5: 'Dreamin\' on the Edge', s6: 'Maybe, Just Maybe...' },
 };
 
 // Release order for sorting (based on first banner appearance)
