@@ -209,6 +209,9 @@ const FACTION_ICONS = {
   'Startorch Academy':    'https://i.ibb.co/tprYJw6t/Startorch-Academy.webp',
   'Spacetrek Collective':  'https://i.ibb.co/ynLTRypG/Spacetrek-Collective.webp',
   'Roya Tribe':            'https://i.ibb.co/PZkNcXCb/Roya-Tribe.webp',
+  // Added 2026-08-17 for Augusta's audit: Septimont is a city-state region of Rinascita (see
+  // REGION_DATA's fix in characters.js) but also has its own dedicated emblem, used as her organization.
+  'Septimont':             'https://i.ibb.co/0pV0d4Yg/septimont-emblem.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // In-game nation/region emblem icons, re-hosted on ibb.co. Same convention as FACTION_ICONS but for
@@ -219,6 +222,9 @@ const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 const REGION_ICONS = {
   'Huanglong': 'https://i.ibb.co/G34c0tdc/Huanglong-Emblem.webp',
   'Black Shores': 'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
+  // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
+  // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
+  'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
 };
 const getRegionIcon = (region) => REGION_ICONS[region] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:

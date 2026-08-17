@@ -230,98 +230,233 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
     teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1305 sheet. desc: title "Matter Weaver" (nanoka) prepended and blurb
+  // rewritten from nanoka's own profile text to match the roster's convention; skills/base stats/
+  // ascension/skill materials/bestEchoes all re-confirmed accurate against both sources. weaponAlts
+  // corrected against Prydwen's current calc %: alt5 previously led with Abyss Surges (81.4%, actually
+  // #7) while omitting Moongazer's Sigil, now Xiangli Yao's actual #1 overall weapon (100%, edges out
+  // even his own Signature) and Blazing Justice (92.0%, #3) — both swapped in. alt4 previously paired
+  // Stonard with Legend of Drunken Hero, a 4★ that Prydwen ranks dead last of all his options with no
+  // score — replaced with Aether Strike (79.7%, actual best 4★), keeping Stonard (73.6%, #2 4★).
+  // teams: 'Xiangli Yao + Yinlin + Verina' kept as the budget pick (Yinlin/Verina both named directly),
+  // but the first slot swapped from a same-tier duplicate (+Shorekeeper) to Prydwen's actual named Best
+  // Team partners — Lynae and Mornye, called "easily Xiangli Yao's best partners" and "the best generalist
+  // Support" (with a Lynae-specific synergy) respectively in the Synergies writeup.
   'Xiangli Yao': { rarity: 5, element: 'Electro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Brilliant, unassuming researcher of the Huaxu Academy who built his own combat mech, Thinker, to compensate for his fragile body — a quiet genius who would rather let his logic speak than argue his case. On-field Electro Main DPS who builds Performance Capacity through his Basic Attack/Skill/Dodge Counter combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain enhanced attacks, and unleashes the burst Law of Reigns nuke once Intuition\'s Capacity is filled — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s next hits.',
+    desc: 'Matter Weaver, Principal Investigator at Jinzhou\'s Huaxu Academy and its youngest multi-disciplinary scientist — a gentle soul with a sharp mind whose relentless passion for Automata Mechanics always translates into constructive findings and insights. On-field Electro Main DPS who builds Capacity through his Basic Attack/Skill combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain 3 Hypercubes and enhanced attacks, then burns each Hypercube via the enhanced Skill Law of Reigns for his core burst damage — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s Basic Attacks.',
     skills: ['Probe', 'Deduction', 'Forever Seeking', 'Cogitation Model'],
     ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Whisperin Core', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Verity's Handle",
-    weaponAlts: { alt5: ['Abyss Surges', 'Tragicomedy'], alt4: ['Stonard', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
-    teams: ['Xiangli Yao + Yinlin + Verina', 'Xiangli Yao + Yinlin + Shorekeeper'] },
+    weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
+    teams: ['Xiangli Yao + Lynae + Mornye', 'Xiangli Yao + Yinlin + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (URL is /the-shorekeeper, Chrome UA +
+  // google.com referer + jsRender) and ww.nanoka.cc's character #1505 sheet. desc: title "Euphonic
+  // Chrysalis" (nanoka) prepended and blurb rewritten from nanoka's own profile text to match the
+  // roster's convention. skills/base stats/ascension/skill materials/bestEchoes/outro+lib buffs all
+  // re-confirmed accurate. weaponAlts corrected: Prydwen ranks only 4 total options for her (Signature +
+  // 3 4★s, no other 5★ at all) — alt5 previously listed 'Cosmic Ripples' first despite it being an ATK%/
+  // Basic-ATK-stacking stat-stick that doesn't fit a support who never attacks; reordered to lead with
+  // Firstlight's Herald (Energy Regen main stat, matching her Prydwen-stated 250% ER build target).
+  // alt4 previously paired Variation with Call of the Abyss (85.1%) while skipping Rectifier#25 (87.2%,
+  // Prydwen's actual #2 and its named no-gacha pick) — swapped in.
   'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Eternal guardian of the Tethys and keeper of the Black Shores, an ancient entity who has watched over Rovers across countless cycles with quiet, weary affection. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG as allies cast Intro Skills inside it, and buffs the incoming Resonator\'s All DMG through her Outro Binary Butterfly.',
+    desc: 'Euphonic Chrysalis, guardian of the Black Shores — this title alone once defined her, but desires, bonds, and emotions, she only began to understand these things after meeting you. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG (scaling with her own Energy Regen) as allies cast Intro Skills inside it, and buffs the whole team\'s All DMG through her Outro Binary Butterfly.',
     skills: ['Origin Calculus', 'Chaos Theory', 'Astral Chord', 'End Loop'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
-    weaponAlts: { alt5: ['Cosmic Ripples', "Firstlight's Herald"], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
+    weaponAlts: { alt5: ["Firstlight's Herald", 'Cosmic Ripples'], alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1603 sheet. desc: title "Sanguine Blossom" (nanoka) prepended and
+  // blurb rewritten from nanoka's own profile text to match the roster's convention (previous desc was
+  // a generic one-liner with no title, unlike the rest of the audited roster). skills/base stats/
+  // ascension/skill materials/bestEchoes/selfBuffs all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 leads with Emerald Sentence (90.1%, Prydwen's actual #2) plus Emerald of
+  // Genesis, explicitly named "Best permanent option for Camellya" despite a slightly lower calc% than
+  // Frostburn/Everbright Polestar; alt4 uses Feather Edge (77.8%, #1 4★) and Lumingloss (76.8%, #2 4★);
+  // alt3 uses the standard starter Sword of Night, matching the convention used for other Sword users.
   'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Enigmatic assassin who blooms like a camellia flower. On-field Havoc DPS who alternates between Budding and Blossom stances, dealing sustained Havoc DMG through enhanced Basic Attacks and Skill combos.',
+    desc: 'Sanguine Blossom, a Bloom Bearer of the Black Shores — free-spirited and dangerously charming, she roams Solaris in search of talent, immersing herself in the present and relishing its pleasures, unburdened by thoughts of the past or future. On-field Havoc Main DPS who alternates White Hair (mobile) and Red Hair/Blossom Mode (stationary AoE spin) via her Skill, builds Crimson Pistils into Crimson Buds, unleashes the Forte burst Ephemeral into Budding Mode for a team of amplified Basic Attacks, and closes with her Outro Twining nuke.',
     skills: ['Burgeoning', 'Valse of Bloom and Blight', 'Fervor Efflorescent', 'Vegetative Universe'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Red Spring',
+    weaponAlts: { alt5: ['Emerald Sentence', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Lumingloss'], alt3: ['Sword of Night'] },
     teams: ['Camellya + Roccia + Shorekeeper', 'Camellya + Sanhua + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1107 sheet. desc: title "Reshaping Dimensions" (nanoka) prepended and
+  // blurb rewritten from nanoka's own profile text to match the roster's convention. skills/ascension/
+  // skill materials/bestEchoes/selfBuffs all re-confirmed accurate. weaponAlts was entirely missing —
+  // added: alt5 uses Phasic Homogenizer (93.5%) and Woodland Aria (86.2%), Prydwen's #2/#3 non-signature
+  // 5-stars; alt4 uses Undying Flame (75.8%, best 4★) and Pistols#26 (72.0%, named best F2P/no-gacha
+  // option); alt3 uses the standard starter Pistols of Night, matching the convention used elsewhere.
   'Carlotta': { rarity: 5, element: 'Glacio', weapon: 'Pistols', role: 'Main DPS',
-    desc: 'Refined heiress of Rinascita\'s Montelli family. On-field Glacio DPS who builds crystal charges via Resonance Skill, then shatters them with Liberation for massive front-loaded Glacio burst.',
+    desc: 'Reshaping Dimensions, second daughter of the Montelli family and an art investor unbound by convention — she moves seamlessly through social circles and business transactions while quietly handling the family\'s unspeakable "troubles" in secret. On-field Glacio Main DPS who builds Moldable Crystals and Substance through her Basic/Heavy Attack and Skill combos, unleashes the Forte Heavy Imminent Oblivion at full Substance for Final Bow, then dumps her fully-buffed Resonance Liberation Era of New Wave into a six-hit Twilight Tango barrage (Death Knell ×4 into Fatal Finale) for a massive burst of Resonance Skill-flagged DMG.',
     skills: ['Silent Execution', 'Art of Violence', 'Era of New Wave', 'Lethal Repertoire'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Phlogiston' },
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'The Last Dance',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'Woodland Aria'], alt4: ['Undying Flame', 'Pistols#26'], alt3: ['Pistols of Night'] },
     teams: ['Carlotta + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Buling'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1606 sheet. desc: title "Stage in the Box" (nanoka) prepended and
+  // blurb rewritten to match the roster's convention (previous desc wrongly described her as dealing
+  // Havoc DMG "through Coordinated Attacks with Pero" — Pero is her companion/pet but her kit has no
+  // Coordinated Attack mechanic at all; corrected to her real Forte Circuit Beyond Imagination combo).
+  // skills/ascension/skill materials/bestEchoes all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 uses Solsworn Ciphers (90.0%) and Blazing Justice (88.2%), Prydwen's #2/#3
+  // non-signature 5-stars; alt4 uses Aether Strike (72.9%) and Celestial Spiral (72.6%), the top two
+  // 4-stars; alt3 uses the standard starter Gauntlets of Night, matching the convention used elsewhere.
   'Roccia': { rarity: 5, element: 'Havoc', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Warm-hearted clown performer from Rinascita with her companion Pero. Havoc sub-DPS who buffs the on-field carry\'s Basic ATK DMG via Outro and deals Havoc DMG through Coordinated Attacks with Pero.',
+    desc: 'Stage in the Box, assistant, prop master, and improv comedian of the Troupe of Fools — always there to make sure the Troupe is at the ready, carrying a Magic Box that appears to hold the world, or perhaps a world she recreated inside it. Havoc sub-DPS/buffer who pulls enemies in and enters Beyond Imagination via her Skill, bounces through 3 Forte Real Fantasy hits (counted as Heavy Attack DMG), nukes with her Liberation for a scaling flat team ATK buff off her own Crit Rate, then buffs the incoming Resonator\'s Havoc and Basic ATK DMG through her Outro Applause, Please! — the best group-pull utility in the game via her Skill and transferable Magic Box.',
     skills: ['Pero, Easy', 'Acrobatic Trick', 'Commedia Improvviso!', 'A Prop Master Prepares'],
     ascension: { boss: 'Cleansing Conch', common: 'Tidal Residuum', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
+    weaponAlts: { alt5: ['Solsworn Ciphers', 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Cantarella + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1506 sheet. desc: title "Graceful Luminescence" (nanoka) prepended
+  // and blurb rewritten — previous desc only described her Confession/support mode ("applies Frazzle...
+  // enabling Spectro DPS teammates"), but Prydwen frames her as equally viable as a Main DPS in
+  // Absolution mode (tier T1.5 DPS vs T2 Hybrid, DPS is actually rated higher), and she has no
+  // "Resonance Skill card summons" mechanic at all — corrected to cover both Forte Circuit states
+  // (Absolution self-DPS / Confession Frazzle-application support). skills/ascension/skill materials/
+  // bestEchoes/outroBuffs/debuffs all re-confirmed accurate. weaponAlts was entirely missing — added:
+  // alt5 uses Lethean Elegy (98.1%) and Stringmaster (97.5%), Prydwen's #2/#3 non-signature 5-stars;
+  // alt4 uses Augment (86.1%, best 4★) and Ocean's Gift (78.8%, #2 4★); alt3 uses the standard starter
+  // Rectifier of Night, matching the convention used elsewhere.
   'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Devoted acolyte of the Order of the Deep, guided by divine light. Spectro sub-DPS who applies Frazzle stacks via Resonance Skill card summons, enabling Spectro DPS teammates to trigger burst damage.',
+    desc: 'Graceful Luminescence, Acolyte of the Order of the Deep — a young woman of quiet devotion who fulfills her duties with unwavering diligence, her prayers offering comfort and peace like the light she carries. Dual-mode Spectro Hybrid who consumes Prayer at full Forte to enter either Absolution (self-buffed Main DPS, amplifying her own Heavy Attack Starflash against Spectro Frazzle) or Confession (support mode, stacking Spectro Frazzle onto enemies and buffing the on-field ally\'s Frazzle DMG via Outro) — Confession Phoebe is built specifically to empower Zani, her only current Frazzle-DPS partner.',
     skills: ['O Come Divine Light', 'To Where Light Shines', 'Dawn of Enlightenment', 'Radiant Invocation'],
     ascension: { boss: 'Cleansing Conch', common: 'Whisperin Core', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
+    weaponAlts: { alt5: ['Lethean Elegy', 'Stringmaster'], alt4: ['Augment', "Ocean's Gift"], alt3: ['Rectifier of Night'] },
     teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Rover: Spectro + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1206 sheet. desc: title "Flamebound Compass" (nanoka) prepended and
+  // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes all
+  // re-confirmed accurate. weaponAlts was entirely missing — added: alt5 uses Laser Shearer (77.2%) and
+  // Bloodpact's Pledge (75.1%, F2P-obtainable), Prydwen's #2/#3 non-signature 5-stars; alt4 uses Overture
+  // (Energy Regen main stat, matching Brant's extreme ER requirement — Prydwen lists no 4★ options for
+  // him at all) and Commando of Conviction as a no-gacha baseline; alt3 uses the standard starter Sword
+  // of Night.
   'Brant': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Blazing knight from Rinascita whose soul burns with unflickering valor. On-field Fusion DPS who chains Basic Attacks and Skill combos in two alternating modes, with built-in self-healing on hits.',
+    desc: 'Flamebound Compass, captain of Rinascita\'s Troupe of Fools — a free spirit and romantic, unpredictable and full of life, the beating heart of the troupe who slips into countless roles on stage but is unwaveringly genuine offstage. Fusion Main DPS/Hybrid who fills his Forte Bravo through Mid-air Basic Attack chains and his Intro, unleashes the burst Forte skill Returned from Ashes for massive damage plus a team-wide shield, heals the team as Bravo builds, and buffs the incoming Resonator\'s Fusion and Resonance Skill DMG through his Outro The Course is Set! — almost his entire kit is executed airborne, dodging most enemy attacks for free.',
     skills: ['Captain\'s Rhapsody', 'Anchors Aweigh!', 'To the Horizon', 'Ocean Odyssey'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Metallic Drip' },
     bestEchoes: ['Dragon of Dirge', 'Tidebreaking Courage 5pc'], bestWeapon: 'Unflickering Valor',
+    weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge"], alt4: ['Overture', 'Commando of Conviction'], alt3: ['Sword of Night'] },
     teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1607 sheet. desc: title "Sea of Dreams" (nanoka) prepended and blurb
+  // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
+  // to match helpers.js's FACTION_ICONS key exactly, avoiding the mismatch previously found on Carlotta.
+  // skills/ascension/skill materials/bestEchoes all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 uses Rime-Draped Sprouts (87.0%) and Stringmaster (85.0%), Prydwen's #2/#3
+  // non-signature 5-stars; alt4 uses Radiant Dawn (77.9%, best 4★) and Augment (77.8%, #2 4★); alt3 uses
+  // the standard starter Rectifier of Night, matching the convention used elsewhere.
   'Cantarella': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Enigmatic head of Rinascita\'s Fisalia family, veiled in twilight. Havoc sub-DPS who deals off-field Havoc DMG via Coordinated Attacks while providing supplementary healing to the active character.',
+    desc: 'Sea of Dreams, current head of the Fisalia Family, Cantarella the Bane — a mysterious noblewoman whose beauty is as captivating as it is perilous, residing in a crown-like castle where illusory dreams flow like streams, meticulously spun by her own hands. Havoc Hybrid who builds Trance through her Intro/Skill/Liberation, enters Mirage via her Forte Heavy Delusive Dive to unlock enhanced Basic Attacks and the burst Perception Drain nuke, deals off-field Havoc DMG through Coordinated Attack Dreamweavers from her Liberation, heals the team throughout, and buffs the incoming Resonator\'s Havoc and Resonance Skill DMG via her Outro Gentle Tentacles.',
     skills: ['Illusion Collapse', 'Dance with Shadows', 'Beneath the Sea', 'Between Illusion and Reality'],
     ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Helix' },
     bestEchoes: ['Lorelei', 'Midnight Veil 5pc'], bestWeapon: 'Whispers of Sirens',
+    weaponAlts: { alt5: ['Rime-Draped Sprouts', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Camellya + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1507 sheet. desc: title "Scorched Radiance" (nanoka) prepended and
+  // blurb rewritten — the previous desc said she "builds Frazzle stacks via Resonance Skill counters and
+  // Heavy Attacks", but Zani cannot apply Spectro Frazzle herself at all; she instantly converts
+  // teammates' Frazzle into her own Heliacal Ember/Blaze resource, which is a meaningfully different
+  // (and team-dependent) mechanic. organization uses 'Montelli Family' (no leading "The") to match
+  // helpers.js's FACTION_ICONS key, avoiding the mismatch previously found on Carlotta. skills/ascension/
+  // skill materials/bestEchoes/outroBuffs/selfBuffs all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 uses Tragicomedy (93.7%) and Verity's Handle (85.0%), Prydwen's #2/#3
+  // non-signature 5-stars; alt4 uses Aether Strike (72.6%, best 4★) and Celestial Spiral (69.3%, #2 4★);
+  // alt3 uses the standard starter Gauntlets of Night.
   'Zani': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Steadfast security officer of the Averardo Vault, devoted to justice. On-field Spectro DPS who builds Frazzle stacks via Resonance Skill counters and Heavy Attacks, then detonates them for burst Spectro DMG.',
+    desc: 'Scorched Radiance, a member of Averardo Vault\'s security team and its longtime "Best Employee" — she has plenty of plans for her free time, but for now her biggest mission is simple: clocking out on time. On-field Spectro Main DPS who converts teammates\' Spectro Frazzle into her own Heliacal Ember and Blaze the instant it lands, builds Redundant Energy through Basic Attacks and parries to unlock her enhanced Skill, then dumps everything into Inferno Mode via her Liberation for a string of massive Heavy Slash combos flagged as both Heavy Attack and Spectro Frazzle DMG — entirely dependent on a teammate applying Frazzle for her to convert.',
     skills: ['Routine Negotiation', 'Restless Watch', 'Between Dawn and Dusk', 'There Will Be A Light'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Blazing Justice',
+    weaponAlts: { alt5: ['Tragicomedy', "Verity's Handle"], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Rover: Spectro + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1407 sheet. desc: title "Woven Melodies" (nanoka) prepended and blurb
+  // rewritten — the previous desc said she "applies Erosion via Coordinated Attacks", but Ciaccona has
+  // no Coordinated Attack mechanic at all; her off-field Erosion application comes from her Ensemble
+  // Sylph clones and her Liberation's lingering Recital state instead. skills/ascension/skill materials/
+  // bestEchoes/outroBuffs/libBuffs/weaponBuffs/debuffs all re-confirmed accurate (already corrected in a
+  // prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses Phasic Homogenizer (86.9%)
+  // and Lux & Umbra (83.0%), Prydwen's #2/#3 non-signature 5-stars; alt4 uses Romance in Farewell (69.9%,
+  // Prydwen's named best 4★/F2P no-gacha pick) and Solar Flame; alt3 uses the standard starter Pistols
+  // of Night.
   'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
-    desc: 'Free-spirited wandering bard whose melodies command the wind. Aero sub-DPS who applies Erosion via Coordinated Attacks and Skill summons while buffing team Aero DMG through Outro.',
+    desc: 'Woven Melodies, a wandering bard from Rinascita — she sings not only for the Divinity, but also for the common folk, recording stories along her journeys and turning them into songs that evoke laughter, emotion, and tears in both the storytellers and the audience. Aero Hybrid who chains quick Basic ATK/Mid-air cancels to summon near-permanent Ensemble Sylph clones (Solo Concert: team Aero DMG Amp), fires the Forte Heavy Quadruple Downbeat, then enters an extended Recital state via her Liberation to apply repeating waves of Aero Erosion or Spectro Frazzle even off-field — buffs the incoming Resonator\'s Aero Erosion DMG through her Outro.',
     skills: ['Quadruple Time Steps', 'Harmonic Allegro', 'Singer\'s Triple Cadenza', 'Symphony of Wind and Verse'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell', 'Solar Flame'], alt3: ['Pistols of Night'] },
     teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1409 sheet. desc: title "Feathered Tempest" (nanoka) prepended and
+  // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes/
+  // outroBuffs/debuffs/weaponBuffs all re-confirmed accurate. weaponAlts was entirely missing — added:
+  // alt5 uses Red Spring (79.5%) and Blazing Brilliance (77.0%), Prydwen's #2/#3 non-signature 5-stars;
+  // alt4 uses Feather Edge (76.3%, the only 4★ Prydwen lists for her); alt3 uses Guardian Sword (72.3%,
+  // Prydwen's own explicit "last resort" pick — the only other Sword in the game with an HP% main stat,
+  // matching her HP-scaling kit, so used here instead of the generic starter Sword of Night).
   'Cartethyia': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
-    desc: 'The Blessed Maiden of Rinascita, beloved by wind and sea. HP-scaling on-field Aero DPS who shifts between sword and Fleurdelys forms, dealing Aero DMG through Erosion-enhanced Basic Attacks.',
+    desc: 'Feathered Tempest, a wandering knight who travels across Rinascita — formerly known as the Blessed Maiden, the vessel of Divinity, and the Queen of Gale and Tide under the name Fleurdelys, she is now simply free and unfettered. HP-scaling on-field Aero Main DPS who builds Sword Shadows through her Basic Attack/Skill/Intro finishers, recalls them via Mid-air Attack, transforms into Fleurdelys via her Liberation for an entirely new enhanced kit, builds Conviction toward the devastating second Ultimate Blade of Howling Squall that consumes stacked Aero Erosion for bonus DMG, then buffs the incoming Resonator\'s Aero DMG against Negative Status targets through her Outro.',
     skills: ['Sword to Carve My Forms', 'Sword to Bear Their Names', 'A Knight\'s Heartfelt Prayers', 'Tempest'],
     ascension: { boss: 'Unfading Glory', common: 'Tidal Residuum', specialty: 'Bamboo Iris' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
+    weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Feather Edge'], alt3: ['Guardian Sword'] },
     teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Cartethyia + Ciaccona + Chisa'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1207 sheet. desc: title "Howling Flame" (nanoka) prepended and blurb
+  // rewritten — the previous desc said she "shreds enemy Fusion RES" as if unconditional, but her Glory
+  // RES-ignore only ramps up with more Fusion teammates present (3%/9%/15%), and she's a team buffer
+  // first (Prydwen files her under "Hybrid", not Sub DPS). skills/ascension/skill materials/bestEchoes/
+  // outroBuffs/libBuffs/selfBuffs/weaponBuffs/debuffs all re-confirmed accurate (already corrected in a
+  // prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses Ages of Harvest (87.8%)
+  // and Kumokiri (87.0%), Prydwen's #2/#3 non-signature 5-stars; alt4 uses Waning Redshift (75.0%, best
+  // 4★) and Aureate Zenith (74.8%, #2 4★); alt3 uses the standard starter Broadblade of Night.
   'Lupa': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Sub DPS',
-    desc: 'Lone wolf Star Gladiator of the arena who fights for herself alone. Fusion sub-DPS who shreds enemy Fusion RES and buffs team DMG via Liberation and Outro, enabling mono-Fusion compositions.',
+    desc: 'Howling Flame, a Gladiator of Septimont and a radiant star of the arena — fiery and straightforward, Lupa lives like a wild lone wolf, and as long as she can savor the adrenaline rush of battle, she doesn\'t mind if that same fire ends up consuming her whole. Fusion Hybrid buffer who dumps her Liberation Fire-Kissed Glory immediately to grant the whole team Pack Hunt (ATK Amp, further boosted by teammates\' Intro Skills) and Glory (Fusion RES ignore that scales with Fusion teammate count), builds Wolfaith through Heavy/Mid-air Attacks toward her Forte finisher Dance With the Wolf, then buffs the incoming Resonator\'s Fusion and Basic ATK DMG through her Outro — built around powering mono-Fusion teams like Changli + Brant + Lupa.',
     skills: ['Flaming Star', 'Shewolf\'s Hunt', 'Fire-Kissed Glory', 'Ignis Lupa'],
     ascension: { boss: 'Unfading Glory', common: 'Howler Core', specialty: 'Bloodleaf Viburnum' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Waveworn Residue' },
     bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 5pc'], bestWeapon: 'Wildfire Mark',
+    weaponAlts: { alt5: ['Ages of Harvest', 'Kumokiri'], alt4: ['Waning Redshift', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
     teams: ['Lupa + Brant + Changli', 'Lupa + Aemeath + Mornye'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1608 sheet. desc: title "Symphony of Beyond" (nanoka) prepended and
+  // blurb rewritten — the previous desc wrongly said she "summons Hecate via Echo Skill"; Hecate is
+  // actually summoned by her Resonance Liberation (entering Maestro state) — Echo Skill casts merely
+  // trigger extra Hecate attacks while Maestro is already active. organization uses 'Fractsidus' (no
+  // leading "The") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta/Zani.
+  // skills/ascension/skill materials/bestEchoes/outroBuffs/selfBuffs all re-confirmed accurate (already
+  // corrected in a prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses
+  // Stringmaster (82.0%) and Whispers of Sirens (80.2%), Prydwen's #2/#3 non-signature 5-stars; alt4
+  // uses Radiant Dawn (66.9%, best 4★) and Augment (64.9%, #2 4★); alt3 uses the standard starter
+  // Rectifier of Night.
   'Phrolova': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Main DPS',
-    desc: 'Former violinist turned Fractsidus Overseer, death\'s euphoric companion. On-field Havoc DPS who summons Hecate via Echo Skill for sustained off-field Havoc DMG while dealing burst damage through Resonance Skill.',
+    desc: 'Symphony of Beyond, a Fractsidus Overseer walking the fine line between life and death — an uncanny, deadly conductor whose silent wave of the baton is enough to attune the very frequencies of being and conduct the symphonies of "souls," her music able to sculpt a better world or just as easily summon a legion to wreak havoc. Havoc Main DPS who builds Volatile Notes through Basic Attack/Skill combos and their Forte-enhanced follow-ups, unleashes her Liberation to enter the Maestro state and command her partner Hecate for sustained off-field Havoc DMG (triggered further by any teammate\'s Echo Skill casts), then buffs the incoming Resonator\'s Havoc and Heavy Attack DMG through her Outro.',
     skills: ['Movement of Life and Death', 'Whispers in a Fleeting Dream', 'Waltz of Forsaken Depths', 'Rhapsody of a New World'],
     ascension: { boss: 'Truth in Lies', common: 'Polygon Core', specialty: 'Afterlife' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Helix' },
     bestEchoes: ['Nightmare: Hecate', 'Dream of the Lost 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Lethean Elegy',
+    weaponAlts: { alt5: ['Stringmaster', 'Whispers of Sirens'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro DPS who deals Heavy ATK and Liberation burst DMG with built-in shields and a time-stop mechanic on Resonance Skill.',
@@ -329,34 +464,43 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
-    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Yinlin + Verina', 'Augusta + Phrolova + Shorekeeper'] },
+    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
+    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Shorekeeper', 'Augusta + Mortefi + Verina'] },
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
     desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro, heals the team through her New Moon attacks and Full Moon Domain, and self-shields on skill casts, cycling between Half Moon and New Moon combat states.',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Lady of the Sea', 'Crown of Valor 3pc + Sierra Gale 2pc'], bestWeapon: "Moongazer's Sigil",
-    teams: ['Iuno + Augusta + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
+    weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Guardian Gauntlets'] },
+    teams: ['Iuno + Augusta + Shorekeeper', 'Iuno + Lynae + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
   'Galbrena': { rarity: 5, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Black Shores Consultant known as the Discord Slayer, seizing power from darkness. On-field Fusion DPS who deals primary damage through Echo Skill and Heavy ATK combos in quick burst rotations.',
     skills: ['Slayer\'s Trigger', 'Edge Transcended', 'Hellfire Absolution', 'Beyond Threshold'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Stone Rose' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Phlogiston' },
     bestEchoes: ['Corrosaurus', "Flamewing's Shadow 3pc + Flaming Clawprint 2pc"], bestWeapon: 'Lux & Umbra',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Relativistic Jet', 'Pistols#26'], alt3: ['Guardian Pistols'] },
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Brant + Lupa'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS who buffs the team\'s Echo Skill DMG and grants Crit DMG Amplify via Outro and Resonance Liberation.',
+    desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who grants the next Resonator Echo Skill DMG Amp via Outro and boosts the active Resonator\'s Crit DMG via Resonance Liberation.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
     ascension: { boss: 'Truth in Lies', common: 'Whisperin Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fenrico', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
+    weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Commando of Conviction'], alt3: ['Guardian Sword'] },
     teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Support/Healer',
     desc: '"Just an ordinary student," she calmly introduces herself, a faint iridescent shimmer flickering in her eyes. Havoc support/healer who deals heavy Resonance Liberation DMG, heals and shields the team, and shreds enemy DEF via Unseen Snare + Havoc Bane.',
-    skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Reverberance - Return'],
+    // skills[3] corrected 2026-08-17: was 'Reverberance - Return' (her actual Intro Skill name) — the
+    // `skills` array convention is [Basic ATK, Skill, Liberation, Forte Circuit] per every other
+    // character's entry, and her real Forte Circuit name is 'Sight of Unraveling - Oblivion' per
+    // fandom's own Forte gallery/Prydwen's kit breakdown.
+    skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Sight of Unraveling - Oblivion'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Kumokiri',
+    bestEchoes: ['Reminiscence: Threnodian - Leviathan (Thread of Severed Fate, personal DMG) / Fallacy of No Return (Rejuvenating Glow, best overall team ATK)', 'Rejuvenating Glow (best overall, except non-ATK-scaling teams) or Thread of Severed Fate 3pc + Havoc Eclipse/Midnight Veil 2pc (personal DMG)'], bestWeapon: 'Kumokiri',
+    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
     teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who amplifies team All DMG and Resonance Liberation DMG via Outro, and boosts Tune Break Boost for Tune Strain team comps.',
@@ -585,11 +729,29 @@ const CHARACTER_DATA = {
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
   ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
-  ['Ciaccona',      ['Coordinated ATK', 'Skill'],    ['Aero Buff'],                           ['Erosion']],
+  // 'Coordinated ATK' tag corrected 2026-08-17: Ciaccona has no Coordinated Attack mechanic at all —
+  // Prydwen's own review explicitly notes she's "similar to Coordinated Attackers (even though she
+  // isn't one)". Her off-field damage instead comes from Ensemble Sylph clones (Basic ATK) and her
+  // Liberation's lingering Recital state.
+  ['Ciaccona',      ['Basic ATK', 'Skill'],          ['Aero Buff'],                           ['Erosion']],
   ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
-  ['Iuno',          ['Heavy ATK'],                   ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
-  ['Qiuyuan',       ['Echo'],                        ['Echo DMG Buff', 'Crit DMG Amp'],       []],
-  ['Chisa',         ['Skill'],                       [],                                      ['DEF Shred']],
+  // dmg-type tag corrected 2026-08-17: Iuno's actual rotation damage (Moonbow Basic ATK, Arc Beyond the
+  // Edge, and the Flux jump-attacks) is explicitly "considered as Resonance Liberation DMG" per Prydwen's
+  // kit breakdown — only Absolute Fullness and the base Moonring combo are true Heavy ATK/Basic ATK.
+  ['Iuno',          ['Liberation', 'Heavy ATK'],     ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
+  // dmg-type tag corrected 2026-08-17: Qiuyuan's actual rotation damage (Inkwash Basic ATK Stage 3-4 and
+  // his Forte Heavy Attack finishers) is explicitly "considered as Heavy Attack DMG" per Prydwen's kit
+  // breakdown, and the Forte finishers are additionally "considered as performing Echo Skill" — his
+  // Liberation/Intro are also tagged Heavy ATK. Previously listed as purely ['Echo'], missing the
+  // majority Heavy ATK component entirely.
+  ['Qiuyuan',       ['Heavy ATK', 'Echo'],           ['Echo DMG Buff', 'Crit DMG Amp'],       []],
+  // dmg-type/buff tags corrected 2026-08-17: Chisa was tagged as purely ['Skill'] with no buff tags at
+  // all — but per Prydwen, her base Skill is barely used (too little Forte/Energy to be worthwhile
+  // outside the Opener) and her actual rotation damage is Basic ATK (incl. Death Snip/Thread Withdrawn)
+  // and her Forte's Sawring Blitz/Eradication, both explicitly "considered Resonance Liberation DMG".
+  // Buff tags were also entirely missing her Heal (Moment of Nihility/Death Snip) and Shield (Sawring -
+  // Eradication) kit.
+  ['Chisa',         ['Basic ATK', 'Liberation'],     ['Heal', 'Shield'],                      ['DEF Shred']],
   ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
   ['Danjin',        ['Basic ATK', 'Heavy ATK'],      ['Havoc DMG Bonus'],                     []],
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
@@ -634,16 +796,16 @@ const CHARACTER_DATA = {
   ['Xiangli Yao',   10625, 425, 1222, 125],
   ['Shorekeeper',   16713, 288, 1100, 175],
   ['Camellya',      10325, 450, 1161, 125],
-  ['Carlotta',      12450, 462, 1197, 125],
-  ['Roccia',        12250, 375, 1197, 125],
-  ['Phoebe',        10825, 412, 1258, 125],
-  ['Brant',         11675, 375, 1307, 125],
-  ['Cantarella',    11600, 400, 1099, 125],
-  ['Zani',          10775, 437, 1136, 125],
-  ['Ciaccona',      12237, 375, 1197, 125],
-  ['Cartethyia',    14800, 312, 611,  125],
-  ['Lupa',          11912, 387, 1185, 125],
-  ['Phrolova',      10775, 437, 1136, 125],
+  ['Carlotta',      12450, 463, 1198, 125],
+  ['Roccia',        12250, 375, 1198, 125],
+  ['Phoebe',        10825, 413, 1259, 125],
+  ['Brant',         11675, 375, 1308, 125],
+  ['Cantarella',    11600, 400, 1100, 125],
+  ['Zani',          10775, 438, 1137, 125],
+  ['Ciaccona',      12238, 375, 1198, 125],
+  ['Cartethyia',    14800, 313, 611,  125],
+  ['Lupa',          11913, 388, 1186, 125],
+  ['Phrolova',      10775, 438, 1137, 125],
   ['Augusta',       10300, 462, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
   ['Galbrena',      10300, 462, 1112, 125],
@@ -718,7 +880,7 @@ const CHARACTER_DATA = {
   ['Changli',       2000, 22, 8],   // Fast Fusion combos
   ['Zhezhi',        1400, 25, 5],   // Off-field painter
   ['Roccia',        1200, 25, 7],   // Support sub DPS
-  ['Phoebe',        2200, 24, 10],  // Card skills burst
+  ['Phoebe',        2200, 24, 10],  // Absolution/Confession Forte burst (no card mechanic in her kit)
   ['Cantarella',    1300, 25, 5],   // Off-field Coordinated
   ['Zani',          2600, 24, 14],  // Res. Skill + Heavy ATK
   ['Ciaccona',      1100, 25, 6],   // Aero support
@@ -914,8 +1076,9 @@ const CHARACTER_DATA = {
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
   ['Ciaccona',     'Rinascita'], ['Cartethyia',   'Rinascita'], ['Lupa',         'Rinascita'],
   ['Phrolova',     'Rinascita'],
-  // Septimont
-  ['Augusta',      'Septimont'], ['Iuno',         'Septimont'],
+  // Septimont (fixed 2026-08-17: Septimont is a city-state region OF Rinascita per fandom's own Location
+  // Infobox `nation` field — same pattern as Jinzhou being a city within Huanglong — not a separate nation).
+  ['Augusta',      'Rinascita'], ['Iuno',         'Rinascita'],
   // Lahai-Roi (Startorch Academy)
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
@@ -978,6 +1141,51 @@ const CHARACTER_DATA = {
   // organization: fandom's infobox has only a single affiliation field for her (Jinzhou) — no specific
   // sub-group like the Jiyan/Changli entries above, so the generic nation-tied org is used as-is.
   ['Zhezhi', 'Enchanted Brush', 'Huanglong', 'Jinzhou', { en: 'Shin-Fei Chen', cn: 'Miao Zi', jp: 'Yui Makino', kr: 'Kim Ha-ru' }],
+  // organization: ww.nanoka.cc's infobox lists a single Affiliation (Jinzhou) for him, matching the
+  // Zhezhi convention above — no specific named sub-group is given, unlike Jiyan/Changli/Jinhsi.
+  ['Xiangli Yao', 'Matter Weaver', 'Huanglong', 'Jinzhou', { en: 'Shaun Mendum', cn: 'Ban Ma', jp: 'Kobayashi Chiaki', kr: 'Jung Eui Jin' }],
+  ['Shorekeeper', 'Euphonic Chrysalis', 'Black Shores', 'Black Shores', { en: 'Stephanie McKeon', cn: 'Tang YaJing', jp: 'Suwa Ayaka', kr: 'Kim Bo Na' }],
+  // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her (unlike most other
+  // characters, which have a real birthplace even when their nation/region tie is separately unconfirmed).
+  ['Camellya', 'Sanguine Blossom', 'Unknown', 'Black Shores', { en: 'Meaghan Martin', cn: 'Liu ZhiXiao', jp: 'Ise Mariya', kr: 'Yu Hye Ji' }],
+  // organization: 'Montelli Family' (no leading "The") to match helpers.js's FACTION_ICONS key exactly —
+  // the icon lookup is a straight object-key match, so "The Montelli Family" silently resolved to no icon.
+  ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
+  ['Roccia', 'Stage in the Box', 'Rinascita', 'Troupe of Fools', { en: 'Holly Earl', cn: 'Shen Huasang', jp: 'Kohara Konomi', kr: 'Jang Mi' }],
+  ['Phoebe', 'Graceful Luminescence', 'Rinascita', 'Order of the Deep', { en: 'Rebecca LaChance', cn: 'Fu Tingyun', jp: 'Hondo Kaede', kr: 'Lee Bo Yong' }],
+  ['Brant', 'Flamebound Compass', 'Rinascita', 'Troupe of Fools', { en: "Hyoie O'Grady", cn: 'Ray Mo', jp: 'Kishio Daisuke', kr: 'Lee Ju Seung' }],
+  ['Cantarella', 'Sea of Dreams', 'Rinascita', 'Fisalia Family', { en: 'Alexandra Guelff', cn: 'Xiaomi', jp: 'Nakahara Mai', kr: 'Kim Yul' }],
+  // organization: 'Montelli Family' (no leading "The", even though nanoka's own infobox literally shows
+  // "The Montelli Family") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta.
+  ['Zani', 'Scorched Radiance', 'Rinascita', 'Montelli Family', { en: 'Alexandra Metaxa', cn: 'Nie Xiying', jp: 'Ueda Hitomi', kr: 'Won Esther' }],
+  ['Ciaccona', 'Woven Melodies', 'Rinascita', 'Ragunna', { en: 'Rebecca Hanssen', cn: 'Ye Zhiqiu', jp: 'Hasegawa Ikumi', kr: 'Kim Ye Rim' }],
+  ['Cartethyia', 'Feathered Tempest', 'Rinascita', 'Ragunna', { en: 'Amanda Elizabeth Rischel', cn: 'Yun Hezhui', jp: 'Asakawa Yuu', kr: 'Bae Ha Gyoung' }],
+  ['Lupa', 'Howling Flame', 'Rinascita', 'Septimont', { en: 'Kaja Chan', cn: 'Shuo Xiaotu', jp: 'Takahashi Minami', kr: 'Kim Ye Reong' }],
+  // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her — her Fractsidus
+  // organization tie is what ties her to the Rinascita region (REGION_DATA below), same pattern as
+  // Camellya's identity block above.
+  ['Phrolova', 'Symphony of Beyond', 'Unknown', 'Fractsidus', { en: 'Rae Lim', cn: 'Zhang Qi', jp: 'Fujita Saki', kr: 'Choi Ha Ri' }],
+  // birthplace: fandom's own infobox leaves both `birthday` and `birthplace` blank for Augusta — treated
+  // as "Unknown" per the Camellya/Phrolova convention above. organization uses her city-state affiliation
+  // (Septimont) rather than the generic Rinascita nation tie, matching the Jinzhou City Hall convention.
+  ['Augusta', 'Ephor of Septimont', 'Unknown', 'Septimont', { en: 'Alix Wilton Regan', cn: 'Mu Xueting', jp: 'Hikasa Yoko', kr: 'Lee Ji-hyun' }],
+  // birthplace: fandom's own infobox leaves both `birthday` and `birthplace` blank for Iuno too — same
+  // "Unknown" convention as Augusta/Camellya/Phrolova above. organization uses affiliation2 (Tetragon
+  // Temple, her specific priesthood) over the generic Septimont/Rinascita tie, matching the Jinzhou City
+  // Hall convention — no dedicated emblem exists for Tetragon Temple on the wiki (only a location photo),
+  // so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
+  ['Iuno', 'Stasis, Cycle, Renewal', 'Unknown', 'Tetragon Temple', { en: 'Ella Boyes', cn: 'Jiang Yingjun', jp: 'Lynn', kr: 'Yoon Eun-seo' }],
+  // birthplace: fandom's infobox literally lists 'Rinascita' for her (a real value this time, not blank)
+  // — she's Septimont-born (a former Septimontian known as "Angel") but now serves as a Consultant of
+  // the Black Shores, which is her REGION_DATA tie/organization, same birthplace-vs-nation-tie pattern
+  // as Verina. organization uses her primary affiliation (Black Shores) rather than her origin
+  // (Septimont) since that's her actual employer, matching the Shorekeeper/Camellya/Encore convention.
+  ['Galbrena', 'Infernal Descent', 'Rinascita', 'Black Shores', { en: 'Devora Wilde', cn: 'Zhang Wenjie', jp: 'Shoji Umeka', kr: 'Lee Da-seul' }],
+  // organization uses his primary affiliation (Mingting) over affiliation2 (Chongzhou) and the now-inactive
+  // affiliation3 (Internal Security Agency, "formerly") — no dedicated emblem exists for Mingting on the
+  // wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
+  ['Qiuyuan', 'Bambooscape', 'Huanglong', 'Mingting', { en: 'Jeremy Ang Jones', cn: 'Gan Ziqi', jp: 'Miki Shinichiro', kr: 'Kim Min-ju' }],
+  ['Chisa', 'Eye of Unravelling', 'Ashinohara', 'Startorch Academy', { en: 'Leader Looi', cn: 'Zhao Lingze', jp: 'Kanemoto Hisako', kr: 'Lee Joo-eun' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -998,15 +1206,19 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro Blossom: heals the incoming Resonator + All DMG Amp +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: outroBuffs' target was 'next' (single
+  // incoming Resonator), but Prydwen explicitly states Binary Butterfly "grants the entire party a 15%
+  // Damage Amplification buff for 30 seconds, regardless of how many times they Swap In-or-Out" — a
+  // team-wide buff, not a swap-in-only one. Fixed to target: 'team'.
   'Shorekeeper': {
-    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 30 }],
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 30 }],
     libBuffs: [
       { stat: 'critRate', value: 12.5, target: 'team', duration: 30, condition: 'In Stellarealm field' },
       { stat: 'critDmg', value: 25, target: 'team', duration: 30, condition: 'In Stellarealm field' },
     ],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% All DMG Amp 30s. Lib Stellarealm: +12.5% CR +25% CD (30s). Knockdown recovery.',
+    note: 'Outro: 15% All DMG Amp, team-wide, 30s (persists through swaps). Lib Stellarealm: +12.5% CR +25% CD (30s), team-wide. Knockdown recovery.',
   },
   // Corrected against ww.nanoka.cc character/1405 — prior Outro (15% All DMG Deepen) and debuff
   // (DEF Shred on shielded) didn't match her real kit at all.
@@ -1118,15 +1330,20 @@ const CHAR_BUFF_TABLE = {
     },
     note: 'Outro: 25% All DMG Amp to team (30s, confirmed exact 2026-08-16 — was miscategorized as deepen). Syntony Field: +50% Off-Tune Buildup Rate (25s), healing, DEF+20% via Ultimate. Interfered Marker: up to 40% DMG Amp on target. Rupture Response.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs was missing target/duration/
+  // condition fields (a formatting bug, not a wrong value) — filled in from Inherent Skill Immersive
+  // Performance. outroBuffs/debuffs were already accurate; libBuffs is correctly empty since her
+  // Liberation's team buff is flat ATK points (up to 200, scaling with her own Crit Rate over 50%) —
+  // not a percentage stat this table's schema represents — documented in the note instead.
   'Roccia': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
       { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 20 }],
+    selfBuffs: [{ stat: 'atkPct', value: 20, target: 'self', duration: 12, condition: 'Immersive Performance: Skill or Heavy ATK cast → self ATK +20% (12s)' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% 12s.',
+    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% (12s) on Skill/Heavy ATK. Liberation: flat team ATK +1 per 0.1% Crit Rate over 50%, up to +200 (30s) — not a % buff, so untracked in libBuffs.',
   },
   // selfBuffs condition corrected 2026-08-17 against fandom/Prydwen — was "After 4 Resonance Skill
   // casts", which matched nothing in her kit. Fiery Feather is granted by casting Liberation (Radiance
@@ -1173,15 +1390,19 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'frazzle', value: 18, duration: 15, condition: '18 stacks per rotation in Confession mode' }],
     note: 'Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs was empty, missing her real
+  // Inherent Skill "Poison" (+6% Havoc DMG Bonus per Echo Skill cast, 10s, stacks up to 2x/12% cap) —
+  // notable since several of her own kit abilities (Flowing Suffocation, Flickering Reverie, Perception
+  // Drain) are themselves flagged as Echo Skill casts, so this self-buff is easy to trigger.
   'Cantarella': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
       { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 10, condition: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap)' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal.',
+    note: 'Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal. Self: up to +12% Havoc DMG from Poison.',
   },
   'Ciaccona': {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
@@ -1225,8 +1446,11 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'defIgnore', value: 18, duration: 30 }],
-    note: 'Support/Healer. DEF Ignore 18% via Thread of Bane on Unseen Snare targets (30s). Heals team via Death Snip and Moment of Nihility; grants Shields via Sawring - Eradication.',
+    debuffs: [
+      { stat: 'defIgnore', value: 18, duration: 30, condition: "Thread of Bane: only benefits teammates who themselves apply/deal Negative Status DMG, not a free-for-all team buff" },
+      { stat: 'defShred', value: 12, duration: 2, condition: 'Havoc Bane: 1 stack (2% DEF Shred) per hit on an Unseen Snare target, up to 6 stacks, refreshed every 2s' },
+    ],
+    note: 'Support/Healer for Negative Status teams. DEF Ignore 18% via Thread of Bane and DEF Shred up to 12% via Havoc Bane both require the enemy to be marked by Unseen Snare, and Thread of Bane specifically only benefits Resonators who themselves inflict/deal Negative Status damage — Prydwen stresses her kit is close to non-functional outside Negative Status teams. Heals team via Death Snip and Moment of Nihility; grants Shields via Sawring - Eradication. Outro: teammates can stack +3 more Negative Status/Electro Rage for 20s.',
   },
   // ── 5★ Main DPS (mostly self-buffs, less team contribution) ──
   'Camellya': {
@@ -1239,12 +1463,17 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Self-buffing Main DPS. Seedbed: +15% Havoc DMG. Epiphyte: +15% Basic DMG.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
+  // equipped weapon's passive (12% Glacio + 24% Charged ATK) rather than her own kit — replaced with her
+  // real Forte Circuit "Final Bow" (+80% DMG Multiplier to all 3 Liberation abilities at full Substance).
+  // debuffs was empty, missing her real "Deconstruction" debuff (18% DEF ignore on hit, applied by
+  // Liberation and — via Inherent Skill Ars Gratia Artis — also her Intro/Chromatic Splendor/Forte Heavy).
   'Carlotta': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive' }],
-    debuffs: [],
-    note: 'Burst Glacio DPS. Weapon passive: 12% Glacio + 24% Charged ATK.',
+    selfBuffs: [{ stat: 'libDmg', value: 80, target: 'self', duration: 99, condition: 'Forte Circuit Final Bow: at full Substance, Liberation DMG Multiplier (Era of New Wave/Death Knell/Fatal Finale) +80%' }],
+    debuffs: [{ stat: 'defIgnore', value: 18, target: 'enemy', duration: 4, condition: 'Deconstruction: applied by Liberation, plus Intro/Chromatic Splendor/Forte Heavy via Ars Gratia Artis' }],
+    note: 'Burst Glacio Main DPS. Final Bow: +80% Liberation DMG Multiplier at full Substance. Deconstruction: -18% target DEF (4s).',
   },
   'Jinhsi': {
     outroBuffs: [],
@@ -1404,15 +1633,19 @@ const CHAR_BUFF_TABLE = {
     ],
     note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Weapon: DEF Ignore 8% (not 16%) + Erosion targets take +20% more DMG. Wind\'s Indelible Imprint debuffs Erosion-stacked targets up to +60% DMG taken. (Corrected 2026-08-16: fixed weapon DEF Ignore value — was double the real number and conflated with a separate effect; the "self elemDmg" entries were actually enemy-side debuffs, moved to debuffs; added the missing Wind\'s Indelible Imprint debuff.)',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
+  // equipped weapon's passive (12% Fusion DMG) instead of his own kit — replaced with his real Inherent
+  // Skill "Trial by Fire and Tide" (+15% Fusion DMG Bonus, plus increased interruption resistance during
+  // Mid-air Attacks).
   'Brant': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },
       { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Fusion DMG +12%' }],
+    selfBuffs: [{ stat: 'elemDmg', value: 15, target: 'self', duration: 99, condition: 'Inherent Skill Trial by Fire and Tide: +15% Fusion DMG Bonus (also grants interrupt resistance during Mid-air Attacks)' }],
     debuffs: [],
-    note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal. Weapon: Fusion DMG +12%.',
+    note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal + team shield from Forte. Inherent: +15% Fusion DMG Bonus.',
   },
   'Augusta': {
     outroBuffs: [{ stat: 'elemDmg', value: 15, target: 'next', duration: 14 }],
@@ -1430,8 +1663,8 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 85, target: 'self', duration: 14, condition: 'Liberation cast: +85% DMG Mult to Demon Hypostasis attacks' },
       { stat: 'atkPct', value: 20, target: 'self', duration: 4, condition: 'Burning Drive: +20% ATK on certain casts' },
     ],
-    debuffs: [],
-    note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit.',
+    debuffs: [{ stat: 'deepen', value: 60, target: 'enemy', duration: 0, condition: "Afterflame: each of up to 40 stacks (gained from any team Resonator's Echo Skill cast, capped once per Echo name) grants +1.5% DMG Taken on the target while Galbrena is in Demon Hypostasis, up to 60% — cleared when she exits the state" }],
+    note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit. Afterflame is a DMG Taken debuff on the enemy (not a self-buff), replenished by any teammate\'s Echo Skill casts — Prydwen notes it\'s realistically 36% without Phrolova, 48% with her (rarely maxed at 60%).',
   },
   'Luuk Herssen': {
     outroBuffs: [],
@@ -1465,12 +1698,17 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro (Unfinished Piece): +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60-100% CD from Aftersound stacking. Intro is "Suite of Quietus" (base) / "Suite of Immortality" (Maestro-enhanced). (Corrected 2026-08-16: Outro skill name was wrong — file previously called it "Final Applause"; the real base Intro name "Suite of Quietus" was also missing, previously only the enhanced Maestro form was listed.)',
   },
   // ── Electro characters with Electro Flare ──
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
+  // equipped weapon's passive (12% Electro DMG) rather than his own innate kit — replaced with his real
+  // Inherent Skill "Knowing" (+5% Electro DMG Bonus per Resonance Skill cast, 8s, stacks to 4×/20%
+  // cap). outroBuffs/libBuffs/debuffs confirmed empty: his Outro Chain Rule deals its own Electro DMG
+  // to the incoming Resonator's target rather than granting a DMG Amp buff, and he applies no debuffs.
   'Xiangli Yao': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Electro DMG +12%' }],
+    selfBuffs: [{ stat: 'elemDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Knowing: +5% Electro DMG Bonus per Resonance Skill cast (8s), stacks up to 4× (20% cap)' }],
     debuffs: [],
-    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
+    note: 'Intuition-state Liberation Main DPS. Outro Chain Rule deals bonus Electro DMG (237.63% ATK, up to 3 procs over 8s) on the incoming Resonator\'s Basic Attacks rather than granting a DMG Amp buff.',
   },
   // Jinhsi: defined earlier in Main DPS section
   'Rover: Spectro': {
@@ -1620,15 +1858,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Debut of Meteoric Radiance', '65.30% + 97.95%', 'Intro Skill used when swapping in from Mech Form.'],
     ['Outro', 'Silent Protection', '10-20% All-DMG Amp to team (20s), mode-dependent', 'Swap-out buff to the whole team; strength depends on which form she left in.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1206 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. Forte burst Returned from Ashes — his single
+  // biggest hit — was listed as '...665%' vs the real '...1322.09%'), the same halving pattern already
+  // found and fixed across Camellya/Carlotta/Roccia/Phoebe's rows. Also fixed 3 skill names that didn't
+  // match his actual kit at all: 'Bravo!' (Liberation) → 'To the Horizon', 'Here I Am!' (Intro) →
+  // 'Applaud for Me!', 'Standing Ovation' (Outro) → 'The Course is Set!' — the fabricated names would
+  // have broken the skill-icon/rotation substring lookups against his real skill list.
   'Brant': [
-    ['Basic ATK', 'Stage 1-4', '25.4% → 51% → 116.5% → 70.5%'],
-    ['Mid-air', 'Charged Combo', '61.8% → 167.1% → 46.8% → 85.1% → 127.6%'],
-    ['Heavy ATK', 'Rhapsodic Riff', '85%'],
-    ['Skill', 'Anchors Aweigh', '100.8% + 67.2%'],
-    ['Liberation', 'Bravo!', '42.8%×4 + 171.1%'],
-    ['Forte', 'Returned from Ashes', '23.8%×2 + 47.5% + 95%×2 + 665%'],
-    ['Intro', 'Here I Am!', '102% + 25.5%'],
-    ['Outro', 'Standing Ovation', '+20% Fusion DMG + 25% Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-4', '50.8% → 102% → 233% → 141%'],
+    ['Mid-air', 'Charged Combo', '123.6% → 334.2% → 93.6% → 170.2% → 255.2%'],
+    ['Heavy ATK', 'Rhapsodic Riff', '169.0%'],
+    ['Skill', 'Anchors Aweigh', '200.4% + 133.6%'],
+    ['Liberation', 'To the Horizon', '85.1%×4 + 340.2%'],
+    ['Forte', 'Returned from Ashes', '47.2%×2 + 94.4% + 188.9%×2 + 1322.1%'],
+    ['Intro', 'Applaud for Me!', '202.8% + 50.7%'],
+    ['Outro', 'The Course is Set!', '+20% Fusion DMG + 25% Skill DMG Amp (14s)'],
   ],
   'Calcharo': [
     ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%'],
@@ -1642,51 +1887,73 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2'],
     ['Outro', 'Shadowy Raid', '195.98%+391.96%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1603 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its real value (e.g. Ephemeral was '635%' vs the real 1262.45%,
+  // Fervor Efflorescent '605%' vs the real 1202.81%) — a consistent ~2x understatement suggesting a
+  // stale/mis-scaled data source. Outro (329.2% + 459%) was already correct and is unchanged.
   'Camellya': [
-    ['Basic ATK', 'Thorns 1-5', '31.5% → 46.8% → 76.5% → 248.4% → 96.9%'],
-    ['Heavy ATK', 'Standard', '44.3%×3'],
-    ['Skill', 'Crimson Blossom', '57.2%×2'],
-    ['Skill', 'Vining Waltz 1-4', '48.5% → 45.9% → 66.2% → 102%'],
-    ['Skill', 'Blazing Waltz', '11%×19'],
-    ['Forte', 'Ephemeral (Budding)', '635%'],
-    ['Liberation', 'Fervor Efflorescent', '605%'],
-    ['Intro', 'Everblooming', '100%'],
-    ['Outro', 'Twining', '329.2% + 459%'],
+    ['Basic ATK', 'Thorns 1-5', '62.53% → 46.48%×2 → 50.70%×3 → 24.70%×20 → 48.17%×4'],
+    ['Heavy ATK', 'Standard', '88.14%×3'],
+    ['Skill', 'Crimson Blossom', '113.62%×2'],
+    ['Skill', 'Vining Waltz 1-4', '96.33% → 45.63%×2 → 21.95%×6 → 67.59%×3'],
+    ['Skill', 'Blazing Waltz', '21.95%×19'],
+    ['Forte', 'Ephemeral (Budding)', '1262.45%'],
+    ['Liberation', 'Fervor Efflorescent', '1202.81%'],
+    ['Intro', 'Everblooming', '198.81%'],
+    ['Outro', 'Twining', '329.24% + 459.02%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1607 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. Perception Drain — her core Forte burst nuke —
+  // was listed as '336%×2' vs the real 667.99%×2), the same halving pattern already found and fixed
+  // across Camellya/Carlotta/Roccia/Phoebe/Brant's rows. Also fixed the Outro's name: 'Sweet Nightmare'
+  // doesn't match her kit at all — her real Outro is 'Gentle Tentacles' (confirmed on both Prydwen and
+  // nanoka); the fabricated name would have broken skill-icon/rotation substring lookups. The Outro's
+  // buff description (+20% Havoc DMG + 25% Skill DMG Amp) was already correct and is unchanged.
   'Cantarella': [
-    ['Basic ATK', 'Stage 1-3', '40% → 73.3% → 73%'],
-    ['Heavy ATK', 'Standard', '28.8%×2'],
-    ['Skill', 'Graceful Step', '37%×2'],
-    ['Skill', 'Flickering Reverie', '98.7%'],
-    ['Forte', 'Phantom Sting 1-3', '53.3% → 63.3% → 130%'],
-    ['Forte', 'Perception Drain', '336%×2'],
-    ['Liberation', 'Flowing Suffocation', '189.1% + 7.3%×21'],
-    ['Intro', 'Ripple', '21.3%×4'],
-    ['Outro', 'Sweet Nightmare', '+20% Havoc DMG + 25% Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-3', '79.5% → 145.8% → 145.1%'],
+    ['Heavy ATK', 'Standard', '57.2%×2'],
+    ['Skill', 'Graceful Step', '73.6%×2'],
+    ['Skill', 'Flickering Reverie', '196.2%'],
+    ['Forte', 'Phantom Sting 1-3', '106.0% → 125.9% → 258.5%'],
+    ['Forte', 'Perception Drain', '668.0%×2'],
+    ['Liberation', 'Flowing Suffocation', '376.0% + 14.5%×21'],
+    ['Intro', 'Ripple', '42.3%×4'],
+    ['Outro', 'Gentle Tentacles', '+20% Havoc DMG + 25% Skill DMG Amp (14s)'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1107 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its real value (e.g. Era of New Wave — her core Liberation nuke —
+  // was listed as '202.6%' vs the real 402.71%), the same halving pattern found and fixed in Camellya's
+  // row. Outro (794.2%) was already correct and is unchanged.
   'Carlotta': [
-    ['Basic ATK', 'Stage 1-2', '27.2% → 66.3%'],
-    ['Basic ATK', 'Necessary Measures 1-3', '33.2% → 67.2% → 117.3%'],
-    ['Heavy ATK', 'Standard', '76.5%'],
-    ['Heavy ATK', 'Containment Tactics', '114.8%'],
-    ['Forte', 'Imminent Oblivion', '33.6%×5 + 252.1%'],
-    ['Skill', 'Art of Violence', '72.5%×2'],
-    ['Skill', 'Chromatic Splendor', '56.7%×2 + 170.1%'],
-    ['Liberation', 'Era of New Wave', '202.6%'],
-    ['Liberation', 'Death Knell', '(92.3% + 7.3%×4) per shot'],
-    ['Liberation', 'Fatal Finale', '324.1%'],
-    ['Intro', 'Wintertime Aria', '90% + 30%×2'],
+    ['Basic ATK', 'Stage 1-2', '54.1% → 132.6%'],
+    ['Basic ATK', 'Necessary Measures 1-3', '66.4% → 134.4% → 234.6%'],
+    ['Heavy ATK', 'Standard', '153.0%'],
+    ['Heavy ATK', 'Containment Tactics', '229.6%'],
+    ['Forte', 'Imminent Oblivion', '67.2%×5 + 504.2%'],
+    ['Skill', 'Art of Violence', '145.0%×2'],
+    ['Skill', 'Chromatic Splendor', '113.4%×2 + 340.2%'],
+    ['Liberation', 'Era of New Wave', '405.2%'],
+    ['Liberation', 'Death Knell', '(184.6% + 14.6%×4) per shot'],
+    ['Liberation', 'Fatal Finale', '648.2%'],
+    ['Intro', 'Wintertime Aria', '180% + 60%×2'],
     ['Outro', 'Closing Remark', '794.2%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1409 sheet (Lv.10 skill attributes): most
+  // rows were roughly half their true value (e.g. her Fleurdelys-form Ultimate Blade of Howling Squall
+  // was listed as '6.6%×7 HP' vs the real 13.12%×7 HP), the same halving pattern already found and
+  // fixed across most of the recently-audited roster — but not uniformly here: her 'Sword to Call for
+  // Freedom' Intro row was already exactly correct (4.28% + 9.97%HP), showing this wasn't a single
+  // clean 2x scaling error but a row-by-row data entry issue. Every value below is now sourced directly
+  // from nanoka's precise Lv.10 multipliers rather than doubled from the old figures.
   'Cartethyia': [
-    ['Basic ATK', 'Base Form 1-4', '2.4%HP → 7%HP → 8.6%HP → 7.6%HP', 'Standard combo in her base sword form, scales off Max HP.'],
-    ['Basic ATK', 'Fleurdelys 1-5', '3.3%HP → 4.6%HP → 6.3%HP → 6.9%HP → 126.7%HP', 'Empowered combo used in Fleurdelys form.'],
-    ['Heavy ATK', 'Fleurdelys Enhanced', '3.9%×2 + 2%HP', 'Charged strike in Fleurdelys form.'],
-    ['Skill', 'Base Form', '3.5%×3 + 4.5%HP', 'Skill strike that applies Aero Erosion and summons a Sword Shadow.'],
-    ['Skill', 'Fleurdelys 1-2', '12.5%HP / 14.2%HP', 'Fleurdelys-form Skill variants.'],
+    ['Basic ATK', 'Base Form 1-4', '4.78%HP → 13.13%HP → 17.12%HP → 15.1%HP', 'Standard combo in her base sword form, scales off Max HP.'],
+    ['Basic ATK', 'Fleurdelys 1-5', '6.49%HP → 9.09%HP → 10.65%HP → 13.7%HP → 36%HP', 'Empowered combo used in Fleurdelys form.'],
+    ['Heavy ATK', 'Fleurdelys Enhanced', '7.78%×2 + 3.89%HP', 'Charged strike in Fleurdelys form.'],
+    ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies Aero Erosion and summons a Sword Shadow.'],
+    ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', 'Fleurdelys-form Skill variants (Sword to Answer Waves\' Call / May Tempest Break the Tides).'],
     ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP', 'Ultimate that transforms her into Fleurdelys form for 12s; no direct damage.'],
-    ['Liberation', 'Blade of Howling Squall', '6.6%×7 HP', 'Fleurdelys-form Ultimate finisher; removes Aero Erosion stacks from the target for bonus DMG.'],
-    ['Intro', "Sword to Mark Tide's Trace", '2.2% + 5%HP', 'Base-form swap-in opener.'],
+    ['Liberation', 'Blade of Howling Squall', '13.12%×7 HP', 'Fleurdelys-form Ultimate finisher; removes Aero Erosion stacks from the target for bonus DMG.'],
+    ['Intro', "Sword to Mark Tide's Trace", '2.08%×3 + 6.24%HP', 'Base-form swap-in opener.'],
     ['Intro', "Sword to Call for Freedom", '4.28% + 9.97%HP', 'Fleurdelys-form swap-in opener.'],
     ['Outro', "Wind's Divine Blessing", '+17.5% Aero DMG vs Negative Status (20s)', 'Swap-out buff to the active teammate against targets with a Negative Status.'],
   ],
@@ -1712,12 +1979,17 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Reverberance - Return', '95.43%', 'Swap-in opener strike.'],
     ['Outro', 'Unraveling - Law Zero', '+3 max Negative Status stacks (15s)', 'Swap-out buff letting the next Resonator stack more Negative Status on enemies.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1407 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. her Liberation nuke Singer's Triple Cadenza was
+  // listed as '553.5%' vs the real 1100.42%), the same halving pattern already found and fixed across
+  // Camellya/Carlotta/Roccia/Phoebe/Brant/Cantarella/Zani's rows. Outro (a DMG Amp buff description,
+  // unaffected by this bug) is unchanged.
   'Ciaccona': [
-    ['Basic ATK', 'Stage 1-4', '28.7% → 81.7% → 66.4% → 123%', 'Standard combo string; Stage 4 inflicts Aero Erosion.'],
-    ['Skill', 'Harmonic Allegro', '20.3%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
-    ['Forte', 'Quadruple Downbeat', '15.8%×10 + 158%', 'Forte finisher that consumes stacked Musical Essence.'],
-    ['Liberation', "Singer's Triple Cadenza", '553.5% + Tonic 3.1%×20/tick', 'Ultimate nuke followed by a lingering damage-over-time field.'],
-    ['Intro', 'Roaming with the Wind', '95.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
+    ['Basic ATK', 'Stage 1-4', '57.1% → 163.0% → 132.1% → 244.6%', 'Standard combo string; Stage 4 inflicts Aero Erosion.'],
+    ['Skill', 'Harmonic Allegro', '40.4%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
+    ['Forte', 'Quadruple Downbeat', '31.4%×10 + 314.0%', 'Forte finisher that consumes stacked Musical Essence.'],
+    ['Liberation', "Singer's Triple Cadenza", '1100.4% + Tonic 6.1%×20/tick', 'Ultimate nuke followed by a lingering damage-over-time field.'],
+    ['Intro', 'Roaming with the Wind', '189.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
     ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
   'Encore': [
@@ -1796,17 +2068,23 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Lion Awakens', '99.41%×2'],
     ['Outro', 'Frosty Marks', '587.94% ATK AoE', 'Pure-damage swap-out finisher — no team buff baseline (S4 chain grants team Glacio DMG +20%/30s).'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1207 sheet (Lv.10 skill attributes): every
+  // row was roughly half its true value (e.g. her Liberation nuke Fire-Kissed Glory was listed as
+  // '412.7%' vs the real 820.44%) — the same halving pattern already found and fixed across most of
+  // the recently-audited roster. The old Intro Try Focusing, Eh? note claiming "exact base number not
+  // published" was also wrong — nanoka does publish it (29.76%+42.16%×4), so the apologetic note is
+  // dropped along with the halved placeholder value.
   'Lupa': [
-    ['Basic ATK', 'Stage 1-4', '45.3% → 45.3% → 79.3% → 89.9%', 'Standard combo string, builds Wolflame.'],
-    ['Basic ATK', "Wolf's Claw", '36.3% + 9.1%×4 + 48.4%', 'Alt combo follow-up.'],
-    ['Mid-air', 'Starfall', '6.4%×4 + 59.4%', 'Airborne attack chain.'],
-    ['Skill', "Shewolf's Hunt", '70.8%', 'Base Skill dash strike.'],
-    ['Skill', 'Feral Fang', '157.7%', 'Empowered Skill against marked targets, +50% DMG Mult.'],
-    ['Skill', 'Dance with the Wolf', '28.2% + 21.1%×4 + 169.1%', 'Forte finisher combo.'],
-    ['Liberation', 'Fire-Kissed Glory', '412.7%', 'Ultimate nuke that also grants the team ATK/Fusion DMG buffs and enables Wild Hunt.'],
-    ['Liberation', 'Foebreaker', '153.1%', 'Follow-up hit tied to her Ultimate.'],
-    ['Intro', 'Try Focusing, Eh?', '15% + 21.2%×4', 'Base swap-in opener. (Approx. base-level value scaled from Lv.10 via the kit\'s standard ~50% level ratio — exact base number not published.)'],
-    ['Intro', 'Nowhere to Run!', '399.2% + 25%×4', 'Much stronger Intro used only once per Liberation, while in Wild Hunt state.'],
+    ['Basic ATK', 'Stage 1-4', '90.1% → 90.1% → 157.7% → 246.2%', 'Standard combo string, builds Wolflame.'],
+    ['Basic ATK', "Wolf's Claw", '72.2% + 18.0%×4 + 96.2%', 'Alt combo follow-up.'],
+    ['Mid-air', 'Starfall', '12.7%×4 + 118.1%', 'Airborne attack chain.'],
+    ['Skill', "Shewolf's Hunt", '140.8%', 'Base Skill dash strike.'],
+    ['Skill', 'Feral Fang', '313.6%', 'Empowered Skill against marked targets, +50% DMG Mult.'],
+    ['Skill', 'Dance with the Wolf', '56.0% + 42.0%×4 + 336.1%', 'Forte finisher combo.'],
+    ['Liberation', 'Fire-Kissed Glory', '820.4%', 'Ultimate nuke that also grants the team ATK/Fusion DMG buffs and enables Wild Hunt.'],
+    ['Liberation', 'Foebreaker', '304.5%', 'Follow-up hit tied to her Ultimate.'],
+    ['Intro', 'Try Focusing, Eh?', '29.8% + 42.2%×4', 'Base swap-in opener.'],
+    ['Intro', 'Nowhere to Run!', '793.6% + 49.6%×4', 'Much stronger Intro used only once per Liberation, while in Wild Hunt state.'],
     ['Outro', 'Stand by Me, Warrior', '+20% Fusion DMG + 25% Basic ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator.'],
   ],
   'Luuk Herssen': [
@@ -1843,25 +2121,34 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Convergence', '202.79%', 'Swap-in opener strike.'],
     ['Outro', 'Recursion', '+25% All DMG Amp (30s)', 'Swap-out buff granting the team +25% All DMG for a long duration.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1506 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its real value (e.g. Absolution Litany — her core Forte burst —
+  // was listed as '321%' vs the real 638.19%) — the same halving pattern already found and fixed across
+  // Camellya/Carlotta/Roccia's rows. Outro (528.4%, matching nanoka's 528.41% exactly) is unchanged.
   'Phoebe': [
-    ['Basic ATK', 'Stage 1-3', '14.9% → 24% → 7.2%×8'],
-    ['Heavy ATK', 'Standard', '20.8%×4'],
-    ['Skill', 'To Where Light Shines', '31.5%×2'],
-    ['Skill', "Chamuel's Star 1-3", '29.9% → 40% → 14.6%×6'],
-    ['Forte', 'Starflash', '41.6%×3'],
-    ['Forte', 'Absolution Litany', '321%'],
-    ['Liberation', 'Dawn of Enlightenment', '202% (+255% in Absolution)'],
-    ['Intro', 'Golden Grace', '100%'],
+    ['Basic ATK', 'Stage 1-3', '29.5% → 49.7% → 14.2%×8'],
+    ['Heavy ATK', 'Standard', '41.4%×4'],
+    ['Skill', 'To Where Light Shines', '62.6%×2'],
+    ['Skill', "Chamuel's Star 1-3", '59.4% → 79.5% → 28.9%×6'],
+    ['Forte', 'Starflash', '82.7%×3'],
+    ['Forte', 'Absolution Litany', '638.2%'],
+    ['Liberation', 'Dawn of Enlightenment', '401.6% (+255% in Absolution)'],
+    ['Intro', 'Golden Grace', '198.8%'],
     ['Outro', 'Attentive Heart', '528.4%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1608 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its true value (e.g. her Liberation cast Curtain Call was listed
+  // as '234%' vs the real 465.22%) — the same halving pattern already found and fixed across most of
+  // the recently-audited roster. The old Intro Suite of Quietus note claiming "exact base number not
+  // published" was also wrong — nanoka does publish it (80.61%+120.91%) — so that note is dropped.
   'Phrolova': [
-    ['Basic ATK', 'Stage 1-3', '53.8% → 48% → 98.6%', 'Standard combo string, builds Aftersound/Notes.'],
-    ['Heavy ATK', 'Scarlet Coda', '16.6%×2 + 6.2%×8 + 249% (+41.5% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
-    ['Skill', 'Whispers in Fleeting Dream', '53.3%×2', 'Quick Skill strike that enters Reincarnate.'],
-    ['Intro', 'Suite of Quietus', '40.6% + 60.8%', 'Base swap-in opener strike. (Approx. base-level value scaled from Lv.10 via the kit\'s standard ~50% level ratio — exact base number not published.)'],
-    ['Intro', 'Suite of Immortality', '300%', 'Enhanced Intro used only while in Maestro state — much stronger than the base opener.'],
-    ['Liberation', 'Maestro State: Hecate', 'Strings 175% / Winds 166.3% / Cadenza 175%', 'Summons Hecate for sustained off-field Havoc DMG during Maestro.'],
-    ['Liberation', 'Curtain Call', '234%', 'Ultimate cast that ends Resolving Chord and enters Maestro.'],
+    ['Basic ATK', 'Stage 1-3', '106.9% → 95.4% → 196.1%', 'Standard combo string, builds Aftersound/Notes.'],
+    ['Heavy ATK', 'Scarlet Coda', '33.0%×2 + 12.4%×8 + 495.1% (+82.55% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
+    ['Skill', 'Whispers in Fleeting Dream', '106.0%×2', 'Quick Skill strike that enters Reincarnate.'],
+    ['Intro', 'Suite of Quietus', '80.6% + 120.9%', 'Base swap-in opener strike.'],
+    ['Intro', 'Suite of Immortality', '596.4%', 'Enhanced Intro used only while in Maestro state — much stronger than the base opener.'],
+    ['Liberation', 'Maestro State: Hecate', 'Strings 347.9% / Winds 330.5% / Cadenza 347.9%', 'Summons Hecate for sustained off-field Havoc DMG during Maestro.'],
+    ['Liberation', 'Curtain Call', '465.2%', 'Ultimate cast that ends Resolving Chord and enters Maestro.'],
     ['Outro', 'Unfinished Piece', '+20% Havoc DMG + 25% Heavy ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator; grants Hecate 2 bonus attacks if cast during Maestro.'],
   ],
   'Qiuyuan': [
@@ -1875,13 +2162,17 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Attack the Must-Defend', '4.8%×5 + 24% + 72%', 'Swap-in opener, counted as Heavy ATK DMG.'],
     ['Outro', 'Strike Before Ready', '100% ATK + 50% Echo Skill DMG Amp (14s)', 'Swap-out buff granting the next Resonator Echo Skill DMG Amp.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1606 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. Real Fantasy's 3 hits were '162% → 171% → 180%'
+  // vs the real 322.08% → 339.97% → 357.86%) — the same halving pattern already found and fixed in
+  // Camellya's/Carlotta's rows. Outro (a DMG Amp buff description, not a raw multiplier) is unaffected.
   'Roccia': [
-    ['Basic ATK', 'Stage 1-4', '36.8% → 57.6% → 85% → 104.8%'],
-    ['Heavy ATK', 'Standard', '85%'],
-    ['Skill', 'Acrobatic Trick', '30.9%×8'],
-    ['Forte', 'Real Fantasy 1-3', '162% → 171% → 180%'],
-    ['Liberation', 'Commedia Improvviso!', '140%×3'],
-    ['Intro', 'Pero, Help!', '85%'],
+    ['Basic ATK', 'Stage 1-4', '73.2% → 114.4% → 169.0% → 208.4%'],
+    ['Heavy ATK', 'Standard', '169.0%'],
+    ['Skill', 'Acrobatic Trick', '61.5%×8'],
+    ['Forte', 'Real Fantasy 1-3', '322.1% → 340.0% → 357.9%'],
+    ['Liberation', 'Commedia Improvviso!', '278.3%×3'],
+    ['Intro', 'Pero, Help!', '169.0%'],
     ['Outro', 'Applause, Please!', '+20% Havoc DMG + 25% Basic ATK DMG Amp (14s)'],
   ],
   'Rover: Spectro': [
@@ -1986,17 +2277,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Raging Storm', '14.32%×10', 'Applies Sinner\'s Mark.'],
     ['Outro', 'Strategist', 'Electro DMG Amp +20% + Liberation DMG Amp +25% (14s)', 'Grants the incoming Resonator these buffs; no direct DMG.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1507 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. her core Inferno-Mode finisher Heavy Slash Nightfall
+  // was listed as '68% + 132% (+5% per Blaze)' vs the real 135.20%+262.43% with +9.95% per Blaze), the
+  // same halving pattern already found and fixed across Camellya/Carlotta/Roccia/Phoebe/Brant/
+  // Cantarella's rows. Outro (150%, matching nanoka's Lv.1 value exactly) was already correct.
   'Zani': [
-    ['Basic ATK', 'Stage 1-4', '29.6% → 40% → 64% → 136%', 'Standard combo string.'],
-    ['Heavy ATK', 'Standard', '20.7%×4', 'Charged combo hit.'],
-    ['Skill', 'Pinpoint Strike', '30.7% + 61.4%', 'Base Skill counter-style strike.'],
-    ['Skill', 'Targeted Action', '43.4% + 14.5% + 86.7%', 'Counter follow-up, empowered by her Resonance Chain.'],
-    ['Forte', 'Heavy Slash Daybreak', '100%', 'First stage of her Forte-empowered Heavy ATK.'],
-    ['Forte', 'Heavy Slash Dawning', '213.3%', 'Second, stronger stage of the Forte Heavy ATK.'],
-    ['Forte', 'Heavy Slash Nightfall', '68% + 132% (+5% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
-    ['Liberation', 'Rekindle', '160.2%', 'Ultimate that raises max Blaze and enters Inferno state.'],
-    ['Liberation', 'The Last Stand', '96.1% + 544.7%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
-    ['Intro', 'Immediate Execution', '12.2%×5 + 40.6%', 'Swap-in opener strike.'],
+    ['Basic ATK', 'Stage 1-4', '58.9% → 79.5% → 127.3% → 270.4%', 'Standard combo string.'],
+    ['Heavy ATK', 'Standard', '41.1%×4', 'Charged combo hit.'],
+    ['Skill', 'Pinpoint Strike', '61.0% + 122.0%', 'Base Skill counter-style strike.'],
+    ['Skill', 'Targeted Action', '86.2% + 28.7% + 172.4%', 'Counter follow-up, empowered by her Resonance Chain.'],
+    ['Forte', 'Heavy Slash Daybreak', '198.8%', 'First stage of her Forte-empowered Heavy ATK.'],
+    ['Forte', 'Heavy Slash Dawning', '424.1%', 'Second, stronger stage of the Forte Heavy ATK.'],
+    ['Forte', 'Heavy Slash Nightfall', '135.2% + 262.4% (+9.95% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
+    ['Liberation', 'Rekindle', '318.5%', 'Ultimate that raises max Blaze and enters Inferno state.'],
+    ['Liberation', 'The Last Stand', '191.1% + 1083.0%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
+    ['Intro', 'Immediate Execution', '24.2%×5 + 80.8%', 'Swap-in opener strike.'],
     ['Outro', 'Beacon For the Future', '150% (+10% per Ember stack)', 'Swap-out finisher that also grants allies hitting the marked target Spectro DMG Amp.'],
   ],
   'Zhezhi': [
@@ -2107,6 +2403,82 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Cantarella (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  'Cantarella': [
+    { type: 'Intro', skill: 'Cruise', note: 'Ripple variant, starts Basic ATK from Stage 3, grants 1 Trance' },
+    { type: 'Basic ATK', skill: 'Illusion Collapse Stage 3', note: 'grants 1 more Trance' },
+    { type: 'Skill', skill: 'Dance with Shadows', note: 'Graceful Step, grants 1 more Trance' },
+    { type: 'Liberation', skill: 'Beneath the Sea', note: 'Flowing Suffocation, grants 3 Trance (caps at 5), applies Diffusion Coordinated Attacks' },
+    { type: 'Heavy ATK', skill: 'Delusive Dive', note: 'consumes Trance, enters Mirage' },
+    { type: 'Skill', skill: 'Flickering Reverie', note: 'Mirage Skill replacement, applies Hazy Dream' },
+    { type: 'Forte', skill: 'Phantom Sting 1-3', note: 'Mirage Basic ATK combo, builds Shiver toward 3' },
+    { type: 'Forte', skill: 'Perception Drain', note: 'consumes 3 Shiver for the burst nuke, heals the team' },
+    { type: 'Outro', skill: 'Gentle Tentacles', duration: 14, note: 'grants the incoming Resonator Havoc + Resonance Skill DMG Amp' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Brant (2026-08-17, Chrome
+  // UA + google.com referer + jsRender). This section was previously entirely missing for him.
+  'Brant': [
+    { type: 'Intro', skill: 'Applaud for Me!', note: 'next Mid-air Attack starts at Stage 2' },
+    { type: 'Liberation', skill: 'To the Horizon', note: 'heals the team, enters Aflame (2x Bravo gain)' },
+    { type: 'Mid-air', skill: 'Stage 2-3 + Charged Attack + Flip', note: 'main Bravo-building combo' },
+    { type: 'Forte', skill: 'Returned from Ashes', note: 'consumes full Bravo, deals massive DMG + shields the team' },
+    { type: 'Outro', skill: 'The Course is Set!', duration: 14, note: 'grants the incoming Resonator Fusion + Resonance Skill DMG Amp' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Phoebe (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Uses her Absolution (self-DPS) rotation, Prydwen's higher-rated mode (T1.5 DPS vs T2 Hybrid) —
+  // Confession mode swaps the Forte cast for Utter Confession and only loops 2x instead of 4x.
+  'Phoebe': [
+    { type: 'Intro', skill: 'Golden Grace' },
+    { type: 'Skill', skill: 'To Where Light Shines', note: 'summons the Ring of Mirrors' },
+    { type: 'Forte', skill: 'Absolution Litany', note: 'consumes full Prayer, enters Absolution' },
+    { type: 'Liberation', skill: 'Dawn of Enlightenment', note: '+255% DMG Multiplier in Absolution' },
+    { type: 'Skill', skill: "Chamuel's Star 1-3", note: 'inside the Ring of Mirrors, ×4 loops' },
+    { type: 'Forte', skill: 'Starflash', note: 'after each Chamuel\'s Star combo, ×4 total' },
+    { type: 'Outro', skill: 'Attentive Heart', note: '+255% DMG Multiplier in Absolution' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Roccia (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  'Roccia': [
+    { type: 'Intro', skill: 'Pero, Help', note: 'grants 100 Imagination' },
+    { type: 'Basic ATK', skill: 'Pero, Easy Stage 4', note: 'skip straight to Stage 4 after Intro, grants 100 more Imagination' },
+    { type: 'Skill', skill: 'Acrobatic Trick', note: 'pulls enemies in, grants the last 100 Imagination, enters Beyond Imagination' },
+    { type: 'Forte', skill: 'Real Fantasy 1-3', note: '3 Forte bounces, counted as Heavy Attack DMG' },
+    { type: 'Liberation', skill: 'Commedia Improvviso!', note: 'AoE nuke + flat team ATK buff scaling with Crit Rate over 50%' },
+    { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'grants the incoming Resonator Havoc + Basic ATK DMG Amp, and replaces their Utility with the Magic Box' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Simplified from Prydwen's full "Burst Combo" (with its Warm Up pre-phase for 0-Substance starts)
+  // down to the core skill sequence, matching the level of detail used for the rest of the roster.
+  'Carlotta': [
+    { type: 'Intro', skill: 'Wintertime Aria', note: 'grants 30 Substance + 3 Moldable Crystals' },
+    { type: 'Skill', skill: 'Art of Violence', note: 'grants 3 more Moldable Crystals' },
+    { type: 'Skill', skill: 'Chromatic Splendor', note: 'consumes 6 Moldable Crystals for 60 Substance, enters Final Bow at 120' },
+    { type: 'Forte', skill: 'Imminent Oblivion', note: 'consumes 120 Substance, cuts Skill cooldown by 6s' },
+    { type: 'Liberation', skill: 'Era of New Wave', note: 'enters Twilight Tango, +80% DMG Multiplier from Final Bow' },
+    { type: 'Liberation', skill: 'Death Knell', note: '×4, builds Meta Vectors' },
+    { type: 'Liberation', skill: 'Fatal Finale', note: 'consumes 4 Meta Vectors, ends Twilight Tango' },
+    { type: 'Skill', skill: 'Art of Violence', note: 'sets up 30 Substance for the next rotation' },
+    { type: 'Skill', skill: 'Chromatic Splendor' },
+    { type: 'Outro', skill: 'Closing Remark' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Camellya (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Simplified from Prydwen's full swap/Echo-cancel-annotated combo down to the core skill sequence,
+  // matching the level of detail used for the rest of the roster's rotation entries.
+  'Camellya': [
+    { type: 'Intro', skill: 'Everblooming' },
+    { type: 'Skill', skill: 'Crimson Blossom', note: 'enters Blossom Mode (Red Hair)' },
+    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'full Blossom Mode combo, builds Crimson Pistils/Buds' },
+    { type: 'Liberation', skill: 'Fervor Efflorescent' },
+    { type: 'Basic ATK', skill: 'Vining Waltz 1', note: 'fills the last Concerto Energy needed' },
+    { type: 'Forte', skill: 'Ephemeral', duration: 15, note: 'consumes all Crimson Buds, enters Budding Mode' },
+    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'Budding Mode combo, +50-100% DMG Multiplier' },
+    { type: 'Skill', skill: 'Floral Ravage', note: 'ends Blossom Mode' },
+    { type: 'Outro', skill: 'Twining', note: 'empowered version deals bonus DMG since Ephemeral was cast this rotation' },
+  ],
   // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
   // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
   'Jianxin': [
@@ -2315,40 +2687,63 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Critical Protocol', duration: 30, note: 'DEF-scaling nuke, empowers team buffs' },
     { type: 'Outro', skill: 'Recursion', duration: 30, note: '+25% All DMG Amp to team' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry never
+  // used a single Basic ATK, put the base Skill (Eye of Unraveling — barely worth casting outside the
+  // Opener per Prydwen) before the Liberation, and skipped straight to Sawring - Blitz 1-3 instead of
+  // matching the actual Basic ATK → Liberation → Serrated Loop → Blitz 2-3 → Eradication loop. Rebuilt
+  // to match Prydwen's actual "Loop Rotation" (used every rotation after the Opener).
   'Chisa': [
-    { type: 'Intro', skill: 'Reverberance - Return' },
-    { type: 'Skill', skill: 'Eye of Unraveling', note: 'marks target for Negative Status' },
-    { type: 'Skill', skill: 'Serrated Loop', note: 'hold for more hits' },
-    { type: 'Forte', skill: 'Sawring - Blitz 1-3', note: 'builds Ring of Chainsaw stacks' },
-    { type: 'Forte', skill: 'Sawring - Eradication', note: 'scales with stacked Rings of Chainsaw' },
-    { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'Ultimate nuke, heals on cast' },
-    { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 15, note: 'next Resonator can stack more Negative Status' },
+    { type: 'Intro', skill: 'Reverberance - Return', note: 'also grants +20% Havoc DMG/Healing Bonus for 12s (Inherent Skill)' },
+    { type: 'Basic ATK', skill: 'Stage 2, Rending Lunge, Death Snip', note: 'Death Snip endlag partially cancelled by the Liberation' },
+    { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'heals the team, enters Woven Myriad - Convergence' },
+    { type: 'Skill', skill: 'Serrated Loop', note: 'at full Ring of Chainsaw — enters Chainsaw Mode' },
+    { type: 'Forte', skill: 'Sawring - Blitz 2-3', note: 'Chainsaw Mode combo' },
+    { type: 'Forte', skill: 'Sawring - Eradication', duration: 30, note: 'scales with Ring of Chainsaw consumed, grants team Shield, swap-cancel out' },
+    { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 20, note: 'next Resonator can stack +3 more Negative Status/Electro Rage' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // included Encroach and Volley of Death as rotation steps and put the Liberation after the Demon
+  // Hypostasis combo — but Prydwen's own review explicitly lists her base Resonance Skill and all Heavy
+  // Attacks as unused in practice (Basic Attacks/Dodge Counters restore Forte fastest and hit harder),
+  // and the Liberation must be cast BEFORE entering the Demon Hypostasis combo since its +85% DMG Mult
+  // buff applies to those very attacks. Rebuilt to match Prydwen's actual "Standard Rotation".
   'Galbrena': [
     { type: 'Intro', skill: 'Hellflare Overload' },
-    { type: 'Skill', skill: 'Encroach', note: 'builds Sinflame' },
-    { type: 'Skill', skill: 'Ascent of Malice', note: 'at max Sinflame, enters Demon Hypostasis' },
-    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'Demon Hypostasis combo' },
-    { type: 'Heavy ATK', skill: 'Volley of Death 1-3', note: 'charged combo finisher' },
-    { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'grants +85% DMG Mult to Demon Hypostasis attacks' },
+    { type: 'Basic ATK', skill: 'Stage 2-4, 2-3', note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1)' },
+    { type: 'Skill', skill: 'Ascent of Malice', note: 'at max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Liberation' },
+    { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows' },
+    { type: 'Basic ATK', skill: 'Seraphic Execution Stage 2-5, 3-5 (swap on final Stage 5)', note: 'Demon Hypostasis combo — Dodge Counter can substitute for Stage 3/4 for higher DMG and Forte if the enemy attacks' },
     { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry put
+  // her Skill before the Liberation and never mentioned the Flux jump-attack that switches her into New
+  // Moon — neither matches Prydwen's actual "Standard Sub DPS Rotation" (used alongside Augusta), which
+  // opens Intro straight into Liberation, then Flux into the Moonbow combo, and skips the base Skill
+  // entirely (Closing Refrain is only used in the longer "Extended"/Main DPS variants).
   'Iuno': [
-    { type: 'Intro', skill: 'Illuminated Manifestation' },
-    { type: 'Skill', skill: 'Pulse of Origins', note: 'or Closing Refrain to enter Lunar Cycle' },
-    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'empowered combo during Lunar Cycle' },
-    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'New Moon state follow-up, 2 charges' },
-    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'Forte-empowered finisher' },
-    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle burst phase' },
-    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator Heavy ATK DMG Amp' },
+    { type: 'Intro', skill: 'Illuminated Manifestation', note: 'restores 40 Sentience' },
+    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle, restores 60 Sentience' },
+    { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'jump attack, switches Half Moon → New Moon' },
+    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Sentience-enhanced combo, consumes up to 50 Sentience' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'New Moon follow-up, 2 charges, consumes up to 25 Sentience each' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'Forte finisher (swap-cancel), optional — cast for the extra team heal/Full Moon Domain, especially with Augusta on the team' },
+    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator 50% Heavy ATK DMG Amp' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
+  // buffs to Fleurdelys, central to her kit — and collapsed her two-phase Fleurdelys Skill 1/Skill 2
+  // loop into a single generic Basic ATK line. Rebuilt to match Prydwen's actual "Basic Rotation".
   'Cartethyia': [
-    { type: 'Intro', skill: "Sword to Mark Tide's Trace" },
-    { type: 'Skill', skill: 'Base Form', note: 'applies Aero Erosion, summons a Sword Shadow' },
-    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'builds Conviction toward transformation' },
-    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", note: 'transforms into Fleurdelys form for 12s' },
-    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'empowered Fleurdelys-form combo' },
-    { type: 'Liberation', skill: 'Blade of Howling Squall', duration: 15, note: 'Fleurdelys finisher, removes stacked Erosion for bonus DMG' },
+    { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: 'grants Sword of Discord' },
+    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'Stage 4 grants Sword of Divinity' },
+    { type: 'Skill', skill: 'Base Form', note: 'grants Sword of Virtue' },
+    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'recalls all 3 Sword Shadows, grants their buffs to Fleurdelys' },
+    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'transforms into Fleurdelys (Manifest)' },
+    { type: 'Skill', skill: "Fleurdelys 1", note: "Sword to Answer Waves' Call" },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Mid-air P3 into Basic P3-P5' },
+    { type: 'Skill', skill: 'Fleurdelys 2', note: 'May Tempest Break the Tides' },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Basic P3-P5 again, builds Conviction to 120' },
+    { type: 'Liberation', skill: 'Blade of Howling Squall', note: 'Fleurdelys finisher, removes stacked Erosion for bonus DMG, ends Manifest' },
     { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'boosts Aero DMG vs Negative Status targets' },
   ],
   'Ciaccona': [
@@ -2422,23 +2817,34 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Maestro State: Hecate', note: 'off-field Hecate attacks during Maestro' },
     { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'grants next Resonator Havoc + Heavy ATK DMG Amp' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // opened with a full Basic ATK combo before her Liberation and never mentioned Foebreaker, the
+  // Mid-air Attack chain, or Wolf's Claw — the actual core of her Forte-building loop. Rebuilt to match
+  // Prydwen's "Loop Rotation" (used whenever an Intro Skill is available, i.e. whenever she isn't the
+  // team's opener).
   'Lupa': [
     { type: 'Intro', skill: 'Try Focusing, Eh?' },
-    { type: 'Skill', skill: "Shewolf's Hunt", note: 'or Feral Fang against marked targets' },
-    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'builds Wolflame' },
-    { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher combo' },
-    { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'grants team ATK + Fusion RES ignore, enables Wild Hunt' },
-    { type: 'Intro', skill: 'Nowhere to Run!', note: 'stronger Wild Hunt Intro, once per Liberation' },
+    { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'fully restores Wolflame, grants team Pack Hunt + Glory buffs' },
+    { type: 'Skill', skill: 'Foebreaker', note: 'press Basic/Skill shortly after Liberation, enters Burning Matchpoint' },
+    { type: 'Mid-air', skill: 'Stage 1-2', note: 'builds toward Firestrike' },
+    { type: 'Mid-air', skill: 'Firestrike', note: 'consumes 50 Wolflame, grants 1 Wolfaith' },
+    { type: 'Heavy ATK', skill: "Wolf's Claw", note: 'press Basic after Firestrike, consumes 50 Wolflame, grants 1 more Wolfaith' },
+    { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher, consumes both Wolfaith' },
     { type: 'Outro', skill: 'Stand by Me, Warrior', duration: 14, note: 'grants next Resonator Fusion + Basic ATK DMG Amp' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // included the un-enhanced Basic ATK Stage 1-3 combo — but the Intro alone grants 400 of his 600 Forte
+  // ("Swordster's Soliloquy"), so Prydwen's actual "Standard Hybrid Rotation" skips straight from Intro
+  // into the enhanced Inkwash Basic Attack (Stage 3-4), never touching the plain Basic ATK. The base
+  // Skill (Through the Groves) is also optional/skippable — best cast before his rotation in quickswap,
+  // or held mid-rotation only if Concerto Energy is genuinely short.
   'Qiuyuan': [
-    { type: 'Intro', skill: 'Attack the Must-Defend' },
-    { type: 'Skill', skill: 'Through the Groves', note: 'or hold for Undaunted Wayfarer' },
-    { type: 'Basic ATK', skill: 'Stage 1-3', note: 'transitions into Inkwash form' },
-    { type: 'Forte', skill: 'Inkwash 1-4', note: 'main Inkwash-form combo' },
-    { type: 'Forte', skill: 'To Teach / To Save / To Sacrifice', note: 'Heavy ATK finisher, pick based on situation' },
-    { type: 'Liberation', skill: 'Sundering Strike', duration: 30, note: 'Ultimate nuke' },
-    { type: 'Outro', skill: 'Strike Before Ready', duration: 14, note: 'grants next Resonator Echo Skill DMG Amp' },
+    { type: 'Intro', skill: 'Attack the Must-Defend', note: 'grants 400 of 600 Forte, skips straight to Inkwash Stage 3' },
+    { type: 'Basic ATK', skill: 'Inkwash Stage 3-4', note: 'fills Forte to 600, endlag optionally cancelled by the Skill' },
+    { type: 'Skill', skill: 'Through the Groves', note: 'optional — best cast before this rotation via quickswap; skip if not needed for Energy' },
+    { type: 'Liberation', skill: 'Sundering Strike', duration: 30, note: 'cancels the Skill\'s endlag on hit, grants self/team Crit DMG at 65%+ Crit Rate' },
+    { type: 'Forte', skill: 'To Teach / To Save / To Sacrifice', note: 'Heavy ATK finisher sequence, empties Forte and restores Concerto Energy' },
+    { type: 'Outro', skill: 'Strike Before Ready', duration: 14, note: 'grants next Resonator 50% Echo Skill DMG Amp' },
   ],
 };
 
@@ -2743,6 +3149,304 @@ const SKILL_ICONS = {
     'Radiant Ruin': 'https://i.ibb.co/LX3NLrxP/Skill-Radiant-Ruin.webp', // Intro Skill
     'Carve and Draw': 'https://i.ibb.co/V0s9WpHG/Skill-Carve-and-Draw.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Xiangli Yao, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Probe (Basic ATK) has no dedicated wiki asset (it's itself a redirect to the generic
+  // Gauntlets icon), also covers Heavy ATK/Mid-air/Dodge Counter, same as Jianxin's shared icon.
+  'Xiangli Yao': {
+    'Probe': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Deduction': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp',
+    'Decipher': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp', // Forte-upgraded Skill, same wiki icon as base Deduction
+    'Forever Seeking': 'https://i.ibb.co/TMjphf6y/skill-forever-seeking.webp',
+    'Cogitation Model': 'https://i.ibb.co/CKYDdBRY/skill-cogitation.webp',
+    'Principle': 'https://i.ibb.co/cXpS7bBx/skill-principle.webp', // Intro Skill
+    'Chain Rule': 'https://i.ibb.co/spxqcJ3K/skill-chain-rule.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Shorekeeper, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
+  // upload. Origin Calculus (Basic ATK) uses the same generic Skill_Rectifier.png icon already
+  // re-hosted for Encore/Yinlin/Verina/Zhezhi.
+  'Shorekeeper': {
+    'Origin Calculus': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Chaos Theory': 'https://i.ibb.co/zTGgrNMM/skill-chaos-theory.webp',
+    'Astral Chord': 'https://i.ibb.co/pkXPr5P/skill-astral-chord.webp',
+    'End Loop': 'https://i.ibb.co/MD3NpydF/skill-end-loop.webp',
+    'Proof of Existence': 'https://i.ibb.co/RGFGH8d9/skill-proof-of-existence.webp', // Intro Skill
+    'Binary Butterfly': 'https://i.ibb.co/bjjhnD3f/skill-binary-butterfly.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Camellya, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Burgeoning (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png
+  // icon (same as Changli's).
+  'Camellya': {
+    'Burgeoning': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Valse of Bloom and Blight': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp',
+    'Vining Waltz': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Blossom Mode's Basic ATK replacement, same Skill icon
+    'Blazing Waltz': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp',
+    'Floral Ravage': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Blossom Mode's Resonance Skill replacement, same wiki icon
+    'Fervor Efflorescent': 'https://i.ibb.co/ynCScFqJ/skill-fervor.webp',
+    'Vegetative Universe': 'https://i.ibb.co/xqcjjVmq/skill-vegetative.webp',
+    'Ephemeral': 'https://i.ibb.co/xqcjjVmq/skill-vegetative.webp', // Forte Circuit's own upgraded skill, same icon
+    'Everblooming': 'https://i.ibb.co/M5ckbVnH/skill-everblooming.webp', // Intro Skill
+    'Twining': 'https://i.ibb.co/vvrfhcLs/skill-twining.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Carlotta, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Silent Execution (Basic ATK) has no dedicated wiki asset, uses the shared generic
+  // Skill_Pistols.png icon.
+  'Carlotta': {
+    'Silent Execution': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Standard': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Necessary Measures': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Moldable-Crystal Basic ATK replacement, same generic weapon icon
+    'Art of Violence': 'https://i.ibb.co/JwZzgLS1/skill-artofviolence.webp',
+    'Chromatic Splendor': 'https://i.ibb.co/JwZzgLS1/skill-artofviolence.webp', // 2nd-press of the same Resonance Skill, no separate wiki icon
+    'Lethal Repertoire': 'https://i.ibb.co/d49NGW0G/skill-lethalrepertoire.webp',
+    'Imminent Oblivion': 'https://i.ibb.co/d49NGW0G/skill-lethalrepertoire.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    'Era of New Wave': 'https://i.ibb.co/7dRxcfdg/skill-eraofnewwave.webp',
+    'Death Knell': 'https://i.ibb.co/7dRxcfdg/skill-eraofnewwave.webp', // Twilight Tango's Liberation-replacement attacks, same wiki icon
+    'Fatal Finale': 'https://i.ibb.co/7dRxcfdg/skill-eraofnewwave.webp',
+    'Wintertime Aria': 'https://i.ibb.co/d4gxw6J8/skill-wintertimearia.webp', // Intro Skill
+    'Closing Remark': 'https://i.ibb.co/qMFKhW2G/skill-closingremark.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Roccia, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Pero, Easy
+  // (Basic ATK) has no dedicated wiki asset (a redirect to the generic Gauntlets icon, same as
+  // Jianxin/Xiangli Yao's shared icon).
+  'Roccia': {
+    'Pero, Easy': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Real Fantasy': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Forte's Basic ATK replacement, same generic weapon icon
+    'Acrobatic Trick': 'https://i.ibb.co/SDY1939h/skill-acrobatictrick.webp',
+    'A Prop Master Prepares': 'https://i.ibb.co/fzp1K5tw/skill-apropmaster.webp',
+    'Commedia Improvviso!': 'https://i.ibb.co/z3hHnSz/skill-commediaimprov.webp',
+    'Pero, Help': 'https://i.ibb.co/kstN6pTM/skill-perohelp.webp', // Intro Skill
+    'Applause, Please!': 'https://i.ibb.co/v4xJNxgk/skill-applauseplease.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Phoebe, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. O Come Divine
+  // Light (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for
+  // Encore/Yinlin/Verina/Zhezhi/Shorekeeper.
+  'Phoebe': {
+    'O Come Divine Light': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    "Chamuel's Star": 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Ring-of-Mirrors Basic ATK replacement, same generic weapon icon
+    'To Where Light Shines': 'https://i.ibb.co/6JNhMwTC/skill-towherelight.webp',
+    'Radiant Invocation': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp',
+    'Starflash': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    'Absolution Litany': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp',
+    'Utter Confession': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp',
+    'Dawn of Enlightenment': 'https://i.ibb.co/ksP6pd0b/skill-dawnofenlight.webp',
+    'Golden Grace': 'https://i.ibb.co/gbGWpjwC/skill-goldengrace.webp', // Intro Skill
+    'Attentive Heart': 'https://i.ibb.co/HTZ5ppLG/skill-attentiveheart.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Brant, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Captain's
+  // Rhapsody (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png icon
+  // (same as Changli/Camellya's).
+  'Brant': {
+    "Captain's Rhapsody": 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Rhapsodic Riff': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Basic ATK-chained Heavy ATK, same generic weapon icon
+    'Anchors Aweigh': 'https://i.ibb.co/Kp8DPNdC/skill-anchorsaweigh.webp',
+    'Ocean Odyssey': 'https://i.ibb.co/VWJhTfT2/skill-oceanodyssey.webp',
+    'Returned from Ashes': 'https://i.ibb.co/VWJhTfT2/skill-oceanodyssey.webp', // Forte Circuit's own upgraded Skill, same icon
+    'To the Horizon': 'https://i.ibb.co/Gfc6z3zy/skill-totheheorizon.webp',
+    'Applaud for Me!': 'https://i.ibb.co/Xk8TCww5/skill-applaudforme.webp', // Intro Skill
+    'The Course is Set!': 'https://i.ibb.co/HpqFG4gz/skill-thecourseisset.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Cantarella, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Illusion Collapse (Basic ATK) has a dedicated icon (not a shared generic weapon one).
+  'Cantarella': {
+    'Illusion Collapse': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp',
+    'Standard': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp',
+    'Phantom Sting': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp', // Mirage's Basic ATK replacement, same icon
+    'Dance with Shadows': 'https://i.ibb.co/VWcwSf2F/skill-dancewithshadows.webp',
+    'Flickering Reverie': 'https://i.ibb.co/VWcwSf2F/skill-dancewithshadows.webp', // Mirage's Resonance Skill replacement, same wiki icon
+    'Between Illusion and Reality': 'https://i.ibb.co/SDPF5pzn/skill-betweenillusion.webp',
+    'Perception Drain': 'https://i.ibb.co/SDPF5pzn/skill-betweenillusion.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Beneath the Sea': 'https://i.ibb.co/60bNqfnF/skill-beneaththesea.webp',
+    'Cruise': 'https://i.ibb.co/DgDVdZ3T/skill-cruise.webp', // Intro Skill
+    'Gentle Tentacles': 'https://i.ibb.co/fVyzhpgr/skill-gentletentacles.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Zani, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Routine
+  // Negotiation (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Gauntlets.webp
+  // icon (same as Jianxin/Xiangli Yao/Roccia's).
+  'Zani': {
+    'Routine Negotiation': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Heavy Slash': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement, same generic weapon icon
+    'Restless Watch': 'https://i.ibb.co/Cpng0BLF/skill-restlesswatch.webp',
+    'Pinpoint Strike': 'https://i.ibb.co/Cpng0BLF/skill-restlesswatch.webp', // same Resonance Skill's parry counter, same wiki icon
+    'Targeted Action': 'https://i.ibb.co/Cpng0BLF/skill-restlesswatch.webp',
+    'There Will Be A Light': 'https://i.ibb.co/0jtmQHtM/skill-therewillbealight.webp',
+    'Between Dawn and Dusk': 'https://i.ibb.co/tpPYsMpx/skill-betweendawndusk.webp',
+    'Rekindle': 'https://i.ibb.co/tpPYsMpx/skill-betweendawndusk.webp', // Liberation's own named cast, same icon
+    'The Last Stand': 'https://i.ibb.co/tpPYsMpx/skill-betweendawndusk.webp',
+    'Immediate Execution': 'https://i.ibb.co/Xx8gjJV2/skill-immediateexecution.webp', // Intro Skill
+    'Beacon For the Future': 'https://i.ibb.co/yczmx4Lj/skill-beaconforfuture.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Ciaccona, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Quadruple
+  // Time Steps (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Pistols.webp icon
+  // (same as Carlotta's).
+  'Ciaccona': {
+    'Quadruple Time Steps': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Standard': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Harmonic Allegro': 'https://i.ibb.co/pjvmZNW0/skill-harmonicallegro.webp',
+    'Symphony of Wind and Verse': 'https://i.ibb.co/rDrSyYC/skill-symphonywindverse.webp',
+    'Quadruple Downbeat': 'https://i.ibb.co/rDrSyYC/skill-symphonywindverse.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    "Singer's Triple Cadenza": 'https://i.ibb.co/Q3SvKHzY/skill-singerstriplecadenza.webp',
+    'Roaming with the Wind': 'https://i.ibb.co/RGVC6MLt/skill-roamingwithwind.webp', // Intro Skill
+    'Windcalling Tune': 'https://i.ibb.co/wFNRyDTB/skill-windcallingtune.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Cartethyia, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
+  // upload. Sword to Carve My Forms (Basic ATK) has no dedicated wiki asset, uses the shared generic
+  // Skill_Sword.webp icon (same as Changli/Camellya/Brant's).
+  'Cartethyia': {
+    'Sword to Carve My Forms': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Base Form': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Fleurdelys/base-form Basic-Heavy-Mid-air variants share the generic icon
+    'Fleurdelys': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Sword to Bear Their Names': 'https://i.ibb.co/cX7v4GDm/skill-swordbeartheirnames.webp',
+    'Sword to Answer Waves': 'https://i.ibb.co/cX7v4GDm/skill-swordbeartheirnames.webp', // Fleurdelys Resonance Skill replacement, same wiki icon
+    'May Tempest Break the Tides': 'https://i.ibb.co/cX7v4GDm/skill-swordbeartheirnames.webp',
+    'Tempest': 'https://i.ibb.co/z3B1sYY/skill-tempest.webp',
+    "A Knight's Heartfelt Prayers": 'https://i.ibb.co/BVqRm8KJ/skill-knightsheartfelt.webp',
+    'Blade of Howling Squall': 'https://i.ibb.co/BVqRm8KJ/skill-knightsheartfelt.webp', // Liberation's own upgraded cast, same icon
+    "Sword to Mark Tide's Trace": 'https://i.ibb.co/k2KS9cv0/skill-swordmarktidestrace.webp', // Intro Skill
+    'Sword to Call for Freedom': 'https://i.ibb.co/k2KS9cv0/skill-swordmarktidestrace.webp', // Fleurdelys Intro replacement, same icon
+    "Wind's Divine Blessing": 'https://i.ibb.co/KzFYk17W/skill-windsdivineblessing.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lupa, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Flaming Star
+  // (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Broadblade.webp icon.
+  'Lupa': {
+    'Flaming Star': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
+    'Standard': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
+    "Wolf's Claw": 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
+    'Starfall': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
+    "Shewolf's Hunt": 'https://i.ibb.co/5WbyTxzD/skill-shewolfshunt.webp',
+    'Feral Fang': 'https://i.ibb.co/5WbyTxzD/skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
+    'Ignis Lupa': 'https://i.ibb.co/S7W3d25X/skill-ignislupa.webp',
+    'Dance with the Wolf': 'https://i.ibb.co/S7W3d25X/skill-ignislupa.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Fire-Kissed Glory': 'https://i.ibb.co/mrPk9FF3/skill-firekissedglory.webp',
+    'Foebreaker': 'https://i.ibb.co/mrPk9FF3/skill-firekissedglory.webp', // Liberation follow-up, same wiki icon
+    'Try Focusing, Eh?': 'https://i.ibb.co/jkNfHp2y/skill-tryfocusingeh.webp', // Intro Skill
+    'Nowhere to Run!': 'https://i.ibb.co/jkNfHp2y/skill-tryfocusingeh.webp', // Intro's Wild Hunt upgrade, same icon
+    'Stand by Me, Warrior': 'https://i.ibb.co/bjzbJyCH/skill-standbymewarrior.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Phrolova, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
+  // upload. Movement of Life and Death (Basic ATK) uses the shared generic Skill_Rectifier.webp icon
+  // (same as Encore/Yinlin/Verina/Zhezhi/Shorekeeper/Phoebe's).
+  'Phrolova': {
+    'Movement of Life and Death': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Scarlet Coda': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
+    'Whispers in a Fleeting Dream': 'https://i.ibb.co/6J40K1F8/skill-whispersfleetingdream.webp',
+    'Whispers in Fleeting Dream': 'https://i.ibb.co/6J40K1F8/skill-whispersfleetingdream.webp',
+    'Movement of Fate and Finality': 'https://i.ibb.co/847dkvDn/skill-rhapsodynewworld.webp',
+    'Murmurs in a Haunting Dream': 'https://i.ibb.co/847dkvDn/skill-rhapsodynewworld.webp',
+    'Rhapsody of a New World': 'https://i.ibb.co/847dkvDn/skill-rhapsodynewworld.webp',
+    'Waltz of Forsaken Depths': 'https://i.ibb.co/RG9T1CF5/skill-waltzforsakendepths.webp',
+    'Maestro State': 'https://i.ibb.co/RG9T1CF5/skill-waltzforsakendepths.webp', // Hecate's off-field attacks during Liberation's Maestro state, same icon
+    'Curtain Call': 'https://i.ibb.co/RG9T1CF5/skill-waltzforsakendepths.webp',
+    'Suite of Quietus': 'https://i.ibb.co/7dWwXT4m/skill-suiteofquietus.webp', // Intro Skill
+    'Suite of Immortality': 'https://i.ibb.co/7dWwXT4m/skill-suiteofquietus.webp', // Maestro-enhanced Intro, same icon
+    'Unfinished Piece': 'https://i.ibb.co/DDQz9zyk/skill-unfinishedpiece.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Augusta, re-hosted on ibb.co (2026-08-17).
+  'Augusta': {
+    "Hunter's Path": 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Hunter's_Path.png resolves to this same asset)
+    "Warrior's Blade": 'https://i.ibb.co/Mxg3Z8k9/warriors-blade.webp',
+    'Undying Sunlight': 'https://i.ibb.co/Mxg3Z8k9/warriors-blade.webp', // Ascendancy-enhanced Resonance Skill, same wiki icon
+    'Sunward Conquest': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp', // Resonance Liberation (Sword of Eternal Oath)
+    'Sword of Eternal Oath': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp',
+    'Sublime is the Sun': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp', // held Liberation alt-cast, same icon
+    'Sunborne': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp',
+    'Everbright Protector': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp',
+    'Call Me By the Sun': 'https://i.ibb.co/21vnPFbj/call-me-by-sun.webp', // Forte Circuit
+    "Glory's Favor": 'https://i.ibb.co/RT0Pjfbz/glorys-favor.webp', // Inherent Skill
+    'Blazing Valor': 'https://i.ibb.co/C3Gkv7Pf/blazing-valor.webp', // Inherent Skill
+    'Stride of Goldenflare': 'https://i.ibb.co/Kj6cSTM0/stride-goldenflare.webp', // Intro Skill
+    'Battlesong of the Unyielding': 'https://i.ibb.co/20CntVcB/battlesong-unyielding.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Iuno, re-hosted on ibb.co (2026-08-17).
+  'Iuno': {
+    'Moon Steps': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Moon_Steps.png resolves to this same asset)
+    'Moonring': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Moonbow': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Foresight Fugue': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Pulse of Origins': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Closing Refrain': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Unfinished Refrain': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Arc Beyond the Edge': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Beneath Lunar Tides': 'https://i.ibb.co/XZR1WbdL/skill-beneath-lunar-tides.webp', // Resonance Liberation
+    'Ebb and Flow': 'https://i.ibb.co/bRJF5hbd/skill-ebb-and-flow.webp', // Forte Circuit
+    'Absolute Fullness': 'https://i.ibb.co/bRJF5hbd/skill-ebb-and-flow.webp', // Forte-empowered Heavy ATK, same icon
+    'Waxing Ascent': 'https://i.ibb.co/HDtjs76J/skill-waxing-ascent.webp', // Inherent Skill
+    'Derivation': 'https://i.ibb.co/k2FqSVVC/skill-derivation.webp', // Inherent Skill
+    'Illuminated Manifestation': 'https://i.ibb.co/TqYmWyr5/skill-illuminated-manifestation.webp', // Intro Skill
+    'From Gloom to Gleam': 'https://i.ibb.co/V0xjgmx3/skill-from-gloom-to-gleam.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Galbrena, re-hosted on ibb.co (2026-08-17).
+  'Galbrena': {
+    "Slayer's Trigger": 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Slayer's_Trigger.png resolves to this same asset)
+    'Stage 1-4': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Seraphic Execution': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Demon Hypostasis Basic ATK replacement, same generic weapon icon
+    'Volley of Death': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Flamewing Verdict': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Edge Transcended': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Encroach': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Ascent of Malice': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Ravage': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Hellfire Absolution': 'https://i.ibb.co/60YMcsnV/skill-hellfire-absolution.webp', // Resonance Liberation
+    'Beyond Threshold': 'https://i.ibb.co/LDJBGZSx/skill-beyond-threshold.webp', // Forte Circuit
+    'Oathbound Hunt': 'https://i.ibb.co/hFY1T091/skill-oathbound-hunt.webp', // Inherent Skill
+    'Sin Feaster': 'https://i.ibb.co/cckG70y9/skill-sin-feaster.webp', // Inherent Skill
+    'Hellflare Overload': 'https://i.ibb.co/fYZhFW4t/skill-hellflare-overload.webp', // Intro Skill
+    'Ashen Pursuit': 'https://i.ibb.co/ch99n99W/skill-ashen-pursuit.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Qiuyuan, re-hosted on ibb.co (2026-08-17).
+  'Qiuyuan': {
+    'Inkwash': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Inkwash.png resolves to this same asset)
+    'Thus Spoke the Blade': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp', // Forte-enhanced Basic ATK/Heavy ATK replacements, same generic weapon icon
+    'Through the Groves': 'https://i.ibb.co/Wpj83CS4/skill-through-the-groves.webp',
+    'Undaunted Wayfarer': 'https://i.ibb.co/Wpj83CS4/skill-through-the-groves.webp', // held Skill variant, same icon
+    'Straw Cape in Drizzly Rain': 'https://i.ibb.co/Wpj83CS4/skill-through-the-groves.webp', // S3 Skill replacement, same icon
+    'Sundering Strike': 'https://i.ibb.co/0Lg31jf/skill-sundering-strike.webp', // Resonance Liberation
+    'Verdant Edge': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp', // Forte Circuit
+    'To Teach': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp', // Forte Heavy ATK finishers, same icon
+    'To Save': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp',
+    'To Sacrifice': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp',
+    'Quietude Within': 'https://i.ibb.co/DgW9vm0Y/skill-quietude-within.webp', // Inherent Skill
+    'Drink Away Woes Age-Old': 'https://i.ibb.co/357LJjGX/skill-drink-away-woes.webp', // Inherent Skill
+    'Attack the Must-Defend': 'https://i.ibb.co/DH5PV4Mc/skill-attack-the-must-defend.webp', // Intro Skill
+    'Strike Before Ready': 'https://i.ibb.co/m5YJ7bBB/skill-strike-before-ready.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Chisa, re-hosted on ibb.co (2026-08-17).
+  'Chisa': {
+    'Reign of Silence': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Reign_of_Silence.png resolves to this same asset)
+    'Rending Lunge': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp',
+    'Death Snip': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp',
+    'Thread Withdrawn': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp',
+    'Fractured Composition': 'https://i.ibb.co/Q7HCQCXS/skill-fractured-composition.webp',
+    'Eye of Unraveling': 'https://i.ibb.co/Q7HCQCXS/skill-fractured-composition.webp',
+    'Serrated Loop': 'https://i.ibb.co/Q7HCQCXS/skill-fractured-composition.webp',
+    'Moment of Nihility': 'https://i.ibb.co/wrM902F9/skill-moment-of-nihility.webp', // Resonance Liberation
+    'Sight of Unraveling - Oblivion': 'https://i.ibb.co/4g9Q3h0k/skill-sight-of-unraveling.webp', // Forte Circuit
+    'Sawring': 'https://i.ibb.co/4g9Q3h0k/skill-sight-of-unraveling.webp', // Sawring - Blitz/Eradication, Forte-state attacks, same icon
+    'Inescapable Fate': 'https://i.ibb.co/mCmwWwsJ/skill-inescapable-fate.webp', // Inherent Skill
+    'All Ends Here': 'https://i.ibb.co/KzpjDvHh/skill-all-ends-here.webp', // Inherent Skill
+    'Reverberance - Return': 'https://i.ibb.co/KxsFThC1/skill-reverberance-return.webp', // Intro Skill
+    'Unraveling - Law Zero': 'https://i.ibb.co/mC9hRxyB/skill-unraveling-law-zero.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2854,6 +3558,199 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/8gCVrMWV/Sequence-Node-Compositions-Clue.webp',
     s6: 'https://i.ibb.co/MDqdsTLR/Sequence-Node-Infinite-Legacy.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Xiangli Yao, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live build
+  // page and ww.nanoka.cc/character/1305, all 6 URLs verified 200/live before upload.
+  'Xiangli Yao': {
+    s1: 'https://i.ibb.co/zHRQ6hSs/node-s1-prodigy.webp',
+    s2: 'https://i.ibb.co/DDWBkrdQ/node-s2-traces.webp',
+    s3: 'https://i.ibb.co/0RyGcG7t/node-s3-ruins.webp',
+    s4: 'https://i.ibb.co/fzP6KpqR/node-s4-vessel.webp',
+    s5: 'https://i.ibb.co/DPTYYfnj/node-s5-end.webp',
+    s6: 'https://i.ibb.co/bg0ffhj0/node-s6-solace.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Shorekeeper, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1505, all 6 URLs verified 200/live before upload.
+  'Shorekeeper': {
+    s1: 'https://i.ibb.co/mrNGMGDz/node-s1-unspoken.webp',
+    s2: 'https://i.ibb.co/1fsfvs1s/node-s2-nightsgift.webp',
+    s3: 'https://i.ibb.co/PZkV3FHz/node-s3-infinity.webp',
+    s4: 'https://i.ibb.co/V00QHX4H/node-s4-overflowing.webp',
+    s5: 'https://i.ibb.co/S4R3jKr6/node-s5-echoes.webp',
+    s6: 'https://i.ibb.co/d45HxqB9/node-s6-newworld.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Camellya, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1603, all 6 URLs verified 200/live before upload.
+  'Camellya': {
+    s1: 'https://i.ibb.co/vy9wwMt/node-s1-somewhere.webp',
+    s2: 'https://i.ibb.co/ZprdWSNF/node-s2-callingupon.webp',
+    s3: 'https://i.ibb.co/gZDgkrSv/node-s3-budadorned.webp',
+    s4: 'https://i.ibb.co/mm8Yz1g/node-s4-rootsset.webp',
+    s5: 'https://i.ibb.co/yFZ91RMt/node-s5-infinityheld.webp',
+    s6: 'https://i.ibb.co/FbpkkPqC/node-s6-bloomfor.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Carlotta, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1107, all 6 URLs verified 200/live before upload.
+  'Carlotta': {
+    s1: 'https://i.ibb.co/1GCPHM5j/node-s1-beauty.webp',
+    s2: 'https://i.ibb.co/1YD00C0c/node-s2-fallen.webp',
+    s3: 'https://i.ibb.co/CK20vW27/node-s3-adelante.webp',
+    s4: 'https://i.ibb.co/DDVdry80/node-s4-yesterdays.webp',
+    s5: 'https://i.ibb.co/tPpvpmFC/node-s5-toast.webp',
+    s6: 'https://i.ibb.co/Kx65J6sT/node-s6-curtain.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Roccia, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1606, all 6 URLs verified 200/live before upload.
+  'Roccia': {
+    s1: 'https://i.ibb.co/q3QR4dS0/node-s1-shadows.webp',
+    s2: 'https://i.ibb.co/VWZG28Xy/node-s2-luceanite.webp',
+    s3: 'https://i.ibb.co/GfR6DwXb/node-s3-heart.webp',
+    s4: 'https://i.ibb.co/7Jy9x2yr/node-s4-wonders.webp',
+    s5: 'https://i.ibb.co/BHYrDMBc/node-s5-dreams.webp',
+    s6: 'https://i.ibb.co/3yGZ0kCy/node-s6-goldenwings.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Phoebe, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1506, all 6 URLs verified 200/live before upload.
+  'Phoebe': {
+    s1: 'https://i.ibb.co/TqtQJ6NK/node-s1-warmlight.webp',
+    s2: 'https://i.ibb.co/k245MwKF/node-s2-boatadrift.webp',
+    s3: 'https://i.ibb.co/8DLvhqMz/node-s3-daisy.webp',
+    s4: 'https://i.ibb.co/8gfbj5t1/node-s4-ringingbells.webp',
+    s5: 'https://i.ibb.co/HDfvkYsV/node-s5-prayer.webp',
+    s6: 'https://i.ibb.co/HT7qsxPx/node-s6-whispering.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Brant, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1206, all 6 URLs verified 200/live before upload.
+  'Brant': {
+    s1: 'https://i.ibb.co/Y4GdsDmY/node-s1-currentswinds.webp',
+    s2: 'https://i.ibb.co/gkF07br/node-s2-smilescheers.webp',
+    s3: 'https://i.ibb.co/Y49jmcXH/node-s3-stormsisail.webp',
+    s4: 'https://i.ibb.co/Fb56p7DW/node-s4-freedomising.webp',
+    s5: 'https://i.ibb.co/chfPWLFw/node-s5-actorsstage.webp',
+    s6: 'https://i.ibb.co/xnDJCdF/node-s6-captainscarnevale.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Cantarella, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1607, all 6 URLs verified 200/live before upload.
+  'Cantarella': {
+    s1: 'https://i.ibb.co/0RDfQXSY/node-s1-embracewaves.webp',
+    s2: 'https://i.ibb.co/LXfVYCkX/node-s2-surrenderreverie.webp',
+    s3: 'https://i.ibb.co/hxxmdVSb/node-s3-gazeabyss.webp',
+    s4: 'https://i.ibb.co/PZhy4tmF/node-s4-beholdsoul.webp',
+    s5: 'https://i.ibb.co/0g4C5hH/node-s5-restreflection.webp',
+    s6: 'https://i.ibb.co/KxGNqZtQ/node-s6-falldream.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Zani, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1507, all 6 URLs verified 200/live before upload.
+  'Zani': {
+    s1: 'https://i.ibb.co/gbN5SWFV/node-s1-alarmclock.webp',
+    s2: 'https://i.ibb.co/N25LYLMp/node-s2-stalebread.webp',
+    s3: 'https://i.ibb.co/6kDrsB0/node-s3-newcommute.webp',
+    s4: 'https://i.ibb.co/nsWMbP51/node-s4-efficiency.webp',
+    s5: 'https://i.ibb.co/tpwvvSMk/node-s5-delivered.webp',
+    s6: 'https://i.ibb.co/Q3vpqhCQ/node-s6-clockout.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Ciaccona, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1407, all 6 URLs verified 200/live before upload.
+  'Ciaccona': {
+    s1: 'https://i.ibb.co/M4Jpwcj/node-s1-wherewindsings.webp',
+    s2: 'https://i.ibb.co/xtVFFs9Y/node-s2-songfourseasons.webp',
+    s3: 'https://i.ibb.co/W4dYrWRZ/node-s3-starlitimprov.webp',
+    s4: 'https://i.ibb.co/XxMdXrfV/node-s4-toccatafugue.webp',
+    s5: 'https://i.ibb.co/4n8DXGQZ/node-s5-eternalidyll.webp',
+    s6: 'https://i.ibb.co/8gp4zwSF/node-s6-unendingcadence.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Cartethyia, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1409, all 6 URLs verified 200/live before upload.
+  'Cartethyia': {
+    s1: 'https://i.ibb.co/0yZrwg1M/node-s1-crowndestined.webp',
+    s2: 'https://i.ibb.co/99w78Rv3/node-s2-bladebroken.webp',
+    s3: 'https://i.ibb.co/BRNk023/node-s3-prisonerhanged.webp',
+    s4: 'https://i.ibb.co/vxL2nJYQ/node-s4-sacrificemade.webp',
+    s5: 'https://i.ibb.co/4wX7vYgB/node-s5-hopereshaped.webp',
+    s6: 'https://i.ibb.co/ycVQfbhB/node-s6-freedomfound.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lupa, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1207, all 6 URLs verified 200/live before upload.
+  'Lupa': {
+    s1: 'https://i.ibb.co/QFQ1RhRB/node-s1-beholdnameless.webp',
+    s2: 'https://i.ibb.co/9H67hH9f/node-s2-everyground.webp',
+    s3: 'https://i.ibb.co/9kyL2xf3/node-s3-wolflamehowls.webp',
+    s4: 'https://i.ibb.co/23DMbTHn/node-s4-highandaflame.webp',
+    s5: 'https://i.ibb.co/99p0trjM/node-s5-embracethunderous.webp',
+    s6: 'https://i.ibb.co/MT1mRss/node-s6-brightestflaming.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Phrolova, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1608, all 6 URLs verified 200/live before upload.
+  'Phrolova': {
+    s1: 'https://i.ibb.co/KpvxFB70/node-s1-keytonetherworld.webp',
+    s2: 'https://i.ibb.co/8nw8Sy8L/node-s2-ropetiedtolife.webp',
+    s3: 'https://i.ibb.co/TBSCHsv0/node-s3-daggercutclean.webp',
+    s4: 'https://i.ibb.co/JwDPJhkf/node-s4-torchilluminating.webp',
+    s5: 'https://i.ibb.co/1f1yj3zj/node-s5-forkedroad.webp',
+    s6: 'https://i.ibb.co/dStZKfy/node-s6-nighttodepart.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Augusta, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on Prydwen's live build page.
+  'Augusta': {
+    s1: 'https://i.ibb.co/HTwqDr5n/node-s1.webp',
+    s2: 'https://i.ibb.co/DHWH8D47/node-s2.webp',
+    s3: 'https://i.ibb.co/QwdPnbk/node-s3.webp',
+    s4: 'https://i.ibb.co/mCrQsqH3/node-s4.webp',
+    s5: 'https://i.ibb.co/ccxMpt1c/node-s5.webp',
+    s6: 'https://i.ibb.co/cKP8919X/node-s6.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Iuno, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Iuno': {
+    s1: 'https://i.ibb.co/kWsh4y7/node-s1.webp',
+    s2: 'https://i.ibb.co/QRQmjWq/node-s2.webp',
+    s3: 'https://i.ibb.co/v6f4N31z/node-s3.webp',
+    s4: 'https://i.ibb.co/k2ZxwPWd/node-s4.webp',
+    s5: 'https://i.ibb.co/604PG1hL/node-s5.webp',
+    s6: 'https://i.ibb.co/67Frp4bF/node-s6.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Galbrena, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Galbrena': {
+    s1: 'https://i.ibb.co/jNH3nSM/node-s1.webp',
+    s2: 'https://i.ibb.co/2VQC6y5/node-s2.webp',
+    s3: 'https://i.ibb.co/Hpf7ZPdk/node-s3.webp',
+    s4: 'https://i.ibb.co/q3p3wPfG/node-s4.webp',
+    s5: 'https://i.ibb.co/0VRF3CBL/node-s5.webp',
+    s6: 'https://i.ibb.co/gb17vj3m/node-s6.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Qiuyuan, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Qiuyuan': {
+    s1: 'https://i.ibb.co/84TqFSG3/node-s1.webp',
+    s2: 'https://i.ibb.co/qLkrYVXv/node-s2.webp',
+    s3: 'https://i.ibb.co/whd9Dwmz/node-s3.webp',
+    s4: 'https://i.ibb.co/Fqk0VQJq/node-s4.webp',
+    s5: 'https://i.ibb.co/0RBWxffy/node-s5.webp',
+    s6: 'https://i.ibb.co/LdNkcSqg/node-s6.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Chisa, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Chisa': {
+    s1: 'https://i.ibb.co/3mw4Nw94/node-s1.webp',
+    s2: 'https://i.ibb.co/nN9MKSTV/node-s2.webp',
+    s3: 'https://i.ibb.co/1fX8724w/node-s3.webp',
+    s4: 'https://i.ibb.co/zHZY0j4p/node-s4.webp',
+    s5: 'https://i.ibb.co/GffX5Qbj/node-s5.webp',
+    s6: 'https://i.ibb.co/1S0brGY/node-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2871,6 +3768,24 @@ const CHAIN_NODE_NAMES = {
   'Jinhsi': { s1: 'Abyssal Ascension', s2: 'Chronofrost Repose', s3: 'Celestial Incarnate', s4: 'Benevolent Grace', s5: 'Frostfire Illumination', s6: 'Thawing Triumph' },
   'Changli': { s1: 'Hidden Thoughts', s2: 'Pursuit of Desires', s3: 'Learned Secrets', s4: 'Polished Words', s5: 'Sacrificed Gains', s6: 'Realized Plans' },
   'Zhezhi': { s1: "Brushwork's Finish", s2: 'Vivid Strokes', s3: "Reflection's Grace", s4: "Hue's Spectrum", s5: "Composition's Clue", s6: 'Infinite Legacy' },
+  'Xiangli Yao': { s1: 'Prodigy of Protégés', s2: 'Traces of Predecessors', s3: 'Ruins of Ancient', s4: 'Vessel of Rebirth', s5: 'End of Stars', s6: 'Solace of the Ordinary' },
+  'Shorekeeper': { s1: 'Unspoken Conjecture', s2: "Night's Gift and Refusal", s3: 'Infinity Awaits Me', s4: 'Overflowing Quietude', s5: 'Echoes in Silence', s6: 'To the New World' },
+  'Camellya': { s1: 'Somewhere No One Travelled', s2: 'Calling Upon the Silent Rose', s3: 'A Bud Adorned by Thorns', s4: 'Roots Set Deep In Eternity', s5: 'Infinity Held in Your Palm', s6: 'Bloom For You Thousand Times Over' },
+  'Carlotta': { s1: 'Beauty Blazes Brightest Before It Fades', s2: 'Fallen Petals Give Life to New Blooms', s3: 'Adelante, Cortado, Spinning in Grace', s4: "Yesterday's Raindrops Make Finest Wine", s5: 'Toast to Past, Today, and Every Day to Come', s6: 'As the Curtain Falls, I Remain What I Am' },
+  'Roccia': { s1: 'When Shadows Engulf the Hull', s2: 'When the Luceanite Gleams', s3: 'When the Heart Sees and Hands Feel', s4: 'When Wonders Gather in the Box', s5: 'When Dreams Are Reborn on Stage', s6: 'When the Golden Wings Fly' },
+  'Phoebe': { s1: 'Warm Light and Bedside Wishes', s2: 'A Boat Adrift in Tears', s3: 'Daisy Wreaths and Dreams', s4: 'Ringing Bells on Wings Aloft', s5: 'Prayer to the Distant Light', s6: 'Whispering Chirps in Silence' },
+  'Brant': { s1: 'By Currents and Winds', s2: 'For Smiles and Cheers', s3: 'Through Storms I Sail', s4: 'To Freedom I Sing', s5: "All the World's an Actor's Stage", s6: "All the World's a Captain's Carnevale" },
+  'Cantarella': { s1: 'Embrace the Endless Waves', s2: 'Surrender to the Illusive Reverie', s3: 'Gaze into the Abyss', s4: 'Behold Your Own Soul', s5: 'Rest in Your Reflection', s6: 'Fall, Fall... and Fall Deeper into the Dream' },
+  'Zani': { s1: 'When the Alarm Clock Rings', s2: 'Stale Bread With Energy Drink', s3: 'Each Day A New Commute', s4: 'More Efficiency, Less Drama', s5: 'Delivered In Full On Time', s6: 'First Things First? Clock Out!' },
+  'Ciaccona': { s1: 'Where Wind Sings', s2: 'Song of the Four Seasons', s3: 'Starlit Improv', s4: 'Toccata and Fugue', s5: 'Eternal Idyll to Lasting Summer', s6: 'Unending Cadence' },
+  'Cartethyia': { s1: 'Crown Destined by Fate', s2: 'Blade Broken by Tempest', s3: 'Prisoner Hanged in the Tower', s4: 'Sacrifice Made for Salvation', s5: 'Hope Reshaped in Storms', s6: "Freedom Found in Storm's Wake" },
+  'Lupa': { s1: 'Behold the Nameless One', s2: 'Every Ground, Her Hunting Field', s3: 'Wolflame Howls in Her Wake', s4: 'High and Aflame Is Her Banner', s5: 'Embrace the Thunderous Triumph', s6: 'To the Brightest Flaming Star' },
+  'Phrolova': { s1: "A Key to Netherworld's Secrets", s2: 'A Rope Tied to a Life Beyond', s3: 'A Dagger to Cut Clean Obsessions', s4: 'A Torch Illuminating the Path', s5: "A Forked Road in Fate's Heartland", s6: 'A Night to Depart From Eternal Rest' },
+  'Augusta': { s1: 'Stained in Scorched Earth', s2: 'Cleansed in Crimson War', s3: 'Forged in Rot and Ruin', s4: 'Ascent in Sun and Glory', s5: 'Unshaken in Wrathful Tides', s6: 'Engraved in Radiant Light' },
+  'Iuno': { s1: 'Wax or Wane, All Gild the Bough', s2: 'Day or Night, Let This Be Eternal', s3: 'I Drink Deep of Their Forgetting', s4: 'Rainy Season Dwell in My Eyes', s5: 'A Thousand Futile Glimpses', s6: 'I Am the Constant in the Chaos' },
+  'Galbrena': { s1: 'Heart of Defiance Ever Ablaze', s2: 'Hellbound Dive of Fire and Abyss', s3: "Hunter's Blood Oath Rekindled", s4: 'Carry Forth This Fading Spark', s5: 'Though Light Fades, Torment Consumes', s6: 'I Remain Who I am, Eternal My Flame' },
+  'Qiuyuan': { s1: 'Sword Sheathed, Mind Unclouded', s2: 'O Blade, I, Who Teach No More', s3: 'O Blade, I, Who Save No More', s4: 'O Blade, I, Who Sacrifice No More', s5: 'O Blade, I, Who Await to be Wielded', s6: 'Thus I Heard, Thus I Saw, Thus I Spoke' },
+  'Chisa': { s1: 'Wandering Through the Desolate Corridors', s2: 'Into the Web of Endless Bonds', s3: 'Across the Confusion of the Long Night', s4: 'Severing the Endless Cycle of Tragic Fate', s5: 'Thousands of Lights to Guide the Way Home', s6: 'Thus, Hope is Rekindled with the Rising Dawn' },
 };
 
 // Release order for sorting (based on first banner appearance)
