@@ -8,7 +8,7 @@ import { User, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { ECHO_DATA, ECHO_SETS } from '../../data/echoes.js';
-import { ELEMENT_COLORS, getElementColor, getSetElementColor, getEchoSetColors, getBuffElementColor } from '../../utils/helpers.js';
+import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
@@ -96,8 +96,12 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
                 }
                 return elements.map(el => {
                   const ec = ELEMENT_COLORS[el];
+                  const icon = getElementIcon(el);
                   return ec ? (
-                    <span key={el} className="kuro-badge font-medium" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>{el}</span>
+                    <span key={el} className="kuro-badge font-medium inline-flex items-center gap-1" style={{ background: ec.bg, color: ec.hex, border: `1px solid ${ec.border}` }}>
+                      {icon && <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                      {el}
+                    </span>
                   ) : null;
                 });
               })()}

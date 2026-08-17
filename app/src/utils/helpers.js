@@ -112,6 +112,17 @@ const ELEMENT_COLORS_CB = {
 const ELEMENT_SHAPES = {
   Fusion: '△', Electro: '◇', Aero: '○', Glacio: '□', Havoc: '✕', Spectro: '☆',
 };
+// Official in-game element icons (T_IconElementAttri* UI assets), re-hosted on ibb.co.
+// Source: static.nanoka.cc asset CDN, traced from its client bundle 2026-08-17.
+const ELEMENT_ICONS = {
+  Glacio:  'https://i.ibb.co/60n11MZg/Element-Glacio.webp',
+  Fusion:  'https://i.ibb.co/RpbkMNCt/Element-Fusion.webp',
+  Electro: 'https://i.ibb.co/BVKXJnxb/Element-Electro.webp',
+  Aero:    'https://i.ibb.co/YF7k8Wy6/Element-Aero.webp',
+  Spectro: 'https://i.ibb.co/JjVxtqZ4/Element-Spectro.webp',
+  Havoc:   'https://i.ibb.co/20gBGvrV/Element-Havoc.webp',
+};
+const getElementIcon = (el) => ELEMENT_ICONS[el] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -177,10 +188,12 @@ export {
   generateUniqueId,
   calculateLuckRating,
   ELEMENT_COLORS,
+  ELEMENT_ICONS,
   getElementColor,
   getElementBg,
   getElementBorder,
   getElementShape,
+  getElementIcon,
   getSetElementColor,
   getEchoSetColors,
   getBuffElementColor,
