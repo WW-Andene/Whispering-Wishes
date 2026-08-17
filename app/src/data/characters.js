@@ -1290,6 +1290,28 @@ const CHARACTER_DATA = {
   ['Lynae', ['Concerto Efficiency', 'Basic Attack Damage', 'DMG Amplification', 'Resonance Liberation DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Tune Break Boost']],
   ['Mornye', ['Support and Healer', 'DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Off-Tune Buildup Efficiency']],
   ['Aemeath', ['Main Damage Dealer', 'Resonance Liberation Damage', 'Tune Rupture Response', 'Fusion Burst', 'DMG Amplification']],
+  // Remaining roster (post-3.1 releases + Rover) added 2026-08-17 so every character carries combatRoles
+  // — otherwise the Combat Profile box silently falls back to the old iconless data.role/dmgFocus badges
+  // for anyone left out. Rover's 4 attunements pulled from their own per-attunement fandom pages
+  // (Rover-Spectro/-Havoc/-Aero/-Electro), not the shared "Rover" page whose `role` field is all 4
+  // attunements' tags concatenated together with no clean separation.
+  ['Rover: Spectro', ['Concerto Efficiency', 'Stagnation', 'Spectro Frazzle']],
+  ['Rover: Havoc', ['Main Damage Dealer']],
+  ['Rover: Aero', ['Support and Healer', 'Resonance Skill Damage', 'Aero Erosion']],
+  ['Rover: Electro', ['Concerto Efficiency', 'Resonance Skill Damage', 'Electro Flare']],
+  ['Luuk Herssen', ['Main Damage Dealer', 'Basic Attack Damage', 'Tune Strain Response']],
+  ['Sigrika', ['Main Damage Dealer', 'Traction', 'Echo Skill Damage']],
+  ['Rebecca', ['Concerto Efficiency', 'Basic Attack Damage', 'Heavy Attack DMG Amplification', 'Tune Break Boost', 'Hack Response']],
+  ['Lucilla', ['Concerto Efficiency', 'Basic Attack Damage', 'Echo Skill Damage', 'Glacio Chafe', 'Echo Skill DMG Amplification']],
+  ['Lucy', ['Main Damage Dealer', 'Heavy Attack Damage', 'Basic Attack DMG Amplification', 'Hack Response']],
+  ['Yangyang: Xuanling', ['Main Damage Dealer', 'Heavy Attack Damage', 'Havoc Bane', 'Traction']],
+  ['Denia', ['Concerto Efficiency', 'Resonance Liberation Damage', 'Traction', 'Fusion Burst', 'Tune Break Boost', 'Tune Strain Response']],
+  ['Hiyuki', ['Main Damage Dealer', 'Resonance Liberation Damage', 'Glacio Chafe']],
+  ['Suisui', ['Support and Healer', 'DMG Amplification', 'Glacio Chafe']],
+  ['Qingxiao', ['Main Damage Dealer', 'Tune Strain Response']],
+  // Jingran intentionally omitted: unreleased (3.6, Aug 20 2026) — fandom's own infobox has an empty
+  // `role` field since Kuro hasn't published her kit yet, matching the "Unconfirmed" placeholder already
+  // used for her bestEchoes/weapon data elsewhere in this file rather than guessing.
 ].forEach(([name, combatRoles]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { combatRoles });
 });

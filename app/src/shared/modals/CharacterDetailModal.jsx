@@ -17,12 +17,6 @@ import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
-// Damage-type tags in data.combatRoles that supersede the plain-text (iconless) data.dmgFocus badges —
-// when present, they replace Damage Focus entirely rather than being hidden behind it.
-const COMBAT_ROLE_DMG_TYPE_TAGS = new Set([
-  'Basic Attack Damage', 'Heavy Attack Damage', 'Resonance Skill Damage', 'Resonance Liberation Damage', 'Echo Skill Damage',
-]);
-
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
   Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50' },
@@ -231,15 +225,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div className="kuro-detail-box space-y-2">
             <div className="kuro-section-label">Combat Profile</div>
             {/* data.combatRoles (when audited) is the authoritative, iconed tag list straight from the
-                character's own infobox — it's a strict superset of the plain-text data.role/dmgFocus
-                fields below (e.g. "Main Damage Dealer" instead of the plain "Main DPS" role badge,
-                "Heavy Attack Damage"/"Resonance Liberation Damage" with icons instead of the plain
-                Damage Focus badges). So once combatRoles exists, it fully replaces those older iconless
-                duplicates rather than being hidden behind them — the plain fallbacks only render for
-                characters that haven't been audited into combatRoles yet. */}
+                character's own infobox. Once a character has been audited into it, it's the sole source
+                for "what does this kit do" — the old plain-text, iconless data.role badge and dmgFocus
+                badges are dropped entirely for that character (not conditionally kept whenever no exact
+                tag match is found — e.g. "Sub DPS" has no 1:1 wiki tag equivalent, but showing it next to
+                Combat Role would still read as a stale leftover). Those plain fallbacks only render for
+                the handful of characters not yet audited into combatRoles (currently just Jingran, an
+                unreleased character with no published kit to source tags from). */}
             {(() => {
-              const hasRoleTag = data.combatRoles?.some(t => t === 'Main Damage Dealer' || t === 'Support and Healer');
-              const hasDmgFocusTags = data.combatRoles?.some(t => COMBAT_ROLE_DMG_TYPE_TAGS.has(t));
+              const audited = data.combatRoles?.length > 0;
               return (
                 <>
                   <div className="flex flex-wrap gap-1.5">
@@ -251,9 +245,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                       {data.weapon}
                     </span>
-                    {!hasRoleTag && <span className="kuro-badge kuro-badge-neutral">{data.role}</span>}
+                    {!audited && <span className="kuro-badge kuro-badge-neutral">{data.role}</span>}
                   </div>
-                  {!hasDmgFocusTags && data.dmgFocus?.length > 0 && (
+                  {!audited && data.dmgFocus?.length > 0 && (
                     <div>
                       <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
                       <div className="flex flex-wrap gap-1">
@@ -261,7 +255,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       </div>
                     </div>
                   )}
-                  {data.combatRoles?.length > 0 && (
+                  {audited && (
                     <div>
                       <div className="text-sm text-gray-400 mb-1">Combat Role</div>
                       <div className="flex flex-wrap gap-1.5">
