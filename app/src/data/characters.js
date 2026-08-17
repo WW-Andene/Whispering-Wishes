@@ -82,9 +82,17 @@ const CHARACTER_DATA = {
     skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Helix' },
+    // bestEchoes confirmed accurate (Molten Rift/Nightmare: Inferno Rider is genuinely #1 per Prydwen
+    // calcs). bestWeapon kept as Cosmic Ripples (her best permanently-available option, same convention
+    // as Calcharo who also has no true signature) since it's the practical F2P choice; weaponAlts/teams
+    // corrected against Prydwen's live build calcs (2026-07-30 profile update): Stringmaster (110%) and
+    // Rime-Draped Sprouts (104.4%) are her real top alternatives, clearly ahead of Cosmic Ripples itself
+    // — 'Boson Astrolabe' wasn't in Prydwen's recommendations for her at all. Lupa is now explicitly her
+    // "new best teammate over Sanhua in most situations" and pairs with Brant in Prydwen's own "Best
+    // Team" example — added ahead of the Changli/Shorekeeper pairing.
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
-    weaponAlts: { alt5: ['Boson Astrolabe'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
-    teams: ['Encore + Changli + Verina', 'Encore + Sanhua + Shorekeeper'] },
+    weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
+    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
     desc: 'Cleansing Reflections, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
@@ -813,7 +821,7 @@ const CHARACTER_DATA = {
   // Huanglong
   ['Rover: Spectro', 'Huanglong'], ['Rover: Havoc', 'Huanglong'], ['Rover: Aero', 'Huanglong'], ['Rover: Electro', 'Huanglong'],
   ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
-  ['Encore',       'Huanglong'], ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
+  ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
   ['Qiuyuan',      'Huanglong'],
@@ -824,6 +832,7 @@ const CHARACTER_DATA = {
   ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'], ['Buling',       'Huanglong'],
   // Black Shores
   ['Shorekeeper',  'Black Shores'], ['Camellya',   'Black Shores'], ['Galbrena',   'Black Shores'],
+  ['Encore',       'Black Shores'],
   // Rinascita
   ['Carlotta',     'Rinascita'], ['Roccia',       'Rinascita'], ['Phoebe',       'Rinascita'],
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
@@ -864,6 +873,7 @@ const CHARACTER_DATA = {
   ['Jiyan', 'Windborne Rider', 'Midnight Rangers', { en: 'Alex Jordan', cn: 'Sun Ye', jp: 'Ono Yuki', kr: 'Nam Doh-hyeong' }],
   ['Yinlin', 'Lightning of Execution', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
   ['Calcharo', 'Phantom Hunters', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
+  ['Encore', 'Wooly-Counting Game', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
 ].forEach(([name, title, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, organization, voiceActor });
 });
@@ -1988,6 +1998,14 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  'Encore': [
+    { type: 'Intro', skill: 'Woolies Helpers' },
+    { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
+    { type: 'Skill', skill: 'Cosmos Rampage', note: 'cast on cooldown during Cosmos Rave, generates Dissonance' },
+    { type: 'Basic ATK', skill: 'Cosmos: Frolicking', note: '4-stage combo, repeated between each Cosmos Rampage cast' },
+    { type: 'Forte', skill: 'Heavy ATK: Cosmos Rupture', note: 'at full Dissonance; swap-cancel the moment Encore begins channelling' },
+    { type: 'Outro', skill: 'Thermal Field' },
+  ],
   'Calcharo': [
     { type: 'Intro', skill: 'Wanted Outlaw' },
     { type: 'Liberation', skill: 'Phantom Etching', duration: 11, note: 'enters Deathblade Gear — Basic ATK replaced by Hounds Roar' },
@@ -2433,6 +2451,18 @@ const RESONANCE_CHAIN_DATA = {
 // Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const SKILL_ICONS = {
+  'Encore': {
+    'Wooly Attack': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Cosmos: Frolicking': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Cosmos Rave's Basic ATK replacement — same generic weapon icon
+    'Flaming Woolies': 'https://i.ibb.co/twHsyRRM/Skill-Flaming-Woolies.webp',
+    'Cosmos Rampage': 'https://i.ibb.co/twHsyRRM/Skill-Flaming-Woolies.webp', // Cosmos Rave's Resonance Skill replacement, same wiki icon as the base Skill
+    'Cosmos Rave': 'https://i.ibb.co/CKy2Dkf5/Skill-Cosmos-Rave.webp',
+    'Heavy ATK: Cloudy Frenzy': 'https://i.ibb.co/whstB0k3/Skill-Black-White-Woolies.webp', // Forte Circuit's own icon, covers both Forte states
+    'Heavy ATK: Cosmos Rupture': 'https://i.ibb.co/whstB0k3/Skill-Black-White-Woolies.webp',
+    'Woolies Helpers': 'https://i.ibb.co/gbpQxXkC/Skill-Woolies-Can-Help.webp',
+    'Thermal Field': 'https://i.ibb.co/MkS6WNzG/Skill-Thermal-Field.webp',
+  },
   'Calcharo': {
     'Gnawing Fangs': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon (same asset already used for Jiyan), also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp',
@@ -2476,6 +2506,14 @@ const getSkillIcon = (name, skillName) => {
 // Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_ICONS = {
+  'Encore': {
+    s1: 'https://i.ibb.co/67jq2qtF/Sequence-Node-Woolys-Fairy-Tale.webp',
+    s2: 'https://i.ibb.co/qvQ1d2y/Sequence-Node-Sheep-counting-Lullaby.webp',
+    s3: 'https://i.ibb.co/607dHq05/Sequence-Node-Fog-The-Black-Shores.webp',
+    s4: 'https://i.ibb.co/wZc99zfT/Sequence-Node-Adventure-Lets-go.webp',
+    s5: 'https://i.ibb.co/ccg6m394/Sequence-Node-Hero-Takes-the-Stage.webp',
+    s6: 'https://i.ibb.co/0RK9HNY8/Sequence-Node-Woolies-Save-the-World.webp',
+  },
   'Calcharo': {
     s1: 'https://i.ibb.co/zW1SQbgD/Sequence-Node-Covert-Negotiation.webp',
     s2: 'https://i.ibb.co/0RhbRfYd/Sequence-Node-Zero-Sum-Game.webp',
@@ -2510,6 +2548,7 @@ const CHAIN_NODE_NAMES = {
   'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
   'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
   'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
+  'Encore': { s1: "Wooly's Fairy Tale", s2: 'Sheep-counting Lullaby', s3: 'Fog? The Black Shores!', s4: "Adventure? Let's go!", s5: 'Hero Takes the Stage!', s6: 'Woolies Save the World!' },
 };
 
 // Release order for sorting (based on first banner appearance)
