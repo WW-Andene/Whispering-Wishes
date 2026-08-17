@@ -150,6 +150,46 @@ const getStatIcon = (stat) => {
   const key = stat.trim().replace(/%$/, '');
   return STAT_ICONS[key] || null;
 };
+// Official Sonata (echo) set icons (T_IconSonata* UI assets), re-hosted on ibb.co.
+// Source: wutheringwaves.fandom.com/wiki/Sonata, traced 2026-08-17.
+const SET_ICONS = {
+  'Freezing Frost':            'https://i.ibb.co/b5cjDwZP/Icon-Freezing-Frost.webp',
+  'Molten Rift':                'https://i.ibb.co/q3qYZYrP/Icon-Molten-Rift.webp',
+  'Void Thunder':                'https://i.ibb.co/LhH3mKDt/Icon-Void-Thunder.webp',
+  'Sierra Gale':                'https://i.ibb.co/JWxWKBbG/Icon-Sierra-Gale.webp',
+  'Celestial Light':            'https://i.ibb.co/23wDkGX2/Icon-Celestial-Light.webp',
+  // Sun-Sinking Eclipse was renamed to Havoc Eclipse in v1.4 — same set, same icon
+  'Havoc Eclipse':              'https://i.ibb.co/p6mwBLpJ/Icon-Sun-sinking-Eclipse.webp',
+  'Rejuvenating Glow':          'https://i.ibb.co/dwJc2xcy/Icon-Rejuvenating-Glow.webp',
+  'Moonlit Clouds':              'https://i.ibb.co/PBDwxwt/Icon-Moonlit-Clouds.webp',
+  'Lingering Tunes':            'https://i.ibb.co/G4qdLpgx/Icon-Lingering-Tunes.webp',
+  'Frosty Resolve':              'https://i.ibb.co/HfNmN45f/Icon-Frosty-Resolve.webp',
+  'Eternal Radiance':            'https://i.ibb.co/6zkWW4h/Icon-Eternal-Radiance.webp',
+  'Midnight Veil':              'https://i.ibb.co/vbQ99B4/Icon-Midnight-Veil.webp',
+  'Empyrean Anthem':            'https://i.ibb.co/WNPt9mvL/Icon-Empyrean-Anthem.webp',
+  'Tidebreaking Courage':        'https://i.ibb.co/twrQZYKq/Icon-Tidebreaking-Courage.webp',
+  'Gusts of Welkin':            'https://i.ibb.co/s93G4MWw/Icon-Gusts-of-Welkin.webp',
+  'Windward Pilgrimage':        'https://i.ibb.co/WWMCRYcw/Icon-Windward-Pilgrimage.webp',
+  'Flaming Clawprint':          'https://i.ibb.co/B5Rsjgn2/Icon-Flaming-Clawprint.webp',
+  'Crown of Valor':              'https://i.ibb.co/DfCHGtNs/Icon-Crown-of-Valor.webp',
+  'Law of Harmony':              'https://i.ibb.co/fdKgmPfs/Icon-Law-of-Harmony.webp',
+  "Flamewing's Shadow":          'https://i.ibb.co/FL64LWkQ/Icon-Flamewing-s-Shadow.webp',
+  'Thread of Severed Fate':      'https://i.ibb.co/Zz6yX3X0/Icon-Thread-of-Severed-Fate.webp',
+  'Dream of the Lost':          'https://i.ibb.co/dwXb8xTc/Icon-Dream-of-the-Lost.webp',
+  'Pact of Neonlight Leap':      'https://i.ibb.co/9m2qR6xk/Icon-Pact-of-Neonlight-Leap.webp',
+  'Rite of Gilded Revelation':  'https://i.ibb.co/fzBZS81C/Icon-Rite-of-Gilded-Revelation.webp',
+  'Halo of Starry Radiance':    'https://i.ibb.co/Y7MT2Y4G/Icon-Halo-of-Starry-Radiance.webp',
+  'Trailblazing Star':          'https://i.ibb.co/0RvWtQgj/Icon-Trailblazing-Star.webp',
+  'Chromatic Foam':              'https://i.ibb.co/G4Qr7QdJ/Icon-Chromatic-Foam.webp',
+  'Sound of True Name':          'https://i.ibb.co/Df7Y2V3q/Icon-Sound-of-True-Name.webp',
+  'Song of Feathered Trace':    'https://i.ibb.co/k65KVHds/Icon-Song-of-Feathered-Trace.webp',
+  "Heart of Evil's Purge":      'https://i.ibb.co/zT2YWWFT/Icon-Heart-of-Evil-s-Purge.webp',
+  'Lamp of Nether Road':        'https://i.ibb.co/XwV6kgH/Icon-Lamp-of-Nether-Road.webp',
+  'Reel of Spliced Memories':    'https://i.ibb.co/qYKQ4Vx9/Icon-Reel-of-Spliced-Memories.webp',
+  'Wishes of Quiet Snowfall':    'https://i.ibb.co/q3k4jgDX/Icon-Wishes-of-Quiet-Snowfall.webp',
+  'Shadow of Shattered Dreams':  'https://i.ibb.co/XZvbg138/Icon-Shadow-of-Shattered-Dreams.webp',
+};
+const getSetIcon = (setName) => SET_ICONS[setName] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -228,4 +268,6 @@ export {
   getWeaponTypeIcon,
   STAT_ICONS,
   getStatIcon,
+  SET_ICONS,
+  getSetIcon,
 };

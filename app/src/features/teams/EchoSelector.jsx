@@ -2,7 +2,7 @@ import React from 'react';
 import { Diamond, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic, getSetIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -298,7 +298,13 @@ export default function EchoSelector({
                       <div className="flex flex-wrap gap-1">
                         {echoData.sets.map(s => {
                           const isRec = charRecSets.has(s);
-                          return <span key={s} className={`kuro-badge border ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>{s}{isRec ? ' ★' : ''}</span>;
+                          const setIcon = getSetIcon(s);
+                          return (
+                            <span key={s} className={`kuro-badge border inline-flex items-center gap-1 ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>
+                              {setIcon && <img src={setIcon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                              {s}{isRec ? ' ★' : ''}
+                            </span>
+                          );
                         })}
                       </div>
                       {charRecSets.size > 0 && echoData.sets.some(s => charRecSets.has(s)) && (
