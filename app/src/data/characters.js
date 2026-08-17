@@ -2388,6 +2388,43 @@ const RESONANCE_CHAIN_DATA = {
   'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
 };
 
+// [SECTION:SKILL_ICONS] — Per-character skill-name → icon URL, matched against SKILL_MULTIPLIERS/
+// CHARACTER_ROTATIONS skill names the same way CHARACTER_ROTATIONS looks up its DMG row (substring match).
+// Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
+// Only characters that have been audited so far are populated.
+const SKILL_ICONS = {
+  'Jiyan': {
+    'Lone Lance': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon on the wiki, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Heavy ATK / Dodge Counter rows
+    'Windqueller': 'https://i.ibb.co/Rk9XDRW3/Skill-Windqueller.webp',
+    'Emerald Storm: Finale': 'https://i.ibb.co/F4SmBx2q/Skill-Qingloong-at-War.webp', // Forte Circuit's own icon
+    'Emerald Storm: Prelude': 'https://i.ibb.co/4gT4C4SW/Skill-Emerald-Storm-Prelude.webp',
+    'Tactical Strike': 'https://i.ibb.co/33s8c1p/Skill-Tactical-Strike.webp',
+    'Discipline': 'https://i.ibb.co/TBjWQSR1/Skill-Discipline.webp',
+  },
+};
+const getSkillIcon = (name, skillName) => {
+  const table = SKILL_ICONS[name];
+  if (!table) return null;
+  const key = Object.keys(table).find(k => skillName.includes(k));
+  return key ? table[key] : null;
+};
+
+// [SECTION:CHAIN_NODE_ICONS] — Per-character S1-S6 Resonance Chain sequence-node icons.
+// Source: wutheringwaves.fandom.com Sequence_Node_* image assets (order matches each character's
+// Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
+// Only characters that have been audited so far are populated.
+const CHAIN_NODE_ICONS = {
+  'Jiyan': {
+    s1: 'https://i.ibb.co/8DQZqf8V/Sequence-Node-Benevolence.webp',
+    s2: 'https://i.ibb.co/qYfdjDZj/Sequence-Node-Versatility.webp',
+    s3: 'https://i.ibb.co/KpnqFPPK/Sequence-Node-Spectation.webp',
+    s4: 'https://i.ibb.co/w3M5q2w/Sequence-Node-Prudence.webp',
+    s5: 'https://i.ibb.co/fzZxFxmw/Sequence-Node-Resolution.webp',
+    s6: 'https://i.ibb.co/0jYkwNc5/Sequence-Node-Fortitude.webp',
+  },
+};
+
 // Release order for sorting (based on first banner appearance)
 const RELEASE_ORDER = [
   // 1.0 - Launch (May 2024) — Rover: Spectro/Havoc/Aero all selectable from launch
@@ -2450,6 +2487,9 @@ export {
   SKILL_MULTIPLIERS,
   CHARACTER_ROTATIONS,
   RESONANCE_CHAIN_DATA,
+  SKILL_ICONS,
+  getSkillIcon,
+  CHAIN_NODE_ICONS,
   RELEASE_ORDER,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,

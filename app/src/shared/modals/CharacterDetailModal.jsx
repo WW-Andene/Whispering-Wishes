@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
@@ -284,9 +284,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     'Charged ATK': 'bg-orange-500/10', 'Skill': 'bg-cyan-500/10', 'Liberation': 'bg-yellow-500/10',
                     'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
                   };
+                  const skillIcon = getSkillIcon(name, skillName);
                   return (
                     <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
                       <div className="flex items-baseline gap-1.5">
+                        {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0 self-center" onError={hideOnError} />}
                         <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
                         <span className="text-sm text-gray-200 font-medium break-words">{skillName}</span>
                       </div>
@@ -335,9 +337,16 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     };
                     return (labels[k] || k) + ' +' + v + '%';
                   }).join(', ');
+                  const nodeIcon = CHAIN_NODE_ICONS[name]?.['s' + s];
+                  const tierBorder = !unlocked ? 'border-gray-500/30' : s <= 2 ? 'border-yellow-500/25' : s <= 4 ? 'border-purple-500/25' : 'border-red-500/25';
                   return (
                     <div key={s} className={`flex items-center gap-2 text-sm ${!unlocked ? 'opacity-50' : ''}`}>
-                      <span className={`w-7 text-center font-bold rounded py-0.5 ${!unlocked ? 'text-gray-400 bg-gray-500/10 border border-gray-500/30' : s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
+                      {nodeIcon && (
+                        <div className={`w-7 h-7 rounded overflow-hidden flex-shrink-0 border ${tierBorder}`} style={!unlocked ? { filter: 'grayscale(100%)' } : undefined}>
+                          <img src={nodeIcon} alt="" className="w-full h-full object-cover" onError={hideOnError} />
+                        </div>
+                      )}
+                      <span className={`w-7 text-center font-bold rounded py-0.5 shrink-0 ${!unlocked ? 'text-gray-400 bg-gray-500/10 border border-gray-500/30' : s <= 2 ? 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/25' : s <= 4 ? 'text-purple-400 bg-purple-500/10 border border-purple-500/25' : 'text-red-400 bg-red-500/10 border border-red-500/25'}`}>S{s}</span>
                       <span className={`flex-1 ${unlocked ? 'text-gray-300' : 'text-gray-500'}`}>{stats}</span>
                     </div>
                   );
@@ -389,9 +398,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   // used above, so Team tab can resolve the same step against the same table later.
                   const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
                   const dmg = row?.[2];
+                  const stepIcon = getSkillIcon(name, step.skill);
                   return (
                     <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded bg-white/5">
                       <span className="text-sm font-medium text-gray-600 shrink-0 w-4 text-right">{i + 1}</span>
+                      {stepIcon && <img src={stepIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
                           <span className={`text-sm font-medium shrink-0 ${typeColors[step.type] || 'text-gray-400'}`}>{step.type}</span>
