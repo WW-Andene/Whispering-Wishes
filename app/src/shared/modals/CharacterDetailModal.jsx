@@ -540,35 +540,82 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           </div>
           )}
 
-          {/* Best Echoes - with picture (main echo icon, or set icon for the "X Ypc" set slot) */}
+          {/* Best Echoes - with pictures. bestEchoes is read in [main, set, main, set, ...] pairs — each
+              pair is one recommended build and renders as its own row. A "set" slot may itself combine two
+              partial sets ("X 3pc + Y 2pc"): both set icons are shown side by side for a mixed set. Any
+              trailing "(...)" note (role/purpose, e.g. "(personal DMG)") is pulled out as the row's label. */}
           {data.bestEchoes?.length > 0 && (() => {
-            const mainEchoImg = ECHO_DATA[data.bestEchoes[0]]?.iconUrl;
-            const setSlotName = data.bestEchoes[1] ? data.bestEchoes[1].replace(/\s+\d+pc$/i, '').trim() : null;
-            const setImg = setSlotName ? getSetIcon(setSlotName) : null;
+            const isSetSlot = (s) => /\d\s*pc\b/i.test(s || '');
+            const splitLabel = (s) => {
+              const m = /^(.*?)\s*\(([^)]+)\)\s*$/.exec(s || '');
+              return m ? { text: m[1].trim(), label: m[2].trim() } : { text: (s || '').trim(), label: null };
+            };
+            // Group the flat array into [main, set] pairs — a leading entry that's already a set slot
+            // (e.g. a 4★ echo-only character with no unique main echo) stands alone as a set-only row.
+            const rows = [];
+            for (let i = 0; i < data.bestEchoes.length; i++) {
+              const entry = data.bestEchoes[i];
+              if (isSetSlot(entry)) { rows.push({ main: null, set: entry }); }
+              else {
+                const next = data.bestEchoes[i + 1];
+                if (next && isSetSlot(next)) { rows.push({ main: entry, set: next }); i++; }
+                else { rows.push({ main: entry, set: null }); }
+              }
+            }
+            const buildLabelOf = (row) => splitLabel(row.set || row.main).label;
+            const showBuildLabels = rows.length > 1;
             return (
           <div className="kuro-detail-box">
             <div className="kuro-section-label mb-2">Recommended Echoes</div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {mainEchoImg ? <img src={mainEchoImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <Star size={14} className="text-cyan-400 fill-cyan-400" />}
-                </div>
-                <div>
-                  <div className="text-cyan-400 text-base font-bold">{data.bestEchoes[0]}</div>
-                  <div className="text-gray-400 text-sm">Main Echo</div>
-                </div>
-              </div>
-              {data.bestEchoes[1] && (
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {setImg ? <img src={setImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={14} className="text-purple-400" />}
-                </div>
-                <div>
-                  <div className="text-purple-400 text-base font-bold">{data.bestEchoes[1]}</div>
-                  <div className="text-gray-400 text-sm">Echo Set</div>
-                </div>
-              </div>
-              )}
+            <div className="space-y-4">
+              {rows.map((row, idx) => {
+                const main = row.main ? splitLabel(row.main) : null;
+                const mainImg = main ? ECHO_DATA[main.text]?.iconUrl : null;
+                // Split a mixed set slot ("X 3pc + Y 2pc") into its component sets, each resolved to its own icon.
+                const setParts = row.set
+                  ? splitLabel(row.set).text.split('+').map(p => p.trim()).filter(Boolean)
+                  : [];
+                const buildLabel = buildLabelOf(row) || main?.label;
+                return (
+                  <div key={idx} className="space-y-2">
+                    {showBuildLabels && (
+                      <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide">
+                        Build {idx + 1}{buildLabel ? ` — ${buildLabel}` : ''}
+                      </div>
+                    )}
+                    {main && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {mainImg ? <img src={mainImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <Star size={14} className="text-cyan-400 fill-cyan-400" />}
+                        </div>
+                        <div>
+                          <div className="text-cyan-400 text-base font-bold">{main.text}</div>
+                          <div className="text-gray-400 text-sm">Main Echo</div>
+                        </div>
+                      </div>
+                    )}
+                    {setParts.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center flex-shrink-0">
+                          {setParts.map((part, pi) => {
+                            const setName = part.replace(/\s+\d+\s*pc$/i, '').trim();
+                            const setImg = getSetIcon(setName);
+                            return (
+                              <div key={pi} className={`w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center overflow-hidden ${pi > 0 ? '-ml-2' : ''}`}>
+                                {setImg ? <img src={setImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={14} className="text-purple-400" />}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div>
+                          <div className="text-purple-400 text-base font-bold">{setParts.join(' + ')}</div>
+                          <div className="text-gray-400 text-sm">{setParts.length > 1 ? 'Mixed Echo Set' : 'Echo Set'}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
             );

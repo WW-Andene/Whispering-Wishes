@@ -499,7 +499,11 @@ const CHARACTER_DATA = {
     skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Sight of Unraveling - Oblivion'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Reminiscence: Threnodian - Leviathan (Thread of Severed Fate, personal DMG) / Fallacy of No Return (Rejuvenating Glow, best overall team ATK)', 'Rejuvenating Glow (best overall, except non-ATK-scaling teams) or Thread of Severed Fate 3pc + Havoc Eclipse/Midnight Veil 2pc (personal DMG)'], bestWeapon: 'Kumokiri',
+    // bestEchoes reshaped 2026-08-17 into the standard [main1, set1, main2, set2] multi-build pairing
+    // (matching Aemeath/Denia's convention) so the detail modal can render each build as its own row with
+    // icons — was previously two long freeform strings baking both options into one entry, which broke
+    // set-icon lookup entirely (no exact key match) and only ever displayed a single unlabeled row.
+    bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc (personal DMG)', 'Fallacy of No Return', 'Rejuvenating Glow 5pc (best overall team ATK)'], bestWeapon: 'Kumokiri',
     weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
     teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
