@@ -93,11 +93,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
     weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
     teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
+  // desc corrected against wutheringwaves.fandom.com's Jianxin infobox (2026-08-17 audit): the wiki's
+  // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
+  // shown on ww.nanoka.cc's character page for her — the two sources disagree here, fandom's live
+  // infobox is treated as authoritative). Skills/base stats/multipliers/buffs/ascension mats/weapon
+  // ranking all independently re-verified against ww.nanoka.cc character/1405 this same audit and were
+  // already accurate — no changes needed there.
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Cleansing Reflections, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
+    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
+    // bestWeapon confirmed as her actual #1 recommended weapon per ww.nanoka.cc's Recommended Weapons
+    // list (Abyss Surges > Marcato > Stonard) — unlike Encore/Calcharo, this isn't just "best F2P option
+    // standing in for a signature", nanoka ranks it #1 outright and she has no dedicated signature weapon
+    // (no Gauntlets weapon's infobox lists Jianxin as its `resonator`). weaponAlts/teams left unchanged —
+    // Prydwen's build/team-comp pages were unreachable this audit (403/blank JS-render), so these
+    // couldn't be independently re-verified against that source; nanoka's list stops at the top 3
+    // weapons overall (matching alt4 exactly) and doesn't cover 5★/3★ alts or echoes/teams.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Marcato', 'Stonard'], alt3: ['Gauntlets of Night'] },
     teams: ['Jianxin + Jiyan + Verina', 'Jianxin + Xiangli Yao + Shorekeeper'] },
@@ -885,6 +898,7 @@ const CHARACTER_DATA = {
   ['Yinlin', 'Lightning of Execution', 'Huanglong', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
   ['Calcharo', 'Phantom Hunters', 'New Federation', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
   ['Encore', 'Wooly-Counting Game', 'New Federation', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
+  ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Yu Tou', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2009,6 +2023,16 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
+  // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
+  'Jianxin': [
+    { type: 'Intro', skill: 'Essence of Tao', note: 'pulls enemies in, builds Chi toward the Forte' },
+    { type: 'Basic ATK', skill: 'Fengyiquan Stage 1-4', note: 'builds Chi toward max (120)' },
+    { type: 'Skill', skill: 'Calming Air', note: 'hold for Parry Stance to build Chi faster via Chi Counter/Chi Parry; 12s cooldown' },
+    { type: 'Forte', skill: 'Primordial Chi Spiral', duration: 3, note: 'at max Chi, hold Basic ATK for Zhoutian Progress — a channeled 50% DMG-reduction shield state, healing the active Resonator every 6s afterward' },
+    { type: 'Liberation', skill: 'Purification Force Field', note: 'groups enemies, then explodes on expiry; 20s cooldown' },
+    { type: 'Outro', skill: 'Transcendence', note: 'grants the incoming Resonator +38% Resonance Liberation DMG for 14s' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2504,6 +2528,17 @@ const SKILL_ICONS = {
     'Tactical Strike': 'https://i.ibb.co/33s8c1p/Skill-Tactical-Strike.webp',
     'Discipline': 'https://i.ibb.co/TBjWQSR1/Skill-Discipline.webp',
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Jianxin, linked directly (static.wikia.nocookie.net) —
+  // not re-hosted to ibb.co since these were sourced in a later audit pass than the entries above.
+  'Jianxin': {
+    'Fengyiquan': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png', // Basic ATK — shared generic Gauntlets icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png',
+    'Calming Air': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b6/Skill_Calming_Air.png',
+    'Primordial Chi Spiral': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/22/Skill_Primordial_Chi_Spiral.png',
+    'Purification Force Field': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/12/Skill_Purification_Force_Field.png',
+    'Essence of Tao': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/ce/Skill_Essence_of_Tao.png', // Intro Skill
+    'Transcendence': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8e/Skill_Transcendence.png', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2549,6 +2584,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/fzZxFxmw/Sequence-Node-Resolution.webp',
     s6: 'https://i.ibb.co/0jYkwNc5/Sequence-Node-Fortitude.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jianxin, linked directly
+  // (static.wikia.nocookie.net) rather than re-hosted to ibb.co — order confirmed S1→S6 against the
+  // Chain Table on Jianxin/Combat.
+  'Jianxin': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/03/Sequence_Node_Verdant_Branchlet.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e6/Sequence_Node_Tao_Seeker%27s_Journey.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/22/Sequence_Node_Principles_of_Wuwei.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f7/Sequence_Node_Multitide_Reflection.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/0c/Sequence_Node_Mirroring_Introspection.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Sequence_Node_Truth_from_Within.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2560,6 +2606,7 @@ const CHAIN_NODE_NAMES = {
   'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
   'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
   'Encore': { s1: "Wooly's Fairy Tale", s2: 'Sheep-counting Lullaby', s3: 'Fog? The Black Shores!', s4: "Adventure? Let's go!", s5: 'Hero Takes the Stage!', s6: 'Woolies Save the World!' },
+  'Jianxin': { s1: 'Verdant Branchlet', s2: "Tao Seeker's Journey", s3: 'Principles of Wuwei', s4: 'Multitide Reflection', s5: 'Mirroring Introspection', s6: 'Truth from Within' },
 };
 
 // Release order for sorting (based on first banner appearance)
