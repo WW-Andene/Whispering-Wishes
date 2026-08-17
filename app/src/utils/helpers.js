@@ -190,6 +190,29 @@ const SET_ICONS = {
   'Shadow of Shattered Dreams':  'https://i.ibb.co/XZvbg138/Icon-Shadow-of-Shattered-Dreams.webp',
 };
 const getSetIcon = (setName) => SET_ICONS[setName] || null;
+// In-game faction emblem/logo icons, re-hosted on ibb.co.
+// Source: wutheringwaves.fandom.com/wiki/Category:Factions, traced 2026-08-17.
+// NOT a complete faction list — the wiki only has a proper emblem/logo image
+// for these; other factions (e.g. Ghost Hounds, Court of Savantae, Ministry of
+// War) have no dedicated icon asset there, so they're intentionally omitted
+// rather than guessed. This map also has no consumer yet — factions aren't
+// modeled on character data in this app (see characters.js), so nothing reads
+// FACTION_ICONS today. Added for whenever that data/UI work happens.
+const FACTION_ICONS = {
+  'Black Shores':          'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
+  'Midnight Rangers':      'https://i.ibb.co/Zz92sqFX/Midnight-Rangers.webp',
+  'Fractsidus':            'https://i.ibb.co/kVVdYWDC/Fractsidus.webp',
+  'Pioneer Association':  'https://i.ibb.co/5XkMDsnY/Pioneer-Association.webp',
+  'Lollo Logistics':      'https://i.ibb.co/bR6KRJXM/Lollo-Logistics.webp',
+  'Order of the Deep':    'https://i.ibb.co/qYB4FKVs/Order-of-the-Deep.webp',
+  'Troupe of Fools':      'https://i.ibb.co/S7NWRwVD/Troupe-of-Fools.webp',
+  'Montelli Family':      'https://i.ibb.co/21NbvT2k/Montelli-Family.webp',
+  'Fisalia Family':        'https://i.ibb.co/xqn6PCQd/Fisalia-Family.webp',
+  'Startorch Academy':    'https://i.ibb.co/tprYJw6t/Startorch-Academy.webp',
+  'Spacetrek Collective':  'https://i.ibb.co/ynLTRypG/Spacetrek-Collective.webp',
+  'Roya Tribe':            'https://i.ibb.co/PZkNcXCb/Roya-Tribe.webp',
+};
+const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -270,4 +293,6 @@ export {
   getStatIcon,
   SET_ICONS,
   getSetIcon,
+  FACTION_ICONS,
+  getFactionIcon,
 };
