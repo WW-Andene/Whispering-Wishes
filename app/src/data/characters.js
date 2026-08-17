@@ -54,9 +54,13 @@ const CHARACTER_DATA = {
     skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'Verdant Summit',
-    weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
-    teams: ['Jiyan + Iuno + Shorekeeper', 'Jiyan + Mortefi + Verina'] },
+    // bestEchoes/weaponAlts corrected against Prydwen's Jiyan build calcs (2026-07-30 profile update):
+    // Windward Pilgrimage (100%) outranks Sierra Gale (94.3%) as long as the team applies Aero Erosion;
+    // Thunderflare Dominion (90.3%) and Aureate Zenith (82.3%) are the actual best 5★/4★ alternatives —
+    // Waning Redshift wasn't in Prydwen's recommendations for him at all.
+    bestEchoes: ['Nightmare: Kelpie', 'Windward Pilgrimage 5pc'], bestWeapon: 'Verdant Summit',
+    weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Broadblade of Night'] },
+    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS who builds Cruelty from his Resonance Skill Extermination Order into an enhanced Heavy Attack "Mercy," then triggers Resonance Liberation Phantom Etching to enter Deathblade Gear, replacing his Basic Attack with the Killing Intent-fueled "Death Messenger" burst finisher.',
     skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
@@ -757,7 +761,7 @@ const CHARACTER_DATA = {
   ['Rover: Spectro', 'T0.5', 'T1.5'],
   ['Rover: Aero',    'T1.5', 'T2'],
   ['Rover: Electro', 'T4',   'T4'],
-  ['Jiyan',         'T1.5', 'T1'],
+  ['Jiyan',         'T1.5', 'T1.5'],
   ['Phoebe',        'T1.5', 'T2'],
   ['Cantarella',    'T1.5', 'T0.5'],
   ['Mortefi',       'T1.5', 'T1.5'],
