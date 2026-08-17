@@ -199,6 +199,7 @@ function TrackerTab({
                   altText="Winter Brume" title="Winter Brume" subtitle="Standard Weapon"
                   items={activeBanners.standardWeapons} itemKey="name"
                   profileData={state.profile.standardWeap} visualSettings={visualSettings}
+                  imagePosition="65% top"
                 />
               </div>
             )}

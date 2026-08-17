@@ -126,7 +126,7 @@ const StandardBannerOverlay = memo(() => {
 StandardBannerOverlay.displayName = 'StandardBannerOverlay';
 
 // Standard banner card — eliminates ~110 lines of copy-paste between standard char/weap banners
-const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings }) => {
+const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
   const hasStats = profileData?.history?.length > 0;
@@ -137,8 +137,8 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         <img
           src={bannerImage}
           alt={altText}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          style={{ zIndex: 1, opacity: stdOpacity, maskImage: stdMask, WebkitMaskImage: stdMask }}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 1, opacity: stdOpacity, maskImage: stdMask, WebkitMaskImage: stdMask, objectPosition: imagePosition ?? 'center top' }}
           loading="eager"
           onError={hideOnError}
         />

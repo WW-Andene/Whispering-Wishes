@@ -240,9 +240,10 @@ const MATERIAL_IMAGES = {
   'HF-Autopuppet Kernel': MATERIAL_PLACEHOLDER_IMAGE,
   'FF-Autopuppet Kernel': MATERIAL_PLACEHOLDER_IMAGE,
   // v3.4/3.5 ascension specialty / weekly-boss-drop materials — no icon art sourced yet
-  'Cloudperch Seed': MATERIAL_PLACEHOLDER_IMAGE,
+  'Cloudperch Seed': 'https://i.ibb.co/k2QZsk8X/Item-Cloudperch-Seed.webp',
   'Dream of Stars': MATERIAL_PLACEHOLDER_IMAGE,
-  'Flowborne Dream': MATERIAL_PLACEHOLDER_IMAGE,
+  'Flowborne Dream': 'https://i.ibb.co/spwJrnR9/Item-Flowborne-Dream.webp',
+  'Blade Blossom': 'https://i.ibb.co/q8w9h0j/Item-Blade-Blossom.webp',
   'Forget-Me-Not': MATERIAL_PLACEHOLDER_IMAGE,
   'Nightmare Flashdrive': MATERIAL_PLACEHOLDER_IMAGE,
   'Past Reveries': MATERIAL_PLACEHOLDER_IMAGE,
