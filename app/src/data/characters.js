@@ -353,12 +353,21 @@ const CHARACTER_DATA = {
     bestEchoes: ['Dragon of Dirge', 'Tidebreaking Courage 5pc'], bestWeapon: 'Unflickering Valor',
     weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge"], alt4: ['Overture', 'Commando of Conviction'], alt3: ['Sword of Night'] },
     teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1607 sheet. desc: title "Sea of Dreams" (nanoka) prepended and blurb
+  // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
+  // to match helpers.js's FACTION_ICONS key exactly, avoiding the mismatch previously found on Carlotta.
+  // skills/ascension/skill materials/bestEchoes all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 uses Rime-Draped Sprouts (87.0%) and Stringmaster (85.0%), Prydwen's #2/#3
+  // non-signature 5-stars; alt4 uses Radiant Dawn (77.9%, best 4★) and Augment (77.8%, #2 4★); alt3 uses
+  // the standard starter Rectifier of Night, matching the convention used elsewhere.
   'Cantarella': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Enigmatic head of Rinascita\'s Fisalia family, veiled in twilight. Havoc sub-DPS who deals off-field Havoc DMG via Coordinated Attacks while providing supplementary healing to the active character.',
+    desc: 'Sea of Dreams, current head of the Fisalia Family, Cantarella the Bane — a mysterious noblewoman whose beauty is as captivating as it is perilous, residing in a crown-like castle where illusory dreams flow like streams, meticulously spun by her own hands. Havoc Hybrid who builds Trance through her Intro/Skill/Liberation, enters Mirage via her Forte Heavy Delusive Dive to unlock enhanced Basic Attacks and the burst Perception Drain nuke, deals off-field Havoc DMG through Coordinated Attack Dreamweavers from her Liberation, heals the team throughout, and buffs the incoming Resonator\'s Havoc and Resonance Skill DMG via her Outro Gentle Tentacles.',
     skills: ['Illusion Collapse', 'Dance with Shadows', 'Beneath the Sea', 'Between Illusion and Reality'],
     ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Helix' },
     bestEchoes: ['Lorelei', 'Midnight Veil 5pc'], bestWeapon: 'Whispers of Sirens',
+    weaponAlts: { alt5: ['Rime-Draped Sprouts', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Camellya + Shorekeeper'] },
   'Zani': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Steadfast security officer of the Averardo Vault, devoted to justice. On-field Spectro DPS who builds Frazzle stacks via Resonance Skill counters and Heavy Attacks, then detonates them for burst Spectro DMG.',
@@ -710,7 +719,7 @@ const CHARACTER_DATA = {
   ['Roccia',        12250, 375, 1198, 125],
   ['Phoebe',        10825, 413, 1259, 125],
   ['Brant',         11675, 375, 1308, 125],
-  ['Cantarella',    11600, 400, 1099, 125],
+  ['Cantarella',    11600, 400, 1100, 125],
   ['Zani',          10775, 437, 1136, 125],
   ['Ciaccona',      12237, 375, 1197, 125],
   ['Cartethyia',    14800, 312, 611,  125],
@@ -1063,6 +1072,7 @@ const CHARACTER_DATA = {
   ['Roccia', 'Stage in the Box', 'Rinascita', 'Troupe of Fools', { en: 'Holly Earl', cn: 'Shen Huasang', jp: 'Kohara Konomi', kr: 'Jang Mi' }],
   ['Phoebe', 'Graceful Luminescence', 'Rinascita', 'Order of the Deep', { en: 'Rebecca LaChance', cn: 'Fu Tingyun', jp: 'Hondo Kaede', kr: 'Lee Bo Yong' }],
   ['Brant', 'Flamebound Compass', 'Rinascita', 'Troupe of Fools', { en: "Hyoie O'Grady", cn: 'Ray Mo', jp: 'Kishio Daisuke', kr: 'Lee Ju Seung' }],
+  ['Cantarella', 'Sea of Dreams', 'Rinascita', 'Fisalia Family', { en: 'Alexandra Guelff', cn: 'Xiaomi', jp: 'Nakahara Mai', kr: 'Kim Yul' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1267,15 +1277,19 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'frazzle', value: 18, duration: 15, condition: '18 stacks per rotation in Confession mode' }],
     note: 'Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs was empty, missing her real
+  // Inherent Skill "Poison" (+6% Havoc DMG Bonus per Echo Skill cast, 10s, stacks up to 2x/12% cap) —
+  // notable since several of her own kit abilities (Flowing Suffocation, Flickering Reverie, Perception
+  // Drain) are themselves flagged as Echo Skill casts, so this self-buff is easy to trigger.
   'Cantarella': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
       { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 10, condition: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap)' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal.',
+    note: 'Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal. Self: up to +12% Havoc DMG from Poison.',
   },
   'Ciaccona': {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
@@ -1772,16 +1786,23 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Everblooming', '198.81%'],
     ['Outro', 'Twining', '329.24% + 459.02%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1607 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. Perception Drain — her core Forte burst nuke —
+  // was listed as '336%×2' vs the real 667.99%×2), the same halving pattern already found and fixed
+  // across Camellya/Carlotta/Roccia/Phoebe/Brant's rows. Also fixed the Outro's name: 'Sweet Nightmare'
+  // doesn't match her kit at all — her real Outro is 'Gentle Tentacles' (confirmed on both Prydwen and
+  // nanoka); the fabricated name would have broken skill-icon/rotation substring lookups. The Outro's
+  // buff description (+20% Havoc DMG + 25% Skill DMG Amp) was already correct and is unchanged.
   'Cantarella': [
-    ['Basic ATK', 'Stage 1-3', '40% → 73.3% → 73%'],
-    ['Heavy ATK', 'Standard', '28.8%×2'],
-    ['Skill', 'Graceful Step', '37%×2'],
-    ['Skill', 'Flickering Reverie', '98.7%'],
-    ['Forte', 'Phantom Sting 1-3', '53.3% → 63.3% → 130%'],
-    ['Forte', 'Perception Drain', '336%×2'],
-    ['Liberation', 'Flowing Suffocation', '189.1% + 7.3%×21'],
-    ['Intro', 'Ripple', '21.3%×4'],
-    ['Outro', 'Sweet Nightmare', '+20% Havoc DMG + 25% Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-3', '79.5% → 145.8% → 145.1%'],
+    ['Heavy ATK', 'Standard', '57.2%×2'],
+    ['Skill', 'Graceful Step', '73.6%×2'],
+    ['Skill', 'Flickering Reverie', '196.2%'],
+    ['Forte', 'Phantom Sting 1-3', '106.0% → 125.9% → 258.5%'],
+    ['Forte', 'Perception Drain', '668.0%×2'],
+    ['Liberation', 'Flowing Suffocation', '376.0% + 14.5%×21'],
+    ['Intro', 'Ripple', '42.3%×4'],
+    ['Outro', 'Gentle Tentacles', '+20% Havoc DMG + 25% Skill DMG Amp (14s)'],
   ],
   // Corrected 2026-08-17 against ww.nanoka.cc's character #1107 sheet (Lv.10 skill attributes): every
   // row except Outro was roughly half its real value (e.g. Era of New Wave — her core Liberation nuke —
@@ -2238,6 +2259,19 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Cantarella (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  'Cantarella': [
+    { type: 'Intro', skill: 'Cruise', note: 'Ripple variant, starts Basic ATK from Stage 3, grants 1 Trance' },
+    { type: 'Basic ATK', skill: 'Illusion Collapse Stage 3', note: 'grants 1 more Trance' },
+    { type: 'Skill', skill: 'Dance with Shadows', note: 'Graceful Step, grants 1 more Trance' },
+    { type: 'Liberation', skill: 'Beneath the Sea', note: 'Flowing Suffocation, grants 3 Trance (caps at 5), applies Diffusion Coordinated Attacks' },
+    { type: 'Heavy ATK', skill: 'Delusive Dive', note: 'consumes Trance, enters Mirage' },
+    { type: 'Skill', skill: 'Flickering Reverie', note: 'Mirage Skill replacement, applies Hazy Dream' },
+    { type: 'Forte', skill: 'Phantom Sting 1-3', note: 'Mirage Basic ATK combo, builds Shiver toward 3' },
+    { type: 'Forte', skill: 'Perception Drain', note: 'consumes 3 Shiver for the burst nuke, heals the team' },
+    { type: 'Outro', skill: 'Gentle Tentacles', duration: 14, note: 'grants the incoming Resonator Havoc + Resonance Skill DMG Amp' },
+  ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Brant (2026-08-17, Chrome
   // UA + google.com referer + jsRender). This section was previously entirely missing for him.
   'Brant': [
@@ -3045,6 +3079,21 @@ const SKILL_ICONS = {
     'Applaud for Me!': 'https://i.ibb.co/Xk8TCww5/skill-applaudforme.webp', // Intro Skill
     'The Course is Set!': 'https://i.ibb.co/HpqFG4gz/skill-thecourseisset.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Cantarella, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Illusion Collapse (Basic ATK) has a dedicated icon (not a shared generic weapon one).
+  'Cantarella': {
+    'Illusion Collapse': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp',
+    'Standard': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp',
+    'Phantom Sting': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp', // Mirage's Basic ATK replacement, same icon
+    'Dance with Shadows': 'https://i.ibb.co/VWcwSf2F/skill-dancewithshadows.webp',
+    'Flickering Reverie': 'https://i.ibb.co/VWcwSf2F/skill-dancewithshadows.webp', // Mirage's Resonance Skill replacement, same wiki icon
+    'Between Illusion and Reality': 'https://i.ibb.co/SDPF5pzn/skill-betweenillusion.webp',
+    'Perception Drain': 'https://i.ibb.co/SDPF5pzn/skill-betweenillusion.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Beneath the Sea': 'https://i.ibb.co/60bNqfnF/skill-beneaththesea.webp',
+    'Cruise': 'https://i.ibb.co/DgDVdZ3T/skill-cruise.webp', // Intro Skill
+    'Gentle Tentacles': 'https://i.ibb.co/fVyzhpgr/skill-gentletentacles.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3233,6 +3282,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/chfPWLFw/node-s5-actorsstage.webp',
     s6: 'https://i.ibb.co/xnDJCdF/node-s6-captainscarnevale.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Cantarella, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1607, all 6 URLs verified 200/live before upload.
+  'Cantarella': {
+    s1: 'https://i.ibb.co/0RDfQXSY/node-s1-embracewaves.webp',
+    s2: 'https://i.ibb.co/LXfVYCkX/node-s2-surrenderreverie.webp',
+    s3: 'https://i.ibb.co/hxxmdVSb/node-s3-gazeabyss.webp',
+    s4: 'https://i.ibb.co/PZhy4tmF/node-s4-beholdsoul.webp',
+    s5: 'https://i.ibb.co/0g4C5hH/node-s5-restreflection.webp',
+    s6: 'https://i.ibb.co/KxGNqZtQ/node-s6-falldream.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3257,6 +3317,7 @@ const CHAIN_NODE_NAMES = {
   'Roccia': { s1: 'When Shadows Engulf the Hull', s2: 'When the Luceanite Gleams', s3: 'When the Heart Sees and Hands Feel', s4: 'When Wonders Gather in the Box', s5: 'When Dreams Are Reborn on Stage', s6: 'When the Golden Wings Fly' },
   'Phoebe': { s1: 'Warm Light and Bedside Wishes', s2: 'A Boat Adrift in Tears', s3: 'Daisy Wreaths and Dreams', s4: 'Ringing Bells on Wings Aloft', s5: 'Prayer to the Distant Light', s6: 'Whispering Chirps in Silence' },
   'Brant': { s1: 'By Currents and Winds', s2: 'For Smiles and Cheers', s3: 'Through Storms I Sail', s4: 'To Freedom I Sing', s5: "All the World's an Actor's Stage", s6: "All the World's a Captain's Carnevale" },
+  'Cantarella': { s1: 'Embrace the Endless Waves', s2: 'Surrender to the Illusive Reverie', s3: 'Gaze into the Abyss', s4: 'Behold Your Own Soul', s5: 'Rest in Your Reflection', s6: 'Fall, Fall... and Fall Deeper into the Dream' },
 };
 
 // Release order for sorting (based on first banner appearance)
