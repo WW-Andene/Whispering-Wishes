@@ -472,7 +472,8 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Lady of the Sea', 'Crown of Valor 3pc + Sierra Gale 2pc'], bestWeapon: "Moongazer's Sigil",
-    teams: ['Iuno + Augusta + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
+    weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Guardian Gauntlets'] },
+    teams: ['Iuno + Augusta + Shorekeeper', 'Iuno + Lynae + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
   'Galbrena': { rarity: 5, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Black Shores Consultant known as the Discord Slayer, seizing power from darkness. On-field Fusion DPS who deals primary damage through Echo Skill and Heavy ATK combos in quick burst rotations.',
     skills: ['Slayer\'s Trigger', 'Edge Transcended', 'Hellfire Absolution', 'Beyond Threshold'],
@@ -727,7 +728,10 @@ const CHARACTER_DATA = {
   // Liberation's lingering Recital state.
   ['Ciaccona',      ['Basic ATK', 'Skill'],          ['Aero Buff'],                           ['Erosion']],
   ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
-  ['Iuno',          ['Heavy ATK'],                   ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
+  // dmg-type tag corrected 2026-08-17: Iuno's actual rotation damage (Moonbow Basic ATK, Arc Beyond the
+  // Edge, and the Flux jump-attacks) is explicitly "considered as Resonance Liberation DMG" per Prydwen's
+  // kit breakdown — only Absolute Fullness and the base Moonring combo are true Heavy ATK/Basic ATK.
+  ['Iuno',          ['Liberation', 'Heavy ATK'],     ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
   ['Qiuyuan',       ['Echo'],                        ['Echo DMG Buff', 'Crit DMG Amp'],       []],
   ['Chisa',         ['Skill'],                       [],                                      ['DEF Shred']],
   ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
@@ -1147,6 +1151,12 @@ const CHARACTER_DATA = {
   // as "Unknown" per the Camellya/Phrolova convention above. organization uses her city-state affiliation
   // (Septimont) rather than the generic Rinascita nation tie, matching the Jinzhou City Hall convention.
   ['Augusta', 'Ephor of Septimont', 'Unknown', 'Septimont', { en: 'Alix Wilton Regan', cn: 'Mu Xueting', jp: 'Hikasa Yoko', kr: 'Lee Ji-hyun' }],
+  // birthplace: fandom's own infobox leaves both `birthday` and `birthplace` blank for Iuno too — same
+  // "Unknown" convention as Augusta/Camellya/Phrolova above. organization uses affiliation2 (Tetragon
+  // Temple, her specific priesthood) over the generic Septimont/Rinascita tie, matching the Jinzhou City
+  // Hall convention — no dedicated emblem exists for Tetragon Temple on the wiki (only a location photo),
+  // so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
+  ['Iuno', 'Stasis, Cycle, Renewal', 'Unknown', 'Tetragon Temple', { en: 'Ella Boyes', cn: 'Jiang Yingjun', jp: 'Lynn', kr: 'Yoon Eun-seo' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2663,14 +2673,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'grants +85% DMG Mult to Demon Hypostasis attacks' },
     { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry put
+  // her Skill before the Liberation and never mentioned the Flux jump-attack that switches her into New
+  // Moon — neither matches Prydwen's actual "Standard Sub DPS Rotation" (used alongside Augusta), which
+  // opens Intro straight into Liberation, then Flux into the Moonbow combo, and skips the base Skill
+  // entirely (Closing Refrain is only used in the longer "Extended"/Main DPS variants).
   'Iuno': [
-    { type: 'Intro', skill: 'Illuminated Manifestation' },
-    { type: 'Skill', skill: 'Pulse of Origins', note: 'or Closing Refrain to enter Lunar Cycle' },
-    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'empowered combo during Lunar Cycle' },
-    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'New Moon state follow-up, 2 charges' },
-    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'Forte-empowered finisher' },
-    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle burst phase' },
-    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator Heavy ATK DMG Amp' },
+    { type: 'Intro', skill: 'Illuminated Manifestation', note: 'restores 40 Sentience' },
+    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle, restores 60 Sentience' },
+    { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'jump attack, switches Half Moon → New Moon' },
+    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Sentience-enhanced combo, consumes up to 50 Sentience' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'New Moon follow-up, 2 charges, consumes up to 25 Sentience each' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'Forte finisher (swap-cancel), optional — cast for the extra team heal/Full Moon Domain, especially with Augusta on the team' },
+    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator 50% Heavy ATK DMG Amp' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
@@ -3315,6 +3330,24 @@ const SKILL_ICONS = {
     'Stride of Goldenflare': 'https://i.ibb.co/Kj6cSTM0/stride-goldenflare.webp', // Intro Skill
     'Battlesong of the Unyielding': 'https://i.ibb.co/20CntVcB/battlesong-unyielding.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Iuno, re-hosted on ibb.co (2026-08-17).
+  'Iuno': {
+    'Moon Steps': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Moon_Steps.png resolves to this same asset)
+    'Moonring': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Moonbow': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Foresight Fugue': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Pulse of Origins': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Closing Refrain': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Unfinished Refrain': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Arc Beyond the Edge': 'https://i.ibb.co/Q7YyYGJL/skill-foresight-fugue.webp',
+    'Beneath Lunar Tides': 'https://i.ibb.co/XZR1WbdL/skill-beneath-lunar-tides.webp', // Resonance Liberation
+    'Ebb and Flow': 'https://i.ibb.co/bRJF5hbd/skill-ebb-and-flow.webp', // Forte Circuit
+    'Absolute Fullness': 'https://i.ibb.co/bRJF5hbd/skill-ebb-and-flow.webp', // Forte-empowered Heavy ATK, same icon
+    'Waxing Ascent': 'https://i.ibb.co/HDtjs76J/skill-waxing-ascent.webp', // Inherent Skill
+    'Derivation': 'https://i.ibb.co/k2FqSVVC/skill-derivation.webp', // Inherent Skill
+    'Illuminated Manifestation': 'https://i.ibb.co/TqYmWyr5/skill-illuminated-manifestation.webp', // Intro Skill
+    'From Gloom to Gleam': 'https://i.ibb.co/V0xjgmx3/skill-from-gloom-to-gleam.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3579,6 +3612,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/ccxMpt1c/node-s5.webp',
     s6: 'https://i.ibb.co/cKP8919X/node-s6.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Iuno, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Iuno': {
+    s1: 'https://i.ibb.co/kWsh4y7/node-s1.webp',
+    s2: 'https://i.ibb.co/QRQmjWq/node-s2.webp',
+    s3: 'https://i.ibb.co/v6f4N31z/node-s3.webp',
+    s4: 'https://i.ibb.co/k2ZxwPWd/node-s4.webp',
+    s5: 'https://i.ibb.co/604PG1hL/node-s5.webp',
+    s6: 'https://i.ibb.co/67Frp4bF/node-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3610,6 +3653,7 @@ const CHAIN_NODE_NAMES = {
   'Lupa': { s1: 'Behold the Nameless One', s2: 'Every Ground, Her Hunting Field', s3: 'Wolflame Howls in Her Wake', s4: 'High and Aflame Is Her Banner', s5: 'Embrace the Thunderous Triumph', s6: 'To the Brightest Flaming Star' },
   'Phrolova': { s1: "A Key to Netherworld's Secrets", s2: 'A Rope Tied to a Life Beyond', s3: 'A Dagger to Cut Clean Obsessions', s4: 'A Torch Illuminating the Path', s5: "A Forked Road in Fate's Heartland", s6: 'A Night to Depart From Eternal Rest' },
   'Augusta': { s1: 'Stained in Scorched Earth', s2: 'Cleansed in Crimson War', s3: 'Forged in Rot and Ruin', s4: 'Ascent in Sun and Glory', s5: 'Unshaken in Wrathful Tides', s6: 'Engraved in Radiant Light' },
+  'Iuno': { s1: 'Wax or Wane, All Gild the Bough', s2: 'Day or Night, Let This Be Eternal', s3: 'I Drink Deep of Their Forgetting', s4: 'Rainy Season Dwell in My Eyes', s5: 'A Thousand Futile Glimpses', s6: 'I Am the Constant in the Chaos' },
 };
 
 // Release order for sorting (based on first banner appearance)
