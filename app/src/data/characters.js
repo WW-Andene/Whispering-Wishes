@@ -3495,6 +3495,44 @@ const SKILL_ICONS = {
     'Reverberance - Return': 'https://i.ibb.co/KxsFThC1/skill-reverberance-return.webp', // Intro Skill
     'Unraveling - Law Zero': 'https://i.ibb.co/mC9hRxyB/skill-unraveling-law-zero.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lynae/Mornye/Aemeath, pulled via the
+  // MediaWiki API (bypasses the site's Cloudflare challenge entirely) and re-hosted on ibb.co (2026-08-17).
+  'Lynae': {
+    'Stage 1-3': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Chroma_Drift.png resolves to this same asset)
+    'Kaleidoscopic 1-5': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp',
+    'Spark Collision': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp',
+    'Lynae-Style Palettes': 'https://i.ibb.co/KxK0V0g9/Lynae-res-Skill.webp', // Resonance Skill
+    'Additive Color': 'https://i.ibb.co/KxK0V0g9/Lynae-res-Skill.webp', // Additive Color shares the Resonance Skill's own icon
+    'Visual Impact': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp', // Forte Circuit — Chromaticity Modeling
+    'Iridescent Splash': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp',
+    'Prismatic Overblast': 'https://i.ibb.co/WW1q9Z9P/Lynae-liberation.webp', // Resonance Liberation
+    'Time to Show Some Colors!': 'https://i.ibb.co/nsQDdd3q/Lynae-intro.webp', // Intro Skill
+    "Let's Hit the Road!": 'https://i.ibb.co/6c4LdY9C/Lynae-outro.webp', // Outro Skill
+    'Spectral Analysis': 'https://i.ibb.co/Jw2KkfqG/Lynae-tune.webp', // Tune Break
+  },
+  'Mornye': {
+    'Stage 1-4': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (same asset already used for Calcharo/Jiyan)
+    'Optimal Solution': 'https://i.ibb.co/q3z1KKmg/Mornye-res-Skill.webp', // Resonance Skill — Resolution
+    'Distributed Array': 'https://i.ibb.co/q3z1KKmg/Mornye-res-Skill.webp',
+    'Geopotential Shift': 'https://i.ibb.co/MDT4gMcx/Mornye-forte.webp', // Forte Circuit — Mass-Energy Equivalence
+    'Inversion': 'https://i.ibb.co/MDT4gMcx/Mornye-forte.webp',
+    'Critical Protocol': 'https://i.ibb.co/kVF6D8Lw/Mornye-liberation.webp', // Resonance Liberation
+    'Convergence': 'https://i.ibb.co/NgLq63xG/Mornye-intro.webp', // Intro Skill
+    'Recursion': 'https://i.ibb.co/wrMwYwtW/Mornye-outro.webp', // Outro Skill
+    'Decoupling': 'https://i.ibb.co/rGgn1yqf/Mornye-tune.webp', // Tune Break
+  },
+  'Aemeath': {
+    'Aemeath Form Stage': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // Basic ATK — generic Sword icon, covers both her human- and Mech-form Basic strings
+    'Mech Form Stage': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Aemeath Charged': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Mech Charged': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Sync Strikes': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp', // Resonance Skill — Shared Voyage
+    'Seraphic Duet': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp',
+    'Heavenfall Edict': 'https://i.ibb.co/3YGvVWff/Aemeath-liberation.webp', // Resonance Liberation — Towards the Daybreak
+    'Songs Across the Universe': 'https://i.ibb.co/prZnwGKQ/Aemeath-skill-intro.webp', // Intro Skill — Overture of Departure
+    'Debut of Meteoric Radiance': 'https://i.ibb.co/prZnwGKQ/Aemeath-skill-intro.webp',
+    'Silent Protection': 'https://i.ibb.co/svSPtz0x/Aemeath-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3799,6 +3837,34 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/GffX5Qbj/node-s5.webp',
     s6: 'https://i.ibb.co/1S0brGY/node-s6.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lynae/Mornye/Aemeath, pulled via the
+  // MediaWiki API (bypasses the site's Cloudflare challenge entirely) and re-hosted on ibb.co (2026-08-17)
+  // — order confirmed S1→S6 against each character's own Resonance Chain section (action=parse, section
+  // "Resonance Chain", Node 1→Node 6 in document order).
+  'Lynae': {
+    s1: 'https://i.ibb.co/jKpHS2C/Lynae-s1.webp',
+    s2: 'https://i.ibb.co/kjCkrdC/Lynae-s2.webp',
+    s3: 'https://i.ibb.co/TBB7SWd9/Lynae-s3.webp',
+    s4: 'https://i.ibb.co/XZ0yd3HN/Lynae-s4.webp',
+    s5: 'https://i.ibb.co/23k6X01r/Lynae-s5.webp',
+    s6: 'https://i.ibb.co/wNpcWSrY/Lynae-s6.webp',
+  },
+  'Mornye': {
+    s1: 'https://i.ibb.co/5hVnMMTV/Mornye-s1.webp',
+    s2: 'https://i.ibb.co/Kzr4mvfw/Mornye-s2.webp',
+    s3: 'https://i.ibb.co/KBrzbMX/Mornye-s3.webp',
+    s4: 'https://i.ibb.co/Kp4VY4tn/Mornye-s4.webp',
+    s5: 'https://i.ibb.co/zV1QDk59/Mornye-s5.webp',
+    s6: 'https://i.ibb.co/DDCxvJfC/Mornye-s6.webp',
+  },
+  'Aemeath': {
+    s1: 'https://i.ibb.co/WNfdHqR4/Aemeath-s1.webp',
+    s2: 'https://i.ibb.co/b5SXdtzk/Aemeath-s2.webp',
+    s3: 'https://i.ibb.co/MygKfXVn/Aemeath-chain-s3.webp',
+    s4: 'https://i.ibb.co/mVwt8H0s/Aemeath-s4.webp',
+    s5: 'https://i.ibb.co/dwK7K9m7/Aemeath-s5.webp',
+    s6: 'https://i.ibb.co/wFsPszFL/Aemeath-chain-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3834,6 +3900,9 @@ const CHAIN_NODE_NAMES = {
   'Galbrena': { s1: 'Heart of Defiance Ever Ablaze', s2: 'Hellbound Dive of Fire and Abyss', s3: "Hunter's Blood Oath Rekindled", s4: 'Carry Forth This Fading Spark', s5: 'Though Light Fades, Torment Consumes', s6: 'I Remain Who I am, Eternal My Flame' },
   'Qiuyuan': { s1: 'Sword Sheathed, Mind Unclouded', s2: 'O Blade, I, Who Teach No More', s3: 'O Blade, I, Who Save No More', s4: 'O Blade, I, Who Sacrifice No More', s5: 'O Blade, I, Who Await to be Wielded', s6: 'Thus I Heard, Thus I Saw, Thus I Spoke' },
   'Chisa': { s1: 'Wandering Through the Desolate Corridors', s2: 'Into the Web of Endless Bonds', s3: 'Across the Confusion of the Long Night', s4: 'Severing the Endless Cycle of Tragic Fate', s5: 'Thousands of Lights to Guide the Way Home', s6: 'Thus, Hope is Rekindled with the Rising Dawn' },
+  'Lynae': { s1: 'Days to be Painted Like a Canvas', s2: "Into Lights' Vanishing Point", s3: 'For One Brilliant Moment', s4: 'Shadows of a Wind Racer', s5: 'Visions of a Future Unbound', s6: 'Painted in My True Color' },
+  'Mornye': { s1: 'The Silent Observer', s2: 'Morning Star of Entropy', s3: 'Blueprint of Recursion', s4: 'Latent Variables of the Cosmos', s5: 'Time Dilation Effect', s6: 'To the Far Shores of the Stars' },
+  'Aemeath': { s1: 'Gilded Glimmer of the First Dawn', s2: 'Downy Notes of Snowfluff', s3: 'Fervor Sightly Burns Bright as New', s4: 'Ethereal Waltz on Binary Tides', s5: 'Voyage to the Astral Shore', s6: "A Zephyr-Kissed Journey to You" },
 };
 
 // Release order for sorting (based on first banner appearance)

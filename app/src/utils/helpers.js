@@ -225,6 +225,13 @@ const REGION_ICONS = {
   // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
   // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
   'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
+  // Added 2026-08-17: Lynae/Mornye/Chisa's region tie (and Aemeath/Luuk Herssen/Sigrika's, per
+  // REGION_DATA) had no icon at all until now — sourced from fandom's own File:Lahai-Roi.png.
+  'Lahai-Roi': 'https://i.ibb.co/C5GV9tSf/Region-lahairoi.webp',
+  // Added 2026-08-17: Aemeath's birthplace (distinct from her Lahai-Roi region tie above) — sourced
+  // from fandom's own File:Roya_Frostlands_Emblem.png. New Federation (Lynae/Mornye's birthplace) has
+  // no dedicated emblem asset on the wiki, so it's intentionally left unset rather than guessed.
+  'Roya Frostlands': 'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
 };
 const getRegionIcon = (region) => REGION_ICONS[region] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:
