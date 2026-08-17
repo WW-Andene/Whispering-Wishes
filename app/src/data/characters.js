@@ -144,13 +144,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and ww.nanoka.cc/
+  // character/1503 — desc, skills, base stats, multipliers, buffs, ascension mats, echoes, alt4/alt3
+  // weapons, and teams all independently re-confirmed accurate, no changes needed there. CHAR_BUFF_TABLE's
+  // existing "Outro is All DMG Amp, not Deepen" note re-confirmed against nanoka's exact wording
+  // ("DMG Amplified by 15%") even though Prydwen's own prose review loosely calls it "DMG Deepen" —
+  // same wording looseness seen auditing Jianxin, nanoka's structured text is treated as authoritative.
+  // bestWeapon: nanoka ranks Cosmic Ripples #1 (kept); note Prydwen's build page instead puts the
+  // rotation-shortening 4★ Variation above every 5★ option for her specifically, since cutting one
+  // attack from her already-shortest-in-game rotation outweighs raw stats — both are legitimate reads,
+  // Variation is already covered in alt4. alt5 reordered to lead with Stellar Symphony (confirmed by
+  // both sources) over Boson Astrolabe (unconfirmed by either this audit, kept as a plausible ER pick).
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Nature Calling — with an extensive knowledge of botany, Verina is always solicitous, always smiling, and always wishing for every flower to be blessed with the miracle of life. Spectro healer who builds Photosynthesis Energy from Basic Attacks, Skill, and Intro, then spends it on Heavy/Mid-air Attack Starflower Blooms to heal the team; Liberation Arboreal Flourish both heals and marks enemies for a Coordinated-Attack heal-on-hit, while Outro Blossom heals the incoming Resonator and grants the team All DMG Amp.',
     skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Cosmic Ripples',
-    weaponAlts: { alt5: ['Boson Astrolabe', 'Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
+    weaponAlts: { alt5: ['Stellar Symphony', 'Boson Astrolabe'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
     teams: ['Jinhsi + Yinlin + Verina', 'Jiyan + Mortefi + Verina', 'Encore + Changli + Verina'] },
   'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS who marks targets with Sinner\'s Mark via Basic Attack and Intro Skill, deals off-field Electro DMG through Coordinated Attacks (Electromagnetic Blast/Judgement Strike) once Punishment Mark is applied, and amplifies the incoming teammate\'s Electro DMG and Resonance Liberation DMG via Outro.',
@@ -927,6 +938,9 @@ const CHARACTER_DATA = {
   // organization uses affiliation2 (Liondance Troupe), his specific in-game sub-group within Jinzhou/
   // Huanglong, matching the Jiyan/Midnight Rangers convention above rather than the generic nation tie.
   ['Lingyang', 'Frosty Gusto', 'Huanglong', 'Liondance Troupe', { en: 'Aleksander Varadian', cn: 'Jinli', jp: 'Natsuki Hanae', kr: 'Lee Sangho' }],
+  // birthplace (New Federation) intentionally differs from her region/nation tie (Huanglong, in
+  // REGION_DATA below) — she's a New Federation-born botanist who now dwells in Jinzhou, Huanglong.
+  ['Verina', 'Nature Calling', 'New Federation', 'Pioneer Association', { en: 'Heather Nicol', cn: 'Zhao Shuang', jp: 'Yu Sasahara', kr: 'Kang Saebom' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2071,6 +2085,17 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Ancient Arts', note: 'Mountain Roamer while airborne; up to ~9 alternating Basic/Skill hits during the Ultimate window under ideal play' },
     { type: 'Outro', skill: 'Frosty Marks', note: 'pure-damage AoE finisher on swap-out (S4 chain grants team Glacio DMG +20%/30s)' },
   ],
+  // Standard Rotation (S0) — sourced from Prydwen's "Gameplay and teams" tab for Verina (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). Her Intro Skill is explicitly skipped —
+  // Prydwen calls it "unusable," sending her airborne and lengthening her already-shortest-in-game
+  // rotation — so she swaps in cold and her Basic ATK cycle starts from Stage 3.
+  'Verina': [
+    { type: 'Basic ATK', skill: 'Cultivation Stage 1-5', note: 'swap-in without an Intro starts the combo from Stage 3, straight into Stage 4-5' },
+    { type: 'Skill', skill: 'Botany Experiment', note: 'can be cancelled immediately by the Liberation below to save time — the hit and its Resonance Energy gain are skipped, Concerto Energy is still gained' },
+    { type: 'Liberation', skill: 'Arboreal Flourish', note: 'heals the team and applies Photosynthesis Mark; 25s cooldown' },
+    { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'jump, then spend all 4 Photosynthesis Energy stacks on Mid-air Starflower Blooms to heal the team and refill Concerto Energy' },
+    { type: 'Outro', skill: 'Blossom', note: 'heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% for 30s' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2589,6 +2614,18 @@ const SKILL_ICONS = {
     'Lion Awakens': 'https://i.ibb.co/v4t5F4cP/Skill-Lion-Awakens.webp', // Intro Skill
     'Frosty Marks': 'https://i.ibb.co/SwNjm5nr/Skill-Frosty-Marks.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Verina, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Cultivation
+  // (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for Encore/Yinlin.
+  'Verina': {
+    'Cultivation': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Botany Experiment': 'https://i.ibb.co/S4TqBZMp/Skill-Botany-Experiment.webp',
+    'Starflower Blooms': 'https://i.ibb.co/4RZZwnz0/Skill-Starflower-Blooms.webp',
+    'Arboreal Flourish': 'https://i.ibb.co/204LdT14/Skill-Arboreal-Flourish.webp',
+    'Verdant Growth': 'https://i.ibb.co/kgxDz6Xv/Skill-Verdant-Growth.webp', // Intro Skill
+    'Blossom': 'https://i.ibb.co/1fVPJtzv/Skill-Blossom.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2656,6 +2693,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/hRYWXtX5/Sequence-Node-Seven-Stars-Shine.webp',
     s6: 'https://i.ibb.co/Z1myY6Sc/Sequence-Node-Demons-Tremble.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Verina, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Chain Table on ww.nanoka.cc/character/1503, all 6
+  // URLs verified 200/live before upload.
+  'Verina': {
+    s1: 'https://i.ibb.co/RptDBgXm/Sequence-Node-Moment-of-Emergence.webp',
+    s2: 'https://i.ibb.co/zW0fpNdD/Sequence-Node-Sprouting-Reflections.webp',
+    s3: 'https://i.ibb.co/VWb4ycvt/Sequence-Node-The-Choice-to-Flourish.webp',
+    s4: 'https://i.ibb.co/Hpfb99bt/Sequence-Node-Blossoming-Embrace.webp',
+    s5: 'https://i.ibb.co/xtHvxT1F/Sequence-Node-Miraculous-Blooms.webp',
+    s6: 'https://i.ibb.co/fYjvXxRB/Sequence-Node-Joyous-Harvest.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2669,6 +2717,7 @@ const CHAIN_NODE_NAMES = {
   'Encore': { s1: "Wooly's Fairy Tale", s2: 'Sheep-counting Lullaby', s3: 'Fog? The Black Shores!', s4: "Adventure? Let's go!", s5: 'Hero Takes the Stage!', s6: 'Woolies Save the World!' },
   'Jianxin': { s1: 'Verdant Branchlet', s2: "Tao Seeker's Journey", s3: 'Principles of Wuwei', s4: 'Multitide Reflection', s5: 'Mirroring Introspection', s6: 'Truth from Within' },
   'Lingyang': { s1: 'Lion of Light, Blessings Abound', s2: 'Dominant and Fierce, Power Unbound', s3: 'Jaw-Dropping Feats, Loud and Wide', s4: 'Immortals Bow, in Reverence Flawed', s5: 'Seven Stars Shine, Stepped upon High', s6: 'Demons Tremble, Divine Power Nigh' },
+  'Verina': { s1: 'Moment of Emergence', s2: 'Sprouting Reflections', s3: 'The Choice to Flourish', s4: 'Blossoming Embrace', s5: 'Miraculous Blooms', s6: 'Joyous Harvest' },
 };
 
 // Release order for sorting (based on first banner appearance)
