@@ -227,8 +227,11 @@ function CollectionTab({
     });
   }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
 
-  const clearCollectionFilters = useCallback(() => {
-    handleSearchChange('');
+  // Resets every filter dropdown but leaves the search box alone — used when switching
+  // between Resonators/Weapons/Echoes views so a filter picked in one tab (e.g. "Sword"
+  // weapon type, or a stat-scaling filter) can't silently carry over and apply to another
+  // tab where that same state means something different (or nothing at all).
+  const resetAllCollectionFilters = useCallback(() => {
     setCollectionCategoryFilter('all');
     setCollectionWeaponFilter('all');
     setCollectionElementFilter('all');
@@ -241,6 +244,11 @@ function CollectionTab({
     setCollectionEchoBuffFilter('all');
     setCollectionOwnedFilter('all');
   }, []);
+
+  const clearCollectionFilters = useCallback(() => {
+    handleSearchChange('');
+    resetAllCollectionFilters();
+  }, [resetAllCollectionFilters]);
 
   const filterEchoes = useCallback((echoNames) => {
     return echoNames.filter(name => {
@@ -386,7 +394,7 @@ function CollectionTab({
                 <CardBody>
                   <div className="flex gap-1.5">
                     <button
-                      onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                      onClick={() => { setCollectionView('items'); resetAllCollectionFilters(); }}
                       className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
                       title="Resonators"
                       aria-label="View Resonators"
@@ -395,7 +403,7 @@ function CollectionTab({
                       <Crown size={12} className="inline mr-1" />Resonators
                     </button>
                     <button
-                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
+                      onClick={() => { setCollectionView('weapons'); resetAllCollectionFilters(); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
                       title="Weapons"
                       aria-label="View weapons"
@@ -404,7 +412,7 @@ function CollectionTab({
                       <Sword size={12} className="inline mr-1" />Weapons
                     </button>
                     <button
-                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
+                      onClick={() => { setCollectionView('echoes'); resetAllCollectionFilters(); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
                       title="Echoes"
                       aria-label="View echoes"
