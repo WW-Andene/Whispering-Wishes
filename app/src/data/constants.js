@@ -215,6 +215,16 @@ const MATERIAL_IMAGES = {
   // === Forgery Materials (skill/weapon upgrade) ===
   'Waveworn Residue 235': 'https://i.ibb.co/N6b1m8VT/Item-Waveworn-Residue-235.webp',
   'Waveworn Residue 239': 'https://i.ibb.co/Xfwt09MV/Item-Waveworn-Residue-239.webp',
+  // Waveworn Shard family — added 2026-08-17 while auditing Luuk Herssen: FORGERY_MAT_TIERS already
+  // pointed to these two tier names, but neither had an icon URL here, so his (and Mornye's, and the
+  // Waveworn Shard-forged weapons') skill-material row rendered with no picture.
+  'HF-Waveworn Shard': 'https://i.ibb.co/KpS51SLv/Item-HF-Waveworn-Shard.webp',
+  'FF-Waveworn Shard': 'https://i.ibb.co/TxB4P0Cp/Item-FF-Waveworn-Shard.webp',
+  // String family — added 2026-08-17 while auditing Luuk Herssen/Freeze Frame's shared skill-material
+  // pool. Real tier names, unlike this app's placeholder "HF-String"/"FF-String": Broken String (LF) →
+  // Spliced String (MF) → Solidified String (HF) → Melodic String (FF), per fandom's own item pages.
+  'Solidified String': 'https://i.ibb.co/8D4cwT2p/Item-Solidified-String.webp',
+  'Melodic String': 'https://i.ibb.co/pH17NjG/Item-Melodic-String.webp',
   'Remnant Combustor': 'https://i.ibb.co/prsfDV7Y/Item-Remnant-Combustor.webp',
   'Reverb Combustor': 'https://i.ibb.co/jkt3qd95/Item-Reverb-Combustor.webp',
   'Polarized Metallic Drip': 'https://i.ibb.co/xSVsWyKd/Item-Polarized-Metallic-Drip.webp',
@@ -273,7 +283,10 @@ const FORGERY_MAT_TIERS = {
   'Polarizer': ['Polywing Polarizer', 'Layered Wing Polarizer'],
   'Carved Crystal': ['HF-Carved Crystal', 'FF-Carved Crystal'],
   'Waveworn Shard': ['HF-Waveworn Shard', 'FF-Waveworn Shard'],
-  'String': ['HF-String', 'FF-String'],
+  // Fixed 2026-08-17: real tier names are Solidified String (HF) / Melodic String (FF), not the
+  // placeholder "HF-String"/"FF-String" — those never matched any MATERIAL_IMAGES entry, so Lucilla's
+  // (and Freeze Frame/Fusion Accretion's) skill-material row rendered with no picture at all.
+  'String': ['Solidified String', 'Melodic String'],
 };
 
 // [SECTION:MATERIAL_COSTS] — Total materials to max level
