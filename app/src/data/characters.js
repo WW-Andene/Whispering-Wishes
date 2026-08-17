@@ -301,12 +301,22 @@ const CHARACTER_DATA = {
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'The Last Dance',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Woodland Aria'], alt4: ['Undying Flame', 'Pistols#26'], alt3: ['Pistols of Night'] },
     teams: ['Carlotta + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Buling'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1606 sheet. desc: title "Stage in the Box" (nanoka) prepended and
+  // blurb rewritten to match the roster's convention (previous desc wrongly described her as dealing
+  // Havoc DMG "through Coordinated Attacks with Pero" — Pero is her companion/pet but her kit has no
+  // Coordinated Attack mechanic at all; corrected to her real Forte Circuit Beyond Imagination combo).
+  // skills/ascension/skill materials/bestEchoes all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 uses Solsworn Ciphers (90.0%) and Blazing Justice (88.2%), Prydwen's #2/#3
+  // non-signature 5-stars; alt4 uses Aether Strike (72.9%) and Celestial Spiral (72.6%), the top two
+  // 4-stars; alt3 uses the standard starter Gauntlets of Night, matching the convention used elsewhere.
   'Roccia': { rarity: 5, element: 'Havoc', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Warm-hearted clown performer from Rinascita with her companion Pero. Havoc sub-DPS who buffs the on-field carry\'s Basic ATK DMG via Outro and deals Havoc DMG through Coordinated Attacks with Pero.',
+    desc: 'Stage in the Box, assistant, prop master, and improv comedian of the Troupe of Fools — always there to make sure the Troupe is at the ready, carrying a Magic Box that appears to hold the world, or perhaps a world she recreated inside it. Havoc sub-DPS/buffer who pulls enemies in and enters Beyond Imagination via her Skill, bounces through 3 Forte Real Fantasy hits (counted as Heavy Attack DMG), nukes with her Liberation for a scaling flat team ATK buff off her own Crit Rate, then buffs the incoming Resonator\'s Havoc and Basic ATK DMG through her Outro Applause, Please! — the best group-pull utility in the game via her Skill and transferable Magic Box.',
     skills: ['Pero, Easy', 'Acrobatic Trick', 'Commedia Improvviso!', 'A Prop Master Prepares'],
     ascension: { boss: 'Cleansing Conch', common: 'Tidal Residuum', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
+    weaponAlts: { alt5: ['Solsworn Ciphers', 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Cantarella + Verina'] },
   'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Devoted acolyte of the Order of the Deep, guided by divine light. Spectro sub-DPS who applies Frazzle stacks via Resonance Skill card summons, enabling Spectro DPS teammates to trigger burst damage.',
@@ -676,7 +686,7 @@ const CHARACTER_DATA = {
   ['Shorekeeper',   16713, 288, 1100, 175],
   ['Camellya',      10325, 450, 1161, 125],
   ['Carlotta',      12450, 463, 1198, 125],
-  ['Roccia',        12250, 375, 1197, 125],
+  ['Roccia',        12250, 375, 1198, 125],
   ['Phoebe',        10825, 412, 1258, 125],
   ['Brant',         11675, 375, 1307, 125],
   ['Cantarella',    11600, 400, 1099, 125],
@@ -1029,6 +1039,7 @@ const CHARACTER_DATA = {
   // organization: 'Montelli Family' (no leading "The") to match helpers.js's FACTION_ICONS key exactly —
   // the icon lookup is a straight object-key match, so "The Montelli Family" silently resolved to no icon.
   ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
+  ['Roccia', 'Stage in the Box', 'Rinascita', 'Troupe of Fools', { en: 'Holly Earl', cn: 'Shen Huasang', jp: 'Kohara Konomi', kr: 'Jang Mi' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1173,15 +1184,20 @@ const CHAR_BUFF_TABLE = {
     },
     note: 'Outro: 25% All DMG Amp to team (30s, confirmed exact 2026-08-16 — was miscategorized as deepen). Syntony Field: +50% Off-Tune Buildup Rate (25s), healing, DEF+20% via Ultimate. Interfered Marker: up to 40% DMG Amp on target. Rupture Response.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs was missing target/duration/
+  // condition fields (a formatting bug, not a wrong value) — filled in from Inherent Skill Immersive
+  // Performance. outroBuffs/debuffs were already accurate; libBuffs is correctly empty since her
+  // Liberation's team buff is flat ATK points (up to 200, scaling with her own Crit Rate over 50%) —
+  // not a percentage stat this table's schema represents — documented in the note instead.
   'Roccia': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
       { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 20 }],
+    selfBuffs: [{ stat: 'atkPct', value: 20, target: 'self', duration: 12, condition: 'Immersive Performance: Skill or Heavy ATK cast → self ATK +20% (12s)' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% 12s.',
+    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% (12s) on Skill/Heavy ATK. Liberation: flat team ATK +1 per 0.1% Crit Rate over 50%, up to +200 (30s) — not a % buff, so untracked in libBuffs.',
   },
   // selfBuffs condition corrected 2026-08-17 against fandom/Prydwen — was "After 4 Resonance Skill
   // casts", which matched nothing in her kit. Fiery Feather is granted by casting Liberation (Radiance
@@ -1948,13 +1964,17 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Attack the Must-Defend', '4.8%×5 + 24% + 72%', 'Swap-in opener, counted as Heavy ATK DMG.'],
     ['Outro', 'Strike Before Ready', '100% ATK + 50% Echo Skill DMG Amp (14s)', 'Swap-out buff granting the next Resonator Echo Skill DMG Amp.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1606 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. Real Fantasy's 3 hits were '162% → 171% → 180%'
+  // vs the real 322.08% → 339.97% → 357.86%) — the same halving pattern already found and fixed in
+  // Camellya's/Carlotta's rows. Outro (a DMG Amp buff description, not a raw multiplier) is unaffected.
   'Roccia': [
-    ['Basic ATK', 'Stage 1-4', '36.8% → 57.6% → 85% → 104.8%'],
-    ['Heavy ATK', 'Standard', '85%'],
-    ['Skill', 'Acrobatic Trick', '30.9%×8'],
-    ['Forte', 'Real Fantasy 1-3', '162% → 171% → 180%'],
-    ['Liberation', 'Commedia Improvviso!', '140%×3'],
-    ['Intro', 'Pero, Help!', '85%'],
+    ['Basic ATK', 'Stage 1-4', '73.2% → 114.4% → 169.0% → 208.4%'],
+    ['Heavy ATK', 'Standard', '169.0%'],
+    ['Skill', 'Acrobatic Trick', '61.5%×8'],
+    ['Forte', 'Real Fantasy 1-3', '322.1% → 340.0% → 357.9%'],
+    ['Liberation', 'Commedia Improvviso!', '278.3%×3'],
+    ['Intro', 'Pero, Help!', '169.0%'],
     ['Outro', 'Applause, Please!', '+20% Havoc DMG + 25% Basic ATK DMG Amp (14s)'],
   ],
   'Rover: Spectro': [
@@ -2180,6 +2200,16 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Roccia (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  'Roccia': [
+    { type: 'Intro', skill: 'Pero, Help', note: 'grants 100 Imagination' },
+    { type: 'Basic ATK', skill: 'Pero, Easy Stage 4', note: 'skip straight to Stage 4 after Intro, grants 100 more Imagination' },
+    { type: 'Skill', skill: 'Acrobatic Trick', note: 'pulls enemies in, grants the last 100 Imagination, enters Beyond Imagination' },
+    { type: 'Forte', skill: 'Real Fantasy 1-3', note: '3 Forte bounces, counted as Heavy Attack DMG' },
+    { type: 'Liberation', skill: 'Commedia Improvviso!', note: 'AoE nuke + flat team ATK buff scaling with Crit Rate over 50%' },
+    { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'grants the incoming Resonator Havoc + Basic ATK DMG Amp, and replaces their Utility with the Magic Box' },
+  ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
   // Simplified from Prydwen's full "Burst Combo" (with its Warm Up pre-phase for 0-Substance starts)
@@ -2909,6 +2939,20 @@ const SKILL_ICONS = {
     'Wintertime Aria': 'https://i.ibb.co/d4gxw6J8/skill-wintertimearia.webp', // Intro Skill
     'Closing Remark': 'https://i.ibb.co/qMFKhW2G/skill-closingremark.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Roccia, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Pero, Easy
+  // (Basic ATK) has no dedicated wiki asset (a redirect to the generic Gauntlets icon, same as
+  // Jianxin/Xiangli Yao's shared icon).
+  'Roccia': {
+    'Pero, Easy': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Real Fantasy': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Forte's Basic ATK replacement, same generic weapon icon
+    'Acrobatic Trick': 'https://i.ibb.co/SDY1939h/skill-acrobatictrick.webp',
+    'A Prop Master Prepares': 'https://i.ibb.co/fzp1K5tw/skill-apropmaster.webp',
+    'Commedia Improvviso!': 'https://i.ibb.co/z3hHnSz/skill-commediaimprov.webp',
+    'Pero, Help': 'https://i.ibb.co/kstN6pTM/skill-perohelp.webp', // Intro Skill
+    'Applause, Please!': 'https://i.ibb.co/v4xJNxgk/skill-applauseplease.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3064,6 +3108,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/tPpvpmFC/node-s5-toast.webp',
     s6: 'https://i.ibb.co/Kx65J6sT/node-s6-curtain.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Roccia, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1606, all 6 URLs verified 200/live before upload.
+  'Roccia': {
+    s1: 'https://i.ibb.co/q3QR4dS0/node-s1-shadows.webp',
+    s2: 'https://i.ibb.co/VWZG28Xy/node-s2-luceanite.webp',
+    s3: 'https://i.ibb.co/GfR6DwXb/node-s3-heart.webp',
+    s4: 'https://i.ibb.co/7Jy9x2yr/node-s4-wonders.webp',
+    s5: 'https://i.ibb.co/BHYrDMBc/node-s5-dreams.webp',
+    s6: 'https://i.ibb.co/3yGZ0kCy/node-s6-goldenwings.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3085,6 +3140,7 @@ const CHAIN_NODE_NAMES = {
   'Shorekeeper': { s1: 'Unspoken Conjecture', s2: "Night's Gift and Refusal", s3: 'Infinity Awaits Me', s4: 'Overflowing Quietude', s5: 'Echoes in Silence', s6: 'To the New World' },
   'Camellya': { s1: 'Somewhere No One Travelled', s2: 'Calling Upon the Silent Rose', s3: 'A Bud Adorned by Thorns', s4: 'Roots Set Deep In Eternity', s5: 'Infinity Held in Your Palm', s6: 'Bloom For You Thousand Times Over' },
   'Carlotta': { s1: 'Beauty Blazes Brightest Before It Fades', s2: 'Fallen Petals Give Life to New Blooms', s3: 'Adelante, Cortado, Spinning in Grace', s4: "Yesterday's Raindrops Make Finest Wine", s5: 'Toast to Past, Today, and Every Day to Come', s6: 'As the Curtain Falls, I Remain What I Am' },
+  'Roccia': { s1: 'When Shadows Engulf the Hull', s2: 'When the Luceanite Gleams', s3: 'When the Heart Sees and Hands Feel', s4: 'When Wonders Gather in the Box', s5: 'When Dreams Are Reborn on Stage', s6: 'When the Golden Wings Fly' },
 };
 
 // Release order for sorting (based on first banner appearance)
