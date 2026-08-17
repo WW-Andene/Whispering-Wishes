@@ -66,25 +66,28 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Calcharo + Yinlin + Verina', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
-    desc: 'Eccentric puppeteer who performs alongside Cosmos and Cloudy. On-field Fusion DPS who enters Cosmos Rampage mode via Resonance Liberation, dealing Fusion DMG with enhanced Basic Attacks.',
-    skills: ['Wooly Attack', 'Flaming Woolies', 'Cosmos Rave', 'Black & White Woolies'],
+    desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem from her Basic/Skill/Intro hits into an empowered, damage-reducing Heavy Attack (Cloudy Frenzy), then unleashes Resonance Liberation Cosmos Rave to swap her whole kit for enhanced Fusion versions for 10s.",
+    skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Helix' },
-    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Stringmaster',
+    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
+    weaponAlts: { alt5: ['Boson Astrolabe'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
     teams: ['Encore + Changli + Verina', 'Encore + Sanhua + Shorekeeper'] },
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Martial artist who seeks inner peace through combat. Aero support who generates shields, groups enemies with her Resonance Skill, and buffs team Aero DMG via Outro.',
-    skills: ['Fengyiquan', 'Calming Air', 'Purification Force Field', 'Primordial Chi Spiral'],
+    desc: 'Cleansing Reflections, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
+    skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: "Verity's Handle",
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Marcato', 'Stonard'], alt3: ['Gauntlets of Night'] },
     teams: ['Jianxin + Jiyan + Verina', 'Jianxin + Xiangli Yao + Shorekeeper'] },
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Opera performer possessed by the spirit of a lion. On-field Glacio DPS who transforms into Lion Form via Liberation, dealing sustained Glacio DMG through aerial Basic Attack combos.',
-    skills: ['Majestic Fists', 'Ancient Arts', 'Strive: Lion\'s Vigor', 'Unification of Spirits'],
+    desc: 'Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion\'s Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.',
+    skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt5: ["Moongazer's Sigil", 'Tragicomedy'], alt4: ['Celestial Spiral', 'Hollow Mirage'], alt3: ['Gauntlets of Night'] },
     teams: ['Lingyang + Sanhua + Verina', 'Lingyang + Zhezhi + Shorekeeper'] },
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Gentle botanist devoted to the study of life. Spectro healer who restores HP with Resonance Skill and Liberation, while granting ATK buffs and DMG Deepen to the team via Outro.',
@@ -513,9 +516,9 @@ const CHARACTER_DATA = {
   ['Rover: Electro', 10775, 438, 1137, 125],
   ['Jiyan',         10488, 438, 1186, 125],
   ['Calcharo',      10500, 438, 1186, 125],
-  ['Encore',        10512, 425, 1246, 125],
-  ['Jianxin',       14112, 337, 1124, 150],
-  ['Lingyang',      10387, 437, 1209, 125],
+  ['Encore',        10513, 425, 1247, 125],
+  ['Jianxin',       14113, 338, 1124, 150],
+  ['Lingyang',      10388, 438, 1210, 125],
   ['Verina',        14237, 337, 1099, 175],
   ['Yinlin',        11000, 400, 1283, 125],
   ['Jinhsi',        10825, 412, 1258, 125],
@@ -851,12 +854,14 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 15% All DMG Amp 30s. Lib Stellarealm: +12.5% CR +25% CD (30s). Knockdown recovery.',
   },
+  // Corrected against ww.nanoka.cc character/1405 — prior Outro (15% All DMG Deepen) and debuff
+  // (DEF Shred on shielded) didn't match her real kit at all.
   'Jianxin': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'libDmg', value: 38, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'defShred', value: 15, duration: 10, condition: 'Shield active' }],
-    note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
+    debuffs: [],
+    note: 'Shield support/Parry-stance sub-DPS. Forte (Primordial Chi Spiral) grants a large HP-scaling shield and periodic healing while channeled. Liberation Purification Force Field groups enemies before exploding. Outro Transcendence: Liberation DMG Amp +38% (14s) for the incoming Resonator.',
   },
   'Suisui': {
     outroBuffs: [
@@ -1217,16 +1222,16 @@ const CHAR_BUFF_TABLE = {
   'Encore': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 10, target: 'self', duration: 10, condition: 'Inherent Skill Woolies Cheer Dance: Fusion DMG +10%/10s on Flaming Woolies/Cosmos-Rampage cast.' }],
     debuffs: [],
-    note: 'Cosmos Rampage mode Basic ATK DPS.',
+    note: 'On-field Fusion main DPS. Builds Mayhem from Basic/Skill/Intro hits; at full Mayhem, Heavy ATK enters a 70% DMG-reduction state and casts a big Liberation-DMG finisher (Cloudy Frenzy / Cosmos Rupture) on exit. Liberation Cosmos Rave replaces her whole kit with enhanced Fusion versions for 10s. Outro Thermal Field is a pure DoT proc, no team buff — free to quickswap.',
   },
   'Lingyang': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 50, target: 'self', duration: 14, condition: "Liberation Strive: Lion's Vigor grants self Glacio DMG Bonus +50% for 14s." }],
     debuffs: [],
-    note: 'Lion Form aerial Basic ATK DPS.',
+    note: "On-field Glacio main DPS. Forte Circuit's Striding Lion state (entered via Heavy ATK Glorious Plunge at full Lion's Spirit) unlocks airborne enhanced attacks. Outro Frosty Marks is a pure-DMG AoE proc, not a team buff, though S4 Resonance Chain grants team Glacio DMG +20%/30s on it.",
   },
   'Cartethyia': {
     outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],
@@ -1557,18 +1562,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
   'Encore': [
-    ['Basic ATK', 'Wooly Attack 1-4', '28% → 33.3% → 33.4%×2 → 19.3%×4'],
-    ['Basic ATK', 'Wooly Strike', '120%'],
-    ['Heavy ATK', 'Standard', '94.1%'],
-    ['Skill', 'Flaming Woolies', '38.5%×8'],
-    ['Skill', 'Energetic Welcome', '170.6%'],
-    ['Liberation', 'Cosmos Frolicking 1-4', '45.4%×2 → 28.4%×3 → 33.2%×4 → 97.6%×3'],
-    ['Liberation', 'Cosmos Heavy ATK', '109.4%'],
-    ['Liberation', 'Cosmos Rampage', '31.9%×4'],
-    ['Forte', 'Cloudy Frenzy', '168%'],
-    ['Forte', 'Cosmos Rupture', '23.4%×6 + 249.1%'],
-    ['Intro', 'Woolies Can Help!', '100%'],
-    ['Outro', 'Thermal Field', '176.8% ×4 ticks'],
+    ['Basic ATK', 'Wooly Attack Stage 1-4 → Wooly Strike', '55.66% → 66.20% → 66.30%×2 → 38.27%×4 → 238.57%', 'Stage 4 into a timed-press Wooly Strike finisher.'],
+    ['Heavy ATK', 'Standard', '187.08%'],
+    ['Mid-air', 'Plunging Attack', '123.26%'],
+    ['Dodge Counter', 'Standard', '125.94%×2'],
+    ['Skill', 'Flaming Woolies → Energetic Welcome', '76.61%×8 → 339.16%', '10s cooldown; Skill again after Flaming Woolies casts Energetic Welcome.'],
+    ['Forte', 'Heavy ATK: Cloudy Frenzy', '334.00%', 'At full Mayhem, Heavy ATK enters a 70% DMG-reduction state, then casts Cloudy Frenzy (Liberation DMG) on exit.'],
+    ['Forte', 'Heavy ATK: Cosmos Rupture', '46.42%×6+495.21%', 'Same mechanic as Cloudy Frenzy, but during Cosmos Rave.'],
+    ['Liberation', 'Cosmos Rave', '217.58% (Cosmos Heavy ATK) · 90.18%×2+56.40%×3+65.99%×4+194.01%×3 (Cosmos: Frolicking) · 63.32%×4 (Cosmos: Rampage)', '10s state; Basic/Heavy/Skill/Dodge Counter all replaced with enhanced Fusion versions. 16s cooldown.'],
+    ['Intro', 'Woolies Helpers', '198.81%'],
+    ['Outro', 'Thermal Field', '176.76% ATK per tick ×4 (6s, 1.5s interval)', 'AoE burn field around the Skill target — no team buff, so she\'s free to quickswap.'],
   ],
   'Galbrena': [
     ['Basic ATK', 'Stage 1-4', '29.8% → 66.2% → 71.9% → 89.5%', 'Standard combo string, builds toward her Demon Hypostasis form.'],
@@ -1613,24 +1616,26 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Guiding Light', 'Spectro coordinated ATK'],
   ],
   'Jianxin': [
-    ['Basic ATK', 'Stage 1-4', '37.6% → 35.3% → 45.3% → 46.4%+30.9%'],
-    ['Heavy ATK', 'Standard', '40%'],
-    ['Skill', 'Chi Counter', '28.8%×2'],
-    ['Skill', 'Chi Parry', '72.8%'],
-    ['Forte', 'Primordial Chi Spiral', '42.2%×2 + 84.4%'],
-    ['Liberation', 'Purification Force Field', '69.6% + 92.8%'],
-    ['Intro', 'Essence of Tao', '50%×2'],
-    ['Outro', 'Transcendence', '+15% All DMG Deepen (14s)'],
+    ['Basic ATK', 'Fengyiquan Stage 1-4', '69.46% → 26.64%×2+79.90% → 41.75%×4 → 113.40%'],
+    ['Heavy ATK', 'Standard', '126.07%'],
+    ['Mid-air', 'Plunging Kick', '123.27%'],
+    ['Dodge Counter', 'Standard', '40.83%×2+163.29%'],
+    ['Skill', 'Calming Air: Chi Counter / Chi Parry', '334.60% / 258.73%', 'Hold Skill for Parry Stance — Chi Counter on being attacked, Chi Parry on early release. 12s cooldown.'],
+    ['Forte', 'Primordial Chi Spiral (Zhoutian Progress)', '248.52% (Pushing Punch) · 139.17%/377.74%/516.91% (Minor/Major-Inner/Major-Outer Shock) · 218.70% (Yielding Pull)', 'At max Chi, hold Basic ATK for a channeled shield-and-DMG state with 50% DMG reduction.'],
+    ['Liberation', 'Purification Force Field', '29.83% (continuous) + 636.20% (explosion)', 'Pulls targets into the field, then explodes on expiry. 20s cooldown.'],
+    ['Intro', 'Essence of Tao', '33.80%×3+67.60%'],
+    ['Outro', 'Transcendence', 'Resonance Liberation DMG Amp +38% (14s)', 'Grants the incoming Resonator this buff — no direct DMG.'],
   ],
   'Lingyang': [
-    ['Basic ATK', 'Stage 1-4', '20.3% → 26.5%×2 → 22.8%×3 → 39%'],
-    ['Heavy ATK', 'Standard', '11.3%×5'],
-    ['Skill', 'Ancient Arts', '100%'],
-    ['Liberation', 'Cloudsplitter', '51%×4'],
-    ['Liberation', 'Striding Lion 1-4', '40%×2 → 43.5% → 51%×2 → 55%'],
-    ['Forte', 'Mountain Roar', '30%×4'],
-    ['Intro', 'Lion Awakens', '100%'],
-    ['Outro', 'Feline Farewell', '+20% Glacio DMG + 25% Basic ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Majestic Fists Stage 1-5', '59.65% → 79.53% → 72.87%×2 → 20.41%×5+43.72% → 152.49%', 'Stage 5 can be replaced by Feral Roars (79.53%×2) after casting Furious Punches.'],
+    ['Heavy ATK', 'Standard', '145.73%'],
+    ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Dodge Counter', 'Standard', '126.05%×2'],
+    ['Skill', 'Ancient Arts → Furious Punches', '132.61% → 76.25%×2', 'Basic ATK 3-5 or Feral Roars swaps Skill to Furious Punches; no cooldown, doesn\'t reset the Basic ATK cycle.'],
+    ['Forte', 'Unification of Spirits (Striding Lion)', '172.37% (Glorious Plunge) · 87.08%×2+116.11%→31.77%×6 (Feral Gyrate) · 82.88%×2 (Mountain Roamer) · 36.03%×8+192.15% (Stormy Kicks) · 174.96%×2 (Tail Strike)', 'At full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters Striding Lion — an airborne enhanced-attack state.'],
+    ['Liberation', "Strive: Lion's Vigor", '397.62%', "Also grants self Glacio DMG Bonus +50% for 14s. 20s cooldown."],
+    ['Intro', 'Lion Awakens', '99.41%×2'],
+    ['Outro', 'Frosty Marks', '587.94% ATK AoE', 'Pure-damage swap-out finisher — no team buff baseline (S4 chain grants team Glacio DMG +20%/30s).'],
   ],
   'Lupa': [
     ['Basic ATK', 'Stage 1-4', '45.3% → 45.3% → 79.3% → 89.9%', 'Standard combo string, builds Wolflame.'],
@@ -2182,7 +2187,7 @@ const RESONANCE_CHAIN_DATA = {
   // Calcharo S1: energy recovery (utility). S2: Skill DMG+30%. S3: Electro DMG+25%. S4: team Electro DMG+20%
   'Calcharo':     { s1: { totalMult: 5 }, s2: { skillDmg: 30 }, s3: { elemDmg: 25 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
   // Encore S1: Fusion DMG+3% x4=12%. S2: energy utility. S3: Heavy ATK mult+40%. S4: team Fusion DMG+20%. S6: ATK stacking ~25%
-  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { totalMult: 10 }, s6: { atkPct: 25 } },
+  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
   // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
   'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { totalMult: 15 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
   // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
@@ -2218,7 +2223,8 @@ const RESONANCE_CHAIN_DATA = {
   // s2 Basic/Heavy/Dodge/Intro DMG Mult +50% confirmed, Mid-air Attack +200% has no direct schema stat, totalMult fallback (was totalMult:25); s3 Liberation2 DMG Mult +100% (was totalMult:15, wrong category);
   // s4 team +20% All-Attribute DMG after inflicting any Bane/Burst/Frazzle/Flare/Chafe/Erosion (was atkPct:40, no basis); s5 fatal-blow immunity + Max HP shield, no direct DPS stat, totalMult fallback (kept as-is);
   // s6 Fleurdelys attacks deal +40% more DMG to targets (was totalMult:25, wrong category).
-  'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
+  // Corrected against ww.nanoka.cc character/1104 — prior values didn't match any real chain effect.
+  'Lingyang':     { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { basicDmg: 20, skillDmg: 10 }, s4: { elemDmg: 20 }, s5: { totalMult: 35 }, s6: { basicDmg: 100 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
   'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
   // Galbrena R-chain corrected 2026-08-16 via Prydwen/Game8: s1 max Afterflame Crit DMG scaling (+2%/pt, cap 80%, was 40);
@@ -2288,7 +2294,9 @@ const RESONANCE_CHAIN_DATA = {
   // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
   // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
   // 4★ + missing characters
-  'Jianxin':      { s1: { atkPct: 8 }, s2: { deepen: 8 }, s3: { defShred: 5 }, s4: { atkPct: 8 }, s5: { totalMult: 10 }, s6: { deepen: 12 } },
+  // Corrected against ww.nanoka.cc character/1405 — prior values (deepen/defShred) didn't match any
+  // real chain effect (she has no DMG Deepen or DEF Shred anywhere in her kit).
+  'Jianxin':      { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { libDmg: 80 }, s5: { totalMult: 10 }, s6: { totalMult: 35 } },
   // Confirmed via ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro).
   // energyRegen/heal aren't tracked stat keys elsewhere in this table — approximated as totalMult, same
   // convention this file already uses for other non-DMG-multiplier chain effects (CD resets, utility, etc).
