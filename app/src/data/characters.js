@@ -422,12 +422,22 @@ const CHARACTER_DATA = {
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
     weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Feather Edge'], alt3: ['Guardian Sword'] },
     teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Cartethyia + Ciaccona + Chisa'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1207 sheet. desc: title "Howling Flame" (nanoka) prepended and blurb
+  // rewritten — the previous desc said she "shreds enemy Fusion RES" as if unconditional, but her Glory
+  // RES-ignore only ramps up with more Fusion teammates present (3%/9%/15%), and she's a team buffer
+  // first (Prydwen files her under "Hybrid", not Sub DPS). skills/ascension/skill materials/bestEchoes/
+  // outroBuffs/libBuffs/selfBuffs/weaponBuffs/debuffs all re-confirmed accurate (already corrected in a
+  // prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses Ages of Harvest (87.8%)
+  // and Kumokiri (87.0%), Prydwen's #2/#3 non-signature 5-stars; alt4 uses Waning Redshift (75.0%, best
+  // 4★) and Aureate Zenith (74.8%, #2 4★); alt3 uses the standard starter Broadblade of Night.
   'Lupa': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Sub DPS',
-    desc: 'Lone wolf Star Gladiator of the arena who fights for herself alone. Fusion sub-DPS who shreds enemy Fusion RES and buffs team DMG via Liberation and Outro, enabling mono-Fusion compositions.',
+    desc: 'Howling Flame, a Gladiator of Septimont and a radiant star of the arena — fiery and straightforward, Lupa lives like a wild lone wolf, and as long as she can savor the adrenaline rush of battle, she doesn\'t mind if that same fire ends up consuming her whole. Fusion Hybrid buffer who dumps her Liberation Fire-Kissed Glory immediately to grant the whole team Pack Hunt (ATK Amp, further boosted by teammates\' Intro Skills) and Glory (Fusion RES ignore that scales with Fusion teammate count), builds Wolfaith through Heavy/Mid-air Attacks toward her Forte finisher Dance With the Wolf, then buffs the incoming Resonator\'s Fusion and Basic ATK DMG through her Outro — built around powering mono-Fusion teams like Changli + Brant + Lupa.',
     skills: ['Flaming Star', 'Shewolf\'s Hunt', 'Fire-Kissed Glory', 'Ignis Lupa'],
     ascension: { boss: 'Unfading Glory', common: 'Howler Core', specialty: 'Bloodleaf Viburnum' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Waveworn Residue' },
     bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 5pc'], bestWeapon: 'Wildfire Mark',
+    weaponAlts: { alt5: ['Ages of Harvest', 'Kumokiri'], alt4: ['Waning Redshift', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
     teams: ['Lupa + Brant + Changli', 'Lupa + Aemeath + Mornye'] },
   'Phrolova': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Main DPS',
     desc: 'Former violinist turned Fractsidus Overseer, death\'s euphoric companion. On-field Havoc DPS who summons Hecate via Echo Skill for sustained off-field Havoc DMG while dealing burst damage through Resonance Skill.',
@@ -759,7 +769,7 @@ const CHARACTER_DATA = {
   ['Zani',          10775, 438, 1137, 125],
   ['Ciaccona',      12238, 375, 1198, 125],
   ['Cartethyia',    14800, 313, 611,  125],
-  ['Lupa',          11912, 387, 1185, 125],
+  ['Lupa',          11913, 388, 1186, 125],
   ['Phrolova',      10775, 437, 1136, 125],
   ['Augusta',       10300, 462, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
@@ -1114,6 +1124,7 @@ const CHARACTER_DATA = {
   ['Zani', 'Scorched Radiance', 'Rinascita', 'Montelli Family', { en: 'Alexandra Metaxa', cn: 'Nie Xiying', jp: 'Ueda Hitomi', kr: 'Won Esther' }],
   ['Ciaccona', 'Woven Melodies', 'Rinascita', 'Ragunna', { en: 'Rebecca Hanssen', cn: 'Ye Zhiqiu', jp: 'Hasegawa Ikumi', kr: 'Kim Ye Rim' }],
   ['Cartethyia', 'Feathered Tempest', 'Rinascita', 'Ragunna', { en: 'Amanda Elizabeth Rischel', cn: 'Yun Hezhui', jp: 'Asakawa Yuu', kr: 'Bae Ha Gyoung' }],
+  ['Lupa', 'Howling Flame', 'Rinascita', 'Septimont', { en: 'Kaja Chan', cn: 'Shuo Xiaotu', jp: 'Takahashi Minami', kr: 'Kim Ye Reong' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1993,17 +2004,23 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Lion Awakens', '99.41%×2'],
     ['Outro', 'Frosty Marks', '587.94% ATK AoE', 'Pure-damage swap-out finisher — no team buff baseline (S4 chain grants team Glacio DMG +20%/30s).'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1207 sheet (Lv.10 skill attributes): every
+  // row was roughly half its true value (e.g. her Liberation nuke Fire-Kissed Glory was listed as
+  // '412.7%' vs the real 820.44%) — the same halving pattern already found and fixed across most of
+  // the recently-audited roster. The old Intro Try Focusing, Eh? note claiming "exact base number not
+  // published" was also wrong — nanoka does publish it (29.76%+42.16%×4), so the apologetic note is
+  // dropped along with the halved placeholder value.
   'Lupa': [
-    ['Basic ATK', 'Stage 1-4', '45.3% → 45.3% → 79.3% → 89.9%', 'Standard combo string, builds Wolflame.'],
-    ['Basic ATK', "Wolf's Claw", '36.3% + 9.1%×4 + 48.4%', 'Alt combo follow-up.'],
-    ['Mid-air', 'Starfall', '6.4%×4 + 59.4%', 'Airborne attack chain.'],
-    ['Skill', "Shewolf's Hunt", '70.8%', 'Base Skill dash strike.'],
-    ['Skill', 'Feral Fang', '157.7%', 'Empowered Skill against marked targets, +50% DMG Mult.'],
-    ['Skill', 'Dance with the Wolf', '28.2% + 21.1%×4 + 169.1%', 'Forte finisher combo.'],
-    ['Liberation', 'Fire-Kissed Glory', '412.7%', 'Ultimate nuke that also grants the team ATK/Fusion DMG buffs and enables Wild Hunt.'],
-    ['Liberation', 'Foebreaker', '153.1%', 'Follow-up hit tied to her Ultimate.'],
-    ['Intro', 'Try Focusing, Eh?', '15% + 21.2%×4', 'Base swap-in opener. (Approx. base-level value scaled from Lv.10 via the kit\'s standard ~50% level ratio — exact base number not published.)'],
-    ['Intro', 'Nowhere to Run!', '399.2% + 25%×4', 'Much stronger Intro used only once per Liberation, while in Wild Hunt state.'],
+    ['Basic ATK', 'Stage 1-4', '90.1% → 90.1% → 157.7% → 246.2%', 'Standard combo string, builds Wolflame.'],
+    ['Basic ATK', "Wolf's Claw", '72.2% + 18.0%×4 + 96.2%', 'Alt combo follow-up.'],
+    ['Mid-air', 'Starfall', '12.7%×4 + 118.1%', 'Airborne attack chain.'],
+    ['Skill', "Shewolf's Hunt", '140.8%', 'Base Skill dash strike.'],
+    ['Skill', 'Feral Fang', '313.6%', 'Empowered Skill against marked targets, +50% DMG Mult.'],
+    ['Skill', 'Dance with the Wolf', '56.0% + 42.0%×4 + 336.1%', 'Forte finisher combo.'],
+    ['Liberation', 'Fire-Kissed Glory', '820.4%', 'Ultimate nuke that also grants the team ATK/Fusion DMG buffs and enables Wild Hunt.'],
+    ['Liberation', 'Foebreaker', '304.5%', 'Follow-up hit tied to her Ultimate.'],
+    ['Intro', 'Try Focusing, Eh?', '29.8% + 42.2%×4', 'Base swap-in opener.'],
+    ['Intro', 'Nowhere to Run!', '793.6% + 49.6%×4', 'Much stronger Intro used only once per Liberation, while in Wild Hunt state.'],
     ['Outro', 'Stand by Me, Warrior', '+20% Fusion DMG + 25% Basic ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator.'],
   ],
   'Luuk Herssen': [
@@ -2716,13 +2733,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Maestro State: Hecate', note: 'off-field Hecate attacks during Maestro' },
     { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'grants next Resonator Havoc + Heavy ATK DMG Amp' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // opened with a full Basic ATK combo before her Liberation and never mentioned Foebreaker, the
+  // Mid-air Attack chain, or Wolf's Claw — the actual core of her Forte-building loop. Rebuilt to match
+  // Prydwen's "Loop Rotation" (used whenever an Intro Skill is available, i.e. whenever she isn't the
+  // team's opener).
   'Lupa': [
     { type: 'Intro', skill: 'Try Focusing, Eh?' },
-    { type: 'Skill', skill: "Shewolf's Hunt", note: 'or Feral Fang against marked targets' },
-    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'builds Wolflame' },
-    { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher combo' },
-    { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'grants team ATK + Fusion RES ignore, enables Wild Hunt' },
-    { type: 'Intro', skill: 'Nowhere to Run!', note: 'stronger Wild Hunt Intro, once per Liberation' },
+    { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'fully restores Wolflame, grants team Pack Hunt + Glory buffs' },
+    { type: 'Skill', skill: 'Foebreaker', note: 'press Basic/Skill shortly after Liberation, enters Burning Matchpoint' },
+    { type: 'Mid-air', skill: 'Stage 1-2', note: 'builds toward Firestrike' },
+    { type: 'Mid-air', skill: 'Firestrike', note: 'consumes 50 Wolflame, grants 1 Wolfaith' },
+    { type: 'Heavy ATK', skill: "Wolf's Claw", note: 'press Basic after Firestrike, consumes 50 Wolflame, grants 1 more Wolfaith' },
+    { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher, consumes both Wolfaith' },
     { type: 'Outro', skill: 'Stand by Me, Warrior', duration: 14, note: 'grants next Resonator Fusion + Basic ATK DMG Amp' },
   ],
   'Qiuyuan': [
@@ -3211,6 +3234,24 @@ const SKILL_ICONS = {
     'Sword to Call for Freedom': 'https://i.ibb.co/k2KS9cv0/skill-swordmarktidestrace.webp', // Fleurdelys Intro replacement, same icon
     "Wind's Divine Blessing": 'https://i.ibb.co/KzFYk17W/skill-windsdivineblessing.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lupa, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Flaming Star
+  // (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Broadblade.webp icon.
+  'Lupa': {
+    'Flaming Star': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
+    'Standard': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
+    "Wolf's Claw": 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
+    'Starfall': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
+    "Shewolf's Hunt": 'https://i.ibb.co/5WbyTxzD/skill-shewolfshunt.webp',
+    'Feral Fang': 'https://i.ibb.co/5WbyTxzD/skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
+    'Ignis Lupa': 'https://i.ibb.co/S7W3d25X/skill-ignislupa.webp',
+    'Dance with the Wolf': 'https://i.ibb.co/S7W3d25X/skill-ignislupa.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Fire-Kissed Glory': 'https://i.ibb.co/mrPk9FF3/skill-firekissedglory.webp',
+    'Foebreaker': 'https://i.ibb.co/mrPk9FF3/skill-firekissedglory.webp', // Liberation follow-up, same wiki icon
+    'Try Focusing, Eh?': 'https://i.ibb.co/jkNfHp2y/skill-tryfocusingeh.webp', // Intro Skill
+    'Nowhere to Run!': 'https://i.ibb.co/jkNfHp2y/skill-tryfocusingeh.webp', // Intro's Wild Hunt upgrade, same icon
+    'Stand by Me, Warrior': 'https://i.ibb.co/bjzbJyCH/skill-standbymewarrior.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3443,6 +3484,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/4wX7vYgB/node-s5-hopereshaped.webp',
     s6: 'https://i.ibb.co/ycVQfbhB/node-s6-freedomfound.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lupa, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1207, all 6 URLs verified 200/live before upload.
+  'Lupa': {
+    s1: 'https://i.ibb.co/QFQ1RhRB/node-s1-beholdnameless.webp',
+    s2: 'https://i.ibb.co/9H67hH9f/node-s2-everyground.webp',
+    s3: 'https://i.ibb.co/9kyL2xf3/node-s3-wolflamehowls.webp',
+    s4: 'https://i.ibb.co/23DMbTHn/node-s4-highandaflame.webp',
+    s5: 'https://i.ibb.co/99p0trjM/node-s5-embracethunderous.webp',
+    s6: 'https://i.ibb.co/MT1mRss/node-s6-brightestflaming.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3471,6 +3523,7 @@ const CHAIN_NODE_NAMES = {
   'Zani': { s1: 'When the Alarm Clock Rings', s2: 'Stale Bread With Energy Drink', s3: 'Each Day A New Commute', s4: 'More Efficiency, Less Drama', s5: 'Delivered In Full On Time', s6: 'First Things First? Clock Out!' },
   'Ciaccona': { s1: 'Where Wind Sings', s2: 'Song of the Four Seasons', s3: 'Starlit Improv', s4: 'Toccata and Fugue', s5: 'Eternal Idyll to Lasting Summer', s6: 'Unending Cadence' },
   'Cartethyia': { s1: 'Crown Destined by Fate', s2: 'Blade Broken by Tempest', s3: 'Prisoner Hanged in the Tower', s4: 'Sacrifice Made for Salvation', s5: 'Hope Reshaped in Storms', s6: "Freedom Found in Storm's Wake" },
+  'Lupa': { s1: 'Behold the Nameless One', s2: 'Every Ground, Her Hunting Field', s3: 'Wolflame Howls in Her Wake', s4: 'High and Aflame Is Her Banner', s5: 'Embrace the Thunderous Triumph', s6: 'To the Brightest Flaming Star' },
 };
 
 // Release order for sorting (based on first banner appearance)
