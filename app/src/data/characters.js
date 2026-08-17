@@ -318,12 +318,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
     weaponAlts: { alt5: ['Solsworn Ciphers', 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Cantarella + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1506 sheet. desc: title "Graceful Luminescence" (nanoka) prepended
+  // and blurb rewritten — previous desc only described her Confession/support mode ("applies Frazzle...
+  // enabling Spectro DPS teammates"), but Prydwen frames her as equally viable as a Main DPS in
+  // Absolution mode (tier T1.5 DPS vs T2 Hybrid, DPS is actually rated higher), and she has no
+  // "Resonance Skill card summons" mechanic at all — corrected to cover both Forte Circuit states
+  // (Absolution self-DPS / Confession Frazzle-application support). skills/ascension/skill materials/
+  // bestEchoes/outroBuffs/debuffs all re-confirmed accurate. weaponAlts was entirely missing — added:
+  // alt5 uses Lethean Elegy (98.1%) and Stringmaster (97.5%), Prydwen's #2/#3 non-signature 5-stars;
+  // alt4 uses Augment (86.1%, best 4★) and Ocean's Gift (78.8%, #2 4★); alt3 uses the standard starter
+  // Rectifier of Night, matching the convention used elsewhere.
   'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Devoted acolyte of the Order of the Deep, guided by divine light. Spectro sub-DPS who applies Frazzle stacks via Resonance Skill card summons, enabling Spectro DPS teammates to trigger burst damage.',
+    desc: 'Graceful Luminescence, Acolyte of the Order of the Deep — a young woman of quiet devotion who fulfills her duties with unwavering diligence, her prayers offering comfort and peace like the light she carries. Dual-mode Spectro Hybrid who consumes Prayer at full Forte to enter either Absolution (self-buffed Main DPS, amplifying her own Heavy Attack Starflash against Spectro Frazzle) or Confession (support mode, stacking Spectro Frazzle onto enemies and buffing the on-field ally\'s Frazzle DMG via Outro) — Confession Phoebe is built specifically to empower Zani, her only current Frazzle-DPS partner.',
     skills: ['O Come Divine Light', 'To Where Light Shines', 'Dawn of Enlightenment', 'Radiant Invocation'],
     ascension: { boss: 'Cleansing Conch', common: 'Whisperin Core', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
+    weaponAlts: { alt5: ['Lethean Elegy', 'Stringmaster'], alt4: ['Augment', "Ocean's Gift"], alt3: ['Rectifier of Night'] },
     teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Rover: Spectro + Verina'] },
   'Brant': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Blazing knight from Rinascita whose soul burns with unflickering valor. On-field Fusion DPS who chains Basic Attacks and Skill combos in two alternating modes, with built-in self-healing on hits.',
@@ -687,7 +699,7 @@ const CHARACTER_DATA = {
   ['Camellya',      10325, 450, 1161, 125],
   ['Carlotta',      12450, 463, 1198, 125],
   ['Roccia',        12250, 375, 1198, 125],
-  ['Phoebe',        10825, 412, 1258, 125],
+  ['Phoebe',        10825, 413, 1259, 125],
   ['Brant',         11675, 375, 1307, 125],
   ['Cantarella',    11600, 400, 1099, 125],
   ['Zani',          10775, 437, 1136, 125],
@@ -769,7 +781,7 @@ const CHARACTER_DATA = {
   ['Changli',       2000, 22, 8],   // Fast Fusion combos
   ['Zhezhi',        1400, 25, 5],   // Off-field painter
   ['Roccia',        1200, 25, 7],   // Support sub DPS
-  ['Phoebe',        2200, 24, 10],  // Card skills burst
+  ['Phoebe',        2200, 24, 10],  // Absolution/Confession Forte burst (no card mechanic in her kit)
   ['Cantarella',    1300, 25, 5],   // Off-field Coordinated
   ['Zani',          2600, 24, 14],  // Res. Skill + Heavy ATK
   ['Ciaccona',      1100, 25, 6],   // Aero support
@@ -1040,6 +1052,7 @@ const CHARACTER_DATA = {
   // the icon lookup is a straight object-key match, so "The Montelli Family" silently resolved to no icon.
   ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
   ['Roccia', 'Stage in the Box', 'Rinascita', 'Troupe of Fools', { en: 'Holly Earl', cn: 'Shen Huasang', jp: 'Kohara Konomi', kr: 'Jang Mi' }],
+  ['Phoebe', 'Graceful Luminescence', 'Rinascita', 'Order of the Deep', { en: 'Rebecca LaChance', cn: 'Fu Tingyun', jp: 'Hondo Kaede', kr: 'Lee Bo Yong' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1932,15 +1945,19 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Convergence', '202.79%', 'Swap-in opener strike.'],
     ['Outro', 'Recursion', '+25% All DMG Amp (30s)', 'Swap-out buff granting the team +25% All DMG for a long duration.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1506 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its real value (e.g. Absolution Litany — her core Forte burst —
+  // was listed as '321%' vs the real 638.19%) — the same halving pattern already found and fixed across
+  // Camellya/Carlotta/Roccia's rows. Outro (528.4%, matching nanoka's 528.41% exactly) is unchanged.
   'Phoebe': [
-    ['Basic ATK', 'Stage 1-3', '14.9% → 24% → 7.2%×8'],
-    ['Heavy ATK', 'Standard', '20.8%×4'],
-    ['Skill', 'To Where Light Shines', '31.5%×2'],
-    ['Skill', "Chamuel's Star 1-3", '29.9% → 40% → 14.6%×6'],
-    ['Forte', 'Starflash', '41.6%×3'],
-    ['Forte', 'Absolution Litany', '321%'],
-    ['Liberation', 'Dawn of Enlightenment', '202% (+255% in Absolution)'],
-    ['Intro', 'Golden Grace', '100%'],
+    ['Basic ATK', 'Stage 1-3', '29.5% → 49.7% → 14.2%×8'],
+    ['Heavy ATK', 'Standard', '41.4%×4'],
+    ['Skill', 'To Where Light Shines', '62.6%×2'],
+    ['Skill', "Chamuel's Star 1-3", '59.4% → 79.5% → 28.9%×6'],
+    ['Forte', 'Starflash', '82.7%×3'],
+    ['Forte', 'Absolution Litany', '638.2%'],
+    ['Liberation', 'Dawn of Enlightenment', '401.6% (+255% in Absolution)'],
+    ['Intro', 'Golden Grace', '198.8%'],
     ['Outro', 'Attentive Heart', '528.4%'],
   ],
   'Phrolova': [
@@ -2200,6 +2217,19 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Phoebe (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Uses her Absolution (self-DPS) rotation, Prydwen's higher-rated mode (T1.5 DPS vs T2 Hybrid) —
+  // Confession mode swaps the Forte cast for Utter Confession and only loops 2x instead of 4x.
+  'Phoebe': [
+    { type: 'Intro', skill: 'Golden Grace' },
+    { type: 'Skill', skill: 'To Where Light Shines', note: 'summons the Ring of Mirrors' },
+    { type: 'Forte', skill: 'Absolution Litany', note: 'consumes full Prayer, enters Absolution' },
+    { type: 'Liberation', skill: 'Dawn of Enlightenment', note: '+255% DMG Multiplier in Absolution' },
+    { type: 'Skill', skill: "Chamuel's Star 1-3", note: 'inside the Ring of Mirrors, ×4 loops' },
+    { type: 'Forte', skill: 'Starflash', note: 'after each Chamuel\'s Star combo, ×4 total' },
+    { type: 'Outro', skill: 'Attentive Heart', note: '+255% DMG Multiplier in Absolution' },
+  ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Roccia (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
   'Roccia': [
@@ -2953,6 +2983,23 @@ const SKILL_ICONS = {
     'Pero, Help': 'https://i.ibb.co/kstN6pTM/skill-perohelp.webp', // Intro Skill
     'Applause, Please!': 'https://i.ibb.co/v4xJNxgk/skill-applauseplease.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Phoebe, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. O Come Divine
+  // Light (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for
+  // Encore/Yinlin/Verina/Zhezhi/Shorekeeper.
+  'Phoebe': {
+    'O Come Divine Light': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    "Chamuel's Star": 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Ring-of-Mirrors Basic ATK replacement, same generic weapon icon
+    'To Where Light Shines': 'https://i.ibb.co/6JNhMwTC/skill-towherelight.webp',
+    'Radiant Invocation': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp',
+    'Starflash': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    'Absolution Litany': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp',
+    'Utter Confession': 'https://i.ibb.co/cKDPRGRt/skill-radiantinvocation.webp',
+    'Dawn of Enlightenment': 'https://i.ibb.co/ksP6pd0b/skill-dawnofenlight.webp',
+    'Golden Grace': 'https://i.ibb.co/gbGWpjwC/skill-goldengrace.webp', // Intro Skill
+    'Attentive Heart': 'https://i.ibb.co/HTZ5ppLG/skill-attentiveheart.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3119,6 +3166,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/BHYrDMBc/node-s5-dreams.webp',
     s6: 'https://i.ibb.co/3yGZ0kCy/node-s6-goldenwings.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Phoebe, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1506, all 6 URLs verified 200/live before upload.
+  'Phoebe': {
+    s1: 'https://i.ibb.co/TqtQJ6NK/node-s1-warmlight.webp',
+    s2: 'https://i.ibb.co/k245MwKF/node-s2-boatadrift.webp',
+    s3: 'https://i.ibb.co/8DLvhqMz/node-s3-daisy.webp',
+    s4: 'https://i.ibb.co/8gfbj5t1/node-s4-ringingbells.webp',
+    s5: 'https://i.ibb.co/HDfvkYsV/node-s5-prayer.webp',
+    s6: 'https://i.ibb.co/HT7qsxPx/node-s6-whispering.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3141,6 +3199,7 @@ const CHAIN_NODE_NAMES = {
   'Camellya': { s1: 'Somewhere No One Travelled', s2: 'Calling Upon the Silent Rose', s3: 'A Bud Adorned by Thorns', s4: 'Roots Set Deep In Eternity', s5: 'Infinity Held in Your Palm', s6: 'Bloom For You Thousand Times Over' },
   'Carlotta': { s1: 'Beauty Blazes Brightest Before It Fades', s2: 'Fallen Petals Give Life to New Blooms', s3: 'Adelante, Cortado, Spinning in Grace', s4: "Yesterday's Raindrops Make Finest Wine", s5: 'Toast to Past, Today, and Every Day to Come', s6: 'As the Curtain Falls, I Remain What I Am' },
   'Roccia': { s1: 'When Shadows Engulf the Hull', s2: 'When the Luceanite Gleams', s3: 'When the Heart Sees and Hands Feel', s4: 'When Wonders Gather in the Box', s5: 'When Dreams Are Reborn on Stage', s6: 'When the Golden Wings Fly' },
+  'Phoebe': { s1: 'Warm Light and Bedside Wishes', s2: 'A Boat Adrift in Tears', s3: 'Daisy Wreaths and Dreams', s4: 'Ringing Bells on Wings Aloft', s5: 'Prayer to the Distant Light', s6: 'Whispering Chirps in Silence' },
 };
 
 // Release order for sorting (based on first banner appearance)
