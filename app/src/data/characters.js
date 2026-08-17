@@ -406,12 +406,21 @@ const CHARACTER_DATA = {
     bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell', 'Solar Flame'], alt3: ['Pistols of Night'] },
     teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1409 sheet. desc: title "Feathered Tempest" (nanoka) prepended and
+  // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes/
+  // outroBuffs/debuffs/weaponBuffs all re-confirmed accurate. weaponAlts was entirely missing — added:
+  // alt5 uses Red Spring (79.5%) and Blazing Brilliance (77.0%), Prydwen's #2/#3 non-signature 5-stars;
+  // alt4 uses Feather Edge (76.3%, the only 4★ Prydwen lists for her); alt3 uses Guardian Sword (72.3%,
+  // Prydwen's own explicit "last resort" pick — the only other Sword in the game with an HP% main stat,
+  // matching her HP-scaling kit, so used here instead of the generic starter Sword of Night).
   'Cartethyia': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
-    desc: 'The Blessed Maiden of Rinascita, beloved by wind and sea. HP-scaling on-field Aero DPS who shifts between sword and Fleurdelys forms, dealing Aero DMG through Erosion-enhanced Basic Attacks.',
+    desc: 'Feathered Tempest, a wandering knight who travels across Rinascita — formerly known as the Blessed Maiden, the vessel of Divinity, and the Queen of Gale and Tide under the name Fleurdelys, she is now simply free and unfettered. HP-scaling on-field Aero Main DPS who builds Sword Shadows through her Basic Attack/Skill/Intro finishers, recalls them via Mid-air Attack, transforms into Fleurdelys via her Liberation for an entirely new enhanced kit, builds Conviction toward the devastating second Ultimate Blade of Howling Squall that consumes stacked Aero Erosion for bonus DMG, then buffs the incoming Resonator\'s Aero DMG against Negative Status targets through her Outro.',
     skills: ['Sword to Carve My Forms', 'Sword to Bear Their Names', 'A Knight\'s Heartfelt Prayers', 'Tempest'],
     ascension: { boss: 'Unfading Glory', common: 'Tidal Residuum', specialty: 'Bamboo Iris' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
+    weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Feather Edge'], alt3: ['Guardian Sword'] },
     teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Cartethyia + Ciaccona + Chisa'] },
   'Lupa': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Sub DPS',
     desc: 'Lone wolf Star Gladiator of the arena who fights for herself alone. Fusion sub-DPS who shreds enemy Fusion RES and buffs team DMG via Liberation and Outro, enabling mono-Fusion compositions.',
@@ -749,7 +758,7 @@ const CHARACTER_DATA = {
   ['Cantarella',    11600, 400, 1100, 125],
   ['Zani',          10775, 438, 1137, 125],
   ['Ciaccona',      12238, 375, 1198, 125],
-  ['Cartethyia',    14800, 312, 611,  125],
+  ['Cartethyia',    14800, 313, 611,  125],
   ['Lupa',          11912, 387, 1185, 125],
   ['Phrolova',      10775, 437, 1136, 125],
   ['Augusta',       10300, 462, 1112, 125],
@@ -1104,6 +1113,7 @@ const CHARACTER_DATA = {
   // "The Montelli Family") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta.
   ['Zani', 'Scorched Radiance', 'Rinascita', 'Montelli Family', { en: 'Alexandra Metaxa', cn: 'Nie Xiying', jp: 'Ueda Hitomi', kr: 'Won Esther' }],
   ['Ciaccona', 'Woven Melodies', 'Rinascita', 'Ragunna', { en: 'Rebecca Hanssen', cn: 'Ye Zhiqiu', jp: 'Hasegawa Ikumi', kr: 'Kim Ye Rim' }],
+  ['Cartethyia', 'Feathered Tempest', 'Rinascita', 'Ragunna', { en: 'Amanda Elizabeth Rischel', cn: 'Yun Hezhui', jp: 'Asakawa Yuu', kr: 'Bae Ha Gyoung' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1853,15 +1863,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Wintertime Aria', '180% + 60%×2'],
     ['Outro', 'Closing Remark', '794.2%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1409 sheet (Lv.10 skill attributes): most
+  // rows were roughly half their true value (e.g. her Fleurdelys-form Ultimate Blade of Howling Squall
+  // was listed as '6.6%×7 HP' vs the real 13.12%×7 HP), the same halving pattern already found and
+  // fixed across most of the recently-audited roster — but not uniformly here: her 'Sword to Call for
+  // Freedom' Intro row was already exactly correct (4.28% + 9.97%HP), showing this wasn't a single
+  // clean 2x scaling error but a row-by-row data entry issue. Every value below is now sourced directly
+  // from nanoka's precise Lv.10 multipliers rather than doubled from the old figures.
   'Cartethyia': [
-    ['Basic ATK', 'Base Form 1-4', '2.4%HP → 7%HP → 8.6%HP → 7.6%HP', 'Standard combo in her base sword form, scales off Max HP.'],
-    ['Basic ATK', 'Fleurdelys 1-5', '3.3%HP → 4.6%HP → 6.3%HP → 6.9%HP → 126.7%HP', 'Empowered combo used in Fleurdelys form.'],
-    ['Heavy ATK', 'Fleurdelys Enhanced', '3.9%×2 + 2%HP', 'Charged strike in Fleurdelys form.'],
-    ['Skill', 'Base Form', '3.5%×3 + 4.5%HP', 'Skill strike that applies Aero Erosion and summons a Sword Shadow.'],
-    ['Skill', 'Fleurdelys 1-2', '12.5%HP / 14.2%HP', 'Fleurdelys-form Skill variants.'],
+    ['Basic ATK', 'Base Form 1-4', '4.78%HP → 13.13%HP → 17.12%HP → 15.1%HP', 'Standard combo in her base sword form, scales off Max HP.'],
+    ['Basic ATK', 'Fleurdelys 1-5', '6.49%HP → 9.09%HP → 10.65%HP → 13.7%HP → 36%HP', 'Empowered combo used in Fleurdelys form.'],
+    ['Heavy ATK', 'Fleurdelys Enhanced', '7.78%×2 + 3.89%HP', 'Charged strike in Fleurdelys form.'],
+    ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies Aero Erosion and summons a Sword Shadow.'],
+    ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', 'Fleurdelys-form Skill variants (Sword to Answer Waves\' Call / May Tempest Break the Tides).'],
     ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP', 'Ultimate that transforms her into Fleurdelys form for 12s; no direct damage.'],
-    ['Liberation', 'Blade of Howling Squall', '6.6%×7 HP', 'Fleurdelys-form Ultimate finisher; removes Aero Erosion stacks from the target for bonus DMG.'],
-    ['Intro', "Sword to Mark Tide's Trace", '2.2% + 5%HP', 'Base-form swap-in opener.'],
+    ['Liberation', 'Blade of Howling Squall', '13.12%×7 HP', 'Fleurdelys-form Ultimate finisher; removes Aero Erosion stacks from the target for bonus DMG.'],
+    ['Intro', "Sword to Mark Tide's Trace", '2.08%×3 + 6.24%HP', 'Base-form swap-in opener.'],
     ['Intro', "Sword to Call for Freedom", '4.28% + 9.97%HP', 'Fleurdelys-form swap-in opener.'],
     ['Outro', "Wind's Divine Blessing", '+17.5% Aero DMG vs Negative Status (20s)', 'Swap-out buff to the active teammate against targets with a Negative Status.'],
   ],
@@ -2611,13 +2628,21 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle burst phase' },
     { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator Heavy ATK DMG Amp' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
+  // buffs to Fleurdelys, central to her kit — and collapsed her two-phase Fleurdelys Skill 1/Skill 2
+  // loop into a single generic Basic ATK line. Rebuilt to match Prydwen's actual "Basic Rotation".
   'Cartethyia': [
-    { type: 'Intro', skill: "Sword to Mark Tide's Trace" },
-    { type: 'Skill', skill: 'Base Form', note: 'applies Aero Erosion, summons a Sword Shadow' },
-    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'builds Conviction toward transformation' },
-    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", note: 'transforms into Fleurdelys form for 12s' },
-    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'empowered Fleurdelys-form combo' },
-    { type: 'Liberation', skill: 'Blade of Howling Squall', duration: 15, note: 'Fleurdelys finisher, removes stacked Erosion for bonus DMG' },
+    { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: 'grants Sword of Discord' },
+    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'Stage 4 grants Sword of Divinity' },
+    { type: 'Skill', skill: 'Base Form', note: 'grants Sword of Virtue' },
+    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'recalls all 3 Sword Shadows, grants their buffs to Fleurdelys' },
+    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'transforms into Fleurdelys (Manifest)' },
+    { type: 'Skill', skill: "Fleurdelys 1", note: "Sword to Answer Waves' Call" },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Mid-air P3 into Basic P3-P5' },
+    { type: 'Skill', skill: 'Fleurdelys 2', note: 'May Tempest Break the Tides' },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Basic P3-P5 again, builds Conviction to 120' },
+    { type: 'Liberation', skill: 'Blade of Howling Squall', note: 'Fleurdelys finisher, removes stacked Erosion for bonus DMG, ends Manifest' },
     { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'boosts Aero DMG vs Negative Status targets' },
   ],
   'Ciaccona': [
@@ -3167,6 +3192,25 @@ const SKILL_ICONS = {
     'Roaming with the Wind': 'https://i.ibb.co/RGVC6MLt/skill-roamingwithwind.webp', // Intro Skill
     'Windcalling Tune': 'https://i.ibb.co/wFNRyDTB/skill-windcallingtune.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Cartethyia, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
+  // upload. Sword to Carve My Forms (Basic ATK) has no dedicated wiki asset, uses the shared generic
+  // Skill_Sword.webp icon (same as Changli/Camellya/Brant's).
+  'Cartethyia': {
+    'Sword to Carve My Forms': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Base Form': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Fleurdelys/base-form Basic-Heavy-Mid-air variants share the generic icon
+    'Fleurdelys': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Sword to Bear Their Names': 'https://i.ibb.co/cX7v4GDm/skill-swordbeartheirnames.webp',
+    'Sword to Answer Waves': 'https://i.ibb.co/cX7v4GDm/skill-swordbeartheirnames.webp', // Fleurdelys Resonance Skill replacement, same wiki icon
+    'May Tempest Break the Tides': 'https://i.ibb.co/cX7v4GDm/skill-swordbeartheirnames.webp',
+    'Tempest': 'https://i.ibb.co/z3B1sYY/skill-tempest.webp',
+    "A Knight's Heartfelt Prayers": 'https://i.ibb.co/BVqRm8KJ/skill-knightsheartfelt.webp',
+    'Blade of Howling Squall': 'https://i.ibb.co/BVqRm8KJ/skill-knightsheartfelt.webp', // Liberation's own upgraded cast, same icon
+    "Sword to Mark Tide's Trace": 'https://i.ibb.co/k2KS9cv0/skill-swordmarktidestrace.webp', // Intro Skill
+    'Sword to Call for Freedom': 'https://i.ibb.co/k2KS9cv0/skill-swordmarktidestrace.webp', // Fleurdelys Intro replacement, same icon
+    "Wind's Divine Blessing": 'https://i.ibb.co/KzFYk17W/skill-windsdivineblessing.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3388,6 +3432,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/4n8DXGQZ/node-s5-eternalidyll.webp',
     s6: 'https://i.ibb.co/8gp4zwSF/node-s6-unendingcadence.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Cartethyia, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1409, all 6 URLs verified 200/live before upload.
+  'Cartethyia': {
+    s1: 'https://i.ibb.co/0yZrwg1M/node-s1-crowndestined.webp',
+    s2: 'https://i.ibb.co/99w78Rv3/node-s2-bladebroken.webp',
+    s3: 'https://i.ibb.co/BRNk023/node-s3-prisonerhanged.webp',
+    s4: 'https://i.ibb.co/vxL2nJYQ/node-s4-sacrificemade.webp',
+    s5: 'https://i.ibb.co/4wX7vYgB/node-s5-hopereshaped.webp',
+    s6: 'https://i.ibb.co/ycVQfbhB/node-s6-freedomfound.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3415,6 +3470,7 @@ const CHAIN_NODE_NAMES = {
   'Cantarella': { s1: 'Embrace the Endless Waves', s2: 'Surrender to the Illusive Reverie', s3: 'Gaze into the Abyss', s4: 'Behold Your Own Soul', s5: 'Rest in Your Reflection', s6: 'Fall, Fall... and Fall Deeper into the Dream' },
   'Zani': { s1: 'When the Alarm Clock Rings', s2: 'Stale Bread With Energy Drink', s3: 'Each Day A New Commute', s4: 'More Efficiency, Less Drama', s5: 'Delivered In Full On Time', s6: 'First Things First? Clock Out!' },
   'Ciaccona': { s1: 'Where Wind Sings', s2: 'Song of the Four Seasons', s3: 'Starlit Improv', s4: 'Toccata and Fugue', s5: 'Eternal Idyll to Lasting Summer', s6: 'Unending Cadence' },
+  'Cartethyia': { s1: 'Crown Destined by Fate', s2: 'Blade Broken by Tempest', s3: 'Prisoner Hanged in the Tower', s4: 'Sacrifice Made for Salvation', s5: 'Hope Reshaped in Storms', s6: "Freedom Found in Storm's Wake" },
 };
 
 // Release order for sorting (based on first banner appearance)
