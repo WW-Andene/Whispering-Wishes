@@ -230,14 +230,27 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
     teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1305 sheet. desc: title "Matter Weaver" (nanoka) prepended and blurb
+  // rewritten from nanoka's own profile text to match the roster's convention; skills/base stats/
+  // ascension/skill materials/bestEchoes all re-confirmed accurate against both sources. weaponAlts
+  // corrected against Prydwen's current calc %: alt5 previously led with Abyss Surges (81.4%, actually
+  // #7) while omitting Moongazer's Sigil, now Xiangli Yao's actual #1 overall weapon (100%, edges out
+  // even his own Signature) and Blazing Justice (92.0%, #3) — both swapped in. alt4 previously paired
+  // Stonard with Legend of Drunken Hero, a 4★ that Prydwen ranks dead last of all his options with no
+  // score — replaced with Aether Strike (79.7%, actual best 4★), keeping Stonard (73.6%, #2 4★).
+  // teams: 'Xiangli Yao + Yinlin + Verina' kept as the budget pick (Yinlin/Verina both named directly),
+  // but the first slot swapped from a same-tier duplicate (+Shorekeeper) to Prydwen's actual named Best
+  // Team partners — Lynae and Mornye, called "easily Xiangli Yao's best partners" and "the best generalist
+  // Support" (with a Lynae-specific synergy) respectively in the Synergies writeup.
   'Xiangli Yao': { rarity: 5, element: 'Electro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Brilliant, unassuming researcher of the Huaxu Academy who built his own combat mech, Thinker, to compensate for his fragile body — a quiet genius who would rather let his logic speak than argue his case. On-field Electro Main DPS who builds Performance Capacity through his Basic Attack/Skill/Dodge Counter combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain enhanced attacks, and unleashes the burst Law of Reigns nuke once Intuition\'s Capacity is filled — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s next hits.',
+    desc: 'Matter Weaver, Principal Investigator at Jinzhou\'s Huaxu Academy and its youngest multi-disciplinary scientist — a gentle soul with a sharp mind whose relentless passion for Automata Mechanics always translates into constructive findings and insights. On-field Electro Main DPS who builds Capacity through his Basic Attack/Skill combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain 3 Hypercubes and enhanced attacks, then burns each Hypercube via the enhanced Skill Law of Reigns for his core burst damage — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s Basic Attacks.',
     skills: ['Probe', 'Deduction', 'Forever Seeking', 'Cogitation Model'],
     ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Whisperin Core', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Verity's Handle",
-    weaponAlts: { alt5: ['Abyss Surges', 'Tragicomedy'], alt4: ['Stonard', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
-    teams: ['Xiangli Yao + Yinlin + Verina', 'Xiangli Yao + Yinlin + Shorekeeper'] },
+    weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
+    teams: ['Xiangli Yao + Lynae + Mornye', 'Xiangli Yao + Yinlin + Verina'] },
   'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Eternal guardian of the Tethys and keeper of the Black Shores, an ancient entity who has watched over Rovers across countless cycles with quiet, weary affection. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG as allies cast Intro Skills inside it, and buffs the incoming Resonator\'s All DMG through her Outro Binary Butterfly.',
     skills: ['Origin Calculus', 'Chaos Theory', 'Astral Chord', 'End Loop'],
@@ -978,6 +991,9 @@ const CHARACTER_DATA = {
   // organization: fandom's infobox has only a single affiliation field for her (Jinzhou) — no specific
   // sub-group like the Jiyan/Changli entries above, so the generic nation-tied org is used as-is.
   ['Zhezhi', 'Enchanted Brush', 'Huanglong', 'Jinzhou', { en: 'Shin-Fei Chen', cn: 'Miao Zi', jp: 'Yui Makino', kr: 'Kim Ha-ru' }],
+  // organization: ww.nanoka.cc's infobox lists a single Affiliation (Jinzhou) for him, matching the
+  // Zhezhi convention above — no specific named sub-group is given, unlike Jiyan/Changli/Jinhsi.
+  ['Xiangli Yao', 'Matter Weaver', 'Huanglong', 'Jinzhou', { en: 'Shaun Mendum', cn: 'Ban Ma', jp: 'Kobayashi Chiaki', kr: 'Jung Eui Jin' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1465,12 +1481,17 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro (Unfinished Piece): +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60-100% CD from Aftersound stacking. Intro is "Suite of Quietus" (base) / "Suite of Immortality" (Maestro-enhanced). (Corrected 2026-08-16: Outro skill name was wrong — file previously called it "Final Applause"; the real base Intro name "Suite of Quietus" was also missing, previously only the enhanced Maestro form was listed.)',
   },
   // ── Electro characters with Electro Flare ──
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
+  // equipped weapon's passive (12% Electro DMG) rather than his own innate kit — replaced with his real
+  // Inherent Skill "Knowing" (+5% Electro DMG Bonus per Resonance Skill cast, 8s, stacks to 4×/20%
+  // cap). outroBuffs/libBuffs/debuffs confirmed empty: his Outro Chain Rule deals its own Electro DMG
+  // to the incoming Resonator's target rather than granting a DMG Amp buff, and he applies no debuffs.
   'Xiangli Yao': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Electro DMG +12%' }],
+    selfBuffs: [{ stat: 'elemDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Knowing: +5% Electro DMG Bonus per Resonance Skill cast (8s), stacks up to 4× (20% cap)' }],
     debuffs: [],
-    note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
+    note: 'Intuition-state Liberation Main DPS. Outro Chain Rule deals bonus Electro DMG (237.63% ATK, up to 3 procs over 8s) on the incoming Resonator\'s Basic Attacks rather than granting a DMG Amp buff.',
   },
   // Jinhsi: defined earlier in Main DPS section
   'Rover: Spectro': {
@@ -2743,6 +2764,20 @@ const SKILL_ICONS = {
     'Radiant Ruin': 'https://i.ibb.co/LX3NLrxP/Skill-Radiant-Ruin.webp', // Intro Skill
     'Carve and Draw': 'https://i.ibb.co/V0s9WpHG/Skill-Carve-and-Draw.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Xiangli Yao, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Probe (Basic ATK) has no dedicated wiki asset (it's itself a redirect to the generic
+  // Gauntlets icon), also covers Heavy ATK/Mid-air/Dodge Counter, same as Jianxin's shared icon.
+  'Xiangli Yao': {
+    'Probe': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Deduction': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp',
+    'Decipher': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp', // Forte-upgraded Skill, same wiki icon as base Deduction
+    'Forever Seeking': 'https://i.ibb.co/TMjphf6y/skill-forever-seeking.webp',
+    'Cogitation Model': 'https://i.ibb.co/CKYDdBRY/skill-cogitation.webp',
+    'Principle': 'https://i.ibb.co/cXpS7bBx/skill-principle.webp', // Intro Skill
+    'Chain Rule': 'https://i.ibb.co/spxqcJ3K/skill-chain-rule.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2854,6 +2889,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/8gCVrMWV/Sequence-Node-Compositions-Clue.webp',
     s6: 'https://i.ibb.co/MDqdsTLR/Sequence-Node-Infinite-Legacy.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Xiangli Yao, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live build
+  // page and ww.nanoka.cc/character/1305, all 6 URLs verified 200/live before upload.
+  'Xiangli Yao': {
+    s1: 'https://i.ibb.co/zHRQ6hSs/node-s1-prodigy.webp',
+    s2: 'https://i.ibb.co/DDWBkrdQ/node-s2-traces.webp',
+    s3: 'https://i.ibb.co/0RyGcG7t/node-s3-ruins.webp',
+    s4: 'https://i.ibb.co/fzP6KpqR/node-s4-vessel.webp',
+    s5: 'https://i.ibb.co/DPTYYfnj/node-s5-end.webp',
+    s6: 'https://i.ibb.co/bg0ffhj0/node-s6-solace.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2871,6 +2917,7 @@ const CHAIN_NODE_NAMES = {
   'Jinhsi': { s1: 'Abyssal Ascension', s2: 'Chronofrost Repose', s3: 'Celestial Incarnate', s4: 'Benevolent Grace', s5: 'Frostfire Illumination', s6: 'Thawing Triumph' },
   'Changli': { s1: 'Hidden Thoughts', s2: 'Pursuit of Desires', s3: 'Learned Secrets', s4: 'Polished Words', s5: 'Sacrificed Gains', s6: 'Realized Plans' },
   'Zhezhi': { s1: "Brushwork's Finish", s2: 'Vivid Strokes', s3: "Reflection's Grace", s4: "Hue's Spectrum", s5: "Composition's Clue", s6: 'Infinite Legacy' },
+  'Xiangli Yao': { s1: 'Prodigy of Protégés', s2: 'Traces of Predecessors', s3: 'Ruins of Ancient', s4: 'Vessel of Rebirth', s5: 'End of Stars', s6: 'Solace of the Ordinary' },
 };
 
 // Release order for sorting (based on first banner appearance)
