@@ -178,13 +178,22 @@ const CHARACTER_DATA = {
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
     teams: ['Yinlin + Iuno + Shorekeeper', 'Yinlin + Jinhsi + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and Prydwen's live build page
+  // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, all skill multipliers
+  // (independently spot-checked section-by-section against fandom's own Forte table, matches exactly),
+  // buffs, ascension mats, bestEchoes, and both example teams all re-confirmed accurate, no changes
+  // needed there. weaponAlts corrected against Prydwen's live calc %: alt5 had Lustrous Razor (80.1%,
+  // near the bottom of her 5★ options) ahead of the two actually-best non-signature 5★s, Kumokiri
+  // (87.9%) and Wildfire Mark (87.6%) — replaced. alt4 had 'Autumntrace', which isn't in Prydwen's
+  // ranked list for her at all (looks like a copy/paste from another character) — replaced with Aureate
+  // Zenith (72.3%), her confirmed best 4★; Waning Redshift (70.7%, confirmed #2 4★) kept.
   'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
     desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS who builds Incandescence from any team member's Attribute or Coordinated DMG, enters Incarnation via her Resonance Skill, then spends stacks through Illuminous Epiphany for a scaling Stella Glamor nuke.",
     skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Luminal Synthesis', 'Purge of Light'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: "Loong's Pearl" },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
     bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
-    weaponAlts: { alt5: ['Lustrous Razor', 'Verdant Summit'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
+    weaponAlts: { alt5: ['Kumokiri', 'Wildfire Mark'], alt4: ['Aureate Zenith', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
   'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Eternal Blaze, counselor serving the Jinzhou Magistrate and former Secretary-General in the capital — shrouded in flames, she\'s fated to burn brightly until her final embers, rising to power with fiery determination and a strategic mindset always thinking ahead. On-field Fusion DPS who enters True Sight from her Basic Attack/Skill/Intro finishers, builds Enflamement stacks from the True Sight follow-ups, then unleashes the enhanced Heavy Attack Flaming Sacrifice — a fast, quickswap-friendly kit that also buffs the incoming Resonator\'s Fusion and Liberation DMG via Outro.',
@@ -941,6 +950,9 @@ const CHARACTER_DATA = {
   // birthplace (New Federation) intentionally differs from her region/nation tie (Huanglong, in
   // REGION_DATA below) — she's a New Federation-born botanist who now dwells in Jinzhou, Huanglong.
   ['Verina', 'Nature Calling', 'New Federation', 'Pioneer Association', { en: 'Heather Nicol', cn: 'Zhao Shuang', jp: 'Yu Sasahara', kr: 'Kang Saebom' }],
+  // organization uses affiliation2 (Jinzhou City Hall, her magistrate office) over the generic Jinzhou
+  // tie and affiliation3 (Mt. Firmament) — matching the specific-sub-group convention used above.
+  ['Jinhsi', 'Thawborn Renewal', 'Huanglong', 'Jinzhou City Hall', { en: 'Anna Devlin', cn: 'Jiang Yue', jp: 'Yoshino Aoyama', kr: 'Park Ha-jin' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2096,6 +2108,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'jump, then spend all 4 Photosynthesis Energy stacks on Mid-air Starflower Blooms to heal the team and refill Concerto Energy' },
     { type: 'Outro', skill: 'Blossom', note: 'heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% for 30s' },
   ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Jinhsi (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's baseline rotation
+  // (no swap/animation/jump cancels) — she also has advanced/expert cancel-heavy variants that push her
+  // damage further, omitted here as too execution-dependent for a standard reference rotation. Notably
+  // she gets 2 Outros and 2 Forte nukes per full team loop via her free-Outro-every-25s Unison mechanic.
+  'Jinhsi': [
+    { type: 'Basic ATK', skill: 'Slash of Breaking Dawn Stage 1-4', note: 'full 4-stage combo on the opener' },
+    { type: 'Skill', skill: 'Overflowing Radiance', note: 'available after Basic ATK 4; sends her into the 10s Incarnation state' },
+    { type: 'Liberation', skill: 'Purge of Light', note: '24s cooldown; huge AoE nuke' },
+    { type: 'Forte', skill: 'Incarnation', note: 'Incarnation Basic ATK Stage 1-4 while airborne, builds toward Illuminous Epiphany' },
+    { type: 'Skill', skill: 'Illuminous Epiphany', note: 'consumes up to 50 Incandescence for a scaling Stella Glamor nuke (+44.54% DMG per stack); grants Unison, giving a free Outro every 25s with no Concerto cost' },
+    { type: 'Outro', skill: 'Temporal Bender', note: 'utility only — accelerates her own Incandescence gain rate for 20s, no team buff' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2626,6 +2651,18 @@ const SKILL_ICONS = {
     'Verdant Growth': 'https://i.ibb.co/kgxDz6Xv/Skill-Verdant-Growth.webp', // Intro Skill
     'Blossom': 'https://i.ibb.co/1fVPJtzv/Skill-Blossom.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Jinhsi, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API (Forte table section fetched directly by section index to
+  // dodge the page's huge collapsed ascension tables) — all 6 URLs verified 200/live before upload.
+  'Jinhsi': {
+    'Slash of Breaking Dawn': 'https://i.ibb.co/tMmTFPJH/Skill-Broadblade.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/tMmTFPJH/Skill-Broadblade.webp',
+    'Trailing Lights of Eons': 'https://i.ibb.co/zVbYMXzG/Skill-Trailing-Lights-of-Eons.webp',
+    'Luminal Synthesis': 'https://i.ibb.co/R5sPDCC/Skill-Luminal-Synthesis.webp',
+    'Purge of Light': 'https://i.ibb.co/cSS7ms3Z/Skill-Purge-of-Light.webp',
+    "Loong's Halo": 'https://i.ibb.co/cKXv3P1y/Skill-Loong-Halo.webp', // Intro Skill
+    'Temporal Bender': 'https://i.ibb.co/qZDp0Jz/Skill-Temporal-Bender.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2704,6 +2741,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/xtHvxT1F/Sequence-Node-Miraculous-Blooms.webp',
     s6: 'https://i.ibb.co/fYjvXxRB/Sequence-Node-Joyous-Harvest.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jinhsi, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Jinhsi/Combat
+  // (fetched by section index), all 6 URLs verified 200/live before upload.
+  'Jinhsi': {
+    s1: 'https://i.ibb.co/B2ZXj0Vp/Sequence-Node-Abyssal-Ascension.webp',
+    s2: 'https://i.ibb.co/C5bnYtr4/Sequence-Node-Chronofrost-Repose.webp',
+    s3: 'https://i.ibb.co/spYvJ40L/Sequence-Node-Celestial-Incarnate.webp',
+    s4: 'https://i.ibb.co/wFtWBff4/Sequence-Node-Benevolent-Grace.webp',
+    s5: 'https://i.ibb.co/SDksbmM6/Sequence-Node-Frostfire-Illumination.webp',
+    s6: 'https://i.ibb.co/63m9q28/Sequence-Node-Thawing-Triumph.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2718,6 +2766,7 @@ const CHAIN_NODE_NAMES = {
   'Jianxin': { s1: 'Verdant Branchlet', s2: "Tao Seeker's Journey", s3: 'Principles of Wuwei', s4: 'Multitide Reflection', s5: 'Mirroring Introspection', s6: 'Truth from Within' },
   'Lingyang': { s1: 'Lion of Light, Blessings Abound', s2: 'Dominant and Fierce, Power Unbound', s3: 'Jaw-Dropping Feats, Loud and Wide', s4: 'Immortals Bow, in Reverence Flawed', s5: 'Seven Stars Shine, Stepped upon High', s6: 'Demons Tremble, Divine Power Nigh' },
   'Verina': { s1: 'Moment of Emergence', s2: 'Sprouting Reflections', s3: 'The Choice to Flourish', s4: 'Blossoming Embrace', s5: 'Miraculous Blooms', s6: 'Joyous Harvest' },
+  'Jinhsi': { s1: 'Abyssal Ascension', s2: 'Chronofrost Repose', s3: 'Celestial Incarnate', s4: 'Benevolent Grace', s5: 'Frostfire Illumination', s6: 'Thawing Triumph' },
 };
 
 // Release order for sorting (based on first banner appearance)
