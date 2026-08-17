@@ -286,12 +286,20 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Red Spring',
     weaponAlts: { alt5: ['Emerald Sentence', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Lumingloss'], alt3: ['Sword of Night'] },
     teams: ['Camellya + Roccia + Shorekeeper', 'Camellya + Sanhua + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1107 sheet. desc: title "Reshaping Dimensions" (nanoka) prepended and
+  // blurb rewritten from nanoka's own profile text to match the roster's convention. skills/ascension/
+  // skill materials/bestEchoes/selfBuffs all re-confirmed accurate. weaponAlts was entirely missing —
+  // added: alt5 uses Phasic Homogenizer (93.5%) and Woodland Aria (86.2%), Prydwen's #2/#3 non-signature
+  // 5-stars; alt4 uses Undying Flame (75.8%, best 4★) and Pistols#26 (72.0%, named best F2P/no-gacha
+  // option); alt3 uses the standard starter Pistols of Night, matching the convention used elsewhere.
   'Carlotta': { rarity: 5, element: 'Glacio', weapon: 'Pistols', role: 'Main DPS',
-    desc: 'Refined heiress of Rinascita\'s Montelli family. On-field Glacio DPS who builds crystal charges via Resonance Skill, then shatters them with Liberation for massive front-loaded Glacio burst.',
+    desc: 'Reshaping Dimensions, second daughter of the Montelli family and an art investor unbound by convention — she moves seamlessly through social circles and business transactions while quietly handling the family\'s unspeakable "troubles" in secret. On-field Glacio Main DPS who builds Moldable Crystals and Substance through her Basic/Heavy Attack and Skill combos, unleashes the Forte Heavy Imminent Oblivion at full Substance for Final Bow, then dumps her fully-buffed Resonance Liberation Era of New Wave into a six-hit Twilight Tango barrage (Death Knell ×4 into Fatal Finale) for a massive burst of Resonance Skill-flagged DMG.',
     skills: ['Silent Execution', 'Art of Violence', 'Era of New Wave', 'Lethal Repertoire'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Phlogiston' },
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'The Last Dance',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'Woodland Aria'], alt4: ['Undying Flame', 'Pistols#26'], alt3: ['Pistols of Night'] },
     teams: ['Carlotta + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Buling'] },
   'Roccia': { rarity: 5, element: 'Havoc', weapon: 'Gauntlets', role: 'Sub DPS',
     desc: 'Warm-hearted clown performer from Rinascita with her companion Pero. Havoc sub-DPS who buffs the on-field carry\'s Basic ATK DMG via Outro and deals Havoc DMG through Coordinated Attacks with Pero.',
@@ -667,7 +675,7 @@ const CHARACTER_DATA = {
   ['Xiangli Yao',   10625, 425, 1222, 125],
   ['Shorekeeper',   16713, 288, 1100, 175],
   ['Camellya',      10325, 450, 1161, 125],
-  ['Carlotta',      12450, 462, 1197, 125],
+  ['Carlotta',      12450, 463, 1198, 125],
   ['Roccia',        12250, 375, 1197, 125],
   ['Phoebe',        10825, 412, 1258, 125],
   ['Brant',         11675, 375, 1307, 125],
@@ -1018,6 +1026,7 @@ const CHARACTER_DATA = {
   // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her (unlike most other
   // characters, which have a real birthplace even when their nation/region tie is separately unconfirmed).
   ['Camellya', 'Sanguine Blossom', 'Unknown', 'Black Shores', { en: 'Meaghan Martin', cn: 'Liu ZhiXiao', jp: 'Ise Mariya', kr: 'Yu Hye Ji' }],
+  ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'The Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1283,12 +1292,17 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Self-buffing Main DPS. Seedbed: +15% Havoc DMG. Epiphyte: +15% Basic DMG.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
+  // equipped weapon's passive (12% Glacio + 24% Charged ATK) rather than her own kit — replaced with her
+  // real Forte Circuit "Final Bow" (+80% DMG Multiplier to all 3 Liberation abilities at full Substance).
+  // debuffs was empty, missing her real "Deconstruction" debuff (18% DEF ignore on hit, applied by
+  // Liberation and — via Inherent Skill Ars Gratia Artis — also her Intro/Chromatic Splendor/Forte Heavy).
   'Carlotta': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive' }],
-    debuffs: [],
-    note: 'Burst Glacio DPS. Weapon passive: 12% Glacio + 24% Charged ATK.',
+    selfBuffs: [{ stat: 'libDmg', value: 80, target: 'self', duration: 99, condition: 'Forte Circuit Final Bow: at full Substance, Liberation DMG Multiplier (Era of New Wave/Death Knell/Fatal Finale) +80%' }],
+    debuffs: [{ stat: 'defIgnore', value: 18, target: 'enemy', duration: 4, condition: 'Deconstruction: applied by Liberation, plus Intro/Chromatic Splendor/Forte Heavy via Ars Gratia Artis' }],
+    note: 'Burst Glacio Main DPS. Final Bow: +80% Liberation DMG Multiplier at full Substance. Deconstruction: -18% target DEF (4s).',
   },
   'Jinhsi': {
     outroBuffs: [],
@@ -1717,18 +1731,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Ripple', '21.3%×4'],
     ['Outro', 'Sweet Nightmare', '+20% Havoc DMG + 25% Skill DMG Amp (14s)'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1107 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its real value (e.g. Era of New Wave — her core Liberation nuke —
+  // was listed as '202.6%' vs the real 402.71%), the same halving pattern found and fixed in Camellya's
+  // row. Outro (794.2%) was already correct and is unchanged.
   'Carlotta': [
-    ['Basic ATK', 'Stage 1-2', '27.2% → 66.3%'],
-    ['Basic ATK', 'Necessary Measures 1-3', '33.2% → 67.2% → 117.3%'],
-    ['Heavy ATK', 'Standard', '76.5%'],
-    ['Heavy ATK', 'Containment Tactics', '114.8%'],
-    ['Forte', 'Imminent Oblivion', '33.6%×5 + 252.1%'],
-    ['Skill', 'Art of Violence', '72.5%×2'],
-    ['Skill', 'Chromatic Splendor', '56.7%×2 + 170.1%'],
-    ['Liberation', 'Era of New Wave', '202.6%'],
-    ['Liberation', 'Death Knell', '(92.3% + 7.3%×4) per shot'],
-    ['Liberation', 'Fatal Finale', '324.1%'],
-    ['Intro', 'Wintertime Aria', '90% + 30%×2'],
+    ['Basic ATK', 'Stage 1-2', '54.1% → 132.6%'],
+    ['Basic ATK', 'Necessary Measures 1-3', '66.4% → 134.4% → 234.6%'],
+    ['Heavy ATK', 'Standard', '153.0%'],
+    ['Heavy ATK', 'Containment Tactics', '229.6%'],
+    ['Forte', 'Imminent Oblivion', '67.2%×5 + 504.2%'],
+    ['Skill', 'Art of Violence', '145.0%×2'],
+    ['Skill', 'Chromatic Splendor', '113.4%×2 + 340.2%'],
+    ['Liberation', 'Era of New Wave', '405.2%'],
+    ['Liberation', 'Death Knell', '(184.6% + 14.6%×4) per shot'],
+    ['Liberation', 'Fatal Finale', '648.2%'],
+    ['Intro', 'Wintertime Aria', '180% + 60%×2'],
     ['Outro', 'Closing Remark', '794.2%'],
   ],
   'Cartethyia': [
@@ -2160,6 +2178,22 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Simplified from Prydwen's full "Burst Combo" (with its Warm Up pre-phase for 0-Substance starts)
+  // down to the core skill sequence, matching the level of detail used for the rest of the roster.
+  'Carlotta': [
+    { type: 'Intro', skill: 'Wintertime Aria', note: 'grants 30 Substance + 3 Moldable Crystals' },
+    { type: 'Skill', skill: 'Art of Violence', note: 'grants 3 more Moldable Crystals' },
+    { type: 'Skill', skill: 'Chromatic Splendor', note: 'consumes 6 Moldable Crystals for 60 Substance, enters Final Bow at 120' },
+    { type: 'Forte', skill: 'Imminent Oblivion', note: 'consumes 120 Substance, cuts Skill cooldown by 6s' },
+    { type: 'Liberation', skill: 'Era of New Wave', note: 'enters Twilight Tango, +80% DMG Multiplier from Final Bow' },
+    { type: 'Liberation', skill: 'Death Knell', note: '×4, builds Meta Vectors' },
+    { type: 'Liberation', skill: 'Fatal Finale', note: 'consumes 4 Meta Vectors, ends Twilight Tango' },
+    { type: 'Skill', skill: 'Art of Violence', note: 'sets up 30 Substance for the next rotation' },
+    { type: 'Skill', skill: 'Chromatic Splendor' },
+    { type: 'Outro', skill: 'Closing Remark' },
+  ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Camellya (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
   // Simplified from Prydwen's full swap/Echo-cancel-annotated combo down to the core skill sequence,
@@ -2855,6 +2889,24 @@ const SKILL_ICONS = {
     'Everblooming': 'https://i.ibb.co/M5ckbVnH/skill-everblooming.webp', // Intro Skill
     'Twining': 'https://i.ibb.co/vvrfhcLs/skill-twining.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Carlotta, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Silent Execution (Basic ATK) has no dedicated wiki asset, uses the shared generic
+  // Skill_Pistols.png icon.
+  'Carlotta': {
+    'Silent Execution': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Standard': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Necessary Measures': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Moldable-Crystal Basic ATK replacement, same generic weapon icon
+    'Art of Violence': 'https://i.ibb.co/JwZzgLS1/skill-artofviolence.webp',
+    'Chromatic Splendor': 'https://i.ibb.co/JwZzgLS1/skill-artofviolence.webp', // 2nd-press of the same Resonance Skill, no separate wiki icon
+    'Lethal Repertoire': 'https://i.ibb.co/d49NGW0G/skill-lethalrepertoire.webp',
+    'Imminent Oblivion': 'https://i.ibb.co/d49NGW0G/skill-lethalrepertoire.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    'Era of New Wave': 'https://i.ibb.co/7dRxcfdg/skill-eraofnewwave.webp',
+    'Death Knell': 'https://i.ibb.co/7dRxcfdg/skill-eraofnewwave.webp', // Twilight Tango's Liberation-replacement attacks, same wiki icon
+    'Fatal Finale': 'https://i.ibb.co/7dRxcfdg/skill-eraofnewwave.webp',
+    'Wintertime Aria': 'https://i.ibb.co/d4gxw6J8/skill-wintertimearia.webp', // Intro Skill
+    'Closing Remark': 'https://i.ibb.co/qMFKhW2G/skill-closingremark.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2999,6 +3051,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/yFZ91RMt/node-s5-infinityheld.webp',
     s6: 'https://i.ibb.co/FbpkkPqC/node-s6-bloomfor.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Carlotta, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1107, all 6 URLs verified 200/live before upload.
+  'Carlotta': {
+    s1: 'https://i.ibb.co/1GCPHM5j/node-s1-beauty.webp',
+    s2: 'https://i.ibb.co/1YD00C0c/node-s2-fallen.webp',
+    s3: 'https://i.ibb.co/CK20vW27/node-s3-adelante.webp',
+    s4: 'https://i.ibb.co/DDVdry80/node-s4-yesterdays.webp',
+    s5: 'https://i.ibb.co/tPpvpmFC/node-s5-toast.webp',
+    s6: 'https://i.ibb.co/Kx65J6sT/node-s6-curtain.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3019,6 +3082,7 @@ const CHAIN_NODE_NAMES = {
   'Xiangli Yao': { s1: 'Prodigy of Protégés', s2: 'Traces of Predecessors', s3: 'Ruins of Ancient', s4: 'Vessel of Rebirth', s5: 'End of Stars', s6: 'Solace of the Ordinary' },
   'Shorekeeper': { s1: 'Unspoken Conjecture', s2: "Night's Gift and Refusal", s3: 'Infinity Awaits Me', s4: 'Overflowing Quietude', s5: 'Echoes in Silence', s6: 'To the New World' },
   'Camellya': { s1: 'Somewhere No One Travelled', s2: 'Calling Upon the Silent Rose', s3: 'A Bud Adorned by Thorns', s4: 'Roots Set Deep In Eternity', s5: 'Infinity Held in Your Palm', s6: 'Bloom For You Thousand Times Over' },
+  'Carlotta': { s1: 'Beauty Blazes Brightest Before It Fades', s2: 'Fallen Petals Give Life to New Blooms', s3: 'Adelante, Cortado, Spinning in Grace', s4: "Yesterday's Raindrops Make Finest Wine", s5: 'Toast to Past, Today, and Every Day to Come', s6: 'As the Curtain Falls, I Remain What I Am' },
 };
 
 // Release order for sorting (based on first banner appearance)
