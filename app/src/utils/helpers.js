@@ -219,6 +219,9 @@ const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 const REGION_ICONS = {
   'Huanglong': 'https://i.ibb.co/G34c0tdc/Huanglong-Emblem.webp',
   'Black Shores': 'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
+  // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
+  // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
+  'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
 };
 const getRegionIcon = (region) => REGION_ICONS[region] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:

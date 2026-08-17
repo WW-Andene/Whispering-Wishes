@@ -1026,7 +1026,9 @@ const CHARACTER_DATA = {
   // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her (unlike most other
   // characters, which have a real birthplace even when their nation/region tie is separately unconfirmed).
   ['Camellya', 'Sanguine Blossom', 'Unknown', 'Black Shores', { en: 'Meaghan Martin', cn: 'Liu ZhiXiao', jp: 'Ise Mariya', kr: 'Yu Hye Ji' }],
-  ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'The Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
+  // organization: 'Montelli Family' (no leading "The") to match helpers.js's FACTION_ICONS key exactly —
+  // the icon lookup is a straight object-key match, so "The Montelli Family" silently resolved to no icon.
+  ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
