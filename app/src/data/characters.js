@@ -195,14 +195,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
     weaponAlts: { alt5: ['Kumokiri', 'Wildfire Mark'], alt4: ['Aureate Zenith', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and Prydwen's live build page
+  // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, multipliers, ascension mats,
+  // and bestEchoes all re-confirmed accurate. weaponAlts corrected against Prydwen's calc %: alt5's Red
+  // Spring (90.0%, tied for 5th) was outranked by Emerald Sentence (90.4%, actual #3) — swapped. alt4
+  // had 'Lumingloss'/'Endless Collapse', neither of which appears anywhere in Prydwen's ranked weapon
+  // list for her — replaced with her confirmed best 4★ (Somnoire Anchor, 81.4%) and best no-gacha option
+  // (Commando of Conviction, 76.7%). teams: 'Changli + Brant + Shorekeeper' swapped Shorekeeper (never
+  // named as her specific partner) for Lupa, per Prydwen's actual "Best Team" (Changli+Lupa+Brant,
+  // Lupa being explicitly "part of Changli's best team" as the top Mono Fusion buffer); the Encore+Verina
+  // budget team was kept, confirmed as Prydwen's named Budget Dual DPS Team.
   'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Eternal Blaze, counselor serving the Jinzhou Magistrate and former Secretary-General in the capital — shrouded in flames, she\'s fated to burn brightly until her final embers, rising to power with fiery determination and a strategic mindset always thinking ahead. On-field Fusion DPS who enters True Sight from her Basic Attack/Skill/Intro finishers, builds Enflamement stacks from the True Sight follow-ups, then unleashes the enhanced Heavy Attack Flaming Sacrifice — a fast, quickswap-friendly kit that also buffs the incoming Resonator\'s Fusion and Liberation DMG via Outro.',
     skills: ['Blazing Enlightenment', 'Tripartite Flames', 'Flaming Sacrifice', 'Radiance of Fealty'],
     ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Pavo Plum' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Blazing Brilliance',
-    weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
-    teams: ['Changli + Brant + Shorekeeper', 'Changli + Encore + Verina'] },
+    weaponAlts: { alt5: ['Emerald of Genesis', 'Emerald Sentence'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
+    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina'] },
   'Zhezhi': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Shy, soft-spoken painter of the Jinzhou art scene whose ink creations spring to life and fight at her command — her bashfulness masks a fierce devotion to her craft and to those she calls friends. Glacio sub-DPS/support who paints Phantasmic Imprints during her Basic Attack and Forte combo, consumes them to unleash off-field Coordinated Attack Glacio nukes via Resonance Liberation (Living Canvas), and buffs the incoming Resonator\'s Glacio DMG and Skill DMG through her Outro Carve and Draw.',
     skills: ['Dimming Brush', 'Manifestation', 'Ink and Wash', 'Living Canvas'],
@@ -953,6 +963,9 @@ const CHARACTER_DATA = {
   // organization uses affiliation2 (Jinzhou City Hall, her magistrate office) over the generic Jinzhou
   // tie and affiliation3 (Mt. Firmament) — matching the specific-sub-group convention used above.
   ['Jinhsi', 'Thawborn Renewal', 'Huanglong', 'Jinzhou City Hall', { en: 'Anna Devlin', cn: 'Jiang Yue', jp: 'Yoshino Aoyama', kr: 'Park Ha-jin' }],
+  // organization uses affiliation2 (Jinzhou City Hall, where she serves as Counselor to Jinhsi) over the
+  // generic Jinzhou tie and her former, now-inactive affiliation3 (Mingting).
+  ['Changli', 'Eternal Blaze', 'Huanglong', 'Jinzhou City Hall', { en: 'Ashleigh Haddad', cn: 'Mufei', jp: 'Chiwa Saitō', kr: 'Shin Nari' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1103,15 +1116,20 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% 12s.',
   },
+  // selfBuffs condition corrected 2026-08-17 against fandom/Prydwen — was "After 4 Resonance Skill
+  // casts", which matched nothing in her kit. Fiery Feather is granted by casting Liberation (Radiance
+  // of Fealty) and consumed by her next Forte Heavy ATK (Flaming Sacrifice) within 10s — already
+  // correctly described in this same file's SKILL_MULTIPLIERS Changli/Liberation row, just not reflected
+  // here.
   'Changli': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 10 },
       { stat: 'libDmg', value: 25, target: 'next', duration: 10 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'After 4 Resonance Skill casts' }],
+    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'Fiery Feather: after Liberation Radiance of Fealty, self ATK +25% on the next Forte Heavy ATK (Flaming Sacrifice) within 10s.' }],
     debuffs: [],
-    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp.',
+    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp via Fiery Feather.',
   },
   'Yinlin': {
     outroBuffs: [
@@ -2121,6 +2139,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Illuminous Epiphany', note: 'consumes up to 50 Incandescence for a scaling Stella Glamor nuke (+44.54% DMG per stack); grants Unison, giving a free Outro every 25s with no Concerto cost' },
     { type: 'Outro', skill: 'Temporal Bender', note: 'utility only — accelerates her own Incandescence gain rate for 20s, no team buff' },
   ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Changli (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's single-Intro,
+  // no-swap-cancel rotation — she also has Double-Intro and heavy Swap-Cancel variants for advanced
+  // quickswap play, omitted here as too execution/team-dependent for a standard reference rotation. Goal
+  // each rotation: land 4 True Sight follow-ups to fill Enflamement for 2 Forte Heavy casts.
+  'Changli': [
+    { type: 'Intro', skill: 'Obedience of Rules', note: 'also enters True Sight (12s)' },
+    { type: 'Skill', skill: 'True Sight: Capture', note: '2 charges, 12s recharge each; each cast also opens a True Sight window' },
+    { type: 'Heavy ATK', skill: 'Standard', note: 'ground Heavy into Mid-air Heavy, weaving in True Sight: Conquest/Charge follow-ups to build Enflamement stacks' },
+    { type: 'Liberation', skill: 'Radiance of Fealty', note: '20s cooldown; instantly grants 4 Enflamement and Fiery Feather (self ATK +25% on the next Forte Heavy within 10s)' },
+    { type: 'Forte', skill: 'Heavy ATK: Flaming Sacrifice', note: 'at 4 Enflamement stacks, consumes them all; takes 40% less DMG while casting — 2 casts per rotation is the goal' },
+    { type: 'Outro', skill: 'Strategy of Duality', note: 'grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s — her shortest Outro window in the game alongside Lumi' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2663,6 +2694,18 @@ const SKILL_ICONS = {
     "Loong's Halo": 'https://i.ibb.co/cKXv3P1y/Skill-Loong-Halo.webp', // Intro Skill
     'Temporal Bender': 'https://i.ibb.co/qZDp0Jz/Skill-Temporal-Bender.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Changli, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Blazing
+  // Enlightenment (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png icon.
+  'Changli': {
+    'Blazing Enlightenment': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Tripartite Flames': 'https://i.ibb.co/DDwNWX8M/Skill-Tripartite-Flames.webp',
+    'Flaming Sacrifice': 'https://i.ibb.co/39K3xvGn/Skill-Flaming-Sacrifice.webp',
+    'Radiance of Fealty': 'https://i.ibb.co/Df83Zv7v/Skill-Radiance-of-Fealty.webp',
+    'Obedience of Rules': 'https://i.ibb.co/4w1N13zp/Skill-Obedience-of-Rules.webp', // Intro Skill
+    'Strategy of Duality': 'https://i.ibb.co/sdkt9Yhd/Skill-Strategy-of-Duality.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2752,6 +2795,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/SDksbmM6/Sequence-Node-Frostfire-Illumination.webp',
     s6: 'https://i.ibb.co/63m9q28/Sequence-Node-Thawing-Triumph.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Changli, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Changli/Combat
+  // (fetched by section index), all 6 URLs verified 200/live before upload.
+  'Changli': {
+    s1: 'https://i.ibb.co/FM07vnf/Sequence-Node-Hidden-Thoughts.webp',
+    s2: 'https://i.ibb.co/XBqhm0L/Sequence-Node-Pursuit-of-Desires.webp',
+    s3: 'https://i.ibb.co/ZzVrnF98/Sequence-Node-Learned-Secrets.webp',
+    s4: 'https://i.ibb.co/MkQV5gT9/Sequence-Node-Polished-Words.webp',
+    s5: 'https://i.ibb.co/39jsTQRB/Sequence-Node-Sacrificed-Gains.webp',
+    s6: 'https://i.ibb.co/wZJn2XcV/Sequence-Node-Realized-Plans.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2767,6 +2821,7 @@ const CHAIN_NODE_NAMES = {
   'Lingyang': { s1: 'Lion of Light, Blessings Abound', s2: 'Dominant and Fierce, Power Unbound', s3: 'Jaw-Dropping Feats, Loud and Wide', s4: 'Immortals Bow, in Reverence Flawed', s5: 'Seven Stars Shine, Stepped upon High', s6: 'Demons Tremble, Divine Power Nigh' },
   'Verina': { s1: 'Moment of Emergence', s2: 'Sprouting Reflections', s3: 'The Choice to Flourish', s4: 'Blossoming Embrace', s5: 'Miraculous Blooms', s6: 'Joyous Harvest' },
   'Jinhsi': { s1: 'Abyssal Ascension', s2: 'Chronofrost Repose', s3: 'Celestial Incarnate', s4: 'Benevolent Grace', s5: 'Frostfire Illumination', s6: 'Thawing Triumph' },
+  'Changli': { s1: 'Hidden Thoughts', s2: 'Pursuit of Desires', s3: 'Learned Secrets', s4: 'Polished Words', s5: 'Sacrificed Gains', s6: 'Realized Plans' },
 };
 
 // Release order for sorting (based on first banner appearance)
