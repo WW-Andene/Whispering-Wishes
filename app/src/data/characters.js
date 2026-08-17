@@ -369,12 +369,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Lorelei', 'Midnight Veil 5pc'], bestWeapon: 'Whispers of Sirens',
     weaponAlts: { alt5: ['Rime-Draped Sprouts', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Camellya + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1507 sheet. desc: title "Scorched Radiance" (nanoka) prepended and
+  // blurb rewritten — the previous desc said she "builds Frazzle stacks via Resonance Skill counters and
+  // Heavy Attacks", but Zani cannot apply Spectro Frazzle herself at all; she instantly converts
+  // teammates' Frazzle into her own Heliacal Ember/Blaze resource, which is a meaningfully different
+  // (and team-dependent) mechanic. organization uses 'Montelli Family' (no leading "The") to match
+  // helpers.js's FACTION_ICONS key, avoiding the mismatch previously found on Carlotta. skills/ascension/
+  // skill materials/bestEchoes/outroBuffs/selfBuffs all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 uses Tragicomedy (93.7%) and Verity's Handle (85.0%), Prydwen's #2/#3
+  // non-signature 5-stars; alt4 uses Aether Strike (72.6%, best 4★) and Celestial Spiral (69.3%, #2 4★);
+  // alt3 uses the standard starter Gauntlets of Night.
   'Zani': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Steadfast security officer of the Averardo Vault, devoted to justice. On-field Spectro DPS who builds Frazzle stacks via Resonance Skill counters and Heavy Attacks, then detonates them for burst Spectro DMG.',
+    desc: 'Scorched Radiance, a member of Averardo Vault\'s security team and its longtime "Best Employee" — she has plenty of plans for her free time, but for now her biggest mission is simple: clocking out on time. On-field Spectro Main DPS who converts teammates\' Spectro Frazzle into her own Heliacal Ember and Blaze the instant it lands, builds Redundant Energy through Basic Attacks and parries to unlock her enhanced Skill, then dumps everything into Inferno Mode via her Liberation for a string of massive Heavy Slash combos flagged as both Heavy Attack and Spectro Frazzle DMG — entirely dependent on a teammate applying Frazzle for her to convert.',
     skills: ['Routine Negotiation', 'Restless Watch', 'Between Dawn and Dusk', 'There Will Be A Light'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Blazing Justice',
+    weaponAlts: { alt5: ['Tragicomedy', "Verity's Handle"], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Rover: Spectro + Verina'] },
   'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Free-spirited wandering bard whose melodies command the wind. Aero sub-DPS who applies Erosion via Coordinated Attacks and Skill summons while buffing team Aero DMG through Outro.',
@@ -720,7 +732,7 @@ const CHARACTER_DATA = {
   ['Phoebe',        10825, 413, 1259, 125],
   ['Brant',         11675, 375, 1308, 125],
   ['Cantarella',    11600, 400, 1100, 125],
-  ['Zani',          10775, 437, 1136, 125],
+  ['Zani',          10775, 438, 1137, 125],
   ['Ciaccona',      12237, 375, 1197, 125],
   ['Cartethyia',    14800, 312, 611,  125],
   ['Lupa',          11912, 387, 1185, 125],
@@ -1073,6 +1085,9 @@ const CHARACTER_DATA = {
   ['Phoebe', 'Graceful Luminescence', 'Rinascita', 'Order of the Deep', { en: 'Rebecca LaChance', cn: 'Fu Tingyun', jp: 'Hondo Kaede', kr: 'Lee Bo Yong' }],
   ['Brant', 'Flamebound Compass', 'Rinascita', 'Troupe of Fools', { en: "Hyoie O'Grady", cn: 'Ray Mo', jp: 'Kishio Daisuke', kr: 'Lee Ju Seung' }],
   ['Cantarella', 'Sea of Dreams', 'Rinascita', 'Fisalia Family', { en: 'Alexandra Guelff', cn: 'Xiaomi', jp: 'Nakahara Mai', kr: 'Kim Yul' }],
+  // organization: 'Montelli Family' (no leading "The", even though nanoka's own infobox literally shows
+  // "The Montelli Family") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta.
+  ['Zani', 'Scorched Radiance', 'Rinascita', 'Montelli Family', { en: 'Alexandra Metaxa', cn: 'Nie Xiying', jp: 'Ueda Hitomi', kr: 'Won Esther' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2138,17 +2153,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Raging Storm', '14.32%×10', 'Applies Sinner\'s Mark.'],
     ['Outro', 'Strategist', 'Electro DMG Amp +20% + Liberation DMG Amp +25% (14s)', 'Grants the incoming Resonator these buffs; no direct DMG.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1507 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. her core Inferno-Mode finisher Heavy Slash Nightfall
+  // was listed as '68% + 132% (+5% per Blaze)' vs the real 135.20%+262.43% with +9.95% per Blaze), the
+  // same halving pattern already found and fixed across Camellya/Carlotta/Roccia/Phoebe/Brant/
+  // Cantarella's rows. Outro (150%, matching nanoka's Lv.1 value exactly) was already correct.
   'Zani': [
-    ['Basic ATK', 'Stage 1-4', '29.6% → 40% → 64% → 136%', 'Standard combo string.'],
-    ['Heavy ATK', 'Standard', '20.7%×4', 'Charged combo hit.'],
-    ['Skill', 'Pinpoint Strike', '30.7% + 61.4%', 'Base Skill counter-style strike.'],
-    ['Skill', 'Targeted Action', '43.4% + 14.5% + 86.7%', 'Counter follow-up, empowered by her Resonance Chain.'],
-    ['Forte', 'Heavy Slash Daybreak', '100%', 'First stage of her Forte-empowered Heavy ATK.'],
-    ['Forte', 'Heavy Slash Dawning', '213.3%', 'Second, stronger stage of the Forte Heavy ATK.'],
-    ['Forte', 'Heavy Slash Nightfall', '68% + 132% (+5% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
-    ['Liberation', 'Rekindle', '160.2%', 'Ultimate that raises max Blaze and enters Inferno state.'],
-    ['Liberation', 'The Last Stand', '96.1% + 544.7%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
-    ['Intro', 'Immediate Execution', '12.2%×5 + 40.6%', 'Swap-in opener strike.'],
+    ['Basic ATK', 'Stage 1-4', '58.9% → 79.5% → 127.3% → 270.4%', 'Standard combo string.'],
+    ['Heavy ATK', 'Standard', '41.1%×4', 'Charged combo hit.'],
+    ['Skill', 'Pinpoint Strike', '61.0% + 122.0%', 'Base Skill counter-style strike.'],
+    ['Skill', 'Targeted Action', '86.2% + 28.7% + 172.4%', 'Counter follow-up, empowered by her Resonance Chain.'],
+    ['Forte', 'Heavy Slash Daybreak', '198.8%', 'First stage of her Forte-empowered Heavy ATK.'],
+    ['Forte', 'Heavy Slash Dawning', '424.1%', 'Second, stronger stage of the Forte Heavy ATK.'],
+    ['Forte', 'Heavy Slash Nightfall', '135.2% + 262.4% (+9.95% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
+    ['Liberation', 'Rekindle', '318.5%', 'Ultimate that raises max Blaze and enters Inferno state.'],
+    ['Liberation', 'The Last Stand', '191.1% + 1083.0%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
+    ['Intro', 'Immediate Execution', '24.2%×5 + 80.8%', 'Swap-in opener strike.'],
     ['Outro', 'Beacon For the Future', '150% (+10% per Ember stack)', 'Swap-out finisher that also grants allies hitting the marked target Spectro DMG Amp.'],
   ],
   'Zhezhi': [
@@ -3094,6 +3114,24 @@ const SKILL_ICONS = {
     'Cruise': 'https://i.ibb.co/DgDVdZ3T/skill-cruise.webp', // Intro Skill
     'Gentle Tentacles': 'https://i.ibb.co/fVyzhpgr/skill-gentletentacles.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Zani, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Routine
+  // Negotiation (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Gauntlets.webp
+  // icon (same as Jianxin/Xiangli Yao/Roccia's).
+  'Zani': {
+    'Routine Negotiation': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Heavy Slash': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement, same generic weapon icon
+    'Restless Watch': 'https://i.ibb.co/Cpng0BLF/skill-restlesswatch.webp',
+    'Pinpoint Strike': 'https://i.ibb.co/Cpng0BLF/skill-restlesswatch.webp', // same Resonance Skill's parry counter, same wiki icon
+    'Targeted Action': 'https://i.ibb.co/Cpng0BLF/skill-restlesswatch.webp',
+    'There Will Be A Light': 'https://i.ibb.co/0jtmQHtM/skill-therewillbealight.webp',
+    'Between Dawn and Dusk': 'https://i.ibb.co/tpPYsMpx/skill-betweendawndusk.webp',
+    'Rekindle': 'https://i.ibb.co/tpPYsMpx/skill-betweendawndusk.webp', // Liberation's own named cast, same icon
+    'The Last Stand': 'https://i.ibb.co/tpPYsMpx/skill-betweendawndusk.webp',
+    'Immediate Execution': 'https://i.ibb.co/Xx8gjJV2/skill-immediateexecution.webp', // Intro Skill
+    'Beacon For the Future': 'https://i.ibb.co/yczmx4Lj/skill-beaconforfuture.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3293,6 +3331,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/0g4C5hH/node-s5-restreflection.webp',
     s6: 'https://i.ibb.co/KxGNqZtQ/node-s6-falldream.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Zani, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1507, all 6 URLs verified 200/live before upload.
+  'Zani': {
+    s1: 'https://i.ibb.co/gbN5SWFV/node-s1-alarmclock.webp',
+    s2: 'https://i.ibb.co/N25LYLMp/node-s2-stalebread.webp',
+    s3: 'https://i.ibb.co/6kDrsB0/node-s3-newcommute.webp',
+    s4: 'https://i.ibb.co/nsWMbP51/node-s4-efficiency.webp',
+    s5: 'https://i.ibb.co/tpwvvSMk/node-s5-delivered.webp',
+    s6: 'https://i.ibb.co/Q3vpqhCQ/node-s6-clockout.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3318,6 +3367,7 @@ const CHAIN_NODE_NAMES = {
   'Phoebe': { s1: 'Warm Light and Bedside Wishes', s2: 'A Boat Adrift in Tears', s3: 'Daisy Wreaths and Dreams', s4: 'Ringing Bells on Wings Aloft', s5: 'Prayer to the Distant Light', s6: 'Whispering Chirps in Silence' },
   'Brant': { s1: 'By Currents and Winds', s2: 'For Smiles and Cheers', s3: 'Through Storms I Sail', s4: 'To Freedom I Sing', s5: "All the World's an Actor's Stage", s6: "All the World's a Captain's Carnevale" },
   'Cantarella': { s1: 'Embrace the Endless Waves', s2: 'Surrender to the Illusive Reverie', s3: 'Gaze into the Abyss', s4: 'Behold Your Own Soul', s5: 'Rest in Your Reflection', s6: 'Fall, Fall... and Fall Deeper into the Dream' },
+  'Zani': { s1: 'When the Alarm Clock Rings', s2: 'Stale Bread With Energy Drink', s3: 'Each Day A New Commute', s4: 'More Efficiency, Less Drama', s5: 'Delivered In Full On Time', s6: 'First Things First? Clock Out!' },
 };
 
 // Release order for sorting (based on first banner appearance)
