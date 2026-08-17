@@ -464,7 +464,8 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
-    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Yinlin + Verina', 'Augusta + Phrolova + Shorekeeper'] },
+    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
+    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Shorekeeper', 'Augusta + Mortefi + Verina'] },
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
     desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro, heals the team through her New Moon attacks and Full Moon Domain, and self-shields on skill casts, cycling between Half Moon and New Moon combat states.',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
@@ -1053,8 +1054,9 @@ const CHARACTER_DATA = {
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
   ['Ciaccona',     'Rinascita'], ['Cartethyia',   'Rinascita'], ['Lupa',         'Rinascita'],
   ['Phrolova',     'Rinascita'],
-  // Septimont
-  ['Augusta',      'Septimont'], ['Iuno',         'Septimont'],
+  // Septimont (fixed 2026-08-17: Septimont is a city-state region OF Rinascita per fandom's own Location
+  // Infobox `nation` field — same pattern as Jinzhou being a city within Huanglong — not a separate nation).
+  ['Augusta',      'Rinascita'], ['Iuno',         'Rinascita'],
   // Lahai-Roi (Startorch Academy)
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
@@ -1141,6 +1143,10 @@ const CHARACTER_DATA = {
   // organization tie is what ties her to the Rinascita region (REGION_DATA below), same pattern as
   // Camellya's identity block above.
   ['Phrolova', 'Symphony of Beyond', 'Unknown', 'Fractsidus', { en: 'Rae Lim', cn: 'Zhang Qi', jp: 'Fujita Saki', kr: 'Choi Ha Ri' }],
+  // birthplace: fandom's own infobox leaves both `birthday` and `birthplace` blank for Augusta — treated
+  // as "Unknown" per the Camellya/Phrolova convention above. organization uses her city-state affiliation
+  // (Septimont) rather than the generic Rinascita nation tie, matching the Jinzhou City Hall convention.
+  ['Augusta', 'Ephor of Septimont', 'Unknown', 'Septimont', { en: 'Alix Wilton Regan', cn: 'Mu Xueting', jp: 'Hikasa Yoko', kr: 'Lee Ji-hyun' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3293,6 +3299,22 @@ const SKILL_ICONS = {
     'Suite of Immortality': 'https://i.ibb.co/7dWwXT4m/skill-suiteofquietus.webp', // Maestro-enhanced Intro, same icon
     'Unfinished Piece': 'https://i.ibb.co/DDQz9zyk/skill-unfinishedpiece.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Augusta, re-hosted on ibb.co (2026-08-17).
+  'Augusta': {
+    "Hunter's Path": 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Hunter's_Path.png resolves to this same asset)
+    "Warrior's Blade": 'https://i.ibb.co/Mxg3Z8k9/warriors-blade.webp',
+    'Undying Sunlight': 'https://i.ibb.co/Mxg3Z8k9/warriors-blade.webp', // Ascendancy-enhanced Resonance Skill, same wiki icon
+    'Sunward Conquest': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp', // Resonance Liberation (Sword of Eternal Oath)
+    'Sword of Eternal Oath': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp',
+    'Sublime is the Sun': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp', // held Liberation alt-cast, same icon
+    'Sunborne': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp',
+    'Everbright Protector': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp',
+    'Call Me By the Sun': 'https://i.ibb.co/21vnPFbj/call-me-by-sun.webp', // Forte Circuit
+    "Glory's Favor": 'https://i.ibb.co/RT0Pjfbz/glorys-favor.webp', // Inherent Skill
+    'Blazing Valor': 'https://i.ibb.co/C3Gkv7Pf/blazing-valor.webp', // Inherent Skill
+    'Stride of Goldenflare': 'https://i.ibb.co/Kj6cSTM0/stride-goldenflare.webp', // Intro Skill
+    'Battlesong of the Unyielding': 'https://i.ibb.co/20CntVcB/battlesong-unyielding.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3547,6 +3569,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/1f1yj3zj/node-s5-forkedroad.webp',
     s6: 'https://i.ibb.co/dStZKfy/node-s6-nighttodepart.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Augusta, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on Prydwen's live build page.
+  'Augusta': {
+    s1: 'https://i.ibb.co/HTwqDr5n/node-s1.webp',
+    s2: 'https://i.ibb.co/DHWH8D47/node-s2.webp',
+    s3: 'https://i.ibb.co/QwdPnbk/node-s3.webp',
+    s4: 'https://i.ibb.co/mCrQsqH3/node-s4.webp',
+    s5: 'https://i.ibb.co/ccxMpt1c/node-s5.webp',
+    s6: 'https://i.ibb.co/cKP8919X/node-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3577,6 +3609,7 @@ const CHAIN_NODE_NAMES = {
   'Cartethyia': { s1: 'Crown Destined by Fate', s2: 'Blade Broken by Tempest', s3: 'Prisoner Hanged in the Tower', s4: 'Sacrifice Made for Salvation', s5: 'Hope Reshaped in Storms', s6: "Freedom Found in Storm's Wake" },
   'Lupa': { s1: 'Behold the Nameless One', s2: 'Every Ground, Her Hunting Field', s3: 'Wolflame Howls in Her Wake', s4: 'High and Aflame Is Her Banner', s5: 'Embrace the Thunderous Triumph', s6: 'To the Brightest Flaming Star' },
   'Phrolova': { s1: "A Key to Netherworld's Secrets", s2: 'A Rope Tied to a Life Beyond', s3: 'A Dagger to Cut Clean Obsessions', s4: 'A Torch Illuminating the Path', s5: "A Forked Road in Fate's Heartland", s6: 'A Night to Depart From Eternal Rest' },
+  'Augusta': { s1: 'Stained in Scorched Earth', s2: 'Cleansed in Crimson War', s3: 'Forged in Rot and Ruin', s4: 'Ascent in Sun and Glory', s5: 'Unshaken in Wrathful Tides', s6: 'Engraved in Radiant Light' },
 };
 
 // Release order for sorting (based on first banner appearance)
