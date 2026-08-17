@@ -124,14 +124,26 @@ const CHARACTER_DATA = {
     // Prydwen's own endgame-stats ER estimate). Xiangli Yao + Shorekeeper kept, confirmed as her other
     // named example team.
     teams: ['Jianxin + Iuno + Shorekeeper', 'Jianxin + Xiangli Yao + Shorekeeper'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API, Cloudflare bypassed via
+  // Chrome UA + google.com referer + jsRender) and ww.nanoka.cc/character/1104 — base stats, skills,
+  // multipliers, buffs, ascension mats all independently re-confirmed accurate, no changes needed there.
+  // desc enriched with fandom's "last living Suan'ni" lore detail (his species/heritage, not previously
+  // captured). bestEchoes/weaponAlts/teams corrected against Prydwen's live build/team page (re-fetched
+  // same audit): Endless Resonance 5pc has since overtaken Frosty Resolve as her #1 echo set (100% vs
+  // 98.9% on Prydwen's calc scale) — bestEchoes updated to its main echo, Mech Abomination. weaponAlts.
+  // alt5 swapped Tragicomedy (103.0%, rank 4) for Blazing Justice (105.3%, actual rank 2, was skipped).
+  // alt4 swapped Hollow Mirage (82.8%) for Aether Strike (88.9%, actual best 4★ alt, was omitted).
+  // teams: 'Lingyang + Zhezhi + Shorekeeper' had no basis in Prydwen's synergy list — replaced with
+  // 'Lingyang + Lynae + Zhezhi', explicitly named "Lingyang's best partners" and Prydwen's cited Best
+  // Team; 'Lingyang + Sanhua + Verina' kept, confirmed as Prydwen's named F2P Team.
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion\'s Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.',
+    desc: "Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou and the last living Suan'ni — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion's Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.",
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'Abyss Surges',
-    weaponAlts: { alt5: ["Moongazer's Sigil", 'Tragicomedy'], alt4: ['Celestial Spiral', 'Hollow Mirage'], alt3: ['Gauntlets of Night'] },
-    teams: ['Lingyang + Sanhua + Verina', 'Lingyang + Zhezhi + Shorekeeper'] },
+    bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
+    teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Nature Calling — with an extensive knowledge of botany, Verina is always solicitous, always smiling, and always wishing for every flower to be blessed with the miracle of life. Spectro healer who builds Photosynthesis Energy from Basic Attacks, Skill, and Intro, then spends it on Heavy/Mid-air Attack Starflower Blooms to heal the team; Liberation Arboreal Flourish both heals and marks enemies for a Coordinated-Attack heal-on-hit, while Outro Blossom heals the incoming Resonator and grants the team All DMG Amp.',
     skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
@@ -912,6 +924,9 @@ const CHARACTER_DATA = {
   // real name in its own linked moegirl URL (%E5%BC%A0%E6%98%B1 = 张昱, surname Zhang) — ww.nanoka.cc's
   // Voice Cast list confirms "Elise Zhang", used here instead as the more internally-consistent source.
   ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
+  // organization uses affiliation2 (Liondance Troupe), his specific in-game sub-group within Jinzhou/
+  // Huanglong, matching the Jiyan/Midnight Rangers convention above rather than the generic nation tie.
+  ['Lingyang', 'Frosty Gusto', 'Huanglong', 'Liondance Troupe', { en: 'Aleksander Varadian', cn: 'Jinli', jp: 'Natsuki Hanae', kr: 'Lee Sangho' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2046,6 +2061,16 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Purification Force Field', note: 'groups enemies, then explodes on expiry; 20s cooldown' },
     { type: 'Outro', skill: 'Transcendence', note: 'grants the incoming Resonator +38% Resonance Liberation DMG for 14s' },
   ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Lingyang (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender, confirmed against nanoka's kit order).
+  'Lingyang': [
+    { type: 'Intro', skill: 'Lion Awakens', note: "fills a large chunk of the Forte Gauge on its own" },
+    { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: 'grants self Glacio DMG Bonus +50% for 14s; 20s cooldown' },
+    { type: 'Forte', skill: 'Unification of Spirits', note: 'at full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters the airborne Striding Lion state' },
+    { type: 'Basic ATK', skill: 'Majestic Fists', note: 'Feral Gyrate P1/P2, alternated with Mountain Roamer below — never chain two of the same type in a row' },
+    { type: 'Skill', skill: 'Ancient Arts', note: 'Mountain Roamer while airborne; up to ~9 alternating Basic/Skill hits during the Ultimate window under ideal play' },
+    { type: 'Outro', skill: 'Frosty Marks', note: 'pure-damage AoE finisher on swap-out (S4 chain grants team Glacio DMG +20%/30s)' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2553,6 +2578,17 @@ const SKILL_ICONS = {
     'Essence of Tao': 'https://i.ibb.co/jZvd35BH/Skill-Essence-of-Tao.webp', // Intro Skill
     'Transcendence': 'https://i.ibb.co/jP7RDt0b/Skill-Transcendence.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lingyang, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload.
+  'Lingyang': {
+    'Majestic Fists': 'https://i.ibb.co/Cs76xkJK/Skill-Majestic-Fists.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/Cs76xkJK/Skill-Majestic-Fists.webp',
+    'Ancient Arts': 'https://i.ibb.co/5h5F3YrR/Skill-Ancient-Arts.webp',
+    'Unification of Spirits': 'https://i.ibb.co/4R6ggr17/Skill-Unification-of-Spirits.webp',
+    "Strive: Lion's Vigor": 'https://i.ibb.co/Wbh05jj/Skill-Strive-Lions-Vigor.webp',
+    'Lion Awakens': 'https://i.ibb.co/v4t5F4cP/Skill-Lion-Awakens.webp', // Intro Skill
+    'Frosty Marks': 'https://i.ibb.co/SwNjm5nr/Skill-Frosty-Marks.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2609,6 +2645,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/DHW1ndcQ/Sequence-Node-Mirroring-Introspection.webp',
     s6: 'https://i.ibb.co/hFH1wK8g/Sequence-Node-Truth-from-Within.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lingyang, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Chain Table on ww.nanoka.cc/character/1104, all 6
+  // URLs verified 200/live before upload.
+  'Lingyang': {
+    s1: 'https://i.ibb.co/35qjT11k/Sequence-Node-Lion-of-Light.webp',
+    s2: 'https://i.ibb.co/fY1GpNzv/Sequence-Node-Dominant-and-Fierce.webp',
+    s3: 'https://i.ibb.co/rR5Sv0w7/Sequence-Node-Jaw-Dropping-Feats.webp',
+    s4: 'https://i.ibb.co/Wvr3prmH/Sequence-Node-Immortals-Bow.webp',
+    s5: 'https://i.ibb.co/hRYWXtX5/Sequence-Node-Seven-Stars-Shine.webp',
+    s6: 'https://i.ibb.co/Z1myY6Sc/Sequence-Node-Demons-Tremble.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2621,6 +2668,7 @@ const CHAIN_NODE_NAMES = {
   'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
   'Encore': { s1: "Wooly's Fairy Tale", s2: 'Sheep-counting Lullaby', s3: 'Fog? The Black Shores!', s4: "Adventure? Let's go!", s5: 'Hero Takes the Stage!', s6: 'Woolies Save the World!' },
   'Jianxin': { s1: 'Verdant Branchlet', s2: "Tao Seeker's Journey", s3: 'Principles of Wuwei', s4: 'Multitide Reflection', s5: 'Mirroring Introspection', s6: 'Truth from Within' },
+  'Lingyang': { s1: 'Lion of Light, Blessings Abound', s2: 'Dominant and Fierce, Power Unbound', s3: 'Jaw-Dropping Feats, Loud and Wide', s4: 'Immortals Bow, in Reverence Flawed', s5: 'Seven Stars Shine, Stepped upon High', s6: 'Demons Tremble, Divine Power Nigh' },
 };
 
 // Release order for sorting (based on first banner appearance)
