@@ -908,7 +908,10 @@ const CHARACTER_DATA = {
   ['Yinlin', 'Lightning of Execution', 'Huanglong', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
   ['Calcharo', 'Phantom Hunters', 'New Federation', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
   ['Encore', 'Wooly-Counting Game', 'New Federation', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
-  ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Yu Tou', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
+  // cn VA corrected 2026-08-17: fandom's own wikitext link text ("Yu Tou") doesn't match the CN actor's
+  // real name in its own linked moegirl URL (%E5%BC%A0%E6%98%B1 = 张昱, surname Zhang) — ww.nanoka.cc's
+  // Voice Cast list confirms "Elise Zhang", used here instead as the more internally-consistent source.
+  ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
