@@ -483,11 +483,12 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Relativistic Jet', 'Pistols#26'], alt3: ['Guardian Pistols'] },
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Brant + Lupa'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS who buffs the team\'s Echo Skill DMG and grants Crit DMG Amplify via Outro and Resonance Liberation.',
+    desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who grants the next Resonator Echo Skill DMG Amp via Outro and boosts the active Resonator\'s Crit DMG via Resonance Liberation.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
     ascension: { boss: 'Truth in Lies', common: 'Whisperin Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fenrico', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
+    weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Commando of Conviction'], alt3: ['Guardian Sword'] },
     teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Support/Healer',
     desc: '"Just an ordinary student," she calmly introduces herself, a faint iridescent shimmer flickering in her eyes. Havoc support/healer who deals heavy Resonance Liberation DMG, heals and shields the team, and shreds enemy DEF via Unseen Snare + Havoc Bane.',
@@ -733,7 +734,12 @@ const CHARACTER_DATA = {
   // Edge, and the Flux jump-attacks) is explicitly "considered as Resonance Liberation DMG" per Prydwen's
   // kit breakdown — only Absolute Fullness and the base Moonring combo are true Heavy ATK/Basic ATK.
   ['Iuno',          ['Liberation', 'Heavy ATK'],     ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
-  ['Qiuyuan',       ['Echo'],                        ['Echo DMG Buff', 'Crit DMG Amp'],       []],
+  // dmg-type tag corrected 2026-08-17: Qiuyuan's actual rotation damage (Inkwash Basic ATK Stage 3-4 and
+  // his Forte Heavy Attack finishers) is explicitly "considered as Heavy Attack DMG" per Prydwen's kit
+  // breakdown, and the Forte finishers are additionally "considered as performing Echo Skill" — his
+  // Liberation/Intro are also tagged Heavy ATK. Previously listed as purely ['Echo'], missing the
+  // majority Heavy ATK component entirely.
+  ['Qiuyuan',       ['Heavy ATK', 'Echo'],           ['Echo DMG Buff', 'Crit DMG Amp'],       []],
   ['Chisa',         ['Skill'],                       [],                                      ['DEF Shred']],
   ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
   ['Danjin',        ['Basic ATK', 'Heavy ATK'],      ['Havoc DMG Bonus'],                     []],
@@ -1164,6 +1170,10 @@ const CHARACTER_DATA = {
   // as Verina. organization uses her primary affiliation (Black Shores) rather than her origin
   // (Septimont) since that's her actual employer, matching the Shorekeeper/Camellya/Encore convention.
   ['Galbrena', 'Infernal Descent', 'Rinascita', 'Black Shores', { en: 'Devora Wilde', cn: 'Zhang Wenjie', jp: 'Shoji Umeka', kr: 'Lee Da-seul' }],
+  // organization uses his primary affiliation (Mingting) over affiliation2 (Chongzhou) and the now-inactive
+  // affiliation3 (Internal Security Agency, "formerly") — no dedicated emblem exists for Mingting on the
+  // wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
+  ['Qiuyuan', 'Bambooscape', 'Huanglong', 'Mingting', { en: 'Jeremy Ang Jones', cn: 'Gan Ziqi', jp: 'Miki Shinichiro', kr: 'Kim Min-ju' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2802,14 +2812,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher, consumes both Wolfaith' },
     { type: 'Outro', skill: 'Stand by Me, Warrior', duration: 14, note: 'grants next Resonator Fusion + Basic ATK DMG Amp' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // included the un-enhanced Basic ATK Stage 1-3 combo — but the Intro alone grants 400 of his 600 Forte
+  // ("Swordster's Soliloquy"), so Prydwen's actual "Standard Hybrid Rotation" skips straight from Intro
+  // into the enhanced Inkwash Basic Attack (Stage 3-4), never touching the plain Basic ATK. The base
+  // Skill (Through the Groves) is also optional/skippable — best cast before his rotation in quickswap,
+  // or held mid-rotation only if Concerto Energy is genuinely short.
   'Qiuyuan': [
-    { type: 'Intro', skill: 'Attack the Must-Defend' },
-    { type: 'Skill', skill: 'Through the Groves', note: 'or hold for Undaunted Wayfarer' },
-    { type: 'Basic ATK', skill: 'Stage 1-3', note: 'transitions into Inkwash form' },
-    { type: 'Forte', skill: 'Inkwash 1-4', note: 'main Inkwash-form combo' },
-    { type: 'Forte', skill: 'To Teach / To Save / To Sacrifice', note: 'Heavy ATK finisher, pick based on situation' },
-    { type: 'Liberation', skill: 'Sundering Strike', duration: 30, note: 'Ultimate nuke' },
-    { type: 'Outro', skill: 'Strike Before Ready', duration: 14, note: 'grants next Resonator Echo Skill DMG Amp' },
+    { type: 'Intro', skill: 'Attack the Must-Defend', note: 'grants 400 of 600 Forte, skips straight to Inkwash Stage 3' },
+    { type: 'Basic ATK', skill: 'Inkwash Stage 3-4', note: 'fills Forte to 600, endlag optionally cancelled by the Skill' },
+    { type: 'Skill', skill: 'Through the Groves', note: 'optional — best cast before this rotation via quickswap; skip if not needed for Energy' },
+    { type: 'Liberation', skill: 'Sundering Strike', duration: 30, note: 'cancels the Skill\'s endlag on hit, grants self/team Crit DMG at 65%+ Crit Rate' },
+    { type: 'Forte', skill: 'To Teach / To Save / To Sacrifice', note: 'Heavy ATK finisher sequence, empties Forte and restores Concerto Energy' },
+    { type: 'Outro', skill: 'Strike Before Ready', duration: 14, note: 'grants next Resonator 50% Echo Skill DMG Amp' },
   ],
 };
 
@@ -3378,6 +3393,23 @@ const SKILL_ICONS = {
     'Hellflare Overload': 'https://i.ibb.co/fYZhFW4t/skill-hellflare-overload.webp', // Intro Skill
     'Ashen Pursuit': 'https://i.ibb.co/ch99n99W/skill-ashen-pursuit.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Qiuyuan, re-hosted on ibb.co (2026-08-17).
+  'Qiuyuan': {
+    'Inkwash': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Inkwash.png resolves to this same asset)
+    'Thus Spoke the Blade': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp', // Forte-enhanced Basic ATK/Heavy ATK replacements, same generic weapon icon
+    'Through the Groves': 'https://i.ibb.co/Wpj83CS4/skill-through-the-groves.webp',
+    'Undaunted Wayfarer': 'https://i.ibb.co/Wpj83CS4/skill-through-the-groves.webp', // held Skill variant, same icon
+    'Straw Cape in Drizzly Rain': 'https://i.ibb.co/Wpj83CS4/skill-through-the-groves.webp', // S3 Skill replacement, same icon
+    'Sundering Strike': 'https://i.ibb.co/0Lg31jf/skill-sundering-strike.webp', // Resonance Liberation
+    'Verdant Edge': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp', // Forte Circuit
+    'To Teach': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp', // Forte Heavy ATK finishers, same icon
+    'To Save': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp',
+    'To Sacrifice': 'https://i.ibb.co/79CMny9/skill-verdant-edge.webp',
+    'Quietude Within': 'https://i.ibb.co/DgW9vm0Y/skill-quietude-within.webp', // Inherent Skill
+    'Drink Away Woes Age-Old': 'https://i.ibb.co/357LJjGX/skill-drink-away-woes.webp', // Inherent Skill
+    'Attack the Must-Defend': 'https://i.ibb.co/DH5PV4Mc/skill-attack-the-must-defend.webp', // Intro Skill
+    'Strike Before Ready': 'https://i.ibb.co/m5YJ7bBB/skill-strike-before-ready.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3662,6 +3694,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/0VRF3CBL/node-s5.webp',
     s6: 'https://i.ibb.co/gb17vj3m/node-s6.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Qiuyuan, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Qiuyuan': {
+    s1: 'https://i.ibb.co/84TqFSG3/node-s1.webp',
+    s2: 'https://i.ibb.co/qLkrYVXv/node-s2.webp',
+    s3: 'https://i.ibb.co/whd9Dwmz/node-s3.webp',
+    s4: 'https://i.ibb.co/Fqk0VQJq/node-s4.webp',
+    s5: 'https://i.ibb.co/0RBWxffy/node-s5.webp',
+    s6: 'https://i.ibb.co/LdNkcSqg/node-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3695,6 +3737,7 @@ const CHAIN_NODE_NAMES = {
   'Augusta': { s1: 'Stained in Scorched Earth', s2: 'Cleansed in Crimson War', s3: 'Forged in Rot and Ruin', s4: 'Ascent in Sun and Glory', s5: 'Unshaken in Wrathful Tides', s6: 'Engraved in Radiant Light' },
   'Iuno': { s1: 'Wax or Wane, All Gild the Bough', s2: 'Day or Night, Let This Be Eternal', s3: 'I Drink Deep of Their Forgetting', s4: 'Rainy Season Dwell in My Eyes', s5: 'A Thousand Futile Glimpses', s6: 'I Am the Constant in the Chaos' },
   'Galbrena': { s1: 'Heart of Defiance Ever Ablaze', s2: 'Hellbound Dive of Fire and Abyss', s3: "Hunter's Blood Oath Rekindled", s4: 'Carry Forth This Fading Spark', s5: 'Though Light Fades, Torment Consumes', s6: 'I Remain Who I am, Eternal My Flame' },
+  'Qiuyuan': { s1: 'Sword Sheathed, Mind Unclouded', s2: 'O Blade, I, Who Teach No More', s3: 'O Blade, I, Who Save No More', s4: 'O Blade, I, Who Sacrifice No More', s5: 'O Blade, I, Who Await to be Wielded', s6: 'Thus I Heard, Thus I Saw, Thus I Spoke' },
 };
 
 // Release order for sorting (based on first banner appearance)
