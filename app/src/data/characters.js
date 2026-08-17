@@ -480,6 +480,7 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Stone Rose' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Phlogiston' },
     bestEchoes: ['Corrosaurus', "Flamewing's Shadow 3pc + Flaming Clawprint 2pc"], bestWeapon: 'Lux & Umbra',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Relativistic Jet', 'Pistols#26'], alt3: ['Guardian Pistols'] },
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Brant + Lupa'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS who buffs the team\'s Echo Skill DMG and grants Crit DMG Amplify via Outro and Resonance Liberation.',
@@ -1157,6 +1158,12 @@ const CHARACTER_DATA = {
   // Hall convention — no dedicated emblem exists for Tetragon Temple on the wiki (only a location photo),
   // so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
   ['Iuno', 'Stasis, Cycle, Renewal', 'Unknown', 'Tetragon Temple', { en: 'Ella Boyes', cn: 'Jiang Yingjun', jp: 'Lynn', kr: 'Yoon Eun-seo' }],
+  // birthplace: fandom's infobox literally lists 'Rinascita' for her (a real value this time, not blank)
+  // — she's Septimont-born (a former Septimontian known as "Angel") but now serves as a Consultant of
+  // the Black Shores, which is her REGION_DATA tie/organization, same birthplace-vs-nation-tie pattern
+  // as Verina. organization uses her primary affiliation (Black Shores) rather than her origin
+  // (Septimont) since that's her actual employer, matching the Shorekeeper/Camellya/Encore convention.
+  ['Galbrena', 'Infernal Descent', 'Rinascita', 'Black Shores', { en: 'Devora Wilde', cn: 'Zhang Wenjie', jp: 'Shoji Umeka', kr: 'Lee Da-seul' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1631,8 +1638,8 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 85, target: 'self', duration: 14, condition: 'Liberation cast: +85% DMG Mult to Demon Hypostasis attacks' },
       { stat: 'atkPct', value: 20, target: 'self', duration: 4, condition: 'Burning Drive: +20% ATK on certain casts' },
     ],
-    debuffs: [],
-    note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit.',
+    debuffs: [{ stat: 'deepen', value: 60, target: 'enemy', duration: 0, condition: "Afterflame: each of up to 40 stacks (gained from any team Resonator's Echo Skill cast, capped once per Echo name) grants +1.5% DMG Taken on the target while Galbrena is in Demon Hypostasis, up to 60% — cleared when she exits the state" }],
+    note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit. Afterflame is a DMG Taken debuff on the enemy (not a self-buff), replenished by any teammate\'s Echo Skill casts — Prydwen notes it\'s realistically 36% without Phrolova, 48% with her (rarely maxed at 60%).',
   },
   'Luuk Herssen': {
     outroBuffs: [],
@@ -2664,13 +2671,18 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'Ultimate nuke, heals on cast' },
     { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 15, note: 'next Resonator can stack more Negative Status' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
+  // included Encroach and Volley of Death as rotation steps and put the Liberation after the Demon
+  // Hypostasis combo — but Prydwen's own review explicitly lists her base Resonance Skill and all Heavy
+  // Attacks as unused in practice (Basic Attacks/Dodge Counters restore Forte fastest and hit harder),
+  // and the Liberation must be cast BEFORE entering the Demon Hypostasis combo since its +85% DMG Mult
+  // buff applies to those very attacks. Rebuilt to match Prydwen's actual "Standard Rotation".
   'Galbrena': [
     { type: 'Intro', skill: 'Hellflare Overload' },
-    { type: 'Skill', skill: 'Encroach', note: 'builds Sinflame' },
-    { type: 'Skill', skill: 'Ascent of Malice', note: 'at max Sinflame, enters Demon Hypostasis' },
-    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'Demon Hypostasis combo' },
-    { type: 'Heavy ATK', skill: 'Volley of Death 1-3', note: 'charged combo finisher' },
-    { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'grants +85% DMG Mult to Demon Hypostasis attacks' },
+    { type: 'Basic ATK', skill: 'Stage 2-4, 2-3', note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1)' },
+    { type: 'Skill', skill: 'Ascent of Malice', note: 'at max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Liberation' },
+    { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows' },
+    { type: 'Basic ATK', skill: 'Seraphic Execution Stage 2-5, 3-5 (swap on final Stage 5)', note: 'Demon Hypostasis combo — Dodge Counter can substitute for Stage 3/4 for higher DMG and Forte if the enemy attacks' },
     { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry put
@@ -3348,6 +3360,24 @@ const SKILL_ICONS = {
     'Illuminated Manifestation': 'https://i.ibb.co/TqYmWyr5/skill-illuminated-manifestation.webp', // Intro Skill
     'From Gloom to Gleam': 'https://i.ibb.co/V0xjgmx3/skill-from-gloom-to-gleam.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Galbrena, re-hosted on ibb.co (2026-08-17).
+  'Galbrena': {
+    "Slayer's Trigger": 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Slayer's_Trigger.png resolves to this same asset)
+    'Stage 1-4': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Seraphic Execution': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Demon Hypostasis Basic ATK replacement, same generic weapon icon
+    'Volley of Death': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Flamewing Verdict': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Edge Transcended': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Encroach': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Ascent of Malice': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Ravage': 'https://i.ibb.co/spB7R1n5/skill-edge-transcended.webp',
+    'Hellfire Absolution': 'https://i.ibb.co/60YMcsnV/skill-hellfire-absolution.webp', // Resonance Liberation
+    'Beyond Threshold': 'https://i.ibb.co/LDJBGZSx/skill-beyond-threshold.webp', // Forte Circuit
+    'Oathbound Hunt': 'https://i.ibb.co/hFY1T091/skill-oathbound-hunt.webp', // Inherent Skill
+    'Sin Feaster': 'https://i.ibb.co/cckG70y9/skill-sin-feaster.webp', // Inherent Skill
+    'Hellflare Overload': 'https://i.ibb.co/fYZhFW4t/skill-hellflare-overload.webp', // Intro Skill
+    'Ashen Pursuit': 'https://i.ibb.co/ch99n99W/skill-ashen-pursuit.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3622,6 +3652,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/604PG1hL/node-s5.webp',
     s6: 'https://i.ibb.co/67Frp4bF/node-s6.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Galbrena, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Galbrena': {
+    s1: 'https://i.ibb.co/jNH3nSM/node-s1.webp',
+    s2: 'https://i.ibb.co/2VQC6y5/node-s2.webp',
+    s3: 'https://i.ibb.co/Hpf7ZPdk/node-s3.webp',
+    s4: 'https://i.ibb.co/q3p3wPfG/node-s4.webp',
+    s5: 'https://i.ibb.co/0VRF3CBL/node-s5.webp',
+    s6: 'https://i.ibb.co/gb17vj3m/node-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3654,6 +3694,7 @@ const CHAIN_NODE_NAMES = {
   'Phrolova': { s1: "A Key to Netherworld's Secrets", s2: 'A Rope Tied to a Life Beyond', s3: 'A Dagger to Cut Clean Obsessions', s4: 'A Torch Illuminating the Path', s5: "A Forked Road in Fate's Heartland", s6: 'A Night to Depart From Eternal Rest' },
   'Augusta': { s1: 'Stained in Scorched Earth', s2: 'Cleansed in Crimson War', s3: 'Forged in Rot and Ruin', s4: 'Ascent in Sun and Glory', s5: 'Unshaken in Wrathful Tides', s6: 'Engraved in Radiant Light' },
   'Iuno': { s1: 'Wax or Wane, All Gild the Bough', s2: 'Day or Night, Let This Be Eternal', s3: 'I Drink Deep of Their Forgetting', s4: 'Rainy Season Dwell in My Eyes', s5: 'A Thousand Futile Glimpses', s6: 'I Am the Constant in the Chaos' },
+  'Galbrena': { s1: 'Heart of Defiance Ever Ablaze', s2: 'Hellbound Dive of Fire and Abyss', s3: "Hunter's Blood Oath Rekindled", s4: 'Carry Forth This Fading Spark', s5: 'Though Light Fades, Torment Consumes', s6: 'I Remain Who I am, Eternal My Flame' },
 };
 
 // Release order for sorting (based on first banner appearance)
