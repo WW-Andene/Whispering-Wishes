@@ -213,13 +213,22 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Emerald of Genesis', 'Emerald Sentence'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
     teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and Prydwen's live build page
+  // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
+  // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
+  // teams all re-confirmed accurate. weaponAlts corrected against Prydwen's calc %: alt5 led with Cosmic
+  // Ripples (84.6%, her best F2P/permanent pick, not actually close to top-tier for her) and 'Freeze
+  // Frame', absent from Prydwen's ranked list entirely — replaced with the two true best non-signature
+  // 5★s, Whispers of Sirens (95.8%) and Lethean Elegy (94.5%). alt4 had 'Waltz in Masquerade', also
+  // absent from Prydwen's list — replaced with Radiant Dawn (78.1%, confirmed #2 4★); Augment (81.1%,
+  // confirmed #1 4★) kept.
   'Zhezhi': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Shy, soft-spoken painter of the Jinzhou art scene whose ink creations spring to life and fight at her command — her bashfulness masks a fierce devotion to her craft and to those she calls friends. Glacio sub-DPS/support who paints Phantasmic Imprints during her Basic Attack and Forte combo, consumes them to unleash off-field Coordinated Attack Glacio nukes via Resonance Liberation (Living Canvas), and buffs the incoming Resonator\'s Glacio DMG and Skill DMG through her Outro Carve and Draw.',
+    desc: 'Enchanted Brush — shy, soft-spoken painter of the Jinzhou art scene whose ink creations spring to life and fight at her command; her bashfulness masks a fierce devotion to her craft and to those she calls friends. Glacio sub-DPS/support who paints Phantasmic Imprints during her Basic Attack and Forte combo, consumes them to unleash off-field Coordinated Attack Glacio nukes via Resonance Liberation (Living Canvas), and buffs the incoming Resonator\'s Glacio DMG and Skill DMG through her Outro Carve and Draw.',
     skills: ['Dimming Brush', 'Manifestation', 'Ink and Wash', 'Living Canvas'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
-    weaponAlts: { alt5: ['Cosmic Ripples', 'Freeze Frame'], alt4: ['Augment', 'Waltz in Masquerade'], alt3: ['Rectifier of Night'] },
+    weaponAlts: { alt5: ['Whispers of Sirens', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
     teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
   'Xiangli Yao': { rarity: 5, element: 'Electro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Brilliant, unassuming researcher of the Huaxu Academy who built his own combat mech, Thinker, to compensate for his fragile body — a quiet genius who would rather let his logic speak than argue his case. On-field Electro Main DPS who builds Performance Capacity through his Basic Attack/Skill/Dodge Counter combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain enhanced attacks, and unleashes the burst Law of Reigns nuke once Intuition\'s Capacity is filled — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s next hits.',
@@ -966,6 +975,9 @@ const CHARACTER_DATA = {
   // organization uses affiliation2 (Jinzhou City Hall, where she serves as Counselor to Jinhsi) over the
   // generic Jinzhou tie and her former, now-inactive affiliation3 (Mingting).
   ['Changli', 'Eternal Blaze', 'Huanglong', 'Jinzhou City Hall', { en: 'Ashleigh Haddad', cn: 'Mufei', jp: 'Chiwa Saitō', kr: 'Shin Nari' }],
+  // organization: fandom's infobox has only a single affiliation field for her (Jinzhou) — no specific
+  // sub-group like the Jiyan/Changli entries above, so the generic nation-tied org is used as-is.
+  ['Zhezhi', 'Enchanted Brush', 'Huanglong', 'Jinzhou', { en: 'Shin-Fei Chen', cn: 'Miao Zi', jp: 'Yui Makino', kr: 'Kim Ha-ru' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2152,6 +2164,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Heavy ATK: Flaming Sacrifice', note: 'at 4 Enflamement stacks, consumes them all; takes 40% less DMG while casting — 2 casts per rotation is the goal' },
     { type: 'Outro', skill: 'Strategy of Duality', note: 'grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s — her shortest Outro window in the game alongside Lumi' },
   ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Zhezhi (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). Goal: fill the 3-segment Afflatus Forte
+  // gauge, convert it into Phantasmic Imprints via Skill + Forte Heavy, then teleport to each one with
+  // repeated Stroke of Genius/Creation's Zenith casts before Outro.
+  'Zhezhi': [
+    { type: 'Intro', skill: 'Radiant Ruin', note: 'fills roughly 1.5 of her 3 Afflatus segments' },
+    { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'full combo fills the remaining Afflatus' },
+    { type: 'Skill', skill: 'Manifestation', note: 'at 60+ Afflatus, consumes 60 to summon Phantasmic Imprint - Left and Right' },
+    { type: 'Forte', skill: 'Heavy ATK: Conjuration', note: 'at 30+ Afflatus, consumes 30 to summon Phantasmic Imprint - Middle' },
+    { type: 'Skill', skill: 'Stroke of Genius', note: 'teleports to and consumes a Phantasmic Imprint for an off-field-style Basic ATK-type hit; repeat for each Imprint placed, escalating into Creation\'s Zenith at 2 Painter\'s Delight stacks' },
+    { type: 'Liberation', skill: 'Living Canvas', note: 'summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s — can be cast at any point in the rotation' },
+    { type: 'Outro', skill: 'Carve and Draw', note: 'grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2706,6 +2731,18 @@ const SKILL_ICONS = {
     'Obedience of Rules': 'https://i.ibb.co/4w1N13zp/Skill-Obedience-of-Rules.webp', // Intro Skill
     'Strategy of Duality': 'https://i.ibb.co/sdkt9Yhd/Skill-Strategy-of-Duality.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Zhezhi, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Dimming Brush
+  // (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for Encore/Yinlin/Verina.
+  'Zhezhi': {
+    'Dimming Brush': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Manifestation': 'https://i.ibb.co/DDNMwsCy/Skill-Manifestation.webp',
+    'Ink and Wash': 'https://i.ibb.co/8DYg2f8z/Skill-Ink-and-Wash.webp',
+    'Living Canvas': 'https://i.ibb.co/Vc7cVKF1/Skill-Living-Canvas.webp',
+    'Radiant Ruin': 'https://i.ibb.co/LX3NLrxP/Skill-Radiant-Ruin.webp', // Intro Skill
+    'Carve and Draw': 'https://i.ibb.co/V0s9WpHG/Skill-Carve-and-Draw.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2806,6 +2843,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/39jsTQRB/Sequence-Node-Sacrificed-Gains.webp',
     s6: 'https://i.ibb.co/wZJn2XcV/Sequence-Node-Realized-Plans.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Zhezhi, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Zhezhi/Combat
+  // (fetched by section index), all 6 URLs verified 200/live before upload.
+  'Zhezhi': {
+    s1: 'https://i.ibb.co/pB0KfwRY/Sequence-Node-Brushworks-Finish.webp',
+    s2: 'https://i.ibb.co/PGNt7fSK/Sequence-Node-Vivid-Strokes.webp',
+    s3: 'https://i.ibb.co/b5zxp1S9/Sequence-Node-Reflections-Grace.webp',
+    s4: 'https://i.ibb.co/jZbWXLGX/Sequence-Node-Hues-Spectrum.webp',
+    s5: 'https://i.ibb.co/8gCVrMWV/Sequence-Node-Compositions-Clue.webp',
+    s6: 'https://i.ibb.co/MDqdsTLR/Sequence-Node-Infinite-Legacy.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2822,6 +2870,7 @@ const CHAIN_NODE_NAMES = {
   'Verina': { s1: 'Moment of Emergence', s2: 'Sprouting Reflections', s3: 'The Choice to Flourish', s4: 'Blossoming Embrace', s5: 'Miraculous Blooms', s6: 'Joyous Harvest' },
   'Jinhsi': { s1: 'Abyssal Ascension', s2: 'Chronofrost Repose', s3: 'Celestial Incarnate', s4: 'Benevolent Grace', s5: 'Frostfire Illumination', s6: 'Thawing Triumph' },
   'Changli': { s1: 'Hidden Thoughts', s2: 'Pursuit of Desires', s3: 'Learned Secrets', s4: 'Polished Words', s5: 'Sacrificed Gains', s6: 'Realized Plans' },
+  'Zhezhi': { s1: "Brushwork's Finish", s2: 'Vivid Strokes', s3: "Reflection's Grace", s4: "Hue's Spectrum", s5: "Composition's Clue", s6: 'Infinite Legacy' },
 };
 
 // Release order for sorting (based on first banner appearance)
