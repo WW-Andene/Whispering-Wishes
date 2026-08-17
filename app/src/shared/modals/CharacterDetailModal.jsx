@@ -322,6 +322,27 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           );
           })()}
 
+          {/* Alternative Weapons — signature is data.bestWeapon above; this lists rarity-tiered fallbacks
+              when a character has weaponAlts (5★/4★/3★, each with at least one option). */}
+          {data.weaponAlts && (
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Alternative Weapons</div>
+            <div className="space-y-2">
+              {[['5★', data.weaponAlts.alt5], ['4★', data.weaponAlts.alt4], ['3★', data.weaponAlts.alt3]].filter(([, list]) => list?.length).map(([tier, list]) => (
+                <div key={tier} className="flex items-start gap-2">
+                  <span className="kuro-badge kuro-badge-neutral shrink-0 mt-0.5">{tier}</span>
+                  <div className="flex flex-wrap gap-1">
+                    {list.map((w, i) => {
+                      const owned = ownsWeapon(w);
+                      return <span key={i} className={`kuro-badge ${owned ? 'kuro-badge-yellow' : 'kuro-badge-gray'}`}>{w}{!owned && ' ✗'}</span>;
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          )}
+
           {/* Best Echoes - enhanced */}
           {data.bestEchoes?.length > 0 && (
           <div className="kuro-detail-box">
