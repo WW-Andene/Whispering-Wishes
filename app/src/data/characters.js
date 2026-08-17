@@ -96,24 +96,34 @@ const CHARACTER_DATA = {
   // desc corrected against wutheringwaves.fandom.com's Jianxin infobox (2026-08-17 audit): the wiki's
   // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
   // shown on ww.nanoka.cc's character page for her — the two sources disagree here, fandom's live
-  // infobox is treated as authoritative). Skills/base stats/multipliers/buffs/ascension mats/weapon
-  // ranking all independently re-verified against ww.nanoka.cc character/1405 this same audit and were
-  // already accurate — no changes needed there.
+  // infobox is treated as authoritative). Skills/base stats/multipliers/buffs/ascension mats all
+  // independently re-verified against ww.nanoka.cc character/1405 this same audit and were already
+  // accurate. weaponAlts/teams were corrected against Prydwen's live build/team page (see comments
+  // by those fields below) once it became reachable via a Chrome UA + referer + jsRender fetch.
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
     desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    // bestWeapon confirmed as her actual #1 recommended weapon per ww.nanoka.cc's Recommended Weapons
-    // list (Abyss Surges > Marcato > Stonard) — unlike Encore/Calcharo, this isn't just "best F2P option
-    // standing in for a signature", nanoka ranks it #1 outright and she has no dedicated signature weapon
-    // (no Gauntlets weapon's infobox lists Jianxin as its `resonator`). weaponAlts/teams left unchanged —
-    // Prydwen's build/team-comp pages were unreachable this audit (403/blank JS-render), so these
-    // couldn't be independently re-verified against that source; nanoka's list stops at the top 3
-    // weapons overall (matching alt4 exactly) and doesn't cover 5★/3★ alts or echoes/teams.
+    // bestWeapon kept as Abyss Surges (her best permanently-available option, ranked "100%" baseline
+    // on Prydwen's own calc scale) even though Verity's Handle (114.70%) and Moongazer's Sigil (108.30%)
+    // both out-damage it per Prydwen's live build calcs (prydwen.gg/wuthering-waves/characters/jianxin,
+    // re-fetched 2026-08-17 via Chrome UA + google.com referer + jsRender to get past the Cloudflare
+    // challenge) — same F2P-first convention already used for Encore/Calcharo. weaponAlts corrected
+    // against that same page: alt4 was wrong (Marcato is her worst-performing 4★ at 71.40%, likely
+    // copy/paste from another character) — replaced with Aether Strike (91.20%) and Celestial Spiral
+    // (86.50%), the two actually-best 4★ alternatives. alt3 replaced 'Gauntlets of Night' (not even
+    // mentioned on Prydwen's page) with Originite: Type IV, which Prydwen explicitly calls out as THE
+    // 3★ pick for her low-investment ToA support build (enables the 5pc Rejuvenating Glow set).
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
-    weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Marcato', 'Stonard'], alt3: ['Gauntlets of Night'] },
-    teams: ['Jianxin + Jiyan + Verina', 'Jianxin + Xiangli Yao + Shorekeeper'] },
+    weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Originite: Type IV'] },
+    // teams corrected against the same Prydwen page: 'Jianxin + Jiyan + Verina' had no basis in Prydwen's
+    // synergy list (Jiyan isn't mentioned at all for her) — replaced with 'Jianxin + Iuno + Shorekeeper',
+    // explicitly Prydwen's "Best Team" (Iuno is called her best DPS to buff, taking 38% Lib DMG Amp from
+    // her Outro; the Iuno+Shorekeeper / Xiangli Yao+Shorekeeper pairing is also cited directly in
+    // Prydwen's own endgame-stats ER estimate). Xiangli Yao + Shorekeeper kept, confirmed as her other
+    // named example team.
+    teams: ['Jianxin + Iuno + Shorekeeper', 'Jianxin + Xiangli Yao + Shorekeeper'] },
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion\'s Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.',
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
