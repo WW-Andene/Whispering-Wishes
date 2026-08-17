@@ -10,7 +10,7 @@ import { WEAPON_DATA } from '../../data/weapons.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
-import { getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
@@ -212,7 +212,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div>
                 <div className="text-sm text-gray-400 mb-1">Stat Scaling</div>
                 <div className="flex flex-wrap gap-1">
-                  <span className="kuro-badge kuro-badge-violet">{data.statScaling} Scaling</span>
+                  <span className="kuro-badge kuro-badge-violet inline-flex items-center gap-1">
+                    {getStatIcon(data.statScaling) && <img src={getStatIcon(data.statScaling)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                    {data.statScaling} Scaling
+                  </span>
                 </div>
               </div>
             )}
@@ -231,19 +234,31 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div className="kuro-section-label mb-2">Base Stats (Lv.90)</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">HP</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('HP') && <img src={getStatIcon('HP')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    HP
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{(data.baseHp || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">ATK</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    ATK
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{data.baseAtk}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">DEF</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('DEF') && <img src={getStatIcon('DEF')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    DEF
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{(data.baseDef || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">Energy</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('Energy Regen') && <img src={getStatIcon('Energy Regen')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    Energy
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{data.maxEnergy || '?'}</div>
                 </div>
               </div>

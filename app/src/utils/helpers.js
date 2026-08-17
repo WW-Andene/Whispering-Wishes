@@ -133,6 +133,23 @@ const WEAPON_TYPE_ICONS = {
   Rectifier:  'https://i.ibb.co/5gds1gDg/Weapon-Type-Rectifier.webp',
 };
 const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
+// Official in-game stat icons (T_Iconproperty* UI assets for ATK/HP/DEF/Energy Regen; Crit Rate/Crit
+// DMG from the wutheringwaves.fandom.com wiki, since nanoka's Crit Rate filename couldn't be found).
+// Re-hosted on ibb.co. Keys are the base stat name — '%' suffixes (e.g. weapon substat 'ATK%') are
+// stripped by getStatIcon() before lookup.
+const STAT_ICONS = {
+  ATK:          'https://i.ibb.co/XrcVGXTx/Stat-ATK.webp',
+  HP:           'https://i.ibb.co/nsrx0Ckg/Stat-HP.webp',
+  DEF:          'https://i.ibb.co/xtS2fNjc/Stat-DEF.webp',
+  'Energy Regen': 'https://i.ibb.co/rRJTgZKr/Stat-Energy-Regen.webp',
+  'Crit Rate':  'https://i.ibb.co/yBdK77pW/Stat-Crit-Rate.webp',
+  'Crit DMG':   'https://i.ibb.co/tT1t8HTN/Stat-Crit-DMG.webp',
+};
+const getStatIcon = (stat) => {
+  if (!stat) return null;
+  const key = stat.trim().replace(/%$/, '');
+  return STAT_ICONS[key] || null;
+};
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -209,4 +226,6 @@ export {
   getBuffElementColor,
   WEAPON_TYPE_ICONS,
   getWeaponTypeIcon,
+  STAT_ICONS,
+  getStatIcon,
 };
