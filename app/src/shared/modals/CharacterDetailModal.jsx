@@ -11,7 +11,7 @@ import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
@@ -191,6 +191,25 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   </>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Combat Role tags — Main Damage Dealer / Heavy Attack DMG / Traction / DMG Amplification /
+              Tune Rupture Response / etc. Distinct from the single data.role badge (Main DPS/Healer/...)
+              shown elsewhere; this mirrors the specific mechanical tag row nanoka/fandom both show. */}
+          {data.combatRoles?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {data.combatRoles.map((tag) => {
+                const icon = getCombatRoleIcon(tag);
+                return (
+                  <div key={tag} className="flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-lg bg-white/5 border border-white/10">
+                    <div className="w-4 h-4 rounded-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {icon ? <img src={icon} alt="" className="w-full h-full object-contain" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
+                    </div>
+                    <span className="text-xs text-gray-300 font-medium whitespace-nowrap">{tag}</span>
+                  </div>
+                );
+              })}
             </div>
           )}
 

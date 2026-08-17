@@ -1238,6 +1238,62 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
 
+// [SECTION:COMBAT_ROLE_DATA] — Per-character Combat Role tag badges (Main Damage Dealer, Heavy Attack
+// DMG, Traction, DMG Amplification, Tune Rupture Response, etc.) — a fixed, game-wide icon set of ~38
+// tags (see helpers.js's COMBAT_ROLE_ICONS) where each character just carries a subset. Distinct from
+// the single `role` field elsewhere (Main DPS/Sub DPS/Healer) — these are the specific mechanical tags
+// from the character's own infobox `role` field (order preserved as listed there).
+// Source: wutheringwaves.fandom.com infobox `role` field, pulled via the MediaWiki API's raw wikitext
+// (prop=revisions) — bypasses the site's Cloudflare challenge entirely. Only characters from Jiyan
+// through Aemeath (RELEASE_ORDER's 1.0–3.1 span) have been audited so far.
+[
+  ['Jiyan', ['Main Damage Dealer', 'Heavy Attack Damage', 'Traction']],
+  ['Yinlin', ['Concerto Efficiency', 'Resonance Skill Damage', 'Coordinated Attack', 'Electro DMG Amplification', 'Resonance Liberation DMG Amplification']],
+  ['Calcharo', ['Main Damage Dealer', 'Resonance Liberation Damage']],
+  ['Encore', ['Main Damage Dealer', 'Basic Attack Damage']],
+  ['Jianxin', ['Support and Healer', 'Heavy Attack Damage', 'Traction', 'Resonance Liberation DMG Amplification']],
+  ['Lingyang', ['Main Damage Dealer']],
+  ['Verina', ['Support and Healer', 'Coordinated Attack', 'DMG Amplification']],
+  ['Aalto', ['Concerto Efficiency', 'Aero DMG Amplification']],
+  ['Baizhi', ['Support and Healer', 'Coordinated Attack', 'DMG Amplification']],
+  ['Chixia', ['Main Damage Dealer']],
+  ['Danjin', ['Concerto Efficiency', 'Havoc DMG Amplification']],
+  ['Yangyang', ['Concerto Efficiency', 'Traction', 'Resonance Liberation Regeneration']],
+  ['Sanhua', ['Concerto Efficiency', 'Basic Attack DMG Amplification']],
+  ['Taoqi', ['Support and Healer', 'Resonance Liberation Damage', 'Resonance Skill DMG Amplification']],
+  ['Yuanwu', ['Concerto Efficiency', 'Coordinated Attack', 'Interruption Resistance Boost', 'Vibration Strength Reduction']],
+  ['Mortefi', ['Concerto Efficiency', 'Resonance Liberation Damage', 'Coordinated Attack', 'Heavy Attack DMG Amplification']],
+  ['Jinhsi', ['Main Damage Dealer', 'Resonance Skill Damage']],
+  ['Changli', ['Main Damage Dealer', 'Resonance Skill Damage', 'Fusion DMG Amplification', 'Resonance Liberation DMG Amplification']],
+  ['Youhu', ['Support and Healer', 'Resonance Skill Damage', 'Vibration Strength Reduction', 'Coordinated Attack DMG Amplification']],
+  ['Zhezhi', ['Concerto Efficiency', 'Basic Attack Damage', 'Coordinated Attack', 'Glacio DMG Amplification', 'Resonance Skill DMG Amplification']],
+  ['Xiangli Yao', ['Main Damage Dealer', 'Resonance Liberation Damage']],
+  ['Shorekeeper', ['Support and Healer', 'Traction', 'DMG Amplification']],
+  ['Lumi', ['Main Damage Dealer', 'Basic Attack Damage', 'Resonance Skill DMG Amplification']],
+  ['Camellya', ['Main Damage Dealer', 'Concerto Efficiency', 'Basic Attack Damage']],
+  ['Carlotta', ['Main Damage Dealer', 'Resonance Skill Damage']],
+  ['Roccia', ['Concerto Efficiency', 'Heavy Attack Damage', 'Traction', 'Havoc DMG Amplification', 'Basic Attack DMG Amplification']],
+  ['Phoebe', ['Main Damage Dealer', 'Concerto Efficiency', 'Spectro Frazzle']],
+  ['Brant', ['Support and Healer', 'Basic Attack Damage', 'Fusion DMG Amplification', 'Resonance Skill DMG Amplification']],
+  ['Cantarella', ['Support and Healer', 'Concerto Efficiency', 'Basic Attack Damage', 'Coordinated Attack', 'Havoc DMG Amplification', 'Resonance Skill DMG Amplification']],
+  ['Zani', ['Main Damage Dealer', 'Heavy Attack Damage', 'Spectro DMG Amplification', 'Spectro Frazzle']],
+  ['Ciaccona', ['Concerto Efficiency', 'Traction', 'Aero Erosion']],
+  ['Cartethyia', ['Main Damage Dealer', 'Aero Erosion', 'Aero DMG Amplification', 'Traction']],
+  ['Lupa', ['Concerto Efficiency', 'Resonance Liberation Damage', 'Fusion DMG Amplification', 'Basic Attack DMG Amplification']],
+  ['Phrolova', ['Main Damage Dealer', 'Resonance Skill Damage', 'Havoc DMG Amplification', 'Heavy Attack DMG Amplification']],
+  ['Augusta', ['Main Damage Dealer', 'Heavy Attack Damage', 'DMG Amplification']],
+  ['Iuno', ['Support and Healer', 'Concerto Efficiency', 'Resonance Liberation Damage', 'Heavy Attack DMG Amplification']],
+  ['Galbrena', ['Main Damage Dealer', 'Heavy Attack Damage']],
+  ['Qiuyuan', ['Concerto Efficiency', 'Heavy Attack Damage', 'Echo Skill DMG Amplification']],
+  ['Chisa', ['Support and Healer', 'Resonance Liberation Damage', 'Havoc Bane']],
+  ['Buling', ['Support and Healer', 'DMG Amplification', 'Electro Flare']],
+  ['Lynae', ['Concerto Efficiency', 'Basic Attack Damage', 'DMG Amplification', 'Resonance Liberation DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Tune Break Boost']],
+  ['Mornye', ['Support and Healer', 'DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Off-Tune Buildup Efficiency']],
+  ['Aemeath', ['Main Damage Dealer', 'Resonance Liberation Damage', 'Tune Rupture Response', 'Fusion Burst', 'DMG Amplification']],
+].forEach(([name, combatRoles]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { combatRoles });
+});
+
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
 // Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
 // Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
