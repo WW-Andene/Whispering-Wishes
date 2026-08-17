@@ -853,7 +853,7 @@ const CHARACTER_DATA = {
 // all that's been sourced for a character) or { en, cn, jp, kr } for a full multi-language credit.
 // Only characters that have been audited so far are populated — this is not yet a complete roster table.
 [
-  ['Jiyan', 'Windborne Rider', 'Midnight Rangers', 'Alex Jordan'],
+  ['Jiyan', 'Windborne Rider', 'Midnight Rangers', { en: 'Alex Jordan', cn: 'Sun Ye', jp: 'Ono Yuki', kr: 'Nam Doh-hyeong' }],
   ['Yinlin', 'Lightning of Execution', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
 ].forEach(([name, title, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, organization, voiceActor });
