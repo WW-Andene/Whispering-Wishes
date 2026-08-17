@@ -17,6 +17,13 @@ import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
+// Tags from data.combatRoles that duplicate other fields already shown in the Combat Profile box, so
+// they're hidden from the "Combat Role" badge row rather than repeating the same info twice.
+const COMBAT_ROLE_TAGS_HIDDEN = new Set([
+  'Main Damage Dealer', 'Support and Healer', // duplicate the data.role badge (Main DPS/Sub DPS/Healer)
+  'Basic Attack Damage', 'Heavy Attack Damage', 'Resonance Skill Damage', 'Resonance Liberation Damage', 'Echo Skill Damage', // duplicate Damage Focus
+]);
+
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
   Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50' },
@@ -235,25 +242,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
-            {/* Combat Role tags — Main Damage Dealer / Heavy Attack DMG / Traction / DMG Amplification /
-                Tune Rupture Response / etc., the specific mechanical tag row nanoka/fandom both show.
-                Distinct from the single data.role badge above (Main DPS/Sub DPS/Healer/...). */}
-            {data.combatRoles?.length > 0 && (
-              <div>
-                <div className="text-sm text-gray-400 mb-1">Combat Role</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {data.combatRoles.map((tag) => {
-                    const icon = getCombatRoleIcon(tag);
-                    return (
-                      <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
-                        {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
-                        {tag}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
             {data.dmgFocus?.length > 0 && (
               <div>
                 <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
@@ -262,6 +250,32 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 </div>
               </div>
             )}
+            {/* Combat Role tags — DMG Amplification, Traction, Tune Rupture Response, Concerto Efficiency,
+                and similar mechanical/support tags from the character's infobox. Two categories from that
+                same raw tag list are deliberately excluded as redundant with fields already shown in this
+                box: "Main Damage Dealer"/"Support and Healer" duplicate the data.role badge above (Main
+                DPS/Sub DPS/Healer/...), and the raw damage-type tags ("Basic/Heavy Attack Damage",
+                "Resonance Skill/Liberation Damage", "Echo Skill Damage") duplicate Damage Focus above,
+                which already states which of the character's own actions deal damage. */}
+            {(() => {
+              const roleTags = (data.combatRoles || []).filter(tag => !COMBAT_ROLE_TAGS_HIDDEN.has(tag));
+              return roleTags.length > 0 && (
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Combat Role</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {roleTags.map((tag) => {
+                      const icon = getCombatRoleIcon(tag);
+                      return (
+                        <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                          {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
             {data.statScaling && (
               <div>
                 <div className="text-sm text-gray-400 mb-1">Stat Scaling</div>
