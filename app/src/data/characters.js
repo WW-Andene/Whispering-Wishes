@@ -7,13 +7,17 @@
 
 const CHARACTER_DATA = {
   // 5★ Resonators
-  // NOTE: Electro attunement added to `elements` (confirmed via nanoka.cc + prydwen.gg, v3.4) but the `skills`/
-  // combat fields below still only describe the Spectro attunement — Rover's data model is one entry per
-  // Rover, not one per attunement, so full per-attunement kit data (Electro's Thunderclap/Overshock/Apex
-  // Resonance kit) isn't represented here. Tier confirmed separately: Electro is T4 ToA / T4 WW (prydwen.gg:
-  // "basically a useless character right now," awaiting a future Electro Flare DPS to pair with).
+  // NOTE: Rover is one ownable roster slot (single free starter, base stats/ascension/resonance chain shared)
+  // but the in-game element/kit is a per-attunement choice — Spectro, Havoc, Aero, and Electro each have a
+  // fully distinct Resonance Skill, Liberation, Forte Circuit, Intro, and Outro (confirmed via ww.nanoka.cc
+  // character pages 1502/1604/1406/1309, cross-checked v3.6, 2026-08-16). The top-level fields below describe
+  // the Spectro attunement (the meta support/debuffer build — Frazzle applier paired with Verina/Shorekeeper,
+  // T0.5 ToA / T1.5 WW per prydwen.gg). Full per-attunement combat profile/buffs/debuffs/weapons/echoes/teams/
+  // skills/tier for all four attunements — same standard of detail as every other character — live in
+  // ROVER_ATTUNEMENTS below (see [SECTION:ROVER_ATTUNEMENTS]). Electro is the weakest attunement: T4 ToA / T4 WW
+  // (prydwen.gg: "basically a useless character right now," awaiting a future Electro Flare DPS to pair with).
   'Rover': { rarity: 5, element: 'Spectro', elements: ['Spectro', 'Havoc', 'Aero', 'Electro'], weapon: 'Sword', role: 'Sub DPS',
-    desc: 'A wanderer who awoke with no memory on the shores of Solaris. Flexible sub-DPS who switches between Spectro, Havoc, and Aero attunements, each with distinct Resonance Skills and Liberations.',
+    desc: 'A wanderer who awoke with no memory on the shores of Solaris. Flexible resonator who switches between Spectro (Frazzle debuff support), Havoc (on-field main DPS), Aero (healer/support), and Electro (parry-stance hybrid) attunements, each with distinct Resonance Skills, Liberations, and Forte Circuits.',
     skills: ['Vibration Manifestation', 'Resonating Slashes', 'Echoing Orchestra', 'World in a Grain of Sand'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
@@ -1264,11 +1268,11 @@ const CHAR_BUFF_TABLE = {
   },
   // Jinhsi: defined earlier in Main DPS section
   'Rover': {
-    outroBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Spectro RES Shred' }],
+    outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
-    debuffs: [{ stat: 'frazzle', value: 10, duration: 15, condition: '10 stacks via Skill + Liberation. Shimmer prevents decay.' }],
-    note: 'Spectro Frazzle applier. Outro: Spectro RES -10% (S6). Shimmer prevents stack decay.',
+    selfBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Resonating Slashes/Spin hit → Spectro RES Shred -10% (20s). Resonance Chain 6, not innate.' }],
+    debuffs: [{ stat: 'frazzle', value: 8, duration: 9, condition: 'Forte Circuit Resonating Spin→Echoes applies 2 stacks (+Shimmer); Liberation Echoing Orchestra applies 6 stacks. Shimmer (9s) prevents stacks decaying.' }],
+    note: 'Spectro Frazzle applier/quick-swap support. Forte: Resonance Skill at 50+ Diminutive Sound casts Resonating Spin (2 Frazzle stacks + Shimmer, which stops decay), followed by Basic ATK Resonating Echoes. Liberation Echoing Orchestra applies 6 more Frazzle stacks. S6 (5 copies): Skill hits Spectro RES Shred -10%/20s.',
   },
 };
 
@@ -1651,12 +1655,15 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Applause, Please!', '+20% Havoc DMG + 25% Basic ATK DMG Amp (14s)'],
   ],
   'Rover': [
-    ['Basic ATK', 'Stage 1-4', '19.7% → 25.1% → 30% → 43.2%'],
-    ['Heavy ATK', 'Standard', '44.8%'],
-    ['Skill', 'Resonating Spin', '43.6%×2'],
-    ['Liberation', 'Echoing Orchestration', '146.1%'],
-    ['Intro', 'Wavesplitter', '50%×2'],
-    ['Outro', 'Continuum', '+20% Spectro DMG Amp (14s)'],
+    ['Basic ATK', 'Vibration Manifestation Stage 1-4', '59.15% → 76.05% → 15.21%×5 → 130.13%', 'Standard 4-stage combo; each hit builds Diminutive Sound toward Forte.'],
+    ['Heavy ATK', 'Standard / Resonance / Aftertune', '19.27%×5 → 76.05% → 126.75%', 'Charged Heavy ATK, into timed-press Resonance follow-up, into Aftertune finisher.'],
+    ['Mid-air', 'Plunging Attack', '104.78%'],
+    ['Dodge Counter', 'Standard', '195.34%'],
+    ['Skill', 'Resonating Slashes', '236.19%', '6s cooldown; builds Diminutive Sound toward the Forte combo.'],
+    ['Forte', 'Resonating Spin → Resonating Echoes', '129.08%×2+39.77% → 79.53%+159.05%', 'At 50+ Diminutive Sound, Skill casts Resonating Spin (2 Spectro Frazzle stacks + Shimmer), Basic ATK follow-up casts Resonating Echoes.'],
+    ['Liberation', 'Echoing Orchestra', '198.81%+675.96%', 'Delayed blast; applies 6 stacks of Spectro Frazzle.'],
+    ['Intro', 'Waveshock', '168.99%'],
+    ['Outro', 'Instant', 'Stasis field (CC only, no listed DMG in kit text) — some sources credit +20% Spectro DMG Amp (14s) to the swap-out window'],
   ],
   'Shorekeeper': [
     ['Basic ATK', 'Stage 1-4', '16% → 24% → 35.2% → 36.6%'],
@@ -2178,7 +2185,8 @@ const RESONANCE_CHAIN_DATA = {
   // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
   // 4★ + missing characters
   'Jianxin':      { s1: { atkPct: 8 }, s2: { deepen: 8 }, s3: { defShred: 5 }, s4: { atkPct: 8 }, s5: { totalMult: 10 }, s6: { deepen: 12 } },
-  'Rover':        { s1: { elemDmg: 8 }, s2: { skillDmg: 12 }, s3: { critRate: 8 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 10, deepen: 15 } },
+  // Confirmed via ww.nanoka.cc character/1502 "Resonance Chain" (Spectro attunement; chain is shared account-wide).
+  'Rover':        { s1: { critRate: 15 }, s2: { elemDmg: 20 }, s3: { energyRegen: 20 }, s4: { heal: 20 }, s5: { libDmg: 40 }, s6: { resShred: 10 } },
   'Aalto':        { s1: { elemDmg: 8 }, s2: { totalMult: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
   // Baizhi: mostly healing/utility nodes, minimal DPS contribution
   'Baizhi':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
@@ -2189,6 +2197,83 @@ const RESONANCE_CHAIN_DATA = {
   'Yangyang':     { s1: { atkPct: 5 }, s2: { totalMult: 8 }, s3: { atkPct: 5 }, s4: { totalMult: 8 }, s5: { atkPct: 8 }, s6: { elemDmg: 10 } },
   'Youhu':        { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
   'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
+};
+
+// [SECTION:ROVER_ATTUNEMENTS] — Full per-attunement combat profile for Rover (Spectro/Havoc/Aero/Electro).
+// Rover is one ownable roster slot — base stats, ascension materials, weapon type (Sword), and Resonance
+// Chain (S1-S6, see RESONANCE_CHAIN_DATA['Rover']) are shared across attunements, matching the game itself.
+// Only the Resonance Skill/Liberation/Forte Circuit/Intro/Outro kit (and therefore role, buffs, debuffs,
+// best weapons/echoes/teams, and tier) differ per attunement. This section carries that per-attunement depth
+// to the same standard as every other character's CHARACTER_DATA entry, without splitting Rover's ownable
+// roster slot into four collection entries (which would break wish/collection tracking — see App.jsx's
+// 'Rover (Spectro)' etc. alias map, which intentionally folds all attunement labels back to one 'Rover' key).
+// Source: ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro), v3.6, 2026-08-16.
+// Tier source: prydwen.gg tier list, last updated 01/Aug/2026.
+const ROVER_ATTUNEMENTS = {
+  Spectro: {
+    role: 'Sub DPS / Frazzle Support',
+    tier: { toa: 'T0.5', ww: 'T1.5' },
+    skills: ['Vibration Manifestation (Basic ATK)', 'Resonating Slashes (Skill)', 'World in a Grain of Sand (Forte: Resonating Spin → Resonating Echoes)', 'Echoing Orchestra (Liberation)', 'Waveshock (Intro)', 'Instant (Outro)'],
+    buffs: ['Spectro RES Shred (S6, chain-gated)'],
+    debuffs: ['Spectro Frazzle'],
+    weapons: {
+      signature: 'Emerald of Genesis',
+      alt5: ['Laser Shearer', "Bloodpact's Pledge"],
+      alt4: ['Lunar Cutter', 'Endless Collapse'],
+      alt3: ['Sword of Night'],
+    },
+    bestEchoes: ['Mourning Aix', 'Eternal Radiance 5pc'],
+    teams: ['Phoebe + Spectro Rover + Verina', 'Zani + Spectro Rover + Verina', 'Spectro Rover + Shorekeeper + Camellya'],
+    note: 'Quick-swap Frazzle applier/debuffer — pairs with Verina or Shorekeeper for Concerto Efficiency. Not a sustained on-field DPS.',
+  },
+  Havoc: {
+    role: 'Main DPS',
+    tier: { toa: 'T2', ww: 'T2.5' },
+    skills: ['Tuneslayer (Basic ATK)', 'Wingblade (Skill)', 'Umbra Eclipse (Forte: Devastation → Dark Surge)', 'Deadening Abyss (Liberation)', 'Instant of Annihilation (Intro)', 'Soundweaver (Outro)'],
+    buffs: ['Havoc RES Shred (S4, chain-gated)', 'Crit Rate +25% in Dark Surge (S6, chain-gated)'],
+    debuffs: ['Havoc RES Shred'],
+    weapons: {
+      signature: 'Emerald of Genesis',
+      alt5: ['Red Spring', 'Azure Oath'],
+      alt4: ['Commando of Conviction', 'Endless Collapse'],
+      alt3: ['Sword of Night'],
+    },
+    bestEchoes: ['Impermanence Heron', 'Havoc Eclipse 5pc'],
+    teams: ['Havoc Rover + Sanhua + Verina', 'Havoc Rover + Yinlin + Shorekeeper'],
+    note: 'Full Heavy ATK-hold combo into Dark Surge enhanced state — a self-sufficient on-field Havoc DPS, unlike the other three (sub-DPS/support) attunements.',
+  },
+  Aero: {
+    role: 'Support / Healer',
+    tier: { toa: 'T1.5', ww: 'T2' },
+    skills: ['Wind Cutter (Basic ATK)', 'Illusion Breaker (Skill: Awakening Gale / Skyfall Severance)', 'Cycle of Wind (Forte: Cloudburst Dance / Unbound Flow)', 'Omega Storm (Liberation)', 'Relentless Squall (Intro)', "Storm's Echo (Outro)"],
+    buffs: ['Team healing (Forte + Liberation)', 'Aero Erosion stack cap +3 (Outro)'],
+    debuffs: ['Aero Erosion (via Skyfall Severance, converts other elements\' negative statuses)'],
+    weapons: {
+      signature: 'Emerald of Genesis',
+      alt5: ["Bloodpact's Pledge", 'Laser Shearer'],
+      alt4: ['Overture', 'Lunar Cutter'],
+      alt3: ['Sword of Voyager'],
+    },
+    bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 4pc / Gusts of Welkin 5pc'],
+    teams: ['Ciaccona + Cartethyia + Aero Rover', 'Aero Rover + Jinhsi + Shorekeeper'],
+    note: 'Healer-support with unique Skyfall Severance mechanic: strips Frazzle/Havoc Bane/Fusion Burst/Glacio Chafe/Electro Flare stacks off the target and converts each into a stack of Aero Erosion.',
+  },
+  Electro: {
+    role: 'Hybrid DPS / Parry Support',
+    tier: { toa: 'T4', ww: 'T4' },
+    skills: ['Deterrence (Basic ATK + Parry Stance)', 'Thunderclap (Skill: Overshock)', "Myriad Omens' Mandate (Forte: Apex Resonance / Thrum of All Sounds)", 'Ultimate Tactics (Liberation)', 'Thunderous Fury (Intro)', 'Rumbling Thunders (Outro)'],
+    buffs: ['Team ATK +10%/20s (Overshock tap)', 'All DMG Amp +25%/14s via Electro Core (Outro, on next negative-status hit)'],
+    debuffs: ['Electro Flare'],
+    weapons: {
+      signature: 'Emerald of Genesis',
+      alt5: ['Blazing Brilliance', 'Laser Shearer'],
+      alt4: ['Lunar Cutter', 'Endless Collapse'],
+      alt3: ['Sword of Night'],
+    },
+    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'],
+    teams: ['Electro Rover + Yinlin + Verina', 'Electro Rover + Calcharo + Shorekeeper'],
+    note: 'Weakest attunement currently ("basically a useless character right now" — prydwen.gg): Parry Stance tank-ish Basic ATK loop into a multi-element (Spectro/Havoc/Aero) Apex Resonance Forte combo, but lacks a strong DPS partner. Kept mainly for the free Outro ATK buff/All DMG Amp utility.',
+  },
 };
 
 // Release order for sorting (based on first banner appearance)
@@ -2253,6 +2338,7 @@ export {
   SKILL_MULTIPLIERS,
   CHARACTER_ROTATIONS,
   RESONANCE_CHAIN_DATA,
+  ROVER_ATTUNEMENTS,
   RELEASE_ORDER,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
