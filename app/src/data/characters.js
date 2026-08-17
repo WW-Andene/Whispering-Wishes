@@ -508,6 +508,13 @@ const CHARACTER_DATA = {
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Core', specialty: 'Rimewisp' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Combustor' },
     bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc'], bestWeapon: 'Spectrum Blaster',
+    // weaponAlts added 2026-08-17 against Prydwen's live build calcs page (30/July/2026 profile update):
+    // Phasic Homogenizer (91.2%) and The Last Dance (85.0%) are the top non-signature 5★ alts (ahead of
+    // Lux & Umbra 82.6%, Woodland Aria 70.3%, Static Mist 81.5% — Static Mist is a QOL pick per Prydwen's
+    // review text but scores lower than these two in raw calcs); Solar Flame (68.8%) and Relativistic Jet
+    // (68.5%) are the best 4★s; Pistols of Night is the 3★ fallback (matches the "<Weapon Type> of Night"
+    // naming convention used for other characters' 3★ slot).
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa'] },
   'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who restores HP via Resonance Skill and Liberation while boosting the team\'s Off-Tune Buildup Rate.',
@@ -1186,6 +1193,13 @@ const CHARACTER_DATA = {
   // wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
   ['Qiuyuan', 'Bambooscape', 'Huanglong', 'Mingting', { en: 'Jeremy Ang Jones', cn: 'Gan Ziqi', jp: 'Miki Shinichiro', kr: 'Kim Min-ju' }],
   ['Chisa', 'Eye of Unravelling', 'Ashinohara', 'Startorch Academy', { en: 'Leader Looi', cn: 'Zhao Lingze', jp: 'Kanemoto Hisako', kr: 'Lee Joo-eun' }],
+  // Cross-checked ww.nanoka.cc character/1509 against fandom's own infobox — both agree exactly:
+  // birthplace New Federation (born in the Lawless Zone there, before stealing "Lynae"'s identity to
+  // attend Startorch Academy), organization Startorch Academy (her current affiliation; the wiki lists
+  // "Lawless Zone" only as a "formerly" tag, not her active org). Birthday: both sources list "Unknown" —
+  // intentionally left out of BIRTHDAY_DATA above rather than guessed, same as the "omitted" convention
+  // documented there. cn/jp VA names/spellings confirmed identical on both sources.
+  ['Lynae', 'Radiant Spectrum', 'New Federation', 'Startorch Academy', { en: 'Elsie Lovelock', cn: 'Zhu Jing', jp: 'Inoue Marina', kr: 'Choi Hyeon-ji' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
