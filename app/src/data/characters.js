@@ -66,9 +66,17 @@ const CHARACTER_DATA = {
     skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
+    // bestEchoes confirmed accurate (Void Thunder/Nightmare: Thundering Mephis is genuinely #1 per
+    // Prydwen calcs). weaponAlts/teams corrected against Prydwen's live build calcs (2026-07-30 profile
+    // update): Wildfire Mark (100.72%) actually edges out even his own bestWeapon and belongs in alt5,
+    // not Verdant Summit (96.69%, still fine but not top-tier). 'Waning Redshift' was a straight data
+    // bug — it's a Rectifier weapon (see weapons.js), not equippable by a Broadblade user at all;
+    // replaced with Aureate Zenith, a real Broadblade 4★ option. Lynae + Mornye is Calcharo's explicit
+    // "Best Team" per Prydwen (his best overall buffer by a wide margin) — added ahead of the Yinlin
+    // pairing, which remains valid as his "most reliable Outro buffing option".
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
-    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
-    teams: ['Calcharo + Yinlin + Verina', 'Calcharo + Yinlin + Shorekeeper'] },
+    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Autumntrace', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
+    teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
     desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem from her Basic/Skill/Intro hits into an empowered, damage-reducing Heavy Attack (Cloudy Frenzy), then unleashes Resonance Liberation Cosmos Rave to swap her whole kit for enhanced Fusion versions for 10s.",
     skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
@@ -855,6 +863,7 @@ const CHARACTER_DATA = {
 [
   ['Jiyan', 'Windborne Rider', 'Midnight Rangers', { en: 'Alex Jordan', cn: 'Sun Ye', jp: 'Ono Yuki', kr: 'Nam Doh-hyeong' }],
   ['Yinlin', 'Lightning of Execution', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
+  ['Calcharo', 'Phantom Hunters', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
 ].forEach(([name, title, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, organization, voiceActor });
 });
@@ -1979,6 +1988,16 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  'Calcharo': [
+    { type: 'Intro', skill: 'Wanted Outlaw' },
+    { type: 'Liberation', skill: 'Phantom Etching', duration: 11, note: 'enters Deathblade Gear — Basic ATK replaced by Hounds Roar' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: 'at 5 Killing Intent; optionally swap-cancel to protect Calcharo' },
+    { type: 'Basic ATK', skill: 'Hounds Roar', note: '5-stage combo, rebuilds Killing Intent toward the next Death Messenger' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '2nd proc' },
+    { type: 'Basic ATK', skill: 'Hounds Roar' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '3rd proc — realistic ceiling without frame-perfect dash-cancels (4 is possible but extremely hard)' },
+    { type: 'Outro', skill: 'Shadowy Raid' },
+  ],
   'Yinlin': [
     { type: 'Intro', skill: 'Raging Storm', note: 'applies Sinner\'s Mark' },
     { type: 'Basic ATK', skill: 'Zapstring\'s Dance', note: 'Stage 4; optionally swap-cancel' },
@@ -2414,6 +2433,17 @@ const RESONANCE_CHAIN_DATA = {
 // Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const SKILL_ICONS = {
+  'Calcharo': {
+    'Gnawing Fangs': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon (same asset already used for Jiyan), also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp',
+    'Extermination Order': 'https://i.ibb.co/7Nyx9Z3b/Skill-Extermination-Order.webp',
+    'Heavy ATK: "Mercy"': 'https://i.ibb.co/kVd4h62C/Skill-Hunting-Mission.webp', // Forte Circuit's own icon, covers both Forte states
+    'Heavy ATK: "Death Messenger"': 'https://i.ibb.co/kVd4h62C/Skill-Hunting-Mission.webp',
+    'Phantom Etching': 'https://i.ibb.co/Xx7Hd3NG/Skill-Phantom-Etching.webp', // must precede 'Hounds Roar' below — the Liberation row's name is "Phantom Etching → Hounds Roar" and should resolve to this icon, not the generic weapon one
+    'Hounds Roar': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Deathblade Gear's Basic ATK replacement, referenced standalone in the rotation — same generic weapon icon
+    'Wanted Outlaw': 'https://i.ibb.co/B2pH4yjS/Skill-Wanted-Outlaw.webp',
+    'Shadowy Raid': 'https://i.ibb.co/k2vk5Fqp/Skill-Shadowy-Raid.webp',
+  },
   'Yinlin': {
     "Zapstring's Dance": 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
@@ -2446,6 +2476,14 @@ const getSkillIcon = (name, skillName) => {
 // Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_ICONS = {
+  'Calcharo': {
+    s1: 'https://i.ibb.co/zW1SQbgD/Sequence-Node-Covert-Negotiation.webp',
+    s2: 'https://i.ibb.co/0RhbRfYd/Sequence-Node-Zero-Sum-Game.webp',
+    s3: 'https://i.ibb.co/F42fkz3h/Sequence-Node-Iron-Fist-Diplomacy.webp',
+    s4: 'https://i.ibb.co/hRVPBYSc/Sequence-Node-Dark-Alliance.webp',
+    s5: 'https://i.ibb.co/bMhxw2YM/Sequence-Node-Unconventional-Compact.webp',
+    s6: 'https://i.ibb.co/WvtpCtrd/Sequence-Node-The-Ultimatum.webp',
+  },
   'Yinlin': {
     s1: 'https://i.ibb.co/hFqjmjxt/Sequence-Node-Moralitys-Crossroad.webp',
     s2: 'https://i.ibb.co/x85ZgwFQ/Sequence-Node-Ensnarled-By-Rapport.webp',
@@ -2471,6 +2509,7 @@ const CHAIN_NODE_ICONS = {
 const CHAIN_NODE_NAMES = {
   'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
   'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
+  'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
 };
 
 // Release order for sorting (based on first banner appearance)
