@@ -547,6 +547,12 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Moss Amber' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Polarizer' },
     bestEchoes: ['Sigillum', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Emerald of Genesis (83.5%) and Red
+    // Spring (83.2%) are the top non-signature 5★ Swords (ahead of Emerald Sentence 82.9%, Blazing
+    // Brilliance 78.1%); Feather Edge (74.8%) and Somnoire Anchor (74.1%) are the best 4★s (ahead of
+    // Endless Collapse 73.9%); Sword of Night is the 3★ fallback, matching the "<Weapon Type> of Night"
+    // naming convention used for other characters' 3★ slot.
+    weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Feather Edge', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
     teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye'] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
@@ -1143,7 +1149,11 @@ const CHARACTER_DATA = {
   // cn VA corrected 2026-08-17: fandom's own wikitext link text ("Yu Tou") doesn't match the CN actor's
   // real name in its own linked moegirl URL (%E5%BC%A0%E6%98%B1 = 张昱, surname Zhang) — ww.nanoka.cc's
   // Voice Cast list confirms "Elise Zhang", used here instead as the more internally-consistent source.
-  ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
+  // title corrected 2026-08-17 (found while auditing Aemeath, whose real title turned out to be
+  // "Guiding Starlance" per both ww.nanoka.cc character/1210 and fandom): Jianxin's title was wrongly
+  // copied as "Guiding Starlance" too — ww.nanoka.cc character/1405 confirms her actual title is
+  // "Cleansing Reflections".
+  ['Jianxin', 'Cleansing Reflections', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
   // organization uses affiliation2 (Liondance Troupe), his specific in-game sub-group within Jinzhou/
   // Huanglong, matching the Jiyan/Midnight Rangers convention above rather than the generic nation tie.
   ['Lingyang', 'Frosty Gusto', 'Huanglong', 'Liondance Troupe', { en: 'Aleksander Varadian', cn: 'Jinli', jp: 'Natsuki Hanae', kr: 'Lee Sangho' }],
@@ -1217,6 +1227,13 @@ const CHARACTER_DATA = {
   // `desc`). Birthday: 'Unknown' per the site — left out of BIRTHDAY_DATA above, same convention as
   // Lynae/Augusta/Camellya/etc.
   ['Mornye', 'Astral Mapping', 'New Federation', 'Spacetrek Collective', { en: 'Michelle Fox', cn: 'Tong Xinzhu', jp: 'Iwami Manaka', kr: 'Oh Ro-ah' }],
+  // Cross-checked ww.nanoka.cc character/1210 against fandom's own infobox — both agree exactly.
+  // birthplace: Roya Frostlands (she's a Roya Tribe native), distinct from her region/nation tie
+  // (Lahai-Roi, in REGION_DATA above) — same birthplace-vs-nation-tie pattern as Verina/Galbrena.
+  // organization: fandom's infobox lists two affiliations (Startorch Academy "on profile" + Roya Tribe);
+  // 'Startorch Academy' is used to match nanoka's single Affiliation field and the Lynae/Mornye
+  // convention for other Startorch-affiliated characters. Birthday: both sources list 'Unknown'.
+  ['Aemeath', 'Guiding Starlance', 'Roya Frostlands', 'Startorch Academy', { en: 'Cara Theobold', cn: 'Wang Yaxin', jp: 'Sato Satomi', kr: 'Kim Ha-ru' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
