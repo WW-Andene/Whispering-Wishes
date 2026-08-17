@@ -106,9 +106,16 @@ const CHARACTER_DATA = {
     skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Chameleon Cipher', 'Thundering Wrath'],
     ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Helix' },
+    // bestEchoes confirmed accurate (Moonlit Clouds/Impermanence Heron ties #1 with Empyrean Anthem per
+    // Prydwen calcs). weaponAlts/teams corrected against Prydwen's Jiyan-style live build calcs
+    // (2026-07-30 profile update): Whispers of Sirens (96.7%) and Rime-Draped Sprouts (96.3%) are her
+    // actual best 5★ alternatives — Cosmic Ripples (90%) is just the best F2P option, not a top alt.
+    // Jinzhou Keeper replaces Waltz in Masquerade, which wasn't in Prydwen's Yinlin recommendations at
+    // all. Iuno is now explicitly her best synergy partner ("Yinlin's best synergy nowadays is with
+    // Main DPS Iuno") — added ahead of the Calcharo pairing, which is no longer top-tier for her.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
-    weaponAlts: { alt5: ['Cosmic Ripples', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Waltz in Masquerade'], alt3: ['Rectifier of Night'] },
-    teams: ['Yinlin + Jinhsi + Verina', 'Yinlin + Calcharo + Shorekeeper'] },
+    weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
+    teams: ['Yinlin + Iuno + Shorekeeper', 'Yinlin + Jinhsi + Verina'] },
   'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
     desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS who builds Incandescence from any team member's Attribute or Coordinated DMG, enters Incarnation via her Resonance Skill, then spends stacks through Illuminous Epiphany for a scaling Stella Glamor nuke.",
     skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Luminal Synthesis', 'Purge of Light'],
@@ -840,11 +847,14 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
 });
 
-// [SECTION:IDENTITY_DATA] — Title, in-game organization/faction, and English voice actor.
-// Source: wutheringwaves.fandom.com Resonator Infobox (title/title2, affiliation/affiliation2, voiceEN).
+// [SECTION:IDENTITY_DATA] — Title, in-game organization/faction, and voice actor(s).
+// Source: wutheringwaves.fandom.com Resonator Infobox (title/title2, affiliation/affiliation2,
+// voiceEN/voiceCN/voiceJP/voiceKR). voiceActor is either a plain string (English-only, when that's
+// all that's been sourced for a character) or { en, cn, jp, kr } for a full multi-language credit.
 // Only characters that have been audited so far are populated — this is not yet a complete roster table.
 [
   ['Jiyan', 'Windborne Rider', 'Midnight Rangers', 'Alex Jordan'],
+  ['Yinlin', 'Lightning of Execution', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
 ].forEach(([name, title, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, organization, voiceActor });
 });
@@ -1969,6 +1979,17 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  'Yinlin': [
+    { type: 'Intro', skill: 'Raging Storm', note: 'applies Sinner\'s Mark' },
+    { type: 'Basic ATK', skill: 'Zapstring\'s Dance', note: 'Stage 4; optionally swap-cancel' },
+    { type: 'Skill', skill: 'Magnetic Roar', note: 'enters Execution Mode' },
+    { type: 'Heavy ATK', skill: 'Standard' },
+    { type: 'Skill', skill: 'Lightning Execution', note: 'try to cancel Heavy ATK endlag' },
+    { type: 'Liberation', skill: 'Thundering Wrath', note: 'use right as Yinlin lands; applies Sinner\'s Mark' },
+    { type: 'Basic ATK', skill: 'Zapstring\'s Dance', note: 'Stage 1' },
+    { type: 'Forte', skill: 'Chameleon Cipher', note: 'at full Judgment Points; upgrades Sinner\'s Mark to Punishment Mark' },
+    { type: 'Outro', skill: 'Strategist' },
+  ],
   'Jiyan': [
     { type: 'Intro', skill: 'Tactical Strike' },
     { type: 'Basic ATK', skill: 'Lone Lance', note: 'builds Resolve toward 30' },
@@ -2393,6 +2414,16 @@ const RESONANCE_CHAIN_DATA = {
 // Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const SKILL_ICONS = {
+  'Yinlin': {
+    "Zapstring's Dance": 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Magnetic Roar': 'https://i.ibb.co/6785t0vK/Skill-Magnetic-Roar.webp',
+    'Lightning Execution': 'https://i.ibb.co/6785t0vK/Skill-Magnetic-Roar.webp', // second phase of the same Resonance Skill, no separate wiki icon
+    'Chameleon Cipher': 'https://i.ibb.co/ymCP6ZNM/Skill-Chameleon-Cipher.webp',
+    'Thundering Wrath': 'https://i.ibb.co/0y3Tswfv/Skill-Thundering-Wrath.webp',
+    'Raging Storm': 'https://i.ibb.co/TMqQ3Sdc/Skill-Raging-Storm.webp',
+    'Strategist': 'https://i.ibb.co/dJzzqS1V/Skill-Strategist.webp',
+  },
   'Jiyan': {
     'Lone Lance': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon on the wiki, also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Heavy ATK / Dodge Counter rows
@@ -2415,6 +2446,14 @@ const getSkillIcon = (name, skillName) => {
 // Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_ICONS = {
+  'Yinlin': {
+    s1: 'https://i.ibb.co/hFqjmjxt/Sequence-Node-Moralitys-Crossroad.webp',
+    s2: 'https://i.ibb.co/x85ZgwFQ/Sequence-Node-Ensnarled-By-Rapport.webp',
+    s3: 'https://i.ibb.co/XZFYMQ66/Sequence-Node-Unyielding-Verdict.webp',
+    s4: 'https://i.ibb.co/qMBj8Pb1/Sequence-Node-Steadfast-Conviction.webp',
+    s5: 'https://i.ibb.co/tPPkZN2W/Sequence-Node-Resounding-Will.webp',
+    s6: 'https://i.ibb.co/HfFYQC4C/Sequence-Node-Pursuit-of-Justice.webp',
+  },
   'Jiyan': {
     s1: 'https://i.ibb.co/8DQZqf8V/Sequence-Node-Benevolence.webp',
     s2: 'https://i.ibb.co/qYfdjDZj/Sequence-Node-Versatility.webp',
@@ -2431,6 +2470,7 @@ const CHAIN_NODE_ICONS = {
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_NAMES = {
   'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
+  'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
 };
 
 // Release order for sorting (based on first banner appearance)

@@ -147,9 +147,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {data.organization}
               </span>
             )}
-            {data.voiceActor && (
+            {data.voiceActor && (typeof data.voiceActor === 'string' ? (
               <span className="kuro-badge kuro-badge-neutral">VA: {data.voiceActor}</span>
-            )}
+            ) : (
+              Object.entries({ en: 'EN', jp: 'JP', cn: 'CN', kr: 'KR' })
+                .filter(([code]) => data.voiceActor[code])
+                .map(([code, label]) => (
+                  <span key={code} className="kuro-badge kuro-badge-neutral">{label} VA: {data.voiceActor[code]}</span>
+                ))
+            ))}
           </div>
 
           {/* Tier + Region */}
