@@ -526,6 +526,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Gemini Spore' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Carved Crystal' },
     bestEchoes: ['Reactor Husk', 'Halo of Starry Radiance 5pc'], bestWeapon: 'Starfield Calibrator',
+    // weaponAlts added 2026-08-17: Prydwen's live build calcs only rank 3 weapons total for Mornye
+    // (Signature, then Discord/Broadblade#41 as 4★ Energy Regen picks — she has no ranked 5★ alt since
+    // no other 3.x Broadblade offers her key ER stat). Verdant Summit added as the 5★ alt slot as a
+    // generic ATK/Crit DMG stat-stick (same fallback role it plays for other Broadblade users' alt5
+    // slots elsewhere in this file); Broadblade of Night is the 3★ fallback, matching the "<Weapon
+    // Type> of Night" naming convention used for other characters' 3★ slot.
+    weaponAlts: { alt5: ['Verdant Summit'], alt4: ['Discord', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
     teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia'] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles Aureole of Execution's three enhanced forms and deals bonus Total DMG by responding to Tune Strain - Interfered.",
@@ -1204,6 +1211,12 @@ const CHARACTER_DATA = {
   // intentionally left out of BIRTHDAY_DATA above rather than guessed, same as the "omitted" convention
   // documented there. cn/jp VA names/spellings confirmed identical on both sources.
   ['Lynae', 'Radiant Spectrum', 'New Federation', 'Startorch Academy', { en: 'Elsie Lovelock', cn: 'Zhu Jing', jp: 'Inoue Marina', kr: 'Choi Hyeon-ji' }],
+  // Cross-checked ww.nanoka.cc character/1209 (matches its own infobox exactly): birthplace New
+  // Federation, organization 'Spacetrek Collective' (the wiki's short Affiliation field — her full
+  // in-universe title is "Spacetrek Collective Research Institute engineer", already captured in her
+  // `desc`). Birthday: 'Unknown' per the site — left out of BIRTHDAY_DATA above, same convention as
+  // Lynae/Augusta/Camellya/etc.
+  ['Mornye', 'Astral Mapping', 'New Federation', 'Spacetrek Collective', { en: 'Michelle Fox', cn: 'Tong Xinzhu', jp: 'Iwami Manaka', kr: 'Oh Ro-ah' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
