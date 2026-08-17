@@ -815,12 +815,16 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
 });
 
-// [SECTION:REGION_DATA] — Character regions/nations
+// [SECTION:REGION_DATA] — Character regions/nations (infobox `nation` field — the nation a character
+// is CONFIRMED tied to on the wiki, distinct from birthplace and from their specific in-game
+// organization/faction — see the IDENTITY_DATA comment above). A character is omitted here rather
+// than guessed at when the wiki's own `nation` field is blank (e.g. Calcharo — born in New Federation,
+// leads the Ghost Hounds out of Jinzhou, but has no confirmed `nation` on the wiki).
 // Huanglong (Jinzhou/Mengzhou), Rinascita, Black Shores, Septimont, Lahai-Roi
 [
   // Huanglong
   ['Rover: Spectro', 'Huanglong'], ['Rover: Havoc', 'Huanglong'], ['Rover: Aero', 'Huanglong'], ['Rover: Electro', 'Huanglong'],
-  ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
+  ['Jiyan',        'Huanglong'],
   ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
@@ -864,18 +868,27 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
 });
 
-// [SECTION:IDENTITY_DATA] — Title, in-game organization/faction, and voice actor(s).
-// Source: wutheringwaves.fandom.com Resonator Infobox (title/title2, affiliation/affiliation2,
-// voiceEN/voiceCN/voiceJP/voiceKR). voiceActor is either a plain string (English-only, when that's
-// all that's been sourced for a character) or { en, cn, jp, kr } for a full multi-language credit.
+// [SECTION:IDENTITY_DATA] — Title, birthplace, in-game organization/faction, and voice actor(s).
+// Source: wutheringwaves.fandom.com Resonator Infobox (title/title2, birthplace, nation, affiliation/
+// affiliation2, voiceEN/voiceCN/voiceJP/voiceKR). These are three DISTINCT associations, not one:
+//   - birthplace: where the character was born/raised (infobox `birthplace`)
+//   - region (separate REGION_DATA table below): the nation they currently operate in/are tied to
+//     (infobox `nation`, when the wiki has confirmed one — left unset when it doesn't, rather than
+//     inferring it from an affiliation)
+//   - organization: their specific in-game faction (infobox `affiliation`), which is often a
+//     sub-group WITHIN a nation (e.g. Midnight Rangers operate in Huanglong) and can differ from
+//     nation/birthplace entirely (e.g. Calcharo: born in New Federation, leads Ghost Hounds, operates
+//     out of Jinzhou/Huanglong but the wiki's own `nation` field for him is blank/unconfirmed)
+// voiceActor is either a plain string (English-only, when that's all that's been sourced) or
+// { en, cn, jp, kr } for a full multi-language credit.
 // Only characters that have been audited so far are populated — this is not yet a complete roster table.
 [
-  ['Jiyan', 'Windborne Rider', 'Midnight Rangers', { en: 'Alex Jordan', cn: 'Sun Ye', jp: 'Ono Yuki', kr: 'Nam Doh-hyeong' }],
-  ['Yinlin', 'Lightning of Execution', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
-  ['Calcharo', 'Phantom Hunters', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
-  ['Encore', 'Wooly-Counting Game', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
-].forEach(([name, title, organization, voiceActor]) => {
-  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, organization, voiceActor });
+  ['Jiyan', 'Windborne Rider', 'Huanglong', 'Midnight Rangers', { en: 'Alex Jordan', cn: 'Sun Ye', jp: 'Ono Yuki', kr: 'Nam Doh-hyeong' }],
+  ['Yinlin', 'Lightning of Execution', 'Huanglong', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
+  ['Calcharo', 'Phantom Hunters', 'New Federation', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
+  ['Encore', 'Wooly-Counting Game', 'New Federation', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
+].forEach(([name, title, birthplace, organization, voiceActor]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
 
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values

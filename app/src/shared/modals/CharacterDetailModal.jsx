@@ -132,51 +132,74 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Identity bar: Birthday / Organization (with icon) / Voice Actor — Title is shown under the name above */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {data.birthday && (
-              <span className="kuro-badge kuro-badge-neutral">{(() => {
-                const [m, d] = data.birthday.split('-');
-                const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                return `${months[parseInt(m, 10)]} ${parseInt(d, 10)}`;
-              })()}</span>
-            )}
-            {data.organization && (
-              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
-                {getFactionIcon(data.organization) && <img src={getFactionIcon(data.organization)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                {data.organization}
-              </span>
-            )}
-            {data.voiceActor && (typeof data.voiceActor === 'string' ? (
-              <span className="kuro-badge kuro-badge-neutral">VA: {data.voiceActor}</span>
-            ) : (
-              Object.entries({ en: 'EN', jp: 'JP', cn: 'CN', kr: 'KR' })
-                .filter(([code]) => data.voiceActor[code])
-                .map(([code, label]) => (
-                  <span key={code} className="kuro-badge kuro-badge-neutral">{label} VA: {data.voiceActor[code]}</span>
-                ))
-            ))}
-          </div>
+          {/* Identity block: Birthday / Birthplace / Region (nation) / Organization (faction, with icon) /
+              Voice Actor(s) — Title is shown under the name above. These are distinct associations (a
+              character's birthplace, the nation they're tied to, and their specific in-game faction can
+              all differ), laid out as a label:value grid instead of same-line badges so they read clearly
+              rather than wrapping into an undifferentiated stack. */}
+          {(data.birthday || data.birthplace || data.region || data.organization || data.voiceActor) && (
+            <div className="kuro-detail-box">
+              <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+                {data.birthday && (
+                  <>
+                    <span className="text-gray-500">Birthday</span>
+                    <span className="text-gray-300">{(() => {
+                      const [m, d] = data.birthday.split('-');
+                      const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      return `${months[parseInt(m, 10)]} ${parseInt(d, 10)}`;
+                    })()}</span>
+                  </>
+                )}
+                {data.birthplace && (
+                  <>
+                    <span className="text-gray-500">Birthplace</span>
+                    <span className="text-gray-300">{data.birthplace}</span>
+                  </>
+                )}
+                {data.region && (
+                  <>
+                    <span className="text-gray-500">Region</span>
+                    <span className="text-gray-300">{data.region}</span>
+                  </>
+                )}
+                {data.organization && (
+                  <>
+                    <span className="text-gray-500">Organization</span>
+                    <span className="text-gray-300 inline-flex items-center gap-1">
+                      {getFactionIcon(data.organization) && <img src={getFactionIcon(data.organization)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                      {data.organization}
+                    </span>
+                  </>
+                )}
+                {data.voiceActor && (
+                  <>
+                    <span className="text-gray-500">Voice Actor{typeof data.voiceActor !== 'string' ? 's' : ''}</span>
+                    <span className="text-gray-300">
+                      {typeof data.voiceActor === 'string' ? data.voiceActor : (
+                        Object.entries({ en: 'EN', jp: 'JP', cn: 'CN', kr: 'KR' })
+                          .filter(([code]) => data.voiceActor[code])
+                          .map(([code, label]) => `${label} ${data.voiceActor[code]}`)
+                          .join(' · ')
+                      )}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
-          {/* Tier + Region */}
-          {(data.tier || data.region) && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {data.tier && (
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-base font-bold ${
-                  data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
-                  data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
-                  data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
-                  data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
-                  'bg-gray-500/20 text-gray-300 border border-gray-500/40'
-                }`}>
-                  <span className="text-sm text-gray-400">ToA</span> {data.tier.toa}
-                  <span className="text-gray-600 mx-0.5">|</span>
-                  <span className="text-sm text-gray-400">WW</span> {data.tier.ww}
-                </div>
-              )}
-              {data.region && (
-                <span className="kuro-badge kuro-badge-neutral">{data.region}</span>
-              )}
+          {/* Tier */}
+          {data.tier && (
+            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-base font-bold ${
+              data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
+              data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
+              data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
+              data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+              'bg-gray-500/20 text-gray-300 border border-gray-500/40'
+            }`}>
+              <span className="text-sm text-gray-400">ToA</span> {data.tier.toa}
+              <span className="text-gray-600 mx-0.5">|</span>
+              <span className="text-sm text-gray-400">WW</span> {data.tier.ww}
             </div>
           )}
 
