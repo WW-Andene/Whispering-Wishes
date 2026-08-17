@@ -603,11 +603,18 @@ const CHARACTER_DATA = {
     bestEchoes: ['Thousand-Puppet Pavilion', 'Song of Feathered Trace 5pc'], bestWeapon: 'Azure Oath',
     teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Department of Voidmatters student at Startorch Academy. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
+    desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Dream of Stars' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
     bestEchoes: ['Reminiscence: Denia', 'Chromatic Foam 5pc (Fusion Burst)', 'Voidwing Moth', 'Reel of Spliced Memories 5pc (Tune Strain)'], bestWeapon: 'Forged Dwarf Star',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Aemeath+Chisa Fusion Burst / Luuk
+    // Herssen+Mornye Tune Strain average): Stringmaster (91.0%/85.7%) and Lethean Elegy (89.3%/79.9%)
+    // are the top non-signature 5★ Rectifiers (ahead of Luminous Hymn, Whispers of Sirens, Rime-Draped
+    // Sprouts, Cosmic Ripples); Augment (78.3%/67.6%) and Radiant Dawn (77.6%/60.4%) are the best
+    // Battle Pass 4★s (ahead of Waltz in Masquerade, Fusion Accretion, Jinzhou Keeper); Rectifier of
+    // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Stringmaster', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
     teams: ['Denia + Luuk Herssen + Mornye', 'Denia + Aemeath + Lupa'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
@@ -1125,7 +1132,7 @@ const CHARACTER_DATA = {
   // Lahai-Roi (Startorch Academy)
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
-  ['Hiyuki',       'Lahai-Roi'],
+  ['Hiyuki',       'Lahai-Roi'], ['Denia',        'Lahai-Roi'],
 ].forEach(([name, region]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { region });
 });
@@ -1276,6 +1283,15 @@ const CHARACTER_DATA = {
   // dedicated emblem exists for any of them on the wiki, matching the Jinzhou-precedent convention of
   // leaving unconfirmed sub-org icons out rather than guessed). Birthday: 'Unknown' on both sources.
   ['Hiyuki', "Futures' Tithe", 'Ashinohara', 'Miko of Flaming Sakura', { en: 'Mei Mac', cn: 'Li Chanfei', jp: 'Tomatsu Haruka', kr: 'Jung Hye-won' }],
+  // Sourced via wutheringwaves.fandom.com's MediaWiki API (action=parse&page=Denia&prop=wikitext&
+  // section=0), which bypasses the site's Cloudflare challenge. birthplace: the infobox's own
+  // `birthplace` field is literally 'Redacted' (a deliberate in-lore mystery tied to her being a
+  // Fractsidus-created Resonator for Aleph-1, not a sourcing gap — used verbatim rather than guessed).
+  // organization: uses her primary affiliation (Fractsidus, her secret true allegiance) over affiliation2
+  // (Startorch Academy, her cover identity) to match the Phrolova/Fractsidus convention above; nation
+  // 'Lahai-Roi' (REGION_DATA above) is a separate infobox field from either affiliation. Birthday: blank
+  // on the infobox, omitted from BIRTHDAY_DATA per the established 'Unknown' convention.
+  ['Denia', 'Bubbles of Nihility', 'Redacted', 'Fractsidus', { en: 'Jodie Bell Cortez', cn: 'Ge Zinyu', jp: 'Itō Miku', kr: 'Park Si-yoon' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3708,6 +3724,19 @@ const SKILL_ICONS = {
     'Frostedge': 'https://i.ibb.co/NRt7X9T/Hiyuki-skill-intro.webp', // Intro Skill
     'Snowlight Blessing': 'https://i.ibb.co/Ng7S6X8j/Hiyuki-skill-outro.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Denia, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Denia': {
+    'Stage 1-4': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used for Encore/Yinlin)
+    'Phantom Bubble': 'https://i.ibb.co/ZpdRC3Kx/denia-res-Skill.webp', // Resonance Skill — Bubbles and Baits
+    'Banish': 'https://i.ibb.co/ZpdRC3Kx/denia-res-Skill.webp', // Breakdown Form's Resonance Skill replacement, same wiki icon
+    'Final Act: Stagecraft': 'https://i.ibb.co/xtj5xwht/denia-liberation.webp', // Resonance Liberation — 1st Ultimate
+    'Final Act: Breakdown': 'https://i.ibb.co/xtj5xwht/denia-liberation.webp', // Resonance Liberation — 2nd Ultimate, same wiki icon
+    'Erosion Field': 'https://i.ibb.co/PGHNXhY3/denia-forte.webp', // Forte Circuit "Flawless"
+    "It's Been A While!": 'https://i.ibb.co/hx2nmhpT/denia-intro.webp', // Intro Skill — Formal Greetings
+    'Formal Greetings': 'https://i.ibb.co/hx2nmhpT/denia-intro.webp',
+    'Unfinished Lies': 'https://i.ibb.co/BVB2jBsW/denia-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4064,6 +4093,14 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/4ZdSWbXC/Hiyuki-chain-s5.webp',
     s6: 'https://i.ibb.co/VP72Z2V/Hiyuki-chain-s6.webp',
   },
+  'Denia': {
+    s1: 'https://i.ibb.co/dwDTRNpm/denia-s1.webp',
+    s2: 'https://i.ibb.co/v4KYCSjk/denia-s2.webp',
+    s3: 'https://i.ibb.co/SXYXMvNR/denia-s3.webp',
+    s4: 'https://i.ibb.co/tTjNYQZD/denia-s4.webp',
+    s5: 'https://i.ibb.co/gZBNkHMH/denia-s5.webp',
+    s6: 'https://i.ibb.co/Zz5XhZzj/denia-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4105,6 +4142,7 @@ const CHAIN_NODE_NAMES = {
   'Luuk Herssen': { s1: 'Gold Kindled in Ash', s2: 'Avalanche Roaring in Eyes', s3: 'Spine Tempered by Golden Rain', s4: 'Pulse Thrumming Under Rime', s5: 'Through the Stillness of Snowstorm', s6: 'Dawn Unfurling over Frostlands' },
   'Sigrika': { s1: 'The Gleam Meant for Radiance', s2: 'The Bitterness Steeped in Hope', s3: 'I Flee, Yet I Seek', s4: 'I Lose, Yet I Gain', s5: 'Until Submerged by the Dark', s6: 'True Names Resurfaced, Rising in Light' },
   'Hiyuki': { s1: 'Springless', s2: 'To Burn Cold in Silence', s3: 'No Self, No Bound', s4: 'Like Reeds on Tides', s5: 'Vessel of Thousand Wishes', s6: 'Into a Night Without End' },
+  'Denia': { s1: 'Silent Glows in a Dimlit Dream', s2: 'Tossed in the Tides of Reality', s3: 'Through Dark and Wind, the Erlking Follows', s4: 'From the Far Beyond, to the Far Beyond', s5: 'If Lies Patch Up a Heart', s6: 'May You Find Your Sun in the Silence' },
 };
 
 // Release order for sorting (based on first banner appearance)
