@@ -540,6 +540,12 @@ const CHARACTER_DATA = {
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Pendant', specialty: 'Edelschnee' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Twin Nova - Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Blazing Justice (83.4%) and
+    // Moongazer's Sigil (80.7%) are the top non-signature 5★ Gauntlets (ahead of Verity's Handle 80.2%,
+    // Tragicomedy 74.5%, Abyss Surges 66.5%); Pulsation Bracer (85.7%, the permanent-banner F2P pick,
+    // Prydwen's explicit second-best overall) and Celestial Spiral (65.9%) are the best 4★s; Gauntlets of
+    // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Blazing Justice', "Moongazer's Sigil"], alt4: ['Pulsation Bracer', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between Tune Rupture and Fusion Burst Resonance Modes, dealing massive Resonance Liberation DMG through Seraphic Duet and Heavenfall Edict.',
@@ -1234,6 +1240,12 @@ const CHARACTER_DATA = {
   // 'Startorch Academy' is used to match nanoka's single Affiliation field and the Lynae/Mornye
   // convention for other Startorch-affiliated characters. Birthday: both sources list 'Unknown'.
   ['Aemeath', 'Guiding Starlance', 'Roya Frostlands', 'Startorch Academy', { en: 'Cara Theobold', cn: 'Wang Yaxin', jp: 'Sato Satomi', kr: 'Kim Ha-ru' }],
+  // Cross-checked ww.nanoka.cc character/1510 against fandom's own infobox — both agree exactly:
+  // birthplace New Federation, organization 'Startorch Academy' (his primary affiliation; the wiki's
+  // affiliation2/3 — Spacetrek Collective, Lollo Logistics — are secondary ties, matching the
+  // Lynae/Mornye/Aemeath convention of using the primary Startorch Academy tie). Birthday: 'Unknown' on
+  // both sources.
+  ['Luuk Herssen', 'Phase Transition', 'New Federation', 'Startorch Academy', { en: 'Griffyn Bellah', cn: 'Ma Zhengyang', jp: 'Tachibana Shinnosuke', kr: 'Min Seung-woo' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3611,6 +3623,21 @@ const SKILL_ICONS = {
     'Debut of Meteoric Radiance': 'https://i.ibb.co/prZnwGKQ/Aemeath-skill-intro.webp',
     'Silent Protection': 'https://i.ibb.co/svSPtz0x/Aemeath-outro.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Luuk Herssen, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Luuk Herssen': {
+    'Stage 1-4': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Such_is_Light.png resolves to this same asset)
+    'Scythe: Dissection': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Mid-air Attack strings — considered Basic ATK
+    'Scythe: Resection': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp',
+    'Golden Reflux': 'https://i.ibb.co/1fhf0vt7/Luuk-skill-res-Skill.webp', // Resonance Skill — Reunion of All the Fallen
+    'Aureole of Execution': 'https://i.ibb.co/1fhf0vt7/Luuk-skill-res-Skill.webp',
+    'Basic Attack - Golden Impale': 'https://i.ibb.co/1fhf0vt7/Luuk-skill-res-Skill.webp',
+    'Gavel of Earthshaker': 'https://i.ibb.co/8nFJT3SG/Luuk-skill-forte.webp', // Forte Circuit — Spark from the Frost
+    "Rewritten in Winter's Margins": 'https://i.ibb.co/1Y4xcqYx/Luuk-skill-liberation.webp', // Resonance Liberation
+    'Before Injection of Dawn': 'https://i.ibb.co/ksYqXQPQ/Luuk-skill-intro.webp', // Intro Skill
+    'Bow to the Last Light': 'https://i.ibb.co/W4MMpcrv/Luuk-skill-outro.webp', // Outro Skill
+    'Silent Debate of Light': 'https://i.ibb.co/BHdBsKjP/Luuk-skill-tune.webp', // Tune Break
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3943,6 +3970,14 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/dwK7K9m7/Aemeath-s5.webp',
     s6: 'https://i.ibb.co/wFsPszFL/Aemeath-chain-s6.webp',
   },
+  'Luuk Herssen': {
+    s1: 'https://i.ibb.co/xtbnWHrb/Luuk-chain-s1.webp',
+    s2: 'https://i.ibb.co/hF2MW2bF/Luuk-chain-s2.webp',
+    s3: 'https://i.ibb.co/2X8CFmL/Luuk-chain-s3.webp',
+    s4: 'https://i.ibb.co/JF8kcKvm/Luuk-chain-s4.webp',
+    s5: 'https://i.ibb.co/1tXKZntb/Luuk-chain-s5.webp',
+    s6: 'https://i.ibb.co/svXR1Hkf/Luuk-chain-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3981,6 +4016,7 @@ const CHAIN_NODE_NAMES = {
   'Lynae': { s1: 'Days to be Painted Like a Canvas', s2: "Into Lights' Vanishing Point", s3: 'For One Brilliant Moment', s4: 'Shadows of a Wind Racer', s5: 'Visions of a Future Unbound', s6: 'Painted in My True Color' },
   'Mornye': { s1: 'The Silent Observer', s2: 'Morning Star of Entropy', s3: 'Blueprint of Recursion', s4: 'Latent Variables of the Cosmos', s5: 'Time Dilation Effect', s6: 'To the Far Shores of the Stars' },
   'Aemeath': { s1: 'Gilded Glimmer of the First Dawn', s2: 'Downy Notes of Snowfluff', s3: 'Fervor Sightly Burns Bright as New', s4: 'Ethereal Waltz on Binary Tides', s5: 'Voyage to the Astral Shore', s6: "A Zephyr-Kissed Journey to You" },
+  'Luuk Herssen': { s1: 'Gold Kindled in Ash', s2: 'Avalanche Roaring in Eyes', s3: 'Spine Tempered by Golden Rain', s4: 'Pulse Thrumming Under Rime', s5: 'Through the Stillness of Snowstorm', s6: 'Dawn Unfurling over Frostlands' },
 };
 
 // Release order for sorting (based on first banner appearance)
