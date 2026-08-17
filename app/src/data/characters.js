@@ -1950,7 +1950,7 @@ const SKILL_MULTIPLIERS = {
   ],
 };
 
-// [SECTION:CHARACTER_ROTATIONS] — Solo ("in a vacuum") rotation, one loop, no team-specific cancels/swaps.
+// [SECTION:CHARACTER_ROTATIONS] — Standard rotation, sourced from Prydwen's "Gameplay and teams" tab per character.
 // Each step's `type` + `skill` are matched against SKILL_MULTIPLIERS[name] (type === step.type, name.includes(step.skill))
 // to look up its DMG multiplier at render time — single source of truth, no duplicated numbers to drift out of sync.
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
@@ -2112,6 +2112,39 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Rekindle', note: 'enters Inferno state, raises max Blaze' },
     { type: 'Liberation', skill: 'The Last Stand', duration: 8, note: 'second Ultimate inside Inferno, scales with Blaze consumed' },
     { type: 'Outro', skill: 'Beacon For the Future', duration: 20, note: 'grants allies hitting the marked target Spectro DMG Amp' },
+  ],
+  'Zhezhi': [
+    { type: 'Intro', skill: 'Radiant Ruin' },
+    { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'full Basic 1-2-3 combo' },
+    { type: 'Skill', skill: 'Manifestation' },
+    { type: 'Forte', skill: 'Heavy ATK: Conjuration' },
+    { type: 'Forte', skill: "Stroke of Genius / Creation's Zenith", note: 'Stroke of Genius (Jump Cancel)' },
+    { type: 'Forte', skill: "Stroke of Genius / Creation's Zenith", note: '2nd Stroke of Genius (cancel endlag via Ultimate)' },
+    { type: 'Liberation', skill: 'Living Canvas' },
+    { type: 'Forte', skill: "Stroke of Genius / Creation's Zenith", note: "Creation's Zenith finisher (Dash Cancel into Echo, Swap, Outro)" },
+    { type: 'Outro', skill: 'Carve and Draw', duration: 14 },
+  ],
+  'Xiangli Yao': [
+    { type: 'Intro', skill: 'Principle' },
+    { type: 'Skill', skill: 'Deduction', note: 'instantly cancelled into Ultimate' },
+    { type: 'Liberation', skill: 'Cogitation Model', duration: 24, note: 'enters Intuition' },
+    { type: 'Liberation', skill: 'Intuition: Pivot-Impale / Divergence / Unfathomed', note: 'Skill: Divergence — builds Performance Capacity' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Mid-air Attack: Revamp' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Skill: Law of Reigns — 1st Hypercube' },
+    { type: 'Liberation', skill: 'Intuition: Pivot-Impale / Divergence / Unfathomed', note: 'Basic: Pivot-Impale P1-P3' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Skill: Law of Reigns — 2nd Hypercube' },
+    { type: 'Liberation', skill: 'Intuition: Pivot-Impale / Divergence / Unfathomed', note: 'Skill: Divergence' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Mid-air Attack: Revamp' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Skill: Law of Reigns — 3rd Hypercube, Intuition ends' },
+    { type: 'Outro', skill: 'Chain Rule', duration: 8 },
+  ],
+  'Shorekeeper': [
+    { type: 'Intro', skill: 'Proof of Existence: Enlightenment / Discernment', note: 'Discernment — empowered Intro, guaranteed Crit, ends the current Stellarealm' },
+    { type: 'Basic ATK', skill: 'Origin Calculus Stage 1-4', note: 'full 4-hit Basic combo, builds Empirical Data + Collapsed Cores' },
+    { type: 'Forte', skill: 'Flare Star Butterfly / Illation / Transmutation', note: 'Heavy ATK: Illation — consumes 5 Empirical Data' },
+    { type: 'Skill', skill: 'Chaos Theory' },
+    { type: 'Liberation', skill: 'End Loop', duration: 30, note: 'summons the Stellarealm' },
+    { type: 'Outro', skill: 'Binary Butterfly', duration: 30, note: 'swap to the next Resonator to trigger their Intro and evolve the Stellarealm' },
   ],
   'Augusta': [
     { type: 'Intro', skill: 'Stride of Goldenflare' },

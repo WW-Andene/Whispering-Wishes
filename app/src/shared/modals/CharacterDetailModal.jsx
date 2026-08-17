@@ -506,12 +506,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             )}
           </div>
 
-          {/* Solo Rotation ("in a vacuum") — reusable base steps, adaptable later in the Team tab */}
+          {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
           {CHARACTER_ROTATIONS[name] && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
                 <RotateCw size={14} className={colors.text} /> Standard Rotation
-                <span className="text-sm text-gray-500 font-normal ml-auto">Solo, one loop</span>
               </h3>
               <div className="space-y-0.5">
                 {CHARACTER_ROTATIONS[name].map((step, i) => {
