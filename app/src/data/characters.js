@@ -439,12 +439,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 5pc'], bestWeapon: 'Wildfire Mark',
     weaponAlts: { alt5: ['Ages of Harvest', 'Kumokiri'], alt4: ['Waning Redshift', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
     teams: ['Lupa + Brant + Changli', 'Lupa + Aemeath + Mornye'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1608 sheet. desc: title "Symphony of Beyond" (nanoka) prepended and
+  // blurb rewritten — the previous desc wrongly said she "summons Hecate via Echo Skill"; Hecate is
+  // actually summoned by her Resonance Liberation (entering Maestro state) — Echo Skill casts merely
+  // trigger extra Hecate attacks while Maestro is already active. organization uses 'Fractsidus' (no
+  // leading "The") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta/Zani.
+  // skills/ascension/skill materials/bestEchoes/outroBuffs/selfBuffs all re-confirmed accurate (already
+  // corrected in a prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses
+  // Stringmaster (82.0%) and Whispers of Sirens (80.2%), Prydwen's #2/#3 non-signature 5-stars; alt4
+  // uses Radiant Dawn (66.9%, best 4★) and Augment (64.9%, #2 4★); alt3 uses the standard starter
+  // Rectifier of Night.
   'Phrolova': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Main DPS',
-    desc: 'Former violinist turned Fractsidus Overseer, death\'s euphoric companion. On-field Havoc DPS who summons Hecate via Echo Skill for sustained off-field Havoc DMG while dealing burst damage through Resonance Skill.',
+    desc: 'Symphony of Beyond, a Fractsidus Overseer walking the fine line between life and death — an uncanny, deadly conductor whose silent wave of the baton is enough to attune the very frequencies of being and conduct the symphonies of "souls," her music able to sculpt a better world or just as easily summon a legion to wreak havoc. Havoc Main DPS who builds Volatile Notes through Basic Attack/Skill combos and their Forte-enhanced follow-ups, unleashes her Liberation to enter the Maestro state and command her partner Hecate for sustained off-field Havoc DMG (triggered further by any teammate\'s Echo Skill casts), then buffs the incoming Resonator\'s Havoc and Heavy Attack DMG through her Outro.',
     skills: ['Movement of Life and Death', 'Whispers in a Fleeting Dream', 'Waltz of Forsaken Depths', 'Rhapsody of a New World'],
     ascension: { boss: 'Truth in Lies', common: 'Polygon Core', specialty: 'Afterlife' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Helix' },
     bestEchoes: ['Nightmare: Hecate', 'Dream of the Lost 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Lethean Elegy',
+    weaponAlts: { alt5: ['Stringmaster', 'Whispers of Sirens'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro DPS who deals Heavy ATK and Liberation burst DMG with built-in shields and a time-stop mechanic on Resonance Skill.',
@@ -770,7 +782,7 @@ const CHARACTER_DATA = {
   ['Ciaccona',      12238, 375, 1198, 125],
   ['Cartethyia',    14800, 313, 611,  125],
   ['Lupa',          11913, 388, 1186, 125],
-  ['Phrolova',      10775, 437, 1136, 125],
+  ['Phrolova',      10775, 438, 1137, 125],
   ['Augusta',       10300, 462, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
   ['Galbrena',      10300, 462, 1112, 125],
@@ -1125,6 +1137,10 @@ const CHARACTER_DATA = {
   ['Ciaccona', 'Woven Melodies', 'Rinascita', 'Ragunna', { en: 'Rebecca Hanssen', cn: 'Ye Zhiqiu', jp: 'Hasegawa Ikumi', kr: 'Kim Ye Rim' }],
   ['Cartethyia', 'Feathered Tempest', 'Rinascita', 'Ragunna', { en: 'Amanda Elizabeth Rischel', cn: 'Yun Hezhui', jp: 'Asakawa Yuu', kr: 'Bae Ha Gyoung' }],
   ['Lupa', 'Howling Flame', 'Rinascita', 'Septimont', { en: 'Kaja Chan', cn: 'Shuo Xiaotu', jp: 'Takahashi Minami', kr: 'Kim Ye Reong' }],
+  // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her — her Fractsidus
+  // organization tie is what ties her to the Rinascita region (REGION_DATA below), same pattern as
+  // Camellya's identity block above.
+  ['Phrolova', 'Symphony of Beyond', 'Unknown', 'Fractsidus', { en: 'Rae Lim', cn: 'Zhang Qi', jp: 'Fujita Saki', kr: 'Choi Ha Ri' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2072,14 +2088,19 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Golden Grace', '198.8%'],
     ['Outro', 'Attentive Heart', '528.4%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1608 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its true value (e.g. her Liberation cast Curtain Call was listed
+  // as '234%' vs the real 465.22%) — the same halving pattern already found and fixed across most of
+  // the recently-audited roster. The old Intro Suite of Quietus note claiming "exact base number not
+  // published" was also wrong — nanoka does publish it (80.61%+120.91%) — so that note is dropped.
   'Phrolova': [
-    ['Basic ATK', 'Stage 1-3', '53.8% → 48% → 98.6%', 'Standard combo string, builds Aftersound/Notes.'],
-    ['Heavy ATK', 'Scarlet Coda', '16.6%×2 + 6.2%×8 + 249% (+41.5% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
-    ['Skill', 'Whispers in Fleeting Dream', '53.3%×2', 'Quick Skill strike that enters Reincarnate.'],
-    ['Intro', 'Suite of Quietus', '40.6% + 60.8%', 'Base swap-in opener strike. (Approx. base-level value scaled from Lv.10 via the kit\'s standard ~50% level ratio — exact base number not published.)'],
-    ['Intro', 'Suite of Immortality', '300%', 'Enhanced Intro used only while in Maestro state — much stronger than the base opener.'],
-    ['Liberation', 'Maestro State: Hecate', 'Strings 175% / Winds 166.3% / Cadenza 175%', 'Summons Hecate for sustained off-field Havoc DMG during Maestro.'],
-    ['Liberation', 'Curtain Call', '234%', 'Ultimate cast that ends Resolving Chord and enters Maestro.'],
+    ['Basic ATK', 'Stage 1-3', '106.9% → 95.4% → 196.1%', 'Standard combo string, builds Aftersound/Notes.'],
+    ['Heavy ATK', 'Scarlet Coda', '33.0%×2 + 12.4%×8 + 495.1% (+82.55% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
+    ['Skill', 'Whispers in Fleeting Dream', '106.0%×2', 'Quick Skill strike that enters Reincarnate.'],
+    ['Intro', 'Suite of Quietus', '80.6% + 120.9%', 'Base swap-in opener strike.'],
+    ['Intro', 'Suite of Immortality', '596.4%', 'Enhanced Intro used only while in Maestro state — much stronger than the base opener.'],
+    ['Liberation', 'Maestro State: Hecate', 'Strings 347.9% / Winds 330.5% / Cadenza 347.9%', 'Summons Hecate for sustained off-field Havoc DMG during Maestro.'],
+    ['Liberation', 'Curtain Call', '465.2%', 'Ultimate cast that ends Resolving Chord and enters Maestro.'],
     ['Outro', 'Unfinished Piece', '+20% Havoc DMG + 25% Heavy ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator; grants Hecate 2 bonus attacks if cast during Maestro.'],
   ],
   'Qiuyuan': [
@@ -3252,6 +3273,26 @@ const SKILL_ICONS = {
     'Nowhere to Run!': 'https://i.ibb.co/jkNfHp2y/skill-tryfocusingeh.webp', // Intro's Wild Hunt upgrade, same icon
     'Stand by Me, Warrior': 'https://i.ibb.co/bjzbJyCH/skill-standbymewarrior.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Phrolova, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
+  // upload. Movement of Life and Death (Basic ATK) uses the shared generic Skill_Rectifier.webp icon
+  // (same as Encore/Yinlin/Verina/Zhezhi/Shorekeeper/Phoebe's).
+  'Phrolova': {
+    'Movement of Life and Death': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Scarlet Coda': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
+    'Whispers in a Fleeting Dream': 'https://i.ibb.co/6J40K1F8/skill-whispersfleetingdream.webp',
+    'Whispers in Fleeting Dream': 'https://i.ibb.co/6J40K1F8/skill-whispersfleetingdream.webp',
+    'Movement of Fate and Finality': 'https://i.ibb.co/847dkvDn/skill-rhapsodynewworld.webp',
+    'Murmurs in a Haunting Dream': 'https://i.ibb.co/847dkvDn/skill-rhapsodynewworld.webp',
+    'Rhapsody of a New World': 'https://i.ibb.co/847dkvDn/skill-rhapsodynewworld.webp',
+    'Waltz of Forsaken Depths': 'https://i.ibb.co/RG9T1CF5/skill-waltzforsakendepths.webp',
+    'Maestro State': 'https://i.ibb.co/RG9T1CF5/skill-waltzforsakendepths.webp', // Hecate's off-field attacks during Liberation's Maestro state, same icon
+    'Curtain Call': 'https://i.ibb.co/RG9T1CF5/skill-waltzforsakendepths.webp',
+    'Suite of Quietus': 'https://i.ibb.co/7dWwXT4m/skill-suiteofquietus.webp', // Intro Skill
+    'Suite of Immortality': 'https://i.ibb.co/7dWwXT4m/skill-suiteofquietus.webp', // Maestro-enhanced Intro, same icon
+    'Unfinished Piece': 'https://i.ibb.co/DDQz9zyk/skill-unfinishedpiece.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3495,6 +3536,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/99p0trjM/node-s5-embracethunderous.webp',
     s6: 'https://i.ibb.co/MT1mRss/node-s6-brightestflaming.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Phrolova, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1608, all 6 URLs verified 200/live before upload.
+  'Phrolova': {
+    s1: 'https://i.ibb.co/KpvxFB70/node-s1-keytonetherworld.webp',
+    s2: 'https://i.ibb.co/8nw8Sy8L/node-s2-ropetiedtolife.webp',
+    s3: 'https://i.ibb.co/TBSCHsv0/node-s3-daggercutclean.webp',
+    s4: 'https://i.ibb.co/JwDPJhkf/node-s4-torchilluminating.webp',
+    s5: 'https://i.ibb.co/1f1yj3zj/node-s5-forkedroad.webp',
+    s6: 'https://i.ibb.co/dStZKfy/node-s6-nighttodepart.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3524,6 +3576,7 @@ const CHAIN_NODE_NAMES = {
   'Ciaccona': { s1: 'Where Wind Sings', s2: 'Song of the Four Seasons', s3: 'Starlit Improv', s4: 'Toccata and Fugue', s5: 'Eternal Idyll to Lasting Summer', s6: 'Unending Cadence' },
   'Cartethyia': { s1: 'Crown Destined by Fate', s2: 'Blade Broken by Tempest', s3: 'Prisoner Hanged in the Tower', s4: 'Sacrifice Made for Salvation', s5: 'Hope Reshaped in Storms', s6: "Freedom Found in Storm's Wake" },
   'Lupa': { s1: 'Behold the Nameless One', s2: 'Every Ground, Her Hunting Field', s3: 'Wolflame Howls in Her Wake', s4: 'High and Aflame Is Her Banner', s5: 'Embrace the Thunderous Triumph', s6: 'To the Brightest Flaming Star' },
+  'Phrolova': { s1: "A Key to Netherworld's Secrets", s2: 'A Rope Tied to a Life Beyond', s3: 'A Dagger to Cut Clean Obsessions', s4: 'A Torch Illuminating the Path', s5: "A Forked Road in Fate's Heartland", s6: 'A Night to Depart From Eternal Rest' },
 };
 
 // Release order for sorting (based on first banner appearance)
