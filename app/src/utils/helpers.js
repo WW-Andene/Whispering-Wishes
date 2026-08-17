@@ -123,6 +123,16 @@ const ELEMENT_ICONS = {
   Havoc:   'https://i.ibb.co/20gBGvrV/Element-Havoc.webp',
 };
 const getElementIcon = (el) => ELEMENT_ICONS[el] || null;
+// Official in-game weapon-type icons (SP_IconNor* UI assets), re-hosted on ibb.co.
+// Source: static.nanoka.cc/assets/ww/UIResources/Common/Atlas/SkillIcon/SkillIconNor/, 2026-08-17.
+const WEAPON_TYPE_ICONS = {
+  Broadblade: 'https://i.ibb.co/JF8qY50h/Weapon-Type-Broadblade.webp',
+  Sword:      'https://i.ibb.co/Xx5RH0dH/Weapon-Type-Sword.webp',
+  Pistols:    'https://i.ibb.co/sJbMbWm4/Weapon-Type-Pistols.webp',
+  Gauntlets:  'https://i.ibb.co/wFXHM40H/Weapon-Type-Gauntlets.webp',
+  Rectifier:  'https://i.ibb.co/5gds1gDg/Weapon-Type-Rectifier.webp',
+};
+const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -197,4 +207,6 @@ export {
   getSetElementColor,
   getEchoSetColors,
   getBuffElementColor,
+  WEAPON_TYPE_ICONS,
+  getWeaponTypeIcon,
 };

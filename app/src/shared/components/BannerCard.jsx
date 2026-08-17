@@ -7,7 +7,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Info, Star, X } from 'lucide-react';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
-import { haptic, getElementColor, getElementIcon } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
@@ -141,6 +141,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
             <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
               {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+              {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               {isChar ? item.element : item.type}
             </span>
           </div>

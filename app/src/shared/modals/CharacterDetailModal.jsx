@@ -10,7 +10,7 @@ import { WEAPON_DATA } from '../../data/weapons.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
-import { getElementIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
@@ -115,7 +115,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                 {data.element}
               </span>
-              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.weapon}
+              </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
@@ -175,7 +178,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                 {data.element} DMG
               </span>
-              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.weapon}
+              </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             {data.buffs?.length > 0 && (
