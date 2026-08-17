@@ -388,12 +388,23 @@ const CHARACTER_DATA = {
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Blazing Justice',
     weaponAlts: { alt5: ['Tragicomedy', "Verity's Handle"], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Rover: Spectro + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1407 sheet. desc: title "Woven Melodies" (nanoka) prepended and blurb
+  // rewritten — the previous desc said she "applies Erosion via Coordinated Attacks", but Ciaccona has
+  // no Coordinated Attack mechanic at all; her off-field Erosion application comes from her Ensemble
+  // Sylph clones and her Liberation's lingering Recital state instead. skills/ascension/skill materials/
+  // bestEchoes/outroBuffs/libBuffs/weaponBuffs/debuffs all re-confirmed accurate (already corrected in a
+  // prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses Phasic Homogenizer (86.9%)
+  // and Lux & Umbra (83.0%), Prydwen's #2/#3 non-signature 5-stars; alt4 uses Romance in Farewell (69.9%,
+  // Prydwen's named best 4★/F2P no-gacha pick) and Solar Flame; alt3 uses the standard starter Pistols
+  // of Night.
   'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
-    desc: 'Free-spirited wandering bard whose melodies command the wind. Aero sub-DPS who applies Erosion via Coordinated Attacks and Skill summons while buffing team Aero DMG through Outro.',
+    desc: 'Woven Melodies, a wandering bard from Rinascita — she sings not only for the Divinity, but also for the common folk, recording stories along her journeys and turning them into songs that evoke laughter, emotion, and tears in both the storytellers and the audience. Aero Hybrid who chains quick Basic ATK/Mid-air cancels to summon near-permanent Ensemble Sylph clones (Solo Concert: team Aero DMG Amp), fires the Forte Heavy Quadruple Downbeat, then enters an extended Recital state via her Liberation to apply repeating waves of Aero Erosion or Spectro Frazzle even off-field — buffs the incoming Resonator\'s Aero Erosion DMG through her Outro.',
     skills: ['Quadruple Time Steps', 'Harmonic Allegro', 'Singer\'s Triple Cadenza', 'Symphony of Wind and Verse'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell', 'Solar Flame'], alt3: ['Pistols of Night'] },
     teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
   'Cartethyia': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'The Blessed Maiden of Rinascita, beloved by wind and sea. HP-scaling on-field Aero DPS who shifts between sword and Fleurdelys forms, dealing Aero DMG through Erosion-enhanced Basic Attacks.',
@@ -678,7 +689,11 @@ const CHARACTER_DATA = {
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
   ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
-  ['Ciaccona',      ['Coordinated ATK', 'Skill'],    ['Aero Buff'],                           ['Erosion']],
+  // 'Coordinated ATK' tag corrected 2026-08-17: Ciaccona has no Coordinated Attack mechanic at all —
+  // Prydwen's own review explicitly notes she's "similar to Coordinated Attackers (even though she
+  // isn't one)". Her off-field damage instead comes from Ensemble Sylph clones (Basic ATK) and her
+  // Liberation's lingering Recital state.
+  ['Ciaccona',      ['Basic ATK', 'Skill'],          ['Aero Buff'],                           ['Erosion']],
   ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
   ['Iuno',          ['Heavy ATK'],                   ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
   ['Qiuyuan',       ['Echo'],                        ['Echo DMG Buff', 'Crit DMG Amp'],       []],
@@ -733,7 +748,7 @@ const CHARACTER_DATA = {
   ['Brant',         11675, 375, 1308, 125],
   ['Cantarella',    11600, 400, 1100, 125],
   ['Zani',          10775, 438, 1137, 125],
-  ['Ciaccona',      12237, 375, 1197, 125],
+  ['Ciaccona',      12238, 375, 1198, 125],
   ['Cartethyia',    14800, 312, 611,  125],
   ['Lupa',          11912, 387, 1185, 125],
   ['Phrolova',      10775, 437, 1136, 125],
@@ -1088,6 +1103,7 @@ const CHARACTER_DATA = {
   // organization: 'Montelli Family' (no leading "The", even though nanoka's own infobox literally shows
   // "The Montelli Family") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta.
   ['Zani', 'Scorched Radiance', 'Rinascita', 'Montelli Family', { en: 'Alexandra Metaxa', cn: 'Nie Xiying', jp: 'Ueda Hitomi', kr: 'Won Esther' }],
+  ['Ciaccona', 'Woven Melodies', 'Rinascita', 'Ragunna', { en: 'Rebecca Hanssen', cn: 'Ye Zhiqiu', jp: 'Hasegawa Ikumi', kr: 'Kim Ye Rim' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1871,12 +1887,17 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Reverberance - Return', '95.43%', 'Swap-in opener strike.'],
     ['Outro', 'Unraveling - Law Zero', '+3 max Negative Status stacks (15s)', 'Swap-out buff letting the next Resonator stack more Negative Status on enemies.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1407 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. her Liberation nuke Singer's Triple Cadenza was
+  // listed as '553.5%' vs the real 1100.42%), the same halving pattern already found and fixed across
+  // Camellya/Carlotta/Roccia/Phoebe/Brant/Cantarella/Zani's rows. Outro (a DMG Amp buff description,
+  // unaffected by this bug) is unchanged.
   'Ciaccona': [
-    ['Basic ATK', 'Stage 1-4', '28.7% → 81.7% → 66.4% → 123%', 'Standard combo string; Stage 4 inflicts Aero Erosion.'],
-    ['Skill', 'Harmonic Allegro', '20.3%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
-    ['Forte', 'Quadruple Downbeat', '15.8%×10 + 158%', 'Forte finisher that consumes stacked Musical Essence.'],
-    ['Liberation', "Singer's Triple Cadenza", '553.5% + Tonic 3.1%×20/tick', 'Ultimate nuke followed by a lingering damage-over-time field.'],
-    ['Intro', 'Roaming with the Wind', '95.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
+    ['Basic ATK', 'Stage 1-4', '57.1% → 163.0% → 132.1% → 244.6%', 'Standard combo string; Stage 4 inflicts Aero Erosion.'],
+    ['Skill', 'Harmonic Allegro', '40.4%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
+    ['Forte', 'Quadruple Downbeat', '31.4%×10 + 314.0%', 'Forte finisher that consumes stacked Musical Essence.'],
+    ['Liberation', "Singer's Triple Cadenza", '1100.4% + Tonic 6.1%×20/tick', 'Ultimate nuke followed by a lingering damage-over-time field.'],
+    ['Intro', 'Roaming with the Wind', '189.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
     ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
   'Encore': [
@@ -3132,6 +3153,20 @@ const SKILL_ICONS = {
     'Immediate Execution': 'https://i.ibb.co/Xx8gjJV2/skill-immediateexecution.webp', // Intro Skill
     'Beacon For the Future': 'https://i.ibb.co/yczmx4Lj/skill-beaconforfuture.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Ciaccona, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Quadruple
+  // Time Steps (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Pistols.webp icon
+  // (same as Carlotta's).
+  'Ciaccona': {
+    'Quadruple Time Steps': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Standard': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp',
+    'Harmonic Allegro': 'https://i.ibb.co/pjvmZNW0/skill-harmonicallegro.webp',
+    'Symphony of Wind and Verse': 'https://i.ibb.co/rDrSyYC/skill-symphonywindverse.webp',
+    'Quadruple Downbeat': 'https://i.ibb.co/rDrSyYC/skill-symphonywindverse.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    "Singer's Triple Cadenza": 'https://i.ibb.co/Q3SvKHzY/skill-singerstriplecadenza.webp',
+    'Roaming with the Wind': 'https://i.ibb.co/RGVC6MLt/skill-roamingwithwind.webp', // Intro Skill
+    'Windcalling Tune': 'https://i.ibb.co/wFNRyDTB/skill-windcallingtune.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3342,6 +3377,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/tpwvvSMk/node-s5-delivered.webp',
     s6: 'https://i.ibb.co/Q3vpqhCQ/node-s6-clockout.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Ciaccona, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1407, all 6 URLs verified 200/live before upload.
+  'Ciaccona': {
+    s1: 'https://i.ibb.co/M4Jpwcj/node-s1-wherewindsings.webp',
+    s2: 'https://i.ibb.co/xtVFFs9Y/node-s2-songfourseasons.webp',
+    s3: 'https://i.ibb.co/W4dYrWRZ/node-s3-starlitimprov.webp',
+    s4: 'https://i.ibb.co/XxMdXrfV/node-s4-toccatafugue.webp',
+    s5: 'https://i.ibb.co/4n8DXGQZ/node-s5-eternalidyll.webp',
+    s6: 'https://i.ibb.co/8gp4zwSF/node-s6-unendingcadence.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3368,6 +3414,7 @@ const CHAIN_NODE_NAMES = {
   'Brant': { s1: 'By Currents and Winds', s2: 'For Smiles and Cheers', s3: 'Through Storms I Sail', s4: 'To Freedom I Sing', s5: "All the World's an Actor's Stage", s6: "All the World's a Captain's Carnevale" },
   'Cantarella': { s1: 'Embrace the Endless Waves', s2: 'Surrender to the Illusive Reverie', s3: 'Gaze into the Abyss', s4: 'Behold Your Own Soul', s5: 'Rest in Your Reflection', s6: 'Fall, Fall... and Fall Deeper into the Dream' },
   'Zani': { s1: 'When the Alarm Clock Rings', s2: 'Stale Bread With Energy Drink', s3: 'Each Day A New Commute', s4: 'More Efficiency, Less Drama', s5: 'Delivered In Full On Time', s6: 'First Things First? Clock Out!' },
+  'Ciaccona': { s1: 'Where Wind Sings', s2: 'Song of the Four Seasons', s3: 'Starlit Improv', s4: 'Toccata and Fugue', s5: 'Eternal Idyll to Lasting Summer', s6: 'Unending Cadence' },
 };
 
 // Release order for sorting (based on first banner appearance)
