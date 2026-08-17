@@ -251,13 +251,23 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Verity's Handle",
     weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
     teams: ['Xiangli Yao + Lynae + Mornye', 'Xiangli Yao + Yinlin + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (URL is /the-shorekeeper, Chrome UA +
+  // google.com referer + jsRender) and ww.nanoka.cc's character #1505 sheet. desc: title "Euphonic
+  // Chrysalis" (nanoka) prepended and blurb rewritten from nanoka's own profile text to match the
+  // roster's convention. skills/base stats/ascension/skill materials/bestEchoes/outro+lib buffs all
+  // re-confirmed accurate. weaponAlts corrected: Prydwen ranks only 4 total options for her (Signature +
+  // 3 4★s, no other 5★ at all) — alt5 previously listed 'Cosmic Ripples' first despite it being an ATK%/
+  // Basic-ATK-stacking stat-stick that doesn't fit a support who never attacks; reordered to lead with
+  // Firstlight's Herald (Energy Regen main stat, matching her Prydwen-stated 250% ER build target).
+  // alt4 previously paired Variation with Call of the Abyss (85.1%) while skipping Rectifier#25 (87.2%,
+  // Prydwen's actual #2 and its named no-gacha pick) — swapped in.
   'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Eternal guardian of the Tethys and keeper of the Black Shores, an ancient entity who has watched over Rovers across countless cycles with quiet, weary affection. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG as allies cast Intro Skills inside it, and buffs the incoming Resonator\'s All DMG through her Outro Binary Butterfly.',
+    desc: 'Euphonic Chrysalis, guardian of the Black Shores — this title alone once defined her, but desires, bonds, and emotions, she only began to understand these things after meeting you. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG (scaling with her own Energy Regen) as allies cast Intro Skills inside it, and buffs the whole team\'s All DMG through her Outro Binary Butterfly.',
     skills: ['Origin Calculus', 'Chaos Theory', 'Astral Chord', 'End Loop'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
-    weaponAlts: { alt5: ['Cosmic Ripples', "Firstlight's Herald"], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
+    weaponAlts: { alt5: ["Firstlight's Herald", 'Cosmic Ripples'], alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
   'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'Enigmatic assassin who blooms like a camellia flower. On-field Havoc DPS who alternates between Budding and Blossom stances, dealing sustained Havoc DMG through enhanced Basic Attacks and Skill combos.',
@@ -994,6 +1004,7 @@ const CHARACTER_DATA = {
   // organization: ww.nanoka.cc's infobox lists a single Affiliation (Jinzhou) for him, matching the
   // Zhezhi convention above — no specific named sub-group is given, unlike Jiyan/Changli/Jinhsi.
   ['Xiangli Yao', 'Matter Weaver', 'Huanglong', 'Jinzhou', { en: 'Shaun Mendum', cn: 'Ban Ma', jp: 'Kobayashi Chiaki', kr: 'Jung Eui Jin' }],
+  ['Shorekeeper', 'Euphonic Chrysalis', 'Black Shores', 'Black Shores', { en: 'Stephanie McKeon', cn: 'Tang YaJing', jp: 'Suwa Ayaka', kr: 'Kim Bo Na' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1014,15 +1025,19 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro Blossom: heals the incoming Resonator + All DMG Amp +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: outroBuffs' target was 'next' (single
+  // incoming Resonator), but Prydwen explicitly states Binary Butterfly "grants the entire party a 15%
+  // Damage Amplification buff for 30 seconds, regardless of how many times they Swap In-or-Out" — a
+  // team-wide buff, not a swap-in-only one. Fixed to target: 'team'.
   'Shorekeeper': {
-    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 30 }],
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 30 }],
     libBuffs: [
       { stat: 'critRate', value: 12.5, target: 'team', duration: 30, condition: 'In Stellarealm field' },
       { stat: 'critDmg', value: 25, target: 'team', duration: 30, condition: 'In Stellarealm field' },
     ],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% All DMG Amp 30s. Lib Stellarealm: +12.5% CR +25% CD (30s). Knockdown recovery.',
+    note: 'Outro: 15% All DMG Amp, team-wide, 30s (persists through swaps). Lib Stellarealm: +12.5% CR +25% CD (30s), team-wide. Knockdown recovery.',
   },
   // Corrected against ww.nanoka.cc character/1405 — prior Outro (15% All DMG Deepen) and debuff
   // (DEF Shred on shielded) didn't match her real kit at all.
@@ -2778,6 +2793,19 @@ const SKILL_ICONS = {
     'Principle': 'https://i.ibb.co/cXpS7bBx/skill-principle.webp', // Intro Skill
     'Chain Rule': 'https://i.ibb.co/spxqcJ3K/skill-chain-rule.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Shorekeeper, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
+  // upload. Origin Calculus (Basic ATK) uses the same generic Skill_Rectifier.png icon already
+  // re-hosted for Encore/Yinlin/Verina/Zhezhi.
+  'Shorekeeper': {
+    'Origin Calculus': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Chaos Theory': 'https://i.ibb.co/zTGgrNMM/skill-chaos-theory.webp',
+    'Astral Chord': 'https://i.ibb.co/pkXPr5P/skill-astral-chord.webp',
+    'End Loop': 'https://i.ibb.co/MD3NpydF/skill-end-loop.webp',
+    'Proof of Existence': 'https://i.ibb.co/RGFGH8d9/skill-proof-of-existence.webp', // Intro Skill
+    'Binary Butterfly': 'https://i.ibb.co/bjjhnD3f/skill-binary-butterfly.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2900,6 +2928,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/DPTYYfnj/node-s5-end.webp',
     s6: 'https://i.ibb.co/bg0ffhj0/node-s6-solace.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Shorekeeper, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1505, all 6 URLs verified 200/live before upload.
+  'Shorekeeper': {
+    s1: 'https://i.ibb.co/mrNGMGDz/node-s1-unspoken.webp',
+    s2: 'https://i.ibb.co/1fsfvs1s/node-s2-nightsgift.webp',
+    s3: 'https://i.ibb.co/PZkV3FHz/node-s3-infinity.webp',
+    s4: 'https://i.ibb.co/V00QHX4H/node-s4-overflowing.webp',
+    s5: 'https://i.ibb.co/S4R3jKr6/node-s5-echoes.webp',
+    s6: 'https://i.ibb.co/d45HxqB9/node-s6-newworld.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2918,6 +2957,7 @@ const CHAIN_NODE_NAMES = {
   'Changli': { s1: 'Hidden Thoughts', s2: 'Pursuit of Desires', s3: 'Learned Secrets', s4: 'Polished Words', s5: 'Sacrificed Gains', s6: 'Realized Plans' },
   'Zhezhi': { s1: "Brushwork's Finish", s2: 'Vivid Strokes', s3: "Reflection's Grace", s4: "Hue's Spectrum", s5: "Composition's Clue", s6: 'Infinite Legacy' },
   'Xiangli Yao': { s1: 'Prodigy of Protégés', s2: 'Traces of Predecessors', s3: 'Ruins of Ancient', s4: 'Vessel of Rebirth', s5: 'End of Stars', s6: 'Solace of the Ordinary' },
+  'Shorekeeper': { s1: 'Unspoken Conjecture', s2: "Night's Gift and Refusal", s3: 'Infinity Awaits Me', s4: 'Overflowing Quietude', s5: 'Echoes in Silence', s6: 'To the New World' },
 };
 
 // Release order for sorting (based on first banner appearance)
