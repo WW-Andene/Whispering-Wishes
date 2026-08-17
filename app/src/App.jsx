@@ -538,9 +538,14 @@ function WhisperingWishesInner() {
       }
       return arr;
     };
-    // Rover is a free starter character - always count as obtained (minimum 1 copy)
+    // Rover is a free starter character - always count as obtained (minimum 1 copy). Rover is displayed as
+    // four separate roster entries (one per attunement) but is a single ownable resonator in-game (you
+    // re-spec its element for free, you don't pull separate copies per attunement) — so its owned-copy count
+    // is mirrored across all four keys, plus the legacy bare 'Rover' key still used by weapon bestFor tags.
     const chars5 = countItems(charHistory, 5, true);
-    if (!chars5['Rover']) chars5['Rover'] = 1;
+    const ROVER_KEYS = ['Rover', 'Rover: Spectro', 'Rover: Havoc', 'Rover: Aero', 'Rover: Electro'];
+    const roverOwned = Math.max(1, ...ROVER_KEYS.map(k => chars5[k] || 0));
+    ROVER_KEYS.forEach(k => { chars5[k] = roverOwned; });
     return {
       chars5Counts: chars5, chars4Counts: countItems(charHistory, 4, true),
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
@@ -556,8 +561,12 @@ function WhisperingWishesInner() {
   // Name normalization: maps game API / tracker names to internal names used in this app
   const IMPORT_NAME_ALIASES = useMemo(() => ({
     'The Shorekeeper': 'Shorekeeper',
-    'Rover (Spectro)': 'Rover', 'Rover (Havoc)': 'Rover', 'Rover (Aero)': 'Rover',
-    'Rover-Spectro': 'Rover', 'Rover-Havoc': 'Rover', 'Rover-Aero': 'Rover',
+    'Rover (Spectro)': 'Rover: Spectro', 'Rover (Havoc)': 'Rover: Havoc', 'Rover (Aero)': 'Rover: Aero', 'Rover (Electro)': 'Rover: Electro',
+    'Rover-Spectro': 'Rover: Spectro', 'Rover-Havoc': 'Rover: Havoc', 'Rover-Aero': 'Rover: Aero', 'Rover-Electro': 'Rover: Electro',
+    'Rover: Spectro (Female)': 'Rover: Spectro', 'Rover: Spectro (Male)': 'Rover: Spectro',
+    'Rover: Havoc (Female)': 'Rover: Havoc', 'Rover: Havoc (Male)': 'Rover: Havoc',
+    'Rover: Aero (Female)': 'Rover: Aero', 'Rover: Aero (Male)': 'Rover: Aero',
+    'Rover: Electro (Female)': 'Rover: Electro', 'Rover: Electro (Male)': 'Rover: Electro',
   }), []);
 
   const importInFlightRef = useRef(false);

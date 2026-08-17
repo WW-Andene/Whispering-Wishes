@@ -46,6 +46,12 @@ function CollectionTab({
   const [collectionWeaponFilter, setCollectionWeaponFilter] = useSessionState('ww-coll-weap', 'all');
   const [collectionElementFilter, setCollectionElementFilter] = useSessionState('ww-coll-elem', 'all');
   const [collectionStatFilter, setCollectionStatFilter] = useSessionState('ww-coll-stat', 'all');
+  // Weapons view has its own Type/Sub-stat dropdowns that look like the Resonators view's
+  // weapon-type/stat-scaling ones but mean something different (weapon type vs. resonator's
+  // weapon type, weapon sub-stat vs. resonator stat scaling) — kept in separate state so
+  // picking e.g. "Broadblade" in one tab never silently filters the other tab too.
+  const [weaponsTypeFilter, setWeaponsTypeFilter] = useSessionState('ww-coll-wtype', 'all');
+  const [weaponsStatFilter, setWeaponsStatFilter] = useSessionState('ww-coll-wstat', 'all');
   const [collectionDamageFilter, setCollectionDamageFilter] = useSessionState('ww-coll-dmg', 'all');
   const [collectionRoleFilter, setCollectionRoleFilter] = useSessionState('ww-coll-role', 'all');
   const [collectionRegionFilter, setCollectionRegionFilter] = useSessionState('ww-coll-region', 'all');
@@ -219,28 +225,37 @@ function CollectionTab({
       } else {
         const data = WEAPON_DATA[name];
         if (data) {
-          if (collectionWeaponFilter !== 'all' && data.type !== collectionWeaponFilter) return false;
-          if (collectionStatFilter !== 'all' && data.stat !== collectionStatFilter) return false;
+          if (weaponsTypeFilter !== 'all' && data.type !== weaponsTypeFilter) return false;
+          if (weaponsStatFilter !== 'all' && data.stat !== weaponsStatFilter) return false;
         }
       }
       return true;
     });
-  }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
+  }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, weaponsTypeFilter, weaponsStatFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
 
+  // "Clear all" only touches the filters shown on the CURRENT view — each view's dropdowns
+  // are their own independent state (Resonators' weapon-type/stat-scaling filters are separate
+  // from Weapons' type/sub-stat filters), so clearing shouldn't reach into other tabs either.
   const clearCollectionFilters = useCallback(() => {
     handleSearchChange('');
-    setCollectionCategoryFilter('all');
-    setCollectionWeaponFilter('all');
-    setCollectionElementFilter('all');
-    setCollectionStatFilter('all');
-    setCollectionDamageFilter('all');
-    setCollectionRoleFilter('all');
-    setCollectionRegionFilter('all');
-    setCollectionTierFilter('all');
-    setCollectionEchoSetFilter('all');
-    setCollectionEchoBuffFilter('all');
-    setCollectionOwnedFilter('all');
-  }, []);
+    if (collectionView === 'items') {
+      setCollectionCategoryFilter('all');
+      setCollectionWeaponFilter('all');
+      setCollectionElementFilter('all');
+      setCollectionStatFilter('all');
+      setCollectionDamageFilter('all');
+      setCollectionRoleFilter('all');
+      setCollectionRegionFilter('all');
+      setCollectionTierFilter('all');
+      setCollectionOwnedFilter('all');
+    } else if (collectionView === 'weapons') {
+      setWeaponsTypeFilter('all');
+      setWeaponsStatFilter('all');
+    } else if (collectionView === 'echoes') {
+      setCollectionEchoSetFilter('all');
+      setCollectionEchoBuffFilter('all');
+    }
+  }, [collectionView]);
 
   const filterEchoes = useCallback((echoNames) => {
     return echoNames.filter(name => {
@@ -264,10 +279,17 @@ function CollectionTab({
     });
   }, [debouncedSearch, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
-  const hasActiveFilters = useMemo(() =>
-    !!(debouncedSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all' || collectionOwnedFilter !== 'all'),
-    [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionEchoSetFilter, collectionEchoBuffFilter, collectionOwnedFilter]
-  );
+  // View-scoped: only reflects filters visible on the current tab, so switching tabs doesn't
+  // show a stale "Filters active" badge for filters that live on a different tab.
+  const hasActiveFilters = useMemo(() => {
+    if (collectionView === 'items') {
+      return !!(debouncedSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionOwnedFilter !== 'all');
+    }
+    if (collectionView === 'weapons') {
+      return !!(debouncedSearch || weaponsTypeFilter !== 'all' || weaponsStatFilter !== 'all');
+    }
+    return !!(debouncedSearch || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all');
+  }, [collectionView, debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, weaponsTypeFilter, weaponsStatFilter, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
   // Extended sort: apply DPS/name/tier sorting on top of the base sortItems result
   const applySortOverride = useCallback((items) => {
@@ -386,7 +408,7 @@ function CollectionTab({
                 <CardBody>
                   <div className="flex gap-1.5">
                     <button
-                      onClick={() => { setCollectionView('items'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); }}
+                      onClick={() => setCollectionView('items')}
                       className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
                       title="Resonators"
                       aria-label="View Resonators"
@@ -395,7 +417,7 @@ function CollectionTab({
                       <Crown size={12} className="inline mr-1" />Resonators
                     </button>
                     <button
-                      onClick={() => { setCollectionView('weapons'); setCollectionElementFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionEchoSetFilter('all'); setCollectionEchoBuffFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
+                      onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
                       title="Weapons"
                       aria-label="View weapons"
@@ -404,7 +426,7 @@ function CollectionTab({
                       <Sword size={12} className="inline mr-1" />Weapons
                     </button>
                     <button
-                      onClick={() => { setCollectionView('echoes'); setCollectionCategoryFilter('all'); setCollectionWeaponFilter('all'); setCollectionElementFilter('all'); setCollectionStatFilter('all'); setCollectionDamageFilter('all'); setCollectionRoleFilter('all'); setCollectionRegionFilter('all'); setCollectionTierFilter('all'); setCollectionOwnedFilter('all'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
+                      onClick={() => { setCollectionView('echoes'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
                       title="Echoes"
                       aria-label="View echoes"
@@ -544,8 +566,8 @@ function CollectionTab({
                 {/* ── Weapons view: Type, Sub-stat ── */}
                 {collectionView === 'weapons' && (<>
                   <KuroSelect
-                    value={collectionWeaponFilter}
-                    onChange={setCollectionWeaponFilter}
+                    value={weaponsTypeFilter}
+                    onChange={setWeaponsTypeFilter}
                     options={[
                       { value: 'all', label: 'All Types' },
                       { value: 'Broadblade', label: 'Broadblade' },
@@ -557,8 +579,8 @@ function CollectionTab({
                     ariaLabel="Filter by weapon type"
                   />
                   <KuroSelect
-                    value={collectionStatFilter}
-                    onChange={setCollectionStatFilter}
+                    value={weaponsStatFilter}
+                    onChange={setWeaponsStatFilter}
                     options={[
                       { value: 'all', label: 'All Sub-stats' },
                       { value: 'ATK%', label: 'ATK%' },

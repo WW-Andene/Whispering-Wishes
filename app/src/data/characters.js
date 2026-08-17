@@ -7,101 +7,143 @@
 
 const CHARACTER_DATA = {
   // 5★ Resonators
-  // NOTE: Electro attunement added to `elements` (confirmed via nanoka.cc + prydwen.gg, v3.4) but the `skills`/
-  // combat fields below still only describe the Spectro attunement — Rover's data model is one entry per
-  // Rover, not one per attunement, so full per-attunement kit data (Electro's Thunderclap/Overshock/Apex
-  // Resonance kit) isn't represented here. Tier confirmed separately: Electro is T4 ToA / T4 WW (prydwen.gg:
-  // "basically a useless character right now," awaiting a future Electro Flare DPS to pair with).
-  'Rover': { rarity: 5, element: 'Spectro', elements: ['Spectro', 'Havoc', 'Aero', 'Electro'], weapon: 'Sword', role: 'Sub DPS',
-    desc: 'A wanderer who awoke with no memory on the shores of Solaris. Flexible sub-DPS who switches between Spectro, Havoc, and Aero attunements, each with distinct Resonance Skills and Liberations.',
-    skills: ['Vibration Manifestation', 'Resonating Slashes', 'Echoing Orchestra', 'World in a Grain of Sand'],
+  // NOTE: Rover is modeled as four separate roster entries — one per attunement — matching ww.nanoka.cc's
+  // own character-page split (Rover: Spectro/Havoc/Aero/Electro are each a distinct page/kit there) and the
+  // depth every other character gets: each has its own full combat profile, buffs/debuffs, base stats,
+  // resonance chain, skill multipliers, weapons (signature + rarity alternatives), echoes, and teams.
+  // In-game, Rover is a single ownable resonator that freely re-specs its attunement (no separate copies are
+  // pulled per element), so collection/wish-count ownership is mirrored across all four keys in App.jsx's
+  // collectionData builder — owning "Rover" owns every attunement card here. Ascension materials, skill
+  // materials, and weapon type (Sword) are identical across all four since it's the same resonator.
+  // Source: ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro), v3.6,
+  // 2026-08-16. Tier source: prydwen.gg tier list, last updated 01/Aug/2026.
+  'Rover: Spectro': { rarity: 5, element: 'Spectro', weapon: 'Sword', role: 'Sub DPS',
+    desc: "A wanderer who awoke with no memory on the shores of Solaris. Spectro attunement: a quick-swap Frazzle debuffer — Forte Circuit's Resonating Spin applies Spectro Frazzle (with Shimmer to stop decay) and Liberation Echoing Orchestra piles on more, then swaps out for the main DPS.",
+    skills: ['Vibration Manifestation', 'Resonating Slashes', 'World in a Grain of Sand', 'Echoing Orchestra'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Mourning Aix', 'Eternal Radiance 5pc'], bestWeapon: 'Emerald of Genesis',
-    teams: ['Phoebe + Spectro Rover + Verina', 'Ciaccona + Cartethyia + Aero Rover'] },
+    weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge"], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Rover: Spectro + Shorekeeper + Camellya'] },
+  'Rover: Havoc': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
+    desc: 'A wanderer who awoke with no memory on the shores of Solaris. Havoc attunement: an on-field main DPS — hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge, an enhanced-state combo that ends in the 1520%-ATK Liberation nuke Deadening Abyss.',
+    skills: ['Tuneslayer', 'Wingblade', 'Umbra Eclipse', 'Deadening Abyss'],
+    ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
+    skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
+    bestEchoes: ['Impermanence Heron', 'Havoc Eclipse 5pc'], bestWeapon: 'Emerald of Genesis',
+    weaponAlts: { alt5: ['Red Spring', 'Azure Oath'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    teams: ['Rover: Havoc + Sanhua + Verina', 'Rover: Havoc + Yinlin + Shorekeeper'] },
+  'Rover: Aero': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Healer',
+    desc: "A wanderer who awoke with no memory on the shores of Solaris. Aero attunement: a healer/support whose Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off a target and converts each into a stack of Aero Erosion, while Forte and Liberation both heal the team.",
+    skills: ['Wind Cutter', 'Illusion Breaker', 'Cycle of Wind', 'Omega Storm'],
+    ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
+    skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
+    bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Emerald of Genesis',
+    weaponAlts: { alt5: ["Bloodpact's Pledge", 'Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
+    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Rover: Aero + Jinhsi + Shorekeeper'] },
+  'Rover: Electro': { rarity: 5, element: 'Electro', weapon: 'Sword', role: 'Sub DPS',
+    desc: 'A wanderer who awoke with no memory on the shores of Solaris. Electro attunement: a Parry Stance hybrid — hold Basic ATK for interrupt immunity and 60% DMG reduction, then spend Electric Surge on a team ATK buff or Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo. Currently the weakest attunement, lacking a strong DPS partner.',
+    skills: ['Deterrence', 'Thunderclap', "Myriad Omens' Mandate", 'Ultimate Tactics'],
+    ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
+    skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
+    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Emerald of Genesis',
+    weaponAlts: { alt5: ['Blazing Brilliance', 'Laser Shearer'], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    teams: ['Rover: Electro + Yinlin + Verina', 'Rover: Electro + Calcharo + Shorekeeper'] },
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'General of the Midnight Rangers who commands the azure dragon. On-field Aero DPS who enters Qingloong Mode via Resonance Liberation, dealing heavy aerial Aero DMG through enhanced Basic Attacks.',
-    skills: ['Lone Lance', 'Windqueller', 'Emerald Storm: Prelude', 'Qingloong at War'],
+    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS who builds Resolve through Basic Attacks and the Intro Skill Tactical Strike, spending it on an empowered Windqueller or the Emerald Storm: Finale burst, then unleashes Emerald Storm: Prelude to enter Qingloong Mode — a heavy-hitting Lance of Qingloong combo with high interrupt resistance.",
+    skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
     bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'Verdant Summit',
+    weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Jiyan + Iuno + Shorekeeper', 'Jiyan + Mortefi + Verina'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'Notorious mercenary known as "The Ghost". On-field Electro DPS who chains Resonance Skill combos and enters Death Messenger mode via Liberation for burst finishers.',
-    skills: ['Gnawing Fangs', 'Extermination Order', 'Phantom Etching', 'Hunting Mission'],
+    desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS who builds Cruelty from his Resonance Skill Extermination Order into an enhanced Heavy Attack "Mercy," then triggers Resonance Liberation Phantom Etching to enter Deathblade Gear, replacing his Basic Attack with the Killing Intent-fueled "Death Messenger" burst finisher.',
+    skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
+    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Calcharo + Yinlin + Verina', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
-    desc: 'Eccentric puppeteer who performs alongside Cosmos and Cloudy. On-field Fusion DPS who enters Cosmos Rampage mode via Resonance Liberation, dealing Fusion DMG with enhanced Basic Attacks.',
-    skills: ['Wooly Attack', 'Flaming Woolies', 'Cosmos Rave', 'Black & White Woolies'],
+    desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem from her Basic/Skill/Intro hits into an empowered, damage-reducing Heavy Attack (Cloudy Frenzy), then unleashes Resonance Liberation Cosmos Rave to swap her whole kit for enhanced Fusion versions for 10s.",
+    skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Helix' },
-    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Stringmaster',
+    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
+    weaponAlts: { alt5: ['Boson Astrolabe'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
     teams: ['Encore + Changli + Verina', 'Encore + Sanhua + Shorekeeper'] },
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Martial artist who seeks inner peace through combat. Aero support who generates shields, groups enemies with her Resonance Skill, and buffs team Aero DMG via Outro.',
-    skills: ['Fengyiquan', 'Calming Air', 'Purification Force Field', 'Primordial Chi Spiral'],
+    desc: 'Cleansing Reflections, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
+    skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: "Verity's Handle",
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Marcato', 'Stonard'], alt3: ['Gauntlets of Night'] },
     teams: ['Jianxin + Jiyan + Verina', 'Jianxin + Xiangli Yao + Shorekeeper'] },
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Opera performer possessed by the spirit of a lion. On-field Glacio DPS who transforms into Lion Form via Liberation, dealing sustained Glacio DMG through aerial Basic Attack combos.',
-    skills: ['Majestic Fists', 'Ancient Arts', 'Strive: Lion\'s Vigor', 'Unification of Spirits'],
+    desc: 'Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion\'s Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.',
+    skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt5: ["Moongazer's Sigil", 'Tragicomedy'], alt4: ['Celestial Spiral', 'Hollow Mirage'], alt3: ['Gauntlets of Night'] },
     teams: ['Lingyang + Sanhua + Verina', 'Lingyang + Zhezhi + Shorekeeper'] },
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Gentle botanist devoted to the study of life. Spectro healer who restores HP with Resonance Skill and Liberation, while granting ATK buffs and DMG Deepen to the team via Outro.',
-    skills: ['Cultivation', 'Botany Experiment', 'Arboreal Flourish', 'Starflower Blooms'],
+    desc: 'Nature Calling — with an extensive knowledge of botany, Verina is always solicitous, always smiling, and always wishing for every flower to be blessed with the miracle of life. Spectro healer who builds Photosynthesis Energy from Basic Attacks, Skill, and Intro, then spends it on Heavy/Mid-air Attack Starflower Blooms to heal the team; Liberation Arboreal Flourish both heals and marks enemies for a Coordinated-Attack heal-on-hit, while Outro Blossom heals the incoming Resonator and grants the team All DMG Amp.',
+    skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
-    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Cosmic Ripples',
+    weaponAlts: { alt5: ['Boson Astrolabe', 'Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
     teams: ['Jinhsi + Yinlin + Verina', 'Jiyan + Mortefi + Verina', 'Encore + Changli + Verina'] },
   'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Covert government investigator who manipulates puppet Zapstring from the shadows. Electro sub-DPS who deals off-field Electro DMG via Coordinated Attacks and amplifies teammates\' Resonance Liberation DMG.',
-    skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Thundering Wrath', 'Chameleon Cipher'],
+    desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS who marks targets with Sinner\'s Mark via Basic Attack and Intro Skill, deals off-field Electro DMG through Coordinated Attacks (Electromagnetic Blast/Judgement Strike) once Punishment Mark is applied, and amplifies the incoming teammate\'s Electro DMG and Resonance Liberation DMG via Outro.',
+    skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Chameleon Cipher', 'Thundering Wrath'],
     ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Helix' },
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
+    weaponAlts: { alt5: ['Cosmic Ripples', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Waltz in Masquerade'], alt3: ['Rectifier of Night'] },
     teams: ['Yinlin + Jinhsi + Verina', 'Yinlin + Calcharo + Shorekeeper'] },
   'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'Magistrate of Jinzhou who bears a connection to the Sentinel Jué. On-field Spectro DPS who builds Incarnation stacks via Coordinated Attacks, then unleashes massive Spectro AoE burst through enhanced Basic Attacks.',
-    skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Purge of Light', 'Luminal Synthesis'],
+    desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS who builds Incandescence from any team member's Attribute or Coordinated DMG, enters Incarnation via her Resonance Skill, then spends stacks through Illuminous Epiphany for a scaling Stella Glamor nuke.",
+    skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Luminal Synthesis', 'Purge of Light'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: "Loong's Pearl" },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
     bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
+    weaponAlts: { alt5: ['Lustrous Razor', 'Verdant Summit'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
-  'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'The True Sentinel who guards Jinzhou from the shadows. Fusion sub-DPS who deals rapid Fusion DMG via Resonance Skill combos and buffs the team\'s Fusion DMG through Outro.',
-    skills: ['Blazing Enlightenment', 'Tripartite Flames', 'Radiance of Fealty', 'Flaming Sacrifice'],
+  'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
+    desc: 'Eternal Blaze, counselor serving the Jinzhou Magistrate and former Secretary-General in the capital — shrouded in flames, she\'s fated to burn brightly until her final embers, rising to power with fiery determination and a strategic mindset always thinking ahead. On-field Fusion DPS who enters True Sight from her Basic Attack/Skill/Intro finishers, builds Enflamement stacks from the True Sight follow-ups, then unleashes the enhanced Heavy Attack Flaming Sacrifice — a fast, quickswap-friendly kit that also buffs the incoming Resonator\'s Fusion and Liberation DMG via Outro.',
+    skills: ['Blazing Enlightenment', 'Tripartite Flames', 'Flaming Sacrifice', 'Radiance of Fealty'],
     ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Pavo Plum' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Blazing Brilliance',
+    weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Changli + Brant + Shorekeeper', 'Changli + Encore + Verina'] },
   'Zhezhi': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Shy painter whose ink creations spring to life. Glacio sub-DPS who deploys ink summons that deal off-field Glacio DMG via Coordinated Attacks and buffs Resonance Skill DMG for the team.',
-    skills: ['Dimming Brush', 'Manifestation', 'Living Canvas', 'Ink and Wash'],
+    desc: 'Shy, soft-spoken painter of the Jinzhou art scene whose ink creations spring to life and fight at her command — her bashfulness masks a fierce devotion to her craft and to those she calls friends. Glacio sub-DPS/support who paints Phantasmic Imprints during her Basic Attack and Forte combo, consumes them to unleash off-field Coordinated Attack Glacio nukes via Resonance Liberation (Living Canvas), and buffs the incoming Resonator\'s Glacio DMG and Skill DMG through her Outro Carve and Draw.',
+    skills: ['Dimming Brush', 'Manifestation', 'Ink and Wash', 'Living Canvas'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
+    weaponAlts: { alt5: ['Cosmic Ripples', 'Freeze Frame'], alt4: ['Augment', 'Waltz in Masquerade'], alt3: ['Rectifier of Night'] },
     teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
   'Xiangli Yao': { rarity: 5, element: 'Electro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Brilliant Huaxu Academy researcher who built his own combat mech. On-field Electro DPS who enters Law of Reigns mode via Resonance Liberation, dealing burst Electro DMG through enhanced Skill combos.',
-    skills: ['Probe', 'Deduction', 'Cogitation Model', 'Forever Seeking'],
+    desc: 'Brilliant, unassuming researcher of the Huaxu Academy who built his own combat mech, Thinker, to compensate for his fragile body — a quiet genius who would rather let his logic speak than argue his case. On-field Electro Main DPS who builds Performance Capacity through his Basic Attack/Skill/Dodge Counter combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain enhanced attacks, and unleashes the burst Law of Reigns nuke once Intuition\'s Capacity is filled — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s next hits.',
+    skills: ['Probe', 'Deduction', 'Forever Seeking', 'Cogitation Model'],
     ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Whisperin Core', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Verity's Handle",
+    weaponAlts: { alt5: ['Abyss Surges', 'Tragicomedy'], alt4: ['Stonard', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
     teams: ['Xiangli Yao + Yinlin + Verina', 'Xiangli Yao + Yinlin + Shorekeeper'] },
   'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Eternal guardian of the Tethys, keeper of the Black Shores. Spectro healer who restores HP via Resonance Skill and Liberation, and opens Stellarealm to grant team-wide Crit Rate and Crit DMG buffs.',
-    skills: ['Origin Calculus', 'Chaos Theory', 'End Loop', 'Astral Chord'],
+    desc: 'Eternal guardian of the Tethys and keeper of the Black Shores, an ancient entity who has watched over Rovers across countless cycles with quiet, weary affection. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG as allies cast Intro Skills inside it, and buffs the incoming Resonator\'s All DMG through her Outro Binary Butterfly.',
+    skills: ['Origin Calculus', 'Chaos Theory', 'Astral Chord', 'End Loop'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
+    weaponAlts: { alt5: ['Cosmic Ripples', "Firstlight's Herald"], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
   'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'Enigmatic assassin who blooms like a camellia flower. On-field Havoc DPS who alternates between Budding and Blossom stances, dealing sustained Havoc DMG through enhanced Basic Attacks and Skill combos.',
@@ -130,7 +172,7 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Cleansing Conch', common: 'Whisperin Core', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
-    teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Spectro Rover + Verina'] },
+    teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Rover: Spectro + Verina'] },
   'Brant': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Blazing knight from Rinascita whose soul burns with unflickering valor. On-field Fusion DPS who chains Basic Attacks and Skill combos in two alternating modes, with built-in self-healing on hits.',
     skills: ['Captain\'s Rhapsody', 'Anchors Aweigh!', 'To the Horizon', 'Ocean Odyssey'],
@@ -151,21 +193,21 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Blazing Justice',
-    teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Spectro Rover + Verina'] },
+    teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Rover: Spectro + Verina'] },
   'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Free-spirited wandering bard whose melodies command the wind. Aero sub-DPS who applies Erosion via Coordinated Attacks and Skill summons while buffing team Aero DMG through Outro.',
     skills: ['Quadruple Time Steps', 'Harmonic Allegro', 'Singer\'s Triple Cadenza', 'Symphony of Wind and Verse'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
-    teams: ['Ciaccona + Cartethyia + Aero Rover', 'Ciaccona + Cartethyia + Chisa'] },
+    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
   'Cartethyia': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'The Blessed Maiden of Rinascita, beloved by wind and sea. HP-scaling on-field Aero DPS who shifts between sword and Fleurdelys forms, dealing Aero DMG through Erosion-enhanced Basic Attacks.',
     skills: ['Sword to Carve My Forms', 'Sword to Bear Their Names', 'A Knight\'s Heartfelt Prayers', 'Tempest'],
     ascension: { boss: 'Unfading Glory', common: 'Tidal Residuum', specialty: 'Bamboo Iris' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
-    teams: ['Cartethyia + Ciaccona + Aero Rover', 'Cartethyia + Ciaccona + Chisa'] },
+    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Cartethyia + Ciaccona + Chisa'] },
   'Lupa': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Sub DPS',
     desc: 'Lone wolf Star Gladiator of the arena who fights for herself alone. Fusion sub-DPS who shreds enemy Fusion RES and buffs team DMG via Liberation and Outro, enabling mono-Fusion compositions.',
     skills: ['Flaming Star', 'Shewolf\'s Hunt', 'Fire-Kissed Glory', 'Ignis Lupa'],
@@ -432,7 +474,10 @@ const CHARACTER_DATA = {
   ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
   ['Lucy',          ['Heavy ATK', 'Liberation'],     [],                                      ['Hack - Shifting']],
   // 5★ Sub DPS
-  ['Rover',         ['Skill', 'Liberation'],         [],                                      []],
+  ['Rover: Spectro', ['Skill', 'Liberation'],        [],                                      ['Frazzle']],
+  ['Rover: Havoc',   ['Heavy ATK', 'Basic ATK'],     ['Crit Rate Buff'],                      ['Havoc RES Shred']],
+  ['Rover: Aero',    ['Skill'],                      ['Heal', 'Erosion Cap Buff'],            []],
+  ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],
   ['Yinlin',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
   ['Changli',       ['Skill'],                       ['Fusion DMG Amp'],                      []],
   ['Zhezhi',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
@@ -471,19 +516,22 @@ const CHARACTER_DATA = {
 
 // [SECTION:BASE_STATS] — Level 90 base stats from Game8 (HP, ATK, DEF, maxEnergy)
 [
-  ['Rover',         11400, 375, 1368, 125],
-  ['Jiyan',         10487, 437, 1185, 125],
-  ['Calcharo',      10500, 437, 1185, 125],
-  ['Encore',        10512, 425, 1246, 125],
-  ['Jianxin',       14112, 337, 1124, 150],
-  ['Lingyang',      10387, 437, 1209, 125],
-  ['Verina',        14237, 337, 1099, 175],
+  ['Rover: Spectro', 11400, 375, 1369, 125],
+  ['Rover: Havoc',   10825, 413, 1259, 125],
+  ['Rover: Aero',    10775, 438, 1137, 150],
+  ['Rover: Electro', 10775, 438, 1137, 125],
+  ['Jiyan',         10488, 438, 1186, 125],
+  ['Calcharo',      10500, 438, 1186, 125],
+  ['Encore',        10513, 425, 1247, 125],
+  ['Jianxin',       14113, 338, 1124, 150],
+  ['Lingyang',      10388, 438, 1210, 125],
+  ['Verina',        14238, 338, 1100, 175],
   ['Yinlin',        11000, 400, 1283, 125],
-  ['Jinhsi',        10825, 412, 1258, 125],
-  ['Changli',       10387, 462, 1099, 125],
-  ['Zhezhi',        12250, 375, 1197, 125],
+  ['Jinhsi',        10825, 413, 1259, 125],
+  ['Changli',       10388, 463, 1100, 125],
+  ['Zhezhi',        12250, 375, 1198, 125],
   ['Xiangli Yao',   10625, 425, 1222, 125],
-  ['Shorekeeper',   16712, 287, 1099, 175],
+  ['Shorekeeper',   16713, 288, 1100, 175],
   ['Camellya',      10325, 450, 1161, 125],
   ['Carlotta',      12450, 462, 1197, 125],
   ['Roccia',        12250, 375, 1197, 125],
@@ -540,6 +588,7 @@ const CHARACTER_DATA = {
 // Sources: Prydwen, WutheringLab, community rotation testing
 [
   // 5★ Main DPS — high totalMult, long onField
+  ['Rover: Havoc',  2300, 23, 15],  // Devastation → Dark Surge enhanced combo
   ['Jiyan',         2850, 22, 16],  // Heavy ATK burst in Qingloong
   ['Calcharo',      2600, 24, 17],  // Liberation → Death Messenger combo
   ['Encore',        2400, 22, 15],  // Cosmos Rampage mode
@@ -561,7 +610,9 @@ const CHARACTER_DATA = {
   ['Hiyuki',        3400, 23, 17],  // Present/Foreclaimed Self, Iai burst finisher — best Glacio DPS
   ['Lucy',          2000, 23, 12],  // TCP/Root Access into enhanced Heavy + Ultimate
   // 5★ Sub DPS — moderate totalMult, short onField
-  ['Rover',         1800, 25, 8],   // Spectro Rover quick swap
+  ['Rover: Spectro', 1800, 25, 8],   // Quick-swap Frazzle applier
+  ['Rover: Aero',    900,  25, 6],   // Healer/support, short on-field time
+  ['Rover: Electro', 1300, 24, 9],   // Hybrid utility, moderate on-field
   ['Yinlin',        1600, 25, 6],   // Off-field Coordinated
   ['Changli',       2000, 22, 8],   // Fast Fusion combos
   ['Zhezhi',        1400, 25, 5],   // Off-field painter
@@ -607,6 +658,7 @@ const CHARACTER_DATA = {
 // dmgFocus is set in CHAR_TAGS above — this section only adds statScaling
 [
   // 5★ Main DPS
+  ['Rover: Havoc',   'ATK'],
   ['Jiyan',          'ATK'],
   ['Calcharo',       'ATK'],
   ['Encore',         'ATK'],
@@ -633,7 +685,9 @@ const CHARACTER_DATA = {
   ['Rebecca',        'ATK'],
   ['Denia',          'ATK'],
   // 5★ Sub DPS
-  ['Rover',          'ATK'],
+  ['Rover: Spectro', 'ATK'],
+  ['Rover: Aero',    'ATK'],
+  ['Rover: Electro', 'ATK'],
   ['Yinlin',         'ATK'],
   ['Changli',        'ATK'],
   ['Zhezhi',         'ATK'],
@@ -689,9 +743,6 @@ const CHARACTER_DATA = {
   ['Denia',         'T0',   'T0.5'],
   ['Rebecca',       'T0.5', 'T1'],
   ['Lucy',          'T1',   'T2'],
-  // NOTE: Rover's existing tier row below reflects the Spectro attunement (the one the character model
-  // otherwise describes). Electro attunement is separately confirmed at T4 ToA / T4 WW — not modeled here
-  // since TIER_DATA is one row per character key, not per attunement (see CHARACTER_DATA Rover comment).
   ['Phrolova',      'T0.5', 'T0'],
   ['Augusta',       'T0.5', 'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
@@ -703,7 +754,9 @@ const CHARACTER_DATA = {
   ['Carlotta',      'T1',   'T3'],
   ['Zani',          'T1',   'T1.5'],
   ['Brant',         'T1',   'T1'],
-  ['Rover',         'T0.5', 'T1.5'],
+  ['Rover: Spectro', 'T0.5', 'T1.5'],
+  ['Rover: Aero',    'T1.5', 'T2'],
+  ['Rover: Electro', 'T4',   'T4'],
   ['Jiyan',         'T1.5', 'T1'],
   ['Phoebe',        'T1.5', 'T2'],
   ['Cantarella',    'T1.5', 'T0.5'],
@@ -711,6 +764,7 @@ const CHARACTER_DATA = {
   ['Sanhua',        'T1.5', 'T2'],
   ['Buling',        'T1.5', 'T2'],
   ['Encore',        'T2',   'T4'],
+  ['Rover: Havoc',  'T2',   'T2.5'],
   ['Jinhsi',        'T2',   'T4'],
   ['Xiangli Yao',   'T2',   'T3'],
   ['Changli',       'T2',   'T1.5'],
@@ -738,7 +792,8 @@ const CHARACTER_DATA = {
 // Huanglong (Jinzhou/Mengzhou), Rinascita, Black Shores, Septimont, Lahai-Roi
 [
   // Huanglong
-  ['Rover',        'Huanglong'], ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
+  ['Rover: Spectro', 'Huanglong'], ['Rover: Havoc', 'Huanglong'], ['Rover: Aero', 'Huanglong'], ['Rover: Electro', 'Huanglong'],
+  ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
   ['Encore',       'Huanglong'], ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
@@ -788,15 +843,17 @@ const CHARACTER_DATA = {
 //             critRate, critDmg, deepen, resShred, defShred, defIgnore, coordDmg
 const CHAR_BUFF_TABLE = {
   // ── 5★ Supports / Sub DPS ──
+  // Corrected against ww.nanoka.cc character/1503 — Outro Blossom grants All DMG Amp, not DMG Deepen
+  // (she has no Deepen anywhere in her kit).
   'Verina': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 30 }],
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 30 }],
     libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% All DMG Deepen 30s. Inherent 1: 20% ATK teamwide 20s (on Forte/Lib/Outro).',
+    note: 'Outro Blossom: heals the incoming Resonator + All DMG Amp +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
   },
   'Shorekeeper': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 30 }],
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 30 }],
     libBuffs: [
       { stat: 'critRate', value: 12.5, target: 'team', duration: 30, condition: 'In Stellarealm field' },
       { stat: 'critDmg', value: 25, target: 'team', duration: 30, condition: 'In Stellarealm field' },
@@ -805,12 +862,14 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 15% All DMG Amp 30s. Lib Stellarealm: +12.5% CR +25% CD (30s). Knockdown recovery.',
   },
+  // Corrected against ww.nanoka.cc character/1405 — prior Outro (15% All DMG Deepen) and debuff
+  // (DEF Shred on shielded) didn't match her real kit at all.
   'Jianxin': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'libDmg', value: 38, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'defShred', value: 15, duration: 10, condition: 'Shield active' }],
-    note: 'Outro: 15% All DMG Deepen. Shield + grouping. DEF Shred on shielded.',
+    debuffs: [],
+    note: 'Shield support/Parry-stance sub-DPS. Forte (Primordial Chi Spiral) grants a large HP-scaling shield and periodic healing while channeled. Liberation Purification Force Field groups enemies before exploding. Outro Transcendence: Liberation DMG Amp +38% (14s) for the incoming Resonator.',
   },
   'Suisui': {
     outroBuffs: [
@@ -939,9 +998,9 @@ const CHAR_BUFF_TABLE = {
       { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [],
-    debuffs: [{ stat: 'resShred', value: 10, duration: 10, condition: 'Electro RES' }],
-    note: 'Outro: +20% Electro DMG Amp + 25% Liberation DMG Amp (14s). Off-field Coordinated ATK. Electro RES Shred.',
+    selfBuffs: [{ stat: 'critRate', value: 15, target: 'self', duration: 5, condition: 'Inherent Skill Pain Immersion: Crit Rate +15% for 5s after Magnetic Roar.' }],
+    debuffs: [],
+    note: 'Off-field Electro sub-DPS via Coordinated Attacks (Electromagnetic Blast on Sinner\'s Mark targets, Judgement Strike on Punishment Mark targets). Outro: Electro DMG Amp +20% + Liberation DMG Amp +25% (14s) for the incoming Resonator. No RES Shred in her kit.',
   },
   'Zhezhi': {
     outroBuffs: [
@@ -1039,9 +1098,9 @@ const CHAR_BUFF_TABLE = {
   'Jinhsi': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 20, target: 'self', duration: 99, condition: 'Inherent Skill Radiant Surge: Spectro DMG Bonus +20% (always active).' }],
     debuffs: [],
-    note: 'Incarnation nuke DPS. Weapon: 12% Spectro + 24% Lib DMG.',
+    note: 'On-field Spectro burst DPS. Builds Incandescence from any team member\'s Attribute/Coordinated DMG, then spends it via Illuminous Epiphany (Incarnation Basic ATK Stage 4) for a massive Stella Glamor nuke (+44.54% DMG per Incandescence). Outro Temporal Bender is a pure Incandescence-gain utility, not a team buff.',
   },
   // Xiangli Yao: moved to Main DPS section below
   'Zani': {
@@ -1171,16 +1230,16 @@ const CHAR_BUFF_TABLE = {
   'Encore': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 10, target: 'self', duration: 10, condition: 'Inherent Skill Woolies Cheer Dance: Fusion DMG +10%/10s on Flaming Woolies/Cosmos-Rampage cast.' }],
     debuffs: [],
-    note: 'Cosmos Rampage mode Basic ATK DPS.',
+    note: 'On-field Fusion main DPS. Builds Mayhem from Basic/Skill/Intro hits; at full Mayhem, Heavy ATK enters a 70% DMG-reduction state and casts a big Liberation-DMG finisher (Cloudy Frenzy / Cosmos Rupture) on exit. Liberation Cosmos Rave replaces her whole kit with enhanced Fusion versions for 10s. Outro Thermal Field is a pure DoT proc, no team buff — free to quickswap.',
   },
   'Lingyang': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'elemDmg', value: 50, target: 'self', duration: 14, condition: "Liberation Strive: Lion's Vigor grants self Glacio DMG Bonus +50% for 14s." }],
     debuffs: [],
-    note: 'Lion Form aerial Basic ATK DPS.',
+    note: "On-field Glacio main DPS. Forte Circuit's Striding Lion state (entered via Heavy ATK Glorious Plunge at full Lion's Spirit) unlocks airborne enhanced attacks. Outro Frosty Marks is a pure-DMG AoE proc, not a team buff, though S4 Resonance Chain grants team Glacio DMG +20%/30s on it.",
   },
   'Cartethyia': {
     outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],
@@ -1263,12 +1322,33 @@ const CHAR_BUFF_TABLE = {
     note: 'Mech form Liberation DPS. Weapon: 12% Electro + 24% Mech DMG.',
   },
   // Jinhsi: defined earlier in Main DPS section
-  'Rover': {
-    outroBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Spectro RES Shred' }],
+  'Rover: Spectro': {
+    outroBuffs: [],
     libBuffs: [],
+    selfBuffs: [{ stat: 'resShred', value: 10, target: 'enemy', duration: 20, condition: 'S6: Resonating Slashes/Spin hit → Spectro RES Shred -10% (20s). Resonance Chain 6, not innate.' }],
+    debuffs: [{ stat: 'frazzle', value: 8, duration: 9, condition: 'Forte Circuit Resonating Spin→Echoes applies 2 stacks (+Shimmer); Liberation Echoing Orchestra applies 6 stacks. Shimmer (9s) prevents stacks decaying.' }],
+    note: 'Spectro Frazzle applier/quick-swap support. Forte: Resonance Skill at 50+ Diminutive Sound casts Resonating Spin (2 Frazzle stacks + Shimmer, which stops decay), followed by Basic ATK Resonating Echoes. Liberation Echoing Orchestra applies 6 more Frazzle stacks. S6 (5 copies): Skill hits Spectro RES Shred -10%/20s.',
+  },
+  'Rover: Havoc': {
+    outroBuffs: [],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'critRate', value: 25, target: 'self', duration: 99, condition: 'S6 (5 copies): Crit Rate +25% while in Dark Surge.' }],
+    debuffs: [{ stat: 'resShred', value: 10, duration: 20, condition: 'S4 (3 copies): Devastation/Liberation hit → Havoc RES Shred -10% (20s). Chain-gated, not innate.' }],
+    note: 'On-field Havoc main DPS. Hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge — an enhanced Basic/Heavy/Skill state ending in Liberation Deadening Abyss, a 1520% ATK single-target nuke.',
+  },
+  'Rover: Aero': {
+    outroBuffs: [{ stat: 'totalMult', value: 3, target: 'team', duration: 30, condition: "Outro Storm's Echo: Aeolian Realm — team's Aero Erosion stack cap +3 for 10s per hit (30s field)." }],
+    libBuffs: [{ stat: 'totalMult', value: 77, target: 'team', duration: 0, condition: 'Liberation Omega Storm heals nearby team ~2090 + 77% ATK.' }],
     selfBuffs: [],
-    debuffs: [{ stat: 'frazzle', value: 10, duration: 15, condition: '10 stacks via Skill + Liberation. Shimmer prevents decay.' }],
-    note: 'Spectro Frazzle applier. Outro: Spectro RES -10% (S6). Shimmer prevents stack decay.',
+    debuffs: [],
+    note: "Healer/support. Mid-air Skill Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off the target hit and converts each into a stack of Aero Erosion. Forte Cloudburst Dance and Liberation Omega Storm both heal the team.",
+  },
+  'Rover: Electro': {
+    outroBuffs: [{ stat: 'allDmg', value: 25, target: 'ally', duration: 14, condition: 'Outro Rumbling Thunders: incoming Resonator gains Electro Core — next Negative Status hit grants All DMG Amp +25% (14s).' }],
+    libBuffs: [],
+    selfBuffs: [{ stat: 'atkPct', value: 10, target: 'team', duration: 20, condition: 'Tap-cast Overshock at max Electric Surge → team ATK +10% (20s).' }],
+    debuffs: [{ stat: 'flare', value: 10, duration: 99, condition: 'Inherent Skill Decipher: hold-cast Overshock inflicts 10 stacks of Electro Flare.' }],
+    note: 'Parry Stance hybrid. Hold Basic ATK for interrupt immunity + 60% DMG reduction. At max Electric Surge, tap Overshock for a team ATK buff or hold it to enter Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses). Currently the weakest attunement — lacks a strong DPS partner.',
   },
 };
 
@@ -1400,15 +1480,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Standing Ovation', '+20% Fusion DMG + 25% Skill DMG Amp (14s)'],
   ],
   'Calcharo': [
-    ['Basic ATK', 'Gnawing Fangs', '23%×2 → 50% → 107.1% → 133.3%'],
-    ['Heavy ATK', 'Standard', '20.8%×5'],
-    ['Skill', 'Extermination Order', '86.5% → 129.7% → 216.2%'],
-    ['Forte', 'Mercy', '19.7%×8 + 39.3%'],
-    ['Forte', 'Death Messenger', '49.2%×8 + 98.4%'],
-    ['Liberation', 'Phantom Etching', '300% initial + combo chain'],
-    ['Liberation', 'Hounds Roar', '44.3% → 50.2% → 56.2% → 68.1% → 75.5%'],
-    ['Intro', 'Wanted Outlaw', '20%×2 + 30%×2'],
-    ['Outro', 'Shadowy Raid', '196% + 392%'],
+    ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%'],
+    ['Heavy ATK', 'Standard', '41.36%×5'],
+    ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Dodge Counter', 'Standard', '66.48%×3+85.47%'],
+    ['Skill', 'Extermination Order Stage 1-3', '51.57%×2+68.76% → 77.36%×2+103.14% → 214.87%×2', '10s cooldown; does not interrupt the Basic ATK cycle.'],
+    ['Forte', 'Heavy ATK: "Mercy"', '39.11%×8+78.22%', 'At 3 Cruelty (gained from Skill hits), Heavy ATK becomes "Mercy" — restores Resonance/Concerto Energy.'],
+    ['Forte', 'Heavy ATK: "Death Messenger"', '97.77%×8+195.53%', 'In Deathblade Gear, at 5 Killing Intent, Basic ATK becomes "Death Messenger" (Liberation DMG).'],
+    ['Liberation', 'Phantom Etching → Hounds Roar', '596.43% → 88.07%→35.23%×2+52.84%×2→163.84%→34.82%×6→150.19%×2', 'Enters Deathblade Gear (11s): Basic ATK replaced by Hounds Roar, Heavy ATK/Dodge Counter deal Liberation DMG.'],
+    ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2'],
+    ['Outro', 'Shadowy Raid', '195.98%+391.96%'],
   ],
   'Camellya': [
     ['Basic ATK', 'Thorns 1-5', '31.5% → 46.8% → 76.5% → 248.4% → 96.9%'],
@@ -1459,15 +1540,15 @@ const SKILL_MULTIPLIERS = {
     ['Outro', "Wind's Divine Blessing", '+17.5% Aero DMG vs Negative Status (20s)', 'Swap-out buff to the active teammate against targets with a Negative Status.'],
   ],
   'Changli': [
-    ['Basic ATK', 'Stage 1-4', '29.7% → 35.7% → 55% → 85%'],
-    ['Mid-air', 'Stage 1-4', '30.9% → 51.2% → 66.4% → 63.8%'],
-    ['Skill', 'True Sight Capture', '41.2%×3 + 82.4%'],
-    ['Skill', 'True Sight Conquest', '29.7%×2 + 41.5% + 47.4%'],
-    ['Skill', 'True Sight Charge', '36.6% + 54.8%'],
-    ['Forte', 'Flaming Sacrifice', '19.7%×5 + 230.3%'],
-    ['Liberation', 'Radiance of Fealty', '610%'],
-    ['Intro', 'Blazing Entry', '22.4% + 13.1%×4'],
-    ['Outro', 'Pyrospell', '+20% Fusion DMG Amp (14s)'],
+    ['Basic ATK', 'Blazing Enlightenment Stage 1-4', '29.49%×2 → 35.49%×2 → 36.45%×3 → 50.70%+29.58%×4', 'Releasing Stage 4 enters True Sight (12s).'],
+    ['Mid-air', 'Stage 1-4', '61.35% → 50.87%×2 → 44.00%×3 → 38.03%+22.18%×4', 'Also enters True Sight on release of Stage 4.'],
+    ['Heavy ATK', 'Standard / Mid-air Heavy', '28.99%×3+37.27% → 123.27%'],
+    ['Dodge Counter', 'Standard', '82.64%×3'],
+    ['Skill', 'True Sight: Capture / Conquest / Charge', '81.88%×3+163.76% → 58.95%×2+82.52%+94.31% → 72.68%+109.02%', 'Capture (2 charges, 12s recharge) enters True Sight; Conquest/Charge are the True Sight follow-ups.'],
+    ['Forte', 'Heavy ATK: Flaming Sacrifice', '39.25%×5+457.85%', 'At 4 Enflamement stacks, Heavy ATK casts this instead — 40% DMG reduction while casting.'],
+    ['Liberation', 'Radiance of Fealty', '1212.75%', '20s cooldown; grants 4 Enflamement and Fiery Feather (next Flaming Sacrifice within 10s: self ATK +25%).'],
+    ['Intro', 'Obedience of Rules', '44.50%+25.96%×4', 'Also enters True Sight.'],
+    ['Outro', 'Strategy of Duality', 'Fusion DMG Amp +20% + Liberation DMG Amp +25% (10s)', 'Grants the incoming Resonator these buffs — no direct DMG.'],
   ],
   'Chisa': [
     ['Basic ATK', 'Stage 1-2', '16.71%×2 → 9.55%+19.09%+66.81%', 'Standard combo string ending in a heavier chainsaw finisher.'],
@@ -1489,18 +1570,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
   'Encore': [
-    ['Basic ATK', 'Wooly Attack 1-4', '28% → 33.3% → 33.4%×2 → 19.3%×4'],
-    ['Basic ATK', 'Wooly Strike', '120%'],
-    ['Heavy ATK', 'Standard', '94.1%'],
-    ['Skill', 'Flaming Woolies', '38.5%×8'],
-    ['Skill', 'Energetic Welcome', '170.6%'],
-    ['Liberation', 'Cosmos Frolicking 1-4', '45.4%×2 → 28.4%×3 → 33.2%×4 → 97.6%×3'],
-    ['Liberation', 'Cosmos Heavy ATK', '109.4%'],
-    ['Liberation', 'Cosmos Rampage', '31.9%×4'],
-    ['Forte', 'Cloudy Frenzy', '168%'],
-    ['Forte', 'Cosmos Rupture', '23.4%×6 + 249.1%'],
-    ['Intro', 'Woolies Can Help!', '100%'],
-    ['Outro', 'Thermal Field', '176.8% ×4 ticks'],
+    ['Basic ATK', 'Wooly Attack Stage 1-4 → Wooly Strike', '55.66% → 66.20% → 66.30%×2 → 38.27%×4 → 238.57%', 'Stage 4 into a timed-press Wooly Strike finisher.'],
+    ['Heavy ATK', 'Standard', '187.08%'],
+    ['Mid-air', 'Plunging Attack', '123.26%'],
+    ['Dodge Counter', 'Standard', '125.94%×2'],
+    ['Skill', 'Flaming Woolies → Energetic Welcome', '76.61%×8 → 339.16%', '10s cooldown; Skill again after Flaming Woolies casts Energetic Welcome.'],
+    ['Forte', 'Heavy ATK: Cloudy Frenzy', '334.00%', 'At full Mayhem, Heavy ATK enters a 70% DMG-reduction state, then casts Cloudy Frenzy (Liberation DMG) on exit.'],
+    ['Forte', 'Heavy ATK: Cosmos Rupture', '46.42%×6+495.21%', 'Same mechanic as Cloudy Frenzy, but during Cosmos Rave.'],
+    ['Liberation', 'Cosmos Rave', '217.58% (Cosmos Heavy ATK) · 90.18%×2+56.40%×3+65.99%×4+194.01%×3 (Cosmos: Frolicking) · 63.32%×4 (Cosmos: Rampage)', '10s state; Basic/Heavy/Skill/Dodge Counter all replaced with enhanced Fusion versions. 16s cooldown.'],
+    ['Intro', 'Woolies Helpers', '198.81%'],
+    ['Outro', 'Thermal Field', '176.76% ATK per tick ×4 (6s, 1.5s interval)', 'AoE burn field around the Skill target — no team buff, so she\'s free to quickswap.'],
   ],
   'Galbrena': [
     ['Basic ATK', 'Stage 1-4', '29.8% → 66.2% → 71.9% → 89.5%', 'Standard combo string, builds toward her Demon Hypostasis form.'],
@@ -1523,44 +1602,48 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator Heavy ATK DMG Amp.'],
   ],
   'Jiyan': [
-    ['Basic ATK', 'Lone Lance 1-5', '36.8% → 22% → 91.5% → 66.6% → 237.5%'],
-    ['Heavy ATK', 'Standard', '11.2%×6'],
-    ['Skill', 'Windqueller', '53.5%×4'],
-    ['Liberation', 'Lance of Qingloong 1-3', '33%×8 → 31%×8 → 33.6%×8'],
-    ['Forte', 'Emerald Storm Finale', '71.9%×2 + 215.7%'],
-    ['Intro', 'Tactical Strike', '100%'],
-    ['Outro', 'Discipline', '313.4% coordinated ATK'],
+    ['Basic ATK', 'Lone Lance Stage 1-5', '73.16% → 43.73% → 36.38%×2 → 66.20%×2 → 23.60%×4+153.45%×2', 'Standard 5-stage combo; Stage 3/5 have sub-hits.'],
+    ['Heavy ATK', 'Standard / Windborne Strike / Abyssal Slash', '22.20%×6 → 105.96% → 81.71%', 'Hold or release Basic ATK during Heavy ATK for a follow-up finisher.'],
+    ['Mid-air', 'Plunging Attack + Follow-up', '123.26%+155.66%'],
+    ['Dodge Counter', 'Standard', '125.84%×2'],
+    ['Skill', 'Windqueller', '106.36%×4', '7s cooldown; consumes Resolve for +20% DMG outside Qingloong Mode.'],
+    ['Forte', 'Emerald Storm: Finale', '142.91%×2+428.73%', 'At 30+ Resolve, Liberation Prelude casts Finale instead (Heavy ATK DMG).'],
+    ['Liberation', 'Emerald Storm: Prelude → Lance of Qingloong', '65.52%×8 → 61.55%×8 → 66.76%×8', 'Enters Qingloong Mode (10s): Basic/Heavy/Dodge Counter replaced by Lance of Qingloong.'],
+    ['Intro', 'Tactical Strike', '198.81%'],
+    ['Outro', 'Discipline', '313.40% ATK per proc, up to 2', 'Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window).'],
   ],
   'Jinhsi': [
-    ['Basic ATK', 'Stage 1-4', '33.4% → 49% → 53.6% → 79.3%'],
-    ['Heavy ATK', 'Standard', '12%×5 + 18% + 42%'],
-    ['Skill', 'Standard', '9.8%×4 + 39.2%'],
-    ['Skill', 'Overflowing Radiance', '5%×4 + 14.9%×4 + 19.8%'],
-    ['Basic ATK', 'Incarnation 1-4', '44.6% → 65.4% → 83.4% → 93.9%'],
-    ['Forte', 'Stella Glamor', '175% + 22.4% per Incandescence'],
-    ['Liberation', 'Unbound Enlightenment', '251.4% + 586.6%'],
-    ['Intro', 'Luminal Descent', '80%'],
-    ['Outro', 'Guiding Light', 'Spectro coordinated ATK'],
+    ['Basic ATK', 'Slash of Breaking Dawn Stage 1-4', '66.47% → 38.99%+19.50%×3 → 10.65%×7+31.94% → 63.09%+94.63%'],
+    ['Heavy ATK', 'Standard', '23.86%×5+35.79%+83.51%'],
+    ['Mid-air', 'Plunging Attack', '12.33%+24.66%+86.29%'],
+    ['Dodge Counter', 'Standard', '14.68%×7+44.02%'],
+    ['Skill', 'Trailing Lights of Eons → Overflowing Radiance', '19.46%×4+77.84% → 9.87%×4+29.59%×4+39.45%', 'After Basic ATK 4 or Intro, Skill becomes Overflowing Radiance, entering Incarnation (10s).'],
+    ['Forte', 'Incarnation → Illuminous Epiphany', '88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67% (Basic) · 100.76%+75.57%×2+251.90% (Crescent Divinity) · 19.89%×6+347.92% (Solar Flare/Stella Glamor)', 'Stella Glamor gains +44.54% per Incandescence spent (up to 50).'],
+    ['Liberation', 'Purge of Light', '499.81%+1166.22%', '24s cooldown; huge AoE nuke.'],
+    ['Intro', "Loong's Halo", '159.05%'],
+    ['Outro', 'Temporal Bender', 'Incandescence gain rate +1/s for 20s', 'Utility only — no direct DMG or team buff.'],
   ],
   'Jianxin': [
-    ['Basic ATK', 'Stage 1-4', '37.6% → 35.3% → 45.3% → 46.4%+30.9%'],
-    ['Heavy ATK', 'Standard', '40%'],
-    ['Skill', 'Chi Counter', '28.8%×2'],
-    ['Skill', 'Chi Parry', '72.8%'],
-    ['Forte', 'Primordial Chi Spiral', '42.2%×2 + 84.4%'],
-    ['Liberation', 'Purification Force Field', '69.6% + 92.8%'],
-    ['Intro', 'Essence of Tao', '50%×2'],
-    ['Outro', 'Transcendence', '+15% All DMG Deepen (14s)'],
+    ['Basic ATK', 'Fengyiquan Stage 1-4', '69.46% → 26.64%×2+79.90% → 41.75%×4 → 113.40%'],
+    ['Heavy ATK', 'Standard', '126.07%'],
+    ['Mid-air', 'Plunging Kick', '123.27%'],
+    ['Dodge Counter', 'Standard', '40.83%×2+163.29%'],
+    ['Skill', 'Calming Air: Chi Counter / Chi Parry', '334.60% / 258.73%', 'Hold Skill for Parry Stance — Chi Counter on being attacked, Chi Parry on early release. 12s cooldown.'],
+    ['Forte', 'Primordial Chi Spiral (Zhoutian Progress)', '248.52% (Pushing Punch) · 139.17%/377.74%/516.91% (Minor/Major-Inner/Major-Outer Shock) · 218.70% (Yielding Pull)', 'At max Chi, hold Basic ATK for a channeled shield-and-DMG state with 50% DMG reduction.'],
+    ['Liberation', 'Purification Force Field', '29.83% (continuous) + 636.20% (explosion)', 'Pulls targets into the field, then explodes on expiry. 20s cooldown.'],
+    ['Intro', 'Essence of Tao', '33.80%×3+67.60%'],
+    ['Outro', 'Transcendence', 'Resonance Liberation DMG Amp +38% (14s)', 'Grants the incoming Resonator this buff — no direct DMG.'],
   ],
   'Lingyang': [
-    ['Basic ATK', 'Stage 1-4', '20.3% → 26.5%×2 → 22.8%×3 → 39%'],
-    ['Heavy ATK', 'Standard', '11.3%×5'],
-    ['Skill', 'Ancient Arts', '100%'],
-    ['Liberation', 'Cloudsplitter', '51%×4'],
-    ['Liberation', 'Striding Lion 1-4', '40%×2 → 43.5% → 51%×2 → 55%'],
-    ['Forte', 'Mountain Roar', '30%×4'],
-    ['Intro', 'Lion Awakens', '100%'],
-    ['Outro', 'Feline Farewell', '+20% Glacio DMG + 25% Basic ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Majestic Fists Stage 1-5', '59.65% → 79.53% → 72.87%×2 → 20.41%×5+43.72% → 152.49%', 'Stage 5 can be replaced by Feral Roars (79.53%×2) after casting Furious Punches.'],
+    ['Heavy ATK', 'Standard', '145.73%'],
+    ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Dodge Counter', 'Standard', '126.05%×2'],
+    ['Skill', 'Ancient Arts → Furious Punches', '132.61% → 76.25%×2', 'Basic ATK 3-5 or Feral Roars swaps Skill to Furious Punches; no cooldown, doesn\'t reset the Basic ATK cycle.'],
+    ['Forte', 'Unification of Spirits (Striding Lion)', '172.37% (Glorious Plunge) · 87.08%×2+116.11%→31.77%×6 (Feral Gyrate) · 82.88%×2 (Mountain Roamer) · 36.03%×8+192.15% (Stormy Kicks) · 174.96%×2 (Tail Strike)', 'At full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters Striding Lion — an airborne enhanced-attack state.'],
+    ['Liberation', "Strive: Lion's Vigor", '397.62%', "Also grants self Glacio DMG Bonus +50% for 14s. 20s cooldown."],
+    ['Intro', 'Lion Awakens', '99.41%×2'],
+    ['Outro', 'Frosty Marks', '587.94% ATK AoE', 'Pure-damage swap-out finisher — no team buff baseline (S4 chain grants team Glacio DMG +20%/30s).'],
   ],
   'Lupa': [
     ['Basic ATK', 'Stage 1-4', '45.3% → 45.3% → 79.3% → 89.9%', 'Standard combo string, builds Wolflame.'],
@@ -1650,22 +1733,60 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Pero, Help!', '85%'],
     ['Outro', 'Applause, Please!', '+20% Havoc DMG + 25% Basic ATK DMG Amp (14s)'],
   ],
-  'Rover': [
-    ['Basic ATK', 'Stage 1-4', '19.7% → 25.1% → 30% → 43.2%'],
-    ['Heavy ATK', 'Standard', '44.8%'],
-    ['Skill', 'Resonating Spin', '43.6%×2'],
-    ['Liberation', 'Echoing Orchestration', '146.1%'],
-    ['Intro', 'Wavesplitter', '50%×2'],
-    ['Outro', 'Continuum', '+20% Spectro DMG Amp (14s)'],
+  'Rover: Spectro': [
+    ['Basic ATK', 'Vibration Manifestation Stage 1-4', '59.15% → 76.05% → 15.21%×5 → 130.13%', 'Standard 4-stage combo; each hit builds Diminutive Sound toward Forte.'],
+    ['Heavy ATK', 'Standard / Resonance / Aftertune', '19.27%×5 → 76.05% → 126.75%', 'Charged Heavy ATK, into timed-press Resonance follow-up, into Aftertune finisher.'],
+    ['Mid-air', 'Plunging Attack', '104.78%'],
+    ['Dodge Counter', 'Standard', '195.34%'],
+    ['Skill', 'Resonating Slashes', '236.19%', '6s cooldown; builds Diminutive Sound toward the Forte combo.'],
+    ['Forte', 'Resonating Spin → Resonating Echoes', '129.08%×2+39.77% → 79.53%+159.05%', 'At 50+ Diminutive Sound, Skill casts Resonating Spin (2 Spectro Frazzle stacks + Shimmer), Basic ATK follow-up casts Resonating Echoes.'],
+    ['Liberation', 'Echoing Orchestra', '198.81%+675.96%', 'Delayed blast; applies 6 stacks of Spectro Frazzle.'],
+    ['Intro', 'Waveshock', '168.99%'],
+    ['Outro', 'Instant', 'Stasis field (CC only, no listed DMG in kit text) — some sources credit +20% Spectro DMG Amp (14s) to the swap-out window'],
+  ],
+  'Rover: Havoc': [
+    ['Basic ATK', 'Tuneslayer Stage 1-5', '56.67% → 56.67%×2 → 85% → 40.30%×3 → 94.44%×2', '5-stage Basic ATK combo, into an enhanced Stage 4 after a Heavy ATK.'],
+    ['Heavy ATK', 'Standard', '95.43%'],
+    ['Mid-air', 'Plunging Attack', '117.10%'],
+    ['Dodge Counter', 'Standard', '179.43%'],
+    ['Skill', 'Wingblade', '286.29%×2', '12s cooldown.'],
+    ['Forte', 'Devastation → Dark Surge', '228.14% (Devastation)', 'Hold Basic ATK at full Umbra to cast Devastation, entering Dark Surge: enhanced Basic/Heavy ATK plus Skill Lifetaker (276.35%×2+9.95%×4).'],
+    ['Liberation', 'Deadening Abyss', '1520.90%', '16s cooldown — huge single-target nuke.'],
+    ['Intro', 'Instant of Annihilation', '198.81%'],
+    ['Outro', 'Soundweaver', '143.3% ATK per tick ×3 (6s)', 'Havoc Field: AoE DoT for the incoming Resonator.'],
+  ],
+  'Rover: Aero': [
+    ['Basic ATK', 'Wind Cutter Stage 1-4', '35.31% → 43.05%×2 → 55.05%+1.99%×25 → 76.72%'],
+    ['Heavy ATK', 'Standard / Razor Wind', '17.91%×3 → 36.37%+44.46%'],
+    ['Mid-air', 'Plunging Attack', '140.76%'],
+    ['Dodge Counter', 'Standard', '125.43%+1.99%×25'],
+    ['Skill', 'Awakening Gale / Skyfall Severance', '66.44%+99.66% → 23.37%×3+105.15%', 'Gale (3s CD, ground); mid-air Skyfall Severance (12s CD) strips negative statuses into Aero Erosion.'],
+    ['Forte', 'Cloudburst Dance / Unbound Flow', '128.80%+141.47% → 34.30%×5+723.03%', 'Cloudburst Dance heals the team on hit; at max Windstrings, Skill becomes Unbound Flow instead.'],
+    ['Liberation', 'Omega Storm', '536.79%', 'Also heals nearby team ~2090+77% ATK; can be cast mid-air near ground.'],
+    ['Intro', 'Relentless Squall', '79.53%+119.29%'],
+    ['Outro', "Storm's Echo", 'Aeolian Realm — Aero Erosion cap +3 (30s field, no direct DMG)'],
+  ],
+  'Rover: Electro': [
+    ['Basic ATK', 'Deterrence Stage 1-4', '51.08% → 26.00%+39.00% → 13.27%×7 → 72.82%+109.22%'],
+    ['Basic ATK', 'Riposte Strike / Crumble (Parry Stance)', '55.95% / 59.43%', 'Hold Basic ATK to enter Parry Stance (immune to interrupt, -60% DMG taken); release for Riposte Strike, or Crumble if it neutralizes a hit.'],
+    ['Mid-air', 'Plunging Attack', '104.94%'],
+    ['Dodge Counter', 'Standard', '74.25%+74.25%'],
+    ['Skill', 'Thunderclap → Overshock', '100.20%×2 → 80.72%×7+423.77%+423.77%', 'Thunderclap (10s CD); at max Electric Surge, Skill becomes Overshock instead — tap for team ATK buff, hold for Apex Resonance.'],
+    ['Forte', 'Apex Resonance: Thrum of All Sounds', 'Up to 7-stage ground + 6-stage aerial combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses)', 'Consumes Thunder Rage each second while active.'],
+    ['Liberation', 'Ultimate Tactics', '1192.86%', '25s cooldown.'],
+    ['Intro', 'Thunderous Fury', '33.41%×2+100.21%'],
+    ['Outro', 'Rumbling Thunders', 'Grants Electro Core → next Negative Status hit: All DMG Amp +25% (14s)'],
   ],
   'Shorekeeper': [
-    ['Basic ATK', 'Stage 1-4', '16% → 24% → 35.2% → 36.6%'],
-    ['Skill', 'Chaos Theory', '15.8% + healing'],
-    ['Forte', 'Illation', '9.5%×5'],
-    ['Forte', 'Flare Star Butterfly', '18.8%'],
-    ['Liberation', 'End Loop', 'Stellarealm: +12.5% CR, +25% CD'],
-    ['Intro', 'Proof of Existence', '22.8%×5'],
-    ['Outro', 'Binary Butterfly', '+15% All DMG Amp (30s)'],
+    ['Basic ATK', 'Origin Calculus Stage 1-4', '31.78% → 23.86%×2 → 23.32%×3 → 72.72%', 'Each hit generates a Collapsed Core.'],
+    ['Heavy ATK', 'Unbound Form charge', '45.81%'],
+    ['Mid-air', 'Plunging Attack', '73.96%'],
+    ['Dodge Counter', 'Standard', '87.48%×2'],
+    ['Skill', 'Chaos Theory', '31.31%×5 (Dim Star Butterflies) + heal (1313+5.97% HP)', '16s cooldown; heals the team and summons 5 tracking butterflies.'],
+    ['Forte', 'Flare Star Butterfly / Illation / Transmutation', '37.29% (Butterfly) · 18.97%×5 (Illation, Heavy ATK) · 73.96% (Transmutation, Mid-air)', 'At 5 Empirical Data, Heavy/Mid-air ATK consume it to pull in targets and convert Collapsed Cores into Flare Star Butterflies.'],
+    ['Liberation', 'End Loop', 'No direct DMG — Stellarealm', 'Heals continuously; evolves into Inner (team Crit Rate up to +12.5%) then Supernal Stellarealm (team Crit DMG up to +25%) scaling with her Energy Regen, as allies cast Intro Skills inside it.'],
+    ['Intro', 'Proof of Existence: Enlightenment / Discernment', '45.30%×5 + heal (259+1.20% HP) · 19.64%×3 HP-scaling + heal', 'Discernment only available once per Supernal Stellarealm; guaranteed Crit, counted as Liberation DMG.'],
+    ['Outro', 'Binary Butterfly', 'All DMG Amp +15%', 'Also grants the on-field Resonator up to 5 free interrupt-recoveries (tap Dodge) for 30s — no direct DMG.'],
   ],
   'Sigrika': [
     ['Basic ATK', 'Stage 1-4', '52.97% → 50.34%×2 → 33.41%×2+44.54% → 41.36%+51.70%×2+62.03%', 'Standard combo; ends in Decipher state for Echo-type follow-ups.'],
@@ -1679,33 +1800,40 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'In This Very Moment', '795%', 'Finishing hit that stagnates enemies on ally Echo Skill casts.'],
   ],
   'Verina': [
-    ['Basic ATK', 'Stage 1-5', '19% → 25.7% → 25.7% → 33.9% → 36%'],
-    ['Heavy ATK', 'Standard', '50%'],
-    ['Skill', 'Botany Experiment', '18%×3 + 36%'],
-    ['Forte', 'Starflower Blooms', '32.7% + 49%'],
-    ['Liberation', 'Arboreal Flourish', '100% + Coordinated 5%/hit'],
-    ['Intro', 'Spread', '50%'],
-    ['Outro', 'Blossom', '+15% All DMG Deepen (30s) + heal'],
+    ['Basic ATK', 'Cultivation Stage 1-5', '37.86% → 51.16% → 25.58%×2 → 67.32% → 71.62%'],
+    ['Heavy ATK', 'Standard', '99.41%'],
+    ['Mid-air', 'Stage 1-3 + Heavy', '56.37% → 53.19% → 25.42%×3 · 61.64% (Mid-air Heavy)'],
+    ['Dodge Counter', 'Standard', '129.23%'],
+    ['Skill', 'Botany Experiment', '35.79%×3+71.58%', '12s cooldown; grants Photosynthesis Energy.'],
+    ['Forte', 'Heavy/Mid-air ATK: Starflower Blooms', '64.95%+97.42% (Heavy) · 67.64%+63.82%+30.50%×3 (Mid-air)', 'Consumes Photosynthesis Energy to heal the team and restore Concerto Energy.'],
+    ['Liberation', 'Arboreal Flourish', '198.81%', 'Heals the team and applies Photosynthesis Mark; marked-target hits trigger a healing Coordinated Attack (9.95% ATK/hit).'],
+    ['Intro', 'Verdant Growth', '99.41%'],
+    ['Outro', 'Blossom', 'All DMG Amp +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% (30s) — not a DMG Deepen.'],
   ],
   'Xiangli Yao': [
-    ['Basic ATK', 'Stage 1-4', '17.2% → 21.8% → 25.1% → 35.8%'],
-    ['Heavy ATK', 'Standard', '14.6%×4'],
-    ['Skill', 'Deduction', '42%×2'],
-    ['Skill', 'Pivot Impale', '93.6%'],
-    ['Liberation', 'Cogitation Model', '50% + Enhanced BA chain'],
-    ['Liberation', 'Enhanced BA 1-4', '24%×3 → 16%×6 → 21.4%×6 → 37.4%+25%×6+93.6%'],
-    ['Intro', 'Probing Strike', '50%×2'],
-    ['Outro', 'Chain of Insights', 'Electro coordinated ATK'],
+    ['Basic ATK', 'Probe Stage 1-5', '33.11%×2 → 99.61% → 39.76%×3 → 53.05%×2+26.53% → 198.81%'],
+    ['Heavy ATK', 'Standard', '82.81%×2'],
+    ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Dodge Counter', 'Standard', '238.58%'],
+    ['Skill', 'Deduction → Decipher', '198.81% → 397.82%', '5s cooldown; at 100 Capacity, Skill becomes Decipher instead (Liberation DMG).'],
+    ['Forte', 'Intuition: Law of Reigns / Revamp', '95.73%×4+255.28% (Law of Reigns) · 21.87%×4+65.61%×2 (Mid-air Revamp)', 'Both count as Liberation DMG; Law of Reigns unlocks at 5 Performance Capacity while in Intuition.'],
+    ['Liberation', 'Cogitation Model', '1466.06%', '25s cooldown; enters Intuition (24s) — enhances Basic ATK, Skill, and Dodge Counter.'],
+    ['Liberation', 'Intuition: Pivot-Impale / Divergence / Unfathomed', '119.67%→60.92%×4→133.25%×2 (Basic ATK) · 49.59%×3+173.55%×2 (Divergence Skill) · 38.83%×2+310.58% (Dodge Counter)', 'Enhanced versions of Basic ATK/Skill/Dodge Counter while in Intuition.'],
+    ['Intro', 'Principle', '99.41%×2'],
+    ['Outro', 'Chain Rule', '237.63% ATK ×3 procs (8s, 2s ICD)', "Laser strikes on the incoming Resonator's first Basic ATK hit — pure DMG proc, no team buff."],
   ],
   'Yinlin': [
-    ['Basic ATK', "Zapstring's Dance 1-4", '14.5% → 34% → 49.3% → 37.8%'],
-    ['Skill', 'Magnetic Roar', '30%×3'],
-    ['Skill', 'Lightning Execution', '45%×4'],
-    ['Forte', 'Chameleon Cipher', '90%×2'],
-    ['Forte', 'Judgement Strike', '39.6% per hit (1/s)'],
-    ['Liberation', 'Thundering Wrath', '58.6%×7'],
-    ['Intro', 'Raging Storm', '7.2%×10'],
-    ['Outro', 'Strategist', '+20% Electro DMG + 25% Liberation DMG Amp (14s)'],
+    ['Basic ATK', "Zapstring's Dance Stage 1-4", '28.81% → 33.82%×2 → 13.99%×7 → 75.16%'],
+    ['Heavy ATK', 'Standard', '29.83%×2'],
+    ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Dodge Counter', 'Standard', '24.22%×7'],
+    ['Skill', 'Magnetic Roar → Lightning Execution', '59.65%×3 → 89.47%×4', '12s cooldown; Magnetic Roar puts Yinlin in Execution Mode, applies Sinner\'s Mark.'],
+    ['Skill', 'Electromagnetic Blast', '19.89%', 'Basic ATK/Dodge Counter hits (up to 4) trigger this on Sinner\'s/Punishment-marked targets.'],
+    ['Forte', 'Chameleon Cipher', '178.93%×2', 'At full Judgement Points, Heavy ATK becomes Chameleon Cipher: upgrades Sinner\'s Mark to Punishment Mark.'],
+    ['Forte', 'Judgment Strike', '78.64% (1/s)', 'Coordinated ATK triggered when a Punishment Mark target takes damage; considered Skill DMG.'],
+    ['Liberation', 'Thundering Wrath', '116.56%×7', '16s cooldown; applies Sinner\'s Mark.'],
+    ['Intro', 'Raging Storm', '14.32%×10', 'Applies Sinner\'s Mark.'],
+    ['Outro', 'Strategist', 'Electro DMG Amp +20% + Liberation DMG Amp +25% (14s)', 'Grants the incoming Resonator these buffs; no direct DMG.'],
   ],
   'Zani': [
     ['Basic ATK', 'Stage 1-4', '29.6% → 40% → 64% → 136%', 'Standard combo string.'],
@@ -1721,15 +1849,16 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Beacon For the Future', '150% (+10% per Ember stack)', 'Swap-out finisher that also grants allies hitting the marked target Spectro DMG Amp.'],
   ],
   'Zhezhi': [
-    ['Basic ATK', 'Dimming Brush 1-3', '42% → 51.7% → 67.2%'],
-    ['Heavy ATK', 'Standard', '56.7%'],
-    ['Skill', 'Manifestation', '49.5%×3'],
-    ['Forte', 'Conjuration', '41.8%×3'],
-    ['Forte', 'Stroke of Genius', '150%'],
-    ['Forte', "Creation's Zenith", '60%×3'],
-    ['Liberation', 'Living Canvas', '32.8% coordinated (21 hits, 30s)'],
-    ['Intro', 'Radiant Ruin', '43.3%×3'],
-    ['Outro', 'Carve and Draw', '+20% Glacio DMG + 25% Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Dimming Brush Stage 1-3', '41.76%×2 → 20.55%×5 → 133.61%'],
+    ['Heavy ATK', 'Standard', '112.72%', "Doesn't reset the Basic ATK cycle."],
+    ['Mid-air', 'Plunging Attack', '24.95%×5+104.78%'],
+    ['Dodge Counter', 'Standard', '29.07%×5'],
+    ['Skill', 'Manifestation', '98.42%×3', '6s cooldown; at 60+ Afflatus, summons Phantasmic Imprints (Left/Right).'],
+    ['Forte', 'Heavy ATK: Conjuration', '83.01%×3', 'Alt Heavy ATK follow-up from several combo windows; can summon a Middle Imprint at 30+ Afflatus.'],
+    ['Forte', 'Stroke of Genius / Creation\'s Zenith', '298.22% → 119.29%×3', 'Skill upgrades that consume a Phantasmic Imprint (both count as Basic ATK DMG); Creation\'s Zenith needs 2 stacks of Painter\'s Delight and also grants +18% Basic ATK DMG Bonus for 27s.'],
+    ['Liberation', 'Living Canvas', '65.21% per Inklit Spirit (up to 21 over 30s)', '25s cooldown; summons Coordinated-ATK spirits (Basic ATK DMG) whenever the active Resonator deals damage.'],
+    ['Intro', 'Radiant Ruin', '86.16%×3'],
+    ['Outro', 'Carve and Draw', 'Glacio DMG Amp +20% + Skill DMG Amp +25% (14s)', 'Grants the incoming Resonator these buffs — no direct DMG.'],
   ],
   // ── 4★ Characters ──
   'Aalto': [
@@ -1821,7 +1950,7 @@ const SKILL_MULTIPLIERS = {
   ],
 };
 
-// [SECTION:CHARACTER_ROTATIONS] — Solo ("in a vacuum") rotation, one loop, no team-specific cancels/swaps.
+// [SECTION:CHARACTER_ROTATIONS] — Standard rotation, sourced from Prydwen's "Gameplay and teams" tab per character.
 // Each step's `type` + `skill` are matched against SKILL_MULTIPLIERS[name] (type === step.type, name.includes(step.skill))
 // to look up its DMG multiplier at render time — single source of truth, no duplicated numbers to drift out of sync.
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
@@ -1984,6 +2113,39 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'The Last Stand', duration: 8, note: 'second Ultimate inside Inferno, scales with Blaze consumed' },
     { type: 'Outro', skill: 'Beacon For the Future', duration: 20, note: 'grants allies hitting the marked target Spectro DMG Amp' },
   ],
+  'Zhezhi': [
+    { type: 'Intro', skill: 'Radiant Ruin' },
+    { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'full Basic 1-2-3 combo' },
+    { type: 'Skill', skill: 'Manifestation' },
+    { type: 'Forte', skill: 'Heavy ATK: Conjuration' },
+    { type: 'Forte', skill: "Stroke of Genius / Creation's Zenith", note: 'Stroke of Genius (Jump Cancel)' },
+    { type: 'Forte', skill: "Stroke of Genius / Creation's Zenith", note: '2nd Stroke of Genius (cancel endlag via Ultimate)' },
+    { type: 'Liberation', skill: 'Living Canvas' },
+    { type: 'Forte', skill: "Stroke of Genius / Creation's Zenith", note: "Creation's Zenith finisher (Dash Cancel into Echo, Swap, Outro)" },
+    { type: 'Outro', skill: 'Carve and Draw', duration: 14 },
+  ],
+  'Xiangli Yao': [
+    { type: 'Intro', skill: 'Principle' },
+    { type: 'Skill', skill: 'Deduction', note: 'instantly cancelled into Ultimate' },
+    { type: 'Liberation', skill: 'Cogitation Model', duration: 24, note: 'enters Intuition' },
+    { type: 'Liberation', skill: 'Intuition: Pivot-Impale / Divergence / Unfathomed', note: 'Skill: Divergence — builds Performance Capacity' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Mid-air Attack: Revamp' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Skill: Law of Reigns — 1st Hypercube' },
+    { type: 'Liberation', skill: 'Intuition: Pivot-Impale / Divergence / Unfathomed', note: 'Basic: Pivot-Impale P1-P3' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Skill: Law of Reigns — 2nd Hypercube' },
+    { type: 'Liberation', skill: 'Intuition: Pivot-Impale / Divergence / Unfathomed', note: 'Skill: Divergence' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Mid-air Attack: Revamp' },
+    { type: 'Forte', skill: 'Intuition: Law of Reigns / Revamp', note: 'Skill: Law of Reigns — 3rd Hypercube, Intuition ends' },
+    { type: 'Outro', skill: 'Chain Rule', duration: 8 },
+  ],
+  'Shorekeeper': [
+    { type: 'Intro', skill: 'Proof of Existence: Enlightenment / Discernment', note: 'Discernment — empowered Intro, guaranteed Crit, ends the current Stellarealm' },
+    { type: 'Basic ATK', skill: 'Origin Calculus Stage 1-4', note: 'full 4-hit Basic combo, builds Empirical Data + Collapsed Cores' },
+    { type: 'Forte', skill: 'Flare Star Butterfly / Illation / Transmutation', note: 'Heavy ATK: Illation — consumes 5 Empirical Data' },
+    { type: 'Skill', skill: 'Chaos Theory' },
+    { type: 'Liberation', skill: 'End Loop', duration: 30, note: 'summons the Stellarealm' },
+    { type: 'Outro', skill: 'Binary Butterfly', duration: 30, note: 'swap to the next Resonator to trigger their Intro and evolve the Stellarealm' },
+  ],
   'Augusta': [
     { type: 'Intro', skill: 'Stride of Goldenflare' },
     { type: 'Skill', skill: "Warrior's Blade", note: 'time-stop dash strike' },
@@ -2073,9 +2235,9 @@ const RESONANCE_CHAIN_DATA = {
   // Calcharo S1: energy recovery (utility). S2: Skill DMG+30%. S3: Electro DMG+25%. S4: team Electro DMG+20%
   'Calcharo':     { s1: { totalMult: 5 }, s2: { skillDmg: 30 }, s3: { elemDmg: 25 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
   // Encore S1: Fusion DMG+3% x4=12%. S2: energy utility. S3: Heavy ATK mult+40%. S4: team Fusion DMG+20%. S6: ATK stacking ~25%
-  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { totalMult: 10 }, s6: { atkPct: 25 } },
+  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
   // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
-  'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { totalMult: 15 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
+  'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { skillDmg: 40 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
   // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
   // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
   // no DEF Ignore effect). S4: team +20% All-Attr DMG on Intro/Sync Strike/Duet cast (was totalMult:15, no basis).
@@ -2109,7 +2271,8 @@ const RESONANCE_CHAIN_DATA = {
   // s2 Basic/Heavy/Dodge/Intro DMG Mult +50% confirmed, Mid-air Attack +200% has no direct schema stat, totalMult fallback (was totalMult:25); s3 Liberation2 DMG Mult +100% (was totalMult:15, wrong category);
   // s4 team +20% All-Attribute DMG after inflicting any Bane/Burst/Frazzle/Flare/Chafe/Erosion (was atkPct:40, no basis); s5 fatal-blow immunity + Max HP shield, no direct DPS stat, totalMult fallback (kept as-is);
   // s6 Fleurdelys attacks deal +40% more DMG to targets (was totalMult:25, wrong category).
-  'Lingyang':     { s1: { atkPct: 12 }, s2: { basicDmg: 40 }, s3: { critDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { elemDmg: 25 } },
+  // Corrected against ww.nanoka.cc character/1104 — prior values didn't match any real chain effect.
+  'Lingyang':     { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { basicDmg: 20, skillDmg: 10 }, s4: { elemDmg: 20 }, s5: { totalMult: 35 }, s6: { basicDmg: 100 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
   'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
   // Galbrena R-chain corrected 2026-08-16 via Prydwen/Game8: s1 max Afterflame Crit DMG scaling (+2%/pt, cap 80%, was 40);
@@ -2140,7 +2303,9 @@ const RESONANCE_CHAIN_DATA = {
   // s4 Dance With the Wolf: Climax DMG Mult +125%, Forte-type with no direct schema stat, totalMult fallback (was deepen:12, no basis);
   // s5 +15% Resonance Liberation DMG Bonus (was totalMult:15, wrong category); s6 Climax/Liberation/Nowhere to Run! ignore 30% DEF (was elemDmg:40, no basis).
   // Supports — utility nodes represented as small totalMult DPS contributions
-  'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
+  // S6 corrected — she has no DMG Deepen anywhere in her kit; real S6 boosts Heavy/Mid-air ATK
+  // Starflower Blooms DMG and adds a Coordinated ATK + heal proc (bucketed as totalMult).
+  'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 12 }, s6: { totalMult: 20 } },
   // Shorekeeper S1: utility (range/duration). S2: ATK+40% (confirmed). S6: CD+500% self after Intro (very short window, ≈25 averaged)
   'Shorekeeper':  { s1: { totalMult: 5 }, s2: { atkPct: 40 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { critDmg: 25 } },
   // Lynae S2: team +25% All DMG Amp, self-gain portion (confirmed exact). S4: ATK+20% (was totalMult:10, no basis).
@@ -2169,16 +2334,28 @@ const RESONANCE_CHAIN_DATA = {
   // s6 Solo Concert pulse deals 220% ATK Aero DMG counted as Liberation DMG (was elemDmg:15, wrong category/value).
   // Cantarella S1: +50% Skill DMG mult + Trance recovery ≈ totalMult 20
   'Cantarella':   { s1: { totalMult: 20 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
-  'Yinlin':       { s1: { elemDmg: 10 }, s2: { resShred: 10 }, s3: { totalMult: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 15 } },
+  // Corrected against ww.nanoka.cc character/1302 — prior values (elemDmg/resShred) didn't match her real
+  // kit at all (she has no RES Shred anywhere in her chain).
+  'Yinlin':       { s1: { skillDmg: 70 }, s2: { totalMult: 8 }, s3: { skillDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: { totalMult: 40 } },
   'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 40 } },
-  'Zhezhi':       { s1: { coordDmg: 10 }, s2: { totalMult: 15 }, s3: { coordDmg: 10 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { coordDmg: 40 } },
+  // Corrected against ww.nanoka.cc character/1105 — prior values (coordDmg/elemDmg on S1/S3/S4) didn't
+  // match her real chain effects (Crit Rate, ATK stacking, team ATK — no Glacio DMG anywhere in her chain).
+  'Zhezhi':       { s1: { critRate: 10 }, s2: { totalMult: 15 }, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: { coordDmg: 20 }, s6: { coordDmg: 40 } },
   'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
   // Qiuyuan R-chain corrected 2026-08-16 via Prydwen/Game8: s1 +20% Crit Rate + uninterruptible Heavy ATKs (was echoDmg:10, wrong stat);
   // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
   // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
   // 4★ + missing characters
-  'Jianxin':      { s1: { atkPct: 8 }, s2: { deepen: 8 }, s3: { defShred: 5 }, s4: { atkPct: 8 }, s5: { totalMult: 10 }, s6: { deepen: 12 } },
-  'Rover':        { s1: { elemDmg: 8 }, s2: { skillDmg: 12 }, s3: { critRate: 8 }, s4: { elemDmg: 10 }, s5: { totalMult: 10 }, s6: { resShred: 10, deepen: 15 } },
+  // Corrected against ww.nanoka.cc character/1405 — prior values (deepen/defShred) didn't match any
+  // real chain effect (she has no DMG Deepen or DEF Shred anywhere in her kit).
+  'Jianxin':      { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { libDmg: 80 }, s5: { totalMult: 10 }, s6: { totalMult: 35 } },
+  // Confirmed via ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro).
+  // energyRegen/heal aren't tracked stat keys elsewhere in this table — approximated as totalMult, same
+  // convention this file already uses for other non-DMG-multiplier chain effects (CD resets, utility, etc).
+  'Rover: Spectro': { s1: { critRate: 15 }, s2: { elemDmg: 20 }, s3: { totalMult: 12 }, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { resShred: 10 } },
+  'Rover: Havoc':   { s1: { skillDmg: 30 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { resShred: 10 }, s5: { basicDmg: 50 }, s6: { critRate: 25 } },
+  'Rover: Aero':    { s1: { totalMult: 5 }, s2: { totalMult: 12 }, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
+  'Rover: Electro': { s1: { totalMult: 5 }, s2: { totalMult: 8 }, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
   'Aalto':        { s1: { elemDmg: 8 }, s2: { totalMult: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
   // Baizhi: mostly healing/utility nodes, minimal DPS contribution
   'Baizhi':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
@@ -2193,8 +2370,8 @@ const RESONANCE_CHAIN_DATA = {
 
 // Release order for sorting (based on first banner appearance)
 const RELEASE_ORDER = [
-  // 1.0 - Launch (May 2024)
-  'Rover', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
+  // 1.0 - Launch (May 2024) — Rover: Spectro/Havoc/Aero all selectable from launch
+  'Rover: Spectro', 'Rover: Havoc', 'Rover: Aero', 'Jiyan', 'Yinlin', 'Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina',
   'Aalto', 'Baizhi', 'Chixia', 'Danjin', 'Yangyang', 'Sanhua', 'Taoqi', 'Yuanwu', 'Mortefi',
   // 1.1
   'Jinhsi', 'Changli', 'Youhu',
@@ -2231,7 +2408,7 @@ const RELEASE_ORDER = [
   // 3.3 (verified against game8.co's official character order 2026-08-14)
   'Hiyuki', 'Denia',
   // 3.4
-  'Lucy', 'Rebecca', 'Lucilla',
+  'Rover: Electro', 'Lucy', 'Rebecca', 'Lucilla',
   // 3.5
   'Yangyang: Xuanling', 'Suisui',
   // 3.6

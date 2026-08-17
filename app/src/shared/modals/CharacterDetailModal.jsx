@@ -10,6 +10,7 @@ import { WEAPON_DATA } from '../../data/weapons.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
@@ -110,8 +111,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border}`}>{data.element}</span>
-              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border} inline-flex items-center gap-1`}>
+                {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.element}
+              </span>
+              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.weapon}
+              </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
@@ -167,8 +174,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div className="kuro-detail-box space-y-2">
             <div className="kuro-section-label">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
-              <span className={`kuro-badge font-medium border ${colors.border} ${colors.text}`} style={{ background: 'rgba(255,255,255,0.05)' }}>{data.element} DMG</span>
-              <span className="kuro-badge kuro-badge-neutral">{data.weapon}</span>
+              <span className={`kuro-badge font-medium border ${colors.border} ${colors.text} inline-flex items-center gap-1`} style={{ background: 'rgba(255,255,255,0.05)' }}>
+                {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.element} DMG
+              </span>
+              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.weapon}
+              </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             {data.buffs?.length > 0 && (
@@ -199,7 +212,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div>
                 <div className="text-sm text-gray-400 mb-1">Stat Scaling</div>
                 <div className="flex flex-wrap gap-1">
-                  <span className="kuro-badge kuro-badge-violet">{data.statScaling} Scaling</span>
+                  <span className="kuro-badge kuro-badge-violet inline-flex items-center gap-1">
+                    {getStatIcon(data.statScaling) && <img src={getStatIcon(data.statScaling)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                    {data.statScaling} Scaling
+                  </span>
                 </div>
               </div>
             )}
@@ -218,19 +234,31 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div className="kuro-section-label mb-2">Base Stats (Lv.90)</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">HP</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('HP') && <img src={getStatIcon('HP')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    HP
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{(data.baseHp || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">ATK</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    ATK
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{data.baseAtk}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">DEF</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('DEF') && <img src={getStatIcon('DEF')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    DEF
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{(data.baseDef || 0).toLocaleString('en-US')}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
-                  <div className="text-sm text-gray-500">Energy</div>
+                  <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                    {getStatIcon('Energy Regen') && <img src={getStatIcon('Energy Regen')} alt="" className="w-3 h-3" onError={hideOnError} />}
+                    Energy
+                  </div>
                   <div className="text-xl font-bold text-white kuro-number">{data.maxEnergy || '?'}</div>
                 </div>
               </div>
@@ -321,6 +349,47 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           </div>
           );
           })()}
+
+          {/* Alternative Weapons — signature is data.bestWeapon above; this lists rarity-tiered fallbacks
+              when a character has weaponAlts (5★/4★/3★, each with at least one option). Same image +
+              stat-line treatment as the Recommended Weapon box above, just compact/row-based since there
+              can be several per tier. */}
+          {data.weaponAlts && (
+          <div className="kuro-detail-box">
+            <div className="kuro-section-label mb-2">Alternative Weapons</div>
+            <div className="space-y-3">
+              {[['5★', data.weaponAlts.alt5], ['4★', data.weaponAlts.alt4], ['3★', data.weaponAlts.alt3]].filter(([, list]) => list?.length).map(([tier, list]) => (
+                <div key={tier}>
+                  <div className="text-sm text-gray-500 mb-1.5">{tier}</div>
+                  <div className="space-y-1.5">
+                    {list.map((w, i) => {
+                      const wd = WEAPON_DATA[w];
+                      const wImg = DEFAULT_COLLECTION_IMAGES[w];
+                      const owned = ownsWeapon(w);
+                      return (
+                        <div key={i} className={`flex items-center gap-2.5 p-1.5 rounded-lg ${owned ? 'bg-white/[0.03]' : 'bg-white/[0.015]'}`} style={!owned ? { opacity: 0.55 } : undefined}>
+                          {wImg ? (
+                            <div className={`w-10 h-10 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${owned && wd?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
+                              <img src={wImg} alt={w} className="w-full h-full object-cover" onError={hideOnError} />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center flex-shrink-0">
+                              <Sparkles size={12} className="text-gray-600" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-semibold truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{w}{!owned && ' (Not Owned)'}</div>
+                            {wd && <div className="text-xs text-gray-500 truncate">{wd.type} • {wd.stat}{wd.subStatValue ? ` ${wd.subStatValue}` : ''}</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          )}
 
           {/* Best Echoes - enhanced */}
           {data.bestEchoes?.length > 0 && (
@@ -437,12 +506,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             )}
           </div>
 
-          {/* Solo Rotation ("in a vacuum") — reusable base steps, adaptable later in the Team tab */}
+          {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
           {CHARACTER_ROTATIONS[name] && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
                 <RotateCw size={14} className={colors.text} /> Standard Rotation
-                <span className="text-sm text-gray-500 font-normal ml-auto">Solo, one loop</span>
               </h3>
               <div className="space-y-0.5">
                 {CHARACTER_ROTATIONS[name].map((step, i) => {

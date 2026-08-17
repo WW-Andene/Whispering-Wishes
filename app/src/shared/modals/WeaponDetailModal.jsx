@@ -8,6 +8,7 @@ import { Swords, Star, TrendingUp, X } from 'lucide-react';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 
@@ -48,7 +49,10 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`kuro-badge ${colors.bg} ${colors.text} ${colors.border}`}>{data.type}</span>
+              <span className={`kuro-badge ${colors.bg} ${colors.text} ${colors.border} inline-flex items-center gap-1`}>
+                {getWeaponTypeIcon(data.type) && <img src={getWeaponTypeIcon(data.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.type}
+              </span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -63,11 +67,13 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
           <div className="flex items-center gap-2 flex-wrap">
             {data.baseAtk && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+                {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                 <span className="text-sm text-gray-400">ATK</span>
                 <span className="text-base font-bold text-red-400">{data.baseAtk}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
+              {getStatIcon(data.stat) && <img src={getStatIcon(data.stat)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               <span className="text-sm text-gray-400">{data.stat}</span>
               <span className="text-base font-bold text-white">{data.subStatValue || ''}</span>
             </div>

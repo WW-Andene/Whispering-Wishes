@@ -32,7 +32,7 @@ const CURRENT_BANNERS = {
   tacticalHologramImage: 'https://i.ibb.co/CpjDZj8V/652896591-1275960654470518-5091818010205633369-n.jpg',
   weeklyBossImage: 'https://i.ibb.co/M5cLkMWf/file-00000000e8b071f480ded273f611ec2e.png',
   standardCharBannerImage: 'https://i.ibb.co/pjXgHN70/Tidal-Chorus-Banner-Art.webp',
-  standardWeapBannerImage: 'https://i.ibb.co/Q3TYHS0h/Winter-Brume-Pistols.webp',
+  standardWeapBannerImage: 'https://i.ibb.co/21kQ66xr/Drawn-Edges.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
     { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg', imagePosition: 'center 25%' }, // real splash art
@@ -382,6 +382,10 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Aemeath': 'https://i.ibb.co/0pBQpMwv/Aemeath-Full-Sprite.webp',
   'Mornye': 'https://i.ibb.co/QvyQ33zv/Mornye-Full-Sprite.webp',
   'Rover': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
+  'Rover: Spectro': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
+  'Rover: Havoc': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
+  'Rover: Aero': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
+  'Rover: Electro': 'https://i.ibb.co/V0zwhc58/Rover-1.webp',
   'Chisa': 'https://i.ibb.co/x8zB67Vh/Chisa-Full-Sprite.webp',
   'Phrolova': 'https://i.ibb.co/Nd0HbF4v/Phrolova-Full-Sprite.webp',
   'Qiuyuan': 'https://i.ibb.co/JRvP5fnx/Qiuyuan-Full-Sprite.webp',

@@ -112,6 +112,44 @@ const ELEMENT_COLORS_CB = {
 const ELEMENT_SHAPES = {
   Fusion: '△', Electro: '◇', Aero: '○', Glacio: '□', Havoc: '✕', Spectro: '☆',
 };
+// Official in-game element icons (T_IconElementAttri* UI assets), re-hosted on ibb.co.
+// Source: static.nanoka.cc asset CDN, traced from its client bundle 2026-08-17.
+const ELEMENT_ICONS = {
+  Glacio:  'https://i.ibb.co/60n11MZg/Element-Glacio.webp',
+  Fusion:  'https://i.ibb.co/RpbkMNCt/Element-Fusion.webp',
+  Electro: 'https://i.ibb.co/BVKXJnxb/Element-Electro.webp',
+  Aero:    'https://i.ibb.co/YF7k8Wy6/Element-Aero.webp',
+  Spectro: 'https://i.ibb.co/JjVxtqZ4/Element-Spectro.webp',
+  Havoc:   'https://i.ibb.co/20gBGvrV/Element-Havoc.webp',
+};
+const getElementIcon = (el) => ELEMENT_ICONS[el] || null;
+// Official in-game weapon-type icons (SP_IconNor* UI assets), re-hosted on ibb.co.
+// Source: static.nanoka.cc/assets/ww/UIResources/Common/Atlas/SkillIcon/SkillIconNor/, 2026-08-17.
+const WEAPON_TYPE_ICONS = {
+  Broadblade: 'https://i.ibb.co/JF8qY50h/Weapon-Type-Broadblade.webp',
+  Sword:      'https://i.ibb.co/Xx5RH0dH/Weapon-Type-Sword.webp',
+  Pistols:    'https://i.ibb.co/sJbMbWm4/Weapon-Type-Pistols.webp',
+  Gauntlets:  'https://i.ibb.co/wFXHM40H/Weapon-Type-Gauntlets.webp',
+  Rectifier:  'https://i.ibb.co/5gds1gDg/Weapon-Type-Rectifier.webp',
+};
+const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
+// Official in-game stat icons (T_Iconproperty* UI assets for ATK/HP/DEF/Energy Regen; Crit Rate/Crit
+// DMG from the wutheringwaves.fandom.com wiki, since nanoka's Crit Rate filename couldn't be found).
+// Re-hosted on ibb.co. Keys are the base stat name — '%' suffixes (e.g. weapon substat 'ATK%') are
+// stripped by getStatIcon() before lookup.
+const STAT_ICONS = {
+  ATK:          'https://i.ibb.co/XrcVGXTx/Stat-ATK.webp',
+  HP:           'https://i.ibb.co/nsrx0Ckg/Stat-HP.webp',
+  DEF:          'https://i.ibb.co/xtS2fNjc/Stat-DEF.webp',
+  'Energy Regen': 'https://i.ibb.co/rRJTgZKr/Stat-Energy-Regen.webp',
+  'Crit Rate':  'https://i.ibb.co/yBdK77pW/Stat-Crit-Rate.webp',
+  'Crit DMG':   'https://i.ibb.co/tT1t8HTN/Stat-Crit-DMG.webp',
+};
+const getStatIcon = (stat) => {
+  if (!stat) return null;
+  const key = stat.trim().replace(/%$/, '');
+  return STAT_ICONS[key] || null;
+};
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -177,11 +215,17 @@ export {
   generateUniqueId,
   calculateLuckRating,
   ELEMENT_COLORS,
+  ELEMENT_ICONS,
   getElementColor,
   getElementBg,
   getElementBorder,
   getElementShape,
+  getElementIcon,
   getSetElementColor,
   getEchoSetColors,
   getBuffElementColor,
+  WEAPON_TYPE_ICONS,
+  getWeaponTypeIcon,
+  STAT_ICONS,
+  getStatIcon,
 };
