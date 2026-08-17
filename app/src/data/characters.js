@@ -337,12 +337,21 @@ const CHARACTER_DATA = {
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
     weaponAlts: { alt5: ['Lethean Elegy', 'Stringmaster'], alt4: ['Augment', "Ocean's Gift"], alt3: ['Rectifier of Night'] },
     teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Rover: Spectro + Verina'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1206 sheet. desc: title "Flamebound Compass" (nanoka) prepended and
+  // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes all
+  // re-confirmed accurate. weaponAlts was entirely missing — added: alt5 uses Laser Shearer (77.2%) and
+  // Bloodpact's Pledge (75.1%, F2P-obtainable), Prydwen's #2/#3 non-signature 5-stars; alt4 uses Overture
+  // (Energy Regen main stat, matching Brant's extreme ER requirement — Prydwen lists no 4★ options for
+  // him at all) and Commando of Conviction as a no-gacha baseline; alt3 uses the standard starter Sword
+  // of Night.
   'Brant': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Blazing knight from Rinascita whose soul burns with unflickering valor. On-field Fusion DPS who chains Basic Attacks and Skill combos in two alternating modes, with built-in self-healing on hits.',
+    desc: 'Flamebound Compass, captain of Rinascita\'s Troupe of Fools — a free spirit and romantic, unpredictable and full of life, the beating heart of the troupe who slips into countless roles on stage but is unwaveringly genuine offstage. Fusion Main DPS/Hybrid who fills his Forte Bravo through Mid-air Basic Attack chains and his Intro, unleashes the burst Forte skill Returned from Ashes for massive damage plus a team-wide shield, heals the team as Bravo builds, and buffs the incoming Resonator\'s Fusion and Resonance Skill DMG through his Outro The Course is Set! — almost his entire kit is executed airborne, dodging most enemy attacks for free.',
     skills: ['Captain\'s Rhapsody', 'Anchors Aweigh!', 'To the Horizon', 'Ocean Odyssey'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Metallic Drip' },
     bestEchoes: ['Dragon of Dirge', 'Tidebreaking Courage 5pc'], bestWeapon: 'Unflickering Valor',
+    weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge"], alt4: ['Overture', 'Commando of Conviction'], alt3: ['Sword of Night'] },
     teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
   'Cantarella': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Enigmatic head of Rinascita\'s Fisalia family, veiled in twilight. Havoc sub-DPS who deals off-field Havoc DMG via Coordinated Attacks while providing supplementary healing to the active character.',
@@ -700,7 +709,7 @@ const CHARACTER_DATA = {
   ['Carlotta',      12450, 463, 1198, 125],
   ['Roccia',        12250, 375, 1198, 125],
   ['Phoebe',        10825, 413, 1259, 125],
-  ['Brant',         11675, 375, 1307, 125],
+  ['Brant',         11675, 375, 1308, 125],
   ['Cantarella',    11600, 400, 1099, 125],
   ['Zani',          10775, 437, 1136, 125],
   ['Ciaccona',      12237, 375, 1197, 125],
@@ -1053,6 +1062,7 @@ const CHARACTER_DATA = {
   ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
   ['Roccia', 'Stage in the Box', 'Rinascita', 'Troupe of Fools', { en: 'Holly Earl', cn: 'Shen Huasang', jp: 'Kohara Konomi', kr: 'Jang Mi' }],
   ['Phoebe', 'Graceful Luminescence', 'Rinascita', 'Order of the Deep', { en: 'Rebecca LaChance', cn: 'Fu Tingyun', jp: 'Hondo Kaede', kr: 'Lee Bo Yong' }],
+  ['Brant', 'Flamebound Compass', 'Rinascita', 'Troupe of Fools', { en: "Hyoie O'Grady", cn: 'Ray Mo', jp: 'Kishio Daisuke', kr: 'Lee Ju Seung' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1493,15 +1503,19 @@ const CHAR_BUFF_TABLE = {
     ],
     note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Weapon: DEF Ignore 8% (not 16%) + Erosion targets take +20% more DMG. Wind\'s Indelible Imprint debuffs Erosion-stacked targets up to +60% DMG taken. (Corrected 2026-08-16: fixed weapon DEF Ignore value — was double the real number and conflated with a separate effect; the "self elemDmg" entries were actually enemy-side debuffs, moved to debuffs; added the missing Wind\'s Indelible Imprint debuff.)',
   },
+  // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
+  // equipped weapon's passive (12% Fusion DMG) instead of his own kit — replaced with his real Inherent
+  // Skill "Trial by Fire and Tide" (+15% Fusion DMG Bonus, plus increased interruption resistance during
+  // Mid-air Attacks).
   'Brant': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },
       { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Fusion DMG +12%' }],
+    selfBuffs: [{ stat: 'elemDmg', value: 15, target: 'self', duration: 99, condition: 'Inherent Skill Trial by Fire and Tide: +15% Fusion DMG Bonus (also grants interrupt resistance during Mid-air Attacks)' }],
     debuffs: [],
-    note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal. Weapon: Fusion DMG +12%.',
+    note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal + team shield from Forte. Inherent: +15% Fusion DMG Bonus.',
   },
   'Augusta': {
     outroBuffs: [{ stat: 'elemDmg', value: 15, target: 'next', duration: 14 }],
@@ -1714,15 +1728,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Debut of Meteoric Radiance', '65.30% + 97.95%', 'Intro Skill used when swapping in from Mech Form.'],
     ['Outro', 'Silent Protection', '10-20% All-DMG Amp to team (20s), mode-dependent', 'Swap-out buff to the whole team; strength depends on which form she left in.'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1206 sheet (Lv.10 skill attributes): every
+  // damage row was roughly half its real value (e.g. Forte burst Returned from Ashes — his single
+  // biggest hit — was listed as '...665%' vs the real '...1322.09%'), the same halving pattern already
+  // found and fixed across Camellya/Carlotta/Roccia/Phoebe's rows. Also fixed 3 skill names that didn't
+  // match his actual kit at all: 'Bravo!' (Liberation) → 'To the Horizon', 'Here I Am!' (Intro) →
+  // 'Applaud for Me!', 'Standing Ovation' (Outro) → 'The Course is Set!' — the fabricated names would
+  // have broken the skill-icon/rotation substring lookups against his real skill list.
   'Brant': [
-    ['Basic ATK', 'Stage 1-4', '25.4% → 51% → 116.5% → 70.5%'],
-    ['Mid-air', 'Charged Combo', '61.8% → 167.1% → 46.8% → 85.1% → 127.6%'],
-    ['Heavy ATK', 'Rhapsodic Riff', '85%'],
-    ['Skill', 'Anchors Aweigh', '100.8% + 67.2%'],
-    ['Liberation', 'Bravo!', '42.8%×4 + 171.1%'],
-    ['Forte', 'Returned from Ashes', '23.8%×2 + 47.5% + 95%×2 + 665%'],
-    ['Intro', 'Here I Am!', '102% + 25.5%'],
-    ['Outro', 'Standing Ovation', '+20% Fusion DMG + 25% Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-4', '50.8% → 102% → 233% → 141%'],
+    ['Mid-air', 'Charged Combo', '123.6% → 334.2% → 93.6% → 170.2% → 255.2%'],
+    ['Heavy ATK', 'Rhapsodic Riff', '169.0%'],
+    ['Skill', 'Anchors Aweigh', '200.4% + 133.6%'],
+    ['Liberation', 'To the Horizon', '85.1%×4 + 340.2%'],
+    ['Forte', 'Returned from Ashes', '47.2%×2 + 94.4% + 188.9%×2 + 1322.1%'],
+    ['Intro', 'Applaud for Me!', '202.8% + 50.7%'],
+    ['Outro', 'The Course is Set!', '+20% Fusion DMG + 25% Skill DMG Amp (14s)'],
   ],
   'Calcharo': [
     ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%'],
@@ -2217,6 +2238,15 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Brant (2026-08-17, Chrome
+  // UA + google.com referer + jsRender). This section was previously entirely missing for him.
+  'Brant': [
+    { type: 'Intro', skill: 'Applaud for Me!', note: 'next Mid-air Attack starts at Stage 2' },
+    { type: 'Liberation', skill: 'To the Horizon', note: 'heals the team, enters Aflame (2x Bravo gain)' },
+    { type: 'Mid-air', skill: 'Stage 2-3 + Charged Attack + Flip', note: 'main Bravo-building combo' },
+    { type: 'Forte', skill: 'Returned from Ashes', note: 'consumes full Bravo, deals massive DMG + shields the team' },
+    { type: 'Outro', skill: 'The Course is Set!', duration: 14, note: 'grants the incoming Resonator Fusion + Resonance Skill DMG Amp' },
+  ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Phoebe (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
   // Uses her Absolution (self-DPS) rotation, Prydwen's higher-rated mode (T1.5 DPS vs T2 Hybrid) —
@@ -3000,6 +3030,21 @@ const SKILL_ICONS = {
     'Golden Grace': 'https://i.ibb.co/gbGWpjwC/skill-goldengrace.webp', // Intro Skill
     'Attentive Heart': 'https://i.ibb.co/HTZ5ppLG/skill-attentiveheart.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Brant, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Captain's
+  // Rhapsody (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png icon
+  // (same as Changli/Camellya's).
+  'Brant': {
+    "Captain's Rhapsody": 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Rhapsodic Riff': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Basic ATK-chained Heavy ATK, same generic weapon icon
+    'Anchors Aweigh': 'https://i.ibb.co/Kp8DPNdC/skill-anchorsaweigh.webp',
+    'Ocean Odyssey': 'https://i.ibb.co/VWJhTfT2/skill-oceanodyssey.webp',
+    'Returned from Ashes': 'https://i.ibb.co/VWJhTfT2/skill-oceanodyssey.webp', // Forte Circuit's own upgraded Skill, same icon
+    'To the Horizon': 'https://i.ibb.co/Gfc6z3zy/skill-totheheorizon.webp',
+    'Applaud for Me!': 'https://i.ibb.co/Xk8TCww5/skill-applaudforme.webp', // Intro Skill
+    'The Course is Set!': 'https://i.ibb.co/HpqFG4gz/skill-thecourseisset.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3177,6 +3222,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/HDfvkYsV/node-s5-prayer.webp',
     s6: 'https://i.ibb.co/HT7qsxPx/node-s6-whispering.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Brant, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1206, all 6 URLs verified 200/live before upload.
+  'Brant': {
+    s1: 'https://i.ibb.co/Y4GdsDmY/node-s1-currentswinds.webp',
+    s2: 'https://i.ibb.co/gkF07br/node-s2-smilescheers.webp',
+    s3: 'https://i.ibb.co/Y49jmcXH/node-s3-stormsisail.webp',
+    s4: 'https://i.ibb.co/Fb56p7DW/node-s4-freedomising.webp',
+    s5: 'https://i.ibb.co/chfPWLFw/node-s5-actorsstage.webp',
+    s6: 'https://i.ibb.co/xnDJCdF/node-s6-captainscarnevale.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3200,6 +3256,7 @@ const CHAIN_NODE_NAMES = {
   'Carlotta': { s1: 'Beauty Blazes Brightest Before It Fades', s2: 'Fallen Petals Give Life to New Blooms', s3: 'Adelante, Cortado, Spinning in Grace', s4: "Yesterday's Raindrops Make Finest Wine", s5: 'Toast to Past, Today, and Every Day to Come', s6: 'As the Curtain Falls, I Remain What I Am' },
   'Roccia': { s1: 'When Shadows Engulf the Hull', s2: 'When the Luceanite Gleams', s3: 'When the Heart Sees and Hands Feel', s4: 'When Wonders Gather in the Box', s5: 'When Dreams Are Reborn on Stage', s6: 'When the Golden Wings Fly' },
   'Phoebe': { s1: 'Warm Light and Bedside Wishes', s2: 'A Boat Adrift in Tears', s3: 'Daisy Wreaths and Dreams', s4: 'Ringing Bells on Wings Aloft', s5: 'Prayer to the Distant Light', s6: 'Whispering Chirps in Silence' },
+  'Brant': { s1: 'By Currents and Winds', s2: 'For Smiles and Cheers', s3: 'Through Storms I Sail', s4: 'To Freedom I Sing', s5: "All the World's an Actor's Stage", s6: "All the World's a Captain's Carnevale" },
 };
 
 // Release order for sorting (based on first banner appearance)
