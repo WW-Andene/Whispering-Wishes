@@ -93,29 +93,75 @@ const CHARACTER_DATA = {
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
     weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
     teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
+  // desc corrected against wutheringwaves.fandom.com's Jianxin infobox (2026-08-17 audit): the wiki's
+  // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
+  // shown on ww.nanoka.cc's character page for her — the two sources disagree here, fandom's live
+  // infobox is treated as authoritative). Skills/base stats/multipliers/buffs/ascension mats all
+  // independently re-verified against ww.nanoka.cc character/1405 this same audit and were already
+  // accurate. weaponAlts/teams were corrected against Prydwen's live build/team page (see comments
+  // by those fields below) once it became reachable via a Chrome UA + referer + jsRender fetch.
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Cleansing Reflections, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
+    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
+    // bestWeapon kept as Abyss Surges (her best permanently-available option, ranked "100%" baseline
+    // on Prydwen's own calc scale) even though Verity's Handle (114.70%) and Moongazer's Sigil (108.30%)
+    // both out-damage it per Prydwen's live build calcs (prydwen.gg/wuthering-waves/characters/jianxin,
+    // re-fetched 2026-08-17 via Chrome UA + google.com referer + jsRender to get past the Cloudflare
+    // challenge) — same F2P-first convention already used for Encore/Calcharo. weaponAlts corrected
+    // against that same page: alt4 was wrong (Marcato is her worst-performing 4★ at 71.40%, likely
+    // copy/paste from another character) — replaced with Aether Strike (91.20%) and Celestial Spiral
+    // (86.50%), the two actually-best 4★ alternatives. alt3 replaced 'Gauntlets of Night' (not even
+    // mentioned on Prydwen's page) with Originite: Type IV, which Prydwen explicitly calls out as THE
+    // 3★ pick for her low-investment ToA support build (enables the 5pc Rejuvenating Glow set).
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
-    weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Marcato', 'Stonard'], alt3: ['Gauntlets of Night'] },
-    teams: ['Jianxin + Jiyan + Verina', 'Jianxin + Xiangli Yao + Shorekeeper'] },
+    weaponAlts: { alt5: ["Verity's Handle", "Moongazer's Sigil"], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Originite: Type IV'] },
+    // teams corrected against the same Prydwen page: 'Jianxin + Jiyan + Verina' had no basis in Prydwen's
+    // synergy list (Jiyan isn't mentioned at all for her) — replaced with 'Jianxin + Iuno + Shorekeeper',
+    // explicitly Prydwen's "Best Team" (Iuno is called her best DPS to buff, taking 38% Lib DMG Amp from
+    // her Outro; the Iuno+Shorekeeper / Xiangli Yao+Shorekeeper pairing is also cited directly in
+    // Prydwen's own endgame-stats ER estimate). Xiangli Yao + Shorekeeper kept, confirmed as her other
+    // named example team.
+    teams: ['Jianxin + Iuno + Shorekeeper', 'Jianxin + Xiangli Yao + Shorekeeper'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API, Cloudflare bypassed via
+  // Chrome UA + google.com referer + jsRender) and ww.nanoka.cc/character/1104 — base stats, skills,
+  // multipliers, buffs, ascension mats all independently re-confirmed accurate, no changes needed there.
+  // desc enriched with fandom's "last living Suan'ni" lore detail (his species/heritage, not previously
+  // captured). bestEchoes/weaponAlts/teams corrected against Prydwen's live build/team page (re-fetched
+  // same audit): Endless Resonance 5pc has since overtaken Frosty Resolve as her #1 echo set (100% vs
+  // 98.9% on Prydwen's calc scale) — bestEchoes updated to its main echo, Mech Abomination. weaponAlts.
+  // alt5 swapped Tragicomedy (103.0%, rank 4) for Blazing Justice (105.3%, actual rank 2, was skipped).
+  // alt4 swapped Hollow Mirage (82.8%) for Aether Strike (88.9%, actual best 4★ alt, was omitted).
+  // teams: 'Lingyang + Zhezhi + Shorekeeper' had no basis in Prydwen's synergy list — replaced with
+  // 'Lingyang + Lynae + Zhezhi', explicitly named "Lingyang's best partners" and Prydwen's cited Best
+  // Team; 'Lingyang + Sanhua + Verina' kept, confirmed as Prydwen's named F2P Team.
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion\'s Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.',
+    desc: "Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou and the last living Suan'ni — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion's Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.",
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'Abyss Surges',
-    weaponAlts: { alt5: ["Moongazer's Sigil", 'Tragicomedy'], alt4: ['Celestial Spiral', 'Hollow Mirage'], alt3: ['Gauntlets of Night'] },
-    teams: ['Lingyang + Sanhua + Verina', 'Lingyang + Zhezhi + Shorekeeper'] },
+    bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
+    teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and ww.nanoka.cc/
+  // character/1503 — desc, skills, base stats, multipliers, buffs, ascension mats, echoes, alt4/alt3
+  // weapons, and teams all independently re-confirmed accurate, no changes needed there. CHAR_BUFF_TABLE's
+  // existing "Outro is All DMG Amp, not Deepen" note re-confirmed against nanoka's exact wording
+  // ("DMG Amplified by 15%") even though Prydwen's own prose review loosely calls it "DMG Deepen" —
+  // same wording looseness seen auditing Jianxin, nanoka's structured text is treated as authoritative.
+  // bestWeapon: nanoka ranks Cosmic Ripples #1 (kept); note Prydwen's build page instead puts the
+  // rotation-shortening 4★ Variation above every 5★ option for her specifically, since cutting one
+  // attack from her already-shortest-in-game rotation outweighs raw stats — both are legitimate reads,
+  // Variation is already covered in alt4. alt5 reordered to lead with Stellar Symphony (confirmed by
+  // both sources) over Boson Astrolabe (unconfirmed by either this audit, kept as a plausible ER pick).
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Nature Calling — with an extensive knowledge of botany, Verina is always solicitous, always smiling, and always wishing for every flower to be blessed with the miracle of life. Spectro healer who builds Photosynthesis Energy from Basic Attacks, Skill, and Intro, then spends it on Heavy/Mid-air Attack Starflower Blooms to heal the team; Liberation Arboreal Flourish both heals and marks enemies for a Coordinated-Attack heal-on-hit, while Outro Blossom heals the incoming Resonator and grants the team All DMG Amp.',
     skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Cosmic Ripples',
-    weaponAlts: { alt5: ['Boson Astrolabe', 'Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
+    weaponAlts: { alt5: ['Stellar Symphony', 'Boson Astrolabe'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
     teams: ['Jinhsi + Yinlin + Verina', 'Jiyan + Mortefi + Verina', 'Encore + Changli + Verina'] },
   'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS who marks targets with Sinner\'s Mark via Basic Attack and Intro Skill, deals off-field Electro DMG through Coordinated Attacks (Electromagnetic Blast/Judgement Strike) once Punishment Mark is applied, and amplifies the incoming teammate\'s Electro DMG and Resonance Liberation DMG via Outro.',
@@ -132,29 +178,57 @@ const CHARACTER_DATA = {
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
     teams: ['Yinlin + Iuno + Shorekeeper', 'Yinlin + Jinhsi + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and Prydwen's live build page
+  // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, all skill multipliers
+  // (independently spot-checked section-by-section against fandom's own Forte table, matches exactly),
+  // buffs, ascension mats, bestEchoes, and both example teams all re-confirmed accurate, no changes
+  // needed there. weaponAlts corrected against Prydwen's live calc %: alt5 had Lustrous Razor (80.1%,
+  // near the bottom of her 5★ options) ahead of the two actually-best non-signature 5★s, Kumokiri
+  // (87.9%) and Wildfire Mark (87.6%) — replaced. alt4 had 'Autumntrace', which isn't in Prydwen's
+  // ranked list for her at all (looks like a copy/paste from another character) — replaced with Aureate
+  // Zenith (72.3%), her confirmed best 4★; Waning Redshift (70.7%, confirmed #2 4★) kept.
   'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
     desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS who builds Incandescence from any team member's Attribute or Coordinated DMG, enters Incarnation via her Resonance Skill, then spends stacks through Illuminous Epiphany for a scaling Stella Glamor nuke.",
     skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Luminal Synthesis', 'Purge of Light'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: "Loong's Pearl" },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
     bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
-    weaponAlts: { alt5: ['Lustrous Razor', 'Verdant Summit'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
+    weaponAlts: { alt5: ['Kumokiri', 'Wildfire Mark'], alt4: ['Aureate Zenith', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and Prydwen's live build page
+  // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, multipliers, ascension mats,
+  // and bestEchoes all re-confirmed accurate. weaponAlts corrected against Prydwen's calc %: alt5's Red
+  // Spring (90.0%, tied for 5th) was outranked by Emerald Sentence (90.4%, actual #3) — swapped. alt4
+  // had 'Lumingloss'/'Endless Collapse', neither of which appears anywhere in Prydwen's ranked weapon
+  // list for her — replaced with her confirmed best 4★ (Somnoire Anchor, 81.4%) and best no-gacha option
+  // (Commando of Conviction, 76.7%). teams: 'Changli + Brant + Shorekeeper' swapped Shorekeeper (never
+  // named as her specific partner) for Lupa, per Prydwen's actual "Best Team" (Changli+Lupa+Brant,
+  // Lupa being explicitly "part of Changli's best team" as the top Mono Fusion buffer); the Encore+Verina
+  // budget team was kept, confirmed as Prydwen's named Budget Dual DPS Team.
   'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Eternal Blaze, counselor serving the Jinzhou Magistrate and former Secretary-General in the capital — shrouded in flames, she\'s fated to burn brightly until her final embers, rising to power with fiery determination and a strategic mindset always thinking ahead. On-field Fusion DPS who enters True Sight from her Basic Attack/Skill/Intro finishers, builds Enflamement stacks from the True Sight follow-ups, then unleashes the enhanced Heavy Attack Flaming Sacrifice — a fast, quickswap-friendly kit that also buffs the incoming Resonator\'s Fusion and Liberation DMG via Outro.',
     skills: ['Blazing Enlightenment', 'Tripartite Flames', 'Flaming Sacrifice', 'Radiance of Fealty'],
     ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Pavo Plum' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Blazing Brilliance',
-    weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
-    teams: ['Changli + Brant + Shorekeeper', 'Changli + Encore + Verina'] },
+    weaponAlts: { alt5: ['Emerald of Genesis', 'Emerald Sentence'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
+    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina'] },
+  // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and Prydwen's live build page
+  // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
+  // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
+  // teams all re-confirmed accurate. weaponAlts corrected against Prydwen's calc %: alt5 led with Cosmic
+  // Ripples (84.6%, her best F2P/permanent pick, not actually close to top-tier for her) and 'Freeze
+  // Frame', absent from Prydwen's ranked list entirely — replaced with the two true best non-signature
+  // 5★s, Whispers of Sirens (95.8%) and Lethean Elegy (94.5%). alt4 had 'Waltz in Masquerade', also
+  // absent from Prydwen's list — replaced with Radiant Dawn (78.1%, confirmed #2 4★); Augment (81.1%,
+  // confirmed #1 4★) kept.
   'Zhezhi': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Shy, soft-spoken painter of the Jinzhou art scene whose ink creations spring to life and fight at her command — her bashfulness masks a fierce devotion to her craft and to those she calls friends. Glacio sub-DPS/support who paints Phantasmic Imprints during her Basic Attack and Forte combo, consumes them to unleash off-field Coordinated Attack Glacio nukes via Resonance Liberation (Living Canvas), and buffs the incoming Resonator\'s Glacio DMG and Skill DMG through her Outro Carve and Draw.',
+    desc: 'Enchanted Brush — shy, soft-spoken painter of the Jinzhou art scene whose ink creations spring to life and fight at her command; her bashfulness masks a fierce devotion to her craft and to those she calls friends. Glacio sub-DPS/support who paints Phantasmic Imprints during her Basic Attack and Forte combo, consumes them to unleash off-field Coordinated Attack Glacio nukes via Resonance Liberation (Living Canvas), and buffs the incoming Resonator\'s Glacio DMG and Skill DMG through her Outro Carve and Draw.',
     skills: ['Dimming Brush', 'Manifestation', 'Ink and Wash', 'Living Canvas'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
-    weaponAlts: { alt5: ['Cosmic Ripples', 'Freeze Frame'], alt4: ['Augment', 'Waltz in Masquerade'], alt3: ['Rectifier of Night'] },
+    weaponAlts: { alt5: ['Whispers of Sirens', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
     teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
   'Xiangli Yao': { rarity: 5, element: 'Electro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Brilliant, unassuming researcher of the Huaxu Academy who built his own combat mech, Thinker, to compensate for his fragile body — a quiet genius who would rather let his logic speak than argue his case. On-field Electro Main DPS who builds Performance Capacity through his Basic Attack/Skill/Dodge Counter combos, enters Intuition via Resonance Liberation (Cogitation Model) to gain enhanced attacks, and unleashes the burst Law of Reigns nuke once Intuition\'s Capacity is filled — his Outro Chain Rule then fires bonus laser procs onto the incoming Resonator\'s next hits.',
@@ -885,6 +959,25 @@ const CHARACTER_DATA = {
   ['Yinlin', 'Lightning of Execution', 'Huanglong', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
   ['Calcharo', 'Phantom Hunters', 'New Federation', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
   ['Encore', 'Wooly-Counting Game', 'New Federation', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
+  // cn VA corrected 2026-08-17: fandom's own wikitext link text ("Yu Tou") doesn't match the CN actor's
+  // real name in its own linked moegirl URL (%E5%BC%A0%E6%98%B1 = 张昱, surname Zhang) — ww.nanoka.cc's
+  // Voice Cast list confirms "Elise Zhang", used here instead as the more internally-consistent source.
+  ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
+  // organization uses affiliation2 (Liondance Troupe), his specific in-game sub-group within Jinzhou/
+  // Huanglong, matching the Jiyan/Midnight Rangers convention above rather than the generic nation tie.
+  ['Lingyang', 'Frosty Gusto', 'Huanglong', 'Liondance Troupe', { en: 'Aleksander Varadian', cn: 'Jinli', jp: 'Natsuki Hanae', kr: 'Lee Sangho' }],
+  // birthplace (New Federation) intentionally differs from her region/nation tie (Huanglong, in
+  // REGION_DATA below) — she's a New Federation-born botanist who now dwells in Jinzhou, Huanglong.
+  ['Verina', 'Nature Calling', 'New Federation', 'Pioneer Association', { en: 'Heather Nicol', cn: 'Zhao Shuang', jp: 'Yu Sasahara', kr: 'Kang Saebom' }],
+  // organization uses affiliation2 (Jinzhou City Hall, her magistrate office) over the generic Jinzhou
+  // tie and affiliation3 (Mt. Firmament) — matching the specific-sub-group convention used above.
+  ['Jinhsi', 'Thawborn Renewal', 'Huanglong', 'Jinzhou City Hall', { en: 'Anna Devlin', cn: 'Jiang Yue', jp: 'Yoshino Aoyama', kr: 'Park Ha-jin' }],
+  // organization uses affiliation2 (Jinzhou City Hall, where she serves as Counselor to Jinhsi) over the
+  // generic Jinzhou tie and her former, now-inactive affiliation3 (Mingting).
+  ['Changli', 'Eternal Blaze', 'Huanglong', 'Jinzhou City Hall', { en: 'Ashleigh Haddad', cn: 'Mufei', jp: 'Chiwa Saitō', kr: 'Shin Nari' }],
+  // organization: fandom's infobox has only a single affiliation field for her (Jinzhou) — no specific
+  // sub-group like the Jiyan/Changli entries above, so the generic nation-tied org is used as-is.
+  ['Zhezhi', 'Enchanted Brush', 'Huanglong', 'Jinzhou', { en: 'Shin-Fei Chen', cn: 'Miao Zi', jp: 'Yui Makino', kr: 'Kim Ha-ru' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1035,15 +1128,20 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% 12s.',
   },
+  // selfBuffs condition corrected 2026-08-17 against fandom/Prydwen — was "After 4 Resonance Skill
+  // casts", which matched nothing in her kit. Fiery Feather is granted by casting Liberation (Radiance
+  // of Fealty) and consumed by her next Forte Heavy ATK (Flaming Sacrifice) within 10s — already
+  // correctly described in this same file's SKILL_MULTIPLIERS Changli/Liberation row, just not reflected
+  // here.
   'Changli': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 10 },
       { stat: 'libDmg', value: 25, target: 'next', duration: 10 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'After 4 Resonance Skill casts' }],
+    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'Fiery Feather: after Liberation Radiance of Fealty, self ATK +25% on the next Forte Heavy ATK (Flaming Sacrifice) within 10s.' }],
     debuffs: [],
-    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp.',
+    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp via Fiery Feather.',
   },
   'Yinlin': {
     outroBuffs: [
@@ -2009,6 +2107,76 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
+  // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
+  'Jianxin': [
+    { type: 'Intro', skill: 'Essence of Tao', note: 'pulls enemies in, builds Chi toward the Forte' },
+    { type: 'Basic ATK', skill: 'Fengyiquan Stage 1-4', note: 'builds Chi toward max (120)' },
+    { type: 'Skill', skill: 'Calming Air', note: 'hold for Parry Stance to build Chi faster via Chi Counter/Chi Parry; 12s cooldown' },
+    { type: 'Forte', skill: 'Primordial Chi Spiral', duration: 3, note: 'at max Chi, hold Basic ATK for Zhoutian Progress — a channeled 50% DMG-reduction shield state, healing the active Resonator every 6s afterward' },
+    { type: 'Liberation', skill: 'Purification Force Field', note: 'groups enemies, then explodes on expiry; 20s cooldown' },
+    { type: 'Outro', skill: 'Transcendence', note: 'grants the incoming Resonator +38% Resonance Liberation DMG for 14s' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Lingyang (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender, confirmed against nanoka's kit order).
+  'Lingyang': [
+    { type: 'Intro', skill: 'Lion Awakens', note: "fills a large chunk of the Forte Gauge on its own" },
+    { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: 'grants self Glacio DMG Bonus +50% for 14s; 20s cooldown' },
+    { type: 'Forte', skill: 'Unification of Spirits', note: 'at full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters the airborne Striding Lion state' },
+    { type: 'Basic ATK', skill: 'Majestic Fists', note: 'Feral Gyrate P1/P2, alternated with Mountain Roamer below — never chain two of the same type in a row' },
+    { type: 'Skill', skill: 'Ancient Arts', note: 'Mountain Roamer while airborne; up to ~9 alternating Basic/Skill hits during the Ultimate window under ideal play' },
+    { type: 'Outro', skill: 'Frosty Marks', note: 'pure-damage AoE finisher on swap-out (S4 chain grants team Glacio DMG +20%/30s)' },
+  ],
+  // Standard Rotation (S0) — sourced from Prydwen's "Gameplay and teams" tab for Verina (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). Her Intro Skill is explicitly skipped —
+  // Prydwen calls it "unusable," sending her airborne and lengthening her already-shortest-in-game
+  // rotation — so she swaps in cold and her Basic ATK cycle starts from Stage 3.
+  'Verina': [
+    { type: 'Basic ATK', skill: 'Cultivation Stage 1-5', note: 'swap-in without an Intro starts the combo from Stage 3, straight into Stage 4-5' },
+    { type: 'Skill', skill: 'Botany Experiment', note: 'can be cancelled immediately by the Liberation below to save time — the hit and its Resonance Energy gain are skipped, Concerto Energy is still gained' },
+    { type: 'Liberation', skill: 'Arboreal Flourish', note: 'heals the team and applies Photosynthesis Mark; 25s cooldown' },
+    { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'jump, then spend all 4 Photosynthesis Energy stacks on Mid-air Starflower Blooms to heal the team and refill Concerto Energy' },
+    { type: 'Outro', skill: 'Blossom', note: 'heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% for 30s' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Jinhsi (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's baseline rotation
+  // (no swap/animation/jump cancels) — she also has advanced/expert cancel-heavy variants that push her
+  // damage further, omitted here as too execution-dependent for a standard reference rotation. Notably
+  // she gets 2 Outros and 2 Forte nukes per full team loop via her free-Outro-every-25s Unison mechanic.
+  'Jinhsi': [
+    { type: 'Basic ATK', skill: 'Slash of Breaking Dawn Stage 1-4', note: 'full 4-stage combo on the opener' },
+    { type: 'Skill', skill: 'Overflowing Radiance', note: 'available after Basic ATK 4; sends her into the 10s Incarnation state' },
+    { type: 'Liberation', skill: 'Purge of Light', note: '24s cooldown; huge AoE nuke' },
+    { type: 'Forte', skill: 'Incarnation', note: 'Incarnation Basic ATK Stage 1-4 while airborne, builds toward Illuminous Epiphany' },
+    { type: 'Skill', skill: 'Illuminous Epiphany', note: 'consumes up to 50 Incandescence for a scaling Stella Glamor nuke (+44.54% DMG per stack); grants Unison, giving a free Outro every 25s with no Concerto cost' },
+    { type: 'Outro', skill: 'Temporal Bender', note: 'utility only — accelerates her own Incandescence gain rate for 20s, no team buff' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Changli (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's single-Intro,
+  // no-swap-cancel rotation — she also has Double-Intro and heavy Swap-Cancel variants for advanced
+  // quickswap play, omitted here as too execution/team-dependent for a standard reference rotation. Goal
+  // each rotation: land 4 True Sight follow-ups to fill Enflamement for 2 Forte Heavy casts.
+  'Changli': [
+    { type: 'Intro', skill: 'Obedience of Rules', note: 'also enters True Sight (12s)' },
+    { type: 'Skill', skill: 'True Sight: Capture', note: '2 charges, 12s recharge each; each cast also opens a True Sight window' },
+    { type: 'Heavy ATK', skill: 'Standard', note: 'ground Heavy into Mid-air Heavy, weaving in True Sight: Conquest/Charge follow-ups to build Enflamement stacks' },
+    { type: 'Liberation', skill: 'Radiance of Fealty', note: '20s cooldown; instantly grants 4 Enflamement and Fiery Feather (self ATK +25% on the next Forte Heavy within 10s)' },
+    { type: 'Forte', skill: 'Heavy ATK: Flaming Sacrifice', note: 'at 4 Enflamement stacks, consumes them all; takes 40% less DMG while casting — 2 casts per rotation is the goal' },
+    { type: 'Outro', skill: 'Strategy of Duality', note: 'grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s — her shortest Outro window in the game alongside Lumi' },
+  ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Zhezhi (re-fetched
+  // 2026-08-17 via Chrome UA + google.com referer + jsRender). Goal: fill the 3-segment Afflatus Forte
+  // gauge, convert it into Phantasmic Imprints via Skill + Forte Heavy, then teleport to each one with
+  // repeated Stroke of Genius/Creation's Zenith casts before Outro.
+  'Zhezhi': [
+    { type: 'Intro', skill: 'Radiant Ruin', note: 'fills roughly 1.5 of her 3 Afflatus segments' },
+    { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'full combo fills the remaining Afflatus' },
+    { type: 'Skill', skill: 'Manifestation', note: 'at 60+ Afflatus, consumes 60 to summon Phantasmic Imprint - Left and Right' },
+    { type: 'Forte', skill: 'Heavy ATK: Conjuration', note: 'at 30+ Afflatus, consumes 30 to summon Phantasmic Imprint - Middle' },
+    { type: 'Skill', skill: 'Stroke of Genius', note: 'teleports to and consumes a Phantasmic Imprint for an off-field-style Basic ATK-type hit; repeat for each Imprint placed, escalating into Creation\'s Zenith at 2 Painter\'s Delight stacks' },
+    { type: 'Liberation', skill: 'Living Canvas', note: 'summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s — can be cast at any point in the rotation' },
+    { type: 'Outro', skill: 'Carve and Draw', note: 'grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish' },
+  ],
   'Encore': [
     { type: 'Intro', skill: 'Woolies Helpers' },
     { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
@@ -2504,6 +2672,77 @@ const SKILL_ICONS = {
     'Tactical Strike': 'https://i.ibb.co/33s8c1p/Skill-Tactical-Strike.webp',
     'Discipline': 'https://i.ibb.co/TBjWQSR1/Skill-Discipline.webp',
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Jianxin, re-hosted on ibb.co (2026-08-17,
+  // matching the convention used for the other audited characters above — all 6 URLs verified 200/live
+  // before upload).
+  'Jianxin': {
+    'Fengyiquan': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Basic ATK — shared generic Gauntlets icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Calming Air': 'https://i.ibb.co/4w8Mq52y/Skill-Calming-Air.webp',
+    'Primordial Chi Spiral': 'https://i.ibb.co/xtnnFYZC/Skill-Primordial-Chi-Spiral.webp',
+    'Purification Force Field': 'https://i.ibb.co/JjzrRftm/Skill-Purification-Force-Field.webp',
+    'Essence of Tao': 'https://i.ibb.co/jZvd35BH/Skill-Essence-of-Tao.webp', // Intro Skill
+    'Transcendence': 'https://i.ibb.co/jP7RDt0b/Skill-Transcendence.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lingyang, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload.
+  'Lingyang': {
+    'Majestic Fists': 'https://i.ibb.co/Cs76xkJK/Skill-Majestic-Fists.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/Cs76xkJK/Skill-Majestic-Fists.webp',
+    'Ancient Arts': 'https://i.ibb.co/5h5F3YrR/Skill-Ancient-Arts.webp',
+    'Unification of Spirits': 'https://i.ibb.co/4R6ggr17/Skill-Unification-of-Spirits.webp',
+    "Strive: Lion's Vigor": 'https://i.ibb.co/Wbh05jj/Skill-Strive-Lions-Vigor.webp',
+    'Lion Awakens': 'https://i.ibb.co/v4t5F4cP/Skill-Lion-Awakens.webp', // Intro Skill
+    'Frosty Marks': 'https://i.ibb.co/SwNjm5nr/Skill-Frosty-Marks.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Verina, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Cultivation
+  // (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for Encore/Yinlin.
+  'Verina': {
+    'Cultivation': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Botany Experiment': 'https://i.ibb.co/S4TqBZMp/Skill-Botany-Experiment.webp',
+    'Starflower Blooms': 'https://i.ibb.co/4RZZwnz0/Skill-Starflower-Blooms.webp',
+    'Arboreal Flourish': 'https://i.ibb.co/204LdT14/Skill-Arboreal-Flourish.webp',
+    'Verdant Growth': 'https://i.ibb.co/kgxDz6Xv/Skill-Verdant-Growth.webp', // Intro Skill
+    'Blossom': 'https://i.ibb.co/1fVPJtzv/Skill-Blossom.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Jinhsi, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API (Forte table section fetched directly by section index to
+  // dodge the page's huge collapsed ascension tables) — all 6 URLs verified 200/live before upload.
+  'Jinhsi': {
+    'Slash of Breaking Dawn': 'https://i.ibb.co/tMmTFPJH/Skill-Broadblade.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/tMmTFPJH/Skill-Broadblade.webp',
+    'Trailing Lights of Eons': 'https://i.ibb.co/zVbYMXzG/Skill-Trailing-Lights-of-Eons.webp',
+    'Luminal Synthesis': 'https://i.ibb.co/R5sPDCC/Skill-Luminal-Synthesis.webp',
+    'Purge of Light': 'https://i.ibb.co/cSS7ms3Z/Skill-Purge-of-Light.webp',
+    "Loong's Halo": 'https://i.ibb.co/cKXv3P1y/Skill-Loong-Halo.webp', // Intro Skill
+    'Temporal Bender': 'https://i.ibb.co/qZDp0Jz/Skill-Temporal-Bender.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Changli, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Blazing
+  // Enlightenment (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png icon.
+  'Changli': {
+    'Blazing Enlightenment': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Tripartite Flames': 'https://i.ibb.co/DDwNWX8M/Skill-Tripartite-Flames.webp',
+    'Flaming Sacrifice': 'https://i.ibb.co/39K3xvGn/Skill-Flaming-Sacrifice.webp',
+    'Radiance of Fealty': 'https://i.ibb.co/Df83Zv7v/Skill-Radiance-of-Fealty.webp',
+    'Obedience of Rules': 'https://i.ibb.co/4w1N13zp/Skill-Obedience-of-Rules.webp', // Intro Skill
+    'Strategy of Duality': 'https://i.ibb.co/sdkt9Yhd/Skill-Strategy-of-Duality.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Zhezhi, re-hosted on ibb.co (2026-08-17),
+  // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Dimming Brush
+  // (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for Encore/Yinlin/Verina.
+  'Zhezhi': {
+    'Dimming Brush': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Manifestation': 'https://i.ibb.co/DDNMwsCy/Skill-Manifestation.webp',
+    'Ink and Wash': 'https://i.ibb.co/8DYg2f8z/Skill-Ink-and-Wash.webp',
+    'Living Canvas': 'https://i.ibb.co/Vc7cVKF1/Skill-Living-Canvas.webp',
+    'Radiant Ruin': 'https://i.ibb.co/LX3NLrxP/Skill-Radiant-Ruin.webp', // Intro Skill
+    'Carve and Draw': 'https://i.ibb.co/V0s9WpHG/Skill-Carve-and-Draw.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2549,6 +2788,72 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/fzZxFxmw/Sequence-Node-Resolution.webp',
     s6: 'https://i.ibb.co/0jYkwNc5/Sequence-Node-Fortitude.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jianxin, re-hosted on ibb.co
+  // (2026-08-17, matching the convention above) — order confirmed S1→S6 against the Chain Table on
+  // Jianxin/Combat, all 6 URLs verified 200/live before upload.
+  'Jianxin': {
+    s1: 'https://i.ibb.co/Cp76tHr7/Sequence-Node-Verdant-Branchlet.webp',
+    s2: 'https://i.ibb.co/Z0VXpGV/Sequence-Node-Tao-Seekers-Journey.webp',
+    s3: 'https://i.ibb.co/NgdRQB4T/Sequence-Node-Principles-of-Wuwei.webp',
+    s4: 'https://i.ibb.co/9HypDDH7/Sequence-Node-Multitide-Reflection.webp',
+    s5: 'https://i.ibb.co/DHW1ndcQ/Sequence-Node-Mirroring-Introspection.webp',
+    s6: 'https://i.ibb.co/hFH1wK8g/Sequence-Node-Truth-from-Within.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lingyang, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Chain Table on ww.nanoka.cc/character/1104, all 6
+  // URLs verified 200/live before upload.
+  'Lingyang': {
+    s1: 'https://i.ibb.co/35qjT11k/Sequence-Node-Lion-of-Light.webp',
+    s2: 'https://i.ibb.co/fY1GpNzv/Sequence-Node-Dominant-and-Fierce.webp',
+    s3: 'https://i.ibb.co/rR5Sv0w7/Sequence-Node-Jaw-Dropping-Feats.webp',
+    s4: 'https://i.ibb.co/Wvr3prmH/Sequence-Node-Immortals-Bow.webp',
+    s5: 'https://i.ibb.co/hRYWXtX5/Sequence-Node-Seven-Stars-Shine.webp',
+    s6: 'https://i.ibb.co/Z1myY6Sc/Sequence-Node-Demons-Tremble.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Verina, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Chain Table on ww.nanoka.cc/character/1503, all 6
+  // URLs verified 200/live before upload.
+  'Verina': {
+    s1: 'https://i.ibb.co/RptDBgXm/Sequence-Node-Moment-of-Emergence.webp',
+    s2: 'https://i.ibb.co/zW0fpNdD/Sequence-Node-Sprouting-Reflections.webp',
+    s3: 'https://i.ibb.co/VWb4ycvt/Sequence-Node-The-Choice-to-Flourish.webp',
+    s4: 'https://i.ibb.co/Hpfb99bt/Sequence-Node-Blossoming-Embrace.webp',
+    s5: 'https://i.ibb.co/xtHvxT1F/Sequence-Node-Miraculous-Blooms.webp',
+    s6: 'https://i.ibb.co/fYjvXxRB/Sequence-Node-Joyous-Harvest.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jinhsi, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Jinhsi/Combat
+  // (fetched by section index), all 6 URLs verified 200/live before upload.
+  'Jinhsi': {
+    s1: 'https://i.ibb.co/B2ZXj0Vp/Sequence-Node-Abyssal-Ascension.webp',
+    s2: 'https://i.ibb.co/C5bnYtr4/Sequence-Node-Chronofrost-Repose.webp',
+    s3: 'https://i.ibb.co/spYvJ40L/Sequence-Node-Celestial-Incarnate.webp',
+    s4: 'https://i.ibb.co/wFtWBff4/Sequence-Node-Benevolent-Grace.webp',
+    s5: 'https://i.ibb.co/SDksbmM6/Sequence-Node-Frostfire-Illumination.webp',
+    s6: 'https://i.ibb.co/63m9q28/Sequence-Node-Thawing-Triumph.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Changli, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Changli/Combat
+  // (fetched by section index), all 6 URLs verified 200/live before upload.
+  'Changli': {
+    s1: 'https://i.ibb.co/FM07vnf/Sequence-Node-Hidden-Thoughts.webp',
+    s2: 'https://i.ibb.co/XBqhm0L/Sequence-Node-Pursuit-of-Desires.webp',
+    s3: 'https://i.ibb.co/ZzVrnF98/Sequence-Node-Learned-Secrets.webp',
+    s4: 'https://i.ibb.co/MkQV5gT9/Sequence-Node-Polished-Words.webp',
+    s5: 'https://i.ibb.co/39jsTQRB/Sequence-Node-Sacrificed-Gains.webp',
+    s6: 'https://i.ibb.co/wZJn2XcV/Sequence-Node-Realized-Plans.webp',
+  },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Zhezhi, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Zhezhi/Combat
+  // (fetched by section index), all 6 URLs verified 200/live before upload.
+  'Zhezhi': {
+    s1: 'https://i.ibb.co/pB0KfwRY/Sequence-Node-Brushworks-Finish.webp',
+    s2: 'https://i.ibb.co/PGNt7fSK/Sequence-Node-Vivid-Strokes.webp',
+    s3: 'https://i.ibb.co/b5zxp1S9/Sequence-Node-Reflections-Grace.webp',
+    s4: 'https://i.ibb.co/jZbWXLGX/Sequence-Node-Hues-Spectrum.webp',
+    s5: 'https://i.ibb.co/8gCVrMWV/Sequence-Node-Compositions-Clue.webp',
+    s6: 'https://i.ibb.co/MDqdsTLR/Sequence-Node-Infinite-Legacy.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2560,6 +2865,12 @@ const CHAIN_NODE_NAMES = {
   'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
   'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
   'Encore': { s1: "Wooly's Fairy Tale", s2: 'Sheep-counting Lullaby', s3: 'Fog? The Black Shores!', s4: "Adventure? Let's go!", s5: 'Hero Takes the Stage!', s6: 'Woolies Save the World!' },
+  'Jianxin': { s1: 'Verdant Branchlet', s2: "Tao Seeker's Journey", s3: 'Principles of Wuwei', s4: 'Multitide Reflection', s5: 'Mirroring Introspection', s6: 'Truth from Within' },
+  'Lingyang': { s1: 'Lion of Light, Blessings Abound', s2: 'Dominant and Fierce, Power Unbound', s3: 'Jaw-Dropping Feats, Loud and Wide', s4: 'Immortals Bow, in Reverence Flawed', s5: 'Seven Stars Shine, Stepped upon High', s6: 'Demons Tremble, Divine Power Nigh' },
+  'Verina': { s1: 'Moment of Emergence', s2: 'Sprouting Reflections', s3: 'The Choice to Flourish', s4: 'Blossoming Embrace', s5: 'Miraculous Blooms', s6: 'Joyous Harvest' },
+  'Jinhsi': { s1: 'Abyssal Ascension', s2: 'Chronofrost Repose', s3: 'Celestial Incarnate', s4: 'Benevolent Grace', s5: 'Frostfire Illumination', s6: 'Thawing Triumph' },
+  'Changli': { s1: 'Hidden Thoughts', s2: 'Pursuit of Desires', s3: 'Learned Secrets', s4: 'Polished Words', s5: 'Sacrificed Gains', s6: 'Realized Plans' },
+  'Zhezhi': { s1: "Brushwork's Finish", s2: 'Vivid Strokes', s3: "Reflection's Grace", s4: "Hue's Spectrum", s5: "Composition's Clue", s6: 'Infinite Legacy' },
 };
 
 // Release order for sorting (based on first banner appearance)
