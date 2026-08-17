@@ -492,10 +492,15 @@ const CHARACTER_DATA = {
     teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Support/Healer',
     desc: '"Just an ordinary student," she calmly introduces herself, a faint iridescent shimmer flickering in her eyes. Havoc support/healer who deals heavy Resonance Liberation DMG, heals and shields the team, and shreds enemy DEF via Unseen Snare + Havoc Bane.',
-    skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Reverberance - Return'],
+    // skills[3] corrected 2026-08-17: was 'Reverberance - Return' (her actual Intro Skill name) — the
+    // `skills` array convention is [Basic ATK, Skill, Liberation, Forte Circuit] per every other
+    // character's entry, and her real Forte Circuit name is 'Sight of Unraveling - Oblivion' per
+    // fandom's own Forte gallery/Prydwen's kit breakdown.
+    skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Sight of Unraveling - Oblivion'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Kumokiri',
+    bestEchoes: ['Reminiscence: Threnodian - Leviathan (Thread of Severed Fate, personal DMG) / Fallacy of No Return (Rejuvenating Glow, best overall team ATK)', 'Rejuvenating Glow (best overall, except non-ATK-scaling teams) or Thread of Severed Fate 3pc + Havoc Eclipse/Midnight Veil 2pc (personal DMG)'], bestWeapon: 'Kumokiri',
+    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
     teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who amplifies team All DMG and Resonance Liberation DMG via Outro, and boosts Tune Break Boost for Tune Strain team comps.',
@@ -740,7 +745,13 @@ const CHARACTER_DATA = {
   // Liberation/Intro are also tagged Heavy ATK. Previously listed as purely ['Echo'], missing the
   // majority Heavy ATK component entirely.
   ['Qiuyuan',       ['Heavy ATK', 'Echo'],           ['Echo DMG Buff', 'Crit DMG Amp'],       []],
-  ['Chisa',         ['Skill'],                       [],                                      ['DEF Shred']],
+  // dmg-type/buff tags corrected 2026-08-17: Chisa was tagged as purely ['Skill'] with no buff tags at
+  // all — but per Prydwen, her base Skill is barely used (too little Forte/Energy to be worthwhile
+  // outside the Opener) and her actual rotation damage is Basic ATK (incl. Death Snip/Thread Withdrawn)
+  // and her Forte's Sawring Blitz/Eradication, both explicitly "considered Resonance Liberation DMG".
+  // Buff tags were also entirely missing her Heal (Moment of Nihility/Death Snip) and Shield (Sawring -
+  // Eradication) kit.
+  ['Chisa',         ['Basic ATK', 'Liberation'],     ['Heal', 'Shield'],                      ['DEF Shred']],
   ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
   ['Danjin',        ['Basic ATK', 'Heavy ATK'],      ['Havoc DMG Bonus'],                     []],
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
@@ -1174,6 +1185,7 @@ const CHARACTER_DATA = {
   // affiliation3 (Internal Security Agency, "formerly") — no dedicated emblem exists for Mingting on the
   // wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
   ['Qiuyuan', 'Bambooscape', 'Huanglong', 'Mingting', { en: 'Jeremy Ang Jones', cn: 'Gan Ziqi', jp: 'Miki Shinichiro', kr: 'Kim Min-ju' }],
+  ['Chisa', 'Eye of Unravelling', 'Ashinohara', 'Startorch Academy', { en: 'Leader Looi', cn: 'Zhao Lingze', jp: 'Kanemoto Hisako', kr: 'Lee Joo-eun' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1434,8 +1446,11 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'defIgnore', value: 18, duration: 30 }],
-    note: 'Support/Healer. DEF Ignore 18% via Thread of Bane on Unseen Snare targets (30s). Heals team via Death Snip and Moment of Nihility; grants Shields via Sawring - Eradication.',
+    debuffs: [
+      { stat: 'defIgnore', value: 18, duration: 30, condition: "Thread of Bane: only benefits teammates who themselves apply/deal Negative Status DMG, not a free-for-all team buff" },
+      { stat: 'defShred', value: 12, duration: 2, condition: 'Havoc Bane: 1 stack (2% DEF Shred) per hit on an Unseen Snare target, up to 6 stacks, refreshed every 2s' },
+    ],
+    note: 'Support/Healer for Negative Status teams. DEF Ignore 18% via Thread of Bane and DEF Shred up to 12% via Havoc Bane both require the enemy to be marked by Unseen Snare, and Thread of Bane specifically only benefits Resonators who themselves inflict/deal Negative Status damage — Prydwen stresses her kit is close to non-functional outside Negative Status teams. Heals team via Death Snip and Moment of Nihility; grants Shields via Sawring - Eradication. Outro: teammates can stack +3 more Negative Status/Electro Rage for 20s.',
   },
   // ── 5★ Main DPS (mostly self-buffs, less team contribution) ──
   'Camellya': {
@@ -2672,14 +2687,19 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Critical Protocol', duration: 30, note: 'DEF-scaling nuke, empowers team buffs' },
     { type: 'Outro', skill: 'Recursion', duration: 30, note: '+25% All DMG Amp to team' },
   ],
+  // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry never
+  // used a single Basic ATK, put the base Skill (Eye of Unraveling — barely worth casting outside the
+  // Opener per Prydwen) before the Liberation, and skipped straight to Sawring - Blitz 1-3 instead of
+  // matching the actual Basic ATK → Liberation → Serrated Loop → Blitz 2-3 → Eradication loop. Rebuilt
+  // to match Prydwen's actual "Loop Rotation" (used every rotation after the Opener).
   'Chisa': [
-    { type: 'Intro', skill: 'Reverberance - Return' },
-    { type: 'Skill', skill: 'Eye of Unraveling', note: 'marks target for Negative Status' },
-    { type: 'Skill', skill: 'Serrated Loop', note: 'hold for more hits' },
-    { type: 'Forte', skill: 'Sawring - Blitz 1-3', note: 'builds Ring of Chainsaw stacks' },
-    { type: 'Forte', skill: 'Sawring - Eradication', note: 'scales with stacked Rings of Chainsaw' },
-    { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'Ultimate nuke, heals on cast' },
-    { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 15, note: 'next Resonator can stack more Negative Status' },
+    { type: 'Intro', skill: 'Reverberance - Return', note: 'also grants +20% Havoc DMG/Healing Bonus for 12s (Inherent Skill)' },
+    { type: 'Basic ATK', skill: 'Stage 2, Rending Lunge, Death Snip', note: 'Death Snip endlag partially cancelled by the Liberation' },
+    { type: 'Liberation', skill: 'Moment of Nihility', duration: 15, note: 'heals the team, enters Woven Myriad - Convergence' },
+    { type: 'Skill', skill: 'Serrated Loop', note: 'at full Ring of Chainsaw — enters Chainsaw Mode' },
+    { type: 'Forte', skill: 'Sawring - Blitz 2-3', note: 'Chainsaw Mode combo' },
+    { type: 'Forte', skill: 'Sawring - Eradication', duration: 30, note: 'scales with Ring of Chainsaw consumed, grants team Shield, swap-cancel out' },
+    { type: 'Outro', skill: 'Unraveling - Law Zero', duration: 20, note: 'next Resonator can stack +3 more Negative Status/Electro Rage' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // included Encroach and Volley of Death as rotation steps and put the Liberation after the Demon
@@ -3410,6 +3430,23 @@ const SKILL_ICONS = {
     'Attack the Must-Defend': 'https://i.ibb.co/DH5PV4Mc/skill-attack-the-must-defend.webp', // Intro Skill
     'Strike Before Ready': 'https://i.ibb.co/m5YJ7bBB/skill-strike-before-ready.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Chisa, re-hosted on ibb.co (2026-08-17).
+  'Chisa': {
+    'Reign of Silence': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Reign_of_Silence.png resolves to this same asset)
+    'Rending Lunge': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp',
+    'Death Snip': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp',
+    'Thread Withdrawn': 'https://i.ibb.co/39ZxR3C4/skill-broadblade.webp',
+    'Fractured Composition': 'https://i.ibb.co/Q7HCQCXS/skill-fractured-composition.webp',
+    'Eye of Unraveling': 'https://i.ibb.co/Q7HCQCXS/skill-fractured-composition.webp',
+    'Serrated Loop': 'https://i.ibb.co/Q7HCQCXS/skill-fractured-composition.webp',
+    'Moment of Nihility': 'https://i.ibb.co/wrM902F9/skill-moment-of-nihility.webp', // Resonance Liberation
+    'Sight of Unraveling - Oblivion': 'https://i.ibb.co/4g9Q3h0k/skill-sight-of-unraveling.webp', // Forte Circuit
+    'Sawring': 'https://i.ibb.co/4g9Q3h0k/skill-sight-of-unraveling.webp', // Sawring - Blitz/Eradication, Forte-state attacks, same icon
+    'Inescapable Fate': 'https://i.ibb.co/mCmwWwsJ/skill-inescapable-fate.webp', // Inherent Skill
+    'All Ends Here': 'https://i.ibb.co/KzpjDvHh/skill-all-ends-here.webp', // Inherent Skill
+    'Reverberance - Return': 'https://i.ibb.co/KxsFThC1/skill-reverberance-return.webp', // Intro Skill
+    'Unraveling - Law Zero': 'https://i.ibb.co/mC9hRxyB/skill-unraveling-law-zero.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3704,6 +3741,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/0RBWxffy/node-s5.webp',
     s6: 'https://i.ibb.co/LdNkcSqg/node-s6.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Chisa, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
+  'Chisa': {
+    s1: 'https://i.ibb.co/3mw4Nw94/node-s1.webp',
+    s2: 'https://i.ibb.co/nN9MKSTV/node-s2.webp',
+    s3: 'https://i.ibb.co/1fX8724w/node-s3.webp',
+    s4: 'https://i.ibb.co/zHZY0j4p/node-s4.webp',
+    s5: 'https://i.ibb.co/GffX5Qbj/node-s5.webp',
+    s6: 'https://i.ibb.co/1S0brGY/node-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3738,6 +3785,7 @@ const CHAIN_NODE_NAMES = {
   'Iuno': { s1: 'Wax or Wane, All Gild the Bough', s2: 'Day or Night, Let This Be Eternal', s3: 'I Drink Deep of Their Forgetting', s4: 'Rainy Season Dwell in My Eyes', s5: 'A Thousand Futile Glimpses', s6: 'I Am the Constant in the Chaos' },
   'Galbrena': { s1: 'Heart of Defiance Ever Ablaze', s2: 'Hellbound Dive of Fire and Abyss', s3: "Hunter's Blood Oath Rekindled", s4: 'Carry Forth This Fading Spark', s5: 'Though Light Fades, Torment Consumes', s6: 'I Remain Who I am, Eternal My Flame' },
   'Qiuyuan': { s1: 'Sword Sheathed, Mind Unclouded', s2: 'O Blade, I, Who Teach No More', s3: 'O Blade, I, Who Save No More', s4: 'O Blade, I, Who Sacrifice No More', s5: 'O Blade, I, Who Await to be Wielded', s6: 'Thus I Heard, Thus I Saw, Thus I Spoke' },
+  'Chisa': { s1: 'Wandering Through the Desolate Corridors', s2: 'Into the Web of Endless Bonds', s3: 'Across the Confusion of the Long Night', s4: 'Severing the Endless Cycle of Tragic Fate', s5: 'Thousands of Lights to Guide the Way Home', s6: 'Thus, Hope is Rekindled with the Rising Dawn' },
 };
 
 // Release order for sorting (based on first banner appearance)
