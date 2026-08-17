@@ -225,9 +225,12 @@ const REGION_ICONS = {
   // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
   // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
   'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
-  // Added 2026-08-17: Lynae/Mornye/Chisa's region tie (and Aemeath/Luuk Herssen/Sigrika's, per
-  // REGION_DATA) had no icon at all until now — sourced from fandom's own File:Lahai-Roi.png.
-  'Lahai-Roi': 'https://i.ibb.co/C5GV9tSf/Region-lahairoi.webp',
+  // Fixed 2026-08-17 (was File:Lahai-Roi.png, a 1920x1080 gameplay screenshot, not an emblem — wrong
+  // asset for a badge icon). The nation's own {{Nation Infobox}} on fandom lists File:Roya_Frostlands_
+  // Emblem.png as ITS emblem too (Lahai-Roi is the underground nation beneath the surface Roya
+  // Frostlands, and the wiki has never made a separate emblem for the two) — same asset as the
+  // 'Roya Frostlands' entry below, matching the wiki's own convention rather than guessing a new icon.
+  'Lahai-Roi': 'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
   // Added 2026-08-17: Aemeath's birthplace (distinct from her Lahai-Roi region tie above) — sourced
   // from fandom's own File:Roya_Frostlands_Emblem.png. New Federation (Lynae/Mornye's birthplace) has
   // no dedicated emblem asset on the wiki, so it's intentionally left unset rather than guessed.
