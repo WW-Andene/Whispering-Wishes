@@ -2425,6 +2425,14 @@ const CHAIN_NODE_ICONS = {
   },
 };
 
+// [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
+// (e.g. "Benevolence", "Versatility"...), confirmed against ww.nanoka.cc's character JSON
+// (static.nanoka.cc/ww/<version>/en/character/<id>.json) and wutheringwaves.fandom.com.
+// Only characters that have been audited so far are populated.
+const CHAIN_NODE_NAMES = {
+  'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
+};
+
 // Release order for sorting (based on first banner appearance)
 const RELEASE_ORDER = [
   // 1.0 - Launch (May 2024) — Rover: Spectro/Havoc/Aero all selectable from launch
@@ -2490,6 +2498,7 @@ export {
   SKILL_ICONS,
   getSkillIcon,
   CHAIN_NODE_ICONS,
+  CHAIN_NODE_NAMES,
   RELEASE_ORDER,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
