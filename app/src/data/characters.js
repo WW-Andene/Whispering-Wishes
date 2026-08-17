@@ -615,6 +615,12 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Redbell' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Reminiscence: Threnodian - Voidborne Construct', 'Wishes of Quiet Snowfall 5pc'], bestWeapon: 'Frostburn',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Blazing Brilliance (80.8%) and
+    // Emerald of Genesis (80.1%) are the top non-signature 5★ Swords (ahead of Emerald Sentence 79.0%,
+    // Red Spring 79.0%, Everbright Polestar 76.9%); Feather Edge (76.9%, Prydwen's explicit best 4★) and
+    // Fables of Wisdom (71.8%, her best F2P no-gacha pick) are the 4★s; Sword of Night is the 3★
+    // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Blazing Brilliance', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG + Chafe) via Resonance Skill, culminating in a team-wide All DMG Amplification through her Outro.',
@@ -1119,6 +1125,7 @@ const CHARACTER_DATA = {
   // Lahai-Roi (Startorch Academy)
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
+  ['Hiyuki',       'Lahai-Roi'],
 ].forEach(([name, region]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { region });
 });
@@ -1262,6 +1269,13 @@ const CHARACTER_DATA = {
   // field, and fandom's `affiliation` over `affiliation2` Startorch Academy) — the reverse of Aemeath's
   // primary tie, despite both characters sharing the same two affiliations.
   ['Sigrika', 'True Name Manifestation', 'Roya Frostlands', 'Roya Tribe', { en: 'Maya Lindh', cn: 'Qian Chen', jp: 'Akasaki Chinatsu', kr: 'Jang Ye-na' }],
+  // Cross-checked ww.nanoka.cc character/1108 against fandom's own infobox — both agree exactly:
+  // birthplace Ashinohara (a region distinct from Lahai-Roi, where she now resides — see REGION_DATA
+  // above), organization 'Miko of Flaming Sakura' (her primary affiliation on both sources; fandom lists
+  // 3 more secondary ties — Special Response Force, Spacetrek Collective, Startorch Academy — but no
+  // dedicated emblem exists for any of them on the wiki, matching the Jinzhou-precedent convention of
+  // leaving unconfirmed sub-org icons out rather than guessed). Birthday: 'Unknown' on both sources.
+  ['Hiyuki', "Futures' Tithe", 'Ashinohara', 'Miko of Flaming Sakura', { en: 'Mei Mac', cn: 'Li Chanfei', jp: 'Tomatsu Haruka', kr: 'Jung Hye-won' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1434,9 +1448,16 @@ const CHAR_BUFF_TABLE = {
   'Hiyuki': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'vs. targets affected by Glacio Chafe' }],
     libBuffs: [],
-    selfBuffs: [],
+    // Added 2026-08-17 against Prydwen's live kit breakdown — Inherent Skill "Fine Snow" was missing
+    // entirely. It's a self-only Snow Rust scaling buff, gated on teammates applying Glacio Chafe/Havoc
+    // Bane (1 stack is free from Hiyuki's own Glacio Chafe application; 2nd/3rd stacks need teammates,
+    // e.g. Lucilla/Chisa/Suisui — hence her documented reliance on those specific supports).
+    selfBuffs: [
+      { stat: 'critDmg', value: 40, target: 'self', duration: 99, condition: 'Inherent Fine Snow, 1 stack of Snow Rust (self-applied via her own Glacio Chafe)' },
+      { stat: 'elemDmg', value: 60, target: 'self', duration: 99, condition: 'Inherent Fine Snow, Glacio Bite DMG Amp (a distinct multiplier from base Glacio DMG Bonus): +30% at 1 stack of Snow Rust, +30% more at 3 stacks (teammates applying Glacio Chafe/Havoc Bane, e.g. Lucilla/Chisa/Suisui)' },
+    ],
     debuffs: [],
-    note: 'On-field Glacio DPS. Outro grants +20% Glacio DMG to the rest of the team against Glacio Chafe-affected targets (20s).',
+    note: 'On-field Glacio DPS. Outro grants +20% Glacio DMG to the rest of the team against Glacio Chafe-affected targets (20s). Inherent Fine Snow: self +40% Crit DMG at 1 Snow Rust stack, +30%/+30% Glacio Bite DMG Amp at 1/3 stacks — needs teammates applying Glacio Chafe or Havoc Bane to reach max stacks.',
   },
   'Lucy': {
     outroBuffs: [{ stat: 'basicDmg', value: 25, target: 'next', duration: 14 }],
@@ -3674,6 +3695,19 @@ const SKILL_ICONS = {
     'Solsworn Etymology': 'https://i.ibb.co/Qj6rsbGF/Sigrika-skill-intro.webp', // Intro Skill
     'In This Very Moment': 'https://i.ibb.co/q3yGzhyX/Sigrika-skill-outro.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Hiyuki, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Hiyuki': {
+    'Present Self Stage': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Flaming_Sakura_Blade_Art.png resolves to this same asset)
+    'Foreclaimed Self Stage': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp',
+    'Frost Splinter': 'https://i.ibb.co/9HCF6LL6/Hiyuki-skill-forte.webp', // Heavy ATK, Forte-gated — Everfrost Dominion
+    'Bitterfrost': 'https://i.ibb.co/9HCF6LL6/Hiyuki-skill-forte.webp',
+    'Glacio Bite': 'https://i.ibb.co/9HCF6LL6/Hiyuki-skill-forte.webp', // Forte Circuit
+    'Foreclaiming': 'https://i.ibb.co/hJgrR7gJ/Hiyuki-skill-liberation.webp', // Resonance Liberation
+    'Frostblight': 'https://i.ibb.co/7Jq5CD3r/Hiyuki-skill-res-Skill.webp', // Resonance Skill
+    'Frostedge': 'https://i.ibb.co/NRt7X9T/Hiyuki-skill-intro.webp', // Intro Skill
+    'Snowlight Blessing': 'https://i.ibb.co/Ng7S6X8j/Hiyuki-skill-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4022,6 +4056,14 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/9H04pcpv/Sigrika-chain-s5.webp',
     s6: 'https://i.ibb.co/9kG4hxbd/Sigrika-chain-s6.webp',
   },
+  'Hiyuki': {
+    s1: 'https://i.ibb.co/cK3XdXtT/Hiyuki-chain-s1.webp',
+    s2: 'https://i.ibb.co/tMGFBF2R/Hiyuki-chain-s2.webp',
+    s3: 'https://i.ibb.co/Rmcwhym/Hiyuki-chain-s3.webp',
+    s4: 'https://i.ibb.co/4RpdTpjM/Hiyuki-chain-s4.webp',
+    s5: 'https://i.ibb.co/4ZdSWbXC/Hiyuki-chain-s5.webp',
+    s6: 'https://i.ibb.co/VP72Z2V/Hiyuki-chain-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4062,6 +4104,7 @@ const CHAIN_NODE_NAMES = {
   'Aemeath': { s1: 'Gilded Glimmer of the First Dawn', s2: 'Downy Notes of Snowfluff', s3: 'Fervor Sightly Burns Bright as New', s4: 'Ethereal Waltz on Binary Tides', s5: 'Voyage to the Astral Shore', s6: "A Zephyr-Kissed Journey to You" },
   'Luuk Herssen': { s1: 'Gold Kindled in Ash', s2: 'Avalanche Roaring in Eyes', s3: 'Spine Tempered by Golden Rain', s4: 'Pulse Thrumming Under Rime', s5: 'Through the Stillness of Snowstorm', s6: 'Dawn Unfurling over Frostlands' },
   'Sigrika': { s1: 'The Gleam Meant for Radiance', s2: 'The Bitterness Steeped in Hope', s3: 'I Flee, Yet I Seek', s4: 'I Lose, Yet I Gain', s5: 'Until Submerged by the Dark', s6: 'True Names Resurfaced, Rising in Light' },
+  'Hiyuki': { s1: 'Springless', s2: 'To Burn Cold in Silence', s3: 'No Self, No Bound', s4: 'Like Reeds on Tides', s5: 'Vessel of Thousand Wishes', s6: 'Into a Night Without End' },
 };
 
 // Release order for sorting (based on first banner appearance)
