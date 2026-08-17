@@ -113,12 +113,6 @@ const AVG_PULLS_PER_4STAR = 7.69;
 const AVG_4STAR_PULLS_PER_FEATURED = 1.5;
 const LEADERBOARD_DISPLAY_LIMIT = 20;
 
-// Shared fallback art for materials that don't have a real icon sourced yet
-// (post-v3.3 characters' ascension/skill materials) — same placeholder used
-// for character/weapon art in banners.js. No cross-import to avoid coupling
-// these leaf data modules together.
-const MATERIAL_PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
-
 // [SECTION:MATERIAL_IMAGES] — Material icon URLs for collection detail modals
 const MATERIAL_IMAGES = {
   // === Resonator EXP Materials ===
@@ -237,20 +231,20 @@ const MATERIAL_IMAGES = {
   'Polywing Polarizer': 'https://wuwatracker.com/api/item-icons/file/polywing-polarizer.webp',
   'Layered Wing Polarizer': 'https://wuwatracker.com/api/item-icons/file/layered-wing-polarizer.webp',
   // Autopuppet Kernel family (Land of Xuanfang common drop — Suisui, Yangyang: Xuanling, Azure Oath)
-  'HF-Autopuppet Kernel': MATERIAL_PLACEHOLDER_IMAGE,
-  'FF-Autopuppet Kernel': MATERIAL_PLACEHOLDER_IMAGE,
-  // v3.4/3.5 ascension specialty / weekly-boss-drop materials — no icon art sourced yet
+  'HF-Autopuppet Kernel': 'https://i.ibb.co/Pv1RwHvF/HF-Autopuppet-Kernel.webp',
+  'FF-Autopuppet Kernel': 'https://i.ibb.co/39PtWdsP/FF-Autopuppet-Kernel.webp',
+  // v3.4/3.5 ascension specialty / weekly-boss-drop materials
   'Cloudperch Seed': 'https://i.ibb.co/k2QZsk8X/Item-Cloudperch-Seed.webp',
-  'Dream of Stars': MATERIAL_PLACEHOLDER_IMAGE,
+  'Dream of Stars': 'https://i.ibb.co/CK0t9WqH/Dream-of-Stars.webp',
   'Flowborne Dream': 'https://i.ibb.co/spwJrnR9/Item-Flowborne-Dream.webp',
   'Blade Blossom': 'https://i.ibb.co/q8w9h0j/Item-Blade-Blossom.webp',
-  'Forget-Me-Not': MATERIAL_PLACEHOLDER_IMAGE,
-  'Nightmare Flashdrive': MATERIAL_PLACEHOLDER_IMAGE,
-  'Past Reveries': MATERIAL_PLACEHOLDER_IMAGE,
-  'Redbell': MATERIAL_PLACEHOLDER_IMAGE,
-  'Skyward Glazed Heart': MATERIAL_PLACEHOLDER_IMAGE,
-  "Solidarity's Loneflame": MATERIAL_PLACEHOLDER_IMAGE,
-  'We Who Question': MATERIAL_PLACEHOLDER_IMAGE,
+  'Forget-Me-Not': 'https://i.ibb.co/G4HnvwVb/Forget-Me-Not.webp',
+  'Nightmare Flashdrive': 'https://i.ibb.co/3yMLGMRv/Nightmare-Flashdrive.webp',
+  'Past Reveries': 'https://i.ibb.co/SDBLk5fS/Past-Reveries.webp',
+  'Redbell': 'https://i.ibb.co/G3P7bGDB/Redbell.webp',
+  'Skyward Glazed Heart': 'https://i.ibb.co/FLn7WRQ2/Skyward-Glazed-Heart.webp',
+  "Solidarity's Loneflame": 'https://i.ibb.co/YBhv4RYk/Solidaritys-Loneflame.webp',
+  'We Who Question': 'https://i.ibb.co/G3Jd0prs/We-Who-Question.webp',
 };
 
 // [SECTION:COMMON_MAT_TIERS] — Maps common material family name → [tier3, tier4] display names

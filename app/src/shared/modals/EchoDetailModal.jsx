@@ -8,7 +8,7 @@ import { User, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { ECHO_DATA, ECHO_SETS } from '../../data/echoes.js';
-import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor } from '../../utils/helpers.js';
+import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
@@ -126,7 +126,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
             )}
             {(data.sets || []).map(setName => {
               const sc = getSetElementColor(setName);
-              return <span key={setName} className="kuro-badge font-medium" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>{setName}</span>;
+              const setIcon = getSetIcon(setName);
+              return (
+                <span key={setName} className="kuro-badge font-medium inline-flex items-center gap-1" style={{ background: `${sc}15`, color: sc, border: `1px solid ${sc}30` }}>
+                  {setIcon && <img src={setIcon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                  {setName}
+                </span>
+              );
             })}
           </div>
 
@@ -157,9 +163,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
               {(data.sets || []).map(setName => {
                 const setData = ECHO_SETS[setName];
                 const setColor = getSetElementColor(setName);
+                const setIcon = getSetIcon(setName);
                 return (
                   <div key={setName} className="p-2 rounded-lg" style={{ background: `${setColor}10`, borderLeft: `3px solid ${setColor}80` }}>
-                    <div className="text-base font-bold mb-0.5" style={{ color: setColor }}>{setName}</div>
+                    <div className="text-base font-bold mb-0.5 inline-flex items-center gap-1.5" style={{ color: setColor }}>
+                      {setIcon && <img src={setIcon} alt="" className="w-4 h-4" onError={hideOnError} />}
+                      {setName}
+                    </div>
                     {setData ? (
                       <div className="space-y-0.5">
                         {setData.p2 && <div className="text-sm text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}

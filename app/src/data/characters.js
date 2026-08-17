@@ -54,25 +54,45 @@ const CHARACTER_DATA = {
     skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'Verdant Summit',
-    weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
-    teams: ['Jiyan + Iuno + Shorekeeper', 'Jiyan + Mortefi + Verina'] },
+    // bestEchoes/weaponAlts corrected against Prydwen's Jiyan build calcs (2026-07-30 profile update):
+    // Windward Pilgrimage (100%) outranks Sierra Gale (94.3%) as long as the team applies Aero Erosion;
+    // Thunderflare Dominion (90.3%) and Aureate Zenith (82.3%) are the actual best 5★/4★ alternatives —
+    // Waning Redshift wasn't in Prydwen's recommendations for him at all.
+    bestEchoes: ['Nightmare: Kelpie', 'Windward Pilgrimage 5pc'], bestWeapon: 'Verdant Summit',
+    weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Broadblade of Night'] },
+    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS who builds Cruelty from his Resonance Skill Extermination Order into an enhanced Heavy Attack "Mercy," then triggers Resonance Liberation Phantom Etching to enter Deathblade Gear, replacing his Basic Attack with the Killing Intent-fueled "Death Messenger" burst finisher.',
     skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
+    // bestEchoes confirmed accurate (Void Thunder/Nightmare: Thundering Mephis is genuinely #1 per
+    // Prydwen calcs). weaponAlts/teams corrected against Prydwen's live build calcs (2026-07-30 profile
+    // update): Wildfire Mark (100.72%) actually edges out even his own bestWeapon and belongs in alt5,
+    // not Verdant Summit (96.69%, still fine but not top-tier). 'Waning Redshift' was a straight data
+    // bug — it's a Rectifier weapon (see weapons.js), not equippable by a Broadblade user at all;
+    // replaced with Aureate Zenith, a real Broadblade 4★ option. Lynae + Mornye is Calcharo's explicit
+    // "Best Team" per Prydwen (his best overall buffer by a wide margin) — added ahead of the Yinlin
+    // pairing, which remains valid as his "most reliable Outro buffing option".
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
-    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Autumntrace', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
-    teams: ['Calcharo + Yinlin + Verina', 'Calcharo + Yinlin + Shorekeeper'] },
+    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Autumntrace', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
+    teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
     desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem from her Basic/Skill/Intro hits into an empowered, damage-reducing Heavy Attack (Cloudy Frenzy), then unleashes Resonance Liberation Cosmos Rave to swap her whole kit for enhanced Fusion versions for 10s.",
     skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Helix' },
+    // bestEchoes confirmed accurate (Molten Rift/Nightmare: Inferno Rider is genuinely #1 per Prydwen
+    // calcs). bestWeapon kept as Cosmic Ripples (her best permanently-available option, same convention
+    // as Calcharo who also has no true signature) since it's the practical F2P choice; weaponAlts/teams
+    // corrected against Prydwen's live build calcs (2026-07-30 profile update): Stringmaster (110%) and
+    // Rime-Draped Sprouts (104.4%) are her real top alternatives, clearly ahead of Cosmic Ripples itself
+    // — 'Boson Astrolabe' wasn't in Prydwen's recommendations for her at all. Lupa is now explicitly her
+    // "new best teammate over Sanhua in most situations" and pairs with Brant in Prydwen's own "Best
+    // Team" example — added ahead of the Changli/Shorekeeper pairing.
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
-    weaponAlts: { alt5: ['Boson Astrolabe'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
-    teams: ['Encore + Changli + Verina', 'Encore + Sanhua + Shorekeeper'] },
+    weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
+    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
     desc: 'Cleansing Reflections, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
@@ -102,9 +122,16 @@ const CHARACTER_DATA = {
     skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Chameleon Cipher', 'Thundering Wrath'],
     ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Helix' },
+    // bestEchoes confirmed accurate (Moonlit Clouds/Impermanence Heron ties #1 with Empyrean Anthem per
+    // Prydwen calcs). weaponAlts/teams corrected against Prydwen's Jiyan-style live build calcs
+    // (2026-07-30 profile update): Whispers of Sirens (96.7%) and Rime-Draped Sprouts (96.3%) are her
+    // actual best 5★ alternatives — Cosmic Ripples (90%) is just the best F2P option, not a top alt.
+    // Jinzhou Keeper replaces Waltz in Masquerade, which wasn't in Prydwen's Yinlin recommendations at
+    // all. Iuno is now explicitly her best synergy partner ("Yinlin's best synergy nowadays is with
+    // Main DPS Iuno") — added ahead of the Calcharo pairing, which is no longer top-tier for her.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
-    weaponAlts: { alt5: ['Cosmic Ripples', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Waltz in Masquerade'], alt3: ['Rectifier of Night'] },
-    teams: ['Yinlin + Jinhsi + Verina', 'Yinlin + Calcharo + Shorekeeper'] },
+    weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
+    teams: ['Yinlin + Iuno + Shorekeeper', 'Yinlin + Jinhsi + Verina'] },
   'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
     desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS who builds Incandescence from any team member's Attribute or Coordinated DMG, enters Incarnation via her Resonance Skill, then spends stacks through Illuminous Epiphany for a scaling Stella Glamor nuke.",
     skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Luminal Synthesis', 'Purge of Light'],
@@ -757,7 +784,7 @@ const CHARACTER_DATA = {
   ['Rover: Spectro', 'T0.5', 'T1.5'],
   ['Rover: Aero',    'T1.5', 'T2'],
   ['Rover: Electro', 'T4',   'T4'],
-  ['Jiyan',         'T1.5', 'T1'],
+  ['Jiyan',         'T1.5', 'T1.5'],
   ['Phoebe',        'T1.5', 'T2'],
   ['Cantarella',    'T1.5', 'T0.5'],
   ['Mortefi',       'T1.5', 'T1.5'],
@@ -788,13 +815,15 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
 });
 
-// [SECTION:REGION_DATA] — Character regions/nations
+// [SECTION:REGION_DATA] — Character regions/nations (infobox `nation` field — the nation a character
+// is CONFIRMED tied to, distinct from birthplace and from their specific in-game organization/faction
+// — see the IDENTITY_DATA comment above).
 // Huanglong (Jinzhou/Mengzhou), Rinascita, Black Shores, Septimont, Lahai-Roi
 [
   // Huanglong
   ['Rover: Spectro', 'Huanglong'], ['Rover: Havoc', 'Huanglong'], ['Rover: Aero', 'Huanglong'], ['Rover: Electro', 'Huanglong'],
   ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
-  ['Encore',       'Huanglong'], ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
+  ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
   ['Qiuyuan',      'Huanglong'],
@@ -805,6 +834,7 @@ const CHARACTER_DATA = {
   ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'], ['Buling',       'Huanglong'],
   // Black Shores
   ['Shorekeeper',  'Black Shores'], ['Camellya',   'Black Shores'], ['Galbrena',   'Black Shores'],
+  ['Encore',       'Black Shores'],
   // Rinascita
   ['Carlotta',     'Rinascita'], ['Roccia',       'Rinascita'], ['Phoebe',       'Rinascita'],
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
@@ -834,6 +864,29 @@ const CHARACTER_DATA = {
   ['Youhu',       '10-13'],
 ].forEach(([name, birthday]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
+});
+
+// [SECTION:IDENTITY_DATA] — Title, birthplace, in-game organization/faction, and voice actor(s).
+// Source: wutheringwaves.fandom.com Resonator Infobox (title/title2, birthplace, nation, affiliation/
+// affiliation2, voiceEN/voiceCN/voiceJP/voiceKR). These are three DISTINCT associations, not one:
+//   - birthplace: where the character was born/raised (infobox `birthplace`)
+//   - region (separate REGION_DATA table below): the nation they currently operate in/are tied to
+//     (infobox `nation`, when the wiki has confirmed one — left unset when it doesn't, rather than
+//     inferring it from an affiliation)
+//   - organization: their specific in-game faction (infobox `affiliation`), which is often a
+//     sub-group WITHIN a nation (e.g. Midnight Rangers operate in Huanglong) and can differ from
+//     nation/birthplace entirely (e.g. Calcharo: born in New Federation, leads Ghost Hounds, operates
+//     out of Jinzhou/Huanglong but the wiki's own `nation` field for him is blank/unconfirmed)
+// voiceActor is either a plain string (English-only, when that's all that's been sourced) or
+// { en, cn, jp, kr } for a full multi-language credit.
+// Only characters that have been audited so far are populated — this is not yet a complete roster table.
+[
+  ['Jiyan', 'Windborne Rider', 'Huanglong', 'Midnight Rangers', { en: 'Alex Jordan', cn: 'Sun Ye', jp: 'Ono Yuki', kr: 'Nam Doh-hyeong' }],
+  ['Yinlin', 'Lightning of Execution', 'Huanglong', 'Public Security Bureau', { en: 'Naomi McDonald', cn: 'Xiao Liansha', jp: 'Ami Koshimizu', kr: 'Kang Sae-bom' }],
+  ['Calcharo', 'Phantom Hunters', 'New Federation', 'Ghost Hounds', { en: 'Ben Cura', cn: 'Xu Xiang', jp: 'Toshiyuki Morikawa', kr: 'Park Min-gi' }],
+  ['Encore', 'Wooly-Counting Game', 'New Federation', 'Black Shores', { en: 'Carina Reeves', cn: 'Xiao Sibai', jp: 'Ibuki Chikano', kr: 'Serena Lee' }],
+].forEach(([name, title, birthplace, organization, voiceActor]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
 
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
@@ -1956,6 +2009,42 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  'Encore': [
+    { type: 'Intro', skill: 'Woolies Helpers' },
+    { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
+    { type: 'Skill', skill: 'Cosmos Rampage', note: 'cast on cooldown during Cosmos Rave, generates Dissonance' },
+    { type: 'Basic ATK', skill: 'Cosmos: Frolicking', note: '4-stage combo, repeated between each Cosmos Rampage cast' },
+    { type: 'Forte', skill: 'Heavy ATK: Cosmos Rupture', note: 'at full Dissonance; swap-cancel the moment Encore begins channelling' },
+    { type: 'Outro', skill: 'Thermal Field' },
+  ],
+  'Calcharo': [
+    { type: 'Intro', skill: 'Wanted Outlaw' },
+    { type: 'Liberation', skill: 'Phantom Etching', duration: 11, note: 'enters Deathblade Gear — Basic ATK replaced by Hounds Roar' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: 'at 5 Killing Intent; optionally swap-cancel to protect Calcharo' },
+    { type: 'Basic ATK', skill: 'Hounds Roar', note: '5-stage combo, rebuilds Killing Intent toward the next Death Messenger' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '2nd proc' },
+    { type: 'Basic ATK', skill: 'Hounds Roar' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '3rd proc — realistic ceiling without frame-perfect dash-cancels (4 is possible but extremely hard)' },
+    { type: 'Outro', skill: 'Shadowy Raid' },
+  ],
+  'Yinlin': [
+    { type: 'Intro', skill: 'Raging Storm', note: 'applies Sinner\'s Mark' },
+    { type: 'Basic ATK', skill: 'Zapstring\'s Dance', note: 'Stage 4; optionally swap-cancel' },
+    { type: 'Skill', skill: 'Magnetic Roar', note: 'enters Execution Mode' },
+    { type: 'Heavy ATK', skill: 'Standard' },
+    { type: 'Skill', skill: 'Lightning Execution', note: 'try to cancel Heavy ATK endlag' },
+    { type: 'Liberation', skill: 'Thundering Wrath', note: 'use right as Yinlin lands; applies Sinner\'s Mark' },
+    { type: 'Basic ATK', skill: 'Zapstring\'s Dance', note: 'Stage 1' },
+    { type: 'Forte', skill: 'Chameleon Cipher', note: 'at full Judgment Points; upgrades Sinner\'s Mark to Punishment Mark' },
+    { type: 'Outro', skill: 'Strategist' },
+  ],
+  'Jiyan': [
+    { type: 'Intro', skill: 'Tactical Strike' },
+    { type: 'Basic ATK', skill: 'Lone Lance', note: 'builds Resolve toward 30' },
+    { type: 'Skill', skill: 'Windqueller', note: 'spend Resolve for +20% DMG while outside Qingloong Mode' },
+    { type: 'Liberation', skill: 'Emerald Storm: Prelude', duration: 10, note: 'at 30+ Resolve, enters Qingloong Mode — Basic/Heavy/Dodge Counter replaced by the Lance of Qingloong combo' },
+    { type: 'Outro', skill: 'Discipline', note: 'Coordinated ATK when the incoming Resonator lands a Heavy ATK (8s window, up to 2 procs)' },
+  ],
   'Lucilla': [
     { type: 'Intro', skill: 'Clip It' },
     { type: 'Skill', skill: 'Phantom Frame', note: 'hold to perfect Spotlight' },
@@ -2368,6 +2457,111 @@ const RESONANCE_CHAIN_DATA = {
   'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
 };
 
+// [SECTION:SKILL_ICONS] — Per-character skill-name → icon URL, matched against SKILL_MULTIPLIERS/
+// CHARACTER_ROTATIONS skill names the same way CHARACTER_ROTATIONS looks up its DMG row (substring match).
+// Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
+// Only characters that have been audited so far are populated.
+const SKILL_ICONS = {
+  'Encore': {
+    'Wooly Attack': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Cosmos: Frolicking': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Cosmos Rave's Basic ATK replacement — same generic weapon icon
+    'Flaming Woolies': 'https://i.ibb.co/twHsyRRM/Skill-Flaming-Woolies.webp',
+    'Cosmos Rampage': 'https://i.ibb.co/twHsyRRM/Skill-Flaming-Woolies.webp', // Cosmos Rave's Resonance Skill replacement, same wiki icon as the base Skill
+    'Cosmos Rave': 'https://i.ibb.co/CKy2Dkf5/Skill-Cosmos-Rave.webp',
+    'Heavy ATK: Cloudy Frenzy': 'https://i.ibb.co/whstB0k3/Skill-Black-White-Woolies.webp', // Forte Circuit's own icon, covers both Forte states
+    'Heavy ATK: Cosmos Rupture': 'https://i.ibb.co/whstB0k3/Skill-Black-White-Woolies.webp',
+    'Woolies Helpers': 'https://i.ibb.co/gbpQxXkC/Skill-Woolies-Can-Help.webp',
+    'Thermal Field': 'https://i.ibb.co/MkS6WNzG/Skill-Thermal-Field.webp',
+  },
+  'Calcharo': {
+    'Gnawing Fangs': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon (same asset already used for Jiyan), also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp',
+    'Extermination Order': 'https://i.ibb.co/7Nyx9Z3b/Skill-Extermination-Order.webp',
+    'Heavy ATK: "Mercy"': 'https://i.ibb.co/kVd4h62C/Skill-Hunting-Mission.webp', // Forte Circuit's own icon, covers both Forte states
+    'Heavy ATK: "Death Messenger"': 'https://i.ibb.co/kVd4h62C/Skill-Hunting-Mission.webp',
+    'Phantom Etching': 'https://i.ibb.co/Xx7Hd3NG/Skill-Phantom-Etching.webp', // must precede 'Hounds Roar' below — the Liberation row's name is "Phantom Etching → Hounds Roar" and should resolve to this icon, not the generic weapon one
+    'Hounds Roar': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Deathblade Gear's Basic ATK replacement, referenced standalone in the rotation — same generic weapon icon
+    'Wanted Outlaw': 'https://i.ibb.co/B2pH4yjS/Skill-Wanted-Outlaw.webp',
+    'Shadowy Raid': 'https://i.ibb.co/k2vk5Fqp/Skill-Shadowy-Raid.webp',
+  },
+  'Yinlin': {
+    "Zapstring's Dance": 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Magnetic Roar': 'https://i.ibb.co/6785t0vK/Skill-Magnetic-Roar.webp',
+    'Lightning Execution': 'https://i.ibb.co/6785t0vK/Skill-Magnetic-Roar.webp', // second phase of the same Resonance Skill, no separate wiki icon
+    'Chameleon Cipher': 'https://i.ibb.co/ymCP6ZNM/Skill-Chameleon-Cipher.webp',
+    'Thundering Wrath': 'https://i.ibb.co/0y3Tswfv/Skill-Thundering-Wrath.webp',
+    'Raging Storm': 'https://i.ibb.co/TMqQ3Sdc/Skill-Raging-Storm.webp',
+    'Strategist': 'https://i.ibb.co/dJzzqS1V/Skill-Strategist.webp',
+  },
+  'Jiyan': {
+    'Lone Lance': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon on the wiki, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Heavy ATK / Dodge Counter rows
+    'Windqueller': 'https://i.ibb.co/Rk9XDRW3/Skill-Windqueller.webp',
+    'Emerald Storm: Finale': 'https://i.ibb.co/F4SmBx2q/Skill-Qingloong-at-War.webp', // Forte Circuit's own icon
+    'Emerald Storm: Prelude': 'https://i.ibb.co/4gT4C4SW/Skill-Emerald-Storm-Prelude.webp',
+    'Tactical Strike': 'https://i.ibb.co/33s8c1p/Skill-Tactical-Strike.webp',
+    'Discipline': 'https://i.ibb.co/TBjWQSR1/Skill-Discipline.webp',
+  },
+};
+const getSkillIcon = (name, skillName) => {
+  const table = SKILL_ICONS[name];
+  if (!table) return null;
+  const key = Object.keys(table).find(k => skillName.includes(k));
+  return key ? table[key] : null;
+};
+
+// [SECTION:CHAIN_NODE_ICONS] — Per-character S1-S6 Resonance Chain sequence-node icons.
+// Source: wutheringwaves.fandom.com Sequence_Node_* image assets (order matches each character's
+// Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
+// Only characters that have been audited so far are populated.
+const CHAIN_NODE_ICONS = {
+  'Encore': {
+    s1: 'https://i.ibb.co/67jq2qtF/Sequence-Node-Woolys-Fairy-Tale.webp',
+    s2: 'https://i.ibb.co/qvQ1d2y/Sequence-Node-Sheep-counting-Lullaby.webp',
+    s3: 'https://i.ibb.co/607dHq05/Sequence-Node-Fog-The-Black-Shores.webp',
+    s4: 'https://i.ibb.co/wZc99zfT/Sequence-Node-Adventure-Lets-go.webp',
+    s5: 'https://i.ibb.co/ccg6m394/Sequence-Node-Hero-Takes-the-Stage.webp',
+    s6: 'https://i.ibb.co/0RK9HNY8/Sequence-Node-Woolies-Save-the-World.webp',
+  },
+  'Calcharo': {
+    s1: 'https://i.ibb.co/zW1SQbgD/Sequence-Node-Covert-Negotiation.webp',
+    s2: 'https://i.ibb.co/0RhbRfYd/Sequence-Node-Zero-Sum-Game.webp',
+    s3: 'https://i.ibb.co/F42fkz3h/Sequence-Node-Iron-Fist-Diplomacy.webp',
+    s4: 'https://i.ibb.co/hRVPBYSc/Sequence-Node-Dark-Alliance.webp',
+    s5: 'https://i.ibb.co/bMhxw2YM/Sequence-Node-Unconventional-Compact.webp',
+    s6: 'https://i.ibb.co/WvtpCtrd/Sequence-Node-The-Ultimatum.webp',
+  },
+  'Yinlin': {
+    s1: 'https://i.ibb.co/hFqjmjxt/Sequence-Node-Moralitys-Crossroad.webp',
+    s2: 'https://i.ibb.co/x85ZgwFQ/Sequence-Node-Ensnarled-By-Rapport.webp',
+    s3: 'https://i.ibb.co/XZFYMQ66/Sequence-Node-Unyielding-Verdict.webp',
+    s4: 'https://i.ibb.co/qMBj8Pb1/Sequence-Node-Steadfast-Conviction.webp',
+    s5: 'https://i.ibb.co/tPPkZN2W/Sequence-Node-Resounding-Will.webp',
+    s6: 'https://i.ibb.co/HfFYQC4C/Sequence-Node-Pursuit-of-Justice.webp',
+  },
+  'Jiyan': {
+    s1: 'https://i.ibb.co/8DQZqf8V/Sequence-Node-Benevolence.webp',
+    s2: 'https://i.ibb.co/qYfdjDZj/Sequence-Node-Versatility.webp',
+    s3: 'https://i.ibb.co/KpnqFPPK/Sequence-Node-Spectation.webp',
+    s4: 'https://i.ibb.co/w3M5q2w/Sequence-Node-Prudence.webp',
+    s5: 'https://i.ibb.co/fzZxFxmw/Sequence-Node-Resolution.webp',
+    s6: 'https://i.ibb.co/0jYkwNc5/Sequence-Node-Fortitude.webp',
+  },
+};
+
+// [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
+// (e.g. "Benevolence", "Versatility"...), confirmed against ww.nanoka.cc's character JSON
+// (static.nanoka.cc/ww/<version>/en/character/<id>.json) and wutheringwaves.fandom.com.
+// Only characters that have been audited so far are populated.
+const CHAIN_NODE_NAMES = {
+  'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
+  'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
+  'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
+  'Encore': { s1: "Wooly's Fairy Tale", s2: 'Sheep-counting Lullaby', s3: 'Fog? The Black Shores!', s4: "Adventure? Let's go!", s5: 'Hero Takes the Stage!', s6: 'Woolies Save the World!' },
+};
+
 // Release order for sorting (based on first banner appearance)
 const RELEASE_ORDER = [
   // 1.0 - Launch (May 2024) — Rover: Spectro/Havoc/Aero all selectable from launch
@@ -2430,6 +2624,10 @@ export {
   SKILL_MULTIPLIERS,
   CHARACTER_ROTATIONS,
   RESONANCE_CHAIN_DATA,
+  SKILL_ICONS,
+  getSkillIcon,
+  CHAIN_NODE_ICONS,
+  CHAIN_NODE_NAMES,
   RELEASE_ORDER,
   ALL_CHARACTERS,
   STANDARD_5STAR_CHARACTERS,
