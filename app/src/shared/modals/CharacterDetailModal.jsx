@@ -194,25 +194,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </div>
           )}
 
-          {/* Combat Role tags — Main Damage Dealer / Heavy Attack DMG / Traction / DMG Amplification /
-              Tune Rupture Response / etc. Distinct from the single data.role badge (Main DPS/Healer/...)
-              shown elsewhere; this mirrors the specific mechanical tag row nanoka/fandom both show. */}
-          {data.combatRoles?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {data.combatRoles.map((tag) => {
-                const icon = getCombatRoleIcon(tag);
-                return (
-                  <div key={tag} className="flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-lg bg-white/5 border border-white/10">
-                    <div className="w-4 h-4 rounded-sm flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {icon ? <img src={icon} alt="" className="w-full h-full object-contain" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
-                    </div>
-                    <span className="text-xs text-gray-300 font-medium whitespace-nowrap">{tag}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
           {/* Tier */}
           {data.tier && (
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-base font-bold ${
@@ -254,6 +235,25 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
+            {/* Combat Role tags — Main Damage Dealer / Heavy Attack DMG / Traction / DMG Amplification /
+                Tune Rupture Response / etc., the specific mechanical tag row nanoka/fandom both show.
+                Distinct from the single data.role badge above (Main DPS/Sub DPS/Healer/...). */}
+            {data.combatRoles?.length > 0 && (
+              <div>
+                <div className="text-sm text-gray-400 mb-1">Combat Role</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {data.combatRoles.map((tag) => {
+                    const icon = getCombatRoleIcon(tag);
+                    return (
+                      <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                        {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {data.dmgFocus?.length > 0 && (
               <div>
                 <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
