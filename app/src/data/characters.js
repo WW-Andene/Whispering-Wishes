@@ -2538,16 +2538,17 @@ const SKILL_ICONS = {
     'Tactical Strike': 'https://i.ibb.co/33s8c1p/Skill-Tactical-Strike.webp',
     'Discipline': 'https://i.ibb.co/TBjWQSR1/Skill-Discipline.webp',
   },
-  // Source: wutheringwaves.fandom.com Skill_*.png assets for Jianxin, linked directly (static.wikia.nocookie.net) —
-  // not re-hosted to ibb.co since these were sourced in a later audit pass than the entries above.
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Jianxin, re-hosted on ibb.co (2026-08-17,
+  // matching the convention used for the other audited characters above — all 6 URLs verified 200/live
+  // before upload).
   'Jianxin': {
-    'Fengyiquan': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png', // Basic ATK — shared generic Gauntlets icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png',
-    'Calming Air': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b6/Skill_Calming_Air.png',
-    'Primordial Chi Spiral': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/22/Skill_Primordial_Chi_Spiral.png',
-    'Purification Force Field': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/12/Skill_Purification_Force_Field.png',
-    'Essence of Tao': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/ce/Skill_Essence_of_Tao.png', // Intro Skill
-    'Transcendence': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8e/Skill_Transcendence.png', // Outro Skill
+    'Fengyiquan': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Basic ATK — shared generic Gauntlets icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp',
+    'Calming Air': 'https://i.ibb.co/4w8Mq52y/Skill-Calming-Air.webp',
+    'Primordial Chi Spiral': 'https://i.ibb.co/xtnnFYZC/Skill-Primordial-Chi-Spiral.webp',
+    'Purification Force Field': 'https://i.ibb.co/JjzrRftm/Skill-Purification-Force-Field.webp',
+    'Essence of Tao': 'https://i.ibb.co/jZvd35BH/Skill-Essence-of-Tao.webp', // Intro Skill
+    'Transcendence': 'https://i.ibb.co/jP7RDt0b/Skill-Transcendence.webp', // Outro Skill
   },
 };
 const getSkillIcon = (name, skillName) => {
@@ -2594,16 +2595,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/fzZxFxmw/Sequence-Node-Resolution.webp',
     s6: 'https://i.ibb.co/0jYkwNc5/Sequence-Node-Fortitude.webp',
   },
-  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jianxin, linked directly
-  // (static.wikia.nocookie.net) rather than re-hosted to ibb.co — order confirmed S1→S6 against the
-  // Chain Table on Jianxin/Combat.
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jianxin, re-hosted on ibb.co
+  // (2026-08-17, matching the convention above) — order confirmed S1→S6 against the Chain Table on
+  // Jianxin/Combat, all 6 URLs verified 200/live before upload.
   'Jianxin': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/03/Sequence_Node_Verdant_Branchlet.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e6/Sequence_Node_Tao_Seeker%27s_Journey.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/22/Sequence_Node_Principles_of_Wuwei.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f7/Sequence_Node_Multitide_Reflection.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/0c/Sequence_Node_Mirroring_Introspection.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Sequence_Node_Truth_from_Within.png',
+    s1: 'https://i.ibb.co/Cp76tHr7/Sequence-Node-Verdant-Branchlet.webp',
+    s2: 'https://i.ibb.co/Z0VXpGV/Sequence-Node-Tao-Seekers-Journey.webp',
+    s3: 'https://i.ibb.co/NgdRQB4T/Sequence-Node-Principles-of-Wuwei.webp',
+    s4: 'https://i.ibb.co/9HypDDH7/Sequence-Node-Multitide-Reflection.webp',
+    s5: 'https://i.ibb.co/DHW1ndcQ/Sequence-Node-Mirroring-Introspection.webp',
+    s6: 'https://i.ibb.co/hFH1wK8g/Sequence-Node-Truth-from-Within.webp',
   },
 };
 
