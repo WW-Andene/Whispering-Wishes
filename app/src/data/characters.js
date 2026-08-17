@@ -816,15 +816,13 @@ const CHARACTER_DATA = {
 });
 
 // [SECTION:REGION_DATA] — Character regions/nations (infobox `nation` field — the nation a character
-// is CONFIRMED tied to on the wiki, distinct from birthplace and from their specific in-game
-// organization/faction — see the IDENTITY_DATA comment above). A character is omitted here rather
-// than guessed at when the wiki's own `nation` field is blank (e.g. Calcharo — born in New Federation,
-// leads the Ghost Hounds out of Jinzhou, but has no confirmed `nation` on the wiki).
+// is CONFIRMED tied to, distinct from birthplace and from their specific in-game organization/faction
+// — see the IDENTITY_DATA comment above).
 // Huanglong (Jinzhou/Mengzhou), Rinascita, Black Shores, Septimont, Lahai-Roi
 [
   // Huanglong
   ['Rover: Spectro', 'Huanglong'], ['Rover: Havoc', 'Huanglong'], ['Rover: Aero', 'Huanglong'], ['Rover: Electro', 'Huanglong'],
-  ['Jiyan',        'Huanglong'],
+  ['Jiyan',        'Huanglong'], ['Calcharo',     'Huanglong'],
   ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],

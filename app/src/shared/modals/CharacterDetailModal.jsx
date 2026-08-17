@@ -11,7 +11,7 @@ import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getSetIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
@@ -153,13 +153,19 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {data.birthplace && (
                   <>
                     <span className="text-gray-500">Birthplace</span>
-                    <span className="text-gray-300">{data.birthplace}</span>
+                    <span className="text-gray-300 inline-flex items-center gap-1">
+                      {getRegionIcon(data.birthplace) && <img src={getRegionIcon(data.birthplace)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                      {data.birthplace}
+                    </span>
                   </>
                 )}
                 {data.region && (
                   <>
                     <span className="text-gray-500">Region</span>
-                    <span className="text-gray-300">{data.region}</span>
+                    <span className="text-gray-300 inline-flex items-center gap-1">
+                      {getRegionIcon(data.region) && <img src={getRegionIcon(data.region)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                      {data.region}
+                    </span>
                   </>
                 )}
                 {data.organization && (

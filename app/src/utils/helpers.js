@@ -195,9 +195,7 @@ const getSetIcon = (setName) => SET_ICONS[setName] || null;
 // NOT a complete faction list — the wiki only has a proper emblem/logo image
 // for these; other factions (e.g. Ghost Hounds, Court of Savantae, Ministry of
 // War) have no dedicated icon asset there, so they're intentionally omitted
-// rather than guessed. This map also has no consumer yet — factions aren't
-// modeled on character data in this app (see characters.js), so nothing reads
-// FACTION_ICONS today. Added for whenever that data/UI work happens.
+// rather than guessed. Consumed by CharacterDetailModal's Organization row.
 const FACTION_ICONS = {
   'Black Shores':          'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
   'Midnight Rangers':      'https://i.ibb.co/Zz92sqFX/Midnight-Rangers.webp',
@@ -213,6 +211,16 @@ const FACTION_ICONS = {
   'Roya Tribe':            'https://i.ibb.co/PZkNcXCb/Roya-Tribe.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
+// In-game nation/region emblem icons, re-hosted on ibb.co. Same convention as FACTION_ICONS but for
+// the `region`/`birthplace` fields (see characters.js's REGION_DATA/IDENTITY_DATA comments) — a nation
+// is a distinct concept from a specific faction, even though some names coincide (e.g. Black Shores is
+// both a nation and its own faction, so it's deliberately listed in both maps with the same asset).
+// Only populated for nations that have appeared for an audited character so far.
+const REGION_ICONS = {
+  'Huanglong': 'https://i.ibb.co/G34c0tdc/Huanglong-Emblem.webp',
+  'Black Shores': 'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
+};
+const getRegionIcon = (region) => REGION_ICONS[region] || null;
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -295,4 +303,6 @@ export {
   getSetIcon,
   FACTION_ICONS,
   getFactionIcon,
+  REGION_ICONS,
+  getRegionIcon,
 };
