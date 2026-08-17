@@ -269,12 +269,22 @@ const CHARACTER_DATA = {
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
     weaponAlts: { alt5: ["Firstlight's Herald", 'Cosmic Ripples'], alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
+  // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
+  // and ww.nanoka.cc's character #1603 sheet. desc: title "Sanguine Blossom" (nanoka) prepended and
+  // blurb rewritten from nanoka's own profile text to match the roster's convention (previous desc was
+  // a generic one-liner with no title, unlike the rest of the audited roster). skills/base stats/
+  // ascension/skill materials/bestEchoes/selfBuffs all re-confirmed accurate. weaponAlts was entirely
+  // missing — added: alt5 leads with Emerald Sentence (90.1%, Prydwen's actual #2) plus Emerald of
+  // Genesis, explicitly named "Best permanent option for Camellya" despite a slightly lower calc% than
+  // Frostburn/Everbright Polestar; alt4 uses Feather Edge (77.8%, #1 4★) and Lumingloss (76.8%, #2 4★);
+  // alt3 uses the standard starter Sword of Night, matching the convention used for other Sword users.
   'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Enigmatic assassin who blooms like a camellia flower. On-field Havoc DPS who alternates between Budding and Blossom stances, dealing sustained Havoc DMG through enhanced Basic Attacks and Skill combos.',
+    desc: 'Sanguine Blossom, a Bloom Bearer of the Black Shores — free-spirited and dangerously charming, she roams Solaris in search of talent, immersing herself in the present and relishing its pleasures, unburdened by thoughts of the past or future. On-field Havoc Main DPS who alternates White Hair (mobile) and Red Hair/Blossom Mode (stationary AoE spin) via her Skill, builds Crimson Pistils into Crimson Buds, unleashes the Forte burst Ephemeral into Budding Mode for a team of amplified Basic Attacks, and closes with her Outro Twining nuke.',
     skills: ['Burgeoning', 'Valse of Bloom and Blight', 'Fervor Efflorescent', 'Vegetative Universe'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Red Spring',
+    weaponAlts: { alt5: ['Emerald Sentence', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Lumingloss'], alt3: ['Sword of Night'] },
     teams: ['Camellya + Roccia + Shorekeeper', 'Camellya + Sanhua + Verina'] },
   'Carlotta': { rarity: 5, element: 'Glacio', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Refined heiress of Rinascita\'s Montelli family. On-field Glacio DPS who builds crystal charges via Resonance Skill, then shatters them with Liberation for massive front-loaded Glacio burst.',
@@ -1005,6 +1015,9 @@ const CHARACTER_DATA = {
   // Zhezhi convention above — no specific named sub-group is given, unlike Jiyan/Changli/Jinhsi.
   ['Xiangli Yao', 'Matter Weaver', 'Huanglong', 'Jinzhou', { en: 'Shaun Mendum', cn: 'Ban Ma', jp: 'Kobayashi Chiaki', kr: 'Jung Eui Jin' }],
   ['Shorekeeper', 'Euphonic Chrysalis', 'Black Shores', 'Black Shores', { en: 'Stephanie McKeon', cn: 'Tang YaJing', jp: 'Suwa Ayaka', kr: 'Kim Bo Na' }],
+  // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her (unlike most other
+  // characters, which have a real birthplace even when their nation/region tie is separately unconfirmed).
+  ['Camellya', 'Sanguine Blossom', 'Unknown', 'Black Shores', { en: 'Meaghan Martin', cn: 'Liu ZhiXiao', jp: 'Ise Mariya', kr: 'Yu Hye Ji' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1678,16 +1691,20 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2'],
     ['Outro', 'Shadowy Raid', '195.98%+391.96%'],
   ],
+  // Corrected 2026-08-17 against ww.nanoka.cc's character #1603 sheet (Lv.10 skill attributes): every
+  // row except Outro was roughly half its real value (e.g. Ephemeral was '635%' vs the real 1262.45%,
+  // Fervor Efflorescent '605%' vs the real 1202.81%) — a consistent ~2x understatement suggesting a
+  // stale/mis-scaled data source. Outro (329.2% + 459%) was already correct and is unchanged.
   'Camellya': [
-    ['Basic ATK', 'Thorns 1-5', '31.5% → 46.8% → 76.5% → 248.4% → 96.9%'],
-    ['Heavy ATK', 'Standard', '44.3%×3'],
-    ['Skill', 'Crimson Blossom', '57.2%×2'],
-    ['Skill', 'Vining Waltz 1-4', '48.5% → 45.9% → 66.2% → 102%'],
-    ['Skill', 'Blazing Waltz', '11%×19'],
-    ['Forte', 'Ephemeral (Budding)', '635%'],
-    ['Liberation', 'Fervor Efflorescent', '605%'],
-    ['Intro', 'Everblooming', '100%'],
-    ['Outro', 'Twining', '329.2% + 459%'],
+    ['Basic ATK', 'Thorns 1-5', '62.53% → 46.48%×2 → 50.70%×3 → 24.70%×20 → 48.17%×4'],
+    ['Heavy ATK', 'Standard', '88.14%×3'],
+    ['Skill', 'Crimson Blossom', '113.62%×2'],
+    ['Skill', 'Vining Waltz 1-4', '96.33% → 45.63%×2 → 21.95%×6 → 67.59%×3'],
+    ['Skill', 'Blazing Waltz', '21.95%×19'],
+    ['Forte', 'Ephemeral (Budding)', '1262.45%'],
+    ['Liberation', 'Fervor Efflorescent', '1202.81%'],
+    ['Intro', 'Everblooming', '198.81%'],
+    ['Outro', 'Twining', '329.24% + 459.02%'],
   ],
   'Cantarella': [
     ['Basic ATK', 'Stage 1-3', '40% → 73.3% → 73%'],
@@ -2143,6 +2160,21 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Camellya (2026-08-17,
+  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Simplified from Prydwen's full swap/Echo-cancel-annotated combo down to the core skill sequence,
+  // matching the level of detail used for the rest of the roster's rotation entries.
+  'Camellya': [
+    { type: 'Intro', skill: 'Everblooming' },
+    { type: 'Skill', skill: 'Crimson Blossom', note: 'enters Blossom Mode (Red Hair)' },
+    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'full Blossom Mode combo, builds Crimson Pistils/Buds' },
+    { type: 'Liberation', skill: 'Fervor Efflorescent' },
+    { type: 'Basic ATK', skill: 'Vining Waltz 1', note: 'fills the last Concerto Energy needed' },
+    { type: 'Forte', skill: 'Ephemeral', duration: 15, note: 'consumes all Crimson Buds, enters Budding Mode' },
+    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'Budding Mode combo, +50-100% DMG Multiplier' },
+    { type: 'Skill', skill: 'Floral Ravage', note: 'ends Blossom Mode' },
+    { type: 'Outro', skill: 'Twining', note: 'empowered version deals bonus DMG since Ephemeral was cast this rotation' },
+  ],
   // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
   // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
   'Jianxin': [
@@ -2806,6 +2838,23 @@ const SKILL_ICONS = {
     'Proof of Existence': 'https://i.ibb.co/RGFGH8d9/skill-proof-of-existence.webp', // Intro Skill
     'Binary Butterfly': 'https://i.ibb.co/bjjhnD3f/skill-binary-butterfly.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Camellya, re-hosted on ibb.co
+  // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
+  // upload. Burgeoning (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png
+  // icon (same as Changli's).
+  'Camellya': {
+    'Burgeoning': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
+    'Valse of Bloom and Blight': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp',
+    'Vining Waltz': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Blossom Mode's Basic ATK replacement, same Skill icon
+    'Blazing Waltz': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp',
+    'Floral Ravage': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Blossom Mode's Resonance Skill replacement, same wiki icon
+    'Fervor Efflorescent': 'https://i.ibb.co/ynCScFqJ/skill-fervor.webp',
+    'Vegetative Universe': 'https://i.ibb.co/xqcjjVmq/skill-vegetative.webp',
+    'Ephemeral': 'https://i.ibb.co/xqcjjVmq/skill-vegetative.webp', // Forte Circuit's own upgraded skill, same icon
+    'Everblooming': 'https://i.ibb.co/M5ckbVnH/skill-everblooming.webp', // Intro Skill
+    'Twining': 'https://i.ibb.co/vvrfhcLs/skill-twining.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -2939,6 +2988,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/S4R3jKr6/node-s5-echoes.webp',
     s6: 'https://i.ibb.co/d45HxqB9/node-s6-newworld.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Camellya, re-hosted on ibb.co
+  // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
+  // build page and ww.nanoka.cc/character/1603, all 6 URLs verified 200/live before upload.
+  'Camellya': {
+    s1: 'https://i.ibb.co/vy9wwMt/node-s1-somewhere.webp',
+    s2: 'https://i.ibb.co/ZprdWSNF/node-s2-callingupon.webp',
+    s3: 'https://i.ibb.co/gZDgkrSv/node-s3-budadorned.webp',
+    s4: 'https://i.ibb.co/mm8Yz1g/node-s4-rootsset.webp',
+    s5: 'https://i.ibb.co/yFZ91RMt/node-s5-infinityheld.webp',
+    s6: 'https://i.ibb.co/FbpkkPqC/node-s6-bloomfor.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -2958,6 +3018,7 @@ const CHAIN_NODE_NAMES = {
   'Zhezhi': { s1: "Brushwork's Finish", s2: 'Vivid Strokes', s3: "Reflection's Grace", s4: "Hue's Spectrum", s5: "Composition's Clue", s6: 'Infinite Legacy' },
   'Xiangli Yao': { s1: 'Prodigy of Protégés', s2: 'Traces of Predecessors', s3: 'Ruins of Ancient', s4: 'Vessel of Rebirth', s5: 'End of Stars', s6: 'Solace of the Ordinary' },
   'Shorekeeper': { s1: 'Unspoken Conjecture', s2: "Night's Gift and Refusal", s3: 'Infinity Awaits Me', s4: 'Overflowing Quietude', s5: 'Echoes in Silence', s6: 'To the New World' },
+  'Camellya': { s1: 'Somewhere No One Travelled', s2: 'Calling Upon the Silent Rose', s3: 'A Bud Adorned by Thorns', s4: 'Roots Set Deep In Eternity', s5: 'Infinity Held in Your Palm', s6: 'Bloom For You Thousand Times Over' },
 };
 
 // Release order for sorting (based on first banner appearance)
