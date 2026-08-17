@@ -566,6 +566,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Pendant', specialty: 'Arithmetic Shell' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Blazing Justice (85.4%) and Pulsation
+    // Bracer (81.8%, her best permanent-banner pick) are the top non-signature 5★ Gauntlets (ahead of
+    // Verity's Handle 78.5%, Moongazer's Sigil 76.3%, Abyss Surges 69.4%); Aether Strike (69.4%) and
+    // Legend of Drunken Hero (best F2P no-gacha pick) are the best 4★s; Gauntlets of Night is the 3★
+    // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere (Prydwen doesn't
+    // rank a 3★ for her at all — she "lacks strong F2P weapon alternatives" per its own review).
+    weaponAlts: { alt5: ['Blazing Justice', 'Pulsation Bracer'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
     teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Qiuyuan + Ciaccona'] },
   'Rebecca': { rarity: 5, element: 'Electro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Edgerunner and Fury-Type Arsenal from the Cyberpunk: Edgerunners collab. Electro Hybrid who mode-switches between Huntress and Guts stances, buffing team Heavy ATK DMG and All DMG Amplification via her Outro turret.',
@@ -1246,6 +1253,15 @@ const CHARACTER_DATA = {
   // Lynae/Mornye/Aemeath convention of using the primary Startorch Academy tie). Birthday: 'Unknown' on
   // both sources.
   ['Luuk Herssen', 'Phase Transition', 'New Federation', 'Startorch Academy', { en: 'Griffyn Bellah', cn: 'Ma Zhengyang', jp: 'Tachibana Shinnosuke', kr: 'Min Seung-woo' }],
+  // birthplace: fandom's own infobox lists this as 'Roya Frostlands' (distinct from her Lahai-Roi
+  // region/nation tie, in REGION_DATA above), same birthplace-vs-nation-tie pattern as Aemeath — both are
+  // Roya Tribe natives. ww.nanoka.cc's own Birthplace field shows 'Lahai-Roi' instead (a discrepancy
+  // between the two sources); fandom's is used here as the more granular/precise of the two, matching
+  // the convention already established for Aemeath's identical Roya Frostlands birthplace.
+  // organization: 'Roya Tribe' matches both sources' primary affiliation (nanoka's single Organization
+  // field, and fandom's `affiliation` over `affiliation2` Startorch Academy) — the reverse of Aemeath's
+  // primary tie, despite both characters sharing the same two affiliations.
+  ['Sigrika', 'True Name Manifestation', 'Roya Frostlands', 'Roya Tribe', { en: 'Maya Lindh', cn: 'Qian Chen', jp: 'Akasaki Chinatsu', kr: 'Jang Ye-na' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1821,9 +1837,16 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [
       { stat: 'echoDmg', value: 50, target: 'self', duration: 15, condition: 'Inherent: +2% Echo Skill DMG per 1% ER above 125% (up to 50%)' },
       { stat: 'defIgnore', value: 10, target: 'self', duration: 6, condition: 'Sig weapon: Aero DMG ignores 10% DEF on Echo Skill hit' },
+      // Added 2026-08-17 against Prydwen's live kit breakdown — Blessing of Runes was missing entirely.
+      // Whichever Resonator is active gets this (not Sigrika specifically), stacking on any teammate's
+      // Echo Skill cast up to 6 stacks (3% Aero + 3% Echo Skill DMG each), with a further +30%/+30% jump
+      // at max stacks — modeled as target: 'team' per this file's existing convention for passive,
+      // always-on team buffs (see e.g. Yinlin's Overshock ATK buff).
+      { stat: 'elemDmg', value: 48, target: 'team', duration: 99, condition: 'Inherent True Names Aligned — Blessing of Runes, max 6 stacks (18% base + 30% at max): +48% Aero DMG to whichever Resonator is active, refreshed by teammates\' Echo Skill casts' },
+      { stat: 'echoDmg', value: 48, target: 'team', duration: 99, condition: 'Same Blessing of Runes stacks, +48% Echo Skill DMG to the active Resonator' },
     ],
     debuffs: [],
-    note: 'Rune-consuming Echo Skill hypercarry. Inherent: up to 50% Echo DMG from ER. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes.',
+    note: 'Rune-consuming Echo Skill hypercarry. Inherent True Names Aligned: Blessing of Runes grants the active Resonator +3%/+3% Aero+Echo Skill DMG per stack (6 max) from teammates\' Echo Skill casts, +30%/+30% more at max stacks (48%/48% total) — resets on team swap. Inherent Aligned Names 2: up to 50% Echo DMG from ER above 125%. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes.',
   },
   'Phrolova': {
     outroBuffs: [
@@ -3638,6 +3661,19 @@ const SKILL_ICONS = {
     'Bow to the Last Light': 'https://i.ibb.co/W4MMpcrv/Luuk-skill-outro.webp', // Outro Skill
     'Silent Debate of Light': 'https://i.ibb.co/BHdBsKjP/Luuk-skill-tune.webp', // Tune Break
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Sigrika, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Sigrika': {
+    'Stage 1-4': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (same asset already used for Luuk Herssen)
+    'Elucidated': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Decipher-state Basic ATK finisher, still generic weapon icon
+    'BOOMY BOOM!': 'https://i.ibb.co/k6M2mPzF/Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
+    'BIG BOOMY BOOM!': 'https://i.ibb.co/k6M2mPzF/Sigrika-skill-res-Skill.webp',
+    'Runic Outburst': 'https://i.ibb.co/1Ydcf5Gb/Sigrika-skill-forte.webp', // Forte Circuit — Within Infinity's Embrace
+    'Learn My True Name': 'https://i.ibb.co/1Ydcf5Gb/Sigrika-skill-forte.webp',
+    "Where Trust Leads Me!": 'https://i.ibb.co/tTFS1w8x/Sigrika-skill-liberation.webp', // Resonance Liberation
+    'Solsworn Etymology': 'https://i.ibb.co/Qj6rsbGF/Sigrika-skill-intro.webp', // Intro Skill
+    'In This Very Moment': 'https://i.ibb.co/q3yGzhyX/Sigrika-skill-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3978,6 +4014,14 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/1tXKZntb/Luuk-chain-s5.webp',
     s6: 'https://i.ibb.co/svXR1Hkf/Luuk-chain-s6.webp',
   },
+  'Sigrika': {
+    s1: 'https://i.ibb.co/jv6R8NVL/Sigrika-chain-s1.webp',
+    s2: 'https://i.ibb.co/nyJ4qGz/Sigrika-chain-s2.webp',
+    s3: 'https://i.ibb.co/tMYNB071/Sigrika-chain-s3.webp',
+    s4: 'https://i.ibb.co/mCj31gfL/Sigrika-chain-s4.webp',
+    s5: 'https://i.ibb.co/9H04pcpv/Sigrika-chain-s5.webp',
+    s6: 'https://i.ibb.co/9kG4hxbd/Sigrika-chain-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4017,6 +4061,7 @@ const CHAIN_NODE_NAMES = {
   'Mornye': { s1: 'The Silent Observer', s2: 'Morning Star of Entropy', s3: 'Blueprint of Recursion', s4: 'Latent Variables of the Cosmos', s5: 'Time Dilation Effect', s6: 'To the Far Shores of the Stars' },
   'Aemeath': { s1: 'Gilded Glimmer of the First Dawn', s2: 'Downy Notes of Snowfluff', s3: 'Fervor Sightly Burns Bright as New', s4: 'Ethereal Waltz on Binary Tides', s5: 'Voyage to the Astral Shore', s6: "A Zephyr-Kissed Journey to You" },
   'Luuk Herssen': { s1: 'Gold Kindled in Ash', s2: 'Avalanche Roaring in Eyes', s3: 'Spine Tempered by Golden Rain', s4: 'Pulse Thrumming Under Rime', s5: 'Through the Stillness of Snowstorm', s6: 'Dawn Unfurling over Frostlands' },
+  'Sigrika': { s1: 'The Gleam Meant for Radiance', s2: 'The Bitterness Steeped in Hope', s3: 'I Flee, Yet I Seek', s4: 'I Lose, Yet I Gain', s5: 'Until Submerged by the Dark', s6: 'True Names Resurfaced, Rising in Light' },
 };
 
 // Release order for sorting (based on first banner appearance)
