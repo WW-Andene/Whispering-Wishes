@@ -7,10 +7,11 @@ import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
+import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getSetIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
@@ -122,6 +123,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
+            {data.title && <div className="text-sm text-gray-400 italic -mt-0.5">{data.title}</div>}
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
             </div>
@@ -130,24 +132,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Tier + Info bar */}
+          {/* Identity bar: Birthday / Organization (with icon) / Voice Actor — Title is shown under the name above */}
           <div className="flex items-center gap-2 flex-wrap">
-            {data.tier && (
-              <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-base font-bold ${
-                data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
-                data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
-                data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
-                data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
-                'bg-gray-500/20 text-gray-300 border border-gray-500/40'
-              }`}>
-                <span className="text-sm text-gray-400">ToA</span> {data.tier.toa}
-                <span className="text-gray-600 mx-0.5">|</span>
-                <span className="text-sm text-gray-400">WW</span> {data.tier.ww}
-              </div>
-            )}
-            {data.region && (
-              <span className="kuro-badge kuro-badge-neutral">{data.region}</span>
-            )}
             {data.birthday && (
               <span className="kuro-badge kuro-badge-neutral">{(() => {
                 const [m, d] = data.birthday.split('-');
@@ -155,9 +141,40 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 return `${months[parseInt(m, 10)]} ${parseInt(d, 10)}`;
               })()}</span>
             )}
+            {data.organization && (
+              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getFactionIcon(data.organization) && <img src={getFactionIcon(data.organization)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {data.organization}
+              </span>
+            )}
+            {data.voiceActor && (
+              <span className="kuro-badge kuro-badge-neutral">VA: {data.voiceActor}</span>
+            )}
           </div>
 
-          {/* Description */}
+          {/* Tier + Region */}
+          {(data.tier || data.region) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {data.tier && (
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-base font-bold ${
+                  data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
+                  data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
+                  data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
+                  data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+                  'bg-gray-500/20 text-gray-300 border border-gray-500/40'
+                }`}>
+                  <span className="text-sm text-gray-400">ToA</span> {data.tier.toa}
+                  <span className="text-gray-600 mx-0.5">|</span>
+                  <span className="text-sm text-gray-400">WW</span> {data.tier.ww}
+                </div>
+              )}
+              {data.region && (
+                <span className="kuro-badge kuro-badge-neutral">{data.region}</span>
+              )}
+            </div>
+          )}
+
+          {/* Personal Description & Combat Profile — lore blurb + gameplay role/playstyle summary */}
           {data.desc && (() => {
             const dot = data.desc.indexOf('. ');
             const lore = dot > 0 ? data.desc.slice(0, dot + 1) : null;
@@ -170,7 +187,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             );
           })()}
 
-          {/* Combat Stats — Damage Type, Buffs, Debuffs, Tags */}
           <div className="kuro-detail-box space-y-2">
             <div className="kuro-section-label">Combat Profile</div>
             <div className="flex flex-wrap gap-1.5">
@@ -184,22 +200,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </span>
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
-            {data.buffs?.length > 0 && (
-              <div>
-                <div className="text-sm text-gray-400 mb-1">Buffs</div>
-                <div className="flex flex-wrap gap-1">
-                  {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{b}</span>)}
-                </div>
-              </div>
-            )}
-            {data.debuffs?.length > 0 && (
-              <div>
-                <div className="text-sm text-gray-400 mb-1">Debuffs</div>
-                <div className="flex flex-wrap gap-1">
-                  {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{db}</span>)}
-                </div>
-              </div>
-            )}
             {data.dmgFocus?.length > 0 && (
               <div>
                 <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
@@ -228,7 +228,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </button>
           )}
 
-          {/* Base Stats (Lv.90) */}
+          {/* Stats — Base Stats (Lv.90) */}
           {data.baseAtk && (
             <div className="kuro-detail-box">
               <div className="kuro-section-label mb-2">Base Stats (Lv.90)</div>
@@ -264,6 +264,46 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </div>
             </div>
           )}
+
+          {/* Skills with Multipliers */}
+          <div>
+            <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+              <Zap size={14} className={colors.text} /> Skills
+              <span className="text-sm text-gray-500 font-normal ml-auto">Lv.10 - Scaling: ({data.statScaling || 'ATK'}%)</span>
+            </h3>
+            {SKILL_MULTIPLIERS[name] ? (
+              <div className="space-y-0.5">
+                {SKILL_MULTIPLIERS[name].map(([type, skillName, mult, desc], i) => {
+                  const typeColors = {
+                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
+                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
+                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
+                  };
+                  const typeBg = {
+                    'Basic ATK': 'bg-gray-500/10', 'Mid-air': 'bg-gray-500/10', 'Heavy ATK': 'bg-orange-500/10',
+                    'Charged ATK': 'bg-orange-500/10', 'Skill': 'bg-cyan-500/10', 'Liberation': 'bg-yellow-500/10',
+                    'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
+                  };
+                  return (
+                    <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
+                        <span className="text-sm text-gray-200 font-medium break-words">{skillName}</span>
+                      </div>
+                      <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
+                      {desc && <div className="text-xs text-gray-500 break-words mt-1 italic">{desc}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {(data.skills || []).map((skill, i) => (
+                  <span key={i} className="kuro-badge kuro-badge-neutral">{skill}</span>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Resonance Chain (S1-S6) */}
           {RESONANCE_CHAIN_DATA[name] && (
@@ -306,11 +346,67 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </div>
           )}
 
-          {/* Buff/Debuff Details from CHAR_BUFF_TABLE */}
-          {CHAR_BUFF_TABLE[name]?.note && (
-            <div className="kuro-detail-box">
-              <div className="kuro-section-label mb-1">Buff/Debuff Details</div>
-              <p className="text-sm text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
+          {/* Buff/Debuff — CHAR_BUFF_TABLE note plus the short buff/debuff tag lists */}
+          {(CHAR_BUFF_TABLE[name]?.note || data.buffs?.length > 0 || data.debuffs?.length > 0) && (
+            <div className="kuro-detail-box space-y-2">
+              <div className="kuro-section-label">Buff / Debuff</div>
+              {data.buffs?.length > 0 && (
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Buffs</div>
+                  <div className="flex flex-wrap gap-1">
+                    {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{b}</span>)}
+                  </div>
+                </div>
+              )}
+              {data.debuffs?.length > 0 && (
+                <div>
+                  <div className="text-sm text-gray-400 mb-1">Debuffs</div>
+                  <div className="flex flex-wrap gap-1">
+                    {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{db}</span>)}
+                  </div>
+                </div>
+              )}
+              {CHAR_BUFF_TABLE[name]?.note && (
+                <p className="text-sm text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
+              )}
+            </div>
+          )}
+
+          {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
+          {CHARACTER_ROTATIONS[name] && (
+            <div>
+              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+                <RotateCw size={14} className={colors.text} /> Standard Rotation
+              </h3>
+              <div className="space-y-0.5">
+                {CHARACTER_ROTATIONS[name].map((step, i) => {
+                  const typeColors = {
+                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
+                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
+                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
+                  };
+                  // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
+                  // used above, so Team tab can resolve the same step against the same table later.
+                  const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
+                  const dmg = row?.[2];
+                  return (
+                    <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded bg-white/5">
+                      <span className="text-sm font-medium text-gray-600 shrink-0 w-4 text-right">{i + 1}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline gap-x-1.5">
+                          <span className={`text-sm font-medium shrink-0 ${typeColors[step.type] || 'text-gray-400'}`}>{step.type}</span>
+                          <span className="text-sm text-white font-semibold break-words">{step.skill}</span>
+                          {dmg && <span className={`text-sm font-semibold break-words ${colors.text}`}>{dmg}</span>}
+                          {step.duration != null && (
+                            <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
+                          )}
+                        </div>
+                        {step.note && <div className="text-xs text-gray-500 break-words mt-0.5 italic">{step.note}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -391,14 +487,18 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           </div>
           )}
 
-          {/* Best Echoes - enhanced */}
-          {data.bestEchoes?.length > 0 && (
+          {/* Best Echoes - with picture (main echo icon, or set icon for the "X Ypc" set slot) */}
+          {data.bestEchoes?.length > 0 && (() => {
+            const mainEchoImg = ECHO_DATA[data.bestEchoes[0]]?.iconUrl;
+            const setSlotName = data.bestEchoes[1] ? data.bestEchoes[1].replace(/\s+\d+pc$/i, '').trim() : null;
+            const setImg = setSlotName ? getSetIcon(setSlotName) : null;
+            return (
           <div className="kuro-detail-box">
             <div className="kuro-section-label mb-2">Recommended Echoes</div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
-                  <Star size={14} className="text-cyan-400 fill-cyan-400" />
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {mainEchoImg ? <img src={mainEchoImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <Star size={14} className="text-cyan-400 fill-cyan-400" />}
                 </div>
                 <div>
                   <div className="text-cyan-400 text-base font-bold">{data.bestEchoes[0]}</div>
@@ -407,8 +507,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </div>
               {data.bestEchoes[1] && (
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-                  <LayoutGrid size={14} className="text-purple-400" />
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {setImg ? <img src={setImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={14} className="text-purple-400" />}
                 </div>
                 <div>
                   <div className="text-purple-400 text-base font-bold">{data.bestEchoes[1]}</div>
@@ -418,7 +518,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               )}
             </div>
           </div>
-          )}
+            );
+          })()}
 
           {/* Team Suggestions - with avatars */}
           <div>
@@ -465,84 +566,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               })}
             </div>
           </div>
-
-          {/* Skills with Multipliers */}
-          <div>
-            <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-              <Zap size={14} className={colors.text} /> Skills
-              <span className="text-sm text-gray-500 font-normal ml-auto">Lv.10 - Scaling: ({data.statScaling || 'ATK'}%)</span>
-            </h3>
-            {SKILL_MULTIPLIERS[name] ? (
-              <div className="space-y-0.5">
-                {SKILL_MULTIPLIERS[name].map(([type, skillName, mult, desc], i) => {
-                  const typeColors = {
-                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
-                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
-                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
-                  };
-                  const typeBg = {
-                    'Basic ATK': 'bg-gray-500/10', 'Mid-air': 'bg-gray-500/10', 'Heavy ATK': 'bg-orange-500/10',
-                    'Charged ATK': 'bg-orange-500/10', 'Skill': 'bg-cyan-500/10', 'Liberation': 'bg-yellow-500/10',
-                    'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
-                  };
-                  return (
-                    <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
-                        <span className="text-sm text-gray-200 font-medium break-words">{skillName}</span>
-                      </div>
-                      <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
-                      {desc && <div className="text-xs text-gray-500 break-words mt-1 italic">{desc}</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-1">
-                {(data.skills || []).map((skill, i) => (
-                  <span key={i} className="kuro-badge kuro-badge-neutral">{skill}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
-          {CHARACTER_ROTATIONS[name] && (
-            <div>
-              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                <RotateCw size={14} className={colors.text} /> Standard Rotation
-              </h3>
-              <div className="space-y-0.5">
-                {CHARACTER_ROTATIONS[name].map((step, i) => {
-                  const typeColors = {
-                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
-                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
-                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
-                  };
-                  // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
-                  // used above, so Team tab can resolve the same step against the same table later.
-                  const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
-                  const dmg = row?.[2];
-                  return (
-                    <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded bg-white/5">
-                      <span className="text-sm font-medium text-gray-600 shrink-0 w-4 text-right">{i + 1}</span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-baseline gap-x-1.5">
-                          <span className={`text-sm font-medium shrink-0 ${typeColors[step.type] || 'text-gray-400'}`}>{step.type}</span>
-                          <span className="text-sm text-white font-semibold break-words">{step.skill}</span>
-                          {dmg && <span className={`text-sm font-semibold break-words ${colors.text}`}>{dmg}</span>}
-                          {step.duration != null && (
-                            <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
-                          )}
-                        </div>
-                        {step.note && <div className="text-xs text-gray-500 break-words mt-0.5 italic">{step.note}</div>}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Ascension Materials (Lv 1→90) */}
           <div>

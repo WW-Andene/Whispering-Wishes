@@ -836,6 +836,15 @@ const CHARACTER_DATA = {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
 });
 
+// [SECTION:IDENTITY_DATA] — Title, in-game organization/faction, and English voice actor.
+// Source: wutheringwaves.fandom.com Resonator Infobox (title/title2, affiliation/affiliation2, voiceEN).
+// Only characters that have been audited so far are populated — this is not yet a complete roster table.
+[
+  ['Jiyan', 'Windborne Rider', 'Midnight Rangers', 'Alex Jordan'],
+].forEach(([name, title, organization, voiceActor]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, organization, voiceActor });
+});
+
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
 // Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
 // Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
@@ -1956,6 +1965,13 @@ const SKILL_MULTIPLIERS = {
 // `duration` (seconds) is only set for steps with a notable buff/stance/channel window worth highlighting.
 // Built as a reusable base: Team tab can later prepend/append other characters' Intro/Outro to chain these together.
 const CHARACTER_ROTATIONS = {
+  'Jiyan': [
+    { type: 'Intro', skill: 'Tactical Strike' },
+    { type: 'Basic ATK', skill: 'Lone Lance', note: 'builds Resolve toward 30' },
+    { type: 'Skill', skill: 'Windqueller', note: 'spend Resolve for +20% DMG while outside Qingloong Mode' },
+    { type: 'Liberation', skill: 'Emerald Storm: Prelude', duration: 10, note: 'at 30+ Resolve, enters Qingloong Mode — Basic/Heavy/Dodge Counter replaced by the Lance of Qingloong combo' },
+    { type: 'Outro', skill: 'Discipline', note: 'Coordinated ATK when the incoming Resonator lands a Heavy ATK (8s window, up to 2 procs)' },
+  ],
   'Lucilla': [
     { type: 'Intro', skill: 'Clip It' },
     { type: 'Skill', skill: 'Phantom Frame', note: 'hold to perfect Spotlight' },
