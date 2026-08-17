@@ -708,15 +708,17 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Chop Chop': 'https://i.ibb.co/8LRFvBW4/Chop-Chop-Icon.webp',
   'Lightcrusher': 'https://i.ibb.co/RpYdQddL/Lightcrusher-Icon.webp',
   'Rocksteady Guardian': 'https://i.ibb.co/8LG9k4bn/Rocksteady-Guardian-Icon.webp',
-  // Land of Xuanfang echoes (v3.5) — no real icon sourced yet
-  'Thousand-Puppet Pavilion': PLACEHOLDER_IMAGE,
-  'Myriad Snare: Rustfire Chassis': PLACEHOLDER_IMAGE,
-  'Reminiscence: Denia': PLACEHOLDER_IMAGE,
-  'Reminiscence: Threnodian - Voidborne Construct': PLACEHOLDER_IMAGE,
-  'Reminiscence - Nightmare: Adam Smasher': PLACEHOLDER_IMAGE,
-  'Forbidden Bastion': PLACEHOLDER_IMAGE,
-  'Fog Lionarch': PLACEHOLDER_IMAGE,
-  'Voidwing Moth': PLACEHOLDER_IMAGE,
+  // Land of Xuanfang echoes (v3.5) — icons sourced from wutheringwaves.fandom.com, matching echoes.js's iconUrl
+  'Thousand-Puppet Pavilion': 'https://i.ibb.co/23cVrFbk/Thousand-Puppet-Pavilion.webp',
+  'Myriad Snare: Rustfire Chassis': 'https://i.ibb.co/KzxLH0wS/Myriad-Snare-Rustfire-Chassis.webp',
+  'Reminiscence: Denia': 'https://i.ibb.co/qYy1Y7Ck/Reminiscence-Denia.webp',
+  'Reminiscence: Threnodian - Voidborne Construct': 'https://i.ibb.co/gZdFc1CG/Reminiscence-Threnodian-Voidborne-Construct.webp',
+  'Reminiscence - Nightmare: Adam Smasher': 'https://i.ibb.co/twCtsS1D/Reminiscence-Nightmare-Adam-Smasher.webp',
+  'Forbidden Bastion': 'https://i.ibb.co/Ps1zmbnM/Forbidden-Bastion.webp',
+  'Fog Lionarch': 'https://i.ibb.co/TB6d8kTy/Fog-Lionarch.webp',
+  'Voidwing Moth': 'https://i.ibb.co/mCw6NvMt/Voidwing-Moth.webp',
+  "Pilgrim's Shell": 'https://i.ibb.co/4ZHwcHT6/Pilgrims-Shell.webp',
+  "Devotee's Flesh": 'https://i.ibb.co/DHRkbQg2/Devotees-Flesh.webp',
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
