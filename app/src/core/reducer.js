@@ -38,6 +38,7 @@ const ACTION = Object.freeze({
   CLEAR_TEAM_SLOT: 'CLEAR_TEAM_SLOT',
   CLEAR_TEAM: 'CLEAR_TEAM',
   RENAME_TEAM: 'RENAME_TEAM',
+  SET_TEAM_MAIN_DPS: 'SET_TEAM_MAIN_DPS',
   IMPORT_TEAMS: 'IMPORT_TEAMS',
   LOAD_STATE: 'LOAD_STATE',
   RESET: 'RESET',
@@ -104,11 +105,11 @@ const initialState = {
   bookmarks: [],
   eventStatus: {},
   teams: [
-    { name: 'Team 1', slots: [null, null, null] },
-    { name: 'Team 2', slots: [null, null, null] },
-    { name: 'Team 3', slots: [null, null, null] },
-    { name: 'Team 4', slots: [null, null, null] },
-    { name: 'Team 5', slots: [null, null, null] },
+    { name: 'Team 1', slots: [null, null, null], mainDpsOverride: null },
+    { name: 'Team 2', slots: [null, null, null], mainDpsOverride: null },
+    { name: 'Team 3', slots: [null, null, null], mainDpsOverride: null },
+    { name: 'Team 4', slots: [null, null, null], mainDpsOverride: null },
+    { name: 'Team 5', slots: [null, null, null], mainDpsOverride: null },
   ],
   activeTeamIndex: 0,
   settings: { showOnboarding: true },
@@ -365,6 +366,17 @@ const reducer = (state, action) => {
     case ACTION.RENAME_TEAM: {
       const teams = state.teams.map((t, i) => i === action.teamIndex
         ? { ...t, name: (action.name || '').slice(0, 20) || t.name }
+        : t
+      );
+      return { ...state, teams };
+    }
+    // Manually picks which team member the DPS calculator treats as the headline "Main DPS" —
+    // needed for dual-Main-DPS-role team comps, where the auto-detect (first Main DPS in slot order)
+    // has no way to know which one the player actually wants optimized around. Pass name: null to
+    // clear the override and fall back to auto-detect.
+    case ACTION.SET_TEAM_MAIN_DPS: {
+      const teams = state.teams.map((t, i) => i === action.teamIndex
+        ? { ...t, mainDpsOverride: action.name || null }
         : t
       );
       return { ...state, teams };

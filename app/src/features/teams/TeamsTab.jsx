@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { BookmarkPlus, ChevronDown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -142,6 +142,14 @@ function TeamsTab({
             {(() => {
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
+              // Only relevant for dual/multi-Main-DPS-role team comps — auto-detect (first Main DPS
+              // in slot order) can't know which one the player wants the headline DPS number built
+              // around, so surface a manual override control only when there's actually a choice.
+              const mainDpsCandidateCount = teamSlots.filter(n => n && CHARACTER_DATA[n]?.role === 'Main DPS').length;
+              const setTeamMainDps = (name) => {
+                dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: activeTeam.mainDpsOverride === name ? null : name });
+                haptic.light();
+              };
               const openSelector = (slotIdx) => {
                 setTeamSelectorSlot(slotIdx);
                 setTeamSearch('');
@@ -295,7 +303,7 @@ function TeamsTab({
                               const team = state.teams[state.activeTeamIndex] || state.teams[0];
                               const slots = team.slots;
                               if (!slots.some(s => s)) return;
-                              const stats = damageCalcRef.current?.calcTeamStats?.(slots, state.activeTeamIndex);
+                              const stats = damageCalcRef.current?.calcTeamStats?.(slots, state.activeTeamIndex, team.mainDpsOverride);
                               const charParts = slots.filter(s => s).map(name => {
                                 const eqKey = state.activeTeamIndex + ':' + name;
                                 const eq = teamEquipment[eqKey];
@@ -510,6 +518,16 @@ function TeamsTab({
                               >
                                 <X size={12} />
                               </button>}
+                              {!framingMode && mainDpsCandidateCount > 1 && charData?.role === 'Main DPS' && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setTeamMainDps(charName); }}
+                                  className={`action-btn absolute top-1 left-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
+                                  aria-label={activeTeam.mainDpsOverride === charName ? `${charName} is the headline DPS — click to auto-detect instead` : `Set ${charName} as the headline DPS for this team`}
+                                  title={activeTeam.mainDpsOverride === charName ? 'Headline DPS (click to clear)' : 'Set as headline DPS'}
+                                >
+                                  <Crown size={12} fill={activeTeam.mainDpsOverride === charName ? 'currentColor' : 'none'} />
+                                </button>
+                              )}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
                                 <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-2xs`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-sm truncate text-gray-200">{charName}</div>

@@ -46,7 +46,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
   // ── Reusable calculator with proper WuWa damage formula ──
   // Memoized so it only recalculates when teamEquipment changes.
-  const calcTeamStats = useCallback((slots, teamIdx) => {
+  const calcTeamStats = useCallback((slots, teamIdx, mainDpsOverride) => {
     const mems = slots.filter(s => s).map(name => {
       const d = CHARACTER_DATA[name];
       if (!d) return null;
@@ -104,8 +104,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
     mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
-    // Smart DPS selection: prefer 'Main DPS' role, fallback to highest totalMult character
-    const mainDps = mems.find(m => m.d.role === 'Main DPS')
+    // DPS selection: an explicit mainDpsOverride wins (needed for dual-Main-DPS-role team comps,
+    // where slot order alone can't tell us which one the player wants optimized around) — but only
+    // if that character is actually still in this team and still Main DPS-role. Otherwise fall back
+    // to auto-detect: prefer 'Main DPS' role, then highest totalMult character.
+    const mainDps = (mainDpsOverride && mems.find(m => m.name === mainDpsOverride && m.d.role === 'Main DPS'))
+      || mems.find(m => m.d.role === 'Main DPS')
       || mems.reduce((best, m) => (!best || (m.d.totalMult || 0) > (best.d.totalMult || 0)) ? m : best, null)
       || mems[0];
 
@@ -1033,8 +1037,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   // Memoize active team stats
   const activeTeamData = state.teams?.[state.activeTeamIndex] || state.teams?.[0] || { name: 'Team 1', slots: [null, null, null] };
   const activeTeamStats = useMemo(() =>
-    calcTeamStats(activeTeamData.slots, state.activeTeamIndex),
-    [calcTeamStats, activeTeamData.slots, state.activeTeamIndex]
+    calcTeamStats(activeTeamData.slots, state.activeTeamIndex, activeTeamData.mainDpsOverride),
+    [calcTeamStats, activeTeamData.slots, state.activeTeamIndex, activeTeamData.mainDpsOverride]
   );
 
   const [overviewCollapsed, setOverviewCollapsed] = useSessionState('ww-team-overview-collapsed', false);
