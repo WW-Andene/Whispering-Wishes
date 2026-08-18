@@ -3895,7 +3895,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Heavy ATK', skill: 'Scarlet Coda', note: 'With 6 Volatile Notes and in the Compose state (auto-triggers every 25s), HOLD Basic Attack (Heavy Attack replaced) — a Skill-type hit that scales with stacked Aftersound and activates the Resolving Chord state, unlocking her Ultimate.' },
     { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo (Nightmare: Hecate) right after Scarlet Coda.' },
     { type: 'Liberation', skill: 'Waltz of Forsaken Depths', duration: 24, note: 'Press Liberation (costs no Resonance Energy — she has none) — ends Resolving Chord and enters Maestro for 24s: +120% self ATK, and Hecate now fights alongside her, sharing her stats and cueable via Basic Attack/Dodge/Jump while she stays on-field.' },
-    { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'Swap out to trigger this automatically (Hecate keeps attacking off-field for the rest of Maestro's 24s, auto-triggering an Enhanced Attack whenever any teammate casts their own Echo Skill). Grants the incoming Resonator +20% Havoc DMG Amp and +25% Heavy ATK DMG Amp for 14s.' },
+    { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'Swap out to trigger this automatically (Hecate keeps attacking off-field for the rest of Maestro\'s 24s, auto-triggering an Enhanced Attack whenever any teammate casts their own Echo Skill). Grants the incoming Resonator +20% Havoc DMG Amp and +25% Heavy ATK DMG Amp for 14s.' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // opened with a full Basic ATK combo before her Liberation and never mentioned Foebreaker, the
