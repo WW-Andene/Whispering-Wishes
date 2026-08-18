@@ -706,14 +706,16 @@ const CHARACTER_DATA = {
     skills: ['Half Truths', 'Shift Trick', 'Flower in the Mist', 'Mistcloak Dash'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'The Last Dance',
-    teams: ['Aalto + Jiyan + Verina', 'Aalto + Cartethyia + Shorekeeper'] },
+    bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'The Last Dance',
+    weaponAlts: { alt5: ['Woodland Aria', 'Static Mist'], alt4: ['Relativistic Jet', 'Undying Flame'], alt3: ['Pistols of Night'] },
+    teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     desc: "Devoted Huaxu Academy researcher accompanied by her companion You'an. Glacio healer who restores HP via Resonance Skill and Liberation, providing consistent team sustain with low field time.",
     skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Cycle of Life'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
+    weaponAlts: { alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
     teams: ['Yangyang + Jiyan + Baizhi', 'Lingyang + Sanhua + Baizhi', 'Encore + Sanhua + Baizhi'] },
   'Chixia': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Energetic patroller who blazes through Jinzhou with dual pistols. On-field Fusion DPS who deals Fusion DMG through rapid-fire Resonance Skill shots and Basic Attack combos.',
@@ -721,7 +723,8 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'The Last Dance',
-    teams: ['Chixia + Changli + Verina', 'Chixia + Mortefi + Baizhi'] },
+    weaponAlts: { alt5: ['Static Mist'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
+    teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Baizhi'] },
   'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Midnight Ranger who trades her own blood for power. Havoc sub-DPS who consumes HP to fuel enhanced Basic and Heavy Attacks, gaining Havoc DMG Bonus as health decreases.',
     skills: ['Execution', 'Crimson Fragment', 'Crimson Bloom', 'Serene Vigil'],
@@ -1163,13 +1166,15 @@ const CHARACTER_DATA = {
   ['Qiuyuan',      'Huanglong'], ['Yangyang: Xuanling', 'Huanglong'], ['Suisui', 'Huanglong'],
   ['Qingxiao',     'Huanglong'], ['Jingran',      'Huanglong'],
   // Huanglong 4★
-  ['Aalto',        'Huanglong'], ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
+  ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
   ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
   ['Taoqi',        'Huanglong'], ['Yuanwu',       'Huanglong'], ['Mortefi',      'Huanglong'],
   ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'], ['Buling',       'Huanglong'],
   // Black Shores
   ['Shorekeeper',  'Black Shores'], ['Camellya',   'Black Shores'], ['Galbrena',   'Black Shores'],
   ['Encore',       'Black Shores'],
+  // Aalto's own infobox `nation` field reads "The Black Shores", not Huanglong — corrected 2026-08-18.
+  ['Aalto',        'Black Shores'],
   // Rinascita
   ['Carlotta',     'Rinascita'], ['Roccia',       'Rinascita'], ['Phoebe',       'Rinascita'],
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
@@ -1403,6 +1408,16 @@ const CHARACTER_DATA = {
   // EN/CN/KR are blank on the infobox, left unset rather than guessed. Birthday: blank, omitted from
   // BIRTHDAY_DATA per the established convention.
   ['Jingran', 'Nether Qi Art', 'Huanglong', 'Mengzhou', { jp: 'Kawanishi Kengo' }],
+  // 4★ Resonators — sourced via the MediaWiki API (action=parse&page=X&prop=wikitext&section=0).
+  // Aalto: birthplace New Federation, nation 'The Black Shores' (REGION_DATA above, corrected from the
+  // prior Huanglong bug), organization 'Black Shores' (affiliation).
+  ['Aalto', 'Mistcloak Strike', 'New Federation', 'Black Shores', { en: 'James Day', cn: 'Liang Dawei', jp: 'Iwasaki Ryōta', kr: 'Lim Chae-bin' }],
+  // Baizhi: birthplace/nation both Huanglong. organization uses affiliation2 'Huaxu Academy' (her
+  // research institute) over the generic Jinzhou tie, matching the Jiyan/Changli sub-group convention.
+  ['Baizhi', "Healing You'tan", 'Huanglong', 'Huaxu Academy', { en: 'Samantha Dakin', cn: 'Chen Tingting', jp: 'Seto Asami', kr: 'Seong Ye-won' }],
+  // Chixia: birthplace/nation both Huanglong. organization uses affiliation2 'Public Security Bureau'
+  // over the generic Jinzhou tie, matching the Yinlin precedent (no dedicated emblem exists for it).
+  ['Chixia', 'Gallant Blaze', 'Huanglong', 'Public Security Bureau', { en: 'Harriet Carmichael', cn: 'Cai Na', jp: 'Nagase Anna', kr: 'Kang Eun-ae' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3352,6 +3367,27 @@ const RESONANCE_CHAIN_DATA = {
 // Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const SKILL_ICONS = {
+  'Aalto': {
+    'Half Truths': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Basic ATK — shared generic Pistols icon
+    'Standard': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Shift Trick': 'https://i.ibb.co/4ZDDVq43/aalto-skill.webp',
+    'Flower in the Mist': 'https://i.ibb.co/qYjnpYdK/aalto-heavy.webp',
+    'Mistcloak Dash': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp',
+  },
+  'Baizhi': {
+    'Destined Promise': 'https://i.ibb.co/6c75rLCc/baizhi-basic.webp', // Basic ATK — generic Rectifier icon
+    'Standard': 'https://i.ibb.co/6c75rLCc/baizhi-basic.webp',
+    'Emergency Plan': 'https://i.ibb.co/2BC255K/baizhi-skill.webp',
+    'Momentary Union': 'https://i.ibb.co/fsP021g/baizhi-liberation.webp',
+    'Cycle of Life': 'https://i.ibb.co/d0nRGZwy/baizhi-forte.webp',
+  },
+  'Chixia': {
+    'POW POW': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp', // Basic ATK — shared generic Pistols icon
+    'Standard': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp',
+    'Whizzing Fight Spirit': 'https://i.ibb.co/s9jWxj9V/chixia-skill.webp',
+    'Blazing Flames': 'https://i.ibb.co/67N4dq55/chixia-liberation.webp',
+    'Heroic Bullets': 'https://i.ibb.co/x8mwJBr0/chixia-forte.webp',
+  },
   'Encore': {
     'Wooly Attack': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
@@ -3927,6 +3963,30 @@ const getSkillIcon = (name, skillName) => {
 // Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_ICONS = {
+  'Aalto': {
+    s1: 'https://i.ibb.co/NkJrMMZ/aalto-s1.webp',
+    s2: 'https://i.ibb.co/3mWXdcDs/aalto-s2.webp',
+    s3: 'https://i.ibb.co/tMr4KzDw/aalto-s3.webp',
+    s4: 'https://i.ibb.co/Hf4q5RKy/aalto-s4.webp',
+    s5: 'https://i.ibb.co/KMWZb8Q/aalto-s5.webp',
+    s6: 'https://i.ibb.co/KzcQtD3c/aalto-s6.webp',
+  },
+  'Baizhi': {
+    s1: 'https://i.ibb.co/mF47z129/baizhi-s1.webp',
+    s2: 'https://i.ibb.co/0RXgwTXZ/baizhi-s2.webp',
+    s3: 'https://i.ibb.co/gb918z7X/baizhi-s3.webp',
+    s4: 'https://i.ibb.co/hxg5Y83Q/baizhi-s4.webp',
+    s5: 'https://i.ibb.co/Rw5VF1d/baizhi-s5.webp',
+    s6: 'https://i.ibb.co/3Q9HWqJ/baizhi-s6.webp',
+  },
+  'Chixia': {
+    s1: 'https://i.ibb.co/RGQBc5g3/chixia-s1.webp',
+    s2: 'https://i.ibb.co/svts4DW5/chixia-s2.webp',
+    s3: 'https://i.ibb.co/dRDWwbs/chixia-s3.webp',
+    s4: 'https://i.ibb.co/HThYzvPf/chixia-s4.webp',
+    s5: 'https://i.ibb.co/KpFQt9N0/chixia-s5.webp',
+    s6: 'https://i.ibb.co/bg00YYjQ/chixia-s6.webp',
+  },
   'Encore': {
     s1: 'https://i.ibb.co/67jq2qtF/Sequence-Node-Woolys-Fairy-Tale.webp',
     s2: 'https://i.ibb.co/qvQ1d2y/Sequence-Node-Sheep-counting-Lullaby.webp',
@@ -4308,6 +4368,9 @@ const CHAIN_NODE_ICONS = {
 // (static.nanoka.cc/ww/<version>/en/character/<id>.json) and wutheringwaves.fandom.com.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_NAMES = {
+  'Aalto': { s1: "Trickster's Opening Show", s2: "Mistweaver's Debut", s3: 'Hazey Transition', s4: 'Blake Bloom for Finale', s5: 'Applause of the Lost', s6: "Broker's Secrets" },
+  'Baizhi': { s1: 'Complex Simplicity', s2: 'Silent Tundra', s3: 'Veritas Lux Mea', s4: 'Eternal Verity', s5: 'A Wish Answered', s6: "Seeker's Devotion" },
+  'Chixia': { s1: 'No.1 Hero Play Fan', s2: 'Leaping Sparkles', s3: 'Eternal Flames', s4: "Hero's Ultimate Move", s5: 'Triumphant Explosions', s6: 'Easter Egg Performance' },
   'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
   'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
   'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
