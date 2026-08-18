@@ -77,7 +77,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Abyss Surges': { rarity: 5, type: 'Gauntlets', stat: 'ATK%', baseAtk: 587, subStatValue: '+36.4%',
     desc: 'Standard 5★. Gauntlets surging with abyssal power. Stacking ATK buff based on energy consumed.',
-    passive: 'ATK +8% per 10 energy consumed, max 4 stacks', pv: { atkPct: 32 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu'], // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!")
+    passive: 'ATK +8% per 10 energy consumed, max 4 stacks', pv: { atkPct: 32 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu', 'Youhu'], // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!"). Youhu tag added 2026-08-18: this is her own signature weapon (bestWeapon in CHARACTER_DATA), ranked #3 on Prydwen's Best Weapons for her.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Cosmic Ripples': { rarity: 5, type: 'Rectifier', stat: 'ATK%', baseAtk: 500, subStatValue: '+53.9%',
     desc: 'Standard 5★. Rectifier resonating with cosmic ripples. Stacking Basic ATK DMG buff on hit.',
@@ -234,7 +234,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Marcato': { rarity: 4, type: 'Gauntlets', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Surging waves shattering all like a deadly hymn. Restores Concerto Energy on Skill use.',
-    passive: 'Resonance Skill → restore 8 Concerto Energy (20s CD)', bestFor: ['Yuanwu', 'Gauntlet users', 'Jianxin'],
+    passive: 'Resonance Skill → restore 8 Concerto Energy (20s CD)', bestFor: ['Yuanwu', 'Gauntlet users', 'Jianxin', 'Youhu'], // Youhu tag added 2026-08-18: Prydwen's Best Weapons #1 pick for her by far, thanks to its Energy Regen main stat and Concerto generation easing her Outro access.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Lunar Cutter': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Sword born from an alien star\'s light. Gains ATK stacks on swap-in.',
@@ -284,7 +284,7 @@ const WEAPON_DATA = {
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Rectifier DPS', 'Encore'] },
   'Celestial Spiral': { rarity: 4, type: 'Gauntlets', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Galactic radiance spiraling toward tragic demise. Skill grants Resonance Energy and ATK buff.',
-    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Gauntlet DPS', 'Lingyang'] },
+    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Gauntlet DPS', 'Lingyang', 'Youhu'] }, // Youhu tag added 2026-08-18: Prydwen's Best Weapons #4 pick for her, a flat Resonance Energy bonus every 20s.
   'Relativistic Jet': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s incessant course of cosmic destruction. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS', 'Aalto', 'Mortefi'] }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his top 4★ alt at 83.92%, noting it "significantly reduces Energy requirements"
@@ -362,7 +362,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Gauntlets#21D': { rarity: 4, type: 'Gauntlets', stat: 'Energy Regen', baseAtk: 387, subStatValue: '+38.9%',
     desc: 'Craftable gauntlets. Counter-focused design with adaptive sustain.',
-    passive: 'Mastermind: Dash/dodge → ATK +8%, Dodge Counter DMG +50% for 8s, heal 5% HP on Counter (6s CD)', bestFor: ['Jianxin'],
+    passive: 'Mastermind: Dash/dodge → ATK +8%, Dodge Counter DMG +50% for 8s, heal 5% HP on Counter (6s CD)', bestFor: ['Jianxin', 'Youhu'], // Youhu tag added 2026-08-18: Prydwen's Best Weapons #2 pick for her — Energy Regen main stat plus an ATK% boost after dashing/dodging, improving her healing and Liberation access.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Rectifier#25': { rarity: 4, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Craftable rectifier. Adaptive support with conditional heal or ATK buff.',

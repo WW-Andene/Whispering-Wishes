@@ -846,13 +846,29 @@ const CHARACTER_DATA = {
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Empyrean Anthem 5pc'], bestWeapon: 'Static Mist',
     weaponAlts: { alt5: ['The Last Dance'], alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Pistols#26'] },
     teams: ['Mortefi + Galbrena + Lupa', 'Mortefi + Jiyan + Verina'] },
+  // audited 2026-08-18: sourced from wutheringwaves.fandom.com's Youhu/Combat page (rendered via the
+  // MediaWiki API, section-by-section, since the raw wikitext only transcludes {{Forte Table}}/
+  // {{Chain Table}} templates) and Prydwen's Kit/Build/Review/Gameplay tabs.
+  // bestEchoes expanded with Prydwen's actual #1/#2 Main Echo picks (Fallacy of No Return now Prydwen's
+  // stated top choice over Bell-Borne Geochelone, both on the Rejuvenating Glow 5pc set) plus the
+  // documented Special Set alt (Moonlit Clouds 5pc + Impermanence Heron, for the Outro-swap-cancel
+  // playstyle). weaponAlts added (previously entirely missing) — alt4 only: Prydwen's Best Weapons tab
+  // ranks Marcato (#1, even above her own signature) > Gauntlets#21D (#2) > Abyss Surges (sig, #3) >
+  // Celestial Spiral (#4) — no alt5 (5★) or alt3 (3★) weapon is documented there, so none invented.
+  // teams corrected: the prior 'Youhu + Carlotta + Zhezhi'/'Youhu + Lingyang + Sanhua' pairings don't
+  // match Prydwen's Synergies tab at all (Carlotta/Sanhua aren't Coordinated ATK dealers) — replaced with
+  // Prydwen's actual named "Best Team" (Yinlin, her highest-DMG Coordinated ATK partner, paired with
+  // Calcharo) and "Zhezhi Team" (Zhezhi + Lingyang), the two teams Prydwen gives full named partners for;
+  // a third "Mortefi Team" card exists on Prydwen but lists no partner DPS in its caption text, so it's
+  // left out rather than guessed a third member.
   'Youhu': { rarity: 4, element: 'Glacio', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Whimsical antique appraiser who trusts her luck in all things. Glacio support who heals the team via Resonance Skill and amplifies Coordinated ATK DMG through her Outro buff.',
+    desc: 'Whimsical antique appraiser who trusts her luck in all things. Glacio support who heals the team via Resonance Skill/Forte and grants the incoming Coordinated ATK dealer a massive +100% Coordinated ATK DMG Amp through her Outro (Timeless Classics) — Prydwen calls this "the single biggest source of damage amplification for any attack type in the game."',
     skills: ['Frosty Punches', 'Scroll Divination', 'Fortune\'s Favor', 'Poetic Essence'],
     ascension: { boss: 'Topological Confinement', common: 'Ring', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Cadence' },
-    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Abyss Surges',
-    teams: ['Youhu + Carlotta + Zhezhi', 'Youhu + Lingyang + Sanhua'] },
+    bestEchoes: ['Fallacy of No Return', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc', 'Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt4: ['Marcato', 'Gauntlets#21D', 'Celestial Spiral'] },
+    teams: ['Youhu + Yinlin + Calcharo', 'Youhu + Zhezhi + Lingyang'] },
   'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
     desc: 'Lollo Logistics navigator who charts paths through thundering skies. Electro sub-DPS who deals Electro DMG via Resonance Skill and amplifies the next character\'s Resonance Skill DMG through Outro.',
     skills: ['Navigation Support', 'Searchlight Service', 'Squeakie Express', 'Signal Light'],
@@ -1569,6 +1585,18 @@ const CHARACTER_DATA = {
   // infobox's own CN-VA citation footnote text is a stray copy-paste artifact referencing an unrelated
   // resonator's name — the CN VA name itself (Liu Yijia) is unaffected and matches Prydwen independently.
   ['Mortefi', "Dragon's Breath", 'New Federation', 'Huaxu Academy', { en: 'Joseph May', cn: 'Liu Yijia', jp: 'Miura Katsuyuki', kr: 'Kim Da-ol' }],
+  // Youhu: added 2026-08-18, sourced via the MediaWiki API (action=parse&page=Youhu&prop=wikitext).
+  // Title 'Cryogenic Wonders' from the infobox `title` field. birthplace 'Huanglong' (matches her
+  // region/nation tie in REGION_DATA above — the infobox's `birthplace` and `nation` fields are both
+  // 'Huanglong' for her, unlike the split-tie characters commented elsewhere in this table). organization
+  // uses the infobox's only `affiliation` field, 'Chongzhou' (a city within Huanglong, like Jinzhou/
+  // Mengzhou) — no dedicated FACTION_ICONS emblem exists on the wiki for Chongzhou (confirmed via a
+  // MediaWiki search for "Chongzhou Emblem" turning up no File: result), so it's intentionally left unset
+  // rather than guessed, matching the Jinzhou/Mingting precedent. VAs confirmed exact from the infobox:
+  // EN Leonora Haig, CN Liu Yilei (刘一蕾), JP Tomita Miyu (富田美憂), KR Park Si-yoon (박시윤) — note
+  // Prydwen's own Voice Actors tab is blank ('-') for all four languages for Youhu, so fandom is the only
+  // sourced VA credit here.
+  ['Youhu', 'Cryogenic Wonders', 'Huanglong', 'Chongzhou', { en: 'Leonora Haig', cn: 'Liu Yilei', jp: 'Tomita Miyu', kr: 'Park Si-yoon' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2076,12 +2104,17 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 38% Resonance Skill DMG Amp to next. Electro sub-DPS.',
   },
+  // corrected 2026-08-18: the prior 'Lib: 12% ATK teamwide' buff had no basis anywhere on fandom's
+  // Combat page or Prydwen's Kit tab — Fortune's Favor (Liberation) carries no team buff at all, it's a
+  // DMG blast that grants an Antique. Her real, previously-missing standout buff is the Outro (Timeless
+  // Classics): Coordinated ATK DMG Amplified +100% for 28s to the incoming character — "the single
+  // biggest source of damage amplification for any attack type in the game" per Prydwen's Review tab.
   'Youhu': {
-    outroBuffs: [],
-    libBuffs: [{ stat: 'atkPct', value: 12, target: 'team', duration: 15 }],
+    outroBuffs: [{ stat: 'coordDmg', value: 100, target: 'next', duration: 28 }],
+    libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Glacio healer. Coordinated ATK Amp. Lib: 12% ATK teamwide.',
+    note: 'Glacio healer (Scroll Divination + Poetic Essence, both heal on cast). Outro Timeless Classics: +100% Coordinated ATK DMG Amp (28s) to the incoming Resonator — her signature niche buff.',
   },
   // ── 5★ Main DPS missing from initial table ──
   'Aemeath': {
@@ -2940,12 +2973,24 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Cerulean Song', '79.52%×2', 'Launches target airborne.'],
     ['Outro', 'Whispering Breeze', 'Restore 4 Resonance Energy/s (5s)', 'Funnels Energy to the incoming Resonator.'],
   ],
+  // corrected 2026-08-18: replaced the old generic "Stage 1-4" placeholder (fabricated move names
+  // "Cleansing Blaze"/"Spirit Congregation"/"PoeticErta" that don't exist on the real kit, and a
+  // fabricated "+23% Glacio DMG Amp" Outro that has no basis anywhere — her real Outro carries no Glacio
+  // DMG at all, only a Coordinated ATK buff) with real Lv.10 Attribute Scaling values and move names from
+  // wutheringwaves.fandom.com/wiki/Youhu/Combat's Forte Details table (rendered section-by-section via
+  // the MediaWiki API). No Basic ATK/Heavy ATK/Mid-air/Dodge Counter rows exist in her Forte Details
+  // table at all (unlike Yuanwu/Mortefi) — her 4-part Basic Attack combo and Heavy ATK: Frostfall have no
+  // published DMG% scaling on fandom or Prydwen, so none are invented here.
   'Youhu': [
-    ['Basic ATK', 'Stage 1-4', '18.9% → 22.5% → 12.9%×4 → 32.5%'],
-    ['Skill', 'Cleansing Blaze', '11%×3 + 29%'],
-    ['Liberation', 'Spirit Congregation', '300% healing field'],
-    ['Intro', 'Lucky Draw', '50%×2'],
-    ['Outro', 'PoeticErta', '+23% Glacio DMG Amp (14s)'],
+    ['Skill', 'Scroll Divination', '156.46%', 'Glacio DMG hit + heal to all nearby party members + performs Lucky Draw once (grants a random Antique).'],
+    ['Skill', 'Chime (Antique Appraisal)', '41.05% + 49.85%×3 + 102.62%', 'Antique Appraisal variant. Effectively reduces enemy Vibration Strength.'],
+    ['Skill', 'Ruyi (Antique Appraisal)', '137.00% + 167.45%', 'Antique Appraisal variant with the highest DMG Multiplier of the four.'],
+    ['Skill', 'Ding (Antique Appraisal)', '28.57%×6 + 114.28%', 'Antique Appraisal variant. Effectively breaks enemy stance.'],
+    ['Skill', 'Mask (Antique Appraisal)', '11.46%×9 + 44.20%', 'Antique Appraisal variant, lowest DMG; pulls in enemies along its path.'],
+    ['Liberation', "Fortune's Favor", '327.19%', 'Glacio DMG blast; choose one of four Antiques from the resulting prompt (or get one at random).'],
+    ['Forte', 'Poetic Essence', '37.21%×10', 'Hold Basic ATK at 4 Auspices. Glacio DMG counted as Resonance Skill DMG, heals all nearby party members, plus bonus effects based on Auspice combination (Antithesis +70% DMG, Triplet +175% DMG, etc).'],
+    ['Intro', 'Scroll of Wonders', '89.47% + 109.35%', 'Toss the scroll and perform Lucky Draw once.'],
+    ['Outro', 'Timeless Classics', 'No DMG (Coordinated ATK DMG Amp +100%, 28s)', 'The incoming Resonator has their Coordinated Attack DMG Amplified by 100% for 28s.'],
   ],
   // corrected 2026-08-18: replaced the old generic "Stage 1-5" placeholder values (which didn't match
   // any real move name — Yuanwu never has an unsourced "Liberation DMG Amp" Outro or "shield" on
@@ -3519,6 +3564,21 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Violent Finale', note: 'cast right before swapping out — applies Burning Rhapsody (off-field Coordinated ATK Marcato hits) to the whole team' },
     { type: 'Outro', skill: 'Rage Transposition', note: 'swap into the main Heavy Attacker — grants them 38% Heavy ATK DMG Amp for 14s; Impermanence Heron\'s swap-cancel adds a further buff on the same swap' },
   ],
+  // Added 2026-08-18 (previously entirely missing) — sourced from Prydwen's Gameplay and teams "Rotation
+  // 1" (her simplest loop, 6.5s, works with any weapon) and fandom's Youhu/Combat Instructions text.
+  // Every Antique Appraisal (Chime/Ruyi/Ding/Mask, drawn at random unless chosen via Liberation) refills
+  // an Auspice; Poetic Essence fires once all 4 are gathered. Prydwen recommends picking Mask or Ruyi from
+  // Liberation's choice prompt against bosses.
+  'Youhu': [
+    { type: 'Intro', skill: 'Scroll of Wonders', note: 'Glacio DMG opener, grants Lucky Draw (random Antique)' },
+    { type: 'Skill', skill: 'Ruyi', note: 'enhanced Basic ATK consuming the drawn Antique (Antique Appraisal) — swap-cancel instantly' },
+    { type: 'Liberation', skill: "Fortune's Favor", note: 'Glacio DMG blast; choose an Antique from the prompt (Mask/Ruyi recommended vs bosses)' },
+    { type: 'Skill', skill: 'Ruyi', note: 'Antique Appraisal again, consuming the Liberation-granted Antique' },
+    { type: 'Basic ATK', skill: 'Frosty Punches', note: 'full 4-part Basic ATK combo to fill the Forte Gauge (Frost)' },
+    { type: 'Skill', skill: 'Scroll Divination', note: 'Resonance Skill — Glacio DMG + heal + Lucky Draw, keep on cooldown' },
+    { type: 'Skill', skill: 'Ruyi', note: 'Antique Appraisal once more' },
+    { type: 'Outro', skill: 'Timeless Classics', note: 'swap into the Coordinated ATK dealer — grants +100% Coordinated ATK DMG Amp for 28s' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3689,6 +3749,17 @@ const RESONANCE_CHAIN_DATA = {
   // hits at 50% reduced DMG (extra proc source, kept as small totalMult). S6 Apoplectic Instrumental — on
   // Liberation cast, team ATK+20% for 20s (confirmed exact, modeled as atkPct).
   'Mortefi':      { s1: { totalMult: 6 }, s2: { totalMult: 3 }, s3: { critDmg: 30 }, s4: { totalMult: 4 }, s5: { totalMult: 8 }, s6: { atkPct: 20 } },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's Combat page rendered
+  // Resonance Chain table (matches Prydwen's Kit tab wording exactly). Real effects: S1 Waterside
+  // Respite — 10% chance of DMG/interruption immunity for 5s after Lucky Draw (utility, no DMG stat,
+  // kept as small totalMult). S2 Sunroom Siesta — Antithesis/Triplet/Perfect Rhyme DMG bonus on Poetic
+  // Essence doubled (self DMG, low priority for a healer/support, kept as small totalMult). S3 Restless
+  // Sleep — ATK+20% (confirmed exact -> atkPct). S4 Frosted Lullaby — 20% chance Scroll Divination skips
+  // Cooldown (utility, no DMG stat, kept as small totalMult). S5 Dreamland Meander — Crit Rate+15% for
+  // 14s after Intro Skill (confirmed exact -> critRate). S6 Slumber Evermore — Sky Blue stacks (max 4,
+  // 7s) each granting Crit DMG+15%, so max 60% Crit DMG (confirmed exact at max stacks -> critDmg,
+  // matching this table's convention of using max-stack totals, e.g. Chixia S5/Mortefi S1).
+  'Youhu':        { s1: { totalMult: 3 }, s2: { totalMult: 5 }, s3: { atkPct: 20 }, s4: { totalMult: 3 }, s5: { critRate: 15 }, s6: { critDmg: 60 } },
   // Danjin re-verified 2026-08-18 against fandom's Chain Node pages (Crimson Heart of Justice/Dusted
   // Mirror/Fleeting Blossom/Solitary Carnation/Reigning Blade/Bloodied Jade wikitext, cross-checked with
   // Prydwen's Kit tab Resonance Chain text — identical wording): S1 ATK+5% per stack on Incinerating Will
@@ -4482,6 +4553,24 @@ const SKILL_ICONS = {
     'Dissonance': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d3/Skill_Dissonance.png',
     'Rage Transposition': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c0/Skill_Rage_Transposition.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Skill_*.png assets via the MediaWiki API (Forte Details table image thumbnails + a direct
+  // action=query&titles=File:Skill_Timeless_Classics.png&prop=imageinfo lookup for the Outro icon, which
+  // wasn't inline in the Forte Table's collapsed scaling section). The four Antique Appraisal variants
+  // (Chime/Ruyi/Ding/Mask) share Scroll Divination's icon since they're all sub-effects of the same
+  // Resonance Skill row on the wiki, with no separate per-variant icon files uploaded.
+  'Youhu': {
+    'Frosty Punches': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png',
+    'Scroll Divination': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
+    'Chime': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
+    'Ruyi': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
+    'Ding': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
+    'Mask': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
+    "Fortune's Favor": 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Skill_Fortune%27s_Favor.png',
+    'Poetic Essence': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Poetic_Essence.png',
+    'Scroll of Wonders': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/61/Skill_Scroll_of_Wonders.png',
+    'Timeless Classics': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/61/Skill_Timeless_Classics.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4952,6 +5041,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/cc/Sequence_Node_Funerary_Quartet.png',
     s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Sequence_Node_Apoplectic_Instrumental.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Sequence_Node_*.png assets via the MediaWiki API (action=parse&page=Youhu/Combat&prop=text&section=9).
+  'Youhu': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/be/Sequence_Node_Waterside_Respite.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ab/Sequence_Node_Sunroom_Siesta.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/63/Sequence_Node_Restless_Sleep.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/06/Sequence_Node_Frosted_Lullaby.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/04/Sequence_Node_Dreamland_Meander.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/23/Sequence_Node_Slumber_Evermore.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -5014,6 +5113,8 @@ const CHAIN_NODE_NAMES = {
   'Yuanwu': { s1: 'Steaming Cup of Justice', s2: 'Fierce Heart, Serene Mind', s3: 'Upholder of Integrity', s4: 'Retributive Knuckles', s5: 'Neighborhood Protector', s6: 'Defender of All Realms' },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's Mortefi/Combat Resonance Chain table.
   'Mortefi': { s1: 'Solitary Etude', s2: 'Hypocritical Hymn', s3: 'Flaming Recitativo', s4: 'Cathartic Waltz', s5: 'Funerary Quartet', s6: 'Apoplectic Instrumental' },
+  // added 2026-08-18 — previously entirely missing.
+  'Youhu': { s1: 'Waterside Respite', s2: 'Sunroom Siesta', s3: 'Restless Sleep', s4: 'Frosted Lullaby', s5: 'Dreamland Meander', s6: 'Slumber Evermore' },
   // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
   // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
   'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },
