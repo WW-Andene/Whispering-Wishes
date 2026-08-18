@@ -124,6 +124,11 @@ const ALL_3COST_ECHOES = [
 ];
 
 const ALL_1COST_ECHOES = [
+  // v3.5 — Land of Xuanfang (added 2026-08-18, were missing entirely from the roster)
+  'Smiter', 'Porcelain Picket', 'Stone Picket', 'Aureate Picket',
+  'Kernel Puppet: Joy', 'Kernel Puppet: Anger', 'Kernel Puppet: Worry',
+  'Kernel Puppet: Reflection', 'Kernel Puppet: Grief', 'Kernel Puppet: Fright',
+  'Fog Lionarch: Body', 'Fog Lionarch: Head', 'Smolder',
   // v3.0+ — Lahai-Roi
   'Geospider S4', 'Flora Drone', 'Mining Drone', 'Zip Zap',
   'Iceglint Dancer', 'Shadow Stepper', 'Tremor Warrior',
@@ -271,6 +276,22 @@ const ECHO_DATA = {
   'Lightcrusher':                    { sets: ['Celestial Light'], buff: 'Spectro DMG', desc: 'A light-infused crushing construct. Skill transforms into Lightcrusher and lunges forward for 135.36% Spectro DMG, generating 6 Ablucence on hit; each Ablucence explosion deals 15.04% Spectro DMG. Hold to stay in Lightcrusher form and leap/pounce forward.' , iconUrl: 'https://i.ibb.co/RpYdQddL/Lightcrusher-Icon.webp' },
   'Rocksteady Guardian':             { sets: ['Celestial Light', 'Rejuvenating Glow'], buff: 'Spectro DMG', desc: "A steadfast rock guardian. Skill transforms into a Parry State; upon being attacked, deals Spectro DMG equal to 8.29% of Max HP with a follow-up attack for another 8.29%. If the attack is a Special Skill, interrupt it, gain a 30% Max HP Shield, and unleash a two-stage follow-up (5.52% Max HP each) plus three ground-breaking waves (4.59% Max HP each)." , iconUrl: 'https://i.ibb.co/8LG9k4bn/Rocksteady-Guardian-Icon.webp' },
   // ── 1-Cost Echoes ──
+  // added 2026-08-18 (echo audit): entirely missing from the roster despite being live v3.5 Land of
+  // Xuanfang echoes, confirmed via nanoka.cc live echo pages. No hosted icon available, so image fields
+  // are omitted rather than fabricated.
+  'Smiter':                          { sets: ['Song of Feathered Trace'], buff: 'Spectro DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Smiter to jab enemies 7 times for 19.26% Spectro DMG each, finishing with an uppercut for 57.78% Spectro DMG.' },
+  'Porcelain Picket':                { sets: ['Lamp of Nether Road'], buff: 'Aero DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Porcelain Picket to slash forward, dealing 2 hits of 19.44% Aero DMG and 7 hits of 12.96% Aero DMG to enemies along its path.' },
+  'Stone Picket':                    { sets: ['Lamp of Nether Road'], buff: 'Aero DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Stone Picket, dealing 129.60% Aero DMG.' },
+  'Aureate Picket':                  { sets: ["Heart of Evil's Purge"], buff: 'Aero DMG', desc: "An Elite-class puppet from Land of Xuanfang. Skill transforms into an Aureate Picket, recovering HP over time before bashing enemies for 153.90% Aero DMG." },
+  'Kernel Puppet: Joy':              { sets: ['Song of Feathered Trace'], buff: 'Physical DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Kernel Puppet: Joy to attack enemies, dealing 129.60% Physical DMG.' },
+  'Kernel Puppet: Anger':            { sets: ["Heart of Evil's Purge"], buff: 'Fusion DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Kernel Puppet: Anger to attack enemies, dealing 129.60% Fusion DMG.' },
+  'Kernel Puppet: Worry':            { sets: ["Heart of Evil's Purge"], buff: 'Glacio DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Kernel Puppet: Worry to attack enemies, dealing 64.80% Glacio DMG.' },
+  'Kernel Puppet: Reflection':       { sets: ["Heart of Evil's Purge"], buff: 'Electro DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Kernel Puppet: Reflection to attack enemies, dealing 64.80% Electro DMG.' },
+  'Kernel Puppet: Grief':            { sets: ['Lamp of Nether Road'], buff: 'Spectro DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Kernel Puppet: Grief to attack enemies, dealing 129.60% Spectro DMG.' },
+  'Kernel Puppet: Fright':           { sets: ['Lamp of Nether Road'], buff: 'Havoc DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Kernel Puppet: Fright to attack enemies, dealing 51.84% Havoc DMG then 77.76% Havoc DMG.' },
+  'Fog Lionarch: Body':              { sets: ['Song of Feathered Trace'], buff: 'Fusion DMG', desc: 'An Elite-class beast fragment from Land of Xuanfang. Skill summons Fog Lionarch: Body to ram into enemies, dealing 192.60% Fusion DMG.' },
+  'Fog Lionarch: Head':              { sets: ['Song of Feathered Trace'], buff: 'Fusion DMG', desc: 'An Elite-class beast fragment from Land of Xuanfang. Skill summons Fog Lionarch: Head to dart toward enemies, dealing 129.60% Fusion DMG.' },
+  'Smolder':                         { sets: ['Song of Feathered Trace'], buff: 'Fusion DMG', desc: 'An Elite-class puppet from Land of Xuanfang. Skill summons Smolder to hurl a fireball for 192.60% Fusion DMG; if it hits the ground, it explodes for another 192.60% Fusion DMG to enemies in range.' },
   'Electro Predator':                { sets: ['Molten Rift', 'Void Thunder'], buff: 'Electro DMG', desc: 'A nimble humanoid Tacet Discord with electrical projectiles. Skill summons Electro Predator to shoot 5 times: first 4 deal 17% Electro DMG, last deals 46% Electro DMG.' , imageUrl: 'https://i.ibb.co/M57X0Nsc/Electro-Predator.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/LDX6kPxT/Electro-Predator-Icon.webp' },
   'Fusion Dreadmane':                { sets: ['Molten Rift', 'Rejuvenating Glow'], buff: 'Fusion DMG', desc: 'A fiery lion-like Howler Tacet Discord. Skill summons Fusion Dreadmane to fiercely strike the enemy dealing 32% + 64 Fusion DMG.' , imageUrl: 'https://i.ibb.co/bjZS0vwn/Fusion-Dreadmane.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/pjzkqWTf/Fusion-Dreadmane-Icon.webp' },
   'Lava Larva':                      { sets: ['Molten Rift', 'Lingering Tunes'], buff: 'Fusion DMG', desc: 'A small molten creature that persistently burns. Skill summons Lava Larva to continuously attack enemies dealing 38% Fusion DMG per hit. Disappears when summoner switches out or moves too far.' , imageUrl: 'https://i.ibb.co/LzsHbZg3/Lava-Larva.png', noBgProcess: true, iconUrl: 'https://i.ibb.co/svpSKC3g/Lava-Larva-Icon.webp' },
@@ -523,6 +544,19 @@ const ECHO_SKILL_BUFFS = {
   ['Lightcrusher', 226, 'Spectro', null],
   ['Rocksteady Guardian', 0, 'Spectro', null],
   // ── 1-Cost Echoes ──
+  ['Smiter', 193, 'Spectro', null],
+  ['Porcelain Picket', 130, 'Aero', null],
+  ['Stone Picket', 130, 'Aero', null],
+  ['Aureate Picket', 154, 'Aero', null],
+  ['Kernel Puppet: Joy', 130, 'Physical', null],
+  ['Kernel Puppet: Anger', 130, 'Fusion', null],
+  ['Kernel Puppet: Worry', 65, 'Glacio', null],
+  ['Kernel Puppet: Reflection', 65, 'Electro', null],
+  ['Kernel Puppet: Grief', 130, 'Spectro', null],
+  ['Kernel Puppet: Fright', 130, 'Havoc', null],
+  ['Fog Lionarch: Body', 193, 'Fusion', null],
+  ['Fog Lionarch: Head', 130, 'Fusion', null],
+  ['Smolder', 193, 'Fusion', null],
   ['Electro Predator', 115, 'Electro', null],
   ['Fusion Dreadmane', 0, 'Fusion', null],
   ['Lava Larva', 0, 'Fusion', null],
