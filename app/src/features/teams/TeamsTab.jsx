@@ -304,6 +304,12 @@ function TeamsTab({
               // Characters already in this team (excluding current slot)
               const usedInTeam = new Set(teamSlots.filter((s, i) => s && i !== teamSelectorSlot));
 
+              // Rover: Spectro/Havoc/Aero/Electro are 4 roster entries for the same in-game unit
+              // (Rover freely re-specs attunement, but you only ever own one) — a team can never
+              // contain two different Rover attunements at once, so once one is placed, the other
+              // three attunements must be excluded from the selector, not just the exact duplicate.
+              const usedRoverAttuned = [...usedInTeam].some(n => n.startsWith('Rover:'));
+
               // Compute recommended teammates from current team members' team suggestions
               const recommendedNames = new Set();
               teamSlots.filter(s => s).forEach(charInSlot => {
@@ -319,6 +325,7 @@ function TeamsTab({
               // Filter characters for selector
               const filteredChars = allCharNames.filter(name => {
                 if (usedInTeam.has(name)) return false;
+                if (usedRoverAttuned && name.startsWith('Rover:')) return false;
                 if (teamSearch && !name.toLowerCase().includes(teamSearch.toLowerCase())) return false;
                 const data = CHARACTER_DATA[name];
                 if (!data) return false;
