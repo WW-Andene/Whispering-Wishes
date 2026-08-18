@@ -861,7 +861,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const els = new Set(mems.map(m => m.d.element));
       if (els.size === mems.length) warnings.push('No element resonance');
       const dpsCount = mems.filter(m => m.d.role === 'Main DPS').length;
-      if (dpsCount >= 2) warnings.push('Dual DPS: rotation time shared');
+      if (dpsCount >= 2) warnings.push(`Dual DPS: rotation time shared — use 👑 to pick which one${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
       if (dpsCount === 0) warnings.push('No Main DPS: using highest damage dealer');
     }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
