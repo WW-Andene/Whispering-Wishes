@@ -314,13 +314,27 @@ function TeamsTab({
               // three attunements must be excluded from the selector, not just the exact duplicate.
               const usedRoverAttuned = [...usedInTeam].some(n => n.startsWith('Rover:'));
 
-              // Compute recommended teammates from current team members' team suggestions
+              // Compute recommended teammates from current team members' team suggestions.
+              // Each character's own `teams` field is a list of DIFFERENT curated comps built
+              // around them individually (e.g. Mornye's own list includes both a Lynae/Aemeath
+              // team and an unrelated Luuk Herssen/Denia team) — naively unioning every member's
+              // list together recommends candidates that only make sense in a team that ISN'T the
+              // one currently being built (e.g. recommending Luuk once Hiyuki+Mornye are both
+              // placed, even though Luuk's curated pairing is with Mornye alone in a totally
+              // different Spectro comp, not Hiyuki's Glacio one). So once 2+ members are already
+              // placed, only trust a curated teamStr as a recommendation source if every OTHER
+              // already-placed member also appears in that exact teamStr — i.e. it's actually
+              // describing (a superset of) the team being built, not an unrelated one.
+              const placedNow = teamSlots.filter(s => s);
               const recommendedNames = new Set();
-              teamSlots.filter(s => s).forEach(charInSlot => {
+              placedNow.forEach(charInSlot => {
                 const d = CHARACTER_DATA[charInSlot];
                 if (!d?.teams) return;
+                const otherPlaced = placedNow.filter(p => p !== charInSlot);
                 d.teams.forEach(teamStr => {
-                  teamStr.split('+').map(m => m.trim()).forEach(m => {
+                  const members = teamStr.split('+').map(m => m.trim());
+                  if (otherPlaced.length > 0 && !otherPlaced.every(p => members.includes(p))) return;
+                  members.forEach(m => {
                     if (m !== charInSlot && !usedInTeam.has(m)) recommendedNames.add(m);
                   });
                 });
