@@ -894,13 +894,31 @@ const CHARACTER_DATA = {
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
     weaponAlts: { alt5: ['Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Waning Redshift'] },
     teams: ['Lumi + Jinhsi', 'Lumi + Carlotta'] },
+  // corrected/added 2026-08-18: desc rewritten — a real bio (Black Shores Consultant/"Spiritchaser
+  // Taoist" who wanders investigating the strange and mysterious, selling talismans and divination as
+  // her trade) plus a gameplay-role summary (fandom's Combat page + Prydwen's Kit/Review tabs): she
+  // heals off-field via Heavy Attacks/Intro/Outro, generates Mountain/Thunder Trigrams off her Basic
+  // ATK/Skill/Mid-air Attack to unlock an enhanced Liberation (Flashing Thunder Spell: Harmony) that
+  // deploys a Five Thunders Spell Array inflicting Electro Flare and ramping team Resonance Skill DMG
+  // Bonus (+10%→+25%, +50% at S6) on ally Intro casts, and her Outro (Exorcism Spell) both heals the
+  // active character and Amplifies nearby team DMG by 15% for 30s. bestWeapon corrected — 'Stellar
+  // Symphony' had no basis at all (that's Shorekeeper's own signature weapon per weapons.js, not
+  // Buling's; she has no dedicated signature weapon on Prydwen's Best Weapons list, which instead ranks
+  // generic Rectifier options) — replaced with Prydwen's #1-ranked Stringmaster, with weaponAlts for
+  // the rest of Prydwen's list. bestEchoes expanded — Prydwen's Build tab lists Rejuvenating Glow 5pc
+  // as her sole Best Echo Set with two named Main Echo options, Fallacy of No Return (preferred) and
+  // Bell-Borne Geochelone (budget alt), both added. teams corrected — the prior 'Buling + Carlotta +
+  // Zhezhi' / 'Buling + Carlotta + Shorekeeper' pairings don't match Prydwen's Synergies tab, which
+  // names only Carlotta and Phrolova as her best DPS partners (both Main Skill DMG-oriented DPS); the
+  // 3rd/4th members aren't named there so none are invented, matching the Lumi audit's precedent.
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Taoist feng shui master from Mengzhou and Black Shores Consultant. Electro healer who restores HP and deploys Electro Flare via Liberation, buffing the team\'s Resonance Skill DMG through Outro.',
+    desc: 'Black Shores Consultant and Taoist "Spiritchaser Taoist" fortune-teller who wanders investigating the strange and mysterious, selling talismans and divination to fund her travels. Electro healer who generates Trigrams off her Basic ATK/Skill/Mid-air Attack to unlock an enhanced Liberation that deploys Electro Flare and ramps team Resonance Skill DMG Bonus on ally Intro casts, while her Outro heals the active character and Amplifies nearby team DMG by 15% for 30s.',
     skills: ['Hexagram Calls, Lightning Falls', 'In Shadow Thunder Stirs', 'Flashing Thunder Spell', 'Thunder Begets Life'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Helix' },
-    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
-    teams: ['Buling + Carlotta + Zhezhi', 'Buling + Carlotta + Shorekeeper'] },
+    bestEchoes: ['Fallacy of No Return', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stringmaster',
+    weaponAlts: { alt5: ['Lethean Elegy', 'Rime-Draped Sprouts', 'Luminous Hymn', 'Cosmic Ripples'], alt4: ['Waltz in Masquerade'] },
+    teams: ['Buling + Carlotta', 'Buling + Phrolova'] },
 };
 
 // Structured combat data — derived from desc fields. Merged into CHARACTER_DATA.
@@ -1004,7 +1022,11 @@ const CHARACTER_DATA = {
   // RESONANCE_CHAIN_DATA below), so it's removed from this always-on buff list.
   ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
   ['Youhu',         ['Coordinated ATK'],             ['Heal', 'Coordinated ATK Amp'],         []],
-  ['Buling',        ['Skill'],                       ['Skill DMG Buff', 'Heal'],              []],
+  // dmgFocus corrected 2026-08-18: 'Skill' had no basis — her Resonance Skill (In Shadow Thunder Stirs,
+  // 58.40% at Lv.10) is one of her weakest hits; her biggest single damage source is her Resonance
+  // Liberation (Flashing Thunder Spell / enhanced Harmony variant, up to 536.79% at Lv.10 plus the Five
+  // Thunders Spell Array's continuous DMG) per fandom's Buling/Combat Forte Details table.
+  ['Buling',        ['Liberation'],                  ['Skill DMG Buff', 'Heal'],              []],
 ].forEach(([name, dmgFocus, buffs, debuffs]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs });
 });
@@ -1082,7 +1104,9 @@ const CHARACTER_DATA = {
   // Ascensions and Stats table (8,500.00 / 337.50 / 879.98, rounds to 338/880), matching Prydwen's own
   // Lv.90 stat screen (ATK 338, DEF 880).
   ['Lumi',          8500,  338, 880,  125],
-  ['Buling',        10625, 225, 1258, 125],
+  // DEF corrected 2026-08-18: was 1258 vs Prydwen's own Lv.90 stat screen (DEF 1259) and fandom's
+  // Ascensions and Stats table; HP/ATK (10625/225) already confirmed exact against both sources.
+  ['Buling',        10625, 225, 1259, 125],
 ].forEach(([name, hp, atk, def, maxEnergy]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { baseHp: hp, baseAtk: atk, baseDef: def, maxEnergy });
 });
@@ -1311,12 +1335,16 @@ const CHARACTER_DATA = {
   ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
   ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
   ['Taoqi',        'Huanglong'], ['Yuanwu',       'Huanglong'], ['Mortefi',      'Huanglong'],
-  ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'], ['Buling',       'Huanglong'],
+  ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'],
   // Black Shores
   ['Shorekeeper',  'Black Shores'], ['Camellya',   'Black Shores'], ['Galbrena',   'Black Shores'],
   ['Encore',       'Black Shores'],
   // Aalto's own infobox `nation` field reads "The Black Shores", not Huanglong — corrected 2026-08-18.
   ['Aalto',        'Black Shores'],
+  // Buling's own infobox `nation` field also reads "The Black Shores" (her `birthplace` is Huanglong,
+  // a distinct field per IDENTITY_DATA's comment above) — moved out of the Huanglong group above to
+  // match the Aalto precedent, corrected 2026-08-18.
+  ['Buling',       'Black Shores'],
   // Rinascita
   ['Carlotta',     'Rinascita'], ['Roccia',       'Rinascita'], ['Phoebe',       'Rinascita'],
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
@@ -1636,6 +1664,22 @@ const CHARACTER_DATA = {
   // field exists at all in her infobox wikitext, so it's left out of BIRTHDAY_DATA per the established
   // 'Unknown' convention rather than guessed.
   ['Lumi', 'Kaleido Refraction', 'Huanglong', 'Lollo Logistics', { en: 'Emily Cass', cn: 'Jing Chen', jp: 'Suzuki Minori', kr: 'Jeong Ha-eun' }],
+  // added 2026-08-18 for Buling's audit — previously entirely missing. Sourced from the infobox
+  // wikitext (MediaWiki API, action=parse&page=Buling&prop=wikitext): three titles are given
+  // (title 'Divine Hearing', title2 'Spiritchaser Taoist', title3 'Earthly Immortal') — primary
+  // `title` field used, matching the Yangyang: Xuanling precedent of using `title` over `title2`/
+  // `title3`. birthplace='Huanglong' (distinct from her `nation`='The Black Shores', which drives her
+  // REGION_DATA tie below — moved out of the Huanglong group there to match). Two affiliation fields:
+  // 'Black Shores' (her employer as a "Black Shores Consultant", matching her `desc` and title2
+  // "Spiritchaser Taoist") and 'Mengzhou' (a city within Huanglong, tied to her birthplace/travels, not
+  // her employer) — organization uses 'Black Shores' since it's both the affiliation her kit/lore
+  // actually centers on and already has a FACTION_ICONS emblem on file (Mengzhou also has one, added
+  // for Qingxiao's audit, but isn't the better lore fit here). VAs confirmed exact from the infobox: EN
+  // Elizabeth Chu, CN Zhang Ye (张晔), JP Senbongi Sayaka (千本木彩花), KR Lee I-ro (이이로) — Prydwen's own
+  // Voice Actors tab is blank ('-') for all four languages for Buling, so fandom is the only sourced VA
+  // credit here (same gap as Youhu/Lumi's audits). No `birthday` field exists at all in her infobox
+  // wikitext, so it's left out of BIRTHDAY_DATA per the established convention rather than guessed.
+  ['Buling', 'Divine Hearing', 'Huanglong', 'Black Shores', { en: 'Elizabeth Chu', cn: 'Zhang Ye', jp: 'Senbongi Sayaka', kr: 'Lee I-ro' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2109,13 +2153,21 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro (Whispering Breeze) funnels 4 Energy/s for 5s to the incoming character — no direct DMG buff at S0. Minimal personal DMG contribution; value comes from Energy generation and quickswap-friendliness (buffs unlocked at higher Sequences).',
   },
+  // corrected 2026-08-18: outroBuffs was a fabricated '15% Deepen (14s)' — fandom's Buling/Combat Forte
+  // Details table gives her Outro (Exorcism Spell) as "Heal the active Resonator by 18% of Buling's ATK
+  // per second for 16s. All nearby Resonators in the team have their DMG Amplified by 15% for 30s" — a
+  // general (non-elemental) team DMG Amp with no swap-out expiry, not a Deepen effect on the next
+  // character; modeled as 'allDmg' target 'team' for 30s. libBuffs added — her Forte Circuit (enhanced
+  // Liberation, entered via Yin-Yang Balance) deploys the Five Thunders Spell Array; while it's active,
+  // each ally Intro Skill cast ramps team Resonance Skill DMG Bonus from 0%→10%→25% (confirmed exact,
+  // 50% at S6 — see RESONANCE_CHAIN_DATA below), modeled at its documented 25% base-kit ceiling.
   'Buling': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
-    libBuffs: [],
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 30, condition: "Outro (Exorcism Spell) — DMG Amp to nearby team members; doesn't expire on swap. Also heals the active character for 18% of Buling's ATK/s for 16s" }],
+    libBuffs: [{ stat: 'skillDmg', value: 25, target: 'team', duration: 24, condition: 'Enhanced Liberation (Flashing Thunder Spell: Harmony, requires Minor Yin+Yang) deploys Five Thunders Spell Array (24s); team Resonance Skill DMG Bonus ramps +10%→+25% as allies cast Intro Skill during it (+50% at S6)' }],
     selfBuffs: [],
     debuffs: [],
     electroFlare: true,
-    note: 'Outro: 15% Deepen. Heal. Electro Flare via Liberation.',
+    note: 'Off-field healer (Heavy Attacks/Intro/Outro). Enhanced Liberation deploys Electro Flare array + ramping team Skill DMG Bonus on ally Intro casts (10%→25%, 50% at S6). Outro: 15% team DMG Amp (30s).',
   },
   'Aalto': {
     // corrected 2026-08-18: outroBuffs was empty, missing Aalto's actual Outro Skill "Dissolving Mist" (fandom Combat
@@ -2918,12 +2970,31 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Overflowing Frost', '79.53% + heal', "You'tan plunging attack that also heals the team."],
     ['Outro', 'Rejuvinating Flow', 'Heal 1.54% Max HP/3s (30s) + 15% DMG Amp (6s)', 'Buffs and sustains the incoming Resonator.'],
   ],
+  // corrected 2026-08-18: replaced the old generic "Stage 1-3" placeholder (fabricated move names
+  // "Electro Spark"/"Lightning Storm"/"Static Entry"/"Discharge" don't exist on the real kit, and the
+  // Outro "+12% Electro DMG" was wrong — her real Outro carries no elemental DMG buff at all, only a
+  // general team DMG Amp, see CHAR_BUFF_TABLE above) with real move names and Lv.10 Attribute Scaling
+  // values from wutheringwaves.fandom.com/wiki/Buling/Combat's Forte Details table (rendered — the raw
+  // wikitext only transcludes {{Skill Upgrade|Buling|totalOnly}}), cross-checked against Prydwen's own
+  // Kit tab (identical multiplier text). Trigram-consuming Heavy Attacks, Mid-air Attack, Dodge Counter,
+  // and the enhanced Forte Circuit Liberation (Flashing Thunder Spell: Harmony) were entirely missing.
   'Buling': [
-    ['Basic ATK', 'Stage 1-3', '20% → 26% → 30%'],
-    ['Skill', 'Electro Spark', '28.5%×4'],
-    ['Liberation', 'Lightning Storm', '18%×8'],
-    ['Intro', 'Static Entry', '50%×2'],
-    ['Outro', 'Discharge', '+12% Electro DMG + Electro Flare stacks'],
+    ['Basic ATK', 'Hexagram Calls, Lightning Falls: Stage 1', '20.73%×2', 'First 2 hits of the up-to-4-hit Basic ATK combo.'],
+    ['Basic ATK', 'Hexagram Calls, Lightning Falls: Stage 2', '33.45%×2', 'Grants Trigram - Mountain on hit.'],
+    ['Basic ATK', 'Hexagram Calls, Lightning Falls: Stage 3', '23.51%×2', 'Also reachable via Dodge Counter.'],
+    ['Basic ATK', 'Hexagram Calls, Lightning Falls: Stage 4', '93.64%', 'Grants Trigram - Thunder on hit; can be chained right after Resonance Skill.'],
+    ['Basic ATK', 'Mid-air Attack', '73.96%', 'Consumes STA; grants Trigram - Thunder on hit.'],
+    ['Basic ATK', 'Heavy Attack - Mountain Over Thunder', '178.93%', 'Consumes 1 Trigram - Mountain + 1 Trigram - Thunder (in that order); grants Minor Yang.'],
+    ['Basic ATK', 'Heavy Attack - Thunder Over Mountain', '89.47%', 'Consumes 1 Trigram - Thunder + 1 Trigram - Mountain (in that order); small DMG, also reduces target Vibration Strength; grants Minor Yang.'],
+    ['Basic ATK', 'Heavy Attack - Twin Mountains', '360 flat + 135.20%', 'Consumes 2 Trigram - Mountain; heals all nearby team Resonators instead of dealing full DMG; grants Minor Yin.'],
+    ['Basic ATK', 'Heavy Attack - Twin Thunders', '85 flat + 18.30%', 'Consumes 2 Trigram - Thunder; heals all nearby team Resonators once/s for 8s; grants Minor Yin.'],
+    ['Skill', 'In Shadow Thunder Stirs: Thunder Talisman', '58.40%', 'Pulls in nearby targets; can chain into Basic Attack Stage 4 right after cast.'],
+    ['Skill', 'In Shadow Thunder Stirs: Pull-in Effect', '5.84%×10', 'Continuous DMG while pulling targets in.'],
+    ['Liberation', 'Flashing Thunder Spell', '357.86%', 'Base-kit Liberation, used when Buling lacks both Minor Yin and Minor Yang.'],
+    ['Liberation', 'Flashing Thunder Spell: Harmony', '536.79%', "Forte Circuit enhancement — replaces the base Liberation once both Minor Yin and Minor Yang are held (Yin-Yang Balance); generates a Five Thunders Spell Array."],
+    ['Liberation', 'Five Thunders Spell Array', '19.89% per tick', '2 stacks of Electro Flare inflicted on all targets in range every 2s for 24s; ramps team Resonance Skill DMG Bonus on ally Intro casts (see CHAR_BUFF_TABLE).'],
+    ['Intro', 'Summon and Smite', '131.10%', 'Heals all nearby team Resonators on cast; Inherent Skill grants 4 Electro Flare stacks to targets hit (once per 10s).'],
+    ['Outro', 'Exorcism Spell', 'No DMG (Heal + 15% team DMG Amp, 30s)', "Heals the active Resonator by 18% of Buling's ATK/s for 16s. All nearby team Resonators have DMG Amplified by 15% for 30s."],
   ],
   'Chixia': [
     ['Basic ATK', 'POW POW Stage 1-4', '66.21% → 48.32%×2 → 33.55%×4 → 232.61%', 'Up to 4 shots.'],
@@ -3660,6 +3731,23 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Energized Pounce', note: 'Yellow Light Spark full again' },
     { type: 'Outro', skill: 'Escorting', duration: 10, note: 'swap-cancel her Echo right before this — grants the incoming Resonator +38% Resonance Skill DMG Amp for 10s' },
   ],
+  // Added 2026-08-18 (previously entirely missing) — sourced from Prydwen's Gameplay and teams "Rotation"
+  // tab (her "Loop Rotation", used when an Intro is available) and fandom's Buling/Combat Forte Details/
+  // Instructions text. Builds 4 Trigrams (Mountain via Basic 2, Thunder via Mid-air Attack + Skill +
+  // Basic 4) to unlock 2 Heavy Attacks that grant Minor Yang + Minor Yin, entering Yin-Yang Balance for
+  // the enhanced Liberation. Echo best used right before Outro per Prydwen's own timing tip.
+  'Buling': [
+    { type: 'Intro', skill: 'Summon and Smite', note: 'heals nearby team, applies Electro Flare (Inherent Skill), builds Concerto Energy for the loop' },
+    { type: 'Basic ATK', skill: 'Hexagram Calls, Lightning Falls: Stage 1' },
+    { type: 'Basic ATK', skill: 'Hexagram Calls, Lightning Falls: Stage 2', note: 'grants Trigram - Mountain; swap-cancel via Jump' },
+    { type: 'Basic ATK', skill: 'Mid-air Attack', note: 'grants Trigram - Thunder; cancel into Skill' },
+    { type: 'Skill', skill: 'In Shadow Thunder Stirs: Thunder Talisman', note: 'pulls in targets, chains directly into Basic Attack Stage 4' },
+    { type: 'Basic ATK', skill: 'Hexagram Calls, Lightning Falls: Stage 4', note: 'grants Trigram - Thunder — now holding 4 Trigrams' },
+    { type: 'Basic ATK', skill: 'Heavy Attack - Mountain Over Thunder', note: 'consumes Mountain+Thunder Trigrams, grants Minor Yang' },
+    { type: 'Basic ATK', skill: 'Heavy Attack - Twin Thunders', note: 'consumes remaining Thunder Trigrams, grants Minor Yin, heals team over 8s' },
+    { type: 'Liberation', skill: 'Flashing Thunder Spell: Harmony', note: 'Yin-Yang Balance reached — enhanced Liberation deploys the Five Thunders Spell Array (Electro Flare)' },
+    { type: 'Outro', skill: 'Exorcism Spell', duration: 30, note: 'swap-cancel her Echo right before this — heals the incoming active character and Amplifies nearby team DMG by 15% for 30s' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3905,7 +3993,22 @@ const RESONANCE_CHAIN_DATA = {
   // totalMult). S5 revives a KO'd teammate once per 10 min (pure utility, no DPS stat fits). S6 Euphonia pickup grants
   // team Glacio DMG Bonus+12% for 20s (elemDmg, confirmed exact).
   'Baizhi':       { s1: { totalMult: 4 }, s2: { elemDmg: 15 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { totalMult: 4 }, s6: { elemDmg: 12 } },
-  'Buling':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
+  // corrected 2026-08-18: prior values (atkPct/deepen on every node) had no basis in Buling's real
+  // chain kit (fandom Combat page, rendered Resonance Chain table, cross-checked against Prydwen's own
+  // Kit tab) — she has no ATK% node and no DMG Deepen node at all. Real effects: S1 Exorcist Gadgets,
+  // Lend Me Your Power — enhanced Liberation (Flashing Thunder Spell: Harmony) Crit Rate+20% upon
+  // dealing DMG (confirmed exact -> critRate). S2 Talisman Burns, Spirits Turn — restores 25 Resonance
+  // Energy on entering Yin-Yang Balance, once per 24s (Energy-regen utility, no matching stat in this
+  // schema, kept as a small totalMult per the Lumi S1/Youhu S1 precedent for non-damage utility nodes).
+  // S3 Summoner of Spirits, Seeker of Fate — while the Five Thunders Spell Array lasts, heals any team
+  // member below 50% HP by 350+150% ATK once per 24s (healing utility, no basis for a DMG stat, same
+  // small-totalMult treatment). S4 Wanderer of Solaris, Blessed by Fortune — Healing Bonus+20% (no
+  // healBonus stat exists in this schema either, same treatment). S5 Forum Ban? New Account! — the
+  // Five Thunders Spell Array inflicts 6 extra Electro Flare stacks instantly on generation (utility,
+  // same treatment). S6 "Almighty Forum Lord of Thunder Spell" — upgrades the enhanced Liberation's
+  // Thunder Spell - Heaven, Earth, Mind state from 25% to 50% Resonance Skill DMG Bonus to the active
+  // Resonator (confirmed exact -> skillDmg, matches CHAR_BUFF_TABLE's libBuffs note above).
+  'Buling':       { s1: { critRate: 20 }, s2: { totalMult: 3 }, s3: { totalMult: 3 }, s4: { totalMult: 3 }, s5: { totalMult: 3 }, s6: { skillDmg: 50 } },
   // corrected 2026-08-18: prior values (atkPct:8/skillDmg:10/atkPct:8/skillDmg:10/totalMult:10/elemDmg:12) had no basis
   // in Chixia's real chain kit (fandom Combat page). S1 Boom Boom hits always Crit (utility, no %-stat fits). S2
   // Liberation kill-refund of Resonance Energy (utility). S3 Liberation Blazing Flames DMG+40% vs targets below 50%
@@ -4687,6 +4790,21 @@ const SKILL_ICONS = {
     'Special Delivery': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Skill_Special_Delivery.png',
     'Escorting': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/94/Skill_Escorting.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Skill_*.png assets via the MediaWiki API (action=query&titles=File:Skill+...&prop=imageinfo, section
+  // 3 of Buling/Combat). 'File:Skill Hexagram Calls, Lightning Falls.png' itself resolves (redirects) to
+  // the shared generic Skill_Rectifier.png weapon-type icon on fandom, used here for all her un-enhanced
+  // Basic ATK/Heavy Attack/Mid-air Attack moves.
+  'Buling': {
+    'Hexagram Calls': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Rectifier.png',
+    'Mid-air Attack': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Rectifier.png',
+    'Heavy Attack': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Rectifier.png',
+    'In Shadow Thunder Stirs': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/24/Skill_In_Shadow_Thunder_Stirs.png',
+    'Five Thunders Spell Array': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/ff/Skill_Flashing_Thunder_Spell.png',
+    'Flashing Thunder Spell': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/ff/Skill_Flashing_Thunder_Spell.png',
+    'Summon and Smite': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/38/Skill_Summon_and_Smite.png',
+    'Exorcism Spell': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/17/Skill_Exorcism_Spell.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -5177,6 +5295,17 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/cb/Sequence_Node_Parcel_Collected_On_Time.png',
     s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/2a/Sequence_Node_Give_Me_A_Five-star_Rating.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=File:Sequence+Node+...&prop=
+  // imageinfo, from Buling/Combat's image list).
+  'Buling': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/4f/Sequence_Node_Exorcist_Gadgets%2C_Lend_Me_Your_Power.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d3/Sequence_Node_Talisman_Burns%2C_Spirits_Turn.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/68/Sequence_Node_Summoner_of_Spirits%2C_Seeker_of_Fate.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b3/Sequence_Node_Wanderer_of_Solaris%2C_Blessed_by_Fortune.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1d/Sequence_Node_Forum_Ban%3F_New_Account%21.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b1/Sequence_Node_%22Almighty_Forum_Lord_of_Thunder_Spell%22.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -5243,6 +5372,8 @@ const CHAIN_NODE_NAMES = {
   'Youhu': { s1: 'Waterside Respite', s2: 'Sunroom Siesta', s3: 'Restless Sleep', s4: 'Frosted Lullaby', s5: 'Dreamland Meander', s6: 'Slumber Evermore' },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's Lumi/Combat Resonance Chain table.
   'Lumi': { s1: 'Parcel To Be Delivered', s2: 'Lollo Logistics, Ready to Help', s3: 'Priority Parcel In Transit', s4: 'Captain Lumi, At Your Service', s5: 'Parcel Collected On Time', s6: 'Give Me A Five-star Rating' },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's Buling/Combat Resonance Chain table.
+  'Buling': { s1: 'Exorcist Gadgets, Lend Me Your Power', s2: 'Talisman Burns, Spirits Turn', s3: 'Summoner of Spirits, Seeker of Fate', s4: 'Wanderer of Solaris, Blessed by Fortune', s5: 'Forum Ban? New Account!', s6: '"Almighty Forum Lord of Thunder Spell"' },
   // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
   // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
   'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },
