@@ -5225,6 +5225,59 @@ const SKILL_ICONS = {
     'Summon and Smite': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/38/Skill_Summon_and_Smite.png',
     'Exorcism Spell': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/17/Skill_Exorcism_Spell.png',
   },
+  // added 2026-08-18 — previously entirely missing (zero SKILL_ICONS coverage for all 4 Rover
+  // attunements). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the
+  // MediaWiki API (Rover/Combat's tabbed Forte tables, one tab per element). All 4 Rovers share the
+  // same generic Skill_Sword.png Basic ATK icon (also covers Heavy ATK/Mid-air/Dodge Counter).
+  'Rover: Havoc': {
+    'Tuneslayer': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Wingblade': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c5/Skill_Wingblade.png', // Resonance Skill
+    'Umbra Eclipse': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e5/Skill_Umbra_Eclipse.png', // Forte Circuit
+    'Devastation': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e5/Skill_Umbra_Eclipse.png', // Forte-gated Heavy Attack that enters Dark Surge, same Forte icon
+    'Deadening Abyss': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/4e/Skill_Deadening_Abyss.png', // Resonance Liberation
+    'Umbra: Lifetaker': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/4e/Skill_Deadening_Abyss.png', // Umbra-state Liberation nuke, same wiki icon
+    'Instant of Annihilation': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/79/Skill_Instant_of_Annihilation.png', // Intro Skill
+    'Soundweaver': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/ff/Skill_Soundweaver.png', // Outro Skill
+  },
+  'Rover: Spectro': {
+    'Vibration Manifestation': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Resonance': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Heavy Attack: Resonance/Aftertune combo timing hits, no dedicated icon — generic weapon icon
+    'Aftertune': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Resonating Slashes': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png', // Resonance Skill
+    'Resonating Spin': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png', // Forte-Gauge-enhanced Resonance Skill state, same wiki icon
+    'Resonating Whirl': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png',
+    'Resonating Echoes': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png',
+    'Echoing Orchestra': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c4/Skill_Echoing_Orchestra.png', // Resonance Liberation
+    'Waveshock': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/70/Skill_Waveshock.png', // Intro Skill
+    'Instant': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Skill_Instant.png', // Outro Skill
+  },
+  'Rover: Aero': {
+    'Wind Cutter': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Plunge': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Mid-air Attack plunging attack, no dedicated icon — generic weapon icon
+    'Illusion Breaker': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // Resonance Skill
+    'Awakening Gale': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // Resonance Skill's mid-air jump-attack cast, same wiki icon
+    'Skyfall Severance': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // Resonance Skill's mid-air follow-up cast, same wiki icon
+    'Unbound Flow': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // max-Windstrings Resonance Skill upgrade, same wiki icon
+    'Cycle of Wind': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Skill_Cycle_of_Wind.png', // Forte Circuit
+    'Cloudburst Dance': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Skill_Cycle_of_Wind.png', // Forte Circuit's Mid-air Attack replacement, same wiki icon
+    'Omega Storm': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c4/Skill_Omega_Storm.png', // Resonance Liberation
+    'Relentless Squall': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/23/Skill_Relentless_Squall.png', // Intro Skill
+    "Storm's Echo": 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a3/Skill_Storm%27s_Echo.png', // Outro Skill
+  },
+  'Rover: Electro': {
+    'Deterrence': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Repel': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic Attack follow-up after Resonance Skill, no dedicated icon — generic weapon icon
+    'Thunderclap': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Skill_Thunderclap.png', // Resonance Skill
+    "Myriad Omens' Mandate": 'https://static.wikia.nocookie.net/wutheringwaves/images/d/da/Skill_Myriad_Omens%27_Mandate.png', // Forte Circuit
+    'Overshock': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/da/Skill_Myriad_Omens%27_Mandate.png', // Forte Circuit's capped-Electric-Surge Skill replacement, same wiki icon
+    'Ultimate Tactics': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/05/Skill_Ultimate_Tactics.png', // Resonance Liberation
+    'Thunderous Fury': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8a/Skill_Thunderous_Fury.png', // Intro Skill
+    'Rumbling Thunders': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/2c/Skill_Rumbling_Thunders.png', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
