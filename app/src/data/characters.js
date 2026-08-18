@@ -3705,23 +3705,28 @@ const CHARACTER_ROTATIONS = {
     { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo (Sigillum) at any convenient point in the rotation.' },
     { type: 'Outro', skill: 'Silent Protection', duration: 20, note: 'Swap out to trigger this automatically. Grants every other teammate +10% All DMG Amp for 20s, rising to +20% for whichever of them personally applies Tune Rupture or Fusion Burst (matching Aemeath\'s current Resonance Mode).' },
   ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Lynae (2026-08-18, Chrome UA
+  // + google.com referer + jsRender). Omits the S6-only alternate rotation (which skips Spark Collision).
   'Lynae': [
-    { type: 'Intro', skill: 'Time to Show Some Colors!' },
-    { type: 'Skill', skill: 'Lynae-Style Palettes', note: 'builds toward Kaleidoscopic mode' },
-    { type: 'Skill', skill: 'Additive Color', note: 'quick follow-up' },
-    { type: 'Basic ATK', skill: 'Kaleidoscopic 1-5', note: 'empowered combo once mode is active' },
-    { type: 'Forte', skill: 'Visual Impact', note: 'main burst finisher' },
-    { type: 'Liberation', skill: 'Prismatic Overblast', duration: 30, note: 'multi-hit Ultimate barrage' },
-    { type: 'Outro', skill: "Let's Hit the Road!", duration: 30, note: 'grants next Resonator All-DMG / Liberation DMG Amp' },
+    { type: 'Intro', skill: 'Time to Show Some Colors!', note: 'Swap into her — fires automatically, restores 100 Overflow and inflicts Photochromic Flux (Tune Rupture or Tune Strain, per her chosen Resonance Mode). Cancel its endlag by immediately pressing Liberation.' },
+    { type: 'Liberation', skill: 'Prismatic Overblast', note: 'Press Liberation right after Intro — grants the whole nearby team +24% All DMG Bonus for 30s. (Its automatic Basic Attack follow-up isn\'t worth chasing — skip straight to Skill.)' },
+    { type: 'Skill', skill: 'Lynae-Style Palettes', note: 'Press Skill — restores more Overflow toward the 120 cap.' },
+    { type: 'Heavy ATK', skill: 'Spark Collision (full charge)', note: 'Once Overflow is capped, HOLD Basic Attack and keep holding until Lumiflow fully charges (interruption-immune and 50% DMG Reduction throughout) — releases Spark Collision Lv.3, the strongest tier, and puts her into Kaleidoscopic Parade. Cancel its ending by immediately pressing Jump.' },
+    { type: 'Basic ATK', skill: 'Polychrome Leap ×3', note: 'Press Jump 3 times in a row — each cast in Kaleidoscopic Parade consumes 1/3 of her Lumiflow and grants 1 point of True Color (caps at 3), inflicting Photochromic Flux each time.' },
+    { type: 'Forte', skill: 'Mid-air Attack: Visual Impact', note: 'With all 3 True Color banked, press Basic Attack (or Skill) while airborne — her big Forte finisher, consuming all 3 True Color, inflicting Photochromic Flux, and granting the nearby team +40 Tune Break Boost for 30s.' },
+    { type: 'Outro', skill: "Let's Hit the Road!", duration: 14, note: 'Swap out to trigger this automatically (also ends Kaleidoscopic Parade) — a 100% Spectro DMG hit, and grants the incoming Resonator +15% All DMG Amp and +25% Resonance Liberation DMG Amp for 14s or until they swap out.' },
   ],
+  // Standard "Loop Rotation" — sourced from Prydwen's "Gameplay and teams" tab for Mornye (2026-08-18,
+  // Chrome UA + google.com referer + jsRender), used whenever an Intro is available (her Opener, needed
+  // only when it isn't, spends 3 Basics + a Heavy Attack first to reach Wide Field Observation Mode).
   'Mornye': [
-    { type: 'Intro', skill: 'Convergence' },
-    { type: 'Skill', skill: 'Optimal Solution', note: 'marks target, DEF-scaling damage' },
-    { type: 'Skill', skill: 'Distributed Array', note: 'multi-hit follow-up' },
-    { type: 'Forte', skill: 'Geopotential Shift', note: 'fuels support kit' },
-    { type: 'Forte', skill: 'Inversion', note: 'stronger Forte finisher' },
-    { type: 'Liberation', skill: 'Critical Protocol', duration: 30, note: 'DEF-scaling nuke, empowers team buffs' },
-    { type: 'Outro', skill: 'Recursion', duration: 30, note: '+25% All DMG Amp to team' },
+    { type: 'Intro', skill: 'Convergence', note: 'Swap into her — fires automatically, deals a hit, then jumps into mid-air, clears Rest Mass Energy, and immediately enters Wide Field Observation Mode for 30s (also generates a Syntony Field: team healing, +50% Off-Tune Buildup Rate, extra interruption resistance for 25s).' },
+    { type: 'Basic ATK', skill: 'Wide Field Observation Mode Stage 1-3', note: 'Tap Basic Attack 3 times — her Basic Attack is auto-replaced by this while in the enhanced state, building Relative Momentum toward 100. Cancel Stage 3\'s endlag on-hit by immediately pressing Skill.' },
+    { type: 'Skill', skill: 'Distributed Array', note: 'Press Skill right after Stage 3 lands — heals the team and summons Hover Cannons for more Fusion DMG, building the last of Relative Momentum.' },
+    { type: 'Forte', skill: 'Heavy Attack: Inversion', note: 'Once Relative Momentum hits 100/100, HOLD Basic Attack (Heavy Attack replaced) — consumes it all for a hit (counted as Heavy ATK DMG) that inflicts Observation Marker on the target for 30s. Cancel its endlag on-hit by immediately pressing Liberation.' },
+    { type: 'Liberation', skill: 'Critical Protocol', duration: 25, note: 'Press Liberation right after Inversion lands — hits the area, and replaces the Syntony Field with a stronger High Syntony Field for 25s (adds +20% team DEF and +40% Healing Multiplier on top of the base field\'s effects).' },
+    { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo (Reactor Husk) right after Liberation and swap-cancel it — or before Liberation if running Fallacy of No Return instead.' },
+    { type: 'Outro', skill: 'Recursion', duration: 30, note: 'Swap out to trigger this automatically. Grants the whole team +25% All DMG Amp for 30s. (Whenever any teammate lands Tune Break damage on a target Mornye marked with Observation Marker, it upgrades to an Interfered Marker, boosting nearby teammates\' DMG on that target — up to +40% scaling with Mornye\'s Energy Regen above 100%.)' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry never
   // used a single Basic ATK, put the base Skill (Eye of Unraveling — barely worth casting outside the
