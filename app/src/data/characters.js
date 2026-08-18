@@ -703,7 +703,10 @@ const CHARACTER_DATA = {
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
-    skills: ['Half Truths', 'Shift Trick', 'Flower in the Mist', 'Mistcloak Dash'],
+    // corrected 2026-08-18: skills[3] was 'Mistcloak Dash' (the internal dash mechanic triggered within the Forte
+    // Circuit), not the Forte Circuit's actual name 'Misty Cover' (fandom Combat page). SKILL_ICONS already aliased
+    // both names to the same icon; fixing here for consistency with the real skill name.
+    skills: ['Half Truths', 'Shift Trick', 'Flower in the Mist', 'Misty Cover'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'The Last Dance',
@@ -1946,16 +1949,21 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 15% Deepen. Heal. Electro Flare via Liberation.',
   },
   'Aalto': {
-    outroBuffs: [],
+    // corrected 2026-08-18: outroBuffs was empty, missing Aalto's actual Outro Skill "Dissolving Mist" (fandom Combat
+    // page: "The incoming Resonator has their Aero DMG Amplified by 23% for 14s or until they are switched out").
+    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Aero DMG +12%' }],
     debuffs: [],
-    note: 'Off-field Aero applicator. Mist clone Coordinated ATK.',
+    note: 'Off-field Aero applicator. Outro: 23% Aero DMG Amp to next. Mist clone Coordinated ATK.',
   },
   'Chixia': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 15, target: 'self', duration: 10, condition: 'Inherent: ATK buff after Resonance Skill' }],
+    // corrected 2026-08-18: value was 15%, but the actual Inherent Skill "Numbingly Spicy!" (fandom Combat page)
+    // grants ATK+1% per Thermobaric Bullet hit during DAKA DAKA!, stacking up to 30 times (30% ATK at max stacks),
+    // 10s per-stack duration — using the max-stack value like other stacking-buff entries in this table.
+    selfBuffs: [{ stat: 'atkPct', value: 30, target: 'self', duration: 10, condition: 'Inherent: Numbingly Spicy! ATK stacks (max 30 stacks during DAKA DAKA!)' }],
     debuffs: [],
     note: 'Fusion DPS. Resonance Skill burst. Whizzing Fight Spirit sustained fire.',
   },
@@ -3525,11 +3533,31 @@ const RESONANCE_CHAIN_DATA = {
   'Rover: Havoc':   { s1: { skillDmg: 30 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { resShred: 10 }, s5: { basicDmg: 50 }, s6: { critRate: 25 } },
   'Rover: Aero':    { s1: { totalMult: 5 }, s2: { totalMult: 12 }, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
   'Rover: Electro': { s1: { totalMult: 5 }, s2: { totalMult: 8 }, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
-  'Aalto':        { s1: { elemDmg: 8 }, s2: { totalMult: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
-  // Baizhi: mostly healing/utility nodes, minimal DPS contribution
-  'Baizhi':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { deepen: 10 } },
+  // corrected 2026-08-18: prior values (elemDmg:8/totalMult:10/elemDmg:8/atkPct:10/totalMult:10/elemDmg:12) had no basis
+  // in Aalto's actual chain kit (fandom Combat page, Resonance Chain table). Real effects: S1 Shift Trick CD-4s (no
+  // direct DPS stat, modeled as small totalMult utility). S2 Mist Avatar ATK+15% on taunted-target attacks (conditional
+  // atkPct). S3 +2 Mist bullets at 50% Basic/Mid-air DMG (utility totalMult). S4 Mist Bullets (Resonance Skill) DMG+30%
+  // (skillDmg, confirmed exact) + 30% DMG reduction in Mistcloak Dash (defensive, not modeled). S5 Aero DMG Bonus+25%
+  // for 6s in Mistcloak Dash (elemDmg, confirmed exact). S6 Liberation Crit Rate+8% (critRate, confirmed exact) + Heavy
+  // Attack thru Gate of Quandary DMG+50% (conditional, not separately modeled).
+  'Aalto':        { s1: { totalMult: 4 }, s2: { atkPct: 15 }, s3: { totalMult: 8 }, s4: { skillDmg: 30 }, s5: { elemDmg: 25 }, s6: { critRate: 8 } },
+  // corrected 2026-08-18: prior values (all totalMult:5, s6 deepen:10) were unsourced placeholders — Baizhi's real
+  // chain (fandom Combat page) is mostly healing/utility with no "deepen" (enemy DMG-taken debuff) node at all. S1
+  // Emergency Plan +2.5 Resonance Energy per Concentration (utility, not modeled). S2 Emergency Plan (at 4
+  // Concentration) grants Glacio DMG Bonus+15% and Healing+15% for 12s (elemDmg, confirmed exact — healing half not
+  // modeled). S3 Intro Skill grants Max HP+12% for 10s (no HP% stat in schema, kept as small utility totalMult). S4
+  // Remnant Entities gets 2 extra casts + Healing Mult+20% + extra Glacio DMG (healing-focused, kept as small
+  // totalMult). S5 revives a KO'd teammate once per 10 min (pure utility, no DPS stat fits). S6 Euphonia pickup grants
+  // team Glacio DMG Bonus+12% for 20s (elemDmg, confirmed exact).
+  'Baizhi':       { s1: { totalMult: 4 }, s2: { elemDmg: 15 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { totalMult: 4 }, s6: { elemDmg: 12 } },
   'Buling':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
-  'Chixia':       { s1: { atkPct: 8 }, s2: { skillDmg: 10 }, s3: { atkPct: 8 }, s4: { skillDmg: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
+  // corrected 2026-08-18: prior values (atkPct:8/skillDmg:10/atkPct:8/skillDmg:10/totalMult:10/elemDmg:12) had no basis
+  // in Chixia's real chain kit (fandom Combat page). S1 Boom Boom hits always Crit (utility, no %-stat fits). S2
+  // Liberation kill-refund of Resonance Energy (utility). S3 Liberation Blazing Flames DMG+40% vs targets below 50%
+  // HP (libDmg, confirmed exact, conditional). S4 Liberation grants 60 Thermobaric Bullets + resets Skill CD (utility).
+  // S5 ATK+30% at max Numbingly Spicy! stacks (atkPct, confirmed exact, conditional). S6 Boom Boom grants team Basic
+  // ATK DMG Bonus+25% for 15s (basicDmg, confirmed exact, team buff).
+  'Chixia':       { s1: { totalMult: 5 }, s2: { totalMult: 4 }, s3: { libDmg: 40 }, s4: { totalMult: 8 }, s5: { atkPct: 30 }, s6: { basicDmg: 25 } },
   'Lumi':         { s1: { skillDmg: 10 }, s2: { totalMult: 10 }, s3: { skillDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { skillDmg: 15 } },
   'Taoqi':        { s1: { defShred: 5 }, s2: { deepen: 5 }, s3: { defShred: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { defShred: 8 } },
   // Corrected 2026-08-18 via Prydwen's Kit tab (Resonance Chain/Sequence Node text, exact wording).

@@ -2,6 +2,10 @@
 // Weapon data — extracted from appcore-data.js for maintainability
 // Edit this file to add/update weapons without touching the main data file
 
+// corrected 2026-08-18 (Aalto/Baizhi/Chixia audit): several weaponAlts entries pointed at weapons whose bestFor
+// arrays didn't actually name the character, breaking the CharacterDetailModal's weapon-tag cross-check — The Last
+// Dance (Aalto/Chixia signature), Woodland Aria (Aalto alt5), Relativistic Jet/Undying Flame (Aalto alt4),
+// Call of the Abyss (Baizhi alt4), and Pistols of Night (Chixia alt3) were missing their bestFor tags; added.
 /** @type {Record<string, import('../types.js').WeaponData>} */
 const WEAPON_DATA = {
   // 5★ Weapons
@@ -116,7 +120,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'The Last Dance': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
     desc: 'Carlotta signature. Elegant pistols for one final, perfect dance. ATK buff with Res. Skill DMG on Intro/Lib.',
-    passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta'],
+    passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta', 'Aalto', 'Chixia'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Tragicomedy': { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Roccia signature. Gauntlets born of comedy and tragedy entwined. Boosts team ATK and Outro Skill DMG.',
@@ -140,7 +144,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Woodland Aria': { rarity: 5, type: 'Pistols', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
     desc: 'Ciaccona signature. Pistols singing a woodland aria of wind and leaves. Boosts Aero DMG with RES shred.',
-    passive: 'ATK +12%, Aero DMG +24% on Erosion, Aero RES -16%', pv: { atkPct: 12, elemDmg: 24, resShred: 16 }, bestFor: ['Ciaccona'],
+    passive: 'ATK +12%, Aero DMG +24% on Erosion, Aero RES -16%', pv: { atkPct: 12, elemDmg: 24, resShred: 16 }, bestFor: ['Ciaccona', 'Aalto'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   "Defier's Thorn": { rarity: 5, type: 'Sword', stat: 'HP%', baseAtk: 412, subStatValue: '+72.2%',
     desc: 'Cartethyia signature. Thorned sword of a defiant heart. HP scaling with DEF Ignore on Eroded targets.',
@@ -260,7 +264,7 @@ const WEAPON_DATA = {
     passive: 'DMG to Negative Status enemies → ATK +4% (max x4, 10s)', pv: { atkPct: 16 }, bestFor: ['Gauntlet DPS', 'Xiangli Yao'] },
   'Romance in Farewell': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Pistols etched with a parting promise of lingering sorrow. Stacking ATK on Negative Status hits.',
-    passive: 'DMG to Negative Status enemies → ATK +4% (max x4, 10s)', pv: { atkPct: 16 }, bestFor: ['Pistol DPS'] },
+    passive: 'DMG to Negative Status enemies → ATK +4% (max x4, 10s)', pv: { atkPct: 16 }, bestFor: ['Pistol DPS', 'Aalto', 'Chixia'] },
   'Fables of Wisdom': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Sword etched with witty fables hiding truth. Stacking ATK on Negative Status hits.',
     passive: 'DMG to Negative Status enemies → ATK +4% (max x4, 10s)', pv: { atkPct: 16 }, bestFor: ['Sword DPS'] },
@@ -269,7 +273,7 @@ const WEAPON_DATA = {
     passive: 'DMG to Negative Status enemies → ATK +4% (max x4, 10s)', pv: { atkPct: 16 }, bestFor: ['Broadblade DPS'] },
   'Call of the Abyss': { rarity: 4, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Scepter of lost dominion and faded grandeur. Healing Bonus boost after Liberation.',
-    passive: 'Liberation → Healing Bonus +16% for 15s', pv: { healingBonus: 16 }, bestFor: ['Rectifier healers', 'Verina', 'Shorekeeper'] },
+    passive: 'Liberation → Healing Bonus +16% for 15s', pv: { healingBonus: 16 }, bestFor: ['Rectifier healers', 'Verina', 'Shorekeeper', 'Baizhi'] },
   'Somnoire Anchor': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Dreamkeeper\'s anchor from twilight shores. Stacking ATK buff on dealing damage.',
     // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #7 weapon (76.66%), a free F2P
@@ -283,7 +287,7 @@ const WEAPON_DATA = {
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Gauntlet DPS', 'Lingyang'] },
   'Relativistic Jet': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s incessant course of cosmic destruction. Skill grants Resonance Energy and ATK buff.',
-    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS'] },
+    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS', 'Aalto'] },
   'Endless Collapse': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'The collapsing heart of a dying blazar. Skill grants Resonance Energy and ATK buff.',
     // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (82.82%), a good F2P
@@ -433,7 +437,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Pistols of Night': { rarity: 3, type: 'Pistols', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged pistols. Empowers the wielder on swap-in.',
-    passive: 'Chivalry: Intro Skill → ATK +8% for 10s', bestFor: ['Aalto', 'Mortefi'],
+    passive: 'Chivalry: Intro Skill → ATK +8% for 10s', bestFor: ['Aalto', 'Mortefi', 'Chixia'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Gauntlets of Night': { rarity: 3, type: 'Gauntlets', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged gauntlets. Empowers the wielder on swap-in.',
