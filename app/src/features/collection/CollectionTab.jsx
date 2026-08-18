@@ -17,6 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { getElementIcon } from '../../utils/helpers.js';
 
 function CollectionTab({
   state,
@@ -474,12 +475,10 @@ function CollectionTab({
                     onChange={setCollectionElementFilter}
                     options={[
                       { value: 'all', label: 'All Elements' },
-                      { value: 'Aero', label: 'Aero' },
-                      { value: 'Glacio', label: 'Glacio' },
-                      { value: 'Electro', label: 'Electro' },
-                      { value: 'Fusion', label: 'Fusion' },
-                      { value: 'Spectro', label: 'Spectro' },
-                      { value: 'Havoc', label: 'Havoc' },
+                      ...['Aero', 'Glacio', 'Electro', 'Fusion', 'Spectro', 'Havoc'].map(el => ({
+                        value: el,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(el)} alt="" width={14} height={14} className="shrink-0" /> {el}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by element"
                   />
