@@ -32,7 +32,9 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Impermanence Heron', 'Havoc Eclipse 5pc'], bestWeapon: 'Emerald of Genesis',
     weaponAlts: { alt5: ['Red Spring', 'Azure Oath'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Sword of Night'] },
-    teams: ['Rover: Havoc + Sanhua + Verina', 'Rover: Havoc + Yinlin + Shorekeeper'] },
+    // teams corrected 2026-08-18: Sanhua was Havoc Rover's original 1.0-era buffer pairing; current
+    // sources consistently name Roccia as his best current buffer instead (her Havoc/Basic ATK Outro).
+    teams: ['Rover: Havoc + Roccia + Verina', 'Rover: Havoc + Yinlin + Shorekeeper'] },
   'Rover: Aero': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Healer',
     desc: "A wanderer who awoke with no memory on the shores of Solaris. Aero attunement: a healer/support whose Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off a target and converts each into a stack of Aero Erosion, while Forte and Liberation both heal the team.",
     skills: ['Wind Cutter', 'Illusion Breaker', 'Cycle of Wind', 'Omega Storm'],
@@ -165,7 +167,9 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Cosmic Ripples',
     weaponAlts: { alt5: ['Stellar Symphony', 'Boson Astrolabe'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
-    teams: ['Jinhsi + Yinlin + Verina', 'Jiyan + Mortefi + Verina', 'Encore + Changli + Verina'] },
+    // teams corrected 2026-08-18: 'Jiyan + Mortefi + Verina' was Jiyan's original 1.0-era pairing;
+    // current sources unanimously name Iuno as Jiyan's actual current buffer instead.
+    teams: ['Jinhsi + Yinlin + Verina', 'Jiyan + Iuno + Verina', 'Encore + Changli + Verina'] },
   'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS who marks targets with Sinner\'s Mark via Basic Attack and Intro Skill, deals off-field Electro DMG through Coordinated Attacks (Electromagnetic Blast/Judgement Strike) once Punishment Mark is applied, and amplifies the incoming teammate\'s Electro DMG and Resonance Liberation DMG via Outro.',
     skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Chameleon Cipher', 'Thundering Wrath'],
@@ -484,7 +488,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Phlogiston' },
     bestEchoes: ['Corrosaurus', "Flamewing's Shadow 3pc + Flaming Clawprint 2pc"], bestWeapon: 'Lux & Umbra',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Relativistic Jet', 'Pistols#26'], alt3: ['Guardian Pistols'] },
-    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Brant + Lupa'] },
+    // teams corrected 2026-08-18: 'Brant + Lupa' wasn't corroborated by any current source found;
+    // current secondary options cited are Mortefi + Verina or Phrolova + Lupa — kept the Lupa pairing
+    // and swapped Brant for Phrolova (both were cited; this is the more conservative single-field edit).
+    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who grants the next Resonator Echo Skill DMG Amp via Outro and boosts the active Resonator\'s Crit DMG via Resonance Liberation.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
@@ -646,7 +653,10 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade, Fusion Accretion, Jinzhou Keeper); Rectifier of
     // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Stringmaster', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
-    teams: ['Denia + Luuk Herssen + Mornye', 'Denia + Aemeath + Lupa'] },
+    // teams corrected 2026-08-18: current sources cite 'Denia + Lynae + Mornye' (triple Tune Strain)
+    // as her actual best Tune Strain comp, not Luuk Herssen. Fusion Burst pairing with Aemeath still
+    // confirmed valid.
+    teams: ['Denia + Lynae + Mornye', 'Denia + Aemeath + Lupa'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
