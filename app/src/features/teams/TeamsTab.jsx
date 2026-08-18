@@ -734,12 +734,14 @@ function TeamsTab({
                           let current = null;
                           teamRotation.timeline.forEach(entry => {
                             if (entry.kind === 'swap-in') {
-                              current = { char: entry.char, hasData: entry.hasData, steps: [], handoff: null };
+                              current = { char: entry.char, hasData: entry.hasData, steps: [], handoff: null, teamBuff: null };
                               blocks.push(current);
                             } else if (entry.kind === 'step' && current) {
                               current.steps.push(entry);
                             } else if (entry.kind === 'handoff' && current) {
                               current.handoff = entry;
+                            } else if (entry.kind === 'team-buff' && current) {
+                              current.teamBuff = entry;
                             }
                           });
                           return blocks.map((block, bi) => {
@@ -770,9 +772,19 @@ function TeamsTab({
                                     );
                                   })}
                                 </div>
+                                {block.teamBuff && (
+                                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-2xs bg-purple-500/10 border-t border-purple-500/20 text-purple-300 flex-wrap">
+                                    <span className="font-medium">Outro buffs the whole team (not just next):</span>
+                                    {block.teamBuff.buffs.map((b, j) => (
+                                      <span key={j} className="kuro-badge text-2xs bg-purple-500/15 border border-purple-500/30 text-purple-200">
+                                        +{b.value}% {STAT_LABELS[b.stat] || b.stat}{b.duration ? ` (${b.duration}s, all members)` : ' (all members)'}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                                 {block.handoff && (
                                   <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-2xs bg-cyan-500/10 border-t border-cyan-500/20 text-cyan-300 flex-wrap">
-                                    <span className="font-medium">Swap out → {block.handoff.to} gets:</span>
+                                    <span className="font-medium">Swap out → {block.handoff.to} only gets:</span>
                                     {block.handoff.buffs.map((b, j) => (
                                       <span key={j} className="kuro-badge text-2xs bg-cyan-500/15 border border-cyan-500/30 text-cyan-200">
                                         +{b.value}% {STAT_LABELS[b.stat] || b.stat}{b.duration ? ` (${b.duration}s)` : ''}

@@ -601,10 +601,19 @@ export function composeTeamRotation(members) {
     const fallbackSteps = CHARACTER_DATA[name]?.rotation;
     const steps = rotationSteps || (fallbackSteps ? fallbackSteps.map(s => ({ type: 'Step', skill: s })) : []);
     const bt = CHAR_BUFF_TABLE[name];
-    // Only 'next'/'team' targeted outro buffs are a real hand-off to whoever swaps in — 'self' buffs
-    // stay with this character and aren't part of the chain interface.
-    const handoff = (bt?.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'team');
-    return { name, steps, handoff, hasData: !!rotationSteps || !!fallbackSteps?.length };
+    // 'next' and 'team' are NOT the same interface and must not be merged: a 'next'-target Outro buff
+    // (e.g. Jianxin's +38% Liberation DMG, 14s) is consumed by whoever swaps in immediately and is gone
+    // once THEY swap out — a single handoff link to the next module. A 'team'-target Outro buff (e.g.
+    // Verina's/Shorekeeper's +15% All DMG Amp, 30s) applies to every member simultaneously regardless of
+    // swap order and keeps running in the background across multiple swaps within its duration — it is
+    // not "given to the next character" at all, it's closer to a timed team-wide field effect. Rendering
+    // both as one arrow to the next module (the previous version of this function) misrepresents exactly
+    // how 'team' buffs work — every other team-scoring/buff-consuming path in this file already treats
+    // 'next' and 'team' as distinct (see scoreTeamComposition's libBuffs handling above), so this needed
+    // to match rather than silently collapse the distinction for display purposes.
+    const nextHandoff = (bt?.outroBuffs || []).filter(b => b.target === 'next');
+    const teamHandoff = (bt?.outroBuffs || []).filter(b => b.target === 'team');
+    return { name, steps, nextHandoff, teamHandoff, hasData: !!rotationSteps || !!fallbackSteps?.length };
   });
   if (modules.length === 0) return { timeline: [], loop: false, modules: [] };
 
@@ -613,8 +622,11 @@ export function composeTeamRotation(members) {
     timeline.push({ kind: 'swap-in', char: mod.name, hasData: mod.hasData });
     mod.steps.forEach(step => timeline.push({ kind: 'step', char: mod.name, ...step }));
     const nextMod = modules[(i + 1) % modules.length];
-    if (mod.handoff.length && nextMod && nextMod !== mod) {
-      timeline.push({ kind: 'handoff', char: mod.name, to: nextMod.name, buffs: mod.handoff });
+    if (mod.nextHandoff.length && nextMod && nextMod !== mod) {
+      timeline.push({ kind: 'handoff', char: mod.name, to: nextMod.name, buffs: mod.nextHandoff });
+    }
+    if (mod.teamHandoff.length) {
+      timeline.push({ kind: 'team-buff', char: mod.name, buffs: mod.teamHandoff });
     }
   });
   // loop only means something with 2+ distinct members — a solo "team" just repeats its own module
