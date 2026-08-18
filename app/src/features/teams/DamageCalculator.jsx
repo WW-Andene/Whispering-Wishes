@@ -57,9 +57,20 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const charAtk = d.baseAtk || 0;
       const weapAtk = weapon ? weapon.baseAtk : 0;
       const seqLevel = eq?.sequence || 0;
+      const equippedEchoes = eq?.echoes || [];
+      const hasAnyEcho = equippedEchoes.some(e => e && typeof e === 'object' && e.name);
+      // Real equipped-echo set counts — the set bonus must never apply based on a stale/manual
+      // echoSet override or a "recommended gear" text guess when it doesn't match what's actually worn.
+      const wornSetCounts = {};
+      equippedEchoes.forEach(e => {
+        const n = e && typeof e === 'object' ? e.name : null;
+        if (!n) return;
+        (ECHO_DATA[n]?.sets || []).forEach(s => { wornSetCounts[s] = (wornSetCounts[s] || 0) + 1; });
+      });
       let echoSetName = eq?.echoSet || '';
       let echoSet2Name = eq?.echoSet2 || '';
-      if (!echoSetName && d.bestEchoes) {
+      if (!echoSetName && !hasAnyEcho && d.bestEchoes) {
+        // No echoes equipped at all yet → preview the recommended build's set bonus (onboarding aid).
         for (const e of d.bestEchoes) {
           // Parse hybrid "SetA 3pc + SetB 2pc" format
           const hybridMatch = e.match(/^(.+?)\s+3pc\s*\+\s*(.+?)\s+2pc$/i);
@@ -72,6 +83,18 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           const k = Object.keys(ECHO_SETS).find(k => e.includes(k));
           if (k) { echoSetName = k; break; }
         }
+      } else if (hasAnyEcho) {
+        // Echoes are actually equipped — only honor a forced/manual echoSet if it's actually worn
+        // in sufficient count (2pc-type sets need ≥2, 3pc-type sets need ≥3), otherwise drop it so a
+        // stale override (e.g. after swapping echoes) can't silently keep granting a bonus.
+        const meetsThreshold = (setName) => {
+          const s = ECHO_SETS[setName];
+          if (!s) return false;
+          const need = s.p3val ? 3 : 5; // p3val sets unlock at 3pc; standard sets' p2+p5 combo needs 5pc
+          return (wornSetCounts[setName] || 0) >= need;
+        };
+        if (echoSetName && !meetsThreshold(echoSetName)) echoSetName = '';
+        if (echoSet2Name && (wornSetCounts[echoSet2Name] || 0) < 2) echoSet2Name = '';
       }
       const scaling = d.statScaling || 'ATK';
       const baseStat = scaling === 'HP' ? (d.baseHp || 0) : scaling === 'DEF' ? (d.baseDef || 0) : charAtk + weapAtk;
