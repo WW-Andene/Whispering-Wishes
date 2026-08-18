@@ -589,11 +589,18 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Spectrum Blaster', 'Static Mist'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Rebecca + Yangyang: Xuanling + Lucy', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'President of Startorch Academy. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
+    desc: 'President and head of Startorch Academy, former chief editor of the New Federation\'s top academic journal. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
     ascension: { boss: "Suncoveter's Reach", common: 'Mech Core', specialty: 'Forget-Me-Not' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
     bestEchoes: ['Glommoth', 'Wishes of Quiet Snowfall 5pc (Chafe)', 'Impermanence Heron', 'Moonlit Clouds 5pc (Echo)'], bestWeapon: 'Freeze Frame',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Hiyuki Chafe / Sigrika+Shorekeeper
+    // Echo team average): Whispers of Sirens (95.7%/81.6%) and Stringmaster (95.6%/87.6%) are the top
+    // non-signature 5★ Rectifiers (ahead of Lethean Elegy, Rime-Draped Sprouts, Forged Dwarf Star,
+    // Luminous Hymn, Cosmic Ripples); Radiant Dawn (90.4%/68.6%) and Augment (89.1%/73.3%) are the best
+    // Battle Pass 4★s (ahead of Waltz in Masquerade); Rectifier of Night is the 3★ fallback (Prydwen
+    // doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Whispers of Sirens', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Lucilla + Hiyuki + Chisa', 'Lucilla + Sigrika + Shorekeeper', 'Lucilla + Phrolova + Qiuyuan'] },
   'Lucy': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Main DPS',
     desc: 'The Netrunner, from the Cyberpunk: Edgerunners collab. Spectro DPS who builds TCP/Root Access into an enhanced Heavy Attack and a battlefield-freezing Ultimate with selectable Spoofing Program debuffs, dealing bonus DMG via the Hack mechanic.',
@@ -1146,7 +1153,7 @@ const CHARACTER_DATA = {
   // Lahai-Roi (Startorch Academy)
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
-  ['Hiyuki',       'Lahai-Roi'], ['Denia',        'Lahai-Roi'],
+  ['Hiyuki',       'Lahai-Roi'], ['Denia',        'Lahai-Roi'], ['Lucilla',      'Lahai-Roi'],
   // Night City (Cyberpunk: Edgerunners collab, per both characters' own `nation` infobox field — a
   // real-world-fiction location outside the Solaris-3 nations above, not a Solaris-3 error; no dedicated
   // wiki emblem exists for it, same "no icon" convention as New Federation elsewhere in this table).
@@ -1321,6 +1328,14 @@ const CHARACTER_DATA = {
   // surfaced as a separate field here since no other audited character's realname is tracked yet.
   ['Lucy', 'Xeno-Domain Hacking', 'Unknown', 'Lahai-Roi', { en: 'Emi Lo', cn: 'Song Zhengnan', jp: 'Yūki Aoi', kr: 'Kim Ga-ryeong' }],
   ['Rebecca', 'Fury-Type Arsenal', 'Unknown', 'Collaboration Resonators', { en: 'Alex Cazares', cn: 'Chen Zhang', jp: 'Kurosawa Tomoyo', kr: 'Park Si-yoon' }],
+  // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
+  // page=Lucilla&prop=wikitext&section=0). birthplace New Federation, distinct from her Lahai-Roi
+  // region tie (REGION_DATA above) — same birthplace-vs-nation-tie pattern as Verina/Galbrena.
+  // organization uses her primary affiliation (Startorch Academy, where she's president) over
+  // affiliation2 (Spacetrek Collective) and the now-inactive affiliation3 (Pioneer Association,
+  // "formerly"), matching the Lynae/Mornye/Aemeath Startorch Academy convention. Birthday: blank on
+  // the infobox, omitted from BIRTHDAY_DATA per the established 'Unknown' convention.
+  ['Lucilla', 'Memory Palace', 'New Federation', 'Startorch Academy', { en: 'Luci Fish', cn: 'Liu Yinuo', jp: 'Itō Shizuka', kr: 'Min-ah' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3791,6 +3806,16 @@ const SKILL_ICONS = {
     'Hack Response': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte Circuit
     'Preem Choom': 'https://i.ibb.co/zhQshWzF/rebecca-outro.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lucilla, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Lucilla': {
+    'Snapshot': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
+    'Phantom Frame': 'https://i.ibb.co/G4jbSdr2/lucilla-res-Skill.webp', // Resonance Skill
+    'Clear As Day': 'https://i.ibb.co/Q7dvwN32/lucilla-liberation.webp', // Resonance Liberation
+    'Oblivion': 'https://i.ibb.co/qYZ1pTZ0/lucilla-forte.webp', // Forte Circuit — Memory Palace
+    'Clip It': 'https://i.ibb.co/7JWJhpcF/lucilla-intro.webp', // Intro Skill
+    'Montage': 'https://i.ibb.co/RGZrzfTY/lucilla-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4155,13 +4180,13 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/gZBNkHMH/denia-s5.webp',
     s6: 'https://i.ibb.co/Zz5XhZzj/denia-s6.webp',
   },
-  // Lucy/Rebecca (2026-08-17): NOT populated — verified via direct MediaWiki titles queries (action=
-  // query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 12 node names on both
-  // characters) that wutheringwaves.fandom.com has not uploaded Sequence Node icon assets for either
-  // of them yet (their own Chain Table template renders an empty icon column on both /Combat pages —
-  // a genuine wiki content gap for these collab characters, not a fetch failure). Node NAMES are
-  // still populated below in CHAIN_NODE_NAMES since the modal renders names independently of icons;
-  // add icons here once fandom uploads them.
+  // Lucy/Rebecca/Lucilla (2026-08-17): NOT populated — verified via direct MediaWiki titles queries
+  // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 18 node names across
+  // all three characters) that wutheringwaves.fandom.com has not uploaded Sequence Node icon assets
+  // for any of them yet (their own Chain Table template renders an empty icon column on all three
+  // /Combat pages — a genuine wiki content gap for these June-2026-release characters, not a fetch
+  // failure). Node NAMES are still populated below in CHAIN_NODE_NAMES since the modal renders names
+  // independently of icons; add icons here once fandom uploads them.
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4206,6 +4231,7 @@ const CHAIN_NODE_NAMES = {
   'Denia': { s1: 'Silent Glows in a Dimlit Dream', s2: 'Tossed in the Tides of Reality', s3: 'Through Dark and Wind, the Erlking Follows', s4: 'From the Far Beyond, to the Far Beyond', s5: 'If Lies Patch Up a Heart', s6: 'May You Find Your Sun in the Silence' },
   'Lucy': { s1: 'The Moon, a Ticket, and a Dream', s2: 'The Blackwall, the Past, the Escape', s3: 'Cyberpunk', s4: 'No Living Legends in Night City', s5: 'A Broken Path to Hell', s6: 'I Really Want to Stay At Your House' },
   'Rebecca': { s1: 'Try Not to Get in the Way!', s2: 'Oh, Hey Choom!', s3: "Don't Sweat Your Six!", s4: 'Got Ya Covered!', s5: 'Dreamin\' on the Edge', s6: 'Maybe, Just Maybe...' },
+  'Lucilla': { s1: 'Distant Noon', s2: 'Slumbering Moonlight', s3: 'Days Fade Unheard', s4: 'The Past Fades Into Silence', s5: 'Time is Like a Stream', s6: 'Gazing In the Mist of Time' },
 };
 
 // Release order for sorting (based on first banner appearance)
