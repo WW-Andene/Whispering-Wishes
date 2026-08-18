@@ -4522,6 +4522,7 @@ const SKILL_ICONS = {
     'Lone Lance': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon on the wiki, also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Heavy ATK / Dodge Counter rows
     'Windqueller': 'https://i.ibb.co/Rk9XDRW3/Skill-Windqueller.webp',
+    'Lance of Qingloong': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Qingloong Mode's Heavy Attack replacement, same generic weapon icon
     'Emerald Storm: Finale': 'https://i.ibb.co/F4SmBx2q/Skill-Qingloong-at-War.webp', // Forte Circuit's own icon
     'Emerald Storm: Prelude': 'https://i.ibb.co/4gT4C4SW/Skill-Emerald-Storm-Prelude.webp',
     'Tactical Strike': 'https://i.ibb.co/33s8c1p/Skill-Tactical-Strike.webp',
@@ -4569,6 +4570,9 @@ const SKILL_ICONS = {
     'Slash of Breaking Dawn': 'https://i.ibb.co/tMmTFPJH/Skill-Broadblade.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/tMmTFPJH/Skill-Broadblade.webp',
     'Trailing Lights of Eons': 'https://i.ibb.co/zVbYMXzG/Skill-Trailing-Lights-of-Eons.webp',
+    'Overflowing Radiance': 'https://i.ibb.co/zVbYMXzG/Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic (alt-cast after Basic Attack 4/Intro), same wiki icon as Trailing Lights of Eons
+    'Incarnation': 'https://i.ibb.co/zVbYMXzG/Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill state entered via Overflowing Radiance, same wiki icon
+    'Illuminous Epiphany': 'https://i.ibb.co/zVbYMXzG/Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic cast from within Incarnation, same wiki icon
     'Luminal Synthesis': 'https://i.ibb.co/R5sPDCC/Skill-Luminal-Synthesis.webp',
     'Purge of Light': 'https://i.ibb.co/cSS7ms3Z/Skill-Purge-of-Light.webp',
     "Loong's Halo": 'https://i.ibb.co/cKXv3P1y/Skill-Loong-Halo.webp', // Intro Skill
@@ -4581,6 +4585,7 @@ const SKILL_ICONS = {
     'Blazing Enlightenment': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
     'Tripartite Flames': 'https://i.ibb.co/DDwNWX8M/Skill-Tripartite-Flames.webp',
+    'True Sight: Capture': 'https://i.ibb.co/DDwNWX8M/Skill-Tripartite-Flames.webp', // Resonance Skill mechanic (plunging finisher after True Sight), same wiki icon as Tripartite Flames
     'Flaming Sacrifice': 'https://i.ibb.co/39K3xvGn/Skill-Flaming-Sacrifice.webp',
     'Radiance of Fealty': 'https://i.ibb.co/Df83Zv7v/Skill-Radiance-of-Fealty.webp',
     'Obedience of Rules': 'https://i.ibb.co/4w1N13zp/Skill-Obedience-of-Rules.webp', // Intro Skill
@@ -4592,7 +4597,9 @@ const SKILL_ICONS = {
   'Zhezhi': {
     'Dimming Brush': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Heavy ATK: Conjuration': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Heavy Attack's own name on the wiki, no dedicated icon — generic weapon icon
     'Manifestation': 'https://i.ibb.co/DDNMwsCy/Skill-Manifestation.webp',
+    'Stroke of Genius / Creation\'s Zenith': 'https://i.ibb.co/DDNMwsCy/Skill-Manifestation.webp', // named cast-states of the same Resonance Skill (Manifestation), no separate wiki icon
     'Ink and Wash': 'https://i.ibb.co/8DYg2f8z/Skill-Ink-and-Wash.webp',
     'Living Canvas': 'https://i.ibb.co/Vc7cVKF1/Skill-Living-Canvas.webp',
     'Radiant Ruin': 'https://i.ibb.co/LX3NLrxP/Skill-Radiant-Ruin.webp', // Intro Skill
@@ -4608,6 +4615,9 @@ const SKILL_ICONS = {
     'Mid-air Attack: Revamp': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // rotation-step phrasing for the Mid-air Attack, same generic weapon icon
     'Deduction': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp',
     'Decipher': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp', // Forte-upgraded Skill, same wiki icon as base Deduction
+    'Divergence': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp', // Intuition state's Resonance Skill replacement for Deduction, same wiki icon
+    'Skill: Law of Reigns': 'https://i.ibb.co/8D4YCpRh/skill-deduction.webp', // Resonance Skill repeatedly cast during Intuition, no dedicated wiki icon — same as Deduction
+    'Pivot-Impale': 'https://i.ibb.co/dsbWXdtk/Skill-Gauntlets.webp', // Intuition state's Basic Attack replacement, same generic weapon icon
     'Forever Seeking': 'https://i.ibb.co/TMjphf6y/skill-forever-seeking.webp',
     'Cogitation Model': 'https://i.ibb.co/CKYDdBRY/skill-cogitation.webp',
     'Principle': 'https://i.ibb.co/cXpS7bBx/skill-principle.webp', // Intro Skill
@@ -4620,10 +4630,12 @@ const SKILL_ICONS = {
   'Shorekeeper': {
     'Origin Calculus': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
     'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Heavy Attack: Illation': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
     'Chaos Theory': 'https://i.ibb.co/zTGgrNMM/skill-chaos-theory.webp',
     'Astral Chord': 'https://i.ibb.co/pkXPr5P/skill-astral-chord.webp',
     'End Loop': 'https://i.ibb.co/MD3NpydF/skill-end-loop.webp',
     'Proof of Existence': 'https://i.ibb.co/RGFGH8d9/skill-proof-of-existence.webp', // Intro Skill
+    'Discernment': 'https://i.ibb.co/RGFGH8d9/skill-proof-of-existence.webp', // Supernal Stellarealm's Intro Skill replacement for Proof of Existence, same wiki icon
     'Binary Butterfly': 'https://i.ibb.co/bjjhnD3f/skill-binary-butterfly.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Camellya, re-hosted on ibb.co
@@ -4634,6 +4646,7 @@ const SKILL_ICONS = {
     'Burgeoning': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
     'Standard': 'https://i.ibb.co/x86mmjbD/skill-sword.webp',
     'Valse of Bloom and Blight': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp',
+    'Crimson Blossom': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Resonance Skill mechanic (a named hit within Valse of Bloom and Blight), same wiki icon
     'Vining Waltz': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Blossom Mode's Basic ATK replacement, same Skill icon
     'Blazing Waltz': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp',
     'Floral Ravage': 'https://i.ibb.co/wrNPQ1TC/skill-valse.webp', // Blossom Mode's Resonance Skill replacement, same wiki icon
@@ -4714,6 +4727,7 @@ const SKILL_ICONS = {
   'Cantarella': {
     'Illusion Collapse': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp',
     'Standard': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp',
+    'Delusive Dive': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp', // Trance's Heavy Attack replacement, same generic Basic/Heavy icon
     'Phantom Sting': 'https://i.ibb.co/Jw0SD1X0/skill-illusioncollapse.webp', // Mirage's Basic ATK replacement, same icon
     'Dance with Shadows': 'https://i.ibb.co/VWcwSf2F/skill-dancewithshadows.webp',
     'Flickering Reverie': 'https://i.ibb.co/VWcwSf2F/skill-dancewithshadows.webp', // Mirage's Resonance Skill replacement, same wiki icon
@@ -4756,6 +4770,7 @@ const SKILL_ICONS = {
     'Symphony of Wind and Verse': 'https://i.ibb.co/rDrSyYC/skill-symphonywindverse.webp',
     'Quadruple Downbeat': 'https://i.ibb.co/rDrSyYC/skill-symphonywindverse.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
     "Singer's Triple Cadenza": 'https://i.ibb.co/Q3SvKHzY/skill-singerstriplecadenza.webp',
+    'Symphonic Poem: Tonic': 'https://i.ibb.co/Q3SvKHzY/skill-singerstriplecadenza.webp', // the Improvised Symphonic Poem hit within Singer's Triple Cadenza, same wiki icon
     'Roaming with the Wind': 'https://i.ibb.co/RGVC6MLt/skill-roamingwithwind.webp', // Intro Skill
     'Windcalling Tune': 'https://i.ibb.co/wFNRyDTB/skill-windcallingtune.webp', // Outro Skill
   },
@@ -4785,6 +4800,7 @@ const SKILL_ICONS = {
     'Flaming Star': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
     'Standard': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
     'Stage 1-2': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Firestrike': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
     "Wolf's Claw": 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
     'Starfall': 'https://i.ibb.co/RGn44dhM/skill-broadblade.webp',
     "Shewolf's Hunt": 'https://i.ibb.co/5WbyTxzD/skill-shewolfshunt.webp',
@@ -4822,6 +4838,8 @@ const SKILL_ICONS = {
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Augusta, re-hosted on ibb.co (2026-08-17).
   'Augusta': {
     "Hunter's Path": 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Hunter's_Path.png resolves to this same asset)
+    'Thunderoar: Backstep': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Prowess-gated Heavy Attack variant, no dedicated wiki icon — generic weapon icon
+    'Thunderoar: Spinslash': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp',
     "Warrior's Blade": 'https://i.ibb.co/Mxg3Z8k9/warriors-blade.webp',
     'Undying Sunlight': 'https://i.ibb.co/Mxg3Z8k9/warriors-blade.webp', // Ascendancy-enhanced Resonance Skill, same wiki icon
     'Sunward Conquest': 'https://i.ibb.co/wN42DMTf/sunward-conquest.webp', // Resonance Liberation (Sword of Eternal Oath)
@@ -4916,6 +4934,7 @@ const SKILL_ICONS = {
     'Additive Color': 'https://i.ibb.co/KxK0V0g9/Lynae-res-Skill.webp', // Additive Color shares the Resonance Skill's own icon
     'Visual Impact': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp', // Forte Circuit — Chromaticity Modeling
     'Iridescent Splash': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp',
+    'Polychrome Leap': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp', // Forte Gauge (Lumiflow)-gated jump mechanic, same Forte icon
     'Prismatic Overblast': 'https://i.ibb.co/WW1q9Z9P/Lynae-liberation.webp', // Resonance Liberation
     'Time to Show Some Colors!': 'https://i.ibb.co/nsQDdd3q/Lynae-intro.webp', // Intro Skill
     "Let's Hit the Road!": 'https://i.ibb.co/6c4LdY9C/Lynae-outro.webp', // Outro Skill
@@ -4972,6 +4991,7 @@ const SKILL_ICONS = {
     'Stage 1-4': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (same asset already used for Luuk Herssen)
     'Stage 2-4': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Elucidated': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Decipher-state Basic ATK finisher, still generic weapon icon
+    'Heavy ATK: Schemata of Runes': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Heavy Attack, no dedicated wiki icon — generic weapon icon
     'BOOMY BOOM!': 'https://i.ibb.co/k6M2mPzF/Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
     'BIG BOOMY BOOM!': 'https://i.ibb.co/k6M2mPzF/Sigrika-skill-res-Skill.webp',
     'Runic Outburst': 'https://i.ibb.co/1Ydcf5Gb/Sigrika-skill-forte.webp', // Forte Circuit — Within Infinity's Embrace
@@ -5013,10 +5033,12 @@ const SKILL_ICONS = {
   'Lucy': {
     'Locked Thread': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
     'Thread Shredding Stage 1-4': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Dual Threading': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Root Access's Heavy Attack replacement, same generic weapon icon
     'Payload': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp', // Resonance Skill — Protocol Breach
     'Pulse Interference': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp',
     'Deadlock': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp', // Max-TCP Resonance Skill upgrade, same wiki icon
     'Netrunner': 'https://i.ibb.co/qFDfbxtV/lucy-liberation.webp', // Resonance Liberation
+    'Old Net Deep Dive': 'https://i.ibb.co/qFDfbxtV/lucy-liberation.webp', // Multi-threading's Resonance Liberation replacement, same wiki icon
     'Multi-threading': 'https://i.ibb.co/hJfyn0s6/lucy-forte.webp', // Forte-gated Heavy ATK — Depths of Blackwall
     'Hack Response': 'https://i.ibb.co/hJfyn0s6/lucy-forte.webp', // Forte Circuit
     'Outdated Hallucination': 'https://i.ibb.co/TBQxkbJy/lucy-intro.webp', // Intro Skill
@@ -5030,6 +5052,7 @@ const SKILL_ICONS = {
     "It's Big Boomin' Time!": 'https://i.ibb.co/8n7M3D1K/rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks
     "Come 'n' Get Me!": 'https://i.ibb.co/8n7M3D1K/rebecca-res-Skill.webp',
     "Party 'til Dawn!": 'https://i.ibb.co/KcVy8tQW/rebecca-liberation.webp', // Resonance Liberation
+    'BOOM! Fireworks!': 'https://i.ibb.co/KcVy8tQW/rebecca-liberation.webp', // fired when Overload is consumed as Mk. 31 HMG (Liberation) ends, same wiki icon
     'Rat-tat-tat': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte-gated Heavy ATK — Gloves Are Comin' Off!
     'Bang-bang-bang': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp',
     'Hack Response': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte Circuit
@@ -5040,6 +5063,7 @@ const SKILL_ICONS = {
   'Lucilla': {
     'Snapshot': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
     'Tracing Forms Stage 1-3': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Letting It Go': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // auto-follow-up after Basic Attack - Tracing Forms Stage 3, same generic weapon icon
     'Phantom Frame': 'https://i.ibb.co/G4jbSdr2/lucilla-res-Skill.webp', // Resonance Skill
     'Clear As Day': 'https://i.ibb.co/Q7dvwN32/lucilla-liberation.webp', // Resonance Liberation
     'Oblivion': 'https://i.ibb.co/qYZ1pTZ0/lucilla-forte.webp', // Forte Circuit — Memory Palace
@@ -5051,6 +5075,7 @@ const SKILL_ICONS = {
   'Yangyang: Xuanling': {
     'Azure/Feather Stance': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Basic ATK — generic Sword icon (same asset already used elsewhere)
     'Havoc in Bloom Stage 1-3': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Feather Fall': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
     'Sword Stance Switch': 'https://i.ibb.co/NgDz5JK6/yx-res-Skill.webp', // Resonance Skill — Feather's Edge
     'Azure Sword Stance': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp', // Forte-gated Heavy ATK — The Way of Ten Thousand Voices
     'Feather Sword Stance': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp',
