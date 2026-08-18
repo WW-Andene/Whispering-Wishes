@@ -1889,7 +1889,19 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s).',
+    // Added 2026-08-18 against Prydwen's live kit breakdown — tuneBreak sub-object was entirely
+    // missing despite Denia having a full Tune Strain response kit (Tune Strain mode only; she has
+    // no Tune Rupture Response, so no ruptureDmgMult). Forte Circuit "Shattered Hours": 0.12% total
+    // DMG per Tune Break Boost point per Tune Strain - Interfered stack; +1 to the target's max Tune
+    // Strain - Interfered stack cap while she's in the team. Inherent Skill "Etched Colors" (Tune
+    // Strain mode, during Entropy Shift): +10 Tune Break Boost team-wide, up to +40 conditionally.
+    tuneBreak: {
+      boostToTeam: 10, // Etched Colors (Tune Strain mode): +10 Tune Break Boost team, up to 40 conditionally (ER-scaling)
+      baseTuneBreakBoost: 10, // 3.x char base stat
+      strainDmgPerStack: 0.12, // per stack of Tune Strain - Interfered, per point of Tune Break Boost
+      maxStrainStacks: 3, // base 2 + 1 from Denia (Tune Strain mode only)
+    },
+    note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s). Tune Break kit (Tune Strain mode only, confirmed via Prydwen 2026-08-18): Tune Strain response 0.12% DMG/stack/Boost, +1 max Strain stack, +10 Tune Break Boost team (Etched Colors).',
   },
   'Lucilla': {
     outroBuffs: [{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }],
@@ -2337,7 +2349,18 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Spectro Gauntlets DPS. Tune Strain focused. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
+    // Added 2026-08-18 against Prydwen's live kit breakdown — tuneBreak sub-object was entirely
+    // missing despite Luuk having a full Tune Strain response kit (Tune Strain mode only; Forte
+    // Circuit "Silent Debate of Light" gives him no team-wide Tune Break Boost buff, so boostToTeam
+    // stays 0). 0.12% total DMG per Tune Break Boost point per Tune Strain - Interfered stack; +1 to
+    // the target's max Tune Strain - Interfered stack cap while he's in the team.
+    tuneBreak: {
+      boostToTeam: 0,
+      baseTuneBreakBoost: 10, // 3.x char base stat
+      strainDmgPerStack: 0.12, // per stack of Tune Strain - Interfered, per point of Tune Break Boost
+      maxStrainStacks: 3, // base 2 + 1 from Luuk Herssen
+    },
+    note: 'Spectro Gauntlets DPS. Tune Strain focused. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Tune Break kit (confirmed via Prydwen 2026-08-18): Tune Strain response 0.12% DMG/stack/Boost, +1 max Strain stack, no team Tune Break Boost buff.',
   },
   'Sigrika': {
     outroBuffs: [],
