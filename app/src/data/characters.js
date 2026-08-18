@@ -3258,6 +3258,30 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Heavy ATK: Detonate', note: 'second detonate to fully spend the loop before swapping' },
     { type: 'Outro', skill: 'Silversnow', duration: 14, note: 'grants next Resonator 38% Basic ATK DMG Amp — time this to land on the intended DPS' },
   ],
+  // Standard Rotation added 2026-08-18 — sourced from wutheringwaves.fandom.com's Danjin/Combat
+  // Instructions + Forte text (Crimson Erosion/Sanguine Pulse combo strings, Forte Circuit conditions).
+  // This section was previously entirely missing for her.
+  'Danjin': [
+    { type: 'Intro', skill: 'Vindication', note: 'unwavering strike, builds Concerto Energy' },
+    { type: 'Basic ATK', skill: 'Stage 2 into Crimson Erosion', note: 'after Basic ATK 2 (or Dodge Counter/Intro), cast Resonance Skill for the 2-hit Crimson Erosion combo, applying Incinerating Will (+20% DMG taken)' },
+    { type: 'Basic ATK', skill: 'Stage 3 into Sanguine Pulse', note: 'continue into Basic ATK 3, then Resonance Skill again for the 3-hit Sanguine Pulse combo, building Ruby Blossom stacks' },
+    { type: 'Liberation', skill: 'Crimson Bloom', note: 'rapid multi-hit Havoc burst plus Scarlet Burst finisher, consumes HP per hit' },
+    { type: 'Forte', skill: 'Heavy ATK: Chaoscleave', note: 'once Ruby Blossom reaches 60+, unleash Chaoscleave (heals Danjin, counts as Heavy ATK) into the Scatterbloom follow-up' },
+    { type: 'Outro', skill: 'Duality', duration: 14, note: 'grants the incoming Resonator 23% Havoc DMG Deepen for 14s' },
+  ],
+  // Standard Rotation added 2026-08-18 — sourced from wutheringwaves.fandom.com's Yangyang/Combat
+  // Instructions/Forte text and Prydwen's review ("the main and most reliable way to access Feather
+  // Release... by jumping", "we will mostly be counting on Heavy Attacks and Resonance Skills to
+  // generate Forte stacks"). One of the shortest rotations in the game, built for quickswap. This
+  // section was previously entirely missing for her.
+  'Yangyang': [
+    { type: 'Intro', skill: 'Cerulean Song', note: 'launches target airborne, grants 1 Melody stack' },
+    { type: 'Skill', skill: 'Zephyr Domain', note: 'whirling vortex groups nearby enemies, grants 1 Melody stack' },
+    { type: 'Heavy ATK', skill: 'Zephyr Song', note: 'Heavy ATK into follow-up Basic ATK grants the 3rd Melody stack' },
+    { type: 'Basic ATK', skill: 'Mid-air Attack: Feather Release', note: 'jump then Basic ATK to consume all 3 Melodies for the Forte Circuit burst finisher' },
+    { type: 'Liberation', skill: 'Wind Spirals', note: 'Cyclone burst groups enemies and generates Concerto Energy' },
+    { type: 'Outro', skill: 'Whispering Breeze', duration: 5, note: 'funnels 4 Resonance Energy/s to the incoming Resonator for 5s — quickswap into the main DPS' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -4058,6 +4082,41 @@ const SKILL_ICONS = {
     'Tinkling Jade': 'https://i.ibb.co/fdXb5bgm/suisui-intro.webp', // Intro Skill
     'Rippling Waters': 'https://i.ibb.co/fhrX8pF/suisui-outro.webp', // Outro Skill
   },
+  // Danjin/Yangyang/Sanhua icons added 2026-08-18, sourced directly from wutheringwaves.fandom.com's
+  // own static.wikia.nocookie.net-hosted Skill_*.png assets (no re-hosting needed — same file names
+  // verified live via the fandom Combat page image lists for each character).
+  'Danjin': {
+    'Execution': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Crimson Fragment': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8c/Skill_Crimson_Fragment.png',
+    'Crimson Erosion': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8c/Skill_Crimson_Fragment.png', // Resonance Skill's Crimson Erosion follow-up, same skill icon
+    'Sanguine Pulse': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8c/Skill_Crimson_Fragment.png',
+    'Crimson Bloom': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/3b/Skill_Crimson_Bloom.png',
+    'Serene Vigil': 'https://static.wikia.nocookie.net/wutheringwaves/images/5/5e/Skill_Serene_Vigil.png',
+    'Chaoscleave': 'https://static.wikia.nocookie.net/wutheringwaves/images/5/5e/Skill_Serene_Vigil.png', // Forte Circuit's Heavy ATK finisher, same Forte icon
+    'Vindication': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/fe/Skill_Vindication.png',
+    'Duality': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/68/Skill_Duality.png',
+  },
+  'Yangyang': {
+    'Feather as Blade': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Zephyr Domain': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/32/Skill_Zephyr_Domain.png',
+    'Wind Spirals': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7a/Skill_Wind_Spirals.png',
+    'Echoing Feathers': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b5/Skill_Echoing_Feathers.png',
+    'Feather Release': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b5/Skill_Echoing_Feathers.png', // Forte Circuit's Mid-air Attack finisher, same Forte icon
+    'Cerulean Song': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9f/Skill_Cerulean_Song.png',
+    'Whispering Breeze': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a8/Skill_Whispering_Breeze.png',
+  },
+  'Sanhua': {
+    'Frigid Light': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
+    'Eternal Frost': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6a/Skill_Eternal_Frost.png',
+    'Glacial Gaze': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/3c/Skill_Glacial_Gaze.png',
+    'Clarity of Mind': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Clarity_of_Mind.png',
+    'Detonate': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Clarity_of_Mind.png', // Forte Circuit's Heavy ATK finisher, same Forte icon
+    'Freezing Thorns': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ae/Skill_Freezing_Thorns.png',
+    'Silversnow': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Skill_Silversnow.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4518,14 +4577,16 @@ const CHAIN_NODE_NAMES = {
   'Rebecca': { s1: 'Try Not to Get in the Way!', s2: 'Oh, Hey Choom!', s3: "Don't Sweat Your Six!", s4: 'Got Ya Covered!', s5: 'Dreamin\' on the Edge', s6: 'Maybe, Just Maybe...' },
   'Lucilla': { s1: 'Distant Noon', s2: 'Slumbering Moonlight', s3: 'Days Fade Unheard', s4: 'The Past Fades Into Silence', s5: 'Time is Like a Stream', s6: 'Gazing In the Mist of Time' },
   'Yangyang: Xuanling': { s1: "At the Wind's Breath, the Blossoms Wake", s2: 'River Carries Her Song Away', s3: 'My Grief Follows You into the Clouds', s4: 'Across the Miles, a Letter and My Longing', s5: 'Take Wing. Take Wing.', s6: 'Let the Azure Keep Its Light' },
-  // Yangyang (4★): Prydwen's Kit tab labels her Resonance Chain nodes generically as "Sequence Node
-  // 1"–"Sequence Node 6" rather than giving unique flavor names (unlike most characters) — fandom's own
-  // wiki likewise has no distinct chain node names for her. Using the generic labels rather than
-  // inventing names.
-  'Yangyang': { s1: 'Sequence Node 1', s2: 'Sequence Node 2', s3: 'Sequence Node 3', s4: 'Sequence Node 4', s5: 'Sequence Node 5', s6: 'Sequence Node 6' },
+  // Yangyang's real node names corrected 2026-08-18: Prydwen's Kit tab shows only generic "Sequence
+  // Node 1"-"Sequence Node 6" labels, but fandom's Yangyang/Combat page (Resonance Chain table +
+  // Sequence_Node_*.png filenames) does have unique flavor names — Prydwen just doesn't surface them.
+  'Yangyang': { s1: 'Sapphire Skies, Soaring Sparrows', s2: 'Nesting Twigs, in Beaks They Harrow', s3: 'Nature Sings in Symphony', s4: 'Close Your Eyes and Listen in', s5: 'Winds Whisper in Harmony', s6: "A Tribute to Life's Sweet Hymn" },
   // Sanhua's node names confirmed 2026-08-18 via wutheringwaves.fandom.com's own infobox image filenames
   // (Sequence Node <name>.png assets, S1-S6 in order).
   'Sanhua': { s1: "Solitude's Embrace", s2: 'Snowy Clarity', s3: 'Anomalous Vision', s4: 'Blade Mastery', s5: 'Unraveling Fate', s6: 'Daybreak Radiance' },
+  // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
+  // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
+  'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },
   'Suisui': { s1: 'Mountains Washed Into Paintings', s2: 'Clouds Pour Like Molten Gold', s3: 'Sparse Curtains Invite Evening Glow', s4: 'Autumn Mountains in Choir Sing', s5: 'I Long To Ride The Eastern Wind', s6: 'Staying True To This Splendid Realm' },
   // Qingxiao's node names confirmed 2026-08-18 via ww.nanoka.cc's pre-release datamine (character/1413)
   // — icons NOT populated in CHAIN_NODE_ICONS above: fandom has no Sequence Node assets uploaded yet
