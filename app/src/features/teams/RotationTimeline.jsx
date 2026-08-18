@@ -10,7 +10,7 @@ const ELEMENT_COLORS = {
   Aero: '#10b981', Spectro: '#edaf18', Havoc: '#ec4899',
 };
 
-const STAT_LABELS = {
+export const STAT_LABELS = {
   atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elem DMG', deepen: 'Deepen',
   basicDmg: 'Basic', heavyDmg: 'Heavy', libDmg: 'Lib', echoDmg: 'Echo',
   skillDmg: 'Skill', critRate: 'CR', critDmg: 'CD', resShred: 'RES↓', defShred: 'DEF↓',

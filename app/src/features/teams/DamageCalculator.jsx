@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sword, Users, X, Zap } from 'lucide-react';
+import { AlertTriangle, BarChart3, ChevronDown, Diamond, ListOrdered, Sword, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
@@ -19,7 +19,7 @@ import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
-import RotationTimeline from './RotationTimeline.jsx';
+import RotationTimeline, { STAT_LABELS } from './RotationTimeline.jsx';
 import { useSessionState } from '../../utils/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
@@ -1015,7 +1015,26 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
         t += onField;
       });
-      return { segments: timeline, buffs, totalTime: rotTime };
+
+      // ── Textual rotation guide — narrates the same schedule the Gantt chart shows, so the two
+      // never disagree. One step per on-field window, in the order actually computed above. ──
+      const steps = timeline.map((seg, i) => {
+        const isDps = seg.name === mainDps.name;
+        const reason = isDps
+          ? 'Main DPS — comes on-field last to receive every buff stacked up before it'
+          : hasTeamOutro(mems.find(m => m.name === seg.name))
+            ? 'Team-wide buff persists through swaps — goes first so it covers the whole rotation'
+            : nextOutroValue(mems.find(m => m.name === seg.name)) > 0
+              ? 'Buff only reaches whoever swaps in next — placed right before the DPS window'
+              : 'Sub-DPS / utility window';
+        const given = buffs
+          .filter(b => (b.owner || b.source) === seg.name && (Math.abs(b.start - seg.start) < 0.5 || Math.abs(b.start - (seg.start + seg.duration)) < 0.5))
+          .map(b => `+${b.value}% ${STAT_LABELS[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`);
+        const uniqueGiven = [...new Set(given)];
+        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, buffsGiven: uniqueGiven };
+      });
+
+      return { segments: timeline, buffs, totalTime: rotTime, steps };
     })();
 
     // Add energy warnings
@@ -1643,6 +1662,34 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
       {/* Rotation Timeline — outside Team Overview Card to avoid overflow:hidden clipping */}
       <RotationTimeline rotationTimeline={rotationTimeline} />
+
+      {/* Rotation Guide — narrates the exact schedule the Gantt chart above shows, in plain text */}
+      {rotationTimeline?.steps?.length > 0 && (
+        <Card>
+          <CardHeader>
+            <span className="flex items-center gap-1.5"><ListOrdered size={14} /> Rotation Guide</span>
+          </CardHeader>
+          <CardBody>
+            <ol className="space-y-2">
+              {rotationTimeline.steps.map(step => (
+                <li key={step.order} className="flex gap-2">
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
+                  <div className="min-w-0">
+                    <div className="text-sm">
+                      <span className={`font-semibold ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>
+                      <span className="text-gray-500"> — on-field {step.duration}s</span>
+                    </div>
+                    <div className="text-sm text-gray-500">{step.reason}</div>
+                    {step.buffsGiven.length > 0 && (
+                      <div className="text-sm text-emerald-400/80 mt-0.5">{step.buffsGiven.join(', ')}</div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </CardBody>
+        </Card>
+      )}
 
       <DPSComparisonCard
         teamCompareEntries={teamCompareEntries} setTeamCompareEntries={setTeamCompareEntries}
