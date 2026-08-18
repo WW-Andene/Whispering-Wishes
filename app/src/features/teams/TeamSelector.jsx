@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Search, Star, Users, X, Heart, ShieldCheck, Swords, TrendingUp, Target, Flame, BatteryCharging, Users2, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -25,6 +25,10 @@ export default function TeamSelector({
   setTeamDmgFilter,
   teamRoleFilter,
   setTeamRoleFilter,
+  teamCombatRoleFilter,
+  setTeamCombatRoleFilter,
+  teamRegionFilter,
+  setTeamRegionFilter,
   activeTeam,
   filteredChars,
   recommendedNames,
@@ -34,6 +38,11 @@ export default function TeamSelector({
   state,
 }) {
   const { getImageFraming } = useImageFramingContext();
+  const allCombatRoleTags = useMemo(() => {
+    const tags = new Set();
+    Object.values(CHARACTER_DATA).forEach(d => d.combatRoles?.forEach(t => tags.add(t)));
+    return [...tags].sort();
+  }, []);
   return (
                   <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="" onClick={() => setTeamSelectorOpen(false)} centered>
                       <div
@@ -102,6 +111,32 @@ export default function TeamSelector({
                                 { value: 'Healer', label: 'Healer' },
                               ]}
                               ariaLabel="Filter by role"
+                              small
+                            />
+                            <KuroSelect
+                              value={teamCombatRoleFilter}
+                              onChange={setTeamCombatRoleFilter}
+                              options={[
+                                { value: 'all', label: 'All Combat Roles' },
+                                ...allCombatRoleTags.map(tag => ({
+                                  value: tag,
+                                  label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(tag)} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
+                                })),
+                              ]}
+                              ariaLabel="Filter by combat role"
+                              small
+                            />
+                            <KuroSelect
+                              value={teamRegionFilter}
+                              onChange={setTeamRegionFilter}
+                              options={[
+                                { value: 'all', label: 'All Regions' },
+                                ...['Huanglong', 'Rinascita', 'Black Shores', 'Septimont', 'Lahai-Roi'].map(r => ({
+                                  value: r,
+                                  label: <span className="inline-flex items-center gap-1.5"><img src={getRegionIcon(r)} alt="" width={14} height={14} className="shrink-0" /> {r}</span>,
+                                })),
+                              ]}
+                              ariaLabel="Filter by region"
                               small
                             />
                             <KuroSelect

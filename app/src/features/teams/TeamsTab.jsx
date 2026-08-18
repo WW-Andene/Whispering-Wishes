@@ -33,6 +33,8 @@ function TeamsTab({
   const [teamDebuffFilter, setTeamDebuffFilter] = useState('all');
   const [teamDmgFilter, setTeamDmgFilter] = useState('all');
   const [teamRoleFilter, setTeamRoleFilter] = useState('all');
+  const [teamCombatRoleFilter, setTeamCombatRoleFilter] = useState('all');
+  const [teamRegionFilter, setTeamRegionFilter] = useState('all');
   const [teamCompareEntries, setTeamCompareEntries] = useState([]);
   const [teamEquipment, setTeamEquipment] = useState(() => {
     try { const s = localStorage.getItem('ww-team-equipment'); return s ? JSON.parse(s) : {}; } catch { return {}; }
@@ -314,6 +316,8 @@ function TeamsTab({
                 if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.includes(teamDebuffFilter))) return false;
                 if (teamDmgFilter !== 'all' && !(data.dmgFocus || []).includes(teamDmgFilter)) return false;
                 if (teamRoleFilter !== 'all' && data.role !== teamRoleFilter) return false;
+                if (teamCombatRoleFilter !== 'all' && !data.combatRoles?.includes(teamCombatRoleFilter)) return false;
+                if (teamRegionFilter !== 'all' && data.region !== teamRegionFilter) return false;
                 return true;
               }).sort((a, b) => {
                 // Higher vote count (more placed members independently recommending them) ranks first.
@@ -767,6 +771,10 @@ function TeamsTab({
                     setTeamDmgFilter={setTeamDmgFilter}
                     teamRoleFilter={teamRoleFilter}
                     setTeamRoleFilter={setTeamRoleFilter}
+                    teamCombatRoleFilter={teamCombatRoleFilter}
+                    setTeamCombatRoleFilter={setTeamCombatRoleFilter}
+                    teamRegionFilter={teamRegionFilter}
+                    setTeamRegionFilter={setTeamRegionFilter}
                     activeTeam={activeTeam}
                     filteredChars={filteredChars}
                     recommendedNames={recommendedNames}
