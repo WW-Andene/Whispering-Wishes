@@ -869,13 +869,31 @@ const CHARACTER_DATA = {
     bestEchoes: ['Fallacy of No Return', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc', 'Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt4: ['Marcato', 'Gauntlets#21D', 'Celestial Spiral'] },
     teams: ['Youhu + Yinlin + Calcharo', 'Youhu + Zhezhi + Lingyang'] },
+  // corrected/added 2026-08-18: desc rewritten to a real bio + gameplay-role summary (Prydwen calls her
+  // "primarily utilized as a Hybrid buffer character" whose Outro amplifies Resonance SKILL DMG — a
+  // damage type "currently under-serviced in the Hybrid category", per Prydwen's own Review tab; her
+  // basic playstyle alternates Yellow Light (ranged, via ally Squeakie) and Red Light (melee) stances).
+  // bestEchoes expanded with Prydwen's Build tab: Moonlit Clouds 5pc is her stated #1 Main Echo Set
+  // (10% ER, Outro grants the next character +22.5% ATK), with Impermanence Heron as its Main Echo pick
+  // (a supportive echo swap-cancelled right before Outro for +12% DMG to the incoming character); Void
+  // Thunder 5pc + Nightmare: Thundering Mephis is her listed Special Set for a (non-optimal) Main DPS
+  // build. weaponAlts added — Prydwen's Best Weapons ranks Ages of Harvest (108.33%) and Verdant Summit
+  // (101.11%) above her own signature Lustrous Razor (100.00%, alt5), and Autumntrace (94.03%) /
+  // Waning Redshift (86.84%) as the top 4★ alternatives (alt4); no 3★ option appears on Prydwen's list.
+  // teams corrected — the prior 'Lumi + Carlotta + Shorekeeper' / 'Lumi + Jinhsi + Verina' pairings don't
+  // match Prydwen's Synergies tab's own named "Example Teams" ('Best Team (Jinhsi)' / 'Best Team
+  // (Carlotta)') exactly; replaced with the two real named partners (Jinhsi, Carlotta — both benefit
+  // heavily from her Resonance Skill DMG Amp Outro) without inventing a 3rd/4th member Prydwen doesn't
+  // itself name for these two team cards (Verina/Shorekeeper are listed only as generic healer options,
+  // not tied to a specific named team card).
   'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
-    desc: 'Lollo Logistics navigator who charts paths through thundering skies. Electro sub-DPS who deals Electro DMG via Resonance Skill and amplifies the next character\'s Resonance Skill DMG through Outro.',
+    desc: 'Lollo Logistics navigator who charts paths through thundering skies. Electro Hybrid buffer who alternates ranged Yellow Light and melee Red Light combat stances, dealing Electro DMG considered Basic Attack DMG through most of her kit, and amplifies the next character\'s Resonance Skill DMG by 38% for 10s through her Outro (Escorting) — one of the only sources of Resonance Skill DMG Amp in the game.',
     skills: ['Navigation Support', 'Searchlight Service', 'Squeakie Express', 'Signal Light'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Howler Core', specialty: 'Terraspawn Fungus' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Lustrous Razor',
-    teams: ['Lumi + Carlotta + Shorekeeper', 'Lumi + Jinhsi + Verina'] },
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
+    weaponAlts: { alt5: ['Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Waning Redshift'] },
+    teams: ['Lumi + Jinhsi', 'Lumi + Carlotta'] },
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Taoist feng shui master from Mengzhou and Black Shores Consultant. Electro healer who restores HP and deploys Electro Flare via Liberation, buffing the team\'s Resonance Skill DMG through Outro.',
     skills: ['Hexagram Calls, Lightning Falls', 'In Shadow Thunder Stirs', 'Flashing Thunder Spell', 'Thunder Begets Life'],
@@ -958,7 +976,12 @@ const CHARACTER_DATA = {
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
   ['Sanhua',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Aalto',         ['Coordinated ATK'],             [],                                      []],
-  ['Lumi',          ['Skill'],                       ['Skill DMG Amp'],                       []],
+  // dmgFocus corrected 2026-08-18: her Forte Details table (fandom's Lumi/Combat page) funnels nearly
+  // every attack — Energized Pounce/Rebound, Glare, Red Spotlight Basic/Heavy ATK, Laser — into "counted
+  // as Basic Attack DMG" explicitly; only her Liberation (Squeakie Express) and Resonance Skill
+  // (Pounce/Rebound, which Prydwen's own Review calls "minimal damage") aren't Basic ATK, so 'Skill' had
+  // no basis as her focus. buffs 'Skill DMG Amp' unchanged (matches her real Outro Escorting effect).
+  ['Lumi',          ['Basic ATK'],                    ['Skill DMG Amp'],                       []],
   ['Yangyang',      ['Skill'],                       ['Energy Regen'],                        []],
   // 5★ Support / Healer
   ['Verina',        ['Liberation'],                  ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
@@ -1055,7 +1078,10 @@ const CHARACTER_DATA = {
   // 250.00 / 1,136.65, rounds to 1137) and Prydwen's own Lv.90 stat screen (DEF 1137).
   ['Mortefi',       10025, 250, 1137, 125],
   ['Youhu',         9975,  262, 1051, 125],
-  ['Lumi',          8500,  337, 879,  125],
+  // ATK/DEF corrected 2026-08-18: were 337/879, truncated instead of rounded from fandom's exact Lv.90
+  // Ascensions and Stats table (8,500.00 / 337.50 / 879.98, rounds to 338/880), matching Prydwen's own
+  // Lv.90 stat screen (ATK 338, DEF 880).
+  ['Lumi',          8500,  338, 880,  125],
   ['Buling',        10625, 225, 1258, 125],
 ].forEach(([name, hp, atk, def, maxEnergy]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { baseHp: hp, baseAtk: atk, baseDef: def, maxEnergy });
@@ -1597,6 +1623,19 @@ const CHARACTER_DATA = {
   // Prydwen's own Voice Actors tab is blank ('-') for all four languages for Youhu, so fandom is the only
   // sourced VA credit here.
   ['Youhu', 'Cryogenic Wonders', 'Huanglong', 'Chongzhou', { en: 'Leonora Haig', cn: 'Liu Yilei', jp: 'Tomita Miyu', kr: 'Park Si-yoon' }],
+  // added 2026-08-18 for Lumi's audit — previously entirely missing. title/birthplace/VAs confirmed
+  // exact from the infobox wikitext (MediaWiki API, action=parse&page=Lumi&prop=wikitext): title
+  // 'Kaleido Refraction', birthplace/nation both 'Huanglong' (matching REGION_DATA above — no split
+  // birthplace-vs-nation tie for her). The infobox lists two affiliation fields — 'Yuezhou' (a city
+  // within Huanglong, no dedicated FACTION_ICONS emblem) and 'Lollo Logistics' (her actual employer,
+  // matching her `desc` and Combat page); organization uses 'Lollo Logistics' since it both has a real
+  // FACTION_ICONS emblem already on file and is the affiliation her kit/lore actually centers on. VAs
+  // confirmed exact from the infobox: EN Emily Cass, CN Jing Chen (静宸), JP Suzuki Minori (鈴木みのり),
+  // KR Jeong Ha-eun (정해은) — note Prydwen's own Voice Actors tab is blank ('-') for all four languages
+  // for Lumi, so fandom is the only sourced VA credit here (same gap as Youhu's audit). No `birthday`
+  // field exists at all in her infobox wikitext, so it's left out of BIRTHDAY_DATA per the established
+  // 'Unknown' convention rather than guessed.
+  ['Lumi', 'Kaleido Refraction', 'Huanglong', 'Lollo Logistics', { en: 'Emily Cass', cn: 'Jing Chen', jp: 'Suzuki Minori', kr: 'Jeong Ha-eun' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2097,12 +2136,16 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Fusion DPS. Resonance Skill burst. Whizzing Fight Spirit sustained fire.',
   },
+  // corrected 2026-08-18: duration was 14s, but fandom's Lumi/Combat Forte Details table (Escorting,
+  // Outro Skill) reads exactly "Resonance Skill DMG Amplified by 38% for 10s or until they are switched
+  // out" — 38% was already correct, only the duration had no basis (matches Prydwen's Review tab wording
+  // too, which also states 38%).
   'Lumi': {
-    outroBuffs: [{ stat: 'skillDmg', value: 38, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'skillDmg', value: 38, target: 'next', duration: 10 }],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 38% Resonance Skill DMG Amp to next. Electro sub-DPS.',
+    note: 'Outro (Escorting): 38% Resonance Skill DMG Amp to next for 10s or until they switch out. Electro Hybrid buffer.',
   },
   // corrected 2026-08-18: the prior 'Lib: 12% ATK teamwide' buff had no basis anywhere on fandom's
   // Combat page or Prydwen's Kit tab — Fortune's Favor (Liberation) carries no team buff at all, it's a
@@ -2908,12 +2951,34 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Vindication', '49.71%×4', 'Unwavering strike; can chain into Crimson Erosion.'],
     ['Outro', 'Duality', '+23% Havoc DMG Deepen (14s)', 'Buffs the incoming Resonator.'],
   ],
+  // corrected 2026-08-18: replaced the old generic "Stage 1-3" placeholder (fabricated move names
+  // "Luminal Strike"/"Daybreak Signal"/"Light Surge" don't exist on the real kit, and the Outro
+  // "Radiant Blessing"/"+12% Glacio DMG" was doubly wrong — Lumi is Electro, not Glacio, and her real
+  // Outro buffs Resonance Skill DMG, not elemental DMG) with real move names and Lv.10 Attribute Scaling
+  // values from wutheringwaves.fandom.com/wiki/Lumi/Combat's Forte Details table (rendered — the raw
+  // wikitext only transcludes {{Forte Table|Lumi}}), cross-checked against Prydwen's own Kit tab
+  // (identical multiplier values). Her dual Yellow Light (ranged)/Red Light (melee) Basic ATK stances,
+  // Signal Light Forte Circuit's Energized Pounce/Rebound/Glare/Red Spotlight/Laser rows, and Heavy
+  // ATK/Plunging Attack/Dodge Counter rows were entirely missing before.
   'Lumi': [
-    ['Basic ATK', 'Stage 1-3', '27.3% → 23%×2 → 57.6%'],
-    ['Skill', 'Luminal Strike', '41%×2'],
-    ['Liberation', 'Daybreak Signal', '180%'],
-    ['Intro', 'Light Surge', '50%×2'],
-    ['Outro', 'Radiant Blessing', '+12% Glacio DMG (14s)'],
+    ['Basic ATK', 'Yellow Light: Basic Attack', '31.81%×3', 'Summon Squeakie to shoot three shots in a row; ranged Basic ATK in Yellow Light Mode.'],
+    ['Basic ATK', 'Glitter', '63.62%', 'Yellow Light: Zoom auto-shoot at a locked-on target after a Dodge; considered Basic Attack DMG.'],
+    ['Basic ATK', 'Yellow Light: Plunging Attack', '95.43%', 'Consumes STA; plunging attack in Yellow Light Mode.'],
+    ['Basic ATK', 'Red Light: Basic Attack', '90.66% → 107.66%+21.54%×5 → 64.60%+150.72%', 'Up to 3 consecutive melee strikes in Red Light Mode.'],
+    ['Basic ATK', 'Red Light: Heavy Attack', '66.11%×2', 'Consumes STA; strikes the ground with Squeakie, considered Basic Attack DMG.'],
+    ['Basic ATK', 'Red Light: Plunging Attack', '113.33%', 'Consumes STA; plunging attack in Red Light Mode.'],
+    ['Basic ATK', 'Red Light: Dodge Counter', '167.30%+33.46%×5', 'Basic ATK right after a successful Dodge in Red Light Mode.'],
+    ['Skill', 'Pounce', '181.32%', 'Yellow Light Mode: pounce onto the target, switching to Red Light Mode; free of STA cost when switched onto the field.'],
+    ['Skill', 'Rebound', '173.76%', 'Red Light Mode: leap backward and attack, switching to Yellow Light Mode.'],
+    ['Liberation', 'Squeakie Express', '954.29%', 'Throw the giant Squeakie at the target, dealing Electro DMG. 20s CD, 125 Resonance Cost.'],
+    ['Forte', 'Glare', '81.52%', "Yellow Spotlight Mode: replaces Glitter with a higher DMG Multiplier after Energized Rebound; ends after 6 Glares."],
+    ['Forte', 'Red Spotlight: Basic Attack', '120.25% → 138.32%+27.67%×5 → 93.73%+218.69%', 'Enhanced 3-hit Basic ATK combo during Red Spotlight Mode (after Energized Pounce).'],
+    ['Forte', 'Red Spotlight: Heavy Attack', '88.18%×2', 'Enhanced Heavy Attack during Red Spotlight Mode.'],
+    ['Forte', 'Energized Pounce', '183.31%×2', 'Resonance Skill replacement when Yellow Light Spark is full; Electro DMG counted as Basic Attack DMG, enters Red Spotlight Mode.'],
+    ['Forte', 'Energized Rebound', '251.70%', 'Resonance Skill replacement when Red Light Spark is full; Electro DMG counted as Basic Attack DMG, enters Yellow Spotlight Mode.'],
+    ['Forte', 'Laser', '74.56%×1-4', 'Outro Skill consumes all Sparks; Electro DMG counted as Basic Attack DMG, up to 4 beams (1 extra beam per 25 Sparks consumed).'],
+    ['Intro', 'Special Delivery', '56.33%×3', 'Enter Yellow Light Mode and attack the target, dealing Electro DMG.'],
+    ['Outro', 'Escorting', 'No DMG (Resonance Skill DMG Amp +38%, 10s)', 'The incoming Resonator has their Resonance Skill DMG Amplified by 38% for 10s or until they are switched out.'],
   ],
   // corrected 2026-08-18: replaced the old generic "Stage 1-4" placeholder values (fabricated move names
   // "Violent Crescendo"/"Fury Overture"/"Flame Reprise" don't exist on the real kit at all) with real
@@ -3579,6 +3644,22 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Ruyi', note: 'Antique Appraisal once more' },
     { type: 'Outro', skill: 'Timeless Classics', note: 'swap into the Coordinated ATK dealer — grants +100% Coordinated ATK DMG Amp for 28s' },
   ],
+  // Added 2026-08-18 (previously entirely missing) — sourced from Prydwen's Gameplay and teams "Rotation"
+  // tab and fandom's Lumi/Combat Instructions text. Alternates Yellow Light/Red Light stances by consuming
+  // full Sparks with Energized Pounce/Rebound; ends on a swap-cancelled Echo into Outro for the incoming
+  // Resonance Skill DMG dealer (Jinhsi/Carlotta). Prydwen notes the rotation is "fairly long for a hybrid
+  // character" and recommends swap-cancelling the marked steps to shorten field time.
+  'Lumi': [
+    { type: 'Intro', skill: 'Special Delivery' },
+    { type: 'Liberation', skill: 'Squeakie Express', note: 'Electro DMG nuke, builds Concerto Energy' },
+    { type: 'Forte', skill: 'Energized Pounce', note: 'Yellow Light Spark full — enters Red Spotlight Mode; optional swap cancel and immediately back' },
+    { type: 'Forte', skill: 'Red Spotlight: Basic Attack', note: 'enhanced 3-hit Basic ATK combo; optional swap cancel and immediately back after the 3rd hit' },
+    { type: 'Forte', skill: 'Energized Rebound', note: 'Red Light Spark full — enters Yellow Spotlight Mode' },
+    { type: 'Basic ATK', skill: 'Yellow Light: Basic Attack', note: 'builds Yellow Light Spark' },
+    { type: 'Forte', skill: 'Glare', note: 'Channelled Dash: 6 Glares in Yellow Spotlight Mode' },
+    { type: 'Forte', skill: 'Energized Pounce', note: 'Yellow Light Spark full again' },
+    { type: 'Outro', skill: 'Escorting', duration: 10, note: 'swap-cancel her Echo right before this — grants the incoming Resonator +38% Resonance Skill DMG Amp for 10s' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3832,7 +3913,20 @@ const RESONANCE_CHAIN_DATA = {
   // S5 ATK+30% at max Numbingly Spicy! stacks (atkPct, confirmed exact, conditional). S6 Boom Boom grants team Basic
   // ATK DMG Bonus+25% for 15s (basicDmg, confirmed exact, team buff).
   'Chixia':       { s1: { totalMult: 5 }, s2: { totalMult: 4 }, s3: { libDmg: 40 }, s4: { totalMult: 8 }, s5: { atkPct: 30 }, s6: { basicDmg: 25 } },
-  'Lumi':         { s1: { skillDmg: 10 }, s2: { totalMult: 10 }, s3: { skillDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { skillDmg: 15 } },
+  // corrected 2026-08-18: prior values (skillDmg/atkPct on every node) had no basis in Lumi's real chain
+  // kit (fandom Combat page, rendered Resonance Chain table) — she has no ATK% node and no Resonance
+  // Skill DMG node at all. Real effects: S1 Parcel To Be Delivered — after Energized Rebound, +60 STA
+  // within 3s (utility, no STA-regen stat in schema, kept as small totalMult). S2 Lollo Logistics, Ready
+  // to Help — Energized Pounce/Rebound ignore 20% target DEF (confirmed exact -> defIgnore). S3 Priority
+  // Parcel In Transit — Squeakie Express (Liberation) DMG+30% (confirmed exact -> libDmg). S4 Captain
+  // Lumi, At Your Service — Basic ATK DMG Bonus+30% (confirmed exact -> basicDmg). S5 Parcel Collected On
+  // Time — when Spark is fully recovered, Laser DMG Multiplier+100% (confirmed exact; Laser is "counted
+  // as Basic Attack DMG" per its own Forte text, but this is a conditional per-move multiplier rather
+  // than an unconditional Basic ATK bonus like S4, so kept separate as totalMult to avoid double-counting
+  // S4's basicDmg). S6 Give Me A Five-star Rating — casting Squeakie Express grants all team members
+  // ATK+20% for 20s (confirmed exact -> atkPct, team buff, matches this table's convention elsewhere,
+  // e.g. Danjin/Taoqi S6).
+  'Lumi':         { s1: { totalMult: 5 }, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: { totalMult: 100 }, s6: { atkPct: 20 } },
   // corrected 2026-08-18: prior values (defShred/deepen on every node) had no basis in Taoqi's real
   // chain kit (fandom Combat page, Resonance Chain table) — she has no DEF Shred or DMG Deepen node at
   // all. Real effects: S1 Essense of Tranquility — Forte Circuit Power Shift's Shield +40% (utility,
@@ -4571,6 +4665,25 @@ const SKILL_ICONS = {
     'Scroll of Wonders': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/61/Skill_Scroll_of_Wonders.png',
     'Timeless Classics': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/61/Skill_Timeless_Classics.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Skill_*.png assets via the MediaWiki API (Forte Details table image thumbnails, section=4 of
+  // Lumi/Combat). 'Energized' is listed before 'Pounce'/'Rebound' so getSkillIcon's substring match
+  // resolves 'Energized Pounce'/'Energized Rebound' (Forte Circuit moves) to Signal Light's icon rather
+  // than falling through to the plain Resonance Skill (Searchlight Service) icon.
+  'Lumi': {
+    'Energized': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
+    'Glare': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
+    'Red Spotlight': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
+    'Laser': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
+    'Pounce': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1e/Searchlight_Service.png',
+    'Rebound': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1e/Searchlight_Service.png',
+    'Squeakie Express': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e2/Squeakie_Express.png',
+    'Yellow Light': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
+    'Red Light': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
+    'Glitter': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
+    'Special Delivery': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Skill_Special_Delivery.png',
+    'Escorting': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/94/Skill_Escorting.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -5051,6 +5164,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/04/Sequence_Node_Dreamland_Meander.png',
     s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/23/Sequence_Node_Slumber_Evermore.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Sequence_Node_*.png assets via the MediaWiki API (action=parse&page=Lumi/Combat&prop=text&section=9).
+  'Lumi': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7a/Sequence_Node_Parcel_To_Be_Delivered.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Sequence_Node_Lollo_Logistics%2C_Ready_to_Help.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/35/Sequence_Node_Priority_Parcel_In_Transit.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/5/5b/Sequence_Node_Captain_Lumi%2C_At_Your_Service.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/cb/Sequence_Node_Parcel_Collected_On_Time.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/2a/Sequence_Node_Give_Me_A_Five-star_Rating.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -5115,6 +5238,8 @@ const CHAIN_NODE_NAMES = {
   'Mortefi': { s1: 'Solitary Etude', s2: 'Hypocritical Hymn', s3: 'Flaming Recitativo', s4: 'Cathartic Waltz', s5: 'Funerary Quartet', s6: 'Apoplectic Instrumental' },
   // added 2026-08-18 — previously entirely missing.
   'Youhu': { s1: 'Waterside Respite', s2: 'Sunroom Siesta', s3: 'Restless Sleep', s4: 'Frosted Lullaby', s5: 'Dreamland Meander', s6: 'Slumber Evermore' },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's Lumi/Combat Resonance Chain table.
+  'Lumi': { s1: 'Parcel To Be Delivered', s2: 'Lollo Logistics, Ready to Help', s3: 'Priority Parcel In Transit', s4: 'Captain Lumi, At Your Service', s5: 'Parcel Collected On Time', s6: 'Give Me A Five-star Rating' },
   // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
   // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
   'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },
