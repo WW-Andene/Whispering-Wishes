@@ -1226,6 +1226,30 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
   return (
     <>
+      {/* Enemy Target — drives enemyDef90/enemyResMap above, so it lives here (always visible once a
+          team exists) rather than only inside DPSComparisonCard, which is gated behind "+ Compare". */}
+      <Card>
+        <CardBody>
+          <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+            <Sword size={12} className="text-red-400" />
+            <span className="text-gray-400 text-sm font-medium">Target:</span>
+            <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
+              className="kuro-btn text-sm px-2 py-1 flex-1 min-w-[120px] max-w-[280px] text-left truncate">
+              {enemyEcho || 'Training Dummy (Default)'}
+            </button>
+            <div className="flex items-center gap-1">
+              <span className="text-gray-500 text-sm">Lv.</span>
+              <input type="text" inputMode="numeric" value={enemyLevel}
+                onFocus={e => e.target.select()}
+                onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
+                onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
+                className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
+            </div>
+            <span className="text-gray-600 text-sm">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
+          </div>
+        </CardBody>
+      </Card>
+
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
           <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${overviewCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
