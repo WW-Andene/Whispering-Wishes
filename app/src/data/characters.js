@@ -2071,7 +2071,13 @@ const CHAR_BUFF_TABLE = {
   },
   'Ciaccona': {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
-    libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 99, condition: 'Solo Concert: from Basic ATK Ensemble Sylph summons, not Liberation itself — near-permanent uptime' }],
+    // stat corrected 2026-08-18: was 'allDmg' (universal, applies to any team regardless of element)
+    // but this character's own note text (below) and kit identity both say this is an AERO-only DMG
+    // bonus ("+24% Aero DMG team"), not a true All-Attribute Amp — was granting a phantom +24% damage
+    // buff to any non-Aero main DPS paired with her, in both the damage calculator and the
+    // recommendation engine (which is how this was actually caught — she scored as a top-8 recommended
+    // teammate for a Glacio DPS with no real synergy).
+    libBuffs: [{ stat: 'elemDmg', value: 24, target: 'team', duration: 99, condition: 'aero — Solo Concert: from Basic ATK Ensemble Sylph summons, not Liberation itself — near-permanent uptime' }],
     selfBuffs: [],
     // corrected 2026-08-18: removed — this was mislabeled as a team buff. Woodland Aria's real effect
     // (re-verified against nanoka.cc's raw effect JSON) is entirely self-target: "Hitting Aero-Eroded

@@ -379,6 +379,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           const val = b.value * uptime;
           if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
           else if (b.stat === 'allDmg') elemDmg += val;
+          else if (b.stat === 'elemDmg') {
+            const buffEl = (b.condition || '').toLowerCase();
+            const dpsEl = (mainDps.d.element || '').toLowerCase();
+            if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
+          }
           else if (b.stat === 'critRate') cr += val;
           else if (b.stat === 'critDmg') cd += val;
           else if (b.stat === 'echoDmg') echoDmg += val;
@@ -648,6 +653,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               const val = b.value * uptime;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg') sElem += val;
+              else if (b.stat === 'elemDmg') {
+                const buffEl = (b.condition || '').toLowerCase();
+                const subEl = (m.d.element || '').toLowerCase();
+                if (!buffEl || buffEl.includes(subEl) || buffEl.includes('all')) sElem += val;
+              }
               else if (b.stat === 'critRate') sCr += val;
               else if (b.stat === 'critDmg') sCd += val;
               else if (b.stat === 'echoDmg') sEchoDmg += val;
