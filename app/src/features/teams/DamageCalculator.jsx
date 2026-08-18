@@ -1918,8 +1918,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border ${sty.cls}`}>{sty.label}</span>
                                     <span className="text-sm text-gray-200 font-medium">{s.skill}</span>
                                   </div>
-                                  {sty.hint && <div className="text-2xs text-gray-600 mt-0.5">{sty.hint}</div>}
-                                  {s.note && <div className="text-2xs text-gray-400 mt-0.5">→ {s.note}</div>}
+                                  {s.note ? (
+                                    <div className="text-2xs text-gray-400 mt-0.5">{s.note}</div>
+                                  ) : (
+                                    <div className="text-2xs text-yellow-600/60 italic mt-0.5">No verified how-to instructions for this step yet.</div>
+                                  )}
                                 </div>
                               </div>
                             );

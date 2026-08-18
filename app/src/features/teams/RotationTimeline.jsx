@@ -31,27 +31,27 @@ export const STAT_LABELS_FULL = {
   aeroDmg: 'Aero DMG', spectroDmg: 'Spectro DMG', havocDmg: 'Havoc DMG',
 };
 
-// Color + full label + plain-English explanation per CHARACTER_ROTATIONS step type — shared by the
-// Rotation Guide's skill-sequence chips. A player who doesn't already know Wuthering Waves' combat
-// jargon shouldn't have to decode a 2-3 letter abbreviation (the old version used "SK"/"HVY"/"BSC" —
-// this is a help feature, it has to be readable without a legend) or guess what the category even
-// means — `hint` spells out what that kind of action generally does in combat, `label` is the full
-// word shown on the badge itself.
+// Color + full label per CHARACTER_ROTATIONS step type — shared by the Rotation Guide's skill-sequence
+// chips, just the category name and color (Intro/Skill/Liberation/Heavy/Basic/Forte/Echo/Outro spelled
+// out, no 2-3 letter codes to decode). The actual how-to-execute instructions live in each step's own
+// `note` field in CHARACTER_ROTATIONS (character- and step-specific — a generic "what a Forte Circuit
+// is" blurb here can't tell you HOW to charge THIS character's Forte, only the real per-character combat
+// text can), so this table intentionally carries no generic description text anymore.
 export const STEP_TYPE_STYLE = {
-  Intro: { label: 'Intro Skill', hint: 'Brings this Resonator onto the field with a quick attack as they swap in.', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
-  Skill: { label: 'Resonance Skill', hint: 'A cooldown-based ability, usually the main way to build up this character\'s Forte gauge.', cls: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
-  Liberation: { label: 'Resonance Liberation', hint: 'The character\'s Ultimate — costs Resonance Energy (built up over the fight) and usually hits hardest.', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
-  Ultimate: { label: 'Resonance Liberation (Ultimate)', hint: 'The character\'s Ultimate — costs Resonance Energy (built up over the fight) and usually hits hardest.', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
-  'Heavy ATK': { label: 'Heavy Attack', hint: 'A charged attack, held instead of tapped — usually stronger than a Basic Attack and can have its own special effect.', cls: 'text-orange-400 bg-orange-500/10 border-orange-500/30' },
-  'Basic ATK': { label: 'Basic Attack', hint: 'The character\'s standard combo, chained with repeated taps of the attack button.', cls: 'text-slate-300 bg-slate-500/10 border-slate-500/30' },
-  Forte: { label: 'Forte Circuit', hint: 'A character-specific bonus action, unlocked once their unique Forte gauge (built up through combat) is full.', cls: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
-  'Mid-air': { label: 'Mid-air Attack', hint: 'An attack performed while airborne, usually after a jump or a Skill that launches the character up.', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  'Mid-air ATK': { label: 'Mid-air Attack', hint: 'An attack performed while airborne, usually after a jump or a Skill that launches the character up.', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  Echo: { label: 'Echo Skill', hint: 'The equipped Echo\'s own active ability, separate from the character\'s kit — bound to its own cooldown.', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
-  Outro: { label: 'Outro Skill', hint: 'Triggered when swapping this character OUT — this is what hands buffs off to whoever swaps in next (see below).', cls: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
-  Step: { label: 'Action', hint: 'A step in this character\'s combo, in the order it should be performed.', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' },
+  Intro: { label: 'Intro Skill', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
+  Skill: { label: 'Resonance Skill', cls: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
+  Liberation: { label: 'Resonance Liberation', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
+  Ultimate: { label: 'Resonance Liberation (Ultimate)', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
+  'Heavy ATK': { label: 'Heavy Attack', cls: 'text-orange-400 bg-orange-500/10 border-orange-500/30' },
+  'Basic ATK': { label: 'Basic Attack', cls: 'text-slate-300 bg-slate-500/10 border-slate-500/30' },
+  Forte: { label: 'Forte Circuit', cls: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
+  'Mid-air': { label: 'Mid-air Attack', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  'Mid-air ATK': { label: 'Mid-air Attack', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  Echo: { label: 'Echo Skill', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  Outro: { label: 'Outro Skill', cls: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
+  Step: { label: 'Action', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' },
 };
-export const stepStyle = (type) => STEP_TYPE_STYLE[type] || { label: type || 'Action', hint: '', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' };
+export const stepStyle = (type) => STEP_TYPE_STYLE[type] || { label: type || 'Action', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' };
 
 export default function RotationTimeline({ rotationTimeline }) {
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
