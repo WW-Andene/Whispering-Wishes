@@ -3,7 +3,7 @@
 // Edit this file to add/update echoes, sets, and echo damage data
 
 import ENEMY_LEVEL_STATS from './enemyLevelStats.json';
-import ENEMY_BASE_STATS from './enemyBaseStats.json';
+import ENEMY_STAGGER_STATS from './enemyStaggerStats.json';
 
 /** @type {Record<string, import('../types.js').EchoSetData>} */
 const ECHO_SETS = {
@@ -460,40 +460,45 @@ const ECHO_SKILL_BUFFS = {
   'Reminiscence - Nightmare: Adam Smasher': { buffs: [{ stat: 'critRate', value: 15 }], passive: true, condition: 'Lucy or Rebecca' },
 };
 
-// Per-level (1-120) HP/ATK/DEF/Stun DMG/Toughness DMG for boss echoes, sourced from nanoka.cc's
-// static monster data (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id). Index 0 =
-// level 1 ... index 119 = level 120 (120 is the ceiling nanoka's own level slider exposes for these
-// bosses — Tower/Illusive Realm difficulty scaling goes past the level-90 open-world cap). DEF
-// converges to 1512 for every boss at level 90 specifically: WW's enemy DEF curve at that level is
-// uniform across bosses, not a copy/paste error.
-// stunDmg / toughnessDmg map to nanoka's raw hardness_max / rage_max fields respectively (nanoka's
-// own UI labels them "Stun DMG" and "Toughness DMG" — yes, inverted from what the raw field names
-// suggest).
+// Per-level (1-120) HP/ATK/DEF for boss echoes, sourced from nanoka.cc's static monster data
+// (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id). Index 0 = level 1 ... index
+// 119 = level 120 (120 is the ceiling nanoka's own level slider exposes for these bosses — Tower/
+// Illusive Realm difficulty scaling goes past the level-90 open-world cap). DEF converges to 1512
+// for every boss at level 90 specifically: WW's enemy DEF curve at that level is uniform across
+// bosses, not a copy/paste error.
 
-/**
- * Returns { hp, atk, def, stunDmg, toughnessDmg } for a boss echo at a given level, or null if not
- * tracked/out of range.
- */
+/** Returns { hp, atk, def } for a boss echo at a given level, or null if not tracked/out of range. */
 export function getEnemyStatsAtLevel(name, level) {
   const rows = ENEMY_LEVEL_STATS[name];
   if (!rows) return null;
   const lvl = Math.max(1, Math.min(120, Math.round(Number(level) || 90)));
   const row = rows[lvl - 1];
   if (!row) return null;
-  const [hp, atk, def, stunDmg, toughnessDmg] = row;
-  return { hp, atk, def, stunDmg, toughnessDmg };
+  const [hp, atk, def] = row;
+  return { hp, atk, def };
 }
 
-// Base (non-level-scaling) stagger-system stats for boss echoes, sourced from the same nanoka.cc
-// monster JSON as above (base_stats.hardness_change/recover, tough_change/recover, rage_change/
-// recover — nanoka's own UI doesn't surface these, only the raw API carries them). All in percent.
-// interruptRes/interruptResRecover = hardness_change/hardness_recover (Interruption Resistance)
-// vibration/vibrationRecover = tough_change/tough_recover (Vibration Strength)
-// rage/rageRecover = rage_change/rage_recover (Rage)
+// Per-level (1-120) stagger-system stats — Interruption RES, Vibration Strength, Rage (+ Recovery
+// variants) — sourced from wutheringwaves.fandom.com's own Module:Enemy Stats/data + .../scaling
+// Lua modules (fetched via the site's api.php, which unlike the page itself isn't behind a
+// Cloudflare JS challenge). These genuinely ARE level-scaled for 4 of the 6 fields — confirmed
+// directly from the wiki's own render logic (Module:Enemy Stats: `data[name].hardness *
+// scaling[level].hardness` etc) — only Interruption RES and its Recovery are flat per-boss
+// constants (toughness/toughness_recover in the wiki's raw field names). Vibration Strength/Rage
+// turn out to be the exact same underlying numbers as nanoka.cc's hardness_max/rage_max (which
+// nanoka's own UI mislabels "Stun DMG"/"Toughness DMG") — cross-checked exactly at every level.
+// Lioness of Glory has no entry in the wiki's data module at all (not fabricated — left untracked,
+// same null-fallback as every other genuinely-missing stat in this file).
 
-/** Returns { interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover } (%) or null. */
-export function getEnemyBaseStats(name) {
-  const row = ENEMY_BASE_STATS[name];
+/**
+ * Returns { interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover } at
+ * a given level, or null if not tracked/out of range.
+ */
+export function getEnemyStaggerStatsAtLevel(name, level) {
+  const rows = ENEMY_STAGGER_STATS[name];
+  if (!rows) return null;
+  const lvl = Math.max(1, Math.min(120, Math.round(Number(level) || 90)));
+  const row = rows[lvl - 1];
   if (!row) return null;
   const [interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover] = row;
   return { interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover };
@@ -698,17 +703,16 @@ export function getEnemyBaseStats(name) {
   // want a different level should call getEnemyStatsAtLevel(name, level) directly rather than reading
   // this fixed level-90 snapshot.
   const lv90 = getEnemyStatsAtLevel(name, 90);
-  const baseStats = getEnemyBaseStats(name);
+  const stagger90 = getEnemyStaggerStatsAtLevel(name, 90);
   // These 39 boss echoes' own audited RES (enemyRes) only ever records their one boosted element —
   // every other element (Physical included) is a flat 10% RES baseline confirmed across every raw
   // nanoka.cc monster JSON sampled for this class of enemy (Overlord/Calamity). Fill the full 7-way
   // table from that baseline rather than leaving unlisted elements undisplayed at an implicit 0%.
   const enemyStats = enemyRes ? {
     level: 90, hp: lv90?.hp ?? null, atk: lv90?.atk ?? null, def: lv90?.def ?? null,
-    stunDmg: lv90?.stunDmg ?? null, toughnessDmg: lv90?.toughnessDmg ?? null,
-    interruptRes: baseStats?.interruptRes ?? null, interruptResRecover: baseStats?.interruptResRecover ?? null,
-    vibration: baseStats?.vibration ?? null, vibrationRecover: baseStats?.vibrationRecover ?? null,
-    rage: baseStats?.rage ?? null, rageRecover: baseStats?.rageRecover ?? null,
+    interruptRes: stagger90?.interruptRes ?? null, interruptResRecover: stagger90?.interruptResRecover ?? null,
+    vibration: stagger90?.vibration ?? null, vibrationRecover: stagger90?.vibrationRecover ?? null,
+    rage: stagger90?.rage ?? null, rageRecover: stagger90?.rageRecover ?? null,
     res: {
       physical: enemyRes.physical || 10,
       glacio: enemyRes.glacio || 10, fusion: enemyRes.fusion || 10, electro: enemyRes.electro || 10,

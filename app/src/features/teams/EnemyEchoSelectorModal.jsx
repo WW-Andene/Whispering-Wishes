@@ -12,6 +12,11 @@ import MonsterCard from '../../shared/components/MonsterCard.jsx';
 
 // Only 4-cost Overlord/boss echoes represent an actual boss encounter with meaningful stats — 1-cost
 // and 3-cost echoes are ordinary field monsters, not "target enemies" in the sense this picker models.
+// Corrosaurus and Twin Nova - Nebulous Cannon are the two exceptions: real Elite-class mini-bosses
+// with full tracked HP/ATK/DEF/RES/stagger data (see echoes.js), just filed under 3-cost for their
+// actual in-game echo rarity — included here explicitly so their data isn't unreachable in the picker.
+const EXTRA_TARGETABLE_ECHOES = ['Corrosaurus', 'Twin Nova - Nebulous Cannon'];
+
 export default function EnemyEchoSelectorModal({
   isOpen, onClose,
   enemyEcho, setEnemyEcho,
@@ -22,7 +27,7 @@ export default function EnemyEchoSelectorModal({
   buffFilter, setBuffFilter,
 }) {
 
-  const filtered = ALL_4COST_ECHOES.filter(n => {
+  const filtered = [...ALL_4COST_ECHOES, ...EXTRA_TARGETABLE_ECHOES].filter(n => {
     if (search && !n.toLowerCase().includes(search.toLowerCase())) return false;
     const ed = ECHO_DATA[n];
     if (!ed) return false;

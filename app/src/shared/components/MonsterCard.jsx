@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { Skull } from 'lucide-react';
 import { getElementIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
-import { getEnemyStatsAtLevel } from '../../data/echoes.js';
+import { getEnemyStatsAtLevel, getEnemyStaggerStatsAtLevel } from '../../data/echoes.js';
 
 const ELEMENT_ORDER = ['physical', 'glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'];
 const ELEMENT_LABEL = { physical: 'Physical', glacio: 'Glacio', fusion: 'Fusion', electro: 'Electro', aero: 'Aero', spectro: 'Spectro', havoc: 'Havoc' };
@@ -58,8 +58,18 @@ export default function MonsterCard({
   const hp = scaled ? scaled.hp : enemyStats?.hp;
   const atk = scaled ? scaled.atk : enemyStats?.atk;
   const def = scaled ? scaled.def : enemyStats?.def;
-  const stunDmg = scaled ? scaled.stunDmg : enemyStats?.stunDmg;
-  const toughnessDmg = scaled ? scaled.toughnessDmg : enemyStats?.toughnessDmg;
+
+  // Interruption RES / its Recovery are flat per-boss constants; Vibration Strength, its Recovery,
+  // Rage, and its Recovery genuinely scale with level (wutheringwaves.fandom.com's own Module:Enemy
+  // Stats render logic — see getEnemyStaggerStatsAtLevel in echoes.js).
+  const staggerScaled = (isControlled || showLevelControl) ? getEnemyStaggerStatsAtLevel(name, level) : null;
+  const interruptRes = staggerScaled ? staggerScaled.interruptRes : enemyStats?.interruptRes;
+  const interruptResRecover = staggerScaled ? staggerScaled.interruptResRecover : enemyStats?.interruptResRecover;
+  const vibration = staggerScaled ? staggerScaled.vibration : enemyStats?.vibration;
+  const vibrationRecover = staggerScaled ? staggerScaled.vibrationRecover : enemyStats?.vibrationRecover;
+  const rage = staggerScaled ? staggerScaled.rage : enemyStats?.rage;
+  const rageRecover = staggerScaled ? staggerScaled.rageRecover : enemyStats?.rageRecover;
+
   const res = enemyStats?.res || {};
   const hasResData = Object.values(res).some(v => v);
   const Wrapper = onClick ? 'button' : 'div';
@@ -103,26 +113,24 @@ export default function MonsterCard({
         </div>
       </div>
 
-      {enemyStats && (hp || atk || def || stunDmg || toughnessDmg) && (
+      {enemyStats && (hp || atk || def) && (
         <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]">
           <StatRow icon={getStatIcon('HP')} label="HP" value={hp} />
           <StatRow icon={getStatIcon('ATK')} label="ATK" value={atk} />
           <StatRow icon={getStatIcon('DEF')} label="DEF" value={def} />
-          <StatRow icon={getStatIcon('Stun DMG')} label="Stun DMG" value={stunDmg} />
-          <StatRow icon={getStatIcon('Toughness DMG')} label="Toughness DMG" value={toughnessDmg} />
         </div>
       )}
 
-      {/* Stagger-system stats — flat per-boss constants (not level-scaled), so read straight off
-          enemyStats rather than the level-scaled hp/atk/def/stunDmg/toughnessDmg above. */}
-      {enemyStats && (enemyStats.interruptRes != null || enemyStats.vibration != null || enemyStats.rage != null) && (
+      {/* Stagger system — Interruption RES/Recovery are flat; Vibration Strength/Recovery and
+          Rage/Recovery scale with level just like HP/ATK/DEF above (see staggerScaled). */}
+      {enemyStats && (interruptRes != null || vibration != null || rage != null) && (
         <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]">
-          <StatRow label="Interruption RES" value={enemyStats.interruptRes} suffix="%" />
-          <StatRow label="Interruption RES Recovery" value={enemyStats.interruptResRecover} suffix="%" />
-          <StatRow label="Vibration Strength" value={enemyStats.vibration} suffix="%" />
-          <StatRow label="Vibration Strength Recovery" value={enemyStats.vibrationRecover} suffix="%" />
-          <StatRow label="Rage" value={enemyStats.rage} suffix="%" />
-          <StatRow label="Rage Recovery" value={enemyStats.rageRecover} suffix="%" />
+          <StatRow label="Interruption RES" value={interruptRes} />
+          <StatRow label="Interruption RES Recovery" value={interruptResRecover} />
+          <StatRow label="Vibration Strength" value={vibration} />
+          <StatRow label="Vibration Strength Recovery" value={vibrationRecover} />
+          <StatRow label="Rage" value={rage} />
+          <StatRow label="Rage Recovery" value={rageRecover} />
         </div>
       )}
 
