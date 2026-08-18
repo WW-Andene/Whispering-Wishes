@@ -294,6 +294,23 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         });
       }
 
+      // Sonata set p5 team/next ATK% buffs (Rejuvenating Glow/Halo of Starry Radiance's heal-triggered
+      // teamAtk, Moonlit Clouds' Outro-triggered nextAtk) — previously only emitted into the cosmetic
+      // Rotation Timeline event list, never added to the actual stat totals the DPS number is computed
+      // from. teamAtk applies from any member (including the main DPS healing/triggering it themself);
+      // nextAtk only from a non-main member swapping the main DPS in via their Outro.
+      const p5v = m.echoSet?.p5val;
+      if (p5v?.teamAtk) {
+        const uptime = Math.min(1, 20 / rotTime);
+        const val = p5v.teamAtk * uptime;
+        atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
+      }
+      if (!isMain && p5v?.nextAtk) {
+        const uptime = Math.min(1, 14 / rotTime);
+        const val = p5v.nextAtk * uptime;
+        atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
+      }
+
       (bt.libBuffs || []).forEach(b => {
         if (b.target === 'team' || (!isMain && b.target === 'next')) {
           const teamRotTime = rotTime;
@@ -554,6 +571,18 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               else if (b.stat === 'defShred') sDefShred += val;
             }
           });
+          // Sonata set p5 team/next ATK% buffs (see the same fix on the main-tier computation above).
+          const oP5v = other.echoSet?.p5val;
+          if (oP5v?.teamAtk) {
+            const uptime = Math.min(1, 20 / teamRotTime);
+            const val = oP5v.teamAtk * uptime * (isOffField ? 0.6 : 1.0);
+            if (m.scaling === 'ATK') sAtkPct += val;
+          }
+          if (oP5v?.nextAtk) {
+            const uptime = Math.min(1, 14 / teamRotTime);
+            const val = oP5v.nextAtk * uptime * (isOffField ? 0.6 : 1.0);
+            if (m.scaling === 'ATK') sAtkPct += val;
+          }
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team') {
               const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
@@ -608,6 +637,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           const subSetStats = createStats();
           applyFullEchoSet(subSetStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
           applyEchoStats(subSetStats, sEchoes, m.d.element, m.scaling);
+          // Sonata set p5 team ATK% (Rejuvenating Glow/Halo of Starry Radiance) applies to the wearer
+          // too, not just teammates — applyFullEchoSet doesn't know this key (see calcEngine.js), and
+          // the cross-member loop above explicitly skips self, so it must be added here.
+          if (m.echoSet?.p5val?.teamAtk && m.scaling === 'ATK') sAtkPct += m.echoSet.p5val.teamAtk;
           sAtkPct += subSetStats.atkPct; sCr += subSetStats.cr - BASE_CRIT_RATE; sCd += subSetStats.cd - BASE_CRIT_DMG;
           sElem += subSetStats.elemDmg; sSkillDmg += subSetStats.skillDmg;
           sBasicDmg += subSetStats.basicDmg; sHeavyDmg += subSetStats.heavyDmg;
