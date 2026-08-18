@@ -66,7 +66,11 @@ const BANNER_HISTORY = [
   // Version 3.6 (upcoming — dates are Game8's own estimate: "based on the Version Update's confirmed
   // release date, and the usual 21-day cycle for Version halves." Characters/weapons confirmed via
   // game8.co archive 453303 (Aug 10 2026 update), kit data not final until release.)
-  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
+  // bannerArt sourced 2026-08-18: fandom has no wide banner asset for Jingran yet (unreleased) — self
+  // cropped from File:Jingran_Card.jpg (a tall 2160x3840 portrait) to a 2160x1215 band centered on his
+  // face/upper body, matching the composition of every other bannerArt entry. Swap for the official
+  // wide banner art if/when one surfaces.
+  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: 'https://i.ibb.co/DSdRzq6/jingran-banner-crop1.jpg', predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
   // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used fandom's
   // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a
@@ -407,7 +411,9 @@ const DEFAULT_COLLECTION_IMAGES = {
   // ahead of her 2026-08-20 release, via the MediaWiki API — bypasses the site's Cloudflare challenge).
   'Qingxiao': 'https://i.ibb.co/27tS4Zw1/qingxiao-sprite.webp',
   // v3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
-  'Jingran': PLACEHOLDER_IMAGE,
+  // Jingran sourced 2026-08-18 from fandom's own File:Jingran_Full_Sprite.png (uploaded 2026-08-17,
+  // ahead of his 3.6-p2 release, via the MediaWiki API — bypasses the site's Cloudflare challenge).
+  'Jingran': 'https://i.ibb.co/yB024Z5G/jingran-sprite.webp',
   // 4★ Resonators
   'Aalto': 'https://i.ibb.co/v81v3Hq/Aalto-Full-Sprite.webp',
   'Baizhi': 'https://i.ibb.co/4Ztm8DCG/Baizhi-Full-Sprite.webp',

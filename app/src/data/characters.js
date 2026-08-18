@@ -688,14 +688,18 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
+    desc: 'A loner treading into illusive depths, of Mengzhou. HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
-    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
-    skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
+    // Dates corrected 2026-08-18: Jingran releases in the v3.6-p2 banner (~2026-09-10, per BANNER_HISTORY),
+    // not Aug 20 (that's Qingxiao's v3.6-p1 date) — fandom's own infobox leaves releaseDate blank/commented
+    // ("2026-09-??"), so no exact day is confirmed yet.
+    ascension: { boss: 'Unconfirmed (releases 3.6, ~Sept 2026)', common: 'Unconfirmed (releases 3.6, ~Sept 2026)', specialty: 'Unconfirmed (releases 3.6, ~Sept 2026)' },
+    skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, ~Sept 2026)', forgery: 'Unconfirmed (releases 3.6, ~Sept 2026)' },
     // bestWeapon confirmed real via nanoka.cc: Thousandfold Deliverance (Broadblade, 413 ATK / +72.2% HP, "Hark, Spirits and Stars").
-    // No community build guide exists yet (unreleased) — bestEchoes/teams remain unconfirmed.
-    bestEchoes: ['Unconfirmed (releases 3.6, Aug 20 2026)'], bestWeapon: 'Thousandfold Deliverance',
-    teams: ['Unconfirmed (releases 3.6, Aug 20 2026)'] },
+    // No community build guide exists yet (unreleased, and he isn't even datamined into nanoka.cc's own
+    // character list yet unlike Qingxiao) — bestEchoes/teams/weaponAlts remain unconfirmed.
+    bestEchoes: ['Unconfirmed (releases 3.6, ~Sept 2026)'], bestWeapon: 'Thousandfold Deliverance',
+    teams: ['Unconfirmed (releases 3.6, ~Sept 2026)'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
@@ -1157,7 +1161,7 @@ const CHARACTER_DATA = {
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
   ['Qiuyuan',      'Huanglong'], ['Yangyang: Xuanling', 'Huanglong'], ['Suisui', 'Huanglong'],
-  ['Qingxiao',     'Huanglong'],
+  ['Qingxiao',     'Huanglong'], ['Jingran',      'Huanglong'],
   // Huanglong 4★
   ['Aalto',        'Huanglong'], ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
   ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
@@ -1389,6 +1393,16 @@ const CHARACTER_DATA = {
   // dedicated FACTION_ICONS emblem) over affiliation2 'Xuanfang Wardens'. Birthday: blank on the
   // infobox, omitted from BIRTHDAY_DATA per the established convention.
   ['Qingxiao', 'Heart Sword', 'Huanglong', 'Mengzhou', { en: 'Kirsty Rider', cn: 'Jiang He', jp: 'Nabatame Hitomi', kr: 'Park Ri-na' }],
+  // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Jingran&prop=wikitext&section=0) from
+  // fandom's own "Upcoming" stub infobox — note its `name` field is a stray copy-paste leftover from
+  // Qingxiao's own infobox (a wiki bug, not this table's error); every other field (title, gender,
+  // birthplace, nation, affiliation, VA, quote) is genuinely Jingran-specific and cross-checked against
+  // his own quote/intro text and release-patch pairing with Qingxiao. birthplace/nation both Huanglong
+  // (REGION_DATA above). organization uses his only listed affiliation, 'Mengzhou' (same city/emblem as
+  // Qingxiao — both release in the 3.6 patch). Only JP VA is confirmed pre-release (Kawanishi Kengo);
+  // EN/CN/KR are blank on the infobox, left unset rather than guessed. Birthday: blank, omitted from
+  // BIRTHDAY_DATA per the established convention.
+  ['Jingran', 'Nether Qi Art', 'Huanglong', 'Mengzhou', { jp: 'Kawanishi Kengo' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
