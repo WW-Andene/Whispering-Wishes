@@ -4961,6 +4961,7 @@ const SKILL_ICONS = {
     'Mech Stage': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // rotation-step phrasing ('Mech Stage 2-4'/'Mech Stage 3-4'), same icon
     'Heavy Attack - Mech: Charged II': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // rotation-step phrasing for the Mech Charged ATK, same icon
     'Sync Strikes': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp', // Resonance Skill — Shared Voyage
+    'Form Switch': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp', // rotation-step phrasing for pressing the Resonance Skill to toggle Aemeath/Mech form, same icon
     'Seraphic Duet': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp',
     'Heavenfall Edict': 'https://i.ibb.co/3YGvVWff/Aemeath-liberation.webp', // Resonance Liberation — Towards the Daybreak
     'Songs Across the Universe': 'https://i.ibb.co/prZnwGKQ/Aemeath-skill-intro.webp', // Intro Skill — Overture of Departure
