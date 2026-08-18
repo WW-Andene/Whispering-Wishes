@@ -15,7 +15,7 @@ import {
   calcEnergyCycles,
   isHealerRole,
 } from './calcEngine.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -41,6 +41,18 @@ const TEAM_SET_BUFFS = {
   'Flaming Clawprint': [{ stat: 'elemDmg', value: 15, elem: 'fusion' }, { stat: 'libDmg', value: 20 }],
   'Midnight Veil': [{ stat: 'elemDmg', value: 15, elem: 'havoc' }],
   'Chromatic Foam': [{ stat: 'elemDmg', value: 25, elem: 'fusion' }], // Outro: +25% Fusion for next
+};
+
+// Maps CHARACTER_DATA.dmgFocus's short tags to the long-form wiki tag names COMBAT_ROLE_ICONS
+// is keyed by — same mapping CollectionTab/CharacterDetailModal use for the "All Damage" filter
+// and Combat Role badges, so this section's icons match the rest of the app instead of drifting.
+const DMG_FOCUS_ROLE_TAG = {
+  'Basic ATK': 'Basic Attack Damage',
+  'Heavy ATK': 'Heavy Attack Damage',
+  'Skill': 'Resonance Skill Damage',
+  'Liberation': 'Resonance Liberation Damage',
+  'Echo': 'Echo Skill Damage',
+  'Coordinated ATK': 'Coordinated Attack',
 };
 
 const DamageCalculator = forwardRef(function DamageCalculator({
@@ -974,11 +986,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
             }
           });
+          // CHAR_BUFF_TABLE uses duration: 99 or 999 as sentinels for "conditional passive, no
+          // natural decay" (e.g. a Crit DMG bonus active in a stance, or on a periodic proc) — never
+          // a literal 99/999-second timer. The real durations used anywhere in the table top out at
+          // 30s, so >=90 is an unambiguous sentinel check. Rendered literally these blew the whole
+          // chart's time scale out to ~100-1000s, squashing every real segment/buff into an
+          // unreadable sliver. Since these are self-target and only matter while the character is
+          // actually dealing damage, the correct display window is their own on-field time, same as
+          // the default for an unspecified duration.
           (bt.selfBuffs || []).forEach(b => {
-            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
           });
           (bt.weaponBuffs || []).forEach(b => {
-            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
           });
         }
 
@@ -1097,8 +1119,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         t += onField;
       });
 
-      // ── Textual rotation guide — narrates the same schedule the Gantt chart shows, so the two
-      // never disagree. One step per on-field window, in the order actually computed above. ──
+      // ── Rotation blocks — Prydwen-style: one self-contained block per character (what THEY do
+      // on field, independent of the rest of the team), plus what it hands off to / inherits from
+      // its neighbors in the sequence, so the whole team rotation reads as a chain of blocks rather
+      // than one flat, undifferentiated buff dump. One block per on-field window, in the order
+      // actually computed above. ──
+      const fmtBuff = (b) => `+${b.value}% ${STAT_LABELS[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`;
       const steps = timeline.map((seg, i) => {
         const isDps = seg.name === mainDps.name;
         const reason = isDps
@@ -1108,11 +1134,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             : nextOutroValue(mems.find(m => m.name === seg.name)) > 0
               ? 'Buff only reaches whoever swaps in next — placed right before the DPS window'
               : 'Sub-DPS / utility window';
-        const given = buffs
-          .filter(b => (b.owner || b.source) === seg.name && (Math.abs(b.start - seg.start) < 0.5 || Math.abs(b.start - (seg.start + seg.duration)) < 0.5))
-          .map(b => `+${b.value}% ${STAT_LABELS[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`);
-        const uniqueGiven = [...new Set(given)];
-        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, buffsGiven: uniqueGiven };
+        const own = buffs.filter(b => (b.owner || b.source) === seg.name);
+        // Self: fires and is fully spent during this character's own on-field window (Liberation,
+        // selfBuffs, weapon/echo passives while they're the one attacking).
+        const selfActive = [...new Set(
+          own.filter(b => b.start < seg.start + seg.duration - 0.05).map(fmtBuff)
+        )];
+        // Hands off: starts at/after they leave the field — this is the block's outbound link to
+        // whichever block comes next (outro buffs, echo outro procs).
+        const handsOff = [...new Set(
+          own.filter(b => b.start >= seg.start + seg.duration - 0.05).map(fmtBuff)
+        )];
+        // Inherits: buffs from an earlier block still active when this one starts — the block's
+        // inbound link, i.e. how it adapts to whatever the team set up before it.
+        const inherits = [...new Set(
+          buffs.filter(b => (b.owner || b.source) !== seg.name && b.start <= seg.start + 0.05 && b.start + b.duration > seg.start + 0.05)
+            .map(fmtBuff)
+        )];
+        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits };
       });
 
       return { segments: timeline, buffs, totalTime: rotTime, steps };
@@ -1628,11 +1667,33 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                           {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3.5 h-3.5 inline-block align-middle mr-0.5" onError={hideOnError} />}
                           {getElementShape(m.d.element)}{getElementShape(m.d.element) ? ' ' : ''}{m.d.element} DMG
                         </span>
-                        {(m.d.dmgFocus || []).map((df, di) => (
-                          <span key={di} className="kuro-badge kuro-badge-amber">{df}</span>
-                        ))}
+                        {/* Audited combatRoles is the authoritative, iconed tag source (see
+                            CharacterDetailModal) — falls back to plain dmgFocus tags, iconed via
+                            the same short-tag→wiki-tag mapping, only for un-audited characters. */}
+                        {m.d.combatRoles?.length > 0 ? (
+                          m.d.combatRoles.map((tag, ti) => {
+                            const icon = getCombatRoleIcon(tag);
+                            return (
+                              <span key={ti} className="kuro-badge kuro-badge-amber inline-flex items-center gap-1">
+                                {icon && <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                                {tag}
+                              </span>
+                            );
+                          })
+                        ) : (m.d.dmgFocus || []).map((df, di) => {
+                          const icon = getCombatRoleIcon(DMG_FOCUS_ROLE_TAG[df]);
+                          return (
+                            <span key={di} className="kuro-badge kuro-badge-amber inline-flex items-center gap-1">
+                              {icon && <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                              {df}
+                            </span>
+                          );
+                        })}
                         {m.d.statScaling && (
-                          <span className="kuro-badge kuro-badge-violet">{m.d.statScaling} Scaling</span>
+                          <span className="kuro-badge kuro-badge-violet inline-flex items-center gap-1">
+                            {getStatIcon(m.d.statScaling) && <img src={getStatIcon(m.d.statScaling)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                            {m.d.statScaling} Scaling
+                          </span>
                         )}
                       </div>
                     </div>
@@ -1807,30 +1868,63 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         </p>
       )}
 
-      {/* Rotation Guide — narrates the exact schedule the Gantt chart above shows, in plain text */}
+      {/* Rotation Guide — Prydwen-style: one self-contained block per character (readable on its
+          own — what THEY do on field) chained to its neighbors via explicit inherited/handed-off
+          buffs, instead of one flat list mixing everyone's numbers together. */}
       {rotationTimeline?.steps?.length > 0 && (
         <Card>
           <CardHeader>
             <span className="flex items-center gap-1.5"><ListOrdered size={14} /> Rotation Guide</span>
           </CardHeader>
           <CardBody>
-            <ol className="space-y-2">
-              {rotationTimeline.steps.map(step => (
-                <li key={step.order} className="flex gap-2">
-                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
-                  <div className="min-w-0">
-                    <div className="text-sm">
-                      <span className={`font-semibold ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>
-                      <span className="text-gray-500"> — on-field {step.duration}s</span>
+            <div className="space-y-0">
+              {rotationTimeline.steps.map((step, i) => (
+                <React.Fragment key={step.order}>
+                  <div className={`p-2.5 rounded-lg border ${step.isDps ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-[var(--border-medium)]'}`} style={step.isDps ? undefined : { background: 'var(--bg-stat)' }}>
+                    <div className="flex items-center gap-2">
+                      <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
+                      <span className={`font-semibold text-sm ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>
+                      <span className="text-gray-500 text-sm">on-field {step.duration}s</span>
+                      {step.isDps && <span className="kuro-badge kuro-badge-yellow ml-auto">Main DPS</span>}
                     </div>
-                    <div className="text-sm text-gray-500">{step.reason}</div>
-                    {step.buffsGiven.length > 0 && (
-                      <div className="text-sm text-emerald-400/80 mt-0.5">{step.buffsGiven.join(', ')}</div>
+                    <div className="text-sm text-gray-500 mt-1 pl-7">{step.reason}</div>
+
+                    {/* Inbound — what earlier blocks handed this one, i.e. how it adapts to the team */}
+                    {step.inherits.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-cyan-400/70 uppercase tracking-wide mb-1 flex items-center gap-1">↓ Inherits from team</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.inherits.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-cyan">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Self-contained — this character's own kit, readable with zero team context */}
+                    {step.selfActive.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Own kit</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.selfActive.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-violet">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Outbound — what this block hands off to whoever comes next */}
+                    {step.handsOff.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-emerald-400/70 uppercase tracking-wide mb-1">↑ Hands off to next</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.handsOff.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>)}
+                        </div>
+                      </div>
                     )}
                   </div>
-                </li>
+                  {i < rotationTimeline.steps.length - 1 && (
+                    <div className="flex justify-center py-0.5" aria-hidden="true">
+                      <ChevronDown size={14} className="text-gray-600" />
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
-            </ol>
+            </div>
           </CardBody>
         </Card>
       )}
