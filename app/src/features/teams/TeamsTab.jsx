@@ -12,7 +12,6 @@ import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useSessionState } from '../../utils/useSessionState.js';
-import { RarityStarRow } from '../../shared/components/RarityStars.jsx';
 
 function TeamsTab({
   state,
@@ -512,7 +511,7 @@ function TeamsTab({
                                 <X size={12} />
                               </button>}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
-                                <div className={rarity5 ? 'text-yellow-400' : 'text-purple-400'}>{rarity5 ? <RarityStarRow rarity={5} size={9} /> : <span className="text-2xs">★★★★</span>}</div>
+                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-2xs`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                                 <div className="text-sm truncate text-gray-200">{charName}</div>
                               </div>
                             </div>

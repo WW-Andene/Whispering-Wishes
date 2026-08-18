@@ -5,7 +5,6 @@
 import React from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { RarityStar } from '../../shared/components/RarityStars.jsx';
 
 const getBarColor = (label) => {
   const start = parseInt(label.split('-')[0], 10);
@@ -29,7 +28,7 @@ function PityHistogram({ statsTabData }) {
     return (
       <Card>
         <CardHeader>
-          <span className="flex items-center gap-1.5"><BarChart3 size={14} /> <RarityStar rarity={5} size={13} /> Pity Distribution</span>
+          <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
         </CardHeader>
         <CardBody>
           <p className="text-gray-400 text-base text-center py-4">Need 2+ five-star Convenes to show distribution</p>

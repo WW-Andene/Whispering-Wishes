@@ -26,13 +26,6 @@ export const ALLOWED_IMAGE_HOSTS = Object.freeze([
   'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com',
 ]);
 
-// ── Rarity star icons ───────────────────────────────────────────────────────
-// Official in-game star icons (re-hosted from wutheringwaves.fandom.com to ibb.co).
-// Only 5★ is populated so far — 4★/3★/2★/1★ are added incrementally.
-export const RARITY_STAR_ICONS = Object.freeze({
-  5: 'https://i.ibb.co/5Wk7rHq6/Star-5.webp',
-});
-
 export const isAllowedImageUrl = (url) => {
   if (!url || typeof url !== 'string') return false;
   try {

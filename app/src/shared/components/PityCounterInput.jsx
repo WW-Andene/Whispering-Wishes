@@ -5,7 +5,6 @@
 
 import React, { memo } from 'react';
 import { PityRing } from './PityRing.jsx';
-import { RarityStar } from './RarityStars.jsx';
 import { SOFT_PITY_START } from '../../data/constants.js';
 
 // P8-FIX: HIGH-15 — Extracted pity counter input component (eliminates ~120 lines of duplication across 4 banners)
@@ -25,7 +24,7 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
     </div>
     <div className="grid grid-cols-2 gap-2 text-base">
       <div className="flex items-center justify-between">
-        <span style={{ color }} className="flex items-center gap-1"><RarityStar rarity={5} size={12} /> Target:</span>
+        <span style={{ color }}>5★ Target:</span>
         <input type="text" inputMode="numeric" value={copies} onChange={e => { const v = parseInt(e.target.value, 10) || 1; onCopiesChange(Math.max(1, Math.min(maxCopies, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 5-star copies`} />
       </div>
       <div className="flex items-center justify-between">

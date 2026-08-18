@@ -29,7 +29,6 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
-import { RarityStar } from '../../shared/components/RarityStars.jsx';
 
 function AnalyticsTab({
   state,
@@ -622,7 +621,7 @@ function AnalyticsTab({
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-cyan-400 font-bold text-base">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-400 text-sm flex items-center justify-center gap-1">Total <RarityStar rarity={5} size={11} /></div>
+                              <div className="text-gray-400 text-sm">Total 5★</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
@@ -664,7 +663,7 @@ function AnalyticsTab({
 
                 {/* 5★ Pull Log — moved above Trophies for user workflow priority */}
                 <Card>
-                  <CardHeader><span className="flex items-center gap-1"><RarityStar rarity={5} size={13} /> Convene Log</span></CardHeader>
+                  <CardHeader>5★ Convene Log</CardHeader>
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
@@ -830,13 +829,13 @@ function AnalyticsTab({
                       return (<>
                     <p className="text-gray-400 text-sm mb-1.5">Resonators</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-sm flex items-center justify-center"><RarityStar rarity={5} size={12} /></div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-sm">5★</div></div>
                       <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-sm">4★</div></div>
                     </div>
                     
                     <p className="text-gray-400 text-sm mb-1.5">Weapons</p>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-sm flex items-center justify-center"><RarityStar rarity={5} size={12} /></div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-sm">5★</div></div>
                       <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-sm">4★</div></div>
                       <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-xl kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-sm">3★</div></div>
                     </div>
@@ -868,7 +867,7 @@ function AnalyticsTab({
                             <span className="text-gray-400 text-sm">{hist.length} Convenes</span>
                           </div>
                           <div className="flex gap-2 text-sm">
-                            <span className="text-yellow-400 inline-flex items-center gap-1">{hist.filter(p => p.rarity === 5).length} <RarityStar rarity={5} size={11} /></span>
+                            <span className="text-yellow-400">{hist.filter(p => p.rarity === 5).length} 5★</span>
                             <span className="text-purple-400">{hist.filter(p => p.rarity === 4).length} 4★</span>
                             <span className="text-gray-400">Pity: {pity}/{HARD_PITY}</span>
                           </div>

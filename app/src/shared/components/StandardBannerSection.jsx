@@ -9,7 +9,6 @@ import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW, TEXT_SHADOW_STYLE } from './BannerCard.jsx';
-import { RarityStar } from './RarityStars.jsx';
 
 const StandardBannerOverlay = memo(() => {
   const canvasRef = useRef(null);
@@ -153,7 +152,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <h4 className="font-bold text-xl text-white leading-tight">{title}</h4>
         </div>
         <div className={hasStats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider flex items-center gap-1">Available <RarityStar rarity={5} size={12} /></div>
+          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Available 5★</div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
             {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
           </div>
@@ -165,7 +164,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
             <div className="flex-1 flex items-center gap-3">
               <div className="text-center">
                 <div className={`font-bold text-xl kuro-number ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : profileData.pity5 >= 75 ? 'text-red-400' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400' : 'text-cyan-400'}`}>{profileData.pity5}<span className="text-gray-400 text-sm">/{HARD_PITY}</span></div>
-                <div className={`text-sm mt-0.5 flex items-center justify-center gap-1 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? <><RarityStar rarity={5} size={12} /> GUARANTEED!</> : profileData.pity5 >= 75 ? <>⚠ High Pity!</> : profileData.pity5 >= SOFT_PITY_START ? <>Soft Pity!</> : <><RarityStar rarity={5} size={12} /> Pity</>}</div>
+                <div className={`text-sm mt-0.5 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? '★ GUARANTEED!' : profileData.pity5 >= 75 ? '⚠ High Pity!' : profileData.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
               </div>
               <div className="text-center">
                 <div className="text-purple-400 font-bold text-xl kuro-number">{profileData.pity4}<span className="text-gray-400 text-sm">/10</span></div>
