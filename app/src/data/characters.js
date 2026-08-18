@@ -3429,33 +3429,33 @@ const CHARACTER_ROTATIONS = {
   // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
   // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
   'Jianxin': [
-    { type: 'Intro', skill: 'Essence of Tao', note: 'pulls enemies in, builds Chi toward the Forte' },
-    { type: 'Basic ATK', skill: 'Fengyiquan Stage 1-4', note: 'builds Chi toward max (120)' },
-    { type: 'Skill', skill: 'Calming Air', note: 'hold for Parry Stance to build Chi faster via Chi Counter/Chi Parry; 12s cooldown' },
-    { type: 'Forte', skill: 'Primordial Chi Spiral', duration: 3, note: 'at max Chi, hold Basic ATK for Zhoutian Progress — a channeled 50% DMG-reduction shield state, healing the active Resonator every 6s afterward' },
-    { type: 'Liberation', skill: 'Purification Force Field', note: 'groups enemies, then explodes on expiry; 20s cooldown' },
-    { type: 'Outro', skill: 'Transcendence', note: 'grants the incoming Resonator +38% Resonance Liberation DMG for 14s' },
+    { type: 'Intro', skill: 'Essence of Tao', note: 'Swap into her — fires automatically, pulling enemies in and building Chi toward the Forte gauge.' },
+    { type: 'Basic ATK', skill: 'Fengyiquan Stage 1-4', note: 'Tap Basic Attack repeatedly for the 4-stage combo — builds Chi toward the 120 max.' },
+    { type: 'Skill', skill: 'Calming Air', note: 'HOLD Skill to enter Parry Stance — successfully Chi Parrying/Chi Countering an attack builds Chi faster than the Basic Attack combo alone; 12s cooldown.' },
+    { type: 'Forte', skill: 'Primordial Chi Spiral', duration: 3, note: 'Once Chi is maxed, HOLD Basic Attack to unleash Zhoutian Progress — a channeled 3s state that reduces DMG taken by 50% and heals the active Resonator every 6s afterward.' },
+    { type: 'Liberation', skill: 'Purification Force Field', note: 'Press Liberation to group enemies together — the field explodes for damage when it expires; 20s cooldown.' },
+    { type: 'Outro', skill: 'Transcendence', note: 'Swap out to trigger this automatically — grants the incoming Resonator +38% Resonance Liberation DMG for 14s.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Lingyang (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender, confirmed against nanoka's kit order).
   'Lingyang': [
-    { type: 'Intro', skill: 'Lion Awakens', note: "fills a large chunk of the Forte Gauge on its own" },
-    { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: 'grants self Glacio DMG Bonus +50% for 14s; 20s cooldown' },
-    { type: 'Forte', skill: 'Unification of Spirits', note: 'at full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters the airborne Striding Lion state' },
-    { type: 'Basic ATK', skill: 'Majestic Fists', note: 'Feral Gyrate P1/P2, alternated with Mountain Roamer below — never chain two of the same type in a row' },
-    { type: 'Skill', skill: 'Ancient Arts', note: 'Mountain Roamer while airborne; up to ~9 alternating Basic/Skill hits during the Ultimate window under ideal play' },
-    { type: 'Outro', skill: 'Frosty Marks', note: 'pure-damage AoE finisher on swap-out (S4 chain grants team Glacio DMG +20%/30s)' },
+    { type: 'Intro', skill: 'Lion Awakens', note: "Swap into him — fires automatically, filling a large chunk of the Lion's Spirit Forte gauge on its own." },
+    { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: 'Press Liberation — grants self +50% Glacio DMG Bonus for 14s; 20s cooldown.' },
+    { type: 'Forte', skill: 'Unification of Spirits', note: 'Once Lion\'s Spirit is full, HOLD Heavy Attack to cast Glorious Plunge and enter the airborne Striding Lion state.' },
+    { type: 'Basic ATK', skill: 'Majestic Fists', note: 'While in Striding Lion, tap Basic Attack for Feral Gyrate P1/P2 — alternate with the Skill below (never tap two Basic Attacks or two Skills back-to-back).' },
+    { type: 'Skill', skill: 'Ancient Arts', note: 'Press Skill for Mountain Roamer while airborne — alternating Basic Attack/Skill taps like this lands up to ~9 hits total during the Ultimate window under ideal play.' },
+    { type: 'Outro', skill: 'Frosty Marks', note: 'Swap out to trigger this automatically — a pure-damage AoE finisher with no team buff (though the S4 chain grants the team +20% Glacio DMG for 30s).' },
   ],
   // Standard Rotation (S0) — sourced from Prydwen's "Gameplay and teams" tab for Verina (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). Her Intro Skill is explicitly skipped —
   // Prydwen calls it "unusable," sending her airborne and lengthening her already-shortest-in-game
   // rotation — so she swaps in cold and her Basic ATK cycle starts from Stage 3.
   'Verina': [
-    { type: 'Basic ATK', skill: 'Cultivation Stage 1-5', note: 'swap-in without an Intro starts the combo from Stage 3, straight into Stage 4-5' },
-    { type: 'Skill', skill: 'Botany Experiment', note: 'can be cancelled immediately by the Liberation below to save time — the hit and its Resonance Energy gain are skipped, Concerto Energy is still gained' },
-    { type: 'Liberation', skill: 'Arboreal Flourish', note: 'heals the team and applies Photosynthesis Mark; 25s cooldown' },
-    { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'jump, then spend all 4 Photosynthesis Energy stacks on Mid-air Starflower Blooms to heal the team and refill Concerto Energy' },
-    { type: 'Outro', skill: 'Blossom', note: 'heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% for 30s' },
+    { type: 'Basic ATK', skill: 'Cultivation Stage 1-5', note: 'Swap her in cold with no Intro (Prydwen rates her Intro Skill "unusable"), then tap Basic Attack — swapping in this way starts the combo straight at Stage 3, into Stage 4-5.' },
+    { type: 'Skill', skill: 'Botany Experiment', note: 'Press Skill, then immediately cancel it with the Liberation below to save time — this skips the hit and its Resonance Energy gain, but Concerto Energy is still gained.' },
+    { type: 'Liberation', skill: 'Arboreal Flourish', note: 'Press Liberation right after Botany Experiment to cancel it — heals the team and applies the Photosynthesis Mark; 25s cooldown.' },
+    { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'Jump, then tap Basic Attack to spend all 4 Photosynthesis Energy stacks on Starflower Blooms — heals the team and refills Concerto Energy.' },
+    { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All DMG Amp for 30s.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Jinhsi (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's baseline rotation
@@ -3463,12 +3463,12 @@ const CHARACTER_ROTATIONS = {
   // damage further, omitted here as too execution-dependent for a standard reference rotation. Notably
   // she gets 2 Outros and 2 Forte nukes per full team loop via her free-Outro-every-25s Unison mechanic.
   'Jinhsi': [
-    { type: 'Basic ATK', skill: 'Slash of Breaking Dawn Stage 1-4', note: 'full 4-stage combo on the opener' },
-    { type: 'Skill', skill: 'Overflowing Radiance', note: 'available after Basic ATK 4; sends her into the 10s Incarnation state' },
-    { type: 'Liberation', skill: 'Purge of Light', note: '24s cooldown; huge AoE nuke' },
-    { type: 'Forte', skill: 'Incarnation', note: 'Incarnation Basic ATK Stage 1-4 while airborne, builds toward Illuminous Epiphany' },
-    { type: 'Skill', skill: 'Illuminous Epiphany', note: 'consumes up to 50 Incandescence for a scaling Stella Glamor nuke (+44.54% DMG per stack); grants Unison, giving a free Outro every 25s with no Concerto cost' },
-    { type: 'Outro', skill: 'Temporal Bender', note: 'utility only — accelerates her own Incandescence gain rate for 20s, no team buff' },
+    { type: 'Basic ATK', skill: 'Slash of Breaking Dawn Stage 1-4', note: 'Tap Basic Attack 4 times for the full opening combo.' },
+    { type: 'Skill', skill: 'Overflowing Radiance', note: 'Press Skill (available after Basic Attack Stage 4) — sends her into the 10s Incarnation state.' },
+    { type: 'Liberation', skill: 'Purge of Light', note: 'Press Liberation for a huge AoE nuke; 24s cooldown.' },
+    { type: 'Forte', skill: 'Incarnation', note: 'While in Incarnation, tap Basic Attack for its own 4-stage combo while airborne — builds toward Illuminous Epiphany.' },
+    { type: 'Skill', skill: 'Illuminous Epiphany', note: 'Press Skill to consume up to 50 Incandescence for a scaling Stella Glamor nuke (+44.54% DMG per stack); also grants Unison, a free Outro every 25s at no Concerto cost.' },
+    { type: 'Outro', skill: 'Temporal Bender', note: 'Swap out to trigger this automatically — utility only, accelerates her own Incandescence gain rate for 20s with no team buff.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Changli (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's single-Intro,
@@ -3476,25 +3476,25 @@ const CHARACTER_ROTATIONS = {
   // quickswap play, omitted here as too execution/team-dependent for a standard reference rotation. Goal
   // each rotation: land 4 True Sight follow-ups to fill Enflamement for 2 Forte Heavy casts.
   'Changli': [
-    { type: 'Intro', skill: 'Obedience of Rules', note: 'also enters True Sight (12s)' },
-    { type: 'Skill', skill: 'True Sight: Capture', note: '2 charges, 12s recharge each; each cast also opens a True Sight window' },
-    { type: 'Heavy ATK', skill: 'Standard', note: 'ground Heavy into Mid-air Heavy, weaving in True Sight: Conquest/Charge follow-ups to build Enflamement stacks' },
-    { type: 'Liberation', skill: 'Radiance of Fealty', note: '20s cooldown; instantly grants 4 Enflamement and Fiery Feather (self ATK +25% on the next Forte Heavy within 10s)' },
-    { type: 'Forte', skill: 'Heavy ATK: Flaming Sacrifice', note: 'at 4 Enflamement stacks, consumes them all; takes 40% less DMG while casting — 2 casts per rotation is the goal' },
-    { type: 'Outro', skill: 'Strategy of Duality', note: 'grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s — her shortest Outro window in the game alongside Lumi' },
+    { type: 'Intro', skill: 'Obedience of Rules', note: 'Swap into her — fires automatically and also enters True Sight (12s).' },
+    { type: 'Skill', skill: 'True Sight: Capture', note: 'Press Skill — 2 charges, 12s recharge each; every cast also opens a fresh True Sight window.' },
+    { type: 'Heavy ATK', skill: 'Standard', note: 'HOLD Heavy Attack on the ground, then again in the air for the Mid-air Heavy, weaving in True Sight: Conquest/Charge follow-ups (press Skill when prompted) to build Enflamement stacks.' },
+    { type: 'Liberation', skill: 'Radiance of Fealty', note: 'Press Liberation — instantly grants 4 Enflamement and Fiery Feather (self +25% ATK on the next Forte Heavy Attack within 10s); 20s cooldown.' },
+    { type: 'Forte', skill: 'Heavy ATK: Flaming Sacrifice', note: 'At 4 Enflamement stacks, HOLD Heavy Attack to consume them all — takes 40% less DMG while casting; landing 2 casts per rotation is the goal.' },
+    { type: 'Outro', skill: 'Strategy of Duality', note: 'Swap out to trigger this automatically — grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s, her shortest Outro window in the game alongside Lumi.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Zhezhi (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). Goal: fill the 3-segment Afflatus Forte
   // gauge, convert it into Phantasmic Imprints via Skill + Forte Heavy, then teleport to each one with
   // repeated Stroke of Genius/Creation's Zenith casts before Outro.
   'Zhezhi': [
-    { type: 'Intro', skill: 'Radiant Ruin', note: 'fills roughly 1.5 of her 3 Afflatus segments' },
-    { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'full combo fills the remaining Afflatus' },
-    { type: 'Skill', skill: 'Manifestation', note: 'at 60+ Afflatus, consumes 60 to summon Phantasmic Imprint - Left and Right' },
-    { type: 'Forte', skill: 'Heavy ATK: Conjuration', note: 'at 30+ Afflatus, consumes 30 to summon Phantasmic Imprint - Middle' },
-    { type: 'Skill', skill: 'Stroke of Genius', note: 'teleports to and consumes a Phantasmic Imprint for an off-field-style Basic ATK-type hit; repeat for each Imprint placed, escalating into Creation\'s Zenith at 2 Painter\'s Delight stacks' },
-    { type: 'Liberation', skill: 'Living Canvas', note: 'summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s — can be cast at any point in the rotation' },
-    { type: 'Outro', skill: 'Carve and Draw', note: 'grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish' },
+    { type: 'Intro', skill: 'Radiant Ruin', note: 'Swap into her — fires automatically, filling roughly 1.5 of her 3 Afflatus segments.' },
+    { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'Tap Basic Attack 3 times for the full combo — fills the remaining Afflatus.' },
+    { type: 'Skill', skill: 'Manifestation', note: 'At 60+ Afflatus, press Skill to consume 60 and summon Phantasmic Imprint - Left and Right.' },
+    { type: 'Forte', skill: 'Heavy ATK: Conjuration', note: 'At 30+ Afflatus, HOLD Heavy Attack to consume 30 and summon Phantasmic Imprint - Middle.' },
+    { type: 'Skill', skill: 'Stroke of Genius', note: 'Press Skill to teleport to and consume a Phantasmic Imprint for an off-field-style Basic Attack-type hit — repeat for each Imprint placed, escalating into Creation\'s Zenith once Painter\'s Delight hits 2 stacks.' },
+    { type: 'Liberation', skill: 'Living Canvas', note: 'Press Liberation at any point in the rotation — summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s.' },
+    { type: 'Outro', skill: 'Carve and Draw', note: 'Swap out to trigger this automatically — grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish.' },
   ],
   // Standard Rotation ("Easy & Basic Burst Combo") — sourced from Prydwen's "Gameplay and teams" tab for
   // Encore (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Prydwen also lists
@@ -3762,30 +3762,30 @@ const CHARACTER_ROTATIONS = {
   // opens Intro straight into Liberation, then Flux into the Moonbow combo, and skips the base Skill
   // entirely (Closing Refrain is only used in the longer "Extended"/Main DPS variants).
   'Iuno': [
-    { type: 'Intro', skill: 'Illuminated Manifestation', note: 'restores 40 Sentience' },
-    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'activates Lunar Cycle, restores 60 Sentience' },
-    { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'jump attack, switches Half Moon → New Moon' },
-    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Sentience-enhanced combo, consumes up to 50 Sentience' },
-    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'New Moon follow-up, 2 charges, consumes up to 25 Sentience each' },
-    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'Forte finisher (swap-cancel), optional — cast for the extra team heal/Full Moon Domain, especially with Augusta on the team' },
-    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'grants next Resonator 50% Heavy ATK DMG Amp' },
+    { type: 'Intro', skill: 'Illuminated Manifestation', note: 'Swap into her — fires automatically, restoring 40 Sentience.' },
+    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'Press Liberation — activates Lunar Cycle and restores 60 Sentience.' },
+    { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'HOLD Heavy Attack to jump-attack — switches her from Half Moon to New Moon.' },
+    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Tap Basic Attack for the Sentience-enhanced combo, consuming up to 50 Sentience.' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Press Skill for the New Moon follow-up — 2 charges, consuming up to 25 Sentience each.' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher, then swap-cancel — optional, cast it for the extra team heal/Full Moon Domain, especially with Augusta on the team.' },
+    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'Swap out to trigger this automatically — grants the next Resonator +50% Heavy Attack DMG Amp.' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
   // buffs to Fleurdelys, central to her kit — and collapsed her two-phase Fleurdelys Skill 1/Skill 2
   // loop into a single generic Basic ATK line. Rebuilt to match Prydwen's actual "Basic Rotation".
   'Cartethyia': [
-    { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: 'grants Sword of Discord' },
-    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'Stage 4 grants Sword of Divinity' },
-    { type: 'Skill', skill: 'Base Form', note: 'grants Sword of Virtue' },
-    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'recalls all 3 Sword Shadows, grants their buffs to Fleurdelys' },
-    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'transforms into Fleurdelys (Manifest)' },
-    { type: 'Skill', skill: "Fleurdelys 1", note: "Sword to Answer Waves' Call" },
-    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Mid-air P3 into Basic P3-P5' },
-    { type: 'Skill', skill: 'Fleurdelys 2', note: 'May Tempest Break the Tides' },
-    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Basic P3-P5 again, builds Conviction to 120' },
-    { type: 'Liberation', skill: 'Blade of Howling Squall', note: 'Fleurdelys finisher, removes stacked Erosion for bonus DMG, ends Manifest' },
-    { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'boosts Aero DMG vs Negative Status targets' },
+    { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: 'Swap into her — fires automatically, granting Sword of Discord.' },
+    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'Tap Basic Attack 4 times — Stage 4 grants Sword of Divinity.' },
+    { type: 'Skill', skill: 'Base Form', note: 'Press Skill — grants Sword of Virtue.' },
+    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'Jump then tap Basic Attack to plunge down — recalls all 3 Sword Shadows and grants their buffs to Fleurdelys.' },
+    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'Press Liberation — transforms her into Fleurdelys (Manifest) for 12s.' },
+    { type: 'Skill', skill: "Fleurdelys 1", note: "Press Skill for Sword to Answer Waves' Call." },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack — chains Mid-air Plunge Stage 3 into Basic Attack Stage 3-5.' },
+    { type: 'Skill', skill: 'Fleurdelys 2', note: 'Press Skill again for May Tempest Break the Tides.' },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack for Stage 3-5 again — builds Conviction up to 120.' },
+    { type: 'Liberation', skill: 'Blade of Howling Squall', note: 'Press Liberation for the Fleurdelys finisher — removes stacked Erosion from the target for bonus DMG and ends Manifest.' },
+    { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'Swap out to trigger this automatically — boosts Aero DMG against targets with a Negative Status for 20s.' },
   ],
   // Standard Sub-DPS Rotation — sourced from Prydwen's "Gameplay and teams" tab for Ciaccona (2026-08-18,
   // Chrome UA + google.com referer + jsRender).
