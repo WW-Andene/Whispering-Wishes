@@ -6,7 +6,7 @@ import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_D
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import {
   ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
-  ECHO_MAIN_STAT_VALUES, ECHO_SUB_STAT_VALUES,
+  ECHO_MAIN_STAT_VALUES, ECHO_SUB_STAT_VALUES, ECHO_FLAT_SUB_STAT_VALUES,
   createStats, parsePassive, getWeaponPv, applyWeaponPv,
   applyFullEchoSet, applyEchoStats, applyBuff,
   countTeamElements, routeTypeBonuses, applyResonanceChain,
@@ -195,7 +195,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const rStats = { atkPct: rStatPct, cr: rCr, cd: rCd, elemDmg: rElem, skillDmg: rSkillDmg, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
       applyFullEchoSet(rStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
       const eqKey = teamIdx + ':' + m.name;
-      applyEchoStats(rStats, teamEquipment[eqKey]?.echoes, m.d.element, m.scaling);
+      applyEchoStats(rStats, teamEquipment[eqKey]?.echoes, m.d.element, m.scaling, { atk: m.totalBaseAtk, hp: m.d.baseHp, def: m.d.baseDef });
       if (m.d.element && elCounts[m.d.element] >= 2) rStats.elemDmg += 10;
       const rEff = m.baseStat * (1 + rStats.atkPct / 100);
       const rAvgCrit = calcAvgCrit(rStats.cr, rStats.cd);
@@ -270,6 +270,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           applyStat(echo.mainStat, val);
         }
         (echo.substats || []).forEach(sub => {
+          if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
+            // Flat ATK/HP/DEF substat: converts to %-of-base-stat, and only actually helps the
+            // main DPS if it matches their own scaling stat (see calcEngine.js flatSubToPct for
+            // the full reasoning — no partial credit here, unlike teamwide ATK% buffs elsewhere).
+            const flatVal = ECHO_FLAT_SUB_STAT_VALUES[sub];
+            const baseForSub = sub === 'ATK' ? mainDps.totalBaseAtk : sub === 'HP' ? mainDps.d.baseHp : mainDps.d.baseDef;
+            if (flatVal && sub === mainDps.scaling && baseForSub) {
+              atkPct += (flatVal / baseForSub) * 100;
+            }
+            return;
+          }
           const val = subVals[sub];
           if (val) applyStat(sub, val);
         });
@@ -683,7 +694,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         {
           const subSetStats = createStats();
           applyFullEchoSet(subSetStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
-          applyEchoStats(subSetStats, sEchoes, m.d.element, m.scaling);
+          applyEchoStats(subSetStats, sEchoes, m.d.element, m.scaling, { atk: m.totalBaseAtk, hp: m.d.baseHp, def: m.d.baseDef });
           // Sonata set p5 team ATK% (Rejuvenating Glow/Halo of Starry Radiance) applies to the wearer
           // too, not just teammates — applyFullEchoSet doesn't know this key (see calcEngine.js), and
           // the cross-member loop above explicitly skips self, so it must be added here.

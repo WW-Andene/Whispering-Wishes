@@ -61,6 +61,17 @@ export const ECHO_SUB_STAT_VALUES = {
   'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9,
 };
 
+// Flat echo substat max-roll values (in raw stat points, NOT %). Sourced from
+// prydwen.gg's Echo Stats guide (https://www.prydwen.gg/wuthering-waves/guides/echo-stats,
+// fetched 2026-08-18): substat roll ranges are ATK 30-60, HP 320-580, DEF 40-70 — using the
+// highest roll to match the convention of the % table above. Unlike the % substats, these
+// can't be looked up context-free: they need the wearer's own base ATK/HP/DEF to convert into
+// an equivalent %-of-base contribution (see applyEchoStats below), so they're kept in a
+// separate table rather than merged into ECHO_SUB_STAT_VALUES.
+export const ECHO_FLAT_SUB_STAT_VALUES = {
+  'ATK': 60, 'HP': 580, 'DEF': 70,
+};
+
 // ── Stat accumulator: replaces 50+ loose variables per tier ──
 export function createStats() {
   return {
@@ -184,8 +195,35 @@ export function applyFullEchoSet(stats, echoSet, echoSet2, element, scaling) {
   }
 }
 
+// Convert a flat ATK/HP/DEF echo substat into an equivalent %-of-base-stat contribution.
+// Flat stat substats only benefit a character whose scaling stat matches the substat's own
+// stat type (a flat ATK roll does effectively nothing for an HP-scaling character's Motion
+// Value damage — there's no secondary system that consumes raw ATK the way there sort-of is
+// for teamwide ATK% buffs on off-scaling characters). So: full conversion when it matches the
+// character's scaling stat, 0 credit otherwise — unlike the established 0.25 partial-credit
+// convention used elsewhere in this file for off-scaling *team* ATK% buffs (those raise the
+// character's actual ATK stat, which can still feed unrelated mechanics; a mismatched flat
+// substat conversion has no such secondary use, so partial credit isn't warranted here).
+function flatSubToPct(sub, scaling, baseStats) {
+  if (!baseStats) return 0;
+  const val = ECHO_FLAT_SUB_STAT_VALUES[sub];
+  if (!val) return 0;
+  if (sub === 'ATK' && scaling === 'ATK' && baseStats.atk) return (val / baseStats.atk) * 100;
+  if (sub === 'HP' && scaling === 'HP' && baseStats.hp) return (val / baseStats.hp) * 100;
+  if (sub === 'DEF' && scaling === 'DEF' && baseStats.def) return (val / baseStats.def) * 100;
+  return 0;
+}
+
 // ── Apply echo main stats and substats to accumulator ──
-export function applyEchoStats(stats, echoes, element, scaling) {
+// `baseStats` (optional) = { atk, hp, def } — needed only to convert flat ATK/HP/DEF substats
+// (see flatSubToPct above). `atk` must be the character's TOTAL base ATK including their weapon's
+// base ATK (i.e. what this engine calls totalBaseAtk elsewhere) — atkPct is later applied against
+// that combined figure, not the character's own base ATK alone, so using only the character's base
+// would overstate a flat ATK substat's converted value by however much the weapon contributes.
+// `hp`/`def` stay as the character's own base HP/DEF since weapons in this game never grant a base
+// HP or DEF pool. Omitting `baseStats` entirely just skips flat substats (contributes 0, same as
+// before this table existed) rather than throwing.
+export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
   const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
   const elDmgKey = element ? element.charAt(0).toUpperCase() + element.slice(1).toLowerCase() + ' DMG' : '';
   (echoes || []).forEach((echo, i) => {
@@ -203,6 +241,10 @@ export function applyEchoStats(stats, echoes, element, scaling) {
       else if (echo.mainStat === 'Resonance Liberation DMG') stats.libDmg += val;
     }
     (echo.substats || []).forEach(sub => {
+      if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
+        stats.atkPct += flatSubToPct(sub, scaling, baseStats);
+        return;
+      }
       const val = ECHO_SUB_STAT_VALUES[sub];
       if (!val) return;
       if (sub === scalingStat) stats.atkPct += val;
