@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { RefreshCcw } from 'lucide-react';
+import { RarityStar } from '../../shared/components/RarityStars.jsx';
 
 export default function AdminPlayersTab({
   activePlayersCount, activePlayersHistory,
@@ -110,7 +111,7 @@ export default function AdminPlayersTab({
                   </div>
                   <div className="flex items-center gap-3 ml-6 mt-0.5">
                     <span className="text-gray-400 text-sm">Avg: <span className="text-yellow-400">{typeof p.avgPity === 'number' ? p.avgPity.toFixed(1) : p.avgPity}</span></span>
-                    <span className="text-gray-400 text-sm">5★: <span className="text-purple-400">{p.fiveStars}</span></span>
+                    <span className="text-gray-400 text-sm inline-flex items-center gap-1"><RarityStar rarity={5} size={11} />: <span className="text-purple-400">{p.fiveStars}</span></span>
                     <span className="text-gray-400 text-sm">Convenes: <span className="text-gray-300">{p.totalPulls}</span></span>
                     <span className="text-gray-400 text-sm">50/50: <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                   </div>

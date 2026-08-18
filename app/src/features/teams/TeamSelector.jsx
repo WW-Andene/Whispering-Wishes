@@ -6,6 +6,7 @@ import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { RarityStar } from '../../shared/components/RarityStars.jsx';
 
 export default function TeamSelector({
   teamSelectorOpen,
@@ -87,7 +88,7 @@ export default function TeamSelector({
                               onChange={setTeamRarityFilter}
                               options={[
                                 { value: 'all', label: 'All Rarity' },
-                                { value: '5', label: '5★' },
+                                { value: '5', label: <span className="inline-flex items-center gap-1">5<RarityStar rarity={5} size={11} /></span> },
                                 { value: '4', label: '4★' },
                               ]}
                               ariaLabel="Filter by rarity"

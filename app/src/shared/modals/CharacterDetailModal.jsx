@@ -15,6 +15,7 @@ import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegi
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
+import { RarityStar } from '../components/RarityStars.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 // Shared element color maps
@@ -540,7 +541,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             <div className="space-y-3">
               {[['5★', data.weaponAlts.alt5], ['4★', data.weaponAlts.alt4], ['3★', data.weaponAlts.alt3]].filter(([, list]) => list?.length).map(([tier, list]) => (
                 <div key={tier}>
-                  <div className="text-sm text-gray-500 mb-1.5">{tier}</div>
+                  <div className="text-sm text-gray-500 mb-1.5 flex items-center gap-1">{tier === '5★' ? <>5<RarityStar rarity={5} size={12} /></> : tier}</div>
                   <div className="space-y-1.5">
                     {list.map((w, i) => {
                       const wd = WEAPON_DATA[w];

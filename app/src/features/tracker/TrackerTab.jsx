@@ -14,6 +14,7 @@ import { StandardBannerSection } from '../../shared/components/StandardBannerSec
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { RarityStar, RarityStarRow } from '../../shared/components/RarityStars.jsx';
 
 const FOCUS_DELAY_MS = 0;
 const TRACKER_CATEGORIES = Object.freeze([
@@ -420,7 +421,7 @@ function TrackerTab({
                       onChange={setPullHistoryRarityFilter}
                       options={[
                         { value: 'all', label: 'All Rarities' },
-                        { value: '5', label: '5★' },
+                        { value: '5', label: <span className="inline-flex items-center gap-1">5<RarityStar rarity={5} size={11} /></span> },
                         { value: '4', label: '4★' },
                         { value: '3', label: '3★' },
                       ]}
@@ -445,7 +446,7 @@ function TrackerTab({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className={`text-base font-semibold truncate ${rarityColor}`}>{pull.name || 'Unknown'}</span>
-                              <span className={`text-sm ${rarityColor} opacity-70`}>{stars}</span>
+                              <span className={`${rarityColor} opacity-70`}>{pull.rarity === 5 ? <RarityStarRow rarity={5} size={11} /> : <span className="text-sm">{stars}</span>}</span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-sm text-gray-500">{pull.banner}</span>

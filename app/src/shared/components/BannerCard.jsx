@@ -12,6 +12,7 @@ import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
+import { RarityStar } from './RarityStars.jsx';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -163,7 +164,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             <div className="flex-1 flex items-center gap-3">
                 <div className="text-center">
                   <div className={`font-bold text-xl kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-sm ml-0.5">/{HARD_PITY}</span></div>
-                  <div className={`text-sm mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
+                  <div className={`text-sm mt-0.5 flex items-center justify-center gap-1 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? <><RarityStar rarity={5} size={12} /> GUARANTEED!</> : stats.pity5 >= 75 ? <>⚠ High Pity!</> : stats.pity5 >= SOFT_PITY_START ? <>Soft Pity!</> : <><RarityStar rarity={5} size={12} /> Pity</>}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-purple-400 font-bold text-xl kuro-number">{stats.pity4}<span className="text-gray-400 text-sm ml-0.5">/10</span></div>
@@ -219,7 +220,7 @@ const GachaInfoButton = memo(({ isChar }) => {
           <div className="p-4 space-y-3">
             <div className="space-y-2.5 text-sm text-gray-300 leading-relaxed">
               <div className="flex items-start gap-2">
-                <span className="text-yellow-400 text-lg leading-none mt-0.5">★</span>
+                <RarityStar rarity={5} size={16} className="mt-0.5" />
                 <div><span className="text-white font-medium">Base 5★ rate:</span> 0.8% per Convene</div>
               </div>
               <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
