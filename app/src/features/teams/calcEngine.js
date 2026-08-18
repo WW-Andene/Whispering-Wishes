@@ -585,3 +585,13 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   if (hasBis) tags.push('BiS Weapon');
   return { score, tags: [...new Set(tags)].slice(0, 3) };
 }
+
+// NOTE: an earlier version of this file had a second, cruder rotation-composer here
+// (composeTeamRotation) that duplicated what DamageCalculator.jsx's rotationTimeline/steps
+// computation already does — and did it worse: naive placed-slot order instead of the real
+// hasTeamOutro/nextOutroValue-driven ordering, static rather than simulation-derived on-field
+// durations, and no shared source of truth with the Rotation Timeline Gantt chart. Two
+// independently-maintained "team rotation" features drift apart by construction, so it was
+// removed rather than kept as a second implementation — DamageCalculator's rotationTimeline.steps
+// (rendered by the "Rotation Guide" card) is the one true composed-rotation feature now, and it
+// additionally consumes CHARACTER_ROTATIONS for its per-character skill sequence.
