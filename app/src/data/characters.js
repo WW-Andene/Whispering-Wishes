@@ -141,7 +141,10 @@ const CHARACTER_DATA = {
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
+    // bestEchoes corrected 2026-08-18: Endless Resonance is a real Glacio-DMG set (not a mismatch),
+    // but multiple current sources rank it as Lingyang's second-best set (quickswap-only) — his actual
+    // #1 is Freezing Frost, a straight Glacio DMG% set that fits his on-field Basic/Heavy ATK rotation.
+    bestEchoes: ['Mech Abomination', 'Freezing Frost 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
   // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and ww.nanoka.cc/
@@ -711,7 +714,11 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'The Last Dance',
     weaponAlts: { alt5: ['Woodland Aria', 'Static Mist'], alt4: ['Relativistic Jet', 'Undying Flame'], alt3: ['Pistols of Night'] },
-    teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
+    // teams corrected 2026-08-18: 'Aalto + Ciaccona + Shorekeeper' paired him with a Spectro Main DPS —
+    // Aalto's Outro (Dissolving Mist) grants the incoming Resonator Aero DMG Deepen, which only benefits
+    // an Aero Main DPS (sources name Jiyan/Iuno/Cartethyia as his actual synergy partners). Replaced with
+    // Cartethyia, matching the Aero-Erosion pairing already established elsewhere in this file.
+    teams: ['Aalto + Cartethyia + Shorekeeper', 'Aalto + Jiyan + Verina'] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     desc: "Devoted Huaxu Academy researcher accompanied by her companion You'an. Glacio healer who restores HP via Resonance Skill and Liberation, providing consistent team sustain with low field time.",
     skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Cycle of Life'],
@@ -725,8 +732,11 @@ const CHARACTER_DATA = {
     skills: ['POW POW', 'Whizzing Fight Spirit', 'Blazing Flames', 'Heroic Bullets'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
-    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'The Last Dance',
-    weaponAlts: { alt5: ['Static Mist'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
+    // bestWeapon corrected 2026-08-18: was 'The Last Dance' (Aalto's signature — a copy/mixup between
+    // the two Pistols users), unsupported by any source for Chixia; her actual BiS 5* Pistol is Static
+    // Mist per multiple build guides (previously demoted to weaponAlts.alt5).
+    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Static Mist',
+    weaponAlts: { alt5: ['The Last Dance'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Baizhi'] },
   'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
     // desc expanded 2026-08-18 (Fandom + Prydwen): lore half is Fandom's "Scarlet Shade" Midnight Ranger
