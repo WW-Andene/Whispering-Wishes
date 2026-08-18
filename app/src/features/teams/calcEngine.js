@@ -19,11 +19,23 @@ export const DOT_BASE_FACTOR = 1.25078; // Base damage coefficient for DOT ticks
 
 // DOT mechanic constants (extracted from inline magic numbers)
 export const FRAZZLE_TICK_INTERVAL = 3;    // Frazzle ticks every 3s, consumes 1 stack
-export const FRAZZLE_STACK_MULT = 0.15;    // DMG multiplier per Frazzle stack
 export const FRAZZLE_ICD_PER_SOURCE = 2.5; // Application ICD per source (seconds)
-export const EROSION_TICK_INTERVAL = 2;    // Erosion ticks every 2s, does NOT consume stacks
-export const EROSION_STACK_MULT = 0.8;     // DMG multiplier per Erosion stack
+// Fandom "Negative Status" page: DMG ticks every 3s for both Frazzle and Erosion — the 15s figure
+// for Erosion is how often its stacks decay, not the tick rate (was wrongly used as tick interval).
+export const EROSION_TICK_INTERVAL = 3;    // Erosion ticks every 3s, does NOT consume stacks
 export const EROSION_DURATION = 15;        // Erosion debuff duration (seconds)
+// Stack multiplier tables straight from the Fandom "Negative Status" page (Base DMG = Level Mult ×
+// 1.25078 × Stack Mult). These are non-linear, not a flat per-stack multiplier — index = stack count.
+export const FRAZZLE_STACK_TABLE = [0, 0.240, 0.4355, 0.6298, 0.8251, 1.020, 1.216, 1.409, 1.605, 1.800, 1.995];
+export const EROSION_STACK_TABLE = [0, 0.360, 0.899, 1.799, 2.698, 3.597, 4.497]; // stacks >3 need Aero Rover Outro
+// Linear extrapolation beyond the wiki's tabulated stack range, using the slope of the last two entries.
+function lookupStackMult(table, stacks) {
+  if (stacks <= 0) return 0;
+  if (stacks < table.length) return table[stacks];
+  const last = table[table.length - 1];
+  const slope = last - table[table.length - 2];
+  return last + (stacks - (table.length - 1)) * slope;
+}
 export const FUSION_BURST_THRESHOLD = 10;  // Stacks needed to detonate
 export const FUSION_BURST_APP_ICD = 1;     // Application ICD (seconds)
 export const FUSION_TRAIL_MULT = 3.0;      // Fusion Trail damage multiplier
@@ -287,7 +299,7 @@ export function calcFrazzleDmg(members, rotTime, defMult, resMult) {
   const numTicks = Math.min(Math.floor(rotTime / FRAZZLE_TICK_INTERVAL), stacks);
   let total = 0;
   for (let s = stacks; s > stacks - numTicks && s > 0; s--) {
-    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (s * FRAZZLE_STACK_MULT);
+    total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * lookupStackMult(FRAZZLE_STACK_TABLE, s);
   }
   const hasPhoebe = members.some(m => m.name === 'Phoebe');
   return { dmg: total * (hasPhoebe ? 2.0 : 1.0) * defMult * resMult, active: true };
@@ -303,10 +315,12 @@ export function calcErosionDmg(members, rotTime, defMult, resMult) {
   const uptime = Math.min(1, EROSION_DURATION / rotTime);
   const ticks = Math.floor(EROSION_DURATION / EROSION_TICK_INTERVAL);
   let total = 0;
-  for (let t = 0; t < ticks; t++) total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (baseStacks * EROSION_STACK_MULT);
+  for (let t = 0; t < ticks; t++) total += DOT_LEVEL_MULT * DOT_BASE_FACTOR * lookupStackMult(EROSION_STACK_TABLE, baseStacks);
   return { dmg: total * uptime * defMult * resMult, active: true };
 }
 
+// Fusion Burst's stack-DMG table isn't published on the wiki (only Frazzle/Erosion are); this stays
+// a rough approximation rather than a verified lookup like the two above.
 export function calcFusionBurstDmg(members, rotTime, defMult, resMult) {
   const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'fusionBurst'));
   if (!has) return { dmg: 0, active: false };
@@ -315,6 +329,8 @@ export function calcFusionBurstDmg(members, rotTime, defMult, resMult) {
   return { dmg: dmg * explosions * defMult * resMult, active: true };
 }
 
+// Electro Flare's DMG-per-stack table also isn't published (wiki only documents its old ATK-reduction
+// values); stack halving on tick is confirmed by the wiki, the tick interval/mult stay approximations.
 export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
   const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.electroFlare);
   if (!has) return { dmg: 0, active: false };
@@ -327,6 +343,10 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
   return { dmg: total * defMult * resMult, active: true };
 }
 
+// Tune Break is a bespoke per-character mechanic (Off-Tune Level/Mistune, unique Tune Strain/Tune
+// Rupture/Hack response skills per wiki) with no generic formula published — this stays a generic
+// stack/boost approximation driven entirely by CHAR_BUFF_TABLE[name].tuneBreak fields; accuracy
+// depends on those per-character values being filled in correctly (tracked separately).
 export function calcTuneBreakDmg(members, rotTime, defMult, resMult) {
   const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
   if (!tbMembers.length) return { dmg: 0, deepenMult: 1 };

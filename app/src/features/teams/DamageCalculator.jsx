@@ -24,6 +24,24 @@ import { useSessionState } from '../../utils/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
 
+// Hardcoded team-wide echo-set bonuses that don't come from a per-member p5val (WuWa sets whose
+// team ATK/DMG bonus is an approximated flat number rather than a modeled trigger). Kept as a single
+// table so the DPS math and the rotation timeline read the exact same numbers instead of drifting —
+// previously these were only added to the stat totals and never shown as a buff bar on the timeline.
+const TEAM_SET_BUFFS = {
+  'Rejuvenating Glow': [{ stat: 'atkPct', value: 15 }],
+  'Moonlit Clouds': [{ stat: 'atkPct', value: 22.5 }],
+  'Empyrean Anthem': [{ stat: 'atkPct', value: 30 }], // 20% ATK × 2 stacks, ~75% uptime ≈ 30%
+  'Tidebreaking Courage': [{ stat: 'elemDmg', value: 30 }], // 30% All-Attr DMG team-wide at ≥250% ER
+  'Halo of Starry Radiance': [{ stat: 'atkPct', value: 25 }], // Up to +25% ATK via Off-Tune healing
+  'Pact of Neonlight Leap': [{ stat: 'atkPct', value: 30 }], // +15% base + up to 15% from Tune Break Boost
+  'Gusts of Welkin': [{ stat: 'elemDmg', value: 30, elem: 'aero' }], // 15% + 15% Aero DMG on Erosion trigger
+  'Windward Pilgrimage': [{ stat: 'elemDmg', value: 15, elem: 'aero' }],
+  'Flaming Clawprint': [{ stat: 'elemDmg', value: 15, elem: 'fusion' }, { stat: 'libDmg', value: 20 }],
+  'Midnight Veil': [{ stat: 'elemDmg', value: 15, elem: 'havoc' }],
+  'Chromatic Foam': [{ stat: 'elemDmg', value: 25, elem: 'fusion' }], // Outro: +25% Fusion for next
+};
+
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
   setTeamEquipment,
@@ -388,18 +406,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       // Healer/Support set team buffs (ATK applies to main DPS's scaling stat)
       // Team ATK buffs generally apply as ATK% to all characters regardless of scaling
       // (WuWa team ATK buffs like Rejuvenating Glow, Moonlit Clouds give flat ATK% to all)
-      const addTeamAtk = (val) => { atkPct += val; };
-      if (sn === 'Rejuvenating Glow') addTeamAtk(15);
-      if (sn === 'Moonlit Clouds') addTeamAtk(22.5);
-      if (sn === 'Empyrean Anthem') addTeamAtk(30); // 20% ATK × 2 stacks, ~75% uptime ≈ 30%
-      if (sn === 'Tidebreaking Courage') elemDmg += 30; // 30% All-Attr DMG team-wide at ≥250% ER (ATK buff is self-only)
-      if (sn === 'Halo of Starry Radiance') addTeamAtk(25); // Up to +25% ATK via Off-Tune healing
-      if (sn === 'Pact of Neonlight Leap') addTeamAtk(30); // +15% ATK base + up to 15% from Tune Break Boost
-      if (sn === 'Gusts of Welkin' && mainDpsEl === 'aero') elemDmg += 30; // 15% + 15% Aero DMG on Erosion trigger
-      if (sn === 'Windward Pilgrimage' && mainDpsEl === 'aero') elemDmg += 15;
-      if (sn === 'Flaming Clawprint') { if (mainDpsEl === 'fusion') elemDmg += 15; libDmg += 20; } // +15% Fusion team + 20% Lib DMG (uptime-adjusted)
-      if (sn === 'Midnight Veil' && mainDpsEl === 'havoc') elemDmg += 15;
-      if (sn === 'Chromatic Foam' && mainDpsEl === 'fusion') elemDmg += 25; // Outro: +25% Fusion for next
+      // Sourced from TEAM_SET_BUFFS so the rotation timeline can render the exact same bonuses.
+      (TEAM_SET_BUFFS[sn] || []).forEach(e => {
+        if (e.elem && e.elem !== mainDpsEl) return;
+        if (e.stat === 'atkPct') atkPct += e.value;
+        else if (e.stat === 'elemDmg') elemDmg += e.value;
+        else if (e.stat === 'libDmg') libDmg += e.value;
+      });
       // 3pc set team contribution from sub-DPS (wearer benefits, no direct team buff)
       // 2pc bonus from hybrid secondary set applied to wearer only (handled in sub-DPS calc)
       const bt = CHAR_BUFF_TABLE[m.name];
@@ -908,6 +921,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const timeline = [];
       let t = 0;
       raw.forEach(({ m, onField: rawField }) => {
+        const isMain = m.name === mainDps.name;
         const onField = Math.round(rawField * scale * 10) / 10; // scale + round to 0.1s
         timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
         const bt = CHAR_BUFF_TABLE[m.name];
@@ -928,6 +942,28 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           });
           (bt.weaponBuffs || []).forEach(b => {
             buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+          });
+        }
+
+        // ── Hardcoded team-wide echo-set bonuses (TEAM_SET_BUFFS) — only counted in the DPS math
+        // from non-main members' worn sets, so only render them from those same members here. ──
+        if (!isMain) {
+          (TEAM_SET_BUFFS[m.echoSetName] || []).forEach(e => {
+            if (e.elem && e.elem !== (mainDps.d.element || '').toLowerCase()) return;
+            buffs.push({ source: m.echoSetName, owner: m.name, stat: e.stat, value: e.value, start: 0, duration: rotTime });
+          });
+        }
+
+        // ── Weapon "team value" (tv) passive — team-wide buff added straight to the stat
+        // totals in the DPS math; render it the same way here so it isn't invisible. ──
+        if (!isMain && m.weapon?.tv) {
+          const tvRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
+          const tvRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[tvRefLevel - 1] || 1 : 1;
+          const wt = m.weapon.tv;
+          const tvDur = wt.duration || 15;
+          Object.entries(wt).forEach(([stat, val]) => {
+            if (stat === 'duration' || typeof val !== 'number') return;
+            buffs.push({ source: m.weapName, owner: m.name, stat, value: Math.round(val * tvRefScale * 10) / 10, start: t, duration: tvDur });
           });
         }
 
@@ -980,7 +1016,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         }
 
         // ── 4-cost echo active skill buffs ──
-        if (m.mainEchoName) {
+        // Gated to mirror exactly what the DPS math counts (see the two ECHO_SKILL_BUFFS
+        // consumption sites above): a 'self' buff is only ever added to the stat totals for
+        // the main DPS's own echo; 'team'/'next' buffs are only added from non-main members.
+        // Rendering anything outside that would show a bar the DPS number never actually used.
+        const esbCountedForMath = m.mainEchoName && (() => {
+          const t = ECHO_SKILL_BUFFS[m.mainEchoName]?.target || 'self';
+          return isMain ? t === 'self' : (t === 'team' || t === 'next');
+        })();
+        if (m.mainEchoName && esbCountedForMath) {
           const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
           if (esb) {
             const echoLabel = m.mainEchoName.length > 18 ? m.mainEchoName.split(/[:\s-]+/).slice(0, 2).join(' ') : m.mainEchoName;
@@ -1662,6 +1706,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
       {/* Rotation Timeline — outside Team Overview Card to avoid overflow:hidden clipping */}
       <RotationTimeline rotationTimeline={rotationTimeline} />
+      {members.some(m => (m.seqLevel || 0) > 0) && (
+        <p className="text-2xs text-gray-500 -mt-2 px-1">
+          Resonance Chain bonuses are included in the DPS number above but apply directly to stats — they don't have an on-field window, so they aren't drawn as bars on the timeline.
+        </p>
+      )}
 
       {/* Rotation Guide — narrates the exact schedule the Gantt chart above shows, in plain text */}
       {rotationTimeline?.steps?.length > 0 && (
