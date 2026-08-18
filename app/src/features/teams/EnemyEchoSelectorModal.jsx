@@ -87,16 +87,17 @@ export default function EnemyEchoSelectorModal({
           </div>
         </div>
 
+        {enemyEcho && (
+          <div className="px-2 pt-2">
+            <button onClick={() => { setEnemyEcho(''); onClose(); haptic.light(); }}
+              className="kuro-btn text-sm w-full text-center text-gray-400">
+              Clear target (use default level-only scaling)
+            </button>
+          </div>
+        )}
+
         <div className="overflow-y-auto flex-1 p-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <MonsterCard
-              name="Training Dummy"
-              iconUrl={null}
-              enemyStats={{ level: enemyLevel ?? 90, hp: null, atk: null, def: null, res: {} }}
-              level={enemyLevel ?? 90}
-              selected={!enemyEcho}
-              onClick={() => { setEnemyEcho(''); onClose(); haptic.light(); }}
-            />
             {filtered.map(name => {
               const ed = ECHO_DATA[name];
               return (

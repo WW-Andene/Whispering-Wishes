@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { BarChart3, Sword, X } from 'lucide-react';
-import { ECHO_DATA, ALL_4COST_ECHOES, getEnemyStatsAtLevel } from '../../data/echoes.js';
+import { getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { getElementColor, getElementIcon } from '../../utils/helpers.js';
 import { haptic } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -74,29 +74,19 @@ export default function DPSComparisonCard({
         </button>
       }><BarChart3 size={14} className="text-purple-400" /> DPS Comparison</CardHeader>
       <CardBody>
-        {/* Enemy Target Selector */}
-        <div className="flex flex-wrap items-center gap-2 mb-3 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
-          <Sword size={12} className="text-red-400" />
-          <span className="text-gray-400 text-sm font-medium">Target:</span>
-          <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
-            className="kuro-btn text-sm px-2 py-1 flex-1 min-w-[120px] max-w-[240px] text-left truncate">
-            {enemyEcho ? (() => {
-              const ed = ECHO_DATA[enemyEcho];
-              const resEl = ed?.enemyRes ? Object.keys(ed.enemyRes)[0] : '';
-              const resVal = ed?.enemyRes?.[resEl] || 10;
-              return `${enemyEcho} (${resEl ? resEl.charAt(0).toUpperCase() + resEl.slice(1) + ' ' + resVal + '%' : '10%'})`;
-            })() : 'Default (10% all RES)'}
-          </button>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-500 text-sm">Lv.</span>
-            <input type="text" inputMode="numeric" value={enemyLevel}
-              onFocus={e => e.target.select()}
-              onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
-              onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
-              className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
-          </div>
-          <span className="text-gray-600 text-sm">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
-        </div>
+        {/* Enemy Target — same shared enemyEcho/enemyLevel state as the always-visible Target card
+            above Team Overview; editing it here edits it there too. Kept as a compact read-only
+            summary + shortcut into the same selector modal, rather than a second full editable
+            control, to avoid two out-of-sync-looking copies of the same picker. */}
+        <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
+          className="w-full mb-3 flex items-center gap-2.5 p-2 rounded-lg border border-[var(--border-medium)] hover:border-white/20 transition-colors text-left"
+          style={{ background: 'var(--bg-stat)' }}>
+          <Sword size={12} className="text-red-400 shrink-0" />
+          <span className="text-gray-400 text-sm font-medium shrink-0">Target:</span>
+          <span className="text-white text-sm font-medium truncate flex-1">{enemyEcho || 'No Target Selected (Default)'}</span>
+          <span className="text-gray-500 text-sm shrink-0">Lv. {enemyLevel}</span>
+          <span className="text-gray-600 text-sm shrink-0">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
+        </button>
 
         <div className="space-y-3">
           {computed.map((entry) => {

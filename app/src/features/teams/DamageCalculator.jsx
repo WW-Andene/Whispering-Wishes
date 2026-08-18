@@ -24,6 +24,7 @@ import RotationTimeline, { STAT_LABELS, STAT_LABELS_FULL, stepStyle } from './Ro
 import { useSessionState } from '../../utils/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
+import MonsterCard from '../../shared/components/MonsterCard.jsx';
 
 // Hardcoded team-wide echo-set bonuses that don't come from a per-member p5val (WuWa sets whose
 // team ATK/DMG bonus is an approximated flat number rather than a modeled trigger). Kept as a single
@@ -1218,27 +1219,39 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
   // Enemy Target — drives enemyDef90/enemyResMap in calcTeamStats above, so it's rendered
   // unconditionally (both with and without a team set) rather than only inside DPSComparisonCard,
-  // which is gated behind "+ Compare", or only alongside Team Overview, which needs a team.
+  // which is gated behind "+ Compare", or only alongside Team Overview, which needs a team. Shows
+  // the boss's real icon and full HP/ATK/DEF/RES card (via MonsterCard, stats stacked below the
+  // icon/name row) instead of a bare DEF number. No boss selected falls back to a nameless "no
+  // target" state with just the level-formula DEF — there's no "Training Dummy" boss to pick since
+  // it isn't an actual enemy.
+  const enemyTargetEd = enemyEcho ? ECHO_DATA[enemyEcho] : null;
+  const enemyTargetIcon = enemyEcho ? (collectionImages[enemyEcho] || enemyTargetEd?.iconUrl) : null;
+  const enemyTargetStats = enemyEcho
+    ? enemyTargetEd?.enemyStats
+    : { level: enemyLevel, hp: null, atk: null, def: 792 + 8 * (Number(enemyLevel) || 90), res: {} };
   const enemyTargetCard = (
     <Card>
       <CardBody>
-        <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
-          <Sword size={12} className="text-red-400" />
-          <span className="text-gray-400 text-sm font-medium">Target:</span>
-          <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
-            className="kuro-btn text-sm px-2 py-1 flex-1 min-w-[120px] max-w-[280px] text-left truncate">
-            {enemyEcho || 'Training Dummy (Default)'}
-          </button>
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 mb-2">
+          <Sword size={12} className="text-red-400 shrink-0" />
+          <span className="text-gray-400 text-sm font-medium shrink-0">Target</span>
+          <div className="flex items-center gap-1 ml-auto">
             <span className="text-gray-500 text-sm">Lv.</span>
             <input type="text" inputMode="numeric" value={enemyLevel}
               onFocus={e => e.target.select()}
               onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
               onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
-              className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
+              className="kuro-input w-14 text-sm px-1 py-0.5 text-center" />
+            <span className="text-gray-600 text-sm">/ 120</span>
           </div>
-          <span className="text-gray-600 text-sm">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
         </div>
+        <MonsterCard
+          name={enemyEcho || 'No Target Selected (Default)'}
+          iconUrl={enemyTargetIcon}
+          enemyStats={enemyTargetStats}
+          level={enemyLevel}
+          onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
+        />
       </CardBody>
     </Card>
   );
@@ -1870,6 +1883,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{teamDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-sm">skills + echoes + DOTs + reactions</div>
               </div>
+              {enemyEcho && teamDps > 0 && getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.hp > 0 && (
+                <div className="kuro-stat p-2 text-center col-span-2">
+                  <div className="text-gray-400 text-sm">Time to Kill</div>
+                  <div className="text-lg font-bold text-white kuro-number">{(getEnemyStatsAtLevel(enemyEcho, enemyLevel).hp / teamDps).toFixed(1)}s</div>
+                  <div className="text-gray-500 text-sm">{enemyEcho} Lv.{enemyLevel} HP {getEnemyStatsAtLevel(enemyEcho, enemyLevel).hp.toLocaleString('en-US')} ÷ Team DPS</div>
+                </div>
+              )}
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                 <div className="text-gray-400 text-sm">Solo DPS</div>
                 <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{soloDps.toLocaleString('en-US')}/s</div>
