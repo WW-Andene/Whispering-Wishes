@@ -100,7 +100,13 @@ function TeamsTab({
       // DPS power + buff synergy
       const mainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
       if (mainDps) {
-        score += Math.min(25, Math.round((CHARACTER_DATA[mainDps]?.totalMult || 0) / 120));
+        // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster.
+        // The old flat `/120` divisor saturated at totalMult >= 3000, so most of the current meta
+        // (Jinhsi 3200, Sigrika 3500, Yangyang: Xuanling 3600, Hiyuki 3400, Aemeath 3800) scored
+        // identically despite real power differences. Min-max normalize against that observed range
+        // instead so the top of the meta still differentiates.
+        const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
+        score += Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
         const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
         const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
         // An elemDmg buff only helps this DPS if its condition (when present) actually names their
