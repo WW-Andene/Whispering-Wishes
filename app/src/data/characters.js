@@ -2708,19 +2708,29 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Carve and Draw', 'Glacio DMG Amp +20% + Skill DMG Amp +25% (14s)', 'Grants the incoming Resonator these buffs — no direct DMG.'],
   ],
   // ── 4★ Characters ──
+  // Aalto/Baizhi/Chixia rewritten 2026-08-18: the previous rows used generic "Stage 1-4" labels and
+  // approximated/wrong multipliers and skill names (e.g. Baizhi's Liberation was mislabeled "Momentary
+  // Presence" — the real name is "Momentary Union") that didn't match any real fandom skill name, so
+  // getSkillIcon() could never resolve an icon for them. Replaced with real Lv.10 Attribute Scaling
+  // values and exact move names from wutheringwaves.fandom.com's Combat pages (Forte Details tables),
+  // matching the Suisui-quality format (real names + desc column) instead of the old placeholder style.
   'Aalto': [
-    ['Basic ATK', 'Stage 1-4', '16% → 28.2% → 14.6%×3 → 30.7%'],
-    ['Skill', 'Shift Trick', '28%×3'],
-    ['Liberation', 'Flower in the Mist', '24%×6'],
-    ['Intro', 'Feint Shot', '37%×2'],
-    ['Outro', 'Dissolving Mist', '+23% Aero DMG (14s)'],
+    ['Basic ATK', 'Half Truths Stage 1-5', '31.81% → 53.02% → 47.72%×2 → 50.37%×2 → 179.73%', 'Up to 5 shots; Basic ATK 4 spreads Mist for 1.5s.'],
+    ['Heavy ATK', 'Half Truths (aimed shot)', '35.79% → 80.52% fully charged', 'Charged aimed shot.'],
+    ['Skill', 'Shift Trick', '59.65% per Mist Bullet', 'Mist Avatar taunts enemies and fires Mist Bullets around it.'],
+    ['Liberation', 'Flower in the Mist', '397.62%', 'Gate of Quandary amplifies bullets passing through it.'],
+    ['Forte', 'Misty Cover', '59.65% per Mist Bullet', 'Mistcloak Dash consumes Mist Drops to fire Mist Bullets.'],
+    ['Intro', 'Feint Shot', '66.27%×3', 'Rapid continuous shooting on entry.'],
+    ['Outro', 'Dissolving Mist', '+23% Aero DMG Amp (14s)', 'Buffs the incoming Resonator.'],
   ],
   'Baizhi': [
-    ['Basic ATK', 'Stage 1-4', '32.2% → 28% → 22.8%×2 → 37.8%'],
-    ['Skill', 'Emergency Plan', '10.2%×4 + healing'],
-    ['Liberation', 'Momentary Presence', '12% field heal + burst'],
-    ['Intro', 'Overflowing Frost', '50%×2'],
-    ['Outro', 'Rejuvenation', 'Heal 1.5%HP/s for 6s'],
+    ['Basic ATK', "Destined Promise Stage 1-4", '65.48% → 78.57% → 13.10%×7 → 78.57%', "Up to 4 You'tan-commanded strikes."],
+    ['Heavy ATK', "Destined Promise (channel)", '48.86%/s', "Continuous You'tan attacks; Baizhi can reposition You'tan during the channel."],
+    ['Skill', 'Emergency Plan', '15.94% + healing', "Immediate team heal plus a Glacio hit from You'tan."],
+    ['Liberation', 'Momentary Union', 'Team heal + 4x Remnant Entities (4.07% each)', 'Remnant Entities auto-attack and heal every 2.5s.'],
+    ['Forte', 'Cycle of Life', 'Heals via up to 4 Concentration stacks', 'Heavy ATK/Skill consumes Concentration for continuous team healing.'],
+    ['Intro', 'Overflowing Frost', '79.53% + heal', "You'tan plunging attack that also heals the team."],
+    ['Outro', 'Rejuvinating Flow', 'Heal 1.54% Max HP/3s (30s) + 15% DMG Amp (6s)', 'Buffs and sustains the incoming Resonator.'],
   ],
   'Buling': [
     ['Basic ATK', 'Stage 1-3', '20% → 26% → 30%'],
@@ -2730,20 +2740,30 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Discharge', '+12% Electro DMG + Electro Flare stacks'],
   ],
   'Chixia': [
-    ['Basic ATK', 'Stage 1-4', '14.7% → 16.8% → 27.3% → 9.4%×4'],
-    ['Skill', 'Boom Boom', '20%×8'],
-    ['Liberation', 'Blazing Flames', '200%'],
-    ['Intro', 'Grand Entrance', '40%×2'],
-    ['Outro', 'Burnout', '+12% Fusion DMG (14s)'],
+    ['Basic ATK', 'POW POW Stage 1-4', '66.21% → 48.32%×2 → 33.55%×4 → 232.61%', 'Up to 4 shots.'],
+    ['Heavy ATK', 'POW POW (aimed shot)', '35.79% → 80.52% fully charged', 'Charged aimed shot.'],
+    ['Skill', 'Whizzing Fight Spirit', '31.81%×8', '2 initial charges; hold to enter DAKA DAKA!'],
+    ['Forte', 'Heroic Bullets: DAKA DAKA!', '19.89% per Thermobaric Bullet', 'Continuous-fire state; tapping Basic ATK exits into Basic ATK 4.'],
+    ['Forte', 'Heroic Bullets: Boom Boom', '437.39%', 'Auto-triggered when 30 Thermobaric Bullets are spent in one DAKA DAKA!'],
+    ['Liberation', 'Blazing Flames', '954.29% + 57.84%×11', 'Rapid-fire burst hitting all nearby enemies.'],
+    ['Intro', 'Grand Entrance', '49.21%×2 + 24.61%×4', 'Rapid dual-pistol entry.'],
+    ['Outro', 'Leaping Flames', '530%', 'AoE shockwave around the target.'],
   ],
+  // Danjin/Yangyang/Sanhua rewritten 2026-08-18: same issue as Aalto/Baizhi/Chixia above — Danjin's row
+  // in particular had two fabricated skill names ("Crimson Moonrise" and "Crimson Arrival") that don't
+  // exist anywhere on fandom; her real Liberation is "Crimson Bloom" and Intro is "Vindication".
+  // Replaced with real Lv.10 values and exact move names from each character's fandom Combat page.
   'Danjin': [
-    ['Basic ATK', 'Stage 1-3', '26.3%×2 → 45.5% → 32.6%×3'],
-    ['Skill', 'Crimson Fragment', '19.5%×2'],
-    ['Skill', 'Crimson Erosion', '28.6%×3'],
-    ['Forte', 'Scarlet Burst', '30.2%×5'],
-    ['Liberation', 'Crimson Moonrise', '36%×4'],
-    ['Intro', 'Crimson Arrival', '50%×2'],
-    ['Outro', 'Duality', '+23% Havoc DMG Deepen (14s)'],
+    ['Basic ATK', 'Execution Stage 1-3', '57.26% → 58.85% → 79.53%', 'Up to 3 consecutive Havoc strikes.'],
+    ['Heavy ATK', 'Execution (hold)', '37.12%×3', 'Consumes HP-fueled Forte; heals if Forte Gauge ≥50%.'],
+    ['Skill', 'Crimson Fragment: Carmine Gleam', '38.18%×2', 'Base Skill hit; costs 3% Max HP per attack.'],
+    ['Skill', 'Crimson Erosion', '64.42%×2 → 59.65%×2', 'After Basic ATK 2/Dodge Counter/Intro; applies Incinerating Will (+20% DMG taken).'],
+    ['Skill', 'Sanguine Pulse', '56.07%×2 → 42.95%×3 → 64.42%×3', 'After Basic ATK 3, up to 3 consecutive strikes.'],
+    ['Forte', 'Serene Vigil: Chaoscleave', '59.65%×7', 'At 60+ Ruby Blossom, Heavy ATK finisher; heals Danjin.'],
+    ['Forte', 'Serene Vigil: Scatterbloom', '178.93%', 'Basic ATK follow-up after Chaoscleave.'],
+    ['Liberation', 'Crimson Bloom', '49.09%×8 + 392.65% Scarlet Burst', 'Rapid Havoc combo plus a Scarlet Burst finisher; consumes HP per hit.'],
+    ['Intro', 'Vindication', '49.71%×4', 'Unwavering strike; can chain into Crimson Erosion.'],
+    ['Outro', 'Duality', '+23% Havoc DMG Deepen (14s)', 'Buffs the incoming Resonator.'],
   ],
   'Lumi': [
     ['Basic ATK', 'Stage 1-3', '27.3% → 23%×2 → 57.6%'],
@@ -2760,12 +2780,14 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Flame Reprise', '+38% Heavy ATK DMG Amp (14s)'],
   ],
   'Sanhua': [
-    ['Basic ATK', 'Stage 1-5', '23.7% → 26.2% → 36.3% → 29.2%×2 → 22.2%×3'],
-    ['Skill', 'Eternal Frost', '52.8%×2'],
-    ['Forte', 'Detonate', '86.4%×3'],
-    ['Liberation', 'Glacial Gaze', '32.8%×4'],
-    ['Intro', 'Freezing Thorns', '50%×2'],
-    ['Outro', 'Silversnow', '+38% Basic ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Frigid Light Stage 1-5', '48.71% → 73.76% → 21.58%×4 → 39.67%×2 → 233.81%', 'Up to 5 Glacio strikes.'],
+    ['Heavy ATK', 'Frigid Light (hold)', '22.27%×5', 'Consumes STA.'],
+    ['Skill', 'Eternal Frost', '359.85%', 'Creates 1 Ice Prism, detonable by Heavy ATK: Detonate.'],
+    ['Liberation', 'Glacial Gaze', '809.48%', 'Creates 1 Glacier and grants 2 stacks of Clarity.'],
+    ['Forte', 'Clarity of Mind: Detonate', '186.29%×2', 'Timed Heavy ATK release inside the Frostbite area.'],
+    ['Forte', 'Clarity of Mind: Ice Burst', '59.65% Thorn / 79.53% Prism / 139.17% Glacier', 'Detonate simultaneously bursts all active Ice Thorns/Prisms/Glaciers.'],
+    ['Intro', 'Freezing Thorns', '139.17%', 'Creates 1 Ice Thorn.'],
+    ['Outro', 'Silversnow', '+38% Basic ATK DMG Amp (14s)', 'Buffs the incoming Resonator.'],
   ],
   'Taoqi': [
     ['Basic ATK', 'Stage 1-4', '35.3% → 33.1% → 42.3% → 40.1%+53.5%'],
@@ -2775,11 +2797,15 @@ const SKILL_MULTIPLIERS = {
     ['Outro', 'Iron Curtain', '+15% DEF Shred (10s)'],
   ],
   'Yangyang': [
-    ['Basic ATK', 'Stage 1-4', '18.2% → 25.2%×2 → 36.3% → 22.7%×3'],
-    ['Skill', 'Zephyr Domain', '40%×2'],
-    ['Liberation', 'Wind Spirals', '60%×3'],
-    ['Intro', 'Cerulean Song', '50%×2'],
-    ['Outro', 'Whispering Breeze', 'Recover 4 Resonance Energy/s (5s)'],
+    ['Basic ATK', 'Feather as Blade Stage 1-4', '44.73% → 59.64% → 46.81%×2 → 59.36%×2+79.14%', 'Up to 4 consecutive Aero strikes.'],
+    ['Heavy ATK', 'Feather as Blade (hold)', '19.88%×3', 'Lunge forward, consumes Stamina.'],
+    ['Heavy ATK', 'Zephyr Song', '106.61%', 'Basic ATK follow-up after Heavy ATK or Dodge Counter.'],
+    ['Skill', 'Zephyr Domain', '34.53%×4 + 207.19%', 'Whirling vortex groups nearby enemies.'],
+    ['Forte', 'Echoing Feathers: Stormy Strike', '38.02%×2', 'At 3 Melodies, Heavy ATK follow-up.'],
+    ['Forte', 'Echoing Feathers: Feather Release', '21.73%×5 + 126.81%×2', 'Mid-air Basic ATK consuming all 3 Melodies; landing hit counts as Basic ATK.'],
+    ['Liberation', 'Wind Spirals', '46.58%×12 + 372.70%', 'Cyclone groups nearby enemies.'],
+    ['Intro', 'Cerulean Song', '79.52%×2', 'Launches target airborne.'],
+    ['Outro', 'Whispering Breeze', 'Restore 4 Resonance Energy/s (5s)', 'Funnels Energy to the incoming Resonator.'],
   ],
   'Youhu': [
     ['Basic ATK', 'Stage 1-4', '18.9% → 22.5% → 12.9%×4 → 32.5%'],
@@ -3258,6 +3284,31 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Heavy ATK: Detonate', note: 'second detonate to fully spend the loop before swapping' },
     { type: 'Outro', skill: 'Silversnow', duration: 14, note: 'grants next Resonator 38% Basic ATK DMG Amp — time this to land on the intended DPS' },
   ],
+  // Standard Rotations added 2026-08-18 for Aalto/Baizhi/Chixia — sourced from wutheringwaves.fandom.com's
+  // Combat pages (Instructions + Forte text). These were entirely missing before.
+  'Aalto': [
+    { type: 'Intro', skill: 'Feint Shot', note: 'rapid burst on entry, builds Mist Drops' },
+    { type: 'Skill', skill: 'Shift Trick', note: 'summons a Mist Avatar and spreads Mist, taunting nearby enemies' },
+    { type: 'Basic ATK', skill: 'Half Truths Stage 4', note: 'Basic ATK 4 spreads Mist forward; passing through it triggers Mistcloak Dash' },
+    { type: 'Liberation', skill: 'Flower in the Mist', note: 'creates a Gate of Quandary — Mist Bullets passing through it deal amplified DMG' },
+    { type: 'Forte', skill: 'Misty Cover', note: 'Mistcloak Dash consumes Mist Drops while passing through Mist/Gate for a burst of Mist Bullets' },
+    { type: 'Outro', skill: 'Dissolving Mist', duration: 14, note: 'grants the incoming Resonator 23% Aero DMG Amp for 14s' },
+  ],
+  'Baizhi': [
+    { type: 'Intro', skill: 'Overflowing Frost', note: 'plunging attack that also heals the team on entry' },
+    { type: 'Liberation', skill: 'Momentary Union', note: 'team heal, spawns 4 stacks of Remnant Entities for sustained Coordinated-ATK healing' },
+    { type: 'Skill', skill: 'Emergency Plan', note: 'instant team heal plus a Glacio hit, builds Concentration' },
+    { type: 'Heavy ATK', skill: "Destined Promise (channel)", note: 'consumes Concentration for continuous team healing plus Concerto/Resonance Energy regen' },
+    { type: 'Outro', skill: 'Rejuvinating Flow', duration: 30, note: 'sustains the incoming Resonator with healing over 30s plus 15% DMG Amp for 6s' },
+  ],
+  'Chixia': [
+    { type: 'Intro', skill: 'Grand Entrance', note: 'rapid dual-pistol burst on entry, builds Thermobaric Bullets' },
+    { type: 'Skill', skill: 'Whizzing Fight Spirit', note: 'hold to enter DAKA DAKA!, consuming Thermobaric Bullets on continuous fire' },
+    { type: 'Forte', skill: 'Heroic Bullets: DAKA DAKA!', note: 'spending all 30 Thermobaric Bullets in one go auto-casts Boom Boom' },
+    { type: 'Forte', skill: 'Heroic Bullets: Boom Boom', note: 'auto-triggered Resonance Skill finisher, exits DAKA DAKA!' },
+    { type: 'Liberation', skill: 'Blazing Flames', note: 'AoE rapid-fire burst hitting all nearby enemies' },
+    { type: 'Outro', skill: 'Leaping Flames', note: 'AoE shockwave around the target, sets up the next Resonator' },
+  ],
   // Standard Rotation added 2026-08-18 — sourced from wutheringwaves.fandom.com's Danjin/Combat
   // Instructions + Forte text (Crimson Erosion/Sanguine Pulse combo strings, Forte Circuit conditions).
   // This section was previously entirely missing for her.
@@ -3499,12 +3550,21 @@ const RESONANCE_CHAIN_DATA = {
 // Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const SKILL_ICONS = {
+  // Aalto/Baizhi/Chixia: Intro/Outro icons added 2026-08-18 (previously missing entirely — only
+  // Basic/Skill/Liberation/Forte were populated). Aalto's Forte Circuit's real name is 'Misty Cover'
+  // (was wrongly keyed 'Mistcloak Dash', the Forte's internal dash mechanic, not its own skill name) —
+  // fixed to use the correct name while keeping 'Mistcloak Dash' as an alias to the same icon so any
+  // existing reference to it still resolves. All new icons sourced directly from fandom's
+  // static.wikia.nocookie.net-hosted Skill_*.png assets, same convention as the other 2026-08-18 adds.
   'Aalto': {
     'Half Truths': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Basic ATK — shared generic Pistols icon
     'Standard': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
     'Shift Trick': 'https://i.ibb.co/4ZDDVq43/aalto-skill.webp',
     'Flower in the Mist': 'https://i.ibb.co/qYjnpYdK/aalto-heavy.webp',
-    'Mistcloak Dash': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp',
+    'Misty Cover': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp',
+    'Mistcloak Dash': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp', // alias, see comment above
+    'Feint Shot': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/93/Skill_Feint_Shot.png',
+    'Dissolving Mist': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/77/Skill_Dissolving_Mist.png',
   },
   'Baizhi': {
     'Destined Promise': 'https://i.ibb.co/6c75rLCc/baizhi-basic.webp', // Basic ATK — generic Rectifier icon
@@ -3512,6 +3572,8 @@ const SKILL_ICONS = {
     'Emergency Plan': 'https://i.ibb.co/2BC255K/baizhi-skill.webp',
     'Momentary Union': 'https://i.ibb.co/fsP021g/baizhi-liberation.webp',
     'Cycle of Life': 'https://i.ibb.co/d0nRGZwy/baizhi-forte.webp',
+    'Overflowing Frost': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Overflowing_Frost.png',
+    'Rejuvinating Flow': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/60/Skill_Rejuvinating_Flow.png', // fandom's own spelling ("Rejuvinating") — kept verbatim to match the wiki's file name
   },
   'Chixia': {
     'POW POW': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp', // Basic ATK — shared generic Pistols icon
@@ -3519,6 +3581,8 @@ const SKILL_ICONS = {
     'Whizzing Fight Spirit': 'https://i.ibb.co/s9jWxj9V/chixia-skill.webp',
     'Blazing Flames': 'https://i.ibb.co/67N4dq55/chixia-liberation.webp',
     'Heroic Bullets': 'https://i.ibb.co/x8mwJBr0/chixia-forte.webp',
+    'Grand Entrance': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/28/Skill_Grand_Entrance.png',
+    'Leaping Flames': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7d/Skill_Leaping_Flames.png',
   },
   'Encore': {
     'Wooly Attack': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
@@ -4101,6 +4165,7 @@ const SKILL_ICONS = {
     'Feather as Blade': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
     'Zephyr Domain': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/32/Skill_Zephyr_Domain.png',
+    'Zephyr Song': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Heavy ATK follow-up, no dedicated fandom icon — generic Sword icon (same convention as Basic/Heavy ATK above)
     'Wind Spirals': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7a/Skill_Wind_Spirals.png',
     'Echoing Feathers': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b5/Skill_Echoing_Feathers.png',
     'Feather Release': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b5/Skill_Echoing_Feathers.png', // Forte Circuit's Mid-air Attack finisher, same Forte icon
