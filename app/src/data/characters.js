@@ -663,6 +663,7 @@ const CHARACTER_DATA = {
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
+    rotation: ['Intro', 'Basic 3', 'Heavy: Frost Splinter (cancel → Ultimate)', 'Ultimate: Inward Vision', 'Basic: Foreclaimed 1', 'Basic: Foreclaimed 2', 'Basic: Foreclaimed 3 (cancel → Skill)', 'Skill: Jade Cleave', 'Skill: Petalfall', 'Basic: Foreclaimed 1', 'Basic: Foreclaimed 2', 'Basic: Foreclaimed 3 (cancel → Dodge)', 'Dodge (enter Iai Stance)', 'Basic: Iai (×3)', 'Heavy: Bitterfrost', 'Hold Ultimate: Blade Liberation', 'Skill (swap)', 'Outro'],
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Redbell' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Reminiscence: Threnodian - Voidborne Construct', 'Wishes of Quiet Snowfall 5pc'], bestWeapon: 'Frostburn',
