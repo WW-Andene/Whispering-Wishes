@@ -4528,6 +4528,35 @@ const CHAIN_NODE_ICONS = {
   // /Combat pages — a genuine wiki content gap for these June-2026-release characters, not a fetch
   // failure). Node NAMES are still populated below in CHAIN_NODE_NAMES since the modal renders names
   // independently of icons; add icons here once fandom uploads them.
+  // Danjin/Yangyang/Sanhua added 2026-08-18: fandom DOES have these Sequence_Node_*.png assets
+  // uploaded (unlike the June-2026 characters above) — fetched directly via the MediaWiki API
+  // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png&prop=imageinfo) and linked
+  // straight to their static.wikia.nocookie.net URLs, no re-hosting needed. This closes the gap the
+  // earlier audit pass missed (only CHAIN_NODE_NAMES was filled in, not the icon table).
+  'Danjin': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c7/Sequence_Node_Crimson_Heart_of_Justice.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6d/Sequence_Node_Dusted_Mirror.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/9/96/Sequence_Node_Fleeting_Blossom.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/82/Sequence_Node_Solitary_Carnation.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bb/Sequence_Node_Reigning_Blade.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/08/Sequence_Node_Bloodied_Jade.png',
+  },
+  'Yangyang': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/42/Sequence_Node_Sapphire_Skies%2C_Soaring_Sparrows.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/13/Sequence_Node_Nesting_Twigs%2C_in_Beaks_They_Harrow.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1c/Sequence_Node_Nature_Sings_in_Symphony.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e1/Sequence_Node_Close_Your_Eyes_and_Listen_in.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/76/Sequence_Node_Winds_Whisper_in_Harmony.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f3/Sequence_Node_A_Tribute_to_Life%27s_Sweet_Hymn.png',
+  },
+  'Sanhua': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/3b/Sequence_Node_Solitude%27s_Embrace.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8d/Sequence_Node_Snowy_Clarity.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/03/Sequence_Node_Anomalous_Vision.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/84/Sequence_Node_Blade_Mastery.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e8/Sequence_Node_Unraveling_Fate.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1a/Sequence_Node_Daybreak_Radiance.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
