@@ -253,10 +253,14 @@ function TeamsTab({
             {(() => {
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
-              // Only relevant for dual/multi-Main-DPS-role team comps — auto-detect (first Main DPS
-              // in slot order) can't know which one the player wants the headline DPS number built
-              // around, so surface a manual override control only when there's actually a choice.
+              // Relevant whenever auto-detect can't unambiguously know which member the player wants
+              // the headline DPS number built around: dual/multi-Main-DPS-role comps (ambiguous which
+              // one), and pure Sub-DPS/hybrid quickswap comps with zero 'Main DPS'-role members (falls
+              // back to highest totalMult with no player say). Exactly one Main DPS-role member is the
+              // only case that's genuinely unambiguous.
               const mainDpsCandidateCount = teamSlots.filter(n => n && CHARACTER_DATA[n]?.role === 'Main DPS').length;
+              const dmgCapableCount = teamSlots.filter(n => n && (CHARACTER_DATA[n]?.totalMult || 0) > 0).length;
+              const mainDpsChoiceAmbiguous = mainDpsCandidateCount !== 1 && dmgCapableCount > 1;
               const setTeamMainDps = (name) => {
                 dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: activeTeam.mainDpsOverride === name ? null : name });
                 haptic.light();
@@ -636,7 +640,7 @@ function TeamsTab({
                               >
                                 <X size={12} />
                               </button>}
-                              {!framingMode && mainDpsCandidateCount > 1 && charData?.role === 'Main DPS' && (
+                              {!framingMode && mainDpsChoiceAmbiguous && (charData?.totalMult || 0) > 0 && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setTeamMainDps(charName); }}
                                   className={`action-btn absolute top-1 left-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}

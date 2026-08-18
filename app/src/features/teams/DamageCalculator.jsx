@@ -122,11 +122,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     if (!mems.length) return null;
     const allBuffs = [], allDebuffs = [];
     mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
-    // DPS selection: an explicit mainDpsOverride wins (needed for dual-Main-DPS-role team comps,
-    // where slot order alone can't tell us which one the player wants optimized around) — but only
-    // if that character is actually still in this team and still Main DPS-role. Otherwise fall back
-    // to auto-detect: prefer 'Main DPS' role, then highest totalMult character.
-    const mainDps = (mainDpsOverride && mems.find(m => m.name === mainDpsOverride && m.d.role === 'Main DPS'))
+    // DPS selection: an explicit mainDpsOverride wins — needed both for dual-Main-DPS-role team comps
+    // (slot order alone can't tell us which one the player wants optimized around) and for pure
+    // Sub-DPS/hybrid quickswap comps with zero 'Main DPS'-role members, where auto-detect falls back
+    // to highest totalMult with no way for the player to say otherwise. The override no longer
+    // requires the target to carry the 'Main DPS' role tag — any team member the player picks can be
+    // the headline damage figure the calculator optimizes buff timing/uptime around. Only requirement:
+    // they must still actually be in this team. Otherwise fall back to auto-detect: prefer 'Main DPS'
+    // role, then highest totalMult character.
+    const mainDps = (mainDpsOverride && mems.find(m => m.name === mainDpsOverride))
       || mems.find(m => m.d.role === 'Main DPS')
       || mems.reduce((best, m) => (!best || (m.d.totalMult || 0) > (best.d.totalMult || 0)) ? m : best, null)
       || mems[0];
@@ -878,7 +882,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (els.size === mems.length) warnings.push('No element resonance');
       const dpsCount = mems.filter(m => m.d.role === 'Main DPS').length;
       if (dpsCount >= 2) warnings.push(`Dual DPS: rotation time shared — use 👑 to pick which one${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
-      if (dpsCount === 0) warnings.push('No Main DPS: using highest damage dealer');
+      if (dpsCount === 0) warnings.push(`No Main DPS: using highest damage dealer — use 👑 to pick a different headline DPS${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
     }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
