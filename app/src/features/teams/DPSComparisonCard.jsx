@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { BarChart3, Sword, X } from 'lucide-react';
-import { ECHO_DATA, ALL_4COST_ECHOES } from '../../data/echoes.js';
+import { ECHO_DATA, ALL_4COST_ECHOES, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { getElementColor, getElementIcon } from '../../utils/helpers.js';
 import { haptic } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -95,7 +95,7 @@ export default function DPSComparisonCard({
               onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
               className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
           </div>
-          <span className="text-gray-600 text-sm">DEF {792 + 8 * (Number(enemyLevel) || 90)}</span>
+          <span className="text-gray-600 text-sm">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
         </div>
 
         <div className="space-y-3">

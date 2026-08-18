@@ -2,6 +2,8 @@
 // Echo data — extracted from appcore-data.js for maintainability
 // Edit this file to add/update echoes, sets, and echo damage data
 
+import ENEMY_LEVEL_STATS from './enemyLevelStats.json';
+
 /** @type {Record<string, import('../types.js').EchoSetData>} */
 const ECHO_SETS = {
   'Freezing Frost':       { element: 'Glacio',  p2: '+10% Glacio DMG',  p2val: { glacioDmg: 10 },  p5: 'Basic/Heavy Attack → +10% Glacio DMG (max x3)', p5val: { glacioDmg: 40 } },
@@ -457,51 +459,23 @@ const ECHO_SKILL_BUFFS = {
   'Reminiscence - Nightmare: Adam Smasher': { buffs: [{ stat: 'critRate', value: 15 }], passive: true, condition: 'Lucy or Rebecca' },
 };
 
-// Level 90 HP/ATK/DEF for boss echoes, sourced from nanoka.cc's static monster data
-// (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id — task carryover 2026-08-18).
-// DEF is 1512 for every entry: WW's enemy DEF curve at level 90 is uniform across bosses, not a
-// copy/paste error. [hp, atk, def]
-const ENEMY_LV90_HP_ATK_DEF = {
-  'Mourning Aix': [435138, 5193, 1512],
-  'Feilian Beringal': [453258, 5796, 1512],
-  'Tempest Mephis': [369487, 5026, 1512],
-  'Thundering Mephis': [459298, 6600, 1512],
-  'Inferno Rider': [468489, 4456, 1512],
-  'Bell-Borne Geochelone': [423058, 4020, 1512],
-  'Impermanence Heron': [419907, 5361, 1512],
-  'Lampylumen Myriad': [460348, 6835, 1512],
-  'Mech Abomination': [460348, 6500, 1512],
-  'Crownless': [181198, 2010, 1512],
-  'Jué': [540968, 3551, 1512],
-  'Fallacy of No Return': [435138, 4188, 1512],
-  'Sentry Construct': [584823, 6701, 1512],
-  'Nightmare: Impermanence Heron': [419907, 5361, 1512],
-  'Nightmare: Lampylumen Myriad': [460348, 6835, 1512],
-  'Dragon of Dirge': [535716, 5863, 1512],
-  'Nightmare: Hecate': [681988, 5863, 1512],
-  'Nightmare: Crownless': [563815, 5897, 1512],
-  'Nightmare: Mourning Aix': [435138, 5193, 1512],
-  'Nightmare: Feilian Beringal': [453258, 5796, 1512],
-  'Nightmare: Inferno Rider': [468489, 4456, 1512],
-  'Nightmare: Tempest Mephis': [369487, 5026, 1512],
-  'Nightmare: Thundering Mephis': [459298, 6600, 1512],
-  'Dreamless': [564603, 5528, 1512],
-  'Reminiscence: Fleurdelys': [787818, 4188, 1512],
-  'Lioness of Glory': [535716, 5863, 1512],
-  'The False Sovereign': [681988, 5863, 1512],
-  'Lady of the Sea': [535716, 5193, 1512],
-  'Corrosaurus': [375526, 4020, 1512],
-  'Reminiscence: Threnodian - Leviathan': [787818, 2513, 1512],
-  'Hyvatia': [774546, 4188, 1512],
-  'Twin Nova - Nebulous Cannon': [442197, 5026, 1512],
-  'Sigillum': [1301349, 4188, 1512],
-  'Reactor Husk': [1040986, 4188, 1512],
-  'Nameless Explorer': [1040986, 4188, 1512],
-  'Lorelei': [558563, 5193, 1512],
-  'Nightmare: Kelpie': [336136, 3350, 1512],
-  'Hecate': [535716, 5863, 1512],
-  'Reminiscence: Fenrico': [682775, 5863, 1512],
-};
+// Per-level (1-120) HP/ATK/DEF for boss echoes, sourced from nanoka.cc's static monster data
+// (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id). Index 0 = level 1 ... index
+// 119 = level 120 (120 is the ceiling nanoka's own level slider exposes for these bosses — Tower/
+// Illusive Realm difficulty scaling goes past the level-90 open-world cap). DEF converges to 1512
+// for every boss at level 90 specifically: WW's enemy DEF curve at that level is uniform across
+// bosses, not a copy/paste error.
+
+/** Returns { hp, atk, def } for a boss echo at a given level, or null if not tracked/out of range. */
+export function getEnemyStatsAtLevel(name, level) {
+  const rows = ENEMY_LEVEL_STATS[name];
+  if (!rows) return null;
+  const lvl = Math.max(1, Math.min(120, Math.round(Number(level) || 90)));
+  const row = rows[lvl - 1];
+  if (!row) return null;
+  const [hp, atk, def] = row;
+  return { hp, atk, def };
+}
 
 // [SECTION:ECHO_DMG_DATA] — Per-echo active skill damage multipliers & enemy resistance
 // dmg: total ATK% damage multiplier of echo active skill (sum of all hits)
@@ -696,12 +670,14 @@ const ENEMY_LV90_HP_ATK_DEF = {
   ['Nightmare: Havoc Warrior', 515, 'Havoc', null],
   ['Nightmare: Tick Tack', 171, 'Havoc', null],
 ].forEach(([name, dmg, element, enemyRes]) => {
-  // enemyStats: full boss stat card shape for MonsterCard/EnemySelector/EchoDetail. hp/atk/def come
-  // from ENEMY_LV90_HP_ATK_DEF (nanoka.cc); any boss genuinely not found there is left null (never
-  // fabricated), same graceful-degradation behavior as before.
-  const lv90 = ENEMY_LV90_HP_ATK_DEF[name];
+  // enemyStats: full boss stat card shape for MonsterCard/EnemySelector/EchoDetail. hp/atk/def default
+  // to level 90 via getEnemyStatsAtLevel (nanoka.cc, full 1-120 curve); any boss genuinely not tracked
+  // there is left null (never fabricated), same graceful-degradation behavior as before. Callers that
+  // want a different level should call getEnemyStatsAtLevel(name, level) directly rather than reading
+  // this fixed level-90 snapshot.
+  const lv90 = getEnemyStatsAtLevel(name, 90);
   const enemyStats = enemyRes ? {
-    level: 90, hp: lv90 ? lv90[0] : null, atk: lv90 ? lv90[1] : null, def: lv90 ? lv90[2] : null,
+    level: 90, hp: lv90?.hp ?? null, atk: lv90?.atk ?? null, def: lv90?.def ?? null,
     res: {
       glacio: enemyRes.glacio || 0, fusion: enemyRes.fusion || 0, electro: enemyRes.electro || 0,
       aero: enemyRes.aero || 0, spectro: enemyRes.spectro || 0, havoc: enemyRes.havoc || 0,

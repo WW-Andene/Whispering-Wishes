@@ -5,10 +5,11 @@
 // a compact, reusable presentation.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Skull } from 'lucide-react';
 import { getElementIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { getEnemyStatsAtLevel } from '../../data/echoes.js';
 
 const ELEMENT_ORDER = ['glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'];
 const ELEMENT_LABEL = { glacio: 'Glacio', fusion: 'Fusion', electro: 'Electro', aero: 'Aero', spectro: 'Spectro', havoc: 'Havoc' };
@@ -35,14 +36,33 @@ function StatRow({ icon, label, value }) {
 /**
  * name: echo/boss name
  * iconUrl: boss icon (falls back to a Skull glyph)
- * enemyStats: { level, hp, atk, def, res: { glacio, fusion, ... } } | null
+ * enemyStats: { level, hp, atk, def, res: { glacio, fusion, ... } } | null — base snapshot (level 90)
+ * level / onLevelChange: controlled level (1-120) — if passed, hp/atk/def are recomputed live from
+ *   getEnemyStatsAtLevel(name, level) instead of enemyStats' fixed level-90 snapshot
+ * showLevelControl: renders an inline Lv. stepper. Uncontrolled (no level/onLevelChange given) it
+ *   manages its own local level state, starting from enemyStats.level ?? 90 — for standalone contexts
+ *   (e.g. EchoDetailModal's Boss Stats card) that shouldn't touch any shared app-level enemy level.
  * compact: smaller footprint for grid/list contexts
  */
-export default function MonsterCard({ name, iconUrl, enemyStats, compact = false, selected = false, onClick }) {
-  const level = enemyStats?.level ?? 90;
+export default function MonsterCard({
+  name, iconUrl, enemyStats, compact = false, selected = false, onClick,
+  level: controlledLevel, onLevelChange, showLevelControl = false,
+}) {
+  const [localLevel, setLocalLevel] = useState(enemyStats?.level ?? 90);
+  const isControlled = controlledLevel != null;
+  const level = isControlled ? controlledLevel : localLevel;
+  const setLevel = isControlled ? onLevelChange : setLocalLevel;
+
+  const scaled = (isControlled || showLevelControl) ? getEnemyStatsAtLevel(name, level) : null;
+  const hp = scaled ? scaled.hp : enemyStats?.hp;
+  const atk = scaled ? scaled.atk : enemyStats?.atk;
+  const def = scaled ? scaled.def : enemyStats?.def;
   const res = enemyStats?.res || {};
   const hasResData = Object.values(res).some(v => v);
   const Wrapper = onClick ? 'button' : 'div';
+
+  const clampLevel = v => Math.max(1, Math.min(120, v));
+  const stepLevel = delta => setLevel?.(clampLevel((Number(level) || 90) + delta));
 
   return (
     <Wrapper
@@ -61,15 +81,30 @@ export default function MonsterCard({ name, iconUrl, enemyStats, compact = false
         )}
         <div className="flex-1 min-w-0">
           <div className="text-white font-semibold truncate">{name}</div>
-          <div className="text-2xs text-gray-500">Lv. {level}</div>
+          {showLevelControl && enemyStats ? (
+            <div className="flex items-center gap-1 mt-0.5" onClick={e => e.stopPropagation()}>
+              <button type="button" onClick={() => stepLevel(-1)} className="w-4 h-4 flex items-center justify-center rounded bg-white/5 hover:bg-white/15 text-gray-400 text-2xs leading-none">−</button>
+              <input
+                type="number" min={1} max={120} value={level}
+                onFocus={e => e.target.select()}
+                onChange={e => { const n = parseInt(e.target.value, 10); if (!Number.isNaN(n)) setLevel?.(clampLevel(n)); }}
+                onBlur={e => { if (e.target.value === '' || Number.isNaN(parseInt(e.target.value, 10))) setLevel?.(90); }}
+                className="w-10 text-2xs text-center bg-transparent text-gray-400 border border-[var(--border-subtle)] rounded px-0.5 py-px"
+              />
+              <button type="button" onClick={() => stepLevel(1)} className="w-4 h-4 flex items-center justify-center rounded bg-white/5 hover:bg-white/15 text-gray-400 text-2xs leading-none">+</button>
+              <span className="text-2xs text-gray-500">/ 120</span>
+            </div>
+          ) : (
+            <div className="text-2xs text-gray-500">Lv. {level}</div>
+          )}
         </div>
       </div>
 
-      {enemyStats && (enemyStats.hp || enemyStats.atk || enemyStats.def) && (
+      {enemyStats && (hp || atk || def) && (
         <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]">
-          <StatRow icon={getStatIcon('HP')} label="HP" value={enemyStats.hp} />
-          <StatRow icon={getStatIcon('ATK')} label="ATK" value={enemyStats.atk} />
-          <StatRow icon={getStatIcon('DEF')} label="DEF" value={enemyStats.def} />
+          <StatRow icon={getStatIcon('HP')} label="HP" value={hp} />
+          <StatRow icon={getStatIcon('ATK')} label="ATK" value={atk} />
+          <StatRow icon={getStatIcon('DEF')} label="DEF" value={def} />
         </div>
       )}
 

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef 
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, ListOrdered, Sword, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
-import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import {
   ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
@@ -150,11 +150,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     // ── Enemy scaling (using named constants from calcEngine) ──
     // "Training Dummy" (enemyEcho === '') keeps the original generic level-only formula/0-baseline
-    // behavior unchanged. A selected boss echo overrides DEF with its real stat when known, and RES
-    // with its full per-element map (enemyStats.res) instead of the old single-element enemyRes lookup.
+    // behavior unchanged. A selected boss echo overrides DEF with its real stat at the chosen
+    // enemyLevel (getEnemyStatsAtLevel, full 1-120 per-boss curve) when known, and RES with its full
+    // per-element map (enemyStats.res) instead of the old single-element enemyRes lookup.
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
     const enemyStats = enemyEchoData?.enemyStats || null;
-    const enemyDef90 = enemyStats?.def ?? (792 + 8 * (Number(enemyLevel) || 90));
+    const enemyLevelStats = enemyEcho ? getEnemyStatsAtLevel(enemyEcho, enemyLevel) : null;
+    const enemyDef90 = enemyLevelStats?.def ?? enemyStats?.def ?? (792 + 8 * (Number(enemyLevel) || 90));
     const enemyResMap = enemyStats?.res || enemyEchoData?.enemyRes || {};
     const getEnemyRes = (el) => {
       const elLow = (el || '').toLowerCase();
@@ -2015,6 +2017,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       <EnemyEchoSelectorModal
         isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
         enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
+        enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
         collectionImages={collectionImages}
         search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
         costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}

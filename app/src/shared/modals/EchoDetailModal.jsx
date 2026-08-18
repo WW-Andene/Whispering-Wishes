@@ -146,7 +146,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
           {data.enemyStats && (
             <div>
               <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Boss Stats</div>
-              <MonsterCard name={name} iconUrl={data.iconUrl} enemyStats={data.enemyStats} compact />
+              <MonsterCard name={name} iconUrl={data.iconUrl} enemyStats={data.enemyStats} compact showLevelControl />
             </div>
           )}
 

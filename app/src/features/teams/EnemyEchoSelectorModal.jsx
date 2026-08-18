@@ -15,6 +15,7 @@ import MonsterCard from '../../shared/components/MonsterCard.jsx';
 export default function EnemyEchoSelectorModal({
   isOpen, onClose,
   enemyEcho, setEnemyEcho,
+  enemyLevel, setEnemyLevel,
   collectionImages,
   search, setSearch,
   setFilter, setSetFilter,
@@ -44,6 +45,21 @@ export default function EnemyEchoSelectorModal({
         {/* Search + Filters */}
         <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search bosses…" className="kuro-input w-full text-base" />
+          <div className="flex items-center gap-2 px-0.5">
+            <span className="text-gray-400 text-sm shrink-0">Enemy Lv.</span>
+            <input
+              type="range" min={1} max={120} value={enemyLevel ?? 90}
+              onChange={e => setEnemyLevel?.(Number(e.target.value))}
+              className="flex-1 accent-red-500"
+            />
+            <input
+              type="number" min={1} max={120} value={enemyLevel ?? 90}
+              onFocus={e => e.target.select()}
+              onChange={e => { const n = parseInt(e.target.value, 10); if (!Number.isNaN(n)) setEnemyLevel?.(Math.max(1, Math.min(120, n))); }}
+              onBlur={e => { if (e.target.value === '' || Number.isNaN(parseInt(e.target.value, 10))) setEnemyLevel?.(90); }}
+              className="kuro-input w-14 text-sm px-1 py-0.5 text-center shrink-0"
+            />
+          </div>
           <div className="flex gap-1.5">
             <KuroSelect value={setFilter} onChange={v => setSetFilter(v)} small
               options={[
@@ -76,7 +92,8 @@ export default function EnemyEchoSelectorModal({
             <MonsterCard
               name="Training Dummy"
               iconUrl={null}
-              enemyStats={{ level: 90, hp: null, atk: null, def: null, res: {} }}
+              enemyStats={{ level: enemyLevel ?? 90, hp: null, atk: null, def: null, res: {} }}
+              level={enemyLevel ?? 90}
               selected={!enemyEcho}
               onClick={() => { setEnemyEcho(''); onClose(); haptic.light(); }}
             />
@@ -88,6 +105,7 @@ export default function EnemyEchoSelectorModal({
                   name={name}
                   iconUrl={collectionImages[name] || ed?.iconUrl}
                   enemyStats={ed?.enemyStats}
+                  level={enemyLevel ?? 90}
                   selected={enemyEcho === name}
                   onClick={() => { setEnemyEcho(name); onClose(); haptic.success(); }}
                 />
