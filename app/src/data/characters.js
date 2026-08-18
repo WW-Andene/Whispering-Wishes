@@ -762,13 +762,21 @@ const CHARACTER_DATA = {
     bestEchoes: ['Moonlit Clouds 5pc', 'Sierra Gale 5pc'], bestWeapon: 'Emerald of Genesis',
     weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Yangyang + Xiangli Yao + Shorekeeper', 'Yangyang + Changli + Verina', 'Yangyang + Carlotta + Verina'] },
+  // Sanhua corrected 2026-08-18 via Prydwen's Kit/Build/Gameplay tabs: desc lore confirmed via fandom's
+  // Official Introduction ("the loyal and reliable guard of Jinzhou Magistrate Jinhsi") — was already
+  // accurate. bestWeapon changed from 'Emerald of Genesis' (Prydwen's #3 pick at 100.00%) to 'Blazing
+  // Brilliance' (Prydwen's #1 pick at 108.39%, R1); weaponAlts added (previously missing entirely).
+  // bestEchoes reordered to match Prydwen's stated primary set (Moonlit Clouds 5pc first, Impermanence
+  // Heron as the paired Main Echo, not a second full set). teams reordered/expanded per Prydwen's own
+  // "Example Teams" (Encore Team ranked as her single best pairing, ahead of the Camellya team).
   'Sanhua': { rarity: 4, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Jinhsi\'s stoic personal guard, cold as the frost she commands. Quick-swap Glacio sub-DPS who deals burst Glacio DMG and amplifies the next character\'s Basic ATK DMG via Outro.',
     skills: ['Frigid Light', 'Eternal Frost', 'Glacial Gaze', 'Clarity of Mind'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Emerald of Genesis',
-    teams: ['Sanhua + Camellya + Verina', 'Sanhua + Lingyang + Shorekeeper'] },
+    bestEchoes: ['Moonlit Clouds 5pc', 'Impermanence Heron'], bestWeapon: 'Blazing Brilliance',
+    weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse', 'Lunar Cutter', 'Lumingloss', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
+    teams: ['Sanhua + Encore + Verina', 'Sanhua + Camellya + Verina', 'Sanhua + Lingyang + Shorekeeper'] },
   'Taoqi': { rarity: 4, element: 'Havoc', weapon: 'Broadblade', role: 'Support',
     desc: 'Steadfast border defense director with an iron will. Havoc support who provides shields via Resonance Skill and deepens the team\'s Resonance Skill DMG through Outro.',
     skills: ['Concealed Edge', 'Fortified Defense', 'Unmovable', 'Power Shift'],
@@ -965,7 +973,8 @@ const CHARACTER_DATA = {
   ['Danjin',        9438,  263, 1149, 100],
   // corrected 2026-08-18: DEF was 1099 vs Prydwen's exact Lv.90 stat screen 1100 (HP/ATK/Energy already matched).
   ['Yangyang',      10200, 250, 1100, 100],
-  ['Sanhua',        10062, 275, 941,  100],
+  // corrected 2026-08-18: HP was 10062 vs Prydwen's exact Lv.90 stat screen 10063 (ATK/DEF/Energy already matched).
+  ['Sanhua',        10063, 275, 941,  100],
   ['Taoqi',         8950,  225, 1564, 125],
   ['Yuanwu',        8525,  225, 1637, 125],
   ['Mortefi',       10025, 250, 1136, 125],
@@ -1463,6 +1472,14 @@ const CHARACTER_DATA = {
   // tie. VAs cross-checked against Prydwen's profile tab (exact match): EN Sophie Colquhoun,
   // CN Yi Kou Jing (一口井), JP Okasaki Miho, KR Lee Hyunjin.
   ['Danjin', 'Scarlet Shade', 'Huanglong', 'Midnight Rangers', { en: 'Sophie Colquhoun', cn: 'Yi Kou Jing', jp: 'Okasaki Miho', kr: 'Lee Hyunjin' }],
+  // Sanhua: sourced 2026-08-18 via fandom's own infobox (wutheringwaves.fandom.com/wiki/Sanhua).
+  // Title 'Snow Waltz' taken from the infobox's secondary_title field (no dedicated "Title" row exists
+  // for her, unlike Danjin — same convention). birthplace/nation both Huanglong (REGION_DATA above).
+  // organization uses affiliation2 'Jinzhou City Hall' (her specific in-game sub-group, per Prydwen's
+  // own intro: "bodyguard of Jinzhou's Magistrate") over the generic 'Jinzhou (on profile)' tie,
+  // matching the Chixia/Danjin precedent. VAs cross-checked against Prydwen's profile tab (exact
+  // match): EN Jennifer Armour, CN Song Yuanyuan, JP Matsuda Risae, KR Yu Yeong (Yooyou).
+  ['Sanhua', 'Snow Waltz', 'Huanglong', 'Jinzhou City Hall', { en: 'Jennifer Armour', cn: 'Song Yuanyuan', jp: 'Matsuda Risae', kr: 'Yu Yeong' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -3229,6 +3246,18 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'To Teach / To Save / To Sacrifice', note: 'Heavy ATK finisher sequence, empties Forte and restores Concerto Energy' },
     { type: 'Outro', skill: 'Strike Before Ready', duration: 14, note: 'grants next Resonator 50% Echo Skill DMG Amp' },
   ],
+  // Added 2026-08-18 (previously missing entirely) — sourced from Prydwen's "Gameplay and teams" tab
+  // Heavy ATK Concerto Rotation, the mode Prydwen states sees "far more play overall" over the Basic ATK
+  // variant. Core loop: deploy all 3 Forte Ice constructs (Intro/Skill/Liberation), then shatter them
+  // with 2x Heavy ATK Detonate before they expire (each construct detonation grants 15 Concerto).
+  'Sanhua': [
+    { type: 'Intro', skill: 'Freezing Thorns', note: 'creates 1 Ice Thorn' },
+    { type: 'Liberation', skill: 'Glacial Gaze', note: 'creates 1 Glacier, grants 2 stacks of Clarity (expands Frostbite area)' },
+    { type: 'Skill', skill: 'Eternal Frost', note: 'creates 1 Ice Prism, grants 1 stack of Clarity' },
+    { type: 'Forte', skill: 'Heavy ATK: Detonate', note: 'detonates all 3 Ice constructs (Thorn/Prism/Glacier) at once for a large Concerto/Energy burst' },
+    { type: 'Forte', skill: 'Heavy ATK: Detonate', note: 'second detonate to fully spend the loop before swapping' },
+    { type: 'Outro', skill: 'Silversnow', duration: 14, note: 'grants next Resonator 38% Basic ATK DMG Amp — time this to land on the intended DPS' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3364,7 +3393,17 @@ const RESONANCE_CHAIN_DATA = {
   // (was deepen:15, no basis)
   'Mornye':       { s1: { totalMult: 15 }, s2: { critDmg: 32 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
   'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
-  'Sanhua':       { s1: { atkPct: 10 }, s2: { basicDmg: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { basicDmg: 10 }, s6: { deepen: 15 } },
+  // Sanhua corrected 2026-08-18 per Prydwen's own Resonance Chain text (previous values were unsourced
+  // guesses): S1 Basic ATK V grants Crit Rate+15% for 10s (was atkPct:10, wrong stat -> critRate). S2 is
+  // pure utility (Heavy ATK Detonate Stamina cost -10, Anti-interruption on Eternal Frost cast) with no
+  // direct DPS stat -> totalMult fallback (was basicDmg:10, no basis). S3 DMG dealt +35% vs targets below
+  // 70% HP, conditional -> totalMult weighted average (was totalMult:10, undervalued). S4 Glacial Gaze
+  // restores 10 Energy + next Heavy ATK Detonate DMG+120% within 5s, a large conditional burst ->
+  // totalMult weighted average (was atkPct:10, no basis). S5 Ice Burst Crit DMG+100% (only on the Forte
+  // Detonate hit) plus unconditional Ice Creation auto-explode -> critDmg weighted average (was
+  // basicDmg:10, no basis). S6 team ATK+10%/stack up to 2 (=20% max) for 20s after detonating an Ice
+  // Prism/Glacier, not a DMG Deepen -> atkPct (was deepen:15, wrong stat).
+  'Sanhua':       { s1: { critRate: 15 }, s2: { totalMult: 5 }, s3: { totalMult: 18 }, s4: { totalMult: 35 }, s5: { critDmg: 50 }, s6: { atkPct: 20 } },
   'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 40 } },
   // Danjin corrected 2026-08-18 per Prydwen's own Resonance Chain text (previous values were unsourced
   // guesses that didn't match her kit at all): S1 ATK+5%/stack (max 6 = 30%) on Incinerating Will hits,
@@ -4484,6 +4523,9 @@ const CHAIN_NODE_NAMES = {
   // wiki likewise has no distinct chain node names for her. Using the generic labels rather than
   // inventing names.
   'Yangyang': { s1: 'Sequence Node 1', s2: 'Sequence Node 2', s3: 'Sequence Node 3', s4: 'Sequence Node 4', s5: 'Sequence Node 5', s6: 'Sequence Node 6' },
+  // Sanhua's node names confirmed 2026-08-18 via wutheringwaves.fandom.com's own infobox image filenames
+  // (Sequence Node <name>.png assets, S1-S6 in order).
+  'Sanhua': { s1: "Solitude's Embrace", s2: 'Snowy Clarity', s3: 'Anomalous Vision', s4: 'Blade Mastery', s5: 'Unraveling Fate', s6: 'Daybreak Radiance' },
   'Suisui': { s1: 'Mountains Washed Into Paintings', s2: 'Clouds Pour Like Molten Gold', s3: 'Sparse Curtains Invite Evening Glow', s4: 'Autumn Mountains in Choir Sing', s5: 'I Long To Ride The Eastern Wind', s6: 'Staying True To This Splendid Realm' },
   // Qingxiao's node names confirmed 2026-08-18 via ww.nanoka.cc's pre-release datamine (character/1413)
   // — icons NOT populated in CHAIN_NODE_ICONS above: fandom has no Sequence Node assets uploaded yet

@@ -65,7 +65,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   'Emerald of Genesis': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Standard 5★. Jade-forged sword of ancient origin. Stacking ATK buff on Resonance Skill use.',
-    passive: 'Resonance Skill use grants ATK +12%', pv: { atkPct: 12 }, bestFor: ['Danjin', 'Yangyang', 'Rover', 'Changli'],
+    passive: 'Resonance Skill use grants ATK +12%', pv: { atkPct: 12 }, bestFor: ['Danjin', 'Yangyang', 'Sanhua', 'Rover', 'Changli'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Static Mist': { rarity: 5, type: 'Pistols', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Standard 5★. Pistols wreathed in lingering mist. Energy Regen with ATK boost at full energy.',
@@ -92,7 +92,9 @@ const WEAPON_DATA = {
     // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon (102.39%) despite being
     // Changli's signature — usable on any Sword user with heavy Resonance Skill DMG, listed as her
     // primary alt5 alongside the more widely-obtainable standard Emerald of Genesis (bestWeapon).
-    passive: 'Fusion DMG +12%, Resonance Skill +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Changli', 'Rover', 'Yangyang'],
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon overall (108.39%),
+    // making it her bestWeapon despite also being Changli's signature.
+    passive: 'Fusion DMG +12%, Resonance Skill +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Changli', 'Rover', 'Yangyang', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Rime-Draped Sprouts': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
     desc: 'Zhezhi signature. Frost-kissed sprouts that bloom in stillness. Boosts off-field and Glacio DMG.',
@@ -108,7 +110,9 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Red Spring': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Camellya signature. Crimson blade blooming like a red spring flower. ATK buff with stacking Basic ATK DMG.',
-    passive: 'ATK +12%, Basic ATK DMG +10% per stack (max x3), +40% Basic DMG on Concerto consumed', pv: { atkPct: 12, basicDmg: 50 }, bestFor: ['Camellya', 'Rover', 'Changli'],
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #2 weapon (103.32%), a strong
+    // Basic ATK-focused alt5 alongside Blazing Brilliance.
+    passive: 'ATK +12%, Basic ATK DMG +10% per stack (max x3), +40% Basic DMG on Concerto consumed', pv: { atkPct: 12, basicDmg: 50 }, bestFor: ['Camellya', 'Rover', 'Changli', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'The Last Dance': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
     desc: 'Carlotta signature. Elegant pistols for one final, perfect dance. ATK buff with Res. Skill DMG on Intro/Lib.',
@@ -230,7 +234,9 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Lunar Cutter': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Sword born from an alien star\'s light. Gains ATK stacks on swap-in.',
-    passive: 'Swap-in → 6 Oath stacks, each +2% ATK (max 6 stacks/+12%). Loses 1 stack every 2s. On kill: regain 6 stacks. 12s CD on swap-in trigger.', pv: { atkPct: 12 }, bestFor: ['Sword users', 'Rover'],
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #6 weapon (83.96%) — good for Hybrid
+    // characters with minimal field time, like Sanhua's fast rotation.
+    passive: 'Swap-in → 6 Oath stacks, each +2% ATK (max 6 stacks/+12%). Loses 1 stack every 2s. On kill: regain 6 stacks. 12s CD on swap-in trigger.', pv: { atkPct: 12 }, bestFor: ['Sword users', 'Rover', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Thunderbolt': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Huanglong ceremonial pistols, resilient and enduring. Stacking Skill DMG on Basic/Heavy hits.',
@@ -266,7 +272,9 @@ const WEAPON_DATA = {
     passive: 'Liberation → Healing Bonus +16% for 15s', pv: { healingBonus: 16 }, bestFor: ['Rectifier healers', 'Verina', 'Shorekeeper'] },
   'Somnoire Anchor': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Dreamkeeper\'s anchor from twilight shores. Stacking ATK buff on dealing damage.',
-    passive: 'Dealing DMG → 1 Hiss stack per 1s, each +2% ATK (max x10, 3s/stack). Swap-off clears all. At 10 stacks: Crit Rate +6%.', pv: { atkPct: 20, critRate: 6 }, bestFor: ['Sword DPS'] },
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #7 weapon (76.66%), a free F2P
+    // option for extended field time — loses value fast on her quick-swap rotation.
+    passive: 'Dealing DMG → 1 Hiss stack per 1s, each +2% ATK (max x10, 3s/stack). Swap-off clears all. At 10 stacks: Crit Rate +6%.', pv: { atkPct: 20, critRate: 6 }, bestFor: ['Sword DPS', 'Sanhua'] },
   'Fusion Accretion': { rarity: 4, type: 'Rectifier', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Black Shores prototype channeling a blazar\'s radiance. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Rectifier DPS', 'Encore'] },
@@ -280,18 +288,24 @@ const WEAPON_DATA = {
     desc: 'The collapsing heart of a dying blazar. Skill grants Resonance Energy and ATK buff.',
     // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (82.82%), a good F2P
     // Energy Regen option for her when she has Energy issues.
-    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli', 'Yangyang'] },
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #5 weapon (84.52%), a great F2P
+    // 4★ option when her Energy is short.
+    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli', 'Yangyang', 'Sanhua'] },
   'Waning Redshift': { rarity: 4, type: 'Broadblade', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s fading radiance across billions of light-years. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi'] },
   'Lumingloss': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Luminous sword with a glossy ceremonial edge. Basic and Heavy ATK DMG boost after Skill.',
     // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #3 weapon / top 4★ (82.96%).
-    passive: 'Resonance Skill → Basic & Heavy ATK DMG +20% for 10s (1 stack max, 1s trigger interval)', pv: { basicDmg: 20, heavyDmg: 20 }, bestFor: ['Sword DPS', 'Changli', 'Yangyang'] },
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #7 weapon (80.65%), an easy-to-trigger
+    // 4★ pick for characters using Skill multiple times per rotation, like Sanhua.
+    passive: 'Resonance Skill → Basic & Heavy ATK DMG +20% for 10s (1 stack max, 1s trigger interval)', pv: { basicDmg: 20, heavyDmg: 20 }, bestFor: ['Sword DPS', 'Changli', 'Yangyang', 'Sanhua'] },
   'Commando of Conviction': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Spirits unite in resounding gorges of valor. ATK boost on Intro Skill.',
     // 'Danjin' added 2026-08-18: Prydwen ranks this her #4 weapon overall (81.08%), a top F2P Sword pick.
-    passive: 'Intro Skill → ATK +15% for 15s', pv: { atkPct: 15 }, bestFor: ['Sword users', 'Rover', 'Danjin'] },
+    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (85.50%), the best generic
+    // F2P Sword pick — near-unconditional bonus since Sanhua always uses her Intro Skill.
+    passive: 'Intro Skill → ATK +15% for 15s', pv: { atkPct: 15 }, bestFor: ['Sword users', 'Rover', 'Danjin', 'Sanhua'] },
   'Jinzhou Keeper': { rarity: 4, type: 'Rectifier', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Vigilant gaze northward where rain veils the city. ATK and HP boost on Intro Skill.',
     passive: 'Intro Skill → ATK +8%, HP +10% for 15s', pv: { atkPct: 8 }, bestFor: ['Rectifier supports'] },
