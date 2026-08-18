@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 
 function CollectionTab({
   state,
@@ -462,11 +462,10 @@ function CollectionTab({
                     onChange={setCollectionWeaponFilter}
                     options={[
                       { value: 'all', label: 'All Types' },
-                      { value: 'Broadblade', label: 'Broadblade' },
-                      { value: 'Sword', label: 'Sword' },
-                      { value: 'Pistols', label: 'Pistols' },
-                      { value: 'Gauntlets', label: 'Gauntlets' },
-                      { value: 'Rectifier', label: 'Rectifier' },
+                      ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(t => ({
+                        value: t,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(t)} alt="" width={14} height={14} className="shrink-0" /> {t}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by weapon type"
                   />
@@ -569,11 +568,10 @@ function CollectionTab({
                     onChange={setWeaponsTypeFilter}
                     options={[
                       { value: 'all', label: 'All Types' },
-                      { value: 'Broadblade', label: 'Broadblade' },
-                      { value: 'Sword', label: 'Sword' },
-                      { value: 'Pistols', label: 'Pistols' },
-                      { value: 'Gauntlets', label: 'Gauntlets' },
-                      { value: 'Rectifier', label: 'Rectifier' },
+                      ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(t => ({
+                        value: t,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(t)} alt="" width={14} height={14} className="shrink-0" /> {t}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by weapon type"
                   />
