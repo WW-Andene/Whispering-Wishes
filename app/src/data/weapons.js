@@ -483,37 +483,42 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
 
   // ── 2★ Tyro Series ──
-  'Tyro Sword': { rarity: 2, type: 'Sword', stat: 'ATK%', baseAtk: 200, subStatValue: '+18.2%',
-    desc: 'Sword for novice Resonators. Contains a power not to be underestimated.',
+  // corrected 2026-08-18 (1★/2★ audit): baseAtk/subStatValue were guesses (200/+18.2%) that didn't match
+  // any in-game level breakpoint — re-verified against nanoka.cc's live weapon pages at their actual max
+  // level, Lv.70 (1-2★ weapons cap at Lv.70, not Lv.90 like higher rarities), giving ATK 209/+12.3% ATK.
+  'Tyro Sword': { rarity: 2, type: 'Sword', stat: 'ATK%', baseAtk: 209, subStatValue: '+12.3%',
+    desc: 'The birth of revolutionary tides. A sword designed for novice Resonators. Contains a power not to be underestimated under its simple outlook.',
     passive: 'Prologue: ATK +5%', bestFor: [] },
-  'Tyro Rectifier': { rarity: 2, type: 'Rectifier', stat: 'ATK%', baseAtk: 200, subStatValue: '+18.2%',
-    desc: 'Rectifier for novice Resonators. Contains a power not to be underestimated.',
+  'Tyro Rectifier': { rarity: 2, type: 'Rectifier', stat: 'ATK%', baseAtk: 209, subStatValue: '+12.3%',
+    desc: 'The origin of universal genesis. A Rectifier designed for novice Resonators. Contains a power not to be underestimated under its simple outlook.',
     passive: 'Prologue: ATK +5%', bestFor: [] },
-  'Tyro Gauntlets': { rarity: 2, type: 'Gauntlets', stat: 'ATK%', baseAtk: 200, subStatValue: '+18.2%',
-    desc: 'Gauntlets for novice Resonators. Contains a power not to be underestimated.',
+  'Tyro Gauntlets': { rarity: 2, type: 'Gauntlets', stat: 'ATK%', baseAtk: 209, subStatValue: '+12.3%',
+    desc: 'The dawn of enduring endeavor. A pair of gauntlets designed for novice Resonators. Contains a power not to be underestimated under its simple outlook.',
     passive: 'Prologue: ATK +5%', bestFor: [] },
-  'Tyro Pistols': { rarity: 2, type: 'Pistols', stat: 'ATK%', baseAtk: 200, subStatValue: '+18.2%',
-    desc: 'Pistols for novice Resonators. Contains a power not to be underestimated.',
+  'Tyro Pistols': { rarity: 2, type: 'Pistols', stat: 'ATK%', baseAtk: 209, subStatValue: '+12.3%',
+    desc: 'The inception of valiant venture. A pair of pistols designed for novice Resonators. Contains a power not to be underestimated under its simple outlook.',
     passive: 'Prologue: ATK +5%', bestFor: [] },
-  'Tyro Broadblade': { rarity: 2, type: 'Broadblade', stat: 'ATK%', baseAtk: 200, subStatValue: '+18.2%',
-    desc: 'Broadblade for novice Resonators. Contains a power not to be underestimated.',
+  'Tyro Broadblade': { rarity: 2, type: 'Broadblade', stat: 'ATK%', baseAtk: 209, subStatValue: '+12.3%',
+    desc: 'The onset of pinnacle pursuit. A broadblade designed for novice Resonators. Contains a power not to be underestimated under its simple outlook.',
     passive: 'Prologue: ATK +5%', bestFor: [] },
 
   // ── 1★ Training Series ──
-  'Training Sword': { rarity: 1, type: 'Sword', stat: 'ATK%', baseAtk: 100, subStatValue: '+12.1%',
-    desc: 'Starter sword issued to new Resonators. Found in Supply Chests.',
+  // corrected 2026-08-18 (1★/2★ audit): baseAtk/subStatValue were guesses (100/+12.1%); re-verified
+  // against nanoka.cc's live weapon pages at their actual max level, Lv.70, giving ATK 190/+9.5% ATK.
+  'Training Sword': { rarity: 1, type: 'Sword', stat: 'ATK%', baseAtk: 190, subStatValue: '+9.5%',
+    desc: 'This sword is designed specifically for training and teaching, offering only the basic features.',
     passive: 'Persevere: ATK +4%', bestFor: [] },
-  'Training Rectifier': { rarity: 1, type: 'Rectifier', stat: 'ATK%', baseAtk: 100, subStatValue: '+12.1%',
-    desc: 'Starter rectifier issued to new Resonators. Found in Supply Chests.',
+  'Training Rectifier': { rarity: 1, type: 'Rectifier', stat: 'ATK%', baseAtk: 190, subStatValue: '+9.5%',
+    desc: 'This rectifier is designed specifically for training and teaching, offering only the basic features.',
     passive: 'Persevere: ATK +4%', bestFor: [] },
-  'Training Gauntlets': { rarity: 1, type: 'Gauntlets', stat: 'ATK%', baseAtk: 100, subStatValue: '+12.1%',
-    desc: 'Starter gauntlets issued to new Resonators. Found in Supply Chests.',
+  'Training Gauntlets': { rarity: 1, type: 'Gauntlets', stat: 'ATK%', baseAtk: 190, subStatValue: '+9.5%',
+    desc: 'These gauntlets are designed specifically for training and teaching, offering only the basic features.',
     passive: 'Persevere: ATK +4%', bestFor: [] },
-  'Training Pistols': { rarity: 1, type: 'Pistols', stat: 'ATK%', baseAtk: 100, subStatValue: '+12.1%',
-    desc: 'Starter pistols issued to new Resonators. Found in Supply Chests.',
+  'Training Pistols': { rarity: 1, type: 'Pistols', stat: 'ATK%', baseAtk: 190, subStatValue: '+9.5%',
+    desc: 'These pistols are designed specifically for training and teaching, offering only the basic features.',
     passive: 'Persevere: ATK +4%', bestFor: [] },
-  'Training Broadblade': { rarity: 1, type: 'Broadblade', stat: 'ATK%', baseAtk: 100, subStatValue: '+12.1%',
-    desc: 'Starter broadblade issued to new Resonators. Found in Supply Chests.',
+  'Training Broadblade': { rarity: 1, type: 'Broadblade', stat: 'ATK%', baseAtk: 190, subStatValue: '+9.5%',
+    desc: 'This broadblade is designed specifically for training and teaching, offering only the basic features.',
     passive: 'Persevere: ATK +4%', bestFor: [] },
 };
 
