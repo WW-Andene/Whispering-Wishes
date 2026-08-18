@@ -341,7 +341,7 @@ const WEAPON_DATA = {
     passive: 'After Res. Skill → ATK +3% every 2s (max x4, 12s)', pv: { atkPct: 12 }, bestFor: ['Broadblade DPS'] },
   'Dauntless Evernight': { rarity: 4, type: 'Broadblade', stat: 'DEF%', baseAtk: 337, subStatValue: '+61.6%',
     desc: 'Broadblade that cuts through the longest night. ATK and DEF boost on Intro Skill.',
-    passive: 'Intro Skill → ATK +8%, DEF +15% for 15s', pv: { atkPct: 8, defPct: 15 }, bestFor: ['Broadblade supports'] },
+    passive: 'Intro Skill → ATK +8%, DEF +15% for 15s', pv: { atkPct: 8, defPct: 15 }, bestFor: ['Taoqi', 'Broadblade supports'] }, // Taoqi tag added 2026-08-18: Prydwen's Best Weapons list ranks this as her free/signature #2 pick (107.54%), just below Discord.
   'Autumntrace': { rarity: 4, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Huanglong\'s golden ginkgo, prosperous and long-lasting. Stacking ATK on Basic/Heavy hits.',
     passive: 'Basic/Heavy ATK DMG → ATK +4% per stack (max x5, 7s per stack, 1s trigger interval)', pv: { atkPct: 20 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi'] },

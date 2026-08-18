@@ -780,13 +780,28 @@ const CHARACTER_DATA = {
     bestEchoes: ['Moonlit Clouds 5pc', 'Impermanence Heron'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse', 'Lunar Cutter', 'Lumingloss', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
     teams: ['Sanhua + Encore + Verina', 'Sanhua + Camellya + Verina', 'Sanhua + Lingyang + Shorekeeper'] },
+  // corrected 2026-08-18 via fandom's Taoqi/Combat page + Prydwen's Kit/Build/Gameplay tabs (previously
+  // had no weaponAlts at all, and only a partial CHARACTER_DATA entry). desc: her Outro Iron Will is a
+  // "Resonance Skill DMG Amplified by 38%" per fandom's own Forte Details text (matches her infobox
+  // `role` field's own "Resonance Skill DMG Amplification" tag, see COMBAT_ROLE_DATA above) — not
+  // "deepens", which was unsourced. bestEchoes replaced 'Bell-Borne Geochelone' (Prydwen's shield-focused
+  // Main Echo alt, not the top Echo Set) with Prydwen's actual #1 Echo Set 'Rejuvenating Glow 5pc'
+  // (paired with Main Echo 'Fallacy of No Return', Prydwen's stated top pick over Bell-Borne Geochelone);
+  // 'Moonlit Clouds 5pc' kept as the Special Set alt for the Outro-swap-cancel playstyle. bestWeapon
+  // kept as 'Dauntless Evernight' (free/signature) with weaponAlts alt5 'Discord' added — Prydwen's own
+  // Best Weapons list only documents these 2 options for her (Discord R5 100%, Dauntless Evernight R5
+  // 107.54%; no alt4/alt3 exists in Prydwen's ranking to source). teams replaced 'Taoqi + Camellya +
+  // Shorekeeper' (no basis in Prydwen's Synergies tab — Camellya isn't listed at all) with Prydwen's
+  // actual documented synergies: Carlotta ("by far Taoqi's best DPS to support") and Jinhsi, both paired
+  // with Verina/Shorekeeper per the Example Teams section.
   'Taoqi': { rarity: 4, element: 'Havoc', weapon: 'Broadblade', role: 'Support',
-    desc: 'Steadfast border defense director with an iron will. Havoc support who provides shields via Resonance Skill and deepens the team\'s Resonance Skill DMG through Outro.',
+    desc: 'Steadfast border defense director with an iron will. Havoc support who provides shields via Resonance Skill and amplifies the team\'s Resonance Skill DMG through Outro.',
     skills: ['Concealed Edge', 'Fortified Defense', 'Unmovable', 'Power Shift'],
     ascension: { boss: 'Gold-Dissolving Feather', common: 'Howler Core', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 5pc'], bestWeapon: 'Dauntless Evernight',
-    teams: ['Taoqi + Jinhsi + Verina', 'Taoqi + Camellya + Shorekeeper'] },
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Dauntless Evernight',
+    weaponAlts: { alt5: ['Discord'] },
+    teams: ['Taoqi + Carlotta + Shorekeeper', 'Taoqi + Jinhsi + Verina'] },
   'Yuanwu': { rarity: 4, element: 'Electro', weapon: 'Gauntlets', role: 'Support',
     desc: 'Veteran boxing gym owner who fights with thunderous fists. Electro support who deploys Thunder Wedge for off-field Coordinated Attacks and generates shields via Resonance Liberation.',
     skills: ['Leihuangquan', 'Leihuang Master', 'Blazing Might', 'Unassuming Blade'],
@@ -909,7 +924,11 @@ const CHARACTER_DATA = {
   ['Lucilla',       ['Liberation', 'Echo'],          ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
   ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
   ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
-  ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Deepen'],          []],
+  // buff tag corrected 2026-08-18: fandom's Taoqi/Combat Outro Skill "Iron Will" text is "Resonance
+  // Skill DMG Amplified by 38%" — matches the 'Skill DMG Amp' convention used for Lumi/Baizhi/Buling's
+  // identical Amp-type buffs below, not the "Deepen" wording (which belongs to a different, unsourced
+  // stat this character never actually carries).
+  ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Amp'],              []],
   ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK', 'Shield'],           []],
   ['Youhu',         ['Coordinated ATK'],             ['Heal', 'Coordinated ATK Amp'],         []],
   ['Buling',        ['Skill'],                       ['Skill DMG Buff', 'Heal'],              []],
@@ -1483,6 +1502,14 @@ const CHARACTER_DATA = {
   // matching the Chixia/Danjin precedent. VAs cross-checked against Prydwen's profile tab (exact
   // match): EN Jennifer Armour, CN Song Yuanyuan, JP Matsuda Risae, KR Yu Yeong (Yooyou).
   ['Sanhua', 'Snow Waltz', 'Huanglong', 'Jinzhou City Hall', { en: 'Jennifer Armour', cn: 'Song Yuanyuan', jp: 'Matsuda Risae', kr: 'Yu Yeong' }],
+  // Taoqi: added 2026-08-18, sourced via the MediaWiki API (action=parse&page=Taoqi&prop=wikitext).
+  // Title 'Blossom of Slashes' from the infobox `title` field. birthplace/nation both Huanglong
+  // (REGION_DATA above). organization uses affiliation2 'Ministry of Development' (her specific
+  // in-game department — she's its border defense director, per her own `desc`/Official Introduction)
+  // over the generic primary affiliation 'Jinzhou', matching the Jiyan/Danjin sub-group convention.
+  // VAs confirmed exact from the infobox: EN Clare Louise Connolly, CN KIYO, JP Yōmiya Hina
+  // (羊宮妃那), KR Yi Sae-ah (이새아).
+  ['Taoqi', 'Blossom of Slashes', 'Huanglong', 'Ministry of Development', { en: 'Clare Louise Connolly', cn: 'KIYO', jp: 'Yōmiya Hina', kr: 'Yi Sae-ah' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1914,12 +1941,20 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 15% Deepen (6s per tick, refreshes on heal). Inherent: 15% ATK teamwide (20s on Euphonia pickup). Heal.',
   },
+  // corrected 2026-08-18: fandom's Taoqi/Combat Forte Details table names her Outro Skill "Iron Will":
+  // "The incoming Resonator has their Resonance Skill DMG Amplified by 38% for 14s or until they are
+  // switched out." Was wrongly modeled as a generic 15% `deepen` outro (a value/stat that belongs to no
+  // sourced Taoqi effect) plus a fabricated 12% DEF Shred debuff with no basis anywhere on the Combat
+  // page (Resonance Chain/Forte/Inherent Skill text) — removed. Her actual kit is Resonance Skill
+  // Fortified Defense granting 3 stacks of Rocksteady Shield (each absorbing one hit, 15% DMG reduction
+  // while active) plus self-heal, matching the 'Shield' buff tag already carried in the dmgFocus/buffs
+  // merge array above.
   'Taoqi': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'skillDmg', value: 38, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'defShred', value: 12, duration: 8, condition: 'Shield active' }],
-    note: 'Outro: 15% Deepen. Shield. DEF Shred 12% while shielded.',
+    debuffs: [],
+    note: 'Outro Iron Will: 38% Resonance Skill DMG Amp to next (14s). Skill Fortified Defense grants 3 stacks of Rocksteady Shield (15% DMG reduction while active) + self-heal.',
   },
   'Yuanwu': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
@@ -2797,12 +2832,23 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Freezing Thorns', '139.17%', 'Creates 1 Ice Thorn.'],
     ['Outro', 'Silversnow', '+38% Basic ATK DMG Amp (14s)', 'Buffs the incoming Resonator.'],
   ],
+  // corrected 2026-08-18: replaced the old generic "Stage 1-4"/placeholder multipliers (which didn't
+  // match any real move name or value) with real Lv.10 Attribute Scaling values and move names from
+  // wutheringwaves.fandom.com/wiki/Taoqi/Combat's Forte Details table. Liberation is real-name
+  // 'Unmovable' (DEF-scaling nuke), not 'Iron Will' — that name actually belongs to her Outro Skill
+  // (a pure Resonance Skill DMG Amp buff, no direct multiplier, matching the Lumi/Youhu Outro-row
+  // convention below). Forte Circuit 'Power Shift' (Timed Counters combo) was entirely missing.
   'Taoqi': [
-    ['Basic ATK', 'Stage 1-4', '35.3% → 33.1% → 42.3% → 40.1%+53.5%'],
-    ['Skill', 'Fortified Defense', '25.5%×6 shield'],
-    ['Liberation', 'Iron Will', '135%×3'],
-    ['Intro', 'Defense Line', '100%'],
-    ['Outro', 'Iron Curtain', '+15% DEF Shred (10s)'],
+    ['Basic ATK', 'Concealed Edge Stage 1-4', '90.15% → 84.84% → 111.34% → 270.39%', 'Up to 4 Havoc strikes.'],
+    ['Heavy ATK', 'Concealed Edge (hold)', '220.37%', 'Consumes STA; hold to enter Rocksteady Defense (-35% DMG taken).'],
+    ['Forte', 'Strategic Parry', '78.7%', 'Auto-cast when attacked during Rocksteady Defense or after it lasts 3s.'],
+    ['Mid-air', 'Concealed Edge', '123.27%', 'Plunging attack, consumes STA.'],
+    ['Dodge Counter', 'Concealed Edge', '248.52%', 'Basic ATK after a successful Dodge.'],
+    ['Skill', 'Fortified Defense', '134.92%', 'Havoc DMG to surrounding targets; generates 3 Rocksteady Shield stacks and heals self (1805 + 94.50% HP Recovery scaling).'],
+    ['Liberation', 'Unmovable', '449.71% DEF', 'Havoc DMG scaling off Taoqi\'s DEF instead of ATK.'],
+    ['Forte', 'Power Shift: Timed Counters Stage 1-3', '86.2% → 110.93% → 145.41%', 'Basic ATK after Heavy ATK Strategic Parry/Intro to consume "Resolving Caliber", counted as Basic ATK DMG; each hit grants a shield.'],
+    ['Intro', 'Defense Formation', '208.76%', 'Havoc DMG opener; Basic ATK afterward casts Timed Counters directly.'],
+    ['Outro', 'Iron Will', '+38% Resonance Skill DMG Amp (14s)', 'Buffs the incoming Resonator\'s Resonance Skill DMG.'],
   ],
   'Yangyang': [
     ['Basic ATK', 'Feather as Blade Stage 1-4', '44.73% → 59.64% → 46.81%×2 → 59.36%×2+79.14%', 'Up to 4 consecutive Aero strikes.'],
@@ -3341,6 +3387,17 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Wind Spirals', note: 'Cyclone burst groups enemies and generates Concerto Energy' },
     { type: 'Outro', skill: 'Whispering Breeze', duration: 5, note: 'funnels 4 Resonance Energy/s to the incoming Resonator for 5s — quickswap into the main DPS' },
   ],
+  // Added 2026-08-18 (previously entirely missing) — sourced from wutheringwaves.fandom.com's
+  // Taoqi/Combat Instructions/Forte text. She's a shield support: Skill grants 3 Rocksteady Shield
+  // stacks (each absorbing a hit), Liberation is a DEF-scaling nuke, and the Outro's 38% Resonance
+  // Skill DMG Amp is timed onto the incoming Resonator's own Skill DPS window.
+  'Taoqi': [
+    { type: 'Intro', skill: 'Defense Formation', note: 'Havoc DMG opener; Basic ATK afterward casts Timed Counters (Power Shift) directly' },
+    { type: 'Skill', skill: 'Fortified Defense', note: 'Havoc DMG to surrounding targets, generates 3 Rocksteady Shield stacks and heals self' },
+    { type: 'Liberation', skill: 'Unmovable', note: 'DEF-scaling Havoc nuke — benefits from her naturally high base DEF' },
+    { type: 'Forte', skill: 'Power Shift: Timed Counters', note: 'Basic ATK after Heavy ATK Strategic Parry/Intro consumes "Resolving Caliber" for extra hits and a shield, counted as Basic ATK DMG' },
+    { type: 'Outro', skill: 'Iron Will', duration: 14, note: 'grants the incoming Resonator 38% Resonance Skill DMG Amp for 14s — time this to land on the intended DPS\'s Skill window' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3573,7 +3630,19 @@ const RESONANCE_CHAIN_DATA = {
   // ATK DMG Bonus+25% for 15s (basicDmg, confirmed exact, team buff).
   'Chixia':       { s1: { totalMult: 5 }, s2: { totalMult: 4 }, s3: { libDmg: 40 }, s4: { totalMult: 8 }, s5: { atkPct: 30 }, s6: { basicDmg: 25 } },
   'Lumi':         { s1: { skillDmg: 10 }, s2: { totalMult: 10 }, s3: { skillDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { skillDmg: 15 } },
-  'Taoqi':        { s1: { defShred: 5 }, s2: { deepen: 5 }, s3: { defShred: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { defShred: 8 } },
+  // corrected 2026-08-18: prior values (defShred/deepen on every node) had no basis in Taoqi's real
+  // chain kit (fandom Combat page, Resonance Chain table) — she has no DEF Shred or DMG Deepen node at
+  // all. Real effects: S1 Essense of Tranquility — Forte Circuit Power Shift's Shield +40% (utility,
+  // no shield-% stat in schema, kept as small totalMult). S2 Silent Strength — Liberation Unmovable
+  // Crit Rate+20% AND Crit DMG+20% (both confirmed exact; only critRate modeled, single-stat schema).
+  // S3 Keen-eyed Observer — Rocksteady Shield duration extended to 30s (utility, no duration-only stat,
+  // kept as small totalMult). S4 Heavylifting Duty — on Strategic Parry trigger, restore 25% HP + DEF
+  // +50% for 5s, 1x/15s (conditional, no DEF% stat in schema, kept as small totalMult). S5 Benevolent
+  // Guardian — Power Shift DMG+50% (confirmed exact; Power Shift is "considered as Basic Attack DMG"
+  // per its own Forte text, modeled as basicDmg) + restores 20 Resonance Energy on hit (utility, not
+  // modeled). S6 Defender of Peace — Basic ATK and Heavy ATK DMG+40% while Rocksteady Shield holds
+  // (confirmed exact, conditional; modeled as basicDmg, single-stat schema).
+  'Taoqi':        { s1: { totalMult: 4 }, s2: { critRate: 20 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { basicDmg: 50 }, s6: { basicDmg: 40 } },
   // Corrected 2026-08-18 via Prydwen's Kit tab (Resonance Chain/Sequence Node text, exact wording).
   // S1: Intro Cerulean Song grants an additional +15% Aero DMG Bonus for 8s (was atkPct:5, no basis).
   // S2: Heavy Attack recovers +10 Resonance Energy on hit, 1x/20s — energy utility, no direct DMG stat
@@ -4227,6 +4296,18 @@ const SKILL_ICONS = {
     'Freezing Thorns': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ae/Skill_Freezing_Thorns.png',
     'Silversnow': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Skill_Silversnow.png',
   },
+  // added 2026-08-18 — previously entirely missing (was falling back to no icon for every Taoqi skill
+  // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the MediaWiki API.
+  'Taoqi': {
+    'Concealed Edge': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png', // Basic/Heavy/Mid-air/Dodge Counter — generic Broadblade icon
+    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
+    'Strategic Parry': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
+    'Fortified Defense': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a5/Skill_Fortified_Defense.png',
+    'Unmovable': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/00/Skill_Unmovable.png',
+    'Power Shift': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/33/Skill_Power_Shift.png',
+    'Defense Formation': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f1/Skill_Defense_Formation.png',
+    'Iron Will': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/fd/Skill_Iron_Will.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4667,6 +4748,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e8/Sequence_Node_Unraveling_Fate.png',
     s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1a/Sequence_Node_Daybreak_Radiance.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Taoqi/Combat&prop=images).
+  'Taoqi': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/60/Sequence_Node_Essense_of_Tranquility.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/9/93/Sequence_Node_Silent_Strength.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/dc/Sequence_Node_Keen-eyed_Observer.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/43/Sequence_Node_Heavylifting_Duty.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Sequence_Node_Benevolent_Guardian.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/78/Sequence_Node_Defender_of_Peace.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4723,6 +4814,8 @@ const CHAIN_NODE_NAMES = {
   // Sanhua's node names confirmed 2026-08-18 via wutheringwaves.fandom.com's own infobox image filenames
   // (Sequence Node <name>.png assets, S1-S6 in order).
   'Sanhua': { s1: "Solitude's Embrace", s2: 'Snowy Clarity', s3: 'Anomalous Vision', s4: 'Blade Mastery', s5: 'Unraveling Fate', s6: 'Daybreak Radiance' },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's Taoqi/Combat Resonance Chain table.
+  'Taoqi': { s1: 'Essense of Tranquility', s2: 'Silent Strength', s3: 'Keen-eyed Observer', s4: 'Heavylifting Duty', s5: 'Benevolent Guardian', s6: 'Defender of Peace' },
   // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
   // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
   'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },
