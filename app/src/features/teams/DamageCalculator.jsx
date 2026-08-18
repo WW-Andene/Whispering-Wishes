@@ -20,7 +20,7 @@ import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
-import RotationTimeline, { STAT_LABELS, stepStyle } from './RotationTimeline.jsx';
+import RotationTimeline, { STAT_LABELS, STAT_LABELS_FULL, stepStyle } from './RotationTimeline.jsx';
 import { useSessionState } from '../../utils/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
@@ -1124,7 +1124,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       // its neighbors in the sequence, so the whole team rotation reads as a chain of blocks rather
       // than one flat, undifferentiated buff dump. One block per on-field window, in the order
       // actually computed above. ──
-      const fmtBuff = (b) => `+${b.value}% ${STAT_LABELS[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`;
+      const fmtBuff = (b) => `+${b.value}% ${STAT_LABELS_FULL[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`;
       const steps = timeline.map((seg, i) => {
         const isDps = seg.name === mainDps.name;
         const reason = isDps
@@ -1899,19 +1899,27 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div className="text-sm text-gray-500 mt-1 pl-7">{step.reason}</div>
 
                     {/* Verified skill-by-skill sequence (Prydwen.gg "Standard Rotation") — real combat
-                        data, shown first since it's the most concrete/actionable part of the block. */}
+                        data, shown first since it's the most concrete/actionable part of the block.
+                        Every abbreviation was replaced with the full action-type word plus a plain-
+                        English explanation of what that TYPE of action generally does (a new player
+                        shouldn't have to already know what "Forte" or "Outro" means to read this),
+                        on top of the character-specific note for what THIS step does in this rotation. */}
                     {step.skillSequence && (
                       <div className="mt-2 pl-7">
-                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Skill sequence</div>
-                        <div className="space-y-1">
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Skill sequence — perform in this order</div>
+                        <div className="space-y-2">
                           {step.skillSequence.map((s, si) => {
                             const sty = stepStyle(s.type);
                             return (
                               <div key={si} className="flex items-start gap-2">
-                                <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${sty.cls}`}>{sty.code}</span>
-                                <div className="min-w-0">
-                                  <span className="text-sm text-gray-300">{s.skill}</span>
-                                  {s.note && <div className="text-2xs text-gray-500">{s.note}</div>}
+                                <span className="flex-shrink-0 w-4 h-4 rounded-full bg-white/10 text-gray-400 text-2xs font-bold flex items-center justify-center mt-0.5">{si + 1}</span>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border ${sty.cls}`}>{sty.label}</span>
+                                    <span className="text-sm text-gray-200 font-medium">{s.skill}</span>
+                                  </div>
+                                  {sty.hint && <div className="text-2xs text-gray-600 mt-0.5">{sty.hint}</div>}
+                                  {s.note && <div className="text-2xs text-gray-400 mt-0.5">→ {s.note}</div>}
                                 </div>
                               </div>
                             );
