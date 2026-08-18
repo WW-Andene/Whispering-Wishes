@@ -28,12 +28,28 @@ const COMPARISON_STATS = [
   ['Synergy', e => '+' + (e.stats.synergyUplift || e.stats.synergy || 0) + '%'],
 ];
 
+// Comparison entries snapshot their equipment under a synthetic 'cmp<id>' teamIdx (see the
+// "+ Compare" handler in TeamsTab.jsx) rather than the real team's index, so they never share
+// state with a live team's gear. That snapshot has to be torn down explicitly when its entry is
+// removed, or it leaks in teamEquipment (and localStorage) forever.
+const cleanupEntryEquipment = (entry, setTeamEquipment) => {
+  if (typeof entry.teamIdx !== 'string' || !setTeamEquipment) return;
+  const prefix = entry.teamIdx + ':';
+  setTeamEquipment(prev => {
+    const next = { ...prev };
+    let changed = false;
+    Object.keys(next).forEach(k => { if (k.startsWith(prefix)) { delete next[k]; changed = true; } });
+    return changed ? next : prev;
+  });
+};
+
 export default function DPSComparisonCard({
   teamCompareEntries, setTeamCompareEntries,
   calcTeamStats,
   enemyEcho, enemyLevel, setEnemyLevel,
   setEnemyEchoSearch, setEnemyEchoModalOpen,
   confirm,
+  setTeamEquipment,
 }) {
   if (teamCompareEntries.length === 0) return null;
 
@@ -52,7 +68,7 @@ export default function DPSComparisonCard({
   return (
     <Card id="team-dps-comparison">
       <CardHeader action={
-        <button onClick={async () => { if (await confirm?.({ title: 'Clear comparison', message: 'Remove all comparison entries?', confirmLabel: 'Clear', destructive: true })) { setTeamCompareEntries([]); haptic.light(); } }}
+        <button onClick={async () => { if (await confirm?.({ title: 'Clear comparison', message: 'Remove all comparison entries?', confirmLabel: 'Clear', destructive: true })) { teamCompareEntries.forEach(e => cleanupEntryEquipment(e, setTeamEquipment)); setTeamCompareEntries([]); haptic.light(); } }}
           className="kuro-btn text-sm" aria-label="Clear all team comparisons">
           Clear All
         </button>
@@ -94,7 +110,7 @@ export default function DPSComparisonCard({
                     {entry.slots.filter(Boolean).join(' / ') || 'Empty Team'}
                   </span>
                 </div>
-                <button onClick={() => { setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
+                <button onClick={() => { cleanupEntryEquipment(entry, setTeamEquipment); setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
                   className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
                   aria-label="Remove this team from comparison">
                   <X size={12} />

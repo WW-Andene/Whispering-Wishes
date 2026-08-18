@@ -440,7 +440,24 @@ function TeamsTab({
                             if (teamCompareEntries.length >= 5) return;
                             // H1-01: fallback for browsers without structuredClone (Safari <15.4)
                             const clonedSlots = typeof structuredClone === 'function' ? structuredClone(slots) : JSON.parse(JSON.stringify(slots));
-                            setTeamCompareEntries(prev => [...prev, { id: Date.now(), slots: clonedSlots, teamIdx: state.activeTeamIndex }]);
+                            const id = Date.now();
+                            // Snapshot equipment under a synthetic ('cmp<id>') team index rather than
+                            // reusing state.activeTeamIndex. calcTeamStats looks up gear by `teamIdx + ':' +
+                            // name`, so a saved comparison entry that kept the real teamIdx would silently
+                            // pick up any later weapon/echo edits made to that same team slot — retroactively
+                            // changing a snapshot that's supposed to be frozen at "+ Compare" time.
+                            const cmpIdx = 'cmp' + id;
+                            setTeamEquipment(prev => {
+                              const next = { ...prev };
+                              clonedSlots.filter(Boolean).forEach(name => {
+                                const srcKey = state.activeTeamIndex + ':' + name;
+                                if (prev[srcKey]) {
+                                  next[cmpIdx + ':' + name] = typeof structuredClone === 'function' ? structuredClone(prev[srcKey]) : JSON.parse(JSON.stringify(prev[srcKey]));
+                                }
+                              });
+                              return next;
+                            });
+                            setTeamCompareEntries(prev => [...prev, { id, slots: clonedSlots, teamIdx: cmpIdx }]);
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}

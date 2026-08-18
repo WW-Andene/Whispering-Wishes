@@ -339,8 +339,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const teamRotTime = rotTime;
         // WuWa outro buffs are "DMG Amplification" — a SEPARATE multiplicative layer
         // from self DMG Bonus. Route element/skill/type Amp buffs to `amplify`.
+        // 'ally' (Rover: Electro's Outro) means the same thing as 'next' — the incoming
+        // Resonator receives the buff — just labeled differently in the data; treat identically
+        // or it silently never applies to anyone.
         (bt.outroBuffs || []).forEach(b => {
-          if (b.target === 'next' || b.target === 'enemy') {
+          if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
             const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
             const val = b.value * uptime;
             if (b.stat === 'atkPct') {
@@ -423,6 +426,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         // multiplier as the buff-side 'deepen', just framed as an enemy debuff instead of an ally
         // buff — was never recognized here, silently dropping the whole effect from every DPS calc.
         else if (db.stat === 'deepen') deepen += db.value;
+        // 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same as
+        // the buff-side 'defIgnore' — was falling through to the no-op default, dropping enemy DEF
+        // Ignore debuffs from the calc entirely.
+        else if (db.stat === 'defIgnore') defIgnore += db.value;
       });
     });
 
@@ -629,7 +636,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           const obt = CHAR_BUFF_TABLE[other.name];
           if (!obt) return;
           (obt.outroBuffs || []).forEach(b => {
-            if (b.target === 'next' || b.target === 'enemy') {
+            if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
               // Snapshot rule: off-field chars only get outro buffs from characters who swap BEFORE them.
               // In typical rotation, supports swap before sub-DPS. The DPS-adjacent outro buff
               // (the last support before DPS) does NOT reach the off-field sub-DPS who already left.
@@ -685,6 +692,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             else if (db.stat === 'offTune') sDeepen += db.value;
             else if (db.stat === 'havocBane') sDefShred += db.value * 2;
             else if (db.stat === 'deepen') sDeepen += db.value;
+            else if (db.stat === 'defIgnore') sDefIgnore += db.value;
           });
         });
         const mbt = CHAR_BUFF_TABLE[m.name];
@@ -702,6 +710,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             else if (db.stat === 'resShred') sResShred += db.value;
             else if (db.stat === 'offTune') sDeepen += db.value;
             else if (db.stat === 'deepen') sDeepen += db.value;
+            else if (db.stat === 'defIgnore') sDefIgnore += db.value;
           });
         }
         if (m.weapon) {
@@ -804,7 +813,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             let eCr = 5, eCd = 150;
             if (m.weapSubstat === 'Crit Rate') eCr += parseFloat(m.weapSubVal) || 0;
             if (m.weapSubstat === 'Crit DMG') eCd += parseFloat(m.weapSubVal) || 0;
-            if (m.weapon?.passive) { const wp = parsePassive(m.weapon.passive, m.d.element); eCr += wp.critRate; eCd += wp.critDmg; }
+            if (m.weapon) {
+              // Use getWeaponPv (curated pv table + refinement scaling), matching every other crit
+              // computation in this file — this branch previously called parsePassive() directly,
+              // bypassing curated pv values and always using unrefined (R1) numbers regardless of
+              // the weapon's actual refinement level, understating this member's echo-skill crit.
+              const eRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
+              const wp = getWeaponPv(m.weapon, m.d.element, eRefLevel);
+              eCr += wp.critRate || 0; eCd += wp.critDmg || 0;
+            }
             if (m.echoSet) { const p2 = m.echoSet.p2val || {}, p5 = m.echoSet.p5val || {}; if (p2.critRate) eCr += p2.critRate; if (p5.critRate) eCr += p5.critRate; }
             return 1 + (Math.min(eCr, 100) / 100) * (eCd / 100 - 1);
           })();
@@ -949,7 +966,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const nextOutroValue = (m) => {
         const bt = CHAR_BUFF_TABLE[m.name];
         if (!bt) return 0;
-        return (bt.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'enemy').reduce((s, b) => s + b.value, 0);
+        return (bt.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'enemy' || b.target === 'ally').reduce((s, b) => s + b.value, 0);
       };
 
       // Sort: team-wide outro first, then by next-outro value ascending (strongest last = closest to DPS)
@@ -976,7 +993,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         const bt = CHAR_BUFF_TABLE[m.name];
         if (bt) {
           (bt.outroBuffs || []).forEach(b => {
-            if (b.target === 'next' || b.target === 'enemy') {
+            if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
               const dur = b.duration || 14;
               buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: dur });
             }
@@ -1988,6 +2005,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         enemyEcho={enemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
         setEnemyEchoSearch={setEnemyEchoSearch} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
         confirm={confirm}
+        setTeamEquipment={setTeamEquipment}
       />
 
       <EnemyEchoSelectorModal
