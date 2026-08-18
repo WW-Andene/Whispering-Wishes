@@ -411,7 +411,9 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
 
   // ── 3★ Voyager Series ──
-  'Sword of Voyager': { rarity: 3, type: 'Sword', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.3%',
+  // corrected 2026-08-18 (3★ audit): Sword/Rectifier/Broadblade Energy Regen substat was off by 0.1pp
+  // (+32.3% vs nanoka.cc's live Lv.90 value of +32.4%); Guardian/Pistols/Gauntlets substats verified correct.
+  'Sword of Voyager': { rarity: 3, type: 'Sword', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.4%',
     desc: 'Travel sword built for sustained adventuring. Restores energy on Skill use.',
     passive: 'Crusade: Resonance Skill → restore 8 Resonance Energy (20s CD)', bestFor: ['Rover'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
@@ -423,27 +425,30 @@ const WEAPON_DATA = {
     desc: 'Travel gauntlets built for sustained adventuring. Restores energy on Skill use.',
     passive: 'Crusade: Resonance Skill → restore 8 Resonance Energy (20s CD)', bestFor: ['Yuanwu'],
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
-  'Rectifier of Voyager': { rarity: 3, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.3%',
+  'Rectifier of Voyager': { rarity: 3, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.4%',
     desc: 'Travel rectifier built for sustained adventuring. Restores energy on Skill use.',
     passive: 'Crusade: Resonance Skill → restore 8 Resonance Energy (20s CD)', bestFor: ['Baizhi', 'Shorekeeper', 'Verina', 'Yinlin', 'Zhezhi'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
-  'Broadblade of Voyager': { rarity: 3, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.3%',
+  'Broadblade of Voyager': { rarity: 3, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.4%',
     desc: 'Travel broadblade built for sustained adventuring. Restores energy on Skill use.',
     passive: 'Long Journey: Resonance Skill → restore 8 Resonance Energy (20s CD)', bestFor: ['Lumi'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
 
   // ── 3★ Night Series ──
+  // corrected 2026-08-18 (3★ audit): all five Night-series passives share the single in-game name
+  // "Valiance" per nanoka.cc's live weapon pages — the per-type names (Tenacity/Chivalry/Assemble/Arrival)
+  // previously here were fabricated; effect text (Intro Skill → ATK +8% for 10s) was already correct.
   'Sword of Night': { rarity: 3, type: 'Sword', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged sword. Empowers the wielder on swap-in.',
-    passive: 'Tenacity: Intro Skill → ATK +8% for 10s', bestFor: ['Rover', 'Sanhua', 'Yangyang', 'Changli'],
+    passive: 'Valiance: Intro Skill → ATK +8% for 10s', bestFor: ['Rover', 'Sanhua', 'Yangyang', 'Changli'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Pistols of Night': { rarity: 3, type: 'Pistols', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged pistols. Empowers the wielder on swap-in.',
-    passive: 'Chivalry: Intro Skill → ATK +8% for 10s', bestFor: ['Aalto', 'Mortefi', 'Chixia'],
+    passive: 'Valiance: Intro Skill → ATK +8% for 10s', bestFor: ['Aalto', 'Mortefi', 'Chixia'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Gauntlets of Night': { rarity: 3, type: 'Gauntlets', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged gauntlets. Empowers the wielder on swap-in.',
-    passive: 'Assemble: Intro Skill → ATK +8% for 10s', bestFor: ['Jianxin', 'Lingyang', 'Roccia', 'Xiangli Yao', 'Youhu'],
+    passive: 'Valiance: Intro Skill → ATK +8% for 10s', bestFor: ['Jianxin', 'Lingyang', 'Roccia', 'Xiangli Yao', 'Youhu'],
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Rectifier of Night': { rarity: 3, type: 'Rectifier', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged rectifier. Empowers the wielder on swap-in.',
@@ -451,7 +456,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Broadblade of Night': { rarity: 3, type: 'Broadblade', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged broadblade. Empowers the wielder on swap-in.',
-    passive: 'Arrival: Intro Skill → ATK +8% for 10s', bestFor: ['Calcharo', 'Jinhsi', 'Jiyan'],
+    passive: 'Valiance: Intro Skill → ATK +8% for 10s', bestFor: ['Calcharo', 'Jinhsi', 'Jiyan'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
 
   // ── 3★ Originite Series (Huaxu Academy) ──
@@ -467,7 +472,8 @@ const WEAPON_DATA = {
     desc: 'Huaxu Academy pistols for technical verification. Heals on Dodge Counter.',
     passive: 'Alacrity: Dodge Counter → heal 1.6% Max HP (6s CD)', bestFor: [],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
-  'Originite: Type IV': { rarity: 3, type: 'Gauntlets', stat: 'Crit DMG', baseAtk: 300, subStatValue: '+40.4%',
+  // corrected 2026-08-18 (3★ audit): Crit DMG substat was +40.4%, nanoka.cc's live Lv.90 page shows +40.5%.
+  'Originite: Type IV': { rarity: 3, type: 'Gauntlets', stat: 'Crit DMG', baseAtk: 300, subStatValue: '+40.5%',
     desc: 'Huaxu Academy gauntlets for technical verification. Heals on Basic ATK hit.',
     passive: 'Rejuvenate: Basic ATK DMG → heal 0.5% Max HP (3s CD)', bestFor: ['Lingyang', 'Yuanwu'], // Yuanwu tag added 2026-08-18: Prydwen's dedicated Support-role weapon pick — its Basic ATK self-heal is what triggers the Rejuvenating Glow 5pc set (his actual meta build), despite low raw combat stats
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
