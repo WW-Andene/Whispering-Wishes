@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 
 function CollectionTab({
   state,
@@ -486,12 +486,13 @@ function CollectionTab({
                     onChange={setCollectionStatFilter}
                     options={[
                       { value: 'all', label: 'Stat Scaling' },
-                      { value: 'ATK', label: 'ATK' },
-                      { value: 'HP', label: 'HP' },
-                      { value: 'DEF', label: 'DEF' },
-                      { value: 'Crit Rate', label: 'Crit Rate' },
-                      { value: 'Crit DMG', label: 'Crit DMG' },
-                      { value: 'Energy Regen', label: 'Energy Regen' },
+                      ...[
+                        ['ATK', 'ATK%'], ['HP', 'HP%'], ['DEF', 'DEF%'],
+                        ['Crit Rate', 'Crit Rate'], ['Crit DMG', 'Crit DMG'], ['Energy Regen', 'Energy Regen'],
+                      ].map(([val, text]) => ({
+                        value: val,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(val)} alt="" width={14} height={14} className="shrink-0" /> {text}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by stat scaling"
                   />
@@ -580,12 +581,10 @@ function CollectionTab({
                     onChange={setWeaponsStatFilter}
                     options={[
                       { value: 'all', label: 'All Sub-stats' },
-                      { value: 'ATK%', label: 'ATK%' },
-                      { value: 'HP%', label: 'HP%' },
-                      { value: 'DEF%', label: 'DEF%' },
-                      { value: 'Crit Rate', label: 'Crit Rate' },
-                      { value: 'Crit DMG', label: 'Crit DMG' },
-                      { value: 'Energy Regen', label: 'Energy Regen' },
+                      ...['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen'].map(s => ({
+                        value: s,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by sub-stat"
                   />
