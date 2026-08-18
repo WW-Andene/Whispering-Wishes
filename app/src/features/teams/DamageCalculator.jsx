@@ -407,6 +407,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         else if (db.stat === 'erosion') {}
         else if (db.stat === 'offTune') deepen += db.value;
         else if (db.stat === 'havocBane') defShred += db.value * 2;
+        // 'deepen' as a debuff stat (e.g. Galbrena's Afterflame — enemy DMG Taken) is the same
+        // multiplier as the buff-side 'deepen', just framed as an enemy debuff instead of an ally
+        // buff — was never recognized here, silently dropping the whole effect from every DPS calc.
+        else if (db.stat === 'deepen') deepen += db.value;
       });
     });
 
@@ -668,6 +672,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             else if (db.stat === 'resShred') sResShred += db.value;
             else if (db.stat === 'offTune') sDeepen += db.value;
             else if (db.stat === 'havocBane') sDefShred += db.value * 2;
+            else if (db.stat === 'deepen') sDeepen += db.value;
           });
         });
         const mbt = CHAR_BUFF_TABLE[m.name];
@@ -684,6 +689,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             if (db.stat === 'defShred') sDefShred += db.value;
             else if (db.stat === 'resShred') sResShred += db.value;
             else if (db.stat === 'offTune') sDeepen += db.value;
+            else if (db.stat === 'deepen') sDeepen += db.value;
           });
         }
         if (m.weapon) {

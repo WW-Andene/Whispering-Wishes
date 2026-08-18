@@ -568,6 +568,9 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
         if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
         if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
         if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
+        // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
+        // universal damage multiplier just like the buff-side 'deepen' — was previously unscored here.
+        if (db.stat === 'deepen' || db.stat === 'offTune') score += 8;
       });
     });
   }
