@@ -403,13 +403,16 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       if (m.name === mainDps.name) return;
       const sn = m.echoSetName;
       const sn2 = m.echoSet2Name;
-      // Healer/Support set team buffs (ATK applies to main DPS's scaling stat)
-      // Team ATK buffs generally apply as ATK% to all characters regardless of scaling
-      // (WuWa team ATK buffs like Rejuvenating Glow, Moonlit Clouds give flat ATK% to all)
+      // Healer/Support set team buffs. These grant real ATK% (raises the ATK stat, not "whatever the
+      // DPS scales on") — for an ATK-scaling main DPS that's a 1:1 damage gain, but for an HP/DEF
+      // scaler ATK barely factors into their Motion Value damage, so it's given the same 25%
+      // partial-credit fallback used everywhere else in this file for off-scaling ATK buffs (was
+      // previously added at full value regardless of scaling — inconsistent with every other ATK
+      // buff site here, and a real undervaluation bug in the other direction for HP/DEF-scaling DPS).
       // Sourced from TEAM_SET_BUFFS so the rotation timeline can render the exact same bonuses.
       (TEAM_SET_BUFFS[sn] || []).forEach(e => {
         if (e.elem && e.elem !== mainDpsEl) return;
-        if (e.stat === 'atkPct') atkPct += e.value;
+        if (e.stat === 'atkPct') atkPct += mainDps.scaling === 'ATK' ? e.value : e.value * 0.25;
         else if (e.stat === 'elemDmg') elemDmg += e.value;
         else if (e.stat === 'libDmg') libDmg += e.value;
       });
@@ -597,7 +600,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               const snapshotFactor = isOffField ? 0.6 : 1.0;
               const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
               const val = b.value * uptime * snapshotFactor;
-              if (b.stat === 'atkPct' && m.scaling === 'ATK') sAtkPct += val;
+              if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sAmplify += val;
               else if (b.stat === 'deepen') sDeepen += val;
               else if (b.stat === 'basicDmg') sAmplify += val;
@@ -616,18 +619,18 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           if (oP5v?.teamAtk) {
             const uptime = Math.min(1, 20 / teamRotTime);
             const val = oP5v.teamAtk * uptime * (isOffField ? 0.6 : 1.0);
-            if (m.scaling === 'ATK') sAtkPct += val;
+            sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           if (oP5v?.nextAtk) {
             const uptime = Math.min(1, 14 / teamRotTime);
             const val = oP5v.nextAtk * uptime * (isOffField ? 0.6 : 1.0);
-            if (m.scaling === 'ATK') sAtkPct += val;
+            sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team') {
               const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
               const val = b.value * uptime;
-              if (b.stat === 'atkPct' && m.scaling === 'ATK') sAtkPct += val;
+              if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg') sElem += val;
               else if (b.stat === 'critRate') sCr += val;
               else if (b.stat === 'critDmg') sCd += val;
@@ -680,7 +683,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           // Sonata set p5 team ATK% (Rejuvenating Glow/Halo of Starry Radiance) applies to the wearer
           // too, not just teammates — applyFullEchoSet doesn't know this key (see calcEngine.js), and
           // the cross-member loop above explicitly skips self, so it must be added here.
-          if (m.echoSet?.p5val?.teamAtk && m.scaling === 'ATK') sAtkPct += m.echoSet.p5val.teamAtk;
+          if (m.echoSet?.p5val?.teamAtk) sAtkPct += m.scaling === 'ATK' ? m.echoSet.p5val.teamAtk : m.echoSet.p5val.teamAtk * 0.25;
           sAtkPct += subSetStats.atkPct; sCr += subSetStats.cr - BASE_CRIT_RATE; sCd += subSetStats.cd - BASE_CRIT_DMG;
           sElem += subSetStats.elemDmg; sSkillDmg += subSetStats.skillDmg;
           sBasicDmg += subSetStats.basicDmg; sHeavyDmg += subSetStats.heavyDmg;
