@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { scoreTeamComposition } from './calcEngine.js';
+import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -88,7 +88,9 @@ function TeamsTab({
     const ownedArr = [...ownedNames].filter(n => CHARACTER_DATA[n]);
     const ownedDps = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Main DPS');
     const ownedSub = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Sub DPS');
-    const ownedHeal = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Healer' || CHARACTER_DATA[n].role === 'Support');
+    // 'Healer'/'Support' exact-match would silently exclude compound-role characters like Chisa/Suisui
+    // ('Support/Healer') from the candidate pool entirely — use substring-aware role helpers instead.
+    const ownedHeal = ownedArr.filter(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
     const customSeen = new Set();
     // For each owned DPS, find best sub + best healer/support
     for (const dps of ownedDps) {

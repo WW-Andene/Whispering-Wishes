@@ -302,6 +302,15 @@ export function routeTypeBonuses(stats, dpsFocus) {
   if (dpsFocus.includes('Coordinated ATK')) stats.skillDmg += stats.coordDmg;
 }
 
+// ── Role matching: some characters carry a compound role string ('Support/Healer' — Chisa, Suisui)
+// rather than a single 'Healer'/'Support' tag. Every exact `role === 'Healer'`/`role === 'Support'`
+// check in this codebase silently excluded those characters entirely (no healer detected in a team
+// that HAS one, no Healing Bonus main-stat option in Auto Equip, excluded from the healer/support
+// candidate pool when building team suggestions) — use these substring checks everywhere a role
+// CATEGORY is being tested instead, so a compound role matches every category it actually belongs to.
+export function isHealerRole(role) { return (role || '').includes('Healer'); }
+export function isSupportRole(role) { return (role || '').includes('Support'); }
+
 // ── Defense multiplier calculation ──
 export function calcDefMult(enemyDef, defShred, defIgnore) {
   const reducedDef = enemyDef * Math.max(0, 1 - defShred / 100);
@@ -517,7 +526,10 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   else if (tierSum >= 95) tags.push('Strong');
   // Roles
   const hasMain = roles.includes('Main DPS'), hasSub = roles.includes('Sub DPS');
-  const hasHeal = roles.includes('Healer'), hasSupp = roles.includes('Support');
+  // .includes() here checks exact array-element equality, not substring — a compound role like
+  // 'Support/Healer' (Chisa, Suisui) would never match either, so a team with just one of them as
+  // its only healer/support scored as having neither. Use the substring-aware role helpers instead.
+  const hasHeal = roles.some(isHealerRole), hasSupp = roles.some(isSupportRole);
   if (hasMain) score += 15; if (hasHeal || hasSupp) score += 10; if (hasSub) score += 8;
   if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
   // DPS power + buff synergy

@@ -13,6 +13,7 @@ import {
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcEnergyCycles,
+  isHealerRole,
 } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -845,10 +846,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
     // ── Synergy scoring: measures how well the team works together ──
     let syn = 0;
-    // Role coverage (0-30)
-    const hasHealer = mems.some(m => m.d.role === 'Healer');
+    // Role coverage (0-30). Compound roles like 'Support/Healer' (Chisa, Suisui) never match an
+    // exact 'Healer'/'Support' equality check, so a team with just one of them as its only
+    // healer/support scored as having neither — use the substring-aware role helper instead.
+    const hasHealer = mems.some(m => isHealerRole(m.d.role));
     const hasSubDps = mems.some(m => m.d.role === 'Sub DPS');
-    const hasSupport = mems.some(m => m.d.role === 'Support');
+    const hasSupport = mems.some(m => (m.d.role || '').includes('Support'));
     if (hasHealer) syn += 15;
     if (hasSubDps || hasSupport) syn += 15;
     // Element synergy (0-20): matching elements enable resonance + buff alignment
@@ -888,7 +891,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     if (mems.length < 3) {
       warnings.push('Incomplete team');
     } else {
-      if (!mems.some(m => m.d.role === 'Healer')) warnings.push('No healer in team');
+      if (!mems.some(m => isHealerRole(m.d.role))) warnings.push('No healer in team');
       const els = new Set(mems.map(m => m.d.element));
       if (els.size === mems.length) warnings.push('No element resonance');
       const dpsCount = mems.filter(m => m.d.role === 'Main DPS').length;
@@ -1219,7 +1222,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 return scalingStat;
                               }
                               if (preset === 'support') {
-                                if (cost === 4) return d.role === 'Healer' ? 'Healing Bonus' : 'Energy Regen';
+                                if (cost === 4) return isHealerRole(d.role) ? 'Healing Bonus' : 'Energy Regen';
                                 if (cost === 3) return elDmgKey || scalingStat;
                                 return scaling === 'HP' ? 'HP%' : scalingStat;
                               }
@@ -1263,7 +1266,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               for (const name of tierList) { if (!usedNames.has(name) && directEchoes.has(name)) { usedNames.add(name); return name; } }
                               const wanted = new Set(setPrefs.keys());
                               const charEl = (d.element || '').toLowerCase();
-                              const isRoleForHealing = d.role === 'Healer' || d.role === 'Support' || (d.role || '').includes('Support');
+                              // A 'Healing' echo is only justified for a character who can actually
+                              // heal — a pure buff-Support (no healing) has no more use for it than a
+                              // DPS does, so this checks healer capability specifically, not any
+                              // Support-adjacent role. isHealerRole covers compound roles too (Chisa/
+                              // Suisui's 'Support/Healer').
+                              const isRoleForHealing = isHealerRole(d.role);
                               const matchesElement = (ed) => {
                                 const buffs = ed?.buff ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
                                 if (buffs.length === 0) return true; // no tagged damage type — don't penalize
@@ -1509,7 +1517,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                         const elKey = m.d.element ? m.d.element.charAt(0).toUpperCase() + m.d.element.slice(1).toLowerCase() + ' DMG' : '';
                                         const getPresetStat = (cost) => {
                                           if (opt.value === 'er') return cost >= 3 ? 'Energy Regen' : scalingStat;
-                                          if (opt.value === 'support') return cost === 4 ? (m.d.role === 'Healer' ? 'Healing Bonus' : 'Energy Regen') : cost === 3 ? (elKey || scalingStat) : (scaling === 'HP' ? 'HP%' : scalingStat);
+                                          if (opt.value === 'support') return cost === 4 ? (isHealerRole(m.d.role) ? 'Healing Bonus' : 'Energy Regen') : cost === 3 ? (elKey || scalingStat) : (scaling === 'HP' ? 'HP%' : scalingStat);
                                           return cost === 4 ? 'Crit Rate' : cost === 3 ? (elKey || scalingStat) : scalingStat;
                                         };
                                         const updatedEchoes = existingEchoes.map((echo, i) => {
