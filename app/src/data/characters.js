@@ -1904,7 +1904,11 @@ const CHAR_BUFF_TABLE = {
     // healing + Off-Tune Buildup Rate — no "15% All DMG" anywhere in the real kit, cleared (confirmed via Nanoka/Prydwen 2026-08-16).
     libBuffs: [],
     selfBuffs: [],
-    weaponBuffs: [{ stat: 'critDmg', value: 20, target: 'team', duration: 10, condition: 'Sig weapon: team Crit DMG +20% on heal' }],
+    // corrected 2026-08-18: removed — this exactly duplicated her signature weapon Starfield Calibrator's
+    // own tv field (team Crit DMG +20% on heal, 4s), which the calculator already applies whenever that
+    // weapon is actually equipped. Hardcoding it here double-counted it and phantom-applied it even when a
+    // different weapon was equipped (also had the wrong duration: 10s here vs the weapon's real 4s).
+    weaponBuffs: [],
     debuffs: [{ stat: 'offTune', value: 50, duration: 25, condition: 'Syntony Field: Off-Tune Buildup Rate +50%' }],
     tuneBreak: {
       boostToTeam: 0,
@@ -1994,11 +1998,16 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
     libBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 99, condition: 'Solo Concert: from Basic ATK Ensemble Sylph summons, not Liberation itself — near-permanent uptime' }],
     selfBuffs: [],
-    weaponBuffs: [{ stat: 'resShred', value: 10, target: 'team', duration: 20, condition: 'Sig weapon (Woodland Aria): Aero RES -10% on hitting Erosion targets' }],
+    // corrected 2026-08-18: removed — this was mislabeled as a team buff. Woodland Aria's real effect
+    // (re-verified against nanoka.cc's raw effect JSON) is entirely self-target: "Hitting Aero-Eroded
+    // targets → self Aero RES -10%", not a team-wide RES shred. It's also already covered by the weapon's
+    // own pv.resShred whenever the wielder actually has it equipped — hardcoding it here double-counted it
+    // (as a team buff, which doesn't exist) and phantom-applied it with any other weapon equipped.
+    weaponBuffs: [],
     debuffs: [
       { stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' },
     ],
-    note: 'Solo Concert: +24% Aero DMG team (from Basic ATK passive, near-permanent uptime, not gated behind Liberation). Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Sig weapon: Aero RES -10%. (Corrected 2026-08-16: weapon RES shred was 16%, real value is 10%; Solo Concert duration/source corrected via Nanoka/Prydwen/Game8.)',
+    note: 'Solo Concert: +24% Aero DMG team (from Basic ATK passive, near-permanent uptime, not gated behind Liberation). Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded team-buff assumption.',
   },
   'Lupa': {
     outroBuffs: [
@@ -2007,7 +2016,10 @@ const CHAR_BUFF_TABLE = {
     ],
     libBuffs: [{ stat: 'atkPct', value: 18, target: 'team', duration: 35, condition: 'Pack Hunt: 6% base +6%/Intro cast, up to 2 casts' }],
     selfBuffs: [{ stat: 'atkPct', value: 12, target: 'self', duration: 8, condition: 'Wildfire Banner, from Skill/Forte/Liberation casts' }],
-    weaponBuffs: [{ stat: 'allDmg', value: 24, target: 'team', duration: 30, condition: 'Sig weapon (Wildfire Mark): triggers on successful Heavy ATK extension of the Liberation buff' }],
+    // corrected 2026-08-18: removed — this duplicated her signature weapon Wildfire Mark's own tv field
+    // (team Fusion DMG +24%), which the calculator already applies whenever that weapon is actually
+    // equipped. Hardcoding it here double-counted it and phantom-applied it with any other weapon equipped.
+    weaponBuffs: [],
     debuffs: [{ stat: 'resShred', value: 15, duration: 35, condition: 'Fusion RES ignore, Glory (from Liberation): 3% base +3%/other Fusion Resonator up to 15% at 3 Fusion units' }],
     note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: up to 18% ATK team (35s), enables Wild Hunt. Fusion RES ignore up to 15% (35s), needs a mono-Fusion team for max value (S3 removes the requirement). (Corrected 2026-08-16: fixed Lib buff and RES-ignore durations, which were listed far too short; added missing self-buff and weapon buff via Nanoka/Prydwen/Game8.)',
   },
@@ -2069,16 +2081,18 @@ const CHAR_BUFF_TABLE = {
     note: 'On-field Spectro burst DPS. Builds Incandescence from any team member\'s Attribute/Coordinated DMG, then spends it via Illuminous Epiphany (Incarnation Basic ATK Stage 4) for a massive Stella Glamor nuke (+44.54% DMG per Incandescence). Outro Temporal Bender is a pure Incandescence-gain utility, not a team buff.',
   },
   // Xiangli Yao: moved to Main DPS section below
+  // corrected 2026-08-18: removed the two "Weapon R1" selfBuffs (ATK+24%, DEF Ignore+16%) — these
+  // duplicated Blazing Justice's passive as a hardcoded always-on assumption, double-counting with
+  // whatever weapon.pv the calculator already applies for the actually-equipped weapon (and using stale
+  // pre-fix numbers besides — Blazing Justice's real passive is ATK+12%/DEF Ignore+8%, not +24%/+16%).
   'Zani': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'To allies hitting the Heliacal Ember-marked target' }],
     libBuffs: [],
     selfBuffs: [
       { stat: 'elemDmg', value: 12, target: 'self', duration: 14, condition: 'Quick Response: Intro Skill cast grants +12% Spectro DMG Bonus' },
-      { stat: 'atkPct', value: 24, target: 'self', duration: 20, condition: 'Weapon R1' },
-      { stat: 'defIgnore', value: 16, target: 'self', duration: 14, condition: 'Weapon R1: During Lib + Frazzle Amp 50%' },
     ],
     debuffs: [],
-    note: 'Converts Frazzle→Heliacal Embers. Outro grants allies hitting the marked target +20% Spectro DMG Amp (20s) — this was previously missing entirely. Weapon: +24% ATK, 16% DEF Ignore, 50% Frazzle DMG in Lib. (Corrected 2026-08-16: added the missing Outro team buff and Quick Response self-buff via Nanoka/Prydwen.)',
+    note: 'Converts Frazzle→Heliacal Embers. Outro grants allies hitting the marked target +20% Spectro DMG Amp (20s). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
   },
   // ── 4★ ──
   'Sanhua': {
@@ -2174,7 +2188,11 @@ const CHAR_BUFF_TABLE = {
     // page: "The incoming Resonator has their Aero DMG Amplified by 23% for 14s or until they are switched out").
     outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14 }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Aero DMG +12%' }],
+    // corrected 2026-08-18: removed "Weapon passive: Aero DMG +12%" — this assumed a generic weapon
+    // Attr DMG baseline regardless of which weapon is actually equipped, double-counting with the
+    // equipped weapon's own pv (most 4-5★ weapons carry this baseline) or phantom-applying it with any
+    // weapon that doesn't.
+    selfBuffs: [],
     debuffs: [],
     note: 'Off-field Aero applicator. Outro: 23% Aero DMG Amp to next. Mist clone Coordinated ATK.',
   },
@@ -2215,28 +2233,36 @@ const CHAR_BUFF_TABLE = {
   'Aemeath': {
     outroBuffs: [],
     libBuffs: [],
+    // corrected 2026-08-18: removed the two "Sig weapon" entries (DEF Ignore +32%, Fusion RES ignore +10%)
+    // — they exactly duplicated Everbright Polestar's own pv, which the calculator already applies whenever
+    // that weapon is actually equipped. Hardcoding it here double-counted it and phantom-applied it with
+    // any other weapon equipped.
     selfBuffs: [
       { stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Inherent Skill Between the Stars: Tune Rupture mode 20% per Resonator ×3 stacks, or Fusion Burst mode 30% per Resonator ×2 stacks (both max 60%, resets on team change/mode switch)' },
       { stat: 'deepen', value: 25, target: 'self', duration: 99, condition: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25%' },
-      { stat: 'defIgnore', value: 32, target: 'self', duration: 8, condition: 'Sig weapon: on Tune Rupture/Fusion Burst infliction' },
-      { stat: 'resShred', value: 10, target: 'self', duration: 8, condition: 'Sig weapon: Fusion RES ignore' },
     ],
     debuffs: [{ stat: 'fusionBurst', value: 30, duration: 30, condition: 'Rupturous Trail / Fusion Trail: stacks up to 30 (60 at RC6), each stack removed by Seraphic Duet grants scaling DMG Mult' }],
-    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Sig weapon: 32% DEF Ignore + 10% Fusion RES. Self-buff: up to 60% CD via Between the Stars.',
+    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars.',
   },
+  // corrected 2026-08-18: removed "Weapon passive: Aero DMG +12%" — this assumed a fixed generic weapon
+  // baseline regardless of which weapon is actually equipped, double-counting with the equipped weapon's
+  // own pv, or phantom-applying it otherwise. Verdant Summit's real passive (re-verified against
+  // nanoka.cc) is also no longer a flat "+20%" Heavy ATK bonus, so the stale note was corrected too.
   'Jiyan': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 99, condition: 'Weapon passive: Aero DMG +12%' }],
+    selfBuffs: [],
     debuffs: [],
-    note: 'Heavy ATK DPS in Qingloong form. Weapon: Heavy ATK +20%.',
+    note: 'Heavy ATK DPS in Qingloong form. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
   },
+  // corrected 2026-08-18: removed "Weapon passive" (ATK +12%) — same double-counting/phantom-bonus issue
+  // as Jiyan/Aalto above.
   'Calcharo': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 12, target: 'self', duration: 10, condition: 'Weapon passive' }],
+    selfBuffs: [],
     debuffs: [],
-    note: 'Liberation → Death Messenger combo. Electro DMG +12% from weapon.',
+    note: 'Liberation → Death Messenger combo.',
   },
   'Encore': {
     outroBuffs: [],
@@ -2256,13 +2282,18 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],
     libBuffs: [],
     selfBuffs: [],
-    weaponBuffs: [{ stat: 'defIgnore', value: 8, target: 'self', duration: 15, condition: "Sig weapon (Defier's Thorn): 15s after Intro Skill or Basic ATK casts" }],
+    // corrected 2026-08-18: removed the self-target "Sig weapon" DEF Ignore entry — it exactly duplicated
+    // Defier's Thorn's own pv.defIgnore, which the calculator already applies whenever that weapon is
+    // actually equipped. The enemy-side "+20% DMG taken" debuff below is kept: it's not modeled anywhere
+    // else (weapon pv has no enemy-debuff mechanism), so it isn't a double-count, though it's still a
+    // hardcoded assumption that only holds true when Defier's Thorn is actually equipped.
+    weaponBuffs: [],
     debuffs: [
       { stat: 'erosion', value: 6, duration: 15, condition: '6 stacks with Rover (3 base). HP-scaling DPS.' },
       { stat: 'elemDmg', value: 60, duration: 99, condition: "Wind's Indelible Imprint: targets at max (6) Erosion stacks take +60% more DMG from her (scales from +30% at 1-3 stacks, +10%/stack beyond)" },
-      { stat: 'elemDmg', value: 20, duration: 15, condition: "Sig weapon: Erosion-stacked targets take +20% more DMG (15s after Intro/Basic ATK)" },
+      { stat: 'elemDmg', value: 20, duration: 15, condition: "Sig weapon (Defier's Thorn): Erosion-stacked targets take +20% more DMG (15s after Intro/Basic ATK)" },
     ],
-    note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Weapon: DEF Ignore 8% (not 16%) + Erosion targets take +20% more DMG. Wind\'s Indelible Imprint debuffs Erosion-stacked targets up to +60% DMG taken. (Corrected 2026-08-16: fixed weapon DEF Ignore value — was double the real number and conflated with a separate effect; the "self elemDmg" entries were actually enemy-side debuffs, moved to debuffs; added the missing Wind\'s Indelible Imprint debuff.)',
+    note: 'Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Wind\'s Indelible Imprint debuffs Erosion-stacked targets up to +60% DMG taken. Weapon DEF Ignore now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
   },
   // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
   // equipped weapon's passive (12% Fusion DMG) instead of his own kit — replaced with his real Inherent
@@ -2297,23 +2328,25 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'deepen', value: 60, target: 'enemy', duration: 0, condition: "Afterflame: each of up to 40 stacks (gained from any team Resonator's Echo Skill cast, capped once per Echo name) grants +1.5% DMG Taken on the target while Galbrena is in Demon Hypostasis, up to 60% — cleared when she exits the state" }],
     note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit. Afterflame is a DMG Taken debuff on the enemy (not a self-buff), replenished by any teammate\'s Echo Skill casts — Prydwen notes it\'s realistically 36% without Phrolova, 48% with her (rarely maxed at 60%).',
   },
+  // corrected 2026-08-18: removed all three "Weapon:" selfBuffs — they exactly duplicated his signature
+  // weapon Daybreaker's Spine's own pv (Basic ATK DMG Amp +20%, Spectro DMG +20%, DEF Ignore +10%), which
+  // the calculator already applies whenever that weapon is actually equipped. Hardcoding it here
+  // double-counted it and phantom-applied it with any other weapon equipped.
   'Luuk Herssen': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [
-      { stat: 'basicDmg', value: 20, target: 'self', duration: 99, condition: 'Weapon: Basic ATK DMG Amp +20%' },
-      { stat: 'elemDmg', value: 20, target: 'self', duration: 99, condition: 'Weapon: Spectro DMG +20%' },
-      { stat: 'defIgnore', value: 10, target: 'self', duration: 99, condition: 'Weapon: DEF Ignore +10%' },
-    ],
+    selfBuffs: [],
     debuffs: [],
-    note: 'Spectro Gauntlets DPS. Tune Strain focused. Weapon: Basic ATK +20%, Spectro +20%, DEF Ignore +10%.',
+    note: 'Spectro Gauntlets DPS. Tune Strain focused. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
   },
   'Sigrika': {
     outroBuffs: [],
     libBuffs: [],
+    // corrected 2026-08-18: removed the "Sig weapon" DEF Ignore entry — it exactly duplicated Solsworn
+    // Ciphers' own pv.defIgnore, which the calculator already applies whenever that weapon is actually
+    // equipped. Hardcoding it here double-counted it and phantom-applied it with any other weapon equipped.
     selfBuffs: [
       { stat: 'echoDmg', value: 50, target: 'self', duration: 15, condition: 'Inherent: +2% Echo Skill DMG per 1% ER above 125% (up to 50%)' },
-      { stat: 'defIgnore', value: 10, target: 'self', duration: 6, condition: 'Sig weapon: Aero DMG ignores 10% DEF on Echo Skill hit' },
       // Added 2026-08-17 against Prydwen's live kit breakdown — Blessing of Runes was missing entirely.
       // Whichever Resonator is active gets this (not Sigrika specifically), stacking on any teammate's
       // Echo Skill cast up to 6 stacks (3% Aero + 3% Echo Skill DMG each), with a further +30%/+30% jump
