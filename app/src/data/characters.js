@@ -726,12 +726,20 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Static Mist'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Baizhi'] },
   'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'Midnight Ranger who trades her own blood for power. Havoc sub-DPS who consumes HP to fuel enhanced Basic and Heavy Attacks, gaining Havoc DMG Bonus as health decreases.',
+    // desc expanded 2026-08-18 (Fandom + Prydwen): lore half is Fandom's "Scarlet Shade" Midnight Ranger
+    // who hunts thieves/bandits for retribution; gameplay half is Prydwen's Hybrid framing — a fast
+    // Outro-buff rotation for Havoc teammates, or a longer rotation (Basic ATK x3 into Skill x3, capped
+    // by a full-power Forte Heavy Attack) that lets her run as a legitimate Main DPS.
+    desc: 'Midnight Ranger who trades her own blood for power, hunting thieves and bandits across Huanglong for retribution. Havoc Hybrid who consumes HP to fuel enhanced Basic and Heavy Attacks, gaining Havoc DMG Bonus as health decreases — run as a quick Outro buffer for Havoc DPS or, with a longer rotation, as a Main DPS in her own right.',
     skills: ['Execution', 'Crimson Fragment', 'Crimson Bloom', 'Serene Vigil'],
     ascension: { boss: 'Strife Tacet Core', common: 'Ring', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Blazing Brilliance',
-    teams: ['Danjin + Camellya + Shorekeeper', 'Danjin + Camellya + Verina'] },
+    // weaponAlts added 2026-08-18 from Prydwen's ranked weapon list (all already tagged bestFor Danjin
+    // in weapons.js): Emerald of Genesis (100.00%, standard 5★), Commando of Conviction (81.08%) and
+    // Endless Collapse (80.72%) as top 4★s, Originite: Type II as the 3★ craftable option.
+    weaponAlts: { alt5: ['Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Originite: Type II'] },
+    teams: ['Danjin + Camellya + Shorekeeper', 'Danjin + Camellya + Verina', 'Danjin + Cantarella + Verina', 'Danjin + Phrolova + Cantarella'] },
   'Yangyang': { rarity: 4, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Cheerful Midnight Rangers outrider who rides the wind. Aero sub-DPS who generates Resonance Energy for the team via Resonance Skill and groups enemies with her Liberation.',
     skills: ['Feather as Blade', 'Zephyr Domain', 'Wind Spirals', 'Echoing Feathers'],
@@ -854,7 +862,12 @@ const CHARACTER_DATA = {
   // Eradication) kit.
   ['Chisa',         ['Basic ATK', 'Liberation'],     ['Heal', 'Shield'],                      ['DEF Shred']],
   ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
-  ['Danjin',        ['Basic ATK', 'Heavy ATK'],      ['Havoc DMG Bonus'],                     []],
+  // dmg-type tag corrected 2026-08-18: Danjin's own Prydwen kit breakdown says the Resonance Skill is
+  // "the core of her kit, which all of her combo options revolve around" (Crimson Fragment/Erosion,
+  // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
+  // DMG Deepen" (not "Bonus") per Prydwen's own rotation writeup, matching the `deepen` stat key used
+  // in CHAR_BUFF_TABLE below.
+  ['Danjin',        ['Basic ATK', 'Heavy ATK', 'Skill'], ['Havoc DMG Deepen'],                 []],
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
   ['Sanhua',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Aalto',         ['Coordinated ATK'],             [],                                      []],
@@ -932,7 +945,9 @@ const CHARACTER_DATA = {
   ['Aalto',         9850,  262, 1075, 150],
   ['Baizhi',        12812, 212, 1002, 175],
   ['Chixia',        9087,  300, 953,  150],
-  ['Danjin',        9437,  262, 1148, 100],
+  // corrected 2026-08-18: HP/ATK/DEF were slightly off (9437/262/1148) vs Prydwen's exact Lv.90 stat
+  // screen (9438/263/1149) — Energy already matched.
+  ['Danjin',        9438,  263, 1149, 100],
   ['Yangyang',      10200, 250, 1099, 100],
   ['Sanhua',        10062, 275, 941,  100],
   ['Taoqi',         8950,  225, 1564, 125],
@@ -1418,6 +1433,13 @@ const CHARACTER_DATA = {
   // Chixia: birthplace/nation both Huanglong. organization uses affiliation2 'Public Security Bureau'
   // over the generic Jinzhou tie, matching the Yinlin precedent (no dedicated emblem exists for it).
   ['Chixia', 'Gallant Blaze', 'Huanglong', 'Public Security Bureau', { en: 'Harriet Carmichael', cn: 'Cai Na', jp: 'Nagase Anna', kr: 'Kang Eun-ae' }],
+  // Danjin: sourced 2026-08-18 via fandom's own infobox (wutheringwaves.fandom.com/wiki/Danjin).
+  // Title 'Scarlet Shade' confirmed by the page's own card/banner header. birthplace/nation both
+  // Huanglong (REGION_DATA above). organization uses affiliation2 'Midnight Rangers' (her specific
+  // in-game sub-group, matching the Jiyan/Lingyang convention) over the generic 'Jinzhou (on profile)'
+  // tie. VAs cross-checked against Prydwen's profile tab (exact match): EN Sophie Colquhoun,
+  // CN Yi Kou Jing (一口井), JP Okasaki Miho, KR Lee Hyunjin.
+  ['Danjin', 'Scarlet Shade', 'Huanglong', 'Midnight Rangers', { en: 'Sophie Colquhoun', cn: 'Yi Kou Jing', jp: 'Okasaki Miho', kr: 'Lee Hyunjin' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1834,11 +1856,13 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 38% Heavy ATK DMG Amp. Off-field Coordinated ATK on Heavy ATK.',
   },
   'Danjin': {
-    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Havoc DMG Bonus' }],
+    // corrected 2026-08-18: Prydwen's own kit text calls this "23% Havoc DMG Deepen" (not "Bonus") —
+    // stat key changed from elemDmg to deepen to match; also matches CHARACTER_ROTATIONS' Outro row below.
+    outroBuffs: [{ stat: 'deepen', value: 23, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 23% Havoc DMG Bonus to next.',
+    note: 'Outro: 23% Havoc DMG Deepen to next.',
   },
   'Baizhi': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 6 }],
@@ -3314,7 +3338,16 @@ const RESONANCE_CHAIN_DATA = {
   'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
   'Sanhua':       { s1: { atkPct: 10 }, s2: { basicDmg: 10 }, s3: { totalMult: 10 }, s4: { atkPct: 10 }, s5: { basicDmg: 10 }, s6: { deepen: 15 } },
   'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 40 } },
-  'Danjin':       { s1: { elemDmg: 8 }, s2: { atkPct: 10 }, s3: { elemDmg: 8 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { atkPct: 15, elemDmg: 10 } },
+  // Danjin corrected 2026-08-18 per Prydwen's own Resonance Chain text (previous values were unsourced
+  // guesses that didn't match her kit at all): S1 ATK+5%/stack (max 6 = 30%) on Incinerating Will hits,
+  // lost on taking DMG — scaled down to half-stacks since it's a fragile stacking condition. S2 DMG dealt
+  // to Incinerating Will targets +20% (confirmed exact, modeled as totalMult since it's not attribute-
+  // specific). S3 Liberation DMG Bonus +30% (confirmed exact -> libDmg). S4 Crit Rate+15% conditional on
+  // >60 Ruby Blossom (confirmed exact, active for most of her Forte-charging window -> critRate). S5
+  // Havoc DMG Bonus +15% unconditional, +15% more (30% total) when HP<60% — since her own kit burns HP
+  // fast this condition is usually met, so using ~22 as a conditional-weighted average (confirmed exact
+  // numbers, scaled down for uptime). S6 team ATK+20% for 20s on full-power Chaoscleave (confirmed exact).
+  'Danjin':       { s1: { atkPct: 15 }, s2: { totalMult: 20 }, s3: { libDmg: 30 }, s4: { critRate: 15 }, s5: { elemDmg: 22 }, s6: { atkPct: 20 } },
   // Chisa S1: ATK+30% on Unseen Snare (not defShred, confirmed exact). S2: team +50% All-Attr DMG for allies with
   // Thread of Bane (was deepen:10, wrong stat+value — real 10% Havoc RES ignore is the smaller of two S2 effects).
   // S4: improves Havoc Bane trigger rate (utility). S5: Moment of Nihility Liberation DMG Mult+100% (was totalMult:10,

@@ -284,7 +284,8 @@ const WEAPON_DATA = {
     passive: 'Resonance Skill → Basic & Heavy ATK DMG +20% for 10s (1 stack max, 1s trigger interval)', pv: { basicDmg: 20, heavyDmg: 20 }, bestFor: ['Sword DPS', 'Changli'] },
   'Commando of Conviction': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Spirits unite in resounding gorges of valor. ATK boost on Intro Skill.',
-    passive: 'Intro Skill → ATK +15% for 15s', pv: { atkPct: 15 }, bestFor: ['Sword users', 'Rover'] },
+    // 'Danjin' added 2026-08-18: Prydwen ranks this her #4 weapon overall (81.08%), a top F2P Sword pick.
+    passive: 'Intro Skill → ATK +15% for 15s', pv: { atkPct: 15 }, bestFor: ['Sword users', 'Rover', 'Danjin'] },
   'Jinzhou Keeper': { rarity: 4, type: 'Rectifier', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Vigilant gaze northward where rain veils the city. ATK and HP boost on Intro Skill.',
     passive: 'Intro Skill → ATK +8%, HP +10% for 15s', pv: { atkPct: 8 }, bestFor: ['Rectifier supports'] },
