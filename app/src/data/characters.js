@@ -3579,22 +3579,38 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'BOOM! Fireworks!', note: 'Fires automatically once the 9.5s channel ends or Overload hits 90 — swap out right as it lands to cancel the ending animation (this banks 10 Concerto Energy for the next loop, so future rotations skip straight from Skill into the Forte Heavy Attack with no extra Basics needed).' },
     { type: 'Outro', skill: 'Preem Choom', duration: 14, note: 'Triggers automatically on swap-out. Summons a turret dealing 2.5% Electro DMG per hit for 14s, and grants the incoming Resonator +15% All DMG Amp for 14s plus a stacking Heavy ATK DMG Amp (0.5%/0.2s, up to +35%) for as long as they stay on-field.' },
   ],
+  // Standard "Loop Rotation" — sourced from Prydwen's "Gameplay and teams" tab for Lucy (2026-08-18,
+  // Chrome UA + google.com referer + jsRender). Her Ultimate is best used as the very first action of a
+  // fight (an "Opener" cast before this Loop even starts, swap-cancelled immediately) since her best
+  // teams take 25+ seconds to cycle back to her — that opener is omitted here in favor of this repeating Loop.
   'Lucy': [
-    { type: 'Intro', skill: 'Outdated Hallucination' },
-    { type: 'Skill', skill: 'Payload', note: 'builds TCP' },
-    { type: 'Skill', skill: 'Deadlock', note: 'at max TCP, enters Algorithm Compaction' },
-    { type: 'Heavy ATK', skill: 'Multi-threading', note: 'consumes SQL for bonus DMG' },
-    { type: 'Liberation', skill: 'Netrunner: Override', duration: 10, note: 'mark + detonate with Spoofing Programs' },
-    { type: 'Outro', skill: 'Countermeasure Program', duration: 14 },
+    { type: 'Intro', skill: 'Outdated Hallucination', note: 'Swap into her — fires automatically, grants the team wallhack vision for 25s and (if Rebecca\'s turret is out) boosts its DMG for 4s.' },
+    { type: 'Skill', skill: 'Payload', note: 'Press Skill — charges forward, applies Hack: Shifting, and auto-chains into a follow-up hit that activates Pulse Interference below.' },
+    { type: 'Skill', skill: 'Pulse Interference', note: 'Fires automatically off the Payload follow-up — briefly Stagnates the target and grants Digital Handshake: while she stays on-field and out of Algorithm Compaction, she now passively gains TCP every second.' },
+    { type: 'Basic ATK', skill: 'Locked Thread Stage 2-4', note: 'Tap Basic Attack 3 more times (Stage 2 through 4) — builds the last of her TCP toward 100. Cancel Stage 4\'s endlag by immediately pressing Skill.' },
+    { type: 'Skill', skill: 'Deadlock', note: 'Once TCP hits 100/100, her Skill is replaced by this automatically — press Skill to fire it (counted as Heavy ATK DMG), applying Hack: Shifting and putting her into Algorithm Compaction for 8s (also grants +65% Spectro DMG Bonus for 8s and 1 stack of SQL).' },
+    { type: 'Basic ATK', skill: 'Thread Shredding Stage 1-4', note: 'Now in Algorithm Compaction, tap Basic Attack 4 times — her Basic Attack is auto-replaced by this stronger combo, building Root Access toward 100.' },
+    { type: 'Heavy ATK', skill: 'Dual Threading', note: 'Once Root Access hits 100/100, her Heavy Attack is replaced by this automatically — press Heavy Attack to consume all Root Access and auto-chain straight into Multi-threading below.' },
+    { type: 'Heavy ATK', skill: 'Multi-threading', note: 'Fires automatically off Dual Threading — consumes her banked SQL stack for a +270% DMG Multiplier bonus and applies Hack: Shifting. Cancel its endlag by immediately pressing Liberation.' },
+    { type: 'Liberation', skill: 'Old Net Deep Dive', duration: 10, note: 'Press Liberation right after Multi-threading — an upgraded Ultimate that freezes time for 10s. Pick the first 5 Spoofing Programs from the top of the list (best mix of DMG and debuffs) as she marks targets in view, then hold Basic Attack (or wait out the timer) to trigger Override, an AoE Heavy ATK-type nuke on all marked targets that closes the interface.' },
+    { type: 'Echo', skill: 'Use Echo', note: 'Summon your equipped Echo (Nightmare: Adam Smasher) at any point in the rotation for extra Crit Rate.' },
+    { type: 'Outro', skill: 'Countermeasure Program', duration: 14, note: 'Swap out to trigger this automatically. Grants the incoming Resonator +25% Basic ATK DMG Amp for 14s (lost on swap), plus a team-wide 25s buff: any teammate applying Hack: Shifting gains +20% All DMG Amp, and Lucy grants +30% DMG Reduction for 3s to any teammate hit (once per buff instance).' },
   ],
+  // Standard Rotation (easier non-Jump-Cancel variant) — sourced from Prydwen's "Gameplay and teams" tab
+  // for Denia (2026-08-18, Chrome UA + google.com referer + jsRender). Works in either Resonance Mode
+  // (Fusion Burst or Tune Strain, picked before combat) — only the Outro's payoff differs between them.
   'Denia': [
-    { type: 'Intro', skill: "It's Been A While!" },
-    { type: 'Skill', skill: 'Phantom Bubble', note: 'Stagecraft Form' },
-    { type: 'Liberation', skill: 'Final Act: Stagecraft Form', duration: 12, note: 'switches to Breakdown Form' },
-    { type: 'Skill', skill: 'Banish', note: 'Breakdown Form, consumes Dark Cores' },
-    { type: 'Liberation', skill: 'Final Act: Breakdown Form', note: '2nd Ultimate, switches back to Stagecraft' },
-    { type: 'Forte', skill: 'Erosion Field', duration: 30 },
-    { type: 'Outro', skill: 'Unfinished Lies', duration: 30, note: 'Fusion Burst mode' },
+    { type: 'Intro', skill: "It's Been A While!", note: 'Swap into her in Stagecraft Form — fires automatically, grants 25 Void Particle and 1 Dark Core.' },
+    { type: 'Basic ATK', skill: 'Stagecraft Form Stage 4', note: 'Tap Basic Attack ONCE — cancel its endlag by immediately pressing Skill.' },
+    { type: 'Skill', skill: 'Phantom Bubble', note: 'Press Skill — pulls in nearby targets and grants 25 more Void Particle. Cancel its ending instantly by pressing Liberation.' },
+    { type: 'Liberation', skill: 'Final Act: Stagecraft Form', duration: 12, note: 'Press Liberation — deals a hit and grants Entropy Shift: Breakdown Form (+30% ATK) for 12s, then switches her to Breakdown Form.' },
+    { type: 'Basic ATK', skill: 'Breakdown Form Stage 1-4', note: 'Tap Basic Attack 4 times (ground or mid-air, either works) — builds Conformal Charge toward 100, each hit inflicting Fusion Burst or Tune Strain - Shifting depending on her Resonance Mode.' },
+    { type: 'Skill', skill: 'Banish Stage 1', note: 'Press Skill (replaces Beckon while holding a Dark Core) — pulls in targets. Press Basic Attack or Skill again shortly after for Stage 2.' },
+    { type: 'Skill', skill: 'Banish Stage 2', note: 'Consumes all held Dark Cores for a hit that gets +150% DMG Multiplier per Dark Core spent (counted as Liberation DMG). Cancel its ending instantly by pressing Liberation.' },
+    { type: 'Liberation', skill: 'Final Act: Breakdown Form', note: 'Once Conformal Charge hits 100/100, press Liberation — consumes all Conformal Charge and Void Particle for the 2nd Ultimate, grants Entropy Shift: Stagecraft Form for 30s, and switches her back to Stagecraft Form.' },
+    { type: 'Forte', skill: 'Erosion Field', duration: 30, note: 'Deploys automatically off the 2nd Ultimate — a 30s off-field zone that pulls in and hits nearby targets every 4s (counted as Liberation DMG), applying Fusion Burst/Tune Strain even after Denia swaps out.' },
+    { type: 'Echo', skill: 'Use Echo', note: 'In Fusion Burst mode, use your Echo at any convenient point in the rotation. In Tune Strain mode, swap-cancel it right before swapping out for Outro instead.' },
+    { type: 'Outro', skill: 'Unfinished Lies', duration: 30, note: 'Triggers automatically on swap-out. In Fusion Burst mode, Amplifies Fusion Burst DMG near the active Resonator by +60% for 30s. In Tune Strain mode, grants the incoming Resonator +15% All DMG Amp for 16s (jumping to +40% once they apply Tune Strain themselves) instead.' },
   ],
   'Hiyuki': [
     { type: 'Intro', skill: 'Frostedge' },
