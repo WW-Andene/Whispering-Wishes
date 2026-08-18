@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon } from '../../utils/helpers.js';
 
 function CollectionTab({
   state,
@@ -597,7 +597,10 @@ function CollectionTab({
                     onChange={setCollectionEchoSetFilter}
                     options={[
                       { value: 'all', label: 'All Sets' },
-                      ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s })),
+                      ...ALL_ECHO_SONATA_SETS.map(s => ({
+                        value: s,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by sonata set"
                   />
