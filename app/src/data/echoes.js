@@ -17,10 +17,17 @@ const ECHO_SETS = {
   'Frosty Resolve':       { element: 'Glacio',  p2: '+12% Res. Skill DMG', p2val: { skillDmg: 12 }, p5: 'Skill → +22.5% Glacio; Lib → +18% Skill (x2)', p5val: { glacioDmg: 22.5, skillDmg: 36 } },
   'Eternal Radiance':     { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Frazzle → +20% Crit Rate; 10 stacks → +15% Spectro', p5val: { critRate: 20, spectroDmg: 15 } },
   'Midnight Veil':        { element: 'Havoc',   p2: '+10% Havoc DMG',   p2val: { havocDmg: 10 },   p5: 'Outro → 480% Havoc + 15% Havoc for next', p5val: { havocDmg: 15, outroDmg: 480 } },
-  'Empyrean Anthem':      { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Coord ATK +80%; on crit → +20% ATK', p5val: { coordDmg: 80, atkPct: 40 } },
+  // corrected 2026-08-18 (echo audit): p5val.atkPct was doubled to 40 — nanoka.cc's raw sonata data shows
+  // the on-crit ATK bonus is a flat, non-stacking +20% for 4s, not +40%.
+  'Empyrean Anthem':      { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: 'Coord ATK +80%; on crit → +20% ATK', p5val: { coordDmg: 80, atkPct: 20 } },
   'Tidebreaking Courage': { element: 'Support', p2: '+10% Energy Regen',p2val: { energyRegen: 10 }, p5: '+15% ATK; ≥250% ER → +30% all DMG', p5val: { atkPct: 15, allDmg: 30 } },
-  'Gusts of Welkin':      { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Erosion → +10% Aero DMG per 3s (max x4)', p5val: { aeroDmg: 30 } },
-  'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → +15% Aero team', p5val: { aeroDmg: 15 } },
+  // corrected 2026-08-18: Gusts of Welkin and Windward Pilgrimage's 5pc effects were fabricated/swapped —
+  // re-verified against nanoka.cc's raw sonata data. Gusts of Welkin's real 5pc is a flat team+self split
+  // (Aero Erosion → team Aero DMG +15%, plus the triggerer gets an additional +15%, for 20s — no "per 3s
+  // stacking x4" mechanic exists). Windward Pilgrimage's real 5pc is entirely self-target (hitting an
+  // Aero-Eroded target → self Crit Rate +10% and Aero DMG +30% for 10s — it has no team component at all).
+  'Gusts of Welkin':      { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Aero Erosion → team Aero DMG +15%, +15% more for the triggerer (20s)', p5val: { aeroDmg: 30 } },
+  'Windward Pilgrimage':  { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Hitting Aero-Eroded target → self Crit Rate +10%, Aero DMG +30% (10s)', p5val: { critRate: 10, aeroDmg: 30 } },
   // v2.5–2.6 — Sanguis Plateaus sets
   'Flaming Clawprint':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Liberation → +15% Fusion team, +20% Lib DMG for 35s', p5val: { fusionDmg: 15, libDmg: 20 } },
   'Crown of Valor':       { element: 'Shield',  p3: 'Shield → ATK +6%, Crit DMG +4% for 4s (0.5s CD, max x5)', p3val: { atkPct: 30, critDmg: 20 } },
@@ -30,7 +37,9 @@ const ECHO_SETS = {
   'Thread of Severed Fate': { element: 'Havoc', p3: 'Havoc Bane → +20% ATK, +30% Liberation DMG for 5s', p3val: { atkPct: 20, libDmg: 30 } },
   'Dream of the Lost':    { element: 'Havoc',   p3: '0 Resonance Energy → +20% Crit Rate, +35% Echo Skill DMG', p3val: { critRate: 20, echoDmg: 35 } },
   // v3.0 — Lahai-Roi sets
-  'Pact of Neonlight Leap': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Outro → next +15% ATK; per Tune Break Boost +0.3% ATK (max +15%)', p5val: { atkPct: 40 } },
+  // corrected 2026-08-18: p5val.atkPct was 40 — nanoka.cc's raw sonata data caps the combined bonus at
+  // +15% (Outro) + +15% (Tune Break Boost scaling) = 30%, not 40%.
+  'Pact of Neonlight Leap': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Outro → next +15% ATK; per Tune Break Boost +0.3% ATK (max +15%)', p5val: { atkPct: 30 } },
   'Rite of Gilded Revelation': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Basic ATK → +10% Spectro DMG (max x3); 3 stacks + Lib → +40% Basic ATK DMG', p5val: { spectroDmg: 30, basicDmg: 40 } },
   'Halo of Starry Radiance': { element: 'Heal', p2: '+10% Healing',      p2val: { healBonus: 10 },   p5: 'Heal → per 1% Off-Tune Rate +0.2% ATK team (max +25%)', p5val: { teamAtk: 25 } },
   // v3.1 — Frostlands sets
