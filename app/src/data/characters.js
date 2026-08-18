@@ -622,6 +622,13 @@ const CHARACTER_DATA = {
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Cloudperch Seed' },
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Polarizer' },
     bestEchoes: ['Thousand-Puppet Pavilion', 'Song of Feathered Trace 5pc'], bestWeapon: 'Azure Oath',
+    // weaponAlts added 2026-08-18 from Prydwen's live build calcs (Lynae+Chisa team): Emerald Sentence
+    // (87.8%) and Red Spring (80.5%) are the top non-signature 5★ Swords (ahead of Everbright Polestar,
+    // Frostburn, Emerald of Genesis, Blazing Brilliance); Lumingloss (70.4%, Prydwen's explicit best
+    // 4★) and Fables of Wisdom (her best F2P no-gacha pick) are the only ranked 4★s; Sword of Night is
+    // the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming
+    // convention used elsewhere.
+    weaponAlts: { alt5: ['Emerald Sentence', 'Red Spring'], alt4: ['Lumingloss', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
@@ -656,6 +663,13 @@ const CHARACTER_DATA = {
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Flowborne Dream' },
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'String' },
     bestEchoes: ['Forbidden Bastion', 'Song of Feathered Trace 5pc'], bestWeapon: "Firstlight's Herald",
+    // weaponAlts added 2026-08-18: Prydwen ranks Suisui's weapons by a simple 1-4 list rather than
+    // percentages. Stellar Symphony (Shorekeeper's Signature, #2) is her only ranked non-signature 5★
+    // (provides enough Energy Regen to max her passives, though its team-ATK passive goes unused);
+    // Variation (#3, best cost-efficiency pick) and Call of the Abyss (#4, last-resort fallback) are
+    // the 4★s; Rectifier of Night is the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the
+    // "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
     teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Hiyuki + Lynae', 'Suisui + Aemeath + Denia'] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'Swordswoman who wields a stringed blade of Aero. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks.',
@@ -1133,7 +1147,7 @@ const CHARACTER_DATA = {
   ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
-  ['Qiuyuan',      'Huanglong'],
+  ['Qiuyuan',      'Huanglong'], ['Yangyang: Xuanling', 'Huanglong'], ['Suisui', 'Huanglong'],
   // Huanglong 4★
   ['Aalto',        'Huanglong'], ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
   ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
@@ -1175,6 +1189,10 @@ const CHARACTER_DATA = {
   ['Danjin',      '08-31'], ['Yangyang',    '10-11'], ['Sanhua',      '01-20'],
   ['Taoqi',       '02-25'], ['Yuanwu',      '10-02'], ['Mortefi',     '11-06'],
   ['Youhu',       '10-13'],
+  // Yangyang: Xuanling shares her 4★ counterpart Yangyang's birthday per fandom's own infobox
+  // ('October 11th', confirmed 2026-08-18 via the MediaWiki API). Suisui's infobox leaves `birthday`
+  // blank — omitted per the established convention rather than guessed.
+  ['Yangyang: Xuanling', '10-11'],
 ].forEach(([name, birthday]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
 });
@@ -1336,6 +1354,23 @@ const CHARACTER_DATA = {
   // "formerly"), matching the Lynae/Mornye/Aemeath Startorch Academy convention. Birthday: blank on
   // the infobox, omitted from BIRTHDAY_DATA per the established 'Unknown' convention.
   ['Lucilla', 'Memory Palace', 'New Federation', 'Startorch Academy', { en: 'Luci Fish', cn: 'Liu Yinuo', jp: 'Itō Shizuka', kr: 'Min-ah' }],
+  // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
+  // page=Yangyang:_Xuanling&prop=wikitext&section=0). title2 'Votary of the Voice' is also given but
+  // not surfaced here (no dual-title field exists yet in this table). birthplace/nation both Huanglong
+  // (REGION_DATA above). organization uses affiliation3 'Xuan Triad' (the group whose members are
+  // called "Xuan Watchers" per the infobox's own extra-effect note — matching her own `desc`'s "Xuan
+  // Watcher of Xuanfang Hold") over the more generic primary affiliation 'Ministry of War' and the
+  // now-inactive affiliation4 'Midnight Rangers' ("formerly"); no dedicated emblem exists for Xuan
+  // Triad on the wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as
+  // the Jinzhou/Mingting precedent.
+  ['Yangyang: Xuanling', 'Voices of Azure Plume', 'Huanglong', 'Xuan Triad', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
+  // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
+  // page=Suisui&prop=wikitext&section=0). birthplace/nation both Huanglong (REGION_DATA above).
+  // organization uses her primary affiliation (Zhaoming Commerce Guild, where she's director, matching
+  // her own `desc`) over affiliation2 (Mingting, her noble family of birth) — no dedicated emblem
+  // exists for Zhaoming Commerce Guild on the wiki, so it's intentionally left out of FACTION_ICONS
+  // rather than guessed, same as the Jinzhou/Mingting precedent. Birthday: blank on the infobox.
+  ['Suisui', 'Host of Harmony', 'Huanglong', 'Zhaoming Commerce Guild', { en: 'Emily Piggford', cn: 'Sun Yanqi', jp: 'Fukuen Misato', kr: 'Park Ji-yoon' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1463,9 +1498,9 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 12, target: 'team', duration: 6, condition: '400+ Floral Epistle consumed, Ceaseless Landscape active' },
     ],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'critRate', value: 80, target: 'self', duration: 999, condition: 'Inherent Skill Sky Over Water — Awakening Spring/Tinkling Jade hit, once every 25s (also +240% Glacio DMG on that hit)' }],
     debuffs: [],
-    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff.',
+    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff. Inherent Skill Sky Over Water grants a self Crit Rate/Glacio DMG spike on her own Awakening Spring/Tinkling Jade hits, gated to once every 25s.',
   },
   'Lynae': {
     outroBuffs: [
@@ -1501,9 +1536,13 @@ const CHAR_BUFF_TABLE = {
   'Yangyang: Xuanling': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'Havoc Bane appliers only, via As the Wind Wills' }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critDmg', value: 150, target: 'self', duration: 4, condition: 'Feathered Oath, up to 6 stacks' }],
+    selfBuffs: [
+      { stat: 'critDmg', value: 150, target: 'self', duration: 4, condition: 'Feathered Oath, up to 6 stacks' },
+      { stat: 'critDmg', value: 160, target: 'self', duration: 999, condition: 'Bated Breath/Streaming Storm — Heavy ATK Crit DMG, once every 25s' },
+      { stat: 'elemDmg', value: 36, target: 'self', duration: 999, condition: 'Inherent Skill Unbroken Vow — Havoc Bane DMG Amp, +10%/stack (1-3), +12%/stack (4-6), up to 36% at 6 stacks' },
+    ],
     debuffs: [],
-    note: 'Primarily a self-buffing DPS (huge personal Crit DMG scaling via Feathered Oath). Outro grants +20% Havoc DMG to other Havoc Bane appliers in the team (Chisa).',
+    note: 'Primarily a self-buffing DPS (huge personal Crit DMG scaling via Feathered Oath, plus Bated Breath/Streaming Storm +160% Crit DMG on her Forte-gated Heavy ATK and Unbroken Vow\'s Havoc Bane DMG Amp). Outro grants +20% Havoc DMG to other Havoc Bane appliers in the team (Chisa).',
   },
   'Hiyuki': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'vs. targets affected by Glacio Chafe' }],
@@ -3816,6 +3855,30 @@ const SKILL_ICONS = {
     'Clip It': 'https://i.ibb.co/7JWJhpcF/lucilla-intro.webp', // Intro Skill
     'Montage': 'https://i.ibb.co/RGZrzfTY/lucilla-outro.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Yangyang: Xuanling/Suisui, pulled via
+  // the MediaWiki API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-18).
+  'Yangyang: Xuanling': {
+    'Azure/Feather Stance': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Basic ATK — generic Sword icon (same asset already used elsewhere)
+    'Sword Stance Switch': 'https://i.ibb.co/NgDz5JK6/yx-res-Skill.webp', // Resonance Skill — Feather's Edge
+    'Azure Sword Stance': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp', // Forte-gated Heavy ATK — The Way of Ten Thousand Voices
+    'Feather Sword Stance': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp',
+    'Shadow of Xuanling': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp', // Forte Circuit
+    'Hush of a Thousand Voices': 'https://i.ibb.co/hJWFGQ8N/yx-liberation.webp', // Resonance Liberation
+    'Skybound Feather': 'https://i.ibb.co/5hWRkHJj/yx-intro.webp', // Intro Skill
+    'As the Wind Wills': 'https://i.ibb.co/SDZqCdLj/yx-outro.webp', // Outro Skill
+  },
+  'Suisui': {
+    'Zephyr Stance Stage 1-4': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
+    'Zephyr Stance thrust': 'https://i.ibb.co/rKYhDsHw/suisui-res-Skill.webp', // Resonance Skill — Vernal Screen
+    'Drizzle Stance Stage 1-4': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Awakening Spring': 'https://i.ibb.co/rKYhDsHw/suisui-res-Skill.webp', // Zephyr Skill's max-Cloud Breath upgrade, same wiki icon
+    'Drizzle Stance thrust': 'https://i.ibb.co/rKYhDsHw/suisui-res-Skill.webp',
+    'Zephyr Stance': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Mid-air Attack row, generic weapon icon (must follow the longer Zephyr-prefixed keys above)
+    'Drizzle Stance': 'https://i.ibb.co/cRkfdDc/suisui-forte.webp', // Forte-gated Heavy ATK — Lambent Gold (must follow the longer Drizzle-prefixed keys above)
+    'Song of Thoroughfare': 'https://i.ibb.co/27WLZMx6/suisui-liberation.webp', // Resonance Liberation
+    'Tinkling Jade': 'https://i.ibb.co/fdXb5bgm/suisui-intro.webp', // Intro Skill
+    'Rippling Waters': 'https://i.ibb.co/fhrX8pF/suisui-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4180,6 +4243,22 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/gZBNkHMH/denia-s5.webp',
     s6: 'https://i.ibb.co/Zz5XhZzj/denia-s6.webp',
   },
+  'Yangyang: Xuanling': {
+    s1: 'https://i.ibb.co/93ZS4rdV/yx-s1.webp',
+    s2: 'https://i.ibb.co/ksZDCX9W/yx-s2.webp',
+    s3: 'https://i.ibb.co/XrMxyjcG/yx-s3.webp',
+    s4: 'https://i.ibb.co/KpQnZkWY/yx-s4.webp',
+    s5: 'https://i.ibb.co/6KDh2KB/yx-s5.webp',
+    s6: 'https://i.ibb.co/TD3gkgcb/yx-s6.webp',
+  },
+  'Suisui': {
+    s1: 'https://i.ibb.co/1YF19wXw/suisui-s1.webp',
+    s2: 'https://i.ibb.co/7d5F5ZtZ/suisui-s2.webp',
+    s3: 'https://i.ibb.co/JFGC6Dq2/suisui-s3.webp',
+    s4: 'https://i.ibb.co/DDMC0F52/suisui-s4.webp',
+    s5: 'https://i.ibb.co/vMRL5cr/suisui-s5.webp',
+    s6: 'https://i.ibb.co/tM5fJd43/suisui-s6.webp',
+  },
   // Lucy/Rebecca/Lucilla (2026-08-17): NOT populated — verified via direct MediaWiki titles queries
   // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 18 node names across
   // all three characters) that wutheringwaves.fandom.com has not uploaded Sequence Node icon assets
@@ -4232,6 +4311,8 @@ const CHAIN_NODE_NAMES = {
   'Lucy': { s1: 'The Moon, a Ticket, and a Dream', s2: 'The Blackwall, the Past, the Escape', s3: 'Cyberpunk', s4: 'No Living Legends in Night City', s5: 'A Broken Path to Hell', s6: 'I Really Want to Stay At Your House' },
   'Rebecca': { s1: 'Try Not to Get in the Way!', s2: 'Oh, Hey Choom!', s3: "Don't Sweat Your Six!", s4: 'Got Ya Covered!', s5: 'Dreamin\' on the Edge', s6: 'Maybe, Just Maybe...' },
   'Lucilla': { s1: 'Distant Noon', s2: 'Slumbering Moonlight', s3: 'Days Fade Unheard', s4: 'The Past Fades Into Silence', s5: 'Time is Like a Stream', s6: 'Gazing In the Mist of Time' },
+  'Yangyang: Xuanling': { s1: "At the Wind's Breath, the Blossoms Wake", s2: 'River Carries Her Song Away', s3: 'My Grief Follows You into the Clouds', s4: 'Across the Miles, a Letter and My Longing', s5: 'Take Wing. Take Wing.', s6: 'Let the Azure Keep Its Light' },
+  'Suisui': { s1: 'Mountains Washed Into Paintings', s2: 'Clouds Pour Like Molten Gold', s3: 'Sparse Curtains Invite Evening Glow', s4: 'Autumn Mountains in Choir Sing', s5: 'I Long To Ride The Eastern Wind', s6: 'Staying True To This Splendid Realm' },
 };
 
 // Release order for sorting (based on first banner appearance)
