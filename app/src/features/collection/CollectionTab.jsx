@@ -558,9 +558,12 @@ function CollectionTab({
                     onChange={setCollectionRegionFilter}
                     options={[
                       { value: 'all', label: 'All Regions' },
-                      ...['Huanglong', 'Rinascita', 'Black Shores', 'Septimont', 'Lahai-Roi'].map(r => ({
+                      ...['Huanglong', 'Rinascita', 'Black Shores', 'Lahai-Roi', 'Night City'].map(r => ({
                         value: r,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getRegionIcon(r)} alt="" width={14} height={14} className="shrink-0" /> {r}</span>,
+                        // Night City has no REGION_ICONS entry yet (no sourced emblem) — guard so it falls
+                        // back to text-only instead of rendering a broken <img>. Septimont dropped: no
+                        // character's region field actually holds it (folded into Rinascita).
+                        label: <span className="inline-flex items-center gap-1.5">{getRegionIcon(r) && <img src={getRegionIcon(r)} alt="" width={14} height={14} className="shrink-0" />} {r}</span>,
                       })),
                     ]}
                     ariaLabel="Filter by region"
