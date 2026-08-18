@@ -58,6 +58,7 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Hiyuki': { x: 1, y: -22, zoom: 207 },
   'collection-Suisui': { x: 1, y: -22, zoom: 207 },
   'collection-Yangyang: Xuanling': { x: 1, y: -22, zoom: 207 },
+  'collection-Qingxiao': { x: 1, y: -22, zoom: 207 },
   'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
   // 4-star Resonators
@@ -122,6 +123,16 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'team-Mornye': { x: 4, y: -20, zoom: 170 },
   'team-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'team-Blazing Justice': { x: 0, y: 0, zoom: 100 },
+  // Averaged from every other team- entry above (avg x/y/zoom across all 48 tuned characters) — same
+  // "no individual tuning yet" convention as the collection-/info- averaged entries below.
+  'team-Lucy': { x: 2, y: -17, zoom: 185 },
+  'team-Rebecca': { x: 2, y: -17, zoom: 185 },
+  'team-Lucilla': { x: 2, y: -17, zoom: 185 },
+  'team-Denia': { x: 2, y: -17, zoom: 185 },
+  'team-Hiyuki': { x: 2, y: -17, zoom: 185 },
+  'team-Suisui': { x: 2, y: -17, zoom: 185 },
+  'team-Yangyang: Xuanling': { x: 2, y: -17, zoom: 185 },
+  'team-Qingxiao': { x: 2, y: -17, zoom: 185 },
   // Info panel framing
   'info-Encore': { x: -2, y: -50, zoom: 170 },
   'info-Lingyang': { x: -2, y: -50, zoom: 170 },
@@ -177,6 +188,7 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'info-Hiyuki': { x: -4, y: -59, zoom: 233 },
   'info-Suisui': { x: -4, y: -59, zoom: 233 },
   'info-Yangyang: Xuanling': { x: -4, y: -59, zoom: 233 },
+  'info-Qingxiao': { x: -4, y: -59, zoom: 233 },
 });
 
 const defaultFramingBase = Object.freeze({ x: 0, y: 0, zoom: 100 });

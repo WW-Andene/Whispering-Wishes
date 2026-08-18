@@ -68,9 +68,11 @@ const BANNER_HISTORY = [
   // game8.co archive 453303 (Aug 10 2026 update), kit data not final until release.)
   { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
-  // rerun here, Qingxiao is this banner's new headliner). Now Qingxiao's own splash art, sourced from
-  // fandom's File:Qingxiao_Splash_Art.png via the MediaWiki API ahead of her 2026-08-20 release.
-  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/Hf3J3Ypc/qingxiao-splash.webp', predicted: true },
+  // rerun here, Qingxiao is this banner's new headliner). First attempt used fandom's
+  // File:Qingxiao_Splash_Art.png, but that asset has a transparent background (a character cutout,
+  // not a full banner image) — replaced with File:Qingxiao_Card.jpg, her official convene card art,
+  // which has a full opaque painted background like every other bannerArt entry in this table.
+  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/C5dRw2Fb/qingxiao-card.webp', predicted: true },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
   // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
   // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously
