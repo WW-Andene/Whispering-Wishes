@@ -3396,21 +3396,20 @@ const CHARACTER_ROTATIONS = {
     { type: 'Echo', skill: 'Swap Cancel', note: 'Use your equipped Echo\'s skill right after Liberation, then immediately swap to the next character — swapping cuts off the Echo\'s own animation without losing its effect.' },
     { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'Triggers automatically the moment you swap out — no separate button press needed. Grants the incoming Resonator +20% Havoc DMG / +25% Basic ATK DMG for 14s, and swaps their Utility button for Roccia\'s Magic Box.' },
   ],
-  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (2026-08-17,
-  // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
-  // Simplified from Prydwen's full "Burst Combo" (with its Warm Up pre-phase for 0-Substance starts)
-  // down to the core skill sequence, matching the level of detail used for the rest of the roster.
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (re-fetched
+  // 2026-08-18, Chrome UA + google.com referer + jsRender).
   'Carlotta': [
-    { type: 'Intro', skill: 'Wintertime Aria', note: 'grants 30 Substance + 3 Moldable Crystals' },
-    { type: 'Skill', skill: 'Art of Violence', note: 'grants 3 more Moldable Crystals' },
-    { type: 'Skill', skill: 'Chromatic Splendor', note: 'consumes 6 Moldable Crystals for 60 Substance, enters Final Bow at 120' },
-    { type: 'Forte', skill: 'Imminent Oblivion', note: 'consumes 120 Substance, cuts Skill cooldown by 6s' },
-    { type: 'Liberation', skill: 'Era of New Wave', note: 'enters Twilight Tango, +80% DMG Multiplier from Final Bow' },
-    { type: 'Liberation', skill: 'Death Knell', note: '×4, builds Meta Vectors' },
-    { type: 'Liberation', skill: 'Fatal Finale', note: 'consumes 4 Meta Vectors, ends Twilight Tango' },
-    { type: 'Skill', skill: 'Art of Violence', note: 'sets up 30 Substance for the next rotation' },
-    { type: 'Skill', skill: 'Chromatic Splendor' },
-    { type: 'Outro', skill: 'Closing Remark' },
+    { type: 'Intro', skill: 'Wintertime Aria', note: 'Swap into her — fires automatically. Grants 30 Substance and 3 Moldable Crystals (of 6 max) right away.' },
+    { type: 'Skill', skill: 'Art of Violence', note: 'Press Skill — deals Glacio DMG, inflicts Dispersion (1.5s immobilize), and grants 3 more Moldable Crystals (now 6/6). Press Skill again shortly after to chain into Chromatic Splendor before the window closes.' },
+    { type: 'Skill', skill: 'Chromatic Splendor', note: 'Press Skill again within the follow-up window — consumes all 6 Moldable Crystals for 60 Substance (now 90/120) and enters "Final Bow" once Substance later hits 120, granting +80% DMG Multiplier to all 3 Liberation abilities.' },
+    { type: 'Mid-air', skill: 'Plunging Attack', note: 'Jump and tap Basic Attack to plunge back to the ground — pure repositioning, no damage focus, just gets her grounded to continue the combo.' },
+    { type: 'Forte', skill: 'Imminent Oblivion', note: 'Once Tinted Crystal is off cooldown and Substance is capped at 120/120, HOLD Basic Attack (her Heavy Attack is replaced automatically) — consumes all 120 Substance, deals Glacio DMG counted as Resonance Skill DMG, and cuts Art of Violence\'s cooldown by 6s.' },
+    { type: 'Liberation', skill: 'Era of New Wave', note: 'Press Liberation — hits all nearby targets (counted as Skill DMG), inflicts Deconstruction (-18% DEF for 4s), and activates "Twilight Tango," converting the next 5 Basic Attack/Liberation presses into Death Knell/Fatal Finale.' },
+    { type: 'Liberation', skill: 'Death Knell ×4', note: 'Press Basic Attack or Liberation 4 times in a row — each press fires Death Knell automatically while in Twilight Tango, dealing Glacio DMG (counted as Skill DMG) and building 1 Meta Vector per hit, capping at 4.' },
+    { type: 'Liberation', skill: 'Fatal Finale', note: 'On the 5th press, with 4 Meta Vectors banked, this fires automatically instead of another Death Knell — a big AoE hit (counted as Skill DMG) that consumes all 4 Meta Vectors and ends Twilight Tango, also wiping her Substance to 0.' },
+    { type: 'Skill', skill: 'Art of Violence → Chromatic Splendor', note: 'Press Skill twice again (same as the opener) to bank 30 Substance for the start of the next rotation.' },
+    { type: 'Echo', skill: 'Swap Cancel', note: 'Use your equipped Echo\'s skill, then immediately swap out — cuts the Echo animation short without losing its effect and triggers her Outro.' },
+    { type: 'Outro', skill: 'Closing Remark', note: 'Triggers automatically on swap-out — one final Glacio hit worth 794.2% ATK at base rank.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Camellya (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
@@ -3497,23 +3496,36 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Living Canvas', note: 'summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s — can be cast at any point in the rotation' },
     { type: 'Outro', skill: 'Carve and Draw', note: 'grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish' },
   ],
+  // Standard Rotation ("Easy & Basic Burst Combo") — sourced from Prydwen's "Gameplay and teams" tab for
+  // Encore (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Prydwen also lists
+  // Advanced and "No Forte" combos that squeeze in extra Basic Attacks via Dash/Skill-cancels — omitted
+  // here as too execution-heavy for a standard reference rotation.
   'Encore': [
-    { type: 'Intro', skill: 'Woolies Helpers' },
-    { type: 'Liberation', skill: 'Cosmos Rave', duration: 10, note: 'enters Cosmos Rave — Basic/Heavy/Skill/Dodge Counter all replaced by enhanced Fusion versions; 16s cooldown' },
-    { type: 'Skill', skill: 'Cosmos Rampage', note: 'cast on cooldown during Cosmos Rave, generates Dissonance' },
-    { type: 'Basic ATK', skill: 'Cosmos: Frolicking', note: '4-stage combo, repeated between each Cosmos Rampage cast' },
-    { type: 'Forte', skill: 'Heavy ATK: Cosmos Rupture', note: 'at full Dissonance; swap-cancel the moment Encore begins channelling' },
-    { type: 'Outro', skill: 'Thermal Field' },
+    { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo\'s skill before swapping her in (Inferno Rider is best-in-slot but needs a swap-cancel to use smoothly).' },
+    { type: 'Intro', skill: 'Woolies Can Help!', note: 'Swap into her — fires automatically, dealing a Fusion hit and pouncing enemies together with Cosmos.' },
+    { type: 'Liberation', skill: 'Cosmos Rave', note: 'Press Liberation — sends Encore into a melee-focused frenzy: her Basic Attack, Heavy Attack, Skill, and Dodge Counter are all replaced by enhanced "Cosmos" versions for the duration.' },
+    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Press Skill (her Skill is auto-replaced while in Cosmos Rave) — a Fusion hit that also restores a good chunk of Dissonance (Forte Gauge, caps at 100).' },
+    { type: 'Basic ATK', skill: 'Cosmos: Frolicking 1-4', note: 'Tap Basic Attack 4 times in a row — the auto-replaced combo during Cosmos Rave, each hit also restoring some Dissonance.' },
+    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Press Skill again on cooldown to keep filling Dissonance toward 100.' },
+    { type: 'Basic ATK', skill: 'Cosmos: Frolicking 1-4', note: 'Second 4-tap combo pass, same as above.' },
+    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Third Skill cast — by now Dissonance should be at or near its 100 cap.' },
+    { type: 'Forte', skill: 'Heavy Attack: Cosmos Rupture', note: 'Once Dissonance is full, HOLD Heavy Attack (auto-replaced while in Cosmos Rave) — consumes all 100 Dissonance to enter a 70%-damage-reduction channel, then unleashes a big Fusion hit (counted as Liberation DMG) once it ends. Swap-cancel the instant the channel begins to skip most of its animation.' },
+    { type: 'Outro', skill: 'Thermal Field', duration: 6, note: 'Swap out to trigger this automatically — drops a 3m burn zone dealing Fusion DMG every 1.5s for 6s to anything standing in it.' },
   ],
+  // Standard Rotation ("Basic Burst Combo") — sourced from Prydwen's "Gameplay and teams" tab for
+  // Calcharo (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Prydwen also lists a
+  // Dash-Cancel variant (harder, same Death Messenger count) and a "4 Death Messenger" combo rated
+  // Difficulty: Impossible — both omitted as too execution-heavy for a standard reference rotation.
   'Calcharo': [
-    { type: 'Intro', skill: 'Wanted Outlaw' },
-    { type: 'Liberation', skill: 'Phantom Etching', duration: 11, note: 'enters Deathblade Gear — Basic ATK replaced by Hounds Roar' },
-    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: 'at 5 Killing Intent; optionally swap-cancel to protect Calcharo' },
-    { type: 'Basic ATK', skill: 'Hounds Roar', note: '5-stage combo, rebuilds Killing Intent toward the next Death Messenger' },
-    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '2nd proc' },
-    { type: 'Basic ATK', skill: 'Hounds Roar' },
-    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '3rd proc — realistic ceiling without frame-perfect dash-cancels (4 is possible but extremely hard)' },
-    { type: 'Outro', skill: 'Shadowy Raid' },
+    { type: 'Echo', skill: 'Use + Swap Cancel', note: 'Use your equipped Echo\'s skill before swapping Calcharo in, then swap-cancel it — banks its effect without eating its full animation.' },
+    { type: 'Intro', skill: 'Wanted Outlaw', note: 'Swap into him — fires automatically, dealing an Electro hit.' },
+    { type: 'Liberation', skill: 'Phantom Etching', note: 'Press Liberation — deals a hit and enters "Deathblade Gear": his Basic Attack is replaced by the 5-hit Hounds Roar combo, Dodge Counter deals more damage, and his Forte Gauge becomes "Killing Intent" (caps at 5, gained 1 per Hounds Roar hit; cannot gain Cruelty while in this state).' },
+    { type: 'Forte', skill: 'Heavy Attack: "Death Messenger"', note: 'Once Killing Intent hits 5/5, his Basic Attack is replaced by this automatically — tap Basic Attack to fire it, consuming all 5 Killing Intent for a big Electro hit (counted as Liberation DMG) and refunding Resonance + Concerto Energy. Swap-cancel right after if you can, to protect him from the long wind-up on the next cast.' },
+    { type: 'Basic ATK', skill: 'Hounds Roar 1-5', note: 'Tap Basic Attack 5 times in a row (still in Deathblade Gear) — each hit is 1 stage of the combo and grants 1 Killing Intent, refilling it to 5/5 for the next Death Messenger.' },
+    { type: 'Forte', skill: 'Heavy Attack: "Death Messenger"', note: '2nd cast — same as above, tap Basic Attack once Killing Intent caps again. Swap-cancel if possible.' },
+    { type: 'Basic ATK', skill: 'Hounds Roar 1-5', note: 'Repeat the 5-tap combo to refill Killing Intent to 5/5 a third time.' },
+    { type: 'Forte', skill: 'Heavy Attack: "Death Messenger"', note: '3rd cast — the realistic ceiling per rotation without frame-perfect Dash Cancels between Hounds Roar hits (a 4th is theoretically possible but rated "Difficulty: Impossible" by Prydwen).' },
+    { type: 'Outro', skill: 'Shadowy Raid', note: 'Swap out to trigger this automatically — summons a Phantom that slashes everything in front of him for a large Electro hit.' },
   ],
   'Yinlin': [
     { type: 'Intro', skill: 'Raging Storm', note: 'applies Sinner\'s Mark' },
