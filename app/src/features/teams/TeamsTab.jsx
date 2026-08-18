@@ -210,6 +210,8 @@ function TeamsTab({
                 setTeamDebuffFilter('all');
                 setTeamDmgFilter('all');
                 setTeamRoleFilter('all');
+                setTeamCombatRoleFilter('all');
+                setTeamRegionFilter('all');
                 setTeamSelectorOpen(true);
                 haptic.light();
               };
@@ -315,7 +317,9 @@ function TeamsTab({
                 if (teamBuffFilter !== 'all' && !(data.buffs || []).some(b => b.includes(teamBuffFilter))) return false;
                 if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.includes(teamDebuffFilter))) return false;
                 if (teamDmgFilter !== 'all' && !(data.dmgFocus || []).includes(teamDmgFilter)) return false;
-                if (teamRoleFilter !== 'all' && data.role !== teamRoleFilter) return false;
+                if (teamRoleFilter === 'Healer' && !isHealerRole(data.role)) return false;
+                if (teamRoleFilter === 'Support' && !isSupportRole(data.role)) return false;
+                if ((teamRoleFilter === 'Main DPS' || teamRoleFilter === 'Sub DPS') && data.role !== teamRoleFilter) return false;
                 if (teamCombatRoleFilter !== 'all' && !data.combatRoles?.includes(teamCombatRoleFilter)) return false;
                 if (teamRegionFilter !== 'all' && data.region !== teamRegionFilter) return false;
                 return true;

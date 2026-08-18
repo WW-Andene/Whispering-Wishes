@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Search, Star, Users, X, Heart, ShieldCheck, Swords, TrendingUp, Target, Flame, BatteryCharging, Users2, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
+import { Search, Star, Users, X, Heart, Swords, TrendingUp, Target, Flame, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
@@ -131,7 +131,7 @@ export default function TeamSelector({
                               onChange={setTeamRegionFilter}
                               options={[
                                 { value: 'all', label: 'All Regions' },
-                                ...['Huanglong', 'Rinascita', 'Black Shores', 'Septimont', 'Lahai-Roi'].map(r => ({
+                                ...['Huanglong', 'Rinascita', 'Black Shores', 'Lahai-Roi', 'Night City'].map(r => ({
                                   value: r,
                                   label: <span className="inline-flex items-center gap-1.5"><img src={getRegionIcon(r)} alt="" width={14} height={14} className="shrink-0" /> {r}</span>,
                                 })),
@@ -162,9 +162,8 @@ export default function TeamSelector({
                               options={[
                                 { value: 'all', label: 'All Buffs' },
                                 ...[
-                                  ['Heal', Heart], ['Shield', ShieldCheck], ['Coordinated ATK', Swords],
+                                  ['Heal', Heart], ['Coordinated ATK', Swords],
                                   ['ATK Buff', TrendingUp], ['Crit', Target], ['DMG', Flame, 'DMG Buff'],
-                                  ['Energy Regen', BatteryCharging], ['Grouping', Users2],
                                 ].map(([val, Icon, text]) => ({
                                   value: val,
                                   label: <span className="inline-flex items-center gap-1.5"><Icon size={14} className="shrink-0" /> {text || val}</span>,

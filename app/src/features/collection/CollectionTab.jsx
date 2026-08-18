@@ -7,6 +7,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSessionState } from '../../utils/useSessionState.js';
 import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
+import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
 import { WEAPON_RELEASE_ORDER, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
@@ -226,7 +227,9 @@ function CollectionTab({
         if (data) {
           if (collectionElementFilter !== 'all' && data.element !== collectionElementFilter) return false;
           if (collectionWeaponFilter !== 'all' && data.weapon !== collectionWeaponFilter) return false;
-          if (collectionRoleFilter !== 'all' && data.role !== collectionRoleFilter) return false;
+          if (collectionRoleFilter === 'Healer' && !isHealerRole(data.role)) return false;
+          if (collectionRoleFilter === 'Support' && !isSupportRole(data.role)) return false;
+          if ((collectionRoleFilter === 'Main DPS' || collectionRoleFilter === 'Sub DPS') && data.role !== collectionRoleFilter) return false;
           if (collectionStatFilter !== 'all' && !charMatchesStat(name, collectionStatFilter)) return false;
           if (collectionDamageFilter !== 'all' && !charMatchesDamage(name, collectionDamageFilter)) return false;
           if (collectionRegionFilter !== 'all' && data.region !== collectionRegionFilter) return false;
