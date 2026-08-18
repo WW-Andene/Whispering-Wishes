@@ -802,13 +802,29 @@ const CHARACTER_DATA = {
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Dauntless Evernight',
     weaponAlts: { alt5: ['Discord'] },
     teams: ['Taoqi + Carlotta + Shorekeeper', 'Taoqi + Jinhsi + Verina'] },
+  // corrected 2026-08-18 via fandom's Yuanwu/Combat page (Forte Details, rendered) + Prydwen's
+  // Kit/Build/Review/Gameplay tabs (previously only had a partial CHARACTER_DATA entry, no
+  // weaponAlts). desc: dropped "generates shields via Resonance Liberation" — Blazing Might's own
+  // Forte Details text has no shield at all; the 200%-DEF shield only exists on Resonance Chain S4
+  // "Retributive Knuckles" (RESONANCE_CHAIN_DATA below), so it's not part of his base (S0) kit.
+  // Corrected to what Liberation actually does: grants team-wide Lightning Infused (Interruption
+  // Resistance) and detonates the active Thunder Wedge. bestEchoes replaced 'Nightmare: Tempest
+  // Mephis' + 'Empyrean Anthem 5pc' (Prydwen's Special/off-meta set, not the top pick) with Prydwen's
+  // actual #1 recommendation: 'Rejuvenating Glow 5pc' (Main Echo 'Fallacy of No Return', triggered via
+  // the Originite: Type IV weapon so his Basic ATK self-heal procs the set's teamwide 15% ATK buff —
+  // this is literally his only meta use case per Prydwen's Review) with 'Moonlit Clouds 5pc' kept as
+  // the alt (Main Echo Impermanence Heron, Outro-swap ATK buff). teams corrected — Prydwen's Synergies
+  // tab documents Jinhsi as his ONLY meta pairing (Coordinated ATK stack-feeding for her Forte), run
+  // with either Verina or Shorekeeper; 'Yuanwu + Calcharo + Shorekeeper' had no basis in Prydwen at all
+  // (Calcharo isn't mentioned anywhere on his page) and was removed.
   'Yuanwu': { rarity: 4, element: 'Electro', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Veteran boxing gym owner who fights with thunderous fists. Electro support who deploys Thunder Wedge for off-field Coordinated Attacks and generates shields via Resonance Liberation.',
+    desc: 'Veteran boxing gym owner who fights with thunderous fists. Electro hybrid support who deploys Thunder Wedge for off-field Coordinated Attacks and grants the team Interruption Resistance (Lightning Infused) via Resonance Liberation.',
     skills: ['Leihuangquan', 'Leihuang Master', 'Blazing Might', 'Unassuming Blade'],
     ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Ring', specialty: 'Terraspawn Fungus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Nightmare: Tempest Mephis', 'Empyrean Anthem 5pc'], bestWeapon: 'Abyss Surges',
-    teams: ['Yuanwu + Jinhsi + Verina', 'Yuanwu + Calcharo + Shorekeeper'] },
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
+    weaponAlts: { alt4: ['Amity Accord', 'Stonard'], alt3: ['Guardian Gauntlets', 'Gauntlets of Voyager', 'Originite: Type IV'] },
+    teams: ['Yuanwu + Jinhsi + Verina', 'Yuanwu + Jinhsi + Shorekeeper'] },
   'Mortefi': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Hot-tempered researcher whose music erupts in violent crescendos. Fusion sub-DPS who fires off-field Fusion Coordinated Attacks and buffs the on-field character\'s Heavy ATK DMG via Outro.',
     skills: ['Impromptu Show', 'Passionate Variation', 'Violent Finale', 'Fury Fugue'],
@@ -929,7 +945,11 @@ const CHARACTER_DATA = {
   // identical Amp-type buffs below, not the "Deepen" wording (which belongs to a different, unsourced
   // stat this character never actually carries).
   ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Amp'],              []],
-  ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK', 'Shield'],           []],
+  // buff tag corrected 2026-08-18: fandom's Yuanwu/Combat Forte Details table for Resonance Liberation
+  // Blazing Might has no shield effect at all — the 'Shield' tag had no basis in his base (S0) kit,
+  // only appearing on Resonance Chain S4 "Retributive Knuckles" (200% DEF shield, see
+  // RESONANCE_CHAIN_DATA below), so it's removed from this always-on buff list.
+  ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
   ['Youhu',         ['Coordinated ATK'],             ['Heal', 'Coordinated ATK Amp'],         []],
   ['Buling',        ['Skill'],                       ['Skill DMG Buff', 'Heal'],              []],
 ].forEach(([name, dmgFocus, buffs, debuffs]) => {
@@ -998,7 +1018,9 @@ const CHARACTER_DATA = {
   // corrected 2026-08-18: HP was 10062 vs Prydwen's exact Lv.90 stat screen 10063 (ATK/DEF/Energy already matched).
   ['Sanhua',        10063, 275, 941,  100],
   ['Taoqi',         8950,  225, 1564, 125],
-  ['Yuanwu',        8525,  225, 1637, 125],
+  // DEF corrected 2026-08-18: was 1637 vs fandom's exact Lv.90 Ascensions and Stats table
+  // (8,525.00 / 225.00 / 1,637.75, rounds to 1638) and Prydwen's own Lv.90 stat screen (DEF 1638).
+  ['Yuanwu',        8525,  225, 1638, 125],
   ['Mortefi',       10025, 250, 1136, 125],
   ['Youhu',         9975,  262, 1051, 125],
   ['Lumi',          8500,  337, 879,  125],
@@ -1510,6 +1532,16 @@ const CHARACTER_DATA = {
   // VAs confirmed exact from the infobox: EN Clare Louise Connolly, CN KIYO, JP Yōmiya Hina
   // (羊宮妃那), KR Yi Sae-ah (이새아).
   ['Taoqi', 'Blossom of Slashes', 'Huanglong', 'Ministry of Development', { en: 'Clare Louise Connolly', cn: 'KIYO', jp: 'Yōmiya Hina', kr: 'Yi Sae-ah' }],
+  // Yuanwu: added 2026-08-18, sourced via the MediaWiki API (action=parse&page=Yuanwu&prop=wikitext).
+  // Title 'Fist of Thunder' from the infobox `title` field. birthplace/nation both Huanglong
+  // (REGION_DATA above). organization uses affiliation2 'Yuanwu Boxing Gym' (his own gym, per his
+  // `desc`/Official Introduction) over the generic primary affiliation 'Jinzhou', matching the
+  // Baizhi/Chixia/Danjin/Taoqi sub-group convention. No dedicated FACTION_ICONS emblem exists on the
+  // wiki for a personally-owned gym, so it's intentionally left unset rather than guessed (matches the
+  // Jinzhou/Mingting/Ministry of Development precedent). VAs confirmed exact from the infobox: EN Adam
+  // Diggle, CN Liu Beichen (刘北辰), JP Shirokuma Hiroshi (白熊寬嗣), KR Park Seong-tae (박성태) —
+  // cross-checked and matching against Prydwen's own Voice Actors tab.
+  ['Yuanwu', 'Fist of Thunder', 'Huanglong', 'Yuanwu Boxing Gym', { en: 'Adam Diggle', cn: 'Liu Beichen', jp: 'Shirokuma Hiroshi', kr: 'Park Seong-tae' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1956,12 +1988,20 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro Iron Will: 38% Resonance Skill DMG Amp to next (14s). Skill Fortified Defense grants 3 stacks of Rocksteady Shield (15% DMG reduction while active) + self-heal.',
   },
+  // corrected 2026-08-18: fandom's Yuanwu/Combat Forte Details table for Outro Skill "Lightning
+  // Manipulation" text is "Yuanwu unleashes thunderbolts in an area centered around the skill target,
+  // greatly reducing the Vibration Strength of enemies upon impact" — no DMG buff of any kind, so the
+  // unsourced 15% `deepen` outroBuff (no basis anywhere on the Combat page) is removed. His actual
+  // team-facing effect is Resonance Liberation Blazing Might granting Forte Circuit Lightning Infused
+  // (Interruption Resistance) to all nearby team members for 10s — a status effect with no DMG/stat
+  // equivalent in this schema, so it's not modeled as a libBuff, only noted below. Shield only exists
+  // on Resonance Chain S4 (RESONANCE_CHAIN_DATA), not in his base kit.
   'Yuanwu': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
+    outroBuffs: [],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% Deepen. Coordinated ATK. Shield.',
+    note: 'Skill Thunder Wedge: off-field Coordinated ATK (1x/1.2s while an ally is on-field within the field). Liberation Blazing Might grants team-wide Interruption Resistance (Lightning Infused, 10s) — no DMG stat. Outro Lightning Manipulation: pure Vibration Strength depletion, no DMG buff. Shield only unlocks at Resonance Chain S4.',
   },
   // Corrected 2026-08-18 via Prydwen's Kit tab. Outro: Whispering Breeze funnels 4 Resonance
   // Energy/s for 5s (20 total) to the next character on swap — an Energy-funnel effect, not a DMG/stat
@@ -2868,12 +2908,28 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Lucky Draw', '50%×2'],
     ['Outro', 'PoeticErta', '+23% Glacio DMG Amp (14s)'],
   ],
+  // corrected 2026-08-18: replaced the old generic "Stage 1-5" placeholder values (which didn't match
+  // any real move name — Yuanwu never has an unsourced "Liberation DMG Amp" Outro or "shield" on
+  // Liberation) with real Lv.10 Attribute Scaling values and move names from
+  // wutheringwaves.fandom.com/wiki/Yuanwu/Combat's Forte Details table (rendered, since the raw
+  // wikitext only transcludes the {{Forte Table}} template). Skill's off-field Coordinated ATK and
+  // Forte Circuit's Thunder Wedge Detonation/Rumbling Spark/Thunder Uprising/Thunderweaver rows were
+  // entirely missing. Outro Lightning Manipulation has no DMG multiplier at all (pure Vibration
+  // Strength depletion) — the old "+15% Liberation DMG Amp" value had no basis anywhere on the page.
   'Yuanwu': [
-    ['Basic ATK', 'Stage 1-5', '25.3% → 14.3%×3 → 31.8% → 19.3%×3 → 23.2%×2+30.8%'],
-    ['Skill', 'Thunder Wedge', '46%×2 coordinated'],
-    ['Liberation', 'Blazing Might', '98%×2 shield'],
-    ['Intro', 'Thunder Assault', '50%×2'],
-    ['Outro', 'Lightning Boost', '+15% Liberation DMG Amp (14s)'],
+    ['Basic ATK', 'Leihuangquan Stage 1-5', '49.11% → 51.81%×2 → 21.84%×2+32.76%×2 → 51.81%×2 → 49.11%×2+65.48%', 'Up to 5 consecutive Electro strikes.'],
+    ['Heavy ATK', 'Leihuangquan (hold)', '159.05%', 'Consumes STA to attack the target.'],
+    ['Mid-air', 'Leihuangquan', '98.61%', 'Consumes STA; Mid-air Plunging Attack.'],
+    ['Dodge Counter', 'Leihuangquan', '114.52%×2', 'Basic ATK after a successful Dodge.'],
+    ['Skill', 'Thunder Wedge', '23.86%', 'Summons Thunder Wedge (lasts 12s) and forms a Thunder Field around it.'],
+    ['Skill', 'Thunder Field Coordinated ATK', '7.96%', 'The on-field character\'s hits inside the Thunder Field trigger a Coordinated ATK, 1x/1.2s.'],
+    ['Forte', 'Thunder Wedge Detonation', '59.65%', 'Forte Circuit Rumbling Spark or Liberation Blazing Might detonates the active Thunder Wedge, counted as Resonance Skill DMG.'],
+    ['Forte', 'Rumbling Spark', '108.54%', 'Hold Skill when Forte Gauge is full to consume all "Readiness" and enter Lightning Infused.'],
+    ['Liberation', 'Blazing Might', '174.96%×2', 'Grants Forte Circuit Lightning Infused (Interruption Resistance) to nearby team for 10s, then a powerful blow.'],
+    ['Forte', 'Thunder Uprising', '39.77%', 'Replaces Resonance Skill Thunder Wedge when "Readiness" is full.'],
+    ['Forte', 'Thunderweaver', '31.02%+20.68%×2', 'Basic ATK within 3s of a Heavy ATK/successful Counterattack while Lightning Infused, counted as Basic ATK DMG.'],
+    ['Intro', 'Thunder Bombardment', '63.62%', 'Electro DMG opener.'],
+    ['Outro', 'Lightning Manipulation', 'No DMG (Vibration Strength depletion)', 'Thunderbolts centered on the skill target; deals no DMG, greatly depletes enemy Vibration Strength.'],
   ],
 };
 
@@ -3398,6 +3454,18 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Power Shift: Timed Counters', note: 'Basic ATK after Heavy ATK Strategic Parry/Intro consumes "Resolving Caliber" for extra hits and a shield, counted as Basic ATK DMG' },
     { type: 'Outro', skill: 'Iron Will', duration: 14, note: 'grants the incoming Resonator 38% Resonance Skill DMG Amp for 14s — time this to land on the intended DPS\'s Skill window' },
   ],
+  // Added 2026-08-18 (previously entirely missing) — sourced from Prydwen's Gameplay and teams "Ability
+  // Priority" list and fandom's Yuanwu/Combat Instructions/Forte text. He's a near-zero-field-time
+  // support: deploy Thunder Wedge, detonate it with Liberation, swap off. Prydwen explicitly notes he
+  // "features no set rotation" — this models the documented Ability Priority order for calc purposes.
+  'Yuanwu': [
+    { type: 'Intro', skill: 'Thunder Bombardment', note: 'Electro DMG opener (if available)' },
+    { type: 'Skill', skill: 'Thunder Wedge', note: 'deploy Thunder Wedge to start building Forte Gauge off-field via Coordinated ATKs' },
+    { type: 'Liberation', skill: 'Blazing Might', note: 'detonates the active Thunder Wedge (Resonance Skill DMG) and grants team Interruption Resistance for 10s' },
+    { type: 'Forte', skill: 'Rumbling Spark', note: 'once Forte Gauge is full, hold Skill to detonate Thunder Wedge again and enter Lightning Infused' },
+    { type: 'Skill', skill: 'Thunder Wedge', note: 're-deploy Thunder Wedge to keep the Coordinated ATK field active' },
+    { type: 'Outro', skill: 'Lightning Manipulation', note: 'swap out — depletes enemy Vibration Strength, no DMG; quickswap into the main DPS immediately' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3656,7 +3724,20 @@ const RESONANCE_CHAIN_DATA = {
   // exact against the real node text, no changes needed.
   'Yangyang':     { s1: { elemDmg: 15 }, s2: { totalMult: 5 }, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
   'Youhu':        { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
-  'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
+  // corrected 2026-08-18: prior values (atkPct/deepen on every node) had no basis in Yuanwu's real
+  // chain kit (fandom Combat page, rendered Resonance Chain table) — he has no ATK% or DMG Deepen node
+  // at all. Real effects: S1 Steaming Cup of Justice — Lightning Infused Basic/Heavy Attack Speed+20%
+  // each (utility, no attack-speed stat in schema, kept as small totalMult). S2 Fierce Heart, Serene
+  // Mind — Intro Thunder Bombardment recovers +15 Resonance Energy (utility, not modeled). S3 Upholder
+  // of Integrity — Thunder Wedge's Coordinated ATK deals bonus DMG equal to 20% of Yuanwu's DEF
+  // (confirmed exact; no DEF-scaling-bonus stat in schema, kept as small totalMult). S4 Retributive
+  // Knuckles — Liberation Blazing Might grants the on-field character a Shield equal to 200% of
+  // Yuanwu's DEF for 10s (this is where his 'Shield' capability actually unlocks — no shield-% stat in
+  // schema, kept as small totalMult). S5 Neighborhood Protector — while Thunder Wedge is on the field,
+  // Resonance Liberation DMG Bonus+50% (confirmed exact, modeled as libDmg). S6 Defender of All Realms —
+  // nearby team members gain +32% DEF for 3s while within Thunder Wedge's range (confirmed exact,
+  // team-wide DEF buff; no team-DEF% stat in schema, kept as totalMult).
+  'Yuanwu':       { s1: { totalMult: 4 }, s2: { totalMult: 3 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { libDmg: 50 }, s6: { totalMult: 8 } },
 };
 
 // [SECTION:SKILL_ICONS] — Per-character skill-name → icon URL, matched against SKILL_MULTIPLIERS/
@@ -4308,6 +4389,21 @@ const SKILL_ICONS = {
     'Defense Formation': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f1/Skill_Defense_Formation.png',
     'Iron Will': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/fd/Skill_Iron_Will.png',
   },
+  // added 2026-08-18 — previously entirely missing (was falling back to no icon for every Yuanwu skill
+  // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the MediaWiki API
+  // (action=query&titles=File:Skill X.png&prop=imageinfo&iiprop=url). 'Leihuangquan' itself has no
+  // dedicated skill icon file on the wiki — it redirects to the generic Gauntlets weapon-type icon.
+  'Yuanwu': {
+    'Leihuangquan': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png',
+    'Thunder Field': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6a/Skill_Leihuang_Master.png',
+    'Thunder Wedge': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6a/Skill_Leihuang_Master.png',
+    'Rumbling Spark': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1f/Skill_Unassuming_Blade.png',
+    'Thunder Uprising': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1f/Skill_Unassuming_Blade.png',
+    'Thunderweaver': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1f/Skill_Unassuming_Blade.png',
+    'Blazing Might': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ab/Skill_Blazing_Might.png',
+    'Thunder Bombardment': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/27/Skill_Thunder_Bombardment.png',
+    'Lightning Manipulation': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e4/Skill_Lightning_Manipulation.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4758,6 +4854,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Sequence_Node_Benevolent_Guardian.png',
     s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/78/Sequence_Node_Defender_of_Peace.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Yuanwu/Combat&prop=images).
+  'Yuanwu': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/0f/Sequence_Node_Steaming_Cup_of_Justice.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/dd/Sequence_Node_Fierce_Heart%2C_Serene_Mind.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8d/Sequence_Node_Upholder_of_Integrity.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d8/Sequence_Node_Retributive_Knuckles.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/39/Sequence_Node_Neighborhood_Protector.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/67/Sequence_Node_Defender_of_All_Realms.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4816,6 +4922,8 @@ const CHAIN_NODE_NAMES = {
   'Sanhua': { s1: "Solitude's Embrace", s2: 'Snowy Clarity', s3: 'Anomalous Vision', s4: 'Blade Mastery', s5: 'Unraveling Fate', s6: 'Daybreak Radiance' },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's Taoqi/Combat Resonance Chain table.
   'Taoqi': { s1: 'Essense of Tranquility', s2: 'Silent Strength', s3: 'Keen-eyed Observer', s4: 'Heavylifting Duty', s5: 'Benevolent Guardian', s6: 'Defender of Peace' },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's Yuanwu/Combat Resonance Chain table.
+  'Yuanwu': { s1: 'Steaming Cup of Justice', s2: 'Fierce Heart, Serene Mind', s3: 'Upholder of Integrity', s4: 'Retributive Knuckles', s5: 'Neighborhood Protector', s6: 'Defender of All Realms' },
   // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
   // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
   'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },

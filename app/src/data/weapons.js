@@ -77,7 +77,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Abyss Surges': { rarity: 5, type: 'Gauntlets', stat: 'ATK%', baseAtk: 587, subStatValue: '+36.4%',
     desc: 'Standard 5★. Gauntlets surging with abyssal power. Stacking ATK buff based on energy consumed.',
-    passive: 'ATK +8% per 10 energy consumed, max 4 stacks', pv: { atkPct: 32 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao'],
+    passive: 'ATK +8% per 10 energy consumed, max 4 stacks', pv: { atkPct: 32 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu'], // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!")
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Cosmic Ripples': { rarity: 5, type: 'Rectifier', stat: 'ATK%', baseAtk: 500, subStatValue: '+53.9%',
     desc: 'Standard 5★. Rectifier resonating with cosmic ripples. Stacking Basic ATK DMG buff on hit.',
@@ -326,10 +326,10 @@ const WEAPON_DATA = {
     passive: 'Liberation → 3 Iron Armor stacks, each +3% ATK and +3% DEF (max 3 stacks, no duration; lose 1 stack on taking damage)', pv: { atkPct: 9, defPct: 9 }, bestFor: ['Gauntlet users', 'Lingyang'] },
   'Stonard': { rarity: 4, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Ceremonial gauntlets of Huanglong\'s magistrate. Liberation DMG boost after Skill.',
-    passive: 'Resonance Skill → Liberation DMG +18% for 15s', pv: { libDmg: 18 }, bestFor: ['Gauntlet DPS', 'Jianxin', 'Xiangli Yao'] },
+    passive: 'Resonance Skill → Liberation DMG +18% for 15s', pv: { libDmg: 18 }, bestFor: ['Gauntlet DPS', 'Jianxin', 'Xiangli Yao', 'Yuanwu'] }, // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this 93.03%, his best 4★ alt behind Amity Accord
   'Amity Accord': { rarity: 4, type: 'Gauntlets', stat: 'DEF%', baseAtk: 337, subStatValue: '+61.6%',
     desc: 'Rangers\' comradeship, armor against the chill of stars. Liberation DMG boost on Intro Skill.',
-    passive: 'Intro Skill → Liberation DMG +20% for 15s', pv: { libDmg: 20 }, bestFor: ['Gauntlet supports'] },
+    passive: 'Intro Skill → Liberation DMG +20% for 15s', pv: { libDmg: 20 }, bestFor: ['Gauntlet supports', 'Yuanwu'] }, // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this 100% (2nd overall, top DEF-scaler pick)
   'Novaburst': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Pistols erupting with nova-like force. Stacking ATK boost on dash/dodge.',
     passive: 'Dash/dodge → ATK +4% (max x3, 8s)', pv: { atkPct: 12 }, bestFor: ['Pistol DPS'] },
@@ -469,7 +469,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Originite: Type IV': { rarity: 3, type: 'Gauntlets', stat: 'Crit DMG', baseAtk: 300, subStatValue: '+40.4%',
     desc: 'Huaxu Academy gauntlets for technical verification. Heals on Basic ATK hit.',
-    passive: 'Rejuvenate: Basic ATK DMG → heal 0.5% Max HP (3s CD)', bestFor: ['Lingyang'],
+    passive: 'Rejuvenate: Basic ATK DMG → heal 0.5% Max HP (3s CD)', bestFor: ['Lingyang', 'Yuanwu'], // Yuanwu tag added 2026-08-18: Prydwen's dedicated Support-role weapon pick — its Basic ATK self-heal is what triggers the Rejuvenating Glow 5pc set (his actual meta build), despite low raw combat stats
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Originite: Type V': { rarity: 3, type: 'Rectifier', stat: 'HP%', baseAtk: 300, subStatValue: '+30.4%',
     desc: 'Huaxu Academy rectifier for technical verification. Heals on Intro Skill.',
