@@ -3486,18 +3486,32 @@ const RESONANCE_CHAIN_DATA = {
   // Detonate hit) plus unconditional Ice Creation auto-explode -> critDmg weighted average (was
   // basicDmg:10, no basis). S6 team ATK+10%/stack up to 2 (=20% max) for 20s after detonating an Ice
   // Prism/Glacier, not a DMG Deepen -> atkPct (was deepen:15, wrong stat).
-  'Sanhua':       { s1: { critRate: 15 }, s2: { totalMult: 5 }, s3: { totalMult: 18 }, s4: { totalMult: 35 }, s5: { critDmg: 50 }, s6: { atkPct: 20 } },
+  // Re-verified 2026-08-18 against fandom's Chain Node pages (Solitude's Embrace/Snowy Clarity/Anomalous
+  // Vision/Blade Mastery/Unraveling Fate/Daybreak Radiance wikitext, matches Prydwen's Kit tab wording):
+  // S1 critRate:15 confirmed exact (Basic Attack V, +15% Crit Rate for 10s), unchanged. S2 STA cost
+  // reduction + interruption resist on Skill cast is pure utility with no matching DPS stat, kept as a
+  // small totalMult. S3 DMG dealt +35% vs targets below 70% HP — corrected from an unsourced totalMult:18
+  // to the real value 35 (kept as totalMult since it's general damage, not attribute/skill-specific). S4
+  // Heavy ATK Detonate DMG+120% for 5s after Liberation — corrected from an unsourced totalMult:35 (no
+  // basis) to the real conditional value, now modeled as heavyDmg:120 (Detonate is a Heavy ATK, and
+  // heavyDmg is a supported stat key in this schema) rather than a vague totalMult. S5 Forte Circuit Ice
+  // Burst Crit DMG+100% (confirmed exact, conditional to that one hit) — corrected from an unsourced 50 to
+  // the real value 100. S6 team ATK+10%/stack, stacking to 2 (=20% max) for 20s (confirmed exact),
+  // unchanged.
+  'Sanhua':       { s1: { critRate: 15 }, s2: { totalMult: 5 }, s3: { totalMult: 35 }, s4: { heavyDmg: 120 }, s5: { critDmg: 100 }, s6: { atkPct: 20 } },
   'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 40 } },
-  // Danjin corrected 2026-08-18 per Prydwen's own Resonance Chain text (previous values were unsourced
-  // guesses that didn't match her kit at all): S1 ATK+5%/stack (max 6 = 30%) on Incinerating Will hits,
-  // lost on taking DMG — scaled down to half-stacks since it's a fragile stacking condition. S2 DMG dealt
-  // to Incinerating Will targets +20% (confirmed exact, modeled as totalMult since it's not attribute-
-  // specific). S3 Liberation DMG Bonus +30% (confirmed exact -> libDmg). S4 Crit Rate+15% conditional on
-  // >60 Ruby Blossom (confirmed exact, active for most of her Forte-charging window -> critRate). S5
-  // Havoc DMG Bonus +15% unconditional, +15% more (30% total) when HP<60% — since her own kit burns HP
-  // fast this condition is usually met, so using ~22 as a conditional-weighted average (confirmed exact
-  // numbers, scaled down for uptime). S6 team ATK+20% for 20s on full-power Chaoscleave (confirmed exact).
-  'Danjin':       { s1: { atkPct: 15 }, s2: { totalMult: 20 }, s3: { libDmg: 30 }, s4: { critRate: 15 }, s5: { elemDmg: 22 }, s6: { atkPct: 20 } },
+  // Danjin re-verified 2026-08-18 against fandom's Chain Node pages (Crimson Heart of Justice/Dusted
+  // Mirror/Fleeting Blossom/Solitary Carnation/Reigning Blade/Bloodied Jade wikitext, cross-checked with
+  // Prydwen's Kit tab Resonance Chain text — identical wording): S1 ATK+5% per stack on Incinerating Will
+  // hits, stacking up to 6 times (max 30%, lost 1 stack per hit taken) — corrected from an unsourced flat
+  // 15% to the real max-stack value 30% (matches this table's convention of using max-stack totals
+  // elsewhere, e.g. Chixia S5). S2 DMG dealt to Incinerating Will targets +20% (confirmed exact, kept as
+  // totalMult since it's not attribute-specific). S3 Liberation DMG Bonus +30% (confirmed exact -> libDmg,
+  // unchanged). S4 Crit Rate+15% while above 60 Ruby Blossom (confirmed exact -> critRate, unchanged). S5
+  // Havoc DMG Bonus +15% unconditional (+15% more, 30% total, only when HP<60%) — corrected from an
+  // unsourced 22 to the real unconditional base value 15; the extra conditional +15% isn't separately
+  // modeled. S6 team ATK+20% for 20s on full-power Chaoscleave (confirmed exact, unchanged).
+  'Danjin':       { s1: { atkPct: 30 }, s2: { totalMult: 20 }, s3: { libDmg: 30 }, s4: { critRate: 15 }, s5: { elemDmg: 15 }, s6: { atkPct: 20 } },
   // Chisa S1: ATK+30% on Unseen Snare (not defShred, confirmed exact). S2: team +50% All-Attr DMG for allies with
   // Thread of Bane (was deepen:10, wrong stat+value — real 10% Havoc RES ignore is the smaller of two S2 effects).
   // S4: improves Havoc Bane trigger rate (utility). S5: Moment of Nihility Liberation DMG Mult+100% (was totalMult:10,
@@ -3568,6 +3582,9 @@ const RESONANCE_CHAIN_DATA = {
   // S4: Mid-Air Feather Release DMG+95% (was totalMult:8, far too low).
   // S5: Resonance Liberation Wind Spirals DMG+85% (was atkPct:8, no basis).
   // S6: team-wide ATK+20% for 20s after casting Feather Release (was elemDmg:10, no basis).
+  // Re-verified 2026-08-18 against fandom's Chain Node pages (Sapphire Skies/Nesting Twigs/Nature Sings/
+  // Close Your Eyes/Winds Whisper/A Tribute to Life's Sweet Hymn wikitext) — all 6 values above confirmed
+  // exact against the real node text, no changes needed.
   'Yangyang':     { s1: { elemDmg: 15 }, s2: { totalMult: 5 }, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
   'Youhu':        { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
   'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },

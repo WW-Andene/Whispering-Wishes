@@ -294,7 +294,9 @@ const WEAPON_DATA = {
     // Energy Regen option for her when she has Energy issues.
     // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #5 weapon (84.52%), a great F2P
     // 4★ option when her Energy is short.
-    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli', 'Yangyang', 'Sanhua'] },
+    // 'Danjin' added 2026-08-18 (Danjin/Yangyang/Sanhua re-audit): Prydwen's Build tab ranks this her
+    // #5 weapon (80.72%) — her weaponAlts already pointed at it but bestFor was missing the tag.
+    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli', 'Yangyang', 'Sanhua', 'Danjin'] },
   'Waning Redshift': { rarity: 4, type: 'Broadblade', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s fading radiance across billions of light-years. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi'] },
