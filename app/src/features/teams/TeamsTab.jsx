@@ -102,6 +102,10 @@ function TeamsTab({
       if (mainDps) {
         score += Math.min(25, Math.round((CHARACTER_DATA[mainDps]?.totalMult || 0) / 120));
         const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
+        const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
+        // An elemDmg buff only helps this DPS if its condition (when present) actually names their
+        // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
+        const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
         members.forEach(m => {
           if (m === mainDps) return;
           const bt = CHAR_BUFF_TABLE[m]; if (!bt) return;
@@ -111,12 +115,21 @@ function TeamsTab({
             else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) { score += 10; tags.push('Heavy Amp'); }
             else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) { score += 10; tags.push('Echo Amp'); }
             else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) score += 8;
-            else if (b.stat === 'elemDmg') score += 6;
+            else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
+          });
+          // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports) were
+          // previously invisible to scoring entirely, undervaluing teams built around them.
+          (bt.libBuffs || []).forEach(b => {
+            if (b.target !== 'team' && b.target !== 'next') return;
+            if (b.stat === 'atkPct' || b.stat === 'critRate' || b.stat === 'critDmg') score += 6;
+            else if (b.stat === 'allDmg' || b.stat === 'deepen') score += 8;
+            else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
+            else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) score += 6;
           });
           (bt.debuffs || []).forEach(db => {
             if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
-            if (db.stat === 'frazzle') tags.push('Frazzle');
-            if (db.stat === 'erosion') tags.push('Erosion');
+            if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
+            if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
           });
         });
       }
