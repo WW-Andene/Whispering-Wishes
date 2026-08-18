@@ -734,6 +734,21 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Voidwing Moth': 'https://i.ibb.co/mCw6NvMt/Voidwing-Moth.webp',
   "Pilgrim's Shell": 'https://i.ibb.co/4ZHwcHT6/Pilgrims-Shell.webp',
   "Devotee's Flesh": 'https://i.ibb.co/DHRkbQg2/Devotees-Flesh.webp',
+  // v3.5 — added 2026-08-18 (echo audit): 13 echoes missing from the roster entirely, icons re-hosted
+  // from wutheringwaves.fandom.com, matching echoes.js's iconUrl for each.
+  'Smiter': 'https://i.ibb.co/JWvmx2xC/Smiter.webp',
+  'Porcelain Picket': 'https://i.ibb.co/jP0xbjv8/Porcelain-Picket.webp',
+  'Stone Picket': 'https://i.ibb.co/WvnyB258/Stone-Picket.webp',
+  'Aureate Picket': 'https://i.ibb.co/zTK3cyrf/Aureate-Picket.webp',
+  'Kernel Puppet: Joy': 'https://i.ibb.co/nNh2QrRp/Kernel-Puppet-Joy.webp',
+  'Kernel Puppet: Anger': 'https://i.ibb.co/TxczQftT/Kernel-Puppet-Anger.webp',
+  'Kernel Puppet: Worry': 'https://i.ibb.co/XrGXPtfJ/Kernel-Puppet-Worry.webp',
+  'Kernel Puppet: Reflection': 'https://i.ibb.co/5xYH8fVC/Kernel-Puppet-Reflection.webp',
+  'Kernel Puppet: Grief': 'https://i.ibb.co/RkwnCxWx/Kernel-Puppet-Grief.webp',
+  'Kernel Puppet: Fright': 'https://i.ibb.co/BHK35m0C/Kernel-Puppet-Fright.webp',
+  'Fog Lionarch: Body': 'https://i.ibb.co/F4bswKCP/Fog-Lionarch-Body.webp',
+  'Fog Lionarch: Head': 'https://i.ibb.co/YJfBqQX/Fog-Lionarch-Head.webp',
+  'Smolder': 'https://i.ibb.co/QFv1pCd2/Smolder.webp',
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
