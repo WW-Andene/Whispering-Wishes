@@ -37,8 +37,11 @@ export default function RotationTimeline({ rotationTimeline }) {
     if (buff.duration > 0) rows.push({ label: buff.source, owner: ownerName, start: buff.start, duration: buff.duration, color, type: 'buff', buffKind: isEcho ? 'echo' : 'char', detail: `${prefix}${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
 
-  // timeScale = furthest end of any bar
-  const maxEnd = Math.max(totalTime, ...rows.map(r => r.start + r.duration));
+  // timeScale = the rotation length itself, not the furthest end of any bar — a buff bar that
+  // outlasts the rotation (or carries a bad/sentinel duration) must never stretch the whole chart's
+  // scale, or it silently squashes every real on-field segment into an unreadable sliver. Buff bars
+  // are clamped to the visible width when rendered below instead.
+  const maxEnd = Math.max(totalTime, ...rows.filter(r => r.type === 'field').map(r => r.start + r.duration));
 
   // Group: each on-field segment followed by its buffs
   const ordered = [];
@@ -68,8 +71,10 @@ export default function RotationTimeline({ rotationTimeline }) {
         {/* All percentage-based — no fixed width, no scroll, fits any container */}
         <div style={{ position: 'relative' }}>
           {ordered.map((row, i) => {
-            const leftPct = (row.start / maxEnd) * 100;
-            const widthPct = (row.duration / maxEnd) * 100;
+            const leftPct = Math.min((row.start / maxEnd) * 100, 100);
+            // Clamp so a buff outlasting the rotation window is drawn flush to the right edge
+            // instead of overflowing the card and forcing horizontal scroll.
+            const widthPct = Math.min((row.duration / maxEnd) * 100, 100 - leftPct);
             const isField = row.type === 'field';
             const isEcho = row.buffKind === 'echo';
             return (

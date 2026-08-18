@@ -986,11 +986,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
             }
           });
+          // CHAR_BUFF_TABLE uses duration: 99 or 999 as sentinels for "conditional passive, no
+          // natural decay" (e.g. a Crit DMG bonus active in a stance, or on a periodic proc) — never
+          // a literal 99/999-second timer. The real durations used anywhere in the table top out at
+          // 30s, so >=90 is an unambiguous sentinel check. Rendered literally these blew the whole
+          // chart's time scale out to ~100-1000s, squashing every real segment/buff into an
+          // unreadable sliver. Since these are self-target and only matter while the character is
+          // actually dealing damage, the correct display window is their own on-field time, same as
+          // the default for an unspecified duration.
           (bt.selfBuffs || []).forEach(b => {
-            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
           });
           (bt.weaponBuffs || []).forEach(b => {
-            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || onField });
+            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
           });
         }
 
@@ -1850,16 +1860,23 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           <CardBody>
             <ol className="space-y-2">
               {rotationTimeline.steps.map(step => (
-                <li key={step.order} className="flex gap-2">
-                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
-                  <div className="min-w-0">
+                <li key={step.order} className={`p-2.5 rounded-lg border flex gap-2.5 ${step.isDps ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-[var(--border-medium)]'}`} style={step.isDps ? undefined : { background: 'var(--bg-stat)' }}>
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold mt-0.5 ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
+                  <div className="min-w-0 flex-1">
                     <div className="text-sm">
                       <span className={`font-semibold ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>
-                      <span className="text-gray-500"> — on-field {step.duration}s</span>
+                      <span className="text-gray-500"> plays on-field for {step.duration}s</span>
                     </div>
-                    <div className="text-sm text-gray-500">{step.reason}</div>
+                    <div className="text-sm text-gray-500 mt-0.5">{step.reason}</div>
                     {step.buffsGiven.length > 0 && (
-                      <div className="text-sm text-emerald-400/80 mt-0.5">{step.buffsGiven.join(', ')}</div>
+                      <div className="mt-1.5">
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Grants</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.buffsGiven.map((b, bi) => (
+                            <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </li>
