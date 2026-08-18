@@ -936,7 +936,12 @@ const CHARACTER_DATA = {
   ['Camellya',      ['Basic ATK', 'Skill'],          [],                                      []],
   ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
   ['Brant',         ['Basic ATK', 'Skill'],          ['Self-heal'],                           []],
-  ['Zani',          ['Skill', 'Heavy ATK'],          [],                                      ['Frazzle']],
+  // dmgFocus corrected 2026-08-18: 'Skill' had no basis as a primary focus — Zani's Forte/Resonance Skill
+  // is mainly used to build Redundant Energy/convert Frazzle stacks into Heliacal Ember, while her actual
+  // rotation damage comes from Heavy Slash combos (Heavy ATK, scaled further by her Inferno Mode +40%
+  // Heavy Slash multiplier) and her Resonance Liberation Rekindle (+120% multiplier), which build guides
+  // note she "needs to deal most of her damage."
+  ['Zani',          ['Heavy ATK', 'Liberation'],     [],                                      ['Frazzle']],
   ['Cartethyia',    ['Basic ATK'],                   [],                                      ['Erosion']],
   ['Phrolova',      ['Echo', 'Skill'],               [],                                      []],
   ['Augusta',       ['Heavy ATK', 'Liberation'],     ['Shield'],                              []],
@@ -949,7 +954,11 @@ const CHARACTER_DATA = {
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
   ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
-  ['Lucy',          ['Heavy ATK', 'Liberation'],     [],                                      ['Hack - Shifting']],
+  // dmgFocus corrected 2026-08-18: 'Liberation' had no basis as a second focus — a tested personal-damage
+  // breakdown (game8) shows Lucy's rotation is 77.70% Heavy ATK DMG with Tune Break at 17.10% and her
+  // Resonance Liberation (Netrunner) in "low single digits"; Liberation replaced with a second 'Heavy ATK'-
+  // adjacent focus removed entirely since no other listed dmgFocus term reflects Tune Break DMG.
+  ['Lucy',          ['Heavy ATK'],                   [],                                      ['Hack - Shifting']],
   // 5★ Sub DPS
   ['Rover: Spectro', ['Skill', 'Liberation'],        [],                                      ['Frazzle']],
   ['Rover: Havoc',   ['Heavy ATK', 'Basic ATK'],     ['Crit Rate Buff'],                      ['Havoc RES Shred']],
@@ -1133,7 +1142,11 @@ const CHARACTER_DATA = {
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
-  ['Sigrika',       2800, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
+  // totalMult corrected 2026-08-18: 2800 was lower than several T1.5/T2 units (Jinhsi 3200, Camellya
+  // 3100, Carlotta 3400) despite Sigrika being ranked T0 DPS by Prydwen/game8/driffle tier lists and
+  // explicitly called "arguably the strongest DPS" and "an insane ToA/Matrix DPS" by Prydwen's own
+  // review — raised to 3500 to sit alongside the other T0 Main DPS (Yangyang: Xuanling 3600, Hiyuki 3400).
+  ['Sigrika',       3500, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
   ['Qingxiao',      2900, 24, 17],  // Stance-builder into Ephemeral Transcendence burst
   ['Jingran',       3000, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment
   ["Yangyang: Xuanling", 3600, 23, 18],  // Azure/Feather stance swap, Havoc Bane self-buff — T0/T0 ceiling
