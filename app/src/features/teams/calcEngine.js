@@ -592,8 +592,9 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
 // Resonator swaps in next. Chaining modules end-to-end in team order, and wrapping the last member's
 // handoff back to the first, turns those N solo modules into a single loop: swap through the whole
 // team once, land back on member 1 with their buffs cycled back around, repeat indefinitely. This is
-// what makes any 2-4 character selection "just work" as a team rotation — the module boundary (Outro
-// buff → next Intro) is the actual interface, not anything team-comp-specific.
+// what makes any 1-3 character selection "just work" as a team rotation (teams in this game — and in
+// state.teams' fixed 3-slot arrays — max out at 3 members) — the module boundary (Outro buff → next
+// Intro) is the actual interface, not anything team-comp-specific.
 export function composeTeamRotation(members) {
   const modules = (members || []).filter(Boolean).map(name => {
     const rotationSteps = CHARACTER_ROTATIONS[name];
