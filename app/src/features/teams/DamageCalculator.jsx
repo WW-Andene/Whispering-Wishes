@@ -235,7 +235,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     // ── Main DPS echo skill buffs (self buffs from their own 4-cost echo) ──
     if (mainDps.mainEchoName) {
       const mainEsb = ECHO_SKILL_BUFFS[mainDps.mainEchoName];
-      if (mainEsb && (mainEsb.target || 'self') === 'self') {
+      if (mainEsb && (mainEsb.target || 'self') === 'self' && (!mainEsb.condition || mainDps.name.includes(mainEsb.condition))) {
         const esbUp = mainEsb.passive ? 1 : Math.min(1, (mainEsb.duration || 15) / rotTime);
         mainEsb.buffs.forEach(b => {
           const val = b.value * esbUp;
@@ -386,7 +386,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         if (esb) {
           const target = esb.target || 'self';
           const esbUptime = esb.passive ? 1 : Math.min(1, (esb.duration || 15) / rotTime);
-          if (target === 'team' || target === 'next') {
+          if ((target === 'team' || target === 'next') && (!esb.condition || m.name.includes(esb.condition))) {
             esb.buffs.forEach(b => {
               const val = b.value * esbUptime;
               if (b.stat === 'allDmg') elemDmg += val;
@@ -928,11 +928,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             if (target === 'next') {
               // Outro-triggered echo buff → fires when character swaps out, applies to next
               esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
                 buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo' });
               });
             } else if (target === 'team') {
               // Team-wide buff → active during field time, persists for duration
               esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
                 buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: esb.duration || 15, type: 'echo' });
               });
             } else if (esb.passive) {
@@ -944,6 +946,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             } else {
               // Standard active skill buff → used during field time
               esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
                 buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo' });
               });
             }
