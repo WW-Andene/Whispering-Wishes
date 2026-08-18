@@ -86,24 +86,27 @@ export function parsePassive(passive, element) {
   const r = { atkPct: 0, elemDmg: 0, skillDmg: 0, critRate: 0, critDmg: 0, defIgnore: 0, resShred: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0, hpPct: 0, defPct: 0 };
   if (!passive) { _cacheSet(cacheKey, r); return r; }
   const p = passive.toLowerCase();
-  const atkMatch = p.match(/atk\s*\+(\d+)%/);         if (atkMatch) r.atkPct += parseInt(atkMatch[1], 10);
+  const N = '(\\d+(?:\\.\\d+)?)'; // number, with optional decimal — passive text uses both "ATK +7.2%" and "+12%"
+  // ATK% appears in both word orders across weapon text ("ATK +X%" and "+X% ATK") — try both.
+  const atkMatch = p.match(new RegExp('atk\\s*\\+' + N + '%')) || p.match(new RegExp('\\+' + N + '%\\s*atk\\b'));
+  if (atkMatch) r.atkPct += parseFloat(atkMatch[1]);
   if (element) {
     const elLow = element.toLowerCase();
-    const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?(\\d+)%'));
-    if (elMatch) r.elemDmg += parseInt(elMatch[1], 10);
-    const attrMatch = p.match(/(?:all[- ])?attr(?:ibute)?\s*dmg\s*(?:bonus\s*)?\+?(\d+)%/);
-    if (attrMatch) r.elemDmg += parseInt(attrMatch[1], 10);
+    const elMatch = p.match(new RegExp(elLow + '\\s*dmg\\s*\\+?' + N + '%'));
+    if (elMatch) r.elemDmg += parseFloat(elMatch[1]);
+    const attrMatch = p.match(new RegExp('(?:all[- ])?attr(?:ibute)?\\s*dmg\\s*(?:bonus\\s*)?\\+?' + N + '%'));
+    if (attrMatch) r.elemDmg += parseFloat(attrMatch[1]);
   }
-  const skillMatch = p.match(/(?:res(?:onance)?\.?\s*)?skill\s*dmg\s*\+?(\d+)%/);   if (skillMatch) r.skillDmg += parseInt(skillMatch[1], 10);
-  const libMatch = p.match(/(?:res(?:onance)?\.?\s*)?liberation\s*(?:dmg\s*)?\+?(\d+)%/); if (libMatch) r.libDmg += parseInt(libMatch[1], 10);
-  const basicMatch = p.match(/basic\s*(?:atk?\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);     if (basicMatch) r.basicDmg += parseInt(basicMatch[1], 10);
-  const heavyMatch = p.match(/heavy\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/);           if (heavyMatch) r.heavyDmg += parseInt(heavyMatch[1], 10);
-  const coordMatch = p.match(/coord(?:inated)?\s*(?:atk?\s*)?(?:dmg\s*)?\+?(\d+)%/); if (coordMatch) r.coordDmg += parseInt(coordMatch[1], 10);
-  const echoMatch = p.match(/echo\s*(?:skill\s*)?dmg\s*(?:amp\s*)?\+?(\d+)%/);      if (echoMatch) r.echoDmg += parseInt(echoMatch[1], 10);
-  const crMatch = p.match(/crit\s*rate\s*\+?(\d+)%/);                                if (crMatch) r.critRate += parseInt(crMatch[1], 10);
-  const cdMatch = p.match(/crit\s*dmg\s*\+?(\d+)%/);                                 if (cdMatch) r.critDmg += parseInt(cdMatch[1], 10);
-  const defMatch = p.match(/def\s*ignore\s*\+?(\d+)%/);                              if (defMatch) r.defIgnore += parseInt(defMatch[1], 10);
-  const resMatch = p.match(/res\s*(?:ignore\s*)?\-(\d+)%/);                           if (resMatch) r.resShred += parseInt(resMatch[1], 10);
+  const skillMatch = p.match(new RegExp('(?:res(?:onance)?\\.?\\s*)?skill\\s*dmg\\s*\\+?' + N + '%'));   if (skillMatch) r.skillDmg += parseFloat(skillMatch[1]);
+  const libMatch = p.match(new RegExp('(?:res(?:onance)?\\.?\\s*)?liberation\\s*(?:dmg\\s*)?\\+?' + N + '%')); if (libMatch) r.libDmg += parseFloat(libMatch[1]);
+  const basicMatch = p.match(new RegExp('basic\\s*(?:atk?\\s*)?dmg\\s*(?:amp\\s*)?\\+?' + N + '%'));     if (basicMatch) r.basicDmg += parseFloat(basicMatch[1]);
+  const heavyMatch = p.match(new RegExp('heavy\\s*(?:atk?\\s*)?(?:dmg\\s*)?\\+?' + N + '%'));           if (heavyMatch) r.heavyDmg += parseFloat(heavyMatch[1]);
+  const coordMatch = p.match(new RegExp('coord(?:inated)?\\s*(?:atk?\\s*)?(?:dmg\\s*)?\\+?' + N + '%')); if (coordMatch) r.coordDmg += parseFloat(coordMatch[1]);
+  const echoMatch = p.match(new RegExp('echo\\s*(?:skill\\s*)?dmg\\s*(?:amp\\s*)?\\+?' + N + '%'));      if (echoMatch) r.echoDmg += parseFloat(echoMatch[1]);
+  const crMatch = p.match(new RegExp('crit\\s*rate\\s*\\+?' + N + '%'));                                if (crMatch) r.critRate += parseFloat(crMatch[1]);
+  const cdMatch = p.match(new RegExp('crit\\s*dmg\\s*\\+?' + N + '%'));                                 if (cdMatch) r.critDmg += parseFloat(cdMatch[1]);
+  const defMatch = p.match(new RegExp('def\\s*ignore\\s*\\+?' + N + '%'));                              if (defMatch) r.defIgnore += parseFloat(defMatch[1]);
+  const resMatch = p.match(new RegExp('res\\s*(?:ignore\\s*)?\\-' + N + '%'));                           if (resMatch) r.resShred += parseFloat(resMatch[1]);
   _cacheSet(cacheKey, r);
   return r;
 }
