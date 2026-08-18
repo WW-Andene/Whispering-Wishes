@@ -740,13 +740,28 @@ const CHARACTER_DATA = {
     // Endless Collapse (80.72%) as top 4★s, Originite: Type II as the 3★ craftable option.
     weaponAlts: { alt5: ['Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Originite: Type II'] },
     teams: ['Danjin + Camellya + Shorekeeper', 'Danjin + Camellya + Verina', 'Danjin + Cantarella + Verina', 'Danjin + Phrolova + Cantarella'] },
+  // Audited 2026-08-18 via wutheringwaves.fandom.com (infobox/MediaWiki API) + prydwen.gg Kit/Build/
+  // Gameplay tabs. desc: fandom infobox `role` field is "Concerto Efficiency;Traction;Resonance
+  // Liberation Regeneration"; Prydwen frames her as a fully quickswap-friendly Hybrid whose Outro
+  // funnels Resonance Energy to the incoming character and whose Forte/Resonance Skill both group
+  // enemies — expanded desc below to cover both. bestEchoes corrected: 'Bell-Borne Geochelone' isn't
+  // mentioned anywhere on her current Prydwen Build tab (stale/unsourced) — replaced with Prydwen's
+  // actual top picks: Moonlit Clouds 5pc (support/quickswap build, paired with Impermanence Heron as
+  // Main Echo) and Sierra Gale 5pc (damage-focused build, paired with Nightmare: Feilian Beringal).
+  // teams corrected: Jiyan/Baizhi don't appear in her current Prydwen Synergies list at all — replaced
+  // with her current top picks (Xiangli Yao/Changli quickswap hypercarry teams, Verina/Shorekeeper as
+  // healing support). bestWeapon Emerald of Genesis confirmed (Prydwen's top non-signature 5★, 100%
+  // baseline); Blazing Brilliance (Changli's sig, 102%) scores marginally higher but is a limited sig
+  // weapon, so the widely-obtainable standard 5★ is kept as the primary recommendation (see
+  // weaponAlts below for the full spread).
   'Yangyang': { rarity: 4, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'Cheerful Midnight Rangers outrider who rides the wind. Aero sub-DPS who generates Resonance Energy for the team via Resonance Skill and groups enemies with her Liberation.',
+    desc: 'Free Midnight Rangers outrider, Concerto Efficiency/Traction/Liberation Regen Hybrid. Aero sub-DPS who groups enemies via Resonance Skill and Liberation, builds up to 3 Melody stacks for a mid-air Feather Release burst, and funnels Resonance Energy to the next character via her Outro — one of the fastest, most quickswap-friendly rotations in the game.',
     skills: ['Feather as Blade', 'Zephyr Domain', 'Wind Spirals', 'Echoing Feathers'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Ring', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 5pc'], bestWeapon: 'Emerald of Genesis',
-    teams: ['Yangyang + Jiyan + Baizhi', 'Yangyang + Jiyan + Verina'] },
+    bestEchoes: ['Moonlit Clouds 5pc', 'Sierra Gale 5pc'], bestWeapon: 'Emerald of Genesis',
+    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    teams: ['Yangyang + Xiangli Yao + Shorekeeper', 'Yangyang + Changli + Verina', 'Yangyang + Carlotta + Verina'] },
   'Sanhua': { rarity: 4, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Jinhsi\'s stoic personal guard, cold as the frost she commands. Quick-swap Glacio sub-DPS who deals burst Glacio DMG and amplifies the next character\'s Basic ATK DMG via Outro.',
     skills: ['Frigid Light', 'Eternal Frost', 'Glacial Gaze', 'Clarity of Mind'],
@@ -948,7 +963,8 @@ const CHARACTER_DATA = {
   // corrected 2026-08-18: HP/ATK/DEF were slightly off (9437/262/1148) vs Prydwen's exact Lv.90 stat
   // screen (9438/263/1149) — Energy already matched.
   ['Danjin',        9438,  263, 1149, 100],
-  ['Yangyang',      10200, 250, 1099, 100],
+  // corrected 2026-08-18: DEF was 1099 vs Prydwen's exact Lv.90 stat screen 1100 (HP/ATK/Energy already matched).
+  ['Yangyang',      10200, 250, 1100, 100],
   ['Sanhua',        10062, 275, 941,  100],
   ['Taoqi',         8950,  225, 1564, 125],
   ['Yuanwu',        8525,  225, 1637, 125],
@@ -1397,6 +1413,13 @@ const CHARACTER_DATA = {
   // now-inactive affiliation4 'Midnight Rangers' ("formerly"); no dedicated emblem exists for Xuan
   // Triad on the wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as
   // the Jinzhou/Mingting precedent.
+  // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Yangyang&prop=wikitext&section=0).
+  // birthplace/nation both Huanglong (REGION_DATA above, matches Xuanling's own entry — the two are
+  // sisters). organization uses affiliation2 'Midnight Rangers' (matching her own `desc`'s "Midnight
+  // Rangers outrider" and Prydwen's own framing) over the primary affiliation 'Jinzhou', same
+  // affiliation-choice convention as Jiyan/Yangyang: Xuanling above. VAs cross-checked against
+  // Prydwen's Kit tab Voice Actors panel (Rebecca Yeo/Yui Ishikawa/Chong Chong/Lee Yu-ri) — exact match.
+  ['Yangyang', 'Breath of Winds', 'Huanglong', 'Midnight Rangers', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
   ['Yangyang: Xuanling', 'Voices of Azure Plume', 'Huanglong', 'Xuan Triad', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
   // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
   // page=Suisui&prop=wikitext&section=0). birthplace/nation both Huanglong (REGION_DATA above).
@@ -1885,12 +1908,17 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 15% Deepen. Coordinated ATK. Shield.',
   },
+  // Corrected 2026-08-18 via Prydwen's Kit tab. Outro: Whispering Breeze funnels 4 Resonance
+  // Energy/s for 5s (20 total) to the next character on swap — an Energy-funnel effect, not a DMG/stat
+  // buff, so it's not modeled as an outroBuff entry (no matching stat exists in this schema). S1
+  // Intro self Aero DMG+15% (8s) and S6 team ATK+20% (20s, after Feather Release) both require Sequence
+  // copies and are surfaced via RESONANCE_CHAIN_DATA above rather than duplicated here at S0.
   'Yangyang': {
     outroBuffs: [],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Energy Regen support. Minimal direct DMG contribution.',
+    note: 'Outro (Whispering Breeze) funnels 4 Energy/s for 5s to the incoming character — no direct DMG buff at S0. Minimal personal DMG contribution; value comes from Energy generation and quickswap-friendliness (buffs unlocked at higher Sequences).',
   },
   'Buling': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 14 }],
@@ -3390,7 +3418,15 @@ const RESONANCE_CHAIN_DATA = {
   'Chixia':       { s1: { atkPct: 8 }, s2: { skillDmg: 10 }, s3: { atkPct: 8 }, s4: { skillDmg: 10 }, s5: { totalMult: 10 }, s6: { elemDmg: 12 } },
   'Lumi':         { s1: { skillDmg: 10 }, s2: { totalMult: 10 }, s3: { skillDmg: 10 }, s4: { atkPct: 10 }, s5: { totalMult: 10 }, s6: { skillDmg: 15 } },
   'Taoqi':        { s1: { defShred: 5 }, s2: { deepen: 5 }, s3: { defShred: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { defShred: 8 } },
-  'Yangyang':     { s1: { atkPct: 5 }, s2: { totalMult: 8 }, s3: { atkPct: 5 }, s4: { totalMult: 8 }, s5: { atkPct: 8 }, s6: { elemDmg: 10 } },
+  // Corrected 2026-08-18 via Prydwen's Kit tab (Resonance Chain/Sequence Node text, exact wording).
+  // S1: Intro Cerulean Song grants an additional +15% Aero DMG Bonus for 8s (was atkPct:5, no basis).
+  // S2: Heavy Attack recovers +10 Resonance Energy on hit, 1x/20s — energy utility, no direct DMG stat
+  // exists in this schema, modeled as totalMult like other utility S2 nodes (was totalMult:8, kept).
+  // S3: Resonance Skill Zephyr Domain DMG+40% + pulling range+33% (was atkPct:5, no basis).
+  // S4: Mid-Air Feather Release DMG+95% (was totalMult:8, far too low).
+  // S5: Resonance Liberation Wind Spirals DMG+85% (was atkPct:8, no basis).
+  // S6: team-wide ATK+20% for 20s after casting Feather Release (was elemDmg:10, no basis).
+  'Yangyang':     { s1: { elemDmg: 15 }, s2: { totalMult: 5 }, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
   'Youhu':        { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
   'Yuanwu':       { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { totalMult: 8 }, s6: { deepen: 10 } },
 };
@@ -4443,6 +4479,11 @@ const CHAIN_NODE_NAMES = {
   'Rebecca': { s1: 'Try Not to Get in the Way!', s2: 'Oh, Hey Choom!', s3: "Don't Sweat Your Six!", s4: 'Got Ya Covered!', s5: 'Dreamin\' on the Edge', s6: 'Maybe, Just Maybe...' },
   'Lucilla': { s1: 'Distant Noon', s2: 'Slumbering Moonlight', s3: 'Days Fade Unheard', s4: 'The Past Fades Into Silence', s5: 'Time is Like a Stream', s6: 'Gazing In the Mist of Time' },
   'Yangyang: Xuanling': { s1: "At the Wind's Breath, the Blossoms Wake", s2: 'River Carries Her Song Away', s3: 'My Grief Follows You into the Clouds', s4: 'Across the Miles, a Letter and My Longing', s5: 'Take Wing. Take Wing.', s6: 'Let the Azure Keep Its Light' },
+  // Yangyang (4★): Prydwen's Kit tab labels her Resonance Chain nodes generically as "Sequence Node
+  // 1"–"Sequence Node 6" rather than giving unique flavor names (unlike most characters) — fandom's own
+  // wiki likewise has no distinct chain node names for her. Using the generic labels rather than
+  // inventing names.
+  'Yangyang': { s1: 'Sequence Node 1', s2: 'Sequence Node 2', s3: 'Sequence Node 3', s4: 'Sequence Node 4', s5: 'Sequence Node 5', s6: 'Sequence Node 6' },
   'Suisui': { s1: 'Mountains Washed Into Paintings', s2: 'Clouds Pour Like Molten Gold', s3: 'Sparse Curtains Invite Evening Glow', s4: 'Autumn Mountains in Choir Sing', s5: 'I Long To Ride The Eastern Wind', s6: 'Staying True To This Splendid Realm' },
   // Qingxiao's node names confirmed 2026-08-18 via ww.nanoka.cc's pre-release datamine (character/1413)
   // — icons NOT populated in CHAIN_NODE_ICONS above: fandom has no Sequence Node assets uploaded yet

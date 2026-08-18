@@ -89,7 +89,10 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   'Blazing Brilliance': { rarity: 5, type: 'Sword', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: 'Changli signature. Sword ablaze with undying brilliance. Boosts Fusion and Resonance Skill DMG.',
-    passive: 'Fusion DMG +12%, Resonance Skill +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Changli', 'Rover'],
+    // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon (102.39%) despite being
+    // Changli's signature — usable on any Sword user with heavy Resonance Skill DMG, listed as her
+    // primary alt5 alongside the more widely-obtainable standard Emerald of Genesis (bestWeapon).
+    passive: 'Fusion DMG +12%, Resonance Skill +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Changli', 'Rover', 'Yangyang'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Rime-Draped Sprouts': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
     desc: 'Zhezhi signature. Frost-kissed sprouts that bloom in stillness. Boosts off-field and Glacio DMG.',
@@ -275,13 +278,16 @@ const WEAPON_DATA = {
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS'] },
   'Endless Collapse': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'The collapsing heart of a dying blazar. Skill grants Resonance Energy and ATK buff.',
-    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli'] },
+    // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (82.82%), a good F2P
+    // Energy Regen option for her when she has Energy issues.
+    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli', 'Yangyang'] },
   'Waning Redshift': { rarity: 4, type: 'Broadblade', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s fading radiance across billions of light-years. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi'] },
   'Lumingloss': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Luminous sword with a glossy ceremonial edge. Basic and Heavy ATK DMG boost after Skill.',
-    passive: 'Resonance Skill → Basic & Heavy ATK DMG +20% for 10s (1 stack max, 1s trigger interval)', pv: { basicDmg: 20, heavyDmg: 20 }, bestFor: ['Sword DPS', 'Changli'] },
+    // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #3 weapon / top 4★ (82.96%).
+    passive: 'Resonance Skill → Basic & Heavy ATK DMG +20% for 10s (1 stack max, 1s trigger interval)', pv: { basicDmg: 20, heavyDmg: 20 }, bestFor: ['Sword DPS', 'Changli', 'Yangyang'] },
   'Commando of Conviction': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Spirits unite in resounding gorges of valor. ATK boost on Intro Skill.',
     // 'Danjin' added 2026-08-18: Prydwen ranks this her #4 weapon overall (81.08%), a top F2P Sword pick.
