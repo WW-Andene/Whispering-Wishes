@@ -11,13 +11,14 @@ import { getElementIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { getEnemyStatsAtLevel } from '../../data/echoes.js';
 
-const ELEMENT_ORDER = ['glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'];
-const ELEMENT_LABEL = { glacio: 'Glacio', fusion: 'Fusion', electro: 'Electro', aero: 'Aero', spectro: 'Spectro', havoc: 'Havoc' };
+const ELEMENT_ORDER = ['physical', 'glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'];
+const ELEMENT_LABEL = { physical: 'Physical', glacio: 'Glacio', fusion: 'Fusion', electro: 'Electro', aero: 'Aero', spectro: 'Spectro', havoc: 'Havoc' };
+const BASELINE_RES = 10; // every tracked boss's flat non-signature-element RES — see echoes.js
 
 function resBadgeClass(val) {
-  if (val > 0) return 'kuro-badge-red';   // higher enemy RES = worse for the player, flag it
-  if (val < 0) return 'kuro-badge-emerald'; // negative RES = weakness, good for the player
-  return 'kuro-badge-amber';
+  if (val > BASELINE_RES) return 'kuro-badge-red';    // boosted RES on this element = worse for the player, flag it
+  if (val < BASELINE_RES) return 'kuro-badge-emerald'; // below baseline = weakness, good for the player
+  return 'kuro-badge-amber';                           // flat baseline, nothing notable
 }
 
 function StatRow({ icon, label, value }) {
@@ -57,6 +58,8 @@ export default function MonsterCard({
   const hp = scaled ? scaled.hp : enemyStats?.hp;
   const atk = scaled ? scaled.atk : enemyStats?.atk;
   const def = scaled ? scaled.def : enemyStats?.def;
+  const stunDmg = scaled ? scaled.stunDmg : enemyStats?.stunDmg;
+  const toughnessDmg = scaled ? scaled.toughnessDmg : enemyStats?.toughnessDmg;
   const res = enemyStats?.res || {};
   const hasResData = Object.values(res).some(v => v);
   const Wrapper = onClick ? 'button' : 'div';
@@ -100,21 +103,24 @@ export default function MonsterCard({
         </div>
       </div>
 
-      {enemyStats && (hp || atk || def) && (
+      {enemyStats && (hp || atk || def || stunDmg || toughnessDmg) && (
         <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]">
           <StatRow icon={getStatIcon('HP')} label="HP" value={hp} />
           <StatRow icon={getStatIcon('ATK')} label="ATK" value={atk} />
           <StatRow icon={getStatIcon('DEF')} label="DEF" value={def} />
+          <StatRow icon={getStatIcon('Stun DMG')} label="Stun DMG" value={stunDmg} />
+          <StatRow icon={getStatIcon('Toughness DMG')} label="Toughness DMG" value={toughnessDmg} />
         </div>
       )}
 
       <div className="mt-2 pt-2 border-t border-[var(--border-subtle)] flex flex-wrap gap-1">
-        {hasResData ? ELEMENT_ORDER.filter(el => res[el]).map(el => {
+        {hasResData ? ELEMENT_ORDER.map(el => {
           const icon = getElementIcon(ELEMENT_LABEL[el]);
+          const val = res[el] ?? BASELINE_RES;
           return (
-            <span key={el} className={`kuro-badge ${resBadgeClass(res[el])} inline-flex items-center gap-1`}>
+            <span key={el} className={`kuro-badge ${resBadgeClass(val)} inline-flex items-center gap-1`}>
               {icon && <img src={icon} alt="" className="w-3 h-3" onError={hideOnError} />}
-              {ELEMENT_LABEL[el]} {res[el] > 0 ? '+' : ''}{res[el]}%
+              {ELEMENT_LABEL[el]} {val}%
             </span>
           );
         }) : (

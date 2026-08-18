@@ -459,22 +459,28 @@ const ECHO_SKILL_BUFFS = {
   'Reminiscence - Nightmare: Adam Smasher': { buffs: [{ stat: 'critRate', value: 15 }], passive: true, condition: 'Lucy or Rebecca' },
 };
 
-// Per-level (1-120) HP/ATK/DEF for boss echoes, sourced from nanoka.cc's static monster data
-// (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id). Index 0 = level 1 ... index
-// 119 = level 120 (120 is the ceiling nanoka's own level slider exposes for these bosses — Tower/
-// Illusive Realm difficulty scaling goes past the level-90 open-world cap). DEF converges to 1512
-// for every boss at level 90 specifically: WW's enemy DEF curve at that level is uniform across
-// bosses, not a copy/paste error.
+// Per-level (1-120) HP/ATK/DEF/Stun DMG/Toughness DMG for boss echoes, sourced from nanoka.cc's
+// static monster data (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id). Index 0 =
+// level 1 ... index 119 = level 120 (120 is the ceiling nanoka's own level slider exposes for these
+// bosses — Tower/Illusive Realm difficulty scaling goes past the level-90 open-world cap). DEF
+// converges to 1512 for every boss at level 90 specifically: WW's enemy DEF curve at that level is
+// uniform across bosses, not a copy/paste error.
+// stunDmg / toughnessDmg map to nanoka's raw hardness_max / rage_max fields respectively (nanoka's
+// own UI labels them "Stun DMG" and "Toughness DMG" — yes, inverted from what the raw field names
+// suggest).
 
-/** Returns { hp, atk, def } for a boss echo at a given level, or null if not tracked/out of range. */
+/**
+ * Returns { hp, atk, def, stunDmg, toughnessDmg } for a boss echo at a given level, or null if not
+ * tracked/out of range.
+ */
 export function getEnemyStatsAtLevel(name, level) {
   const rows = ENEMY_LEVEL_STATS[name];
   if (!rows) return null;
   const lvl = Math.max(1, Math.min(120, Math.round(Number(level) || 90)));
   const row = rows[lvl - 1];
   if (!row) return null;
-  const [hp, atk, def] = row;
-  return { hp, atk, def };
+  const [hp, atk, def, stunDmg, toughnessDmg] = row;
+  return { hp, atk, def, stunDmg, toughnessDmg };
 }
 
 // [SECTION:ECHO_DMG_DATA] — Per-echo active skill damage multipliers & enemy resistance
@@ -676,11 +682,17 @@ export function getEnemyStatsAtLevel(name, level) {
   // want a different level should call getEnemyStatsAtLevel(name, level) directly rather than reading
   // this fixed level-90 snapshot.
   const lv90 = getEnemyStatsAtLevel(name, 90);
+  // These 39 boss echoes' own audited RES (enemyRes) only ever records their one boosted element —
+  // every other element (Physical included) is a flat 10% RES baseline confirmed across every raw
+  // nanoka.cc monster JSON sampled for this class of enemy (Overlord/Calamity). Fill the full 7-way
+  // table from that baseline rather than leaving unlisted elements undisplayed at an implicit 0%.
   const enemyStats = enemyRes ? {
     level: 90, hp: lv90?.hp ?? null, atk: lv90?.atk ?? null, def: lv90?.def ?? null,
+    stunDmg: lv90?.stunDmg ?? null, toughnessDmg: lv90?.toughnessDmg ?? null,
     res: {
-      glacio: enemyRes.glacio || 0, fusion: enemyRes.fusion || 0, electro: enemyRes.electro || 0,
-      aero: enemyRes.aero || 0, spectro: enemyRes.spectro || 0, havoc: enemyRes.havoc || 0,
+      physical: enemyRes.physical || 10,
+      glacio: enemyRes.glacio || 10, fusion: enemyRes.fusion || 10, electro: enemyRes.electro || 10,
+      aero: enemyRes.aero || 10, spectro: enemyRes.spectro || 10, havoc: enemyRes.havoc || 10,
     },
   } : null;
   if (ECHO_DATA[name]) Object.assign(ECHO_DATA[name], { dmg, element, ...(enemyRes && { enemyRes, enemyStats }) });
