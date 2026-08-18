@@ -1151,7 +1151,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           buffs.filter(b => (b.owner || b.source) !== seg.name && b.start <= seg.start + 0.05 && b.start + b.duration > seg.start + 0.05)
             .map(fmtBuff)
         )];
-        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits };
+        // Verified skill-by-skill sequence from Prydwen.gg's "Standard Rotation" guides — real
+        // combat data, not derived from CHAR_BUFF_TABLE like the rest of this block. Only present
+        // for the handful of characters it's been sourced for; renders nothing otherwise.
+        const skillSequence = CHARACTER_DATA[seg.name]?.rotation || null;
+        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits, skillSequence };
       });
 
       return { segments: timeline, buffs, totalTime: rotTime, steps };
@@ -1888,6 +1892,22 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       {step.isDps && <span className="kuro-badge kuro-badge-yellow ml-auto">Main DPS</span>}
                     </div>
                     <div className="text-sm text-gray-500 mt-1 pl-7">{step.reason}</div>
+
+                    {/* Verified skill-by-skill sequence (Prydwen.gg "Standard Rotation") — real combat
+                        data, shown first since it's the most concrete/actionable part of the block. */}
+                    {step.skillSequence && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Skill sequence</div>
+                        <div className="text-sm leading-relaxed">
+                          {step.skillSequence.map((s, si) => (
+                            <React.Fragment key={si}>
+                              {si > 0 && <span className="text-gray-700"> → </span>}
+                              <span className="inline-block px-1 rounded-sm border border-white/10 bg-white/5 text-gray-300 text-2xs align-middle">{s}</span>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Inbound — what earlier blocks handed this one, i.e. how it adapts to the team */}
                     {step.inherits.length > 0 && (
