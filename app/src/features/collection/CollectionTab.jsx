@@ -55,6 +55,7 @@ function CollectionTab({
   const [weaponsStatFilter, setWeaponsStatFilter] = useSessionState('ww-coll-wstat', 'all');
   const [collectionDamageFilter, setCollectionDamageFilter] = useSessionState('ww-coll-dmg', 'all');
   const [collectionRoleFilter, setCollectionRoleFilter] = useSessionState('ww-coll-role', 'all');
+  const [collectionCombatRoleFilter, setCollectionCombatRoleFilter] = useSessionState('ww-coll-crole', 'all');
   const [collectionRegionFilter, setCollectionRegionFilter] = useSessionState('ww-coll-region', 'all');
   const [collectionTierFilter, setCollectionTierFilter] = useSessionState('ww-coll-tier', 'all');
   const [collectionEchoSetFilter, setCollectionEchoSetFilter] = useSessionState('ww-coll-eset', 'all');
@@ -124,6 +125,14 @@ function CollectionTab({
   const mergeCount = useCallback((name, historyCount) => Math.max(historyCount || 0, manualCounts[name] || 0), [manualCounts]);
 
   // ── Derived / computed ────────────────────────────────────────────────────────
+
+  // Combat Role filter options — only tags actually used by at least one character (not the full
+  // ~38-tag COMBAT_ROLE_ICONS set, which includes tags no current resonator has).
+  const allCombatRoleTags = useMemo(() => {
+    const tags = new Set();
+    Object.values(CHARACTER_DATA).forEach(d => d.combatRoles?.forEach(t => tags.add(t)));
+    return [...tags].sort();
+  }, []);
 
   // Keyword tags for search matching
   const getSearchTags = useCallback((name, isCharacter) => {
@@ -222,6 +231,7 @@ function CollectionTab({
           if (collectionDamageFilter !== 'all' && !charMatchesDamage(name, collectionDamageFilter)) return false;
           if (collectionRegionFilter !== 'all' && data.region !== collectionRegionFilter) return false;
           if (collectionTierFilter !== 'all' && !(data.tier && (data.tier.toa === collectionTierFilter || data.tier.ww === collectionTierFilter))) return false;
+          if (collectionCombatRoleFilter !== 'all' && !data.combatRoles?.includes(collectionCombatRoleFilter)) return false;
         }
       } else {
         const data = WEAPON_DATA[name];
@@ -232,7 +242,7 @@ function CollectionTab({
       }
       return true;
     });
-  }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, weaponsTypeFilter, weaponsStatFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
+  }, [debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionCombatRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, weaponsTypeFilter, weaponsStatFilter, ownedChars, getSearchTags, charMatchesStat, charMatchesDamage]);
 
   // "Clear all" only touches the filters shown on the CURRENT view — each view's dropdowns
   // are their own independent state (Resonators' weapon-type/stat-scaling filters are separate
@@ -246,6 +256,7 @@ function CollectionTab({
       setCollectionStatFilter('all');
       setCollectionDamageFilter('all');
       setCollectionRoleFilter('all');
+      setCollectionCombatRoleFilter('all');
       setCollectionRegionFilter('all');
       setCollectionTierFilter('all');
       setCollectionOwnedFilter('all');
@@ -284,13 +295,13 @@ function CollectionTab({
   // show a stale "Filters active" badge for filters that live on a different tab.
   const hasActiveFilters = useMemo(() => {
     if (collectionView === 'items') {
-      return !!(debouncedSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionOwnedFilter !== 'all');
+      return !!(debouncedSearch || collectionCategoryFilter !== 'all' || collectionElementFilter !== 'all' || collectionWeaponFilter !== 'all' || collectionStatFilter !== 'all' || collectionDamageFilter !== 'all' || collectionRoleFilter !== 'all' || collectionCombatRoleFilter !== 'all' || collectionRegionFilter !== 'all' || collectionTierFilter !== 'all' || collectionOwnedFilter !== 'all');
     }
     if (collectionView === 'weapons') {
       return !!(debouncedSearch || weaponsTypeFilter !== 'all' || weaponsStatFilter !== 'all');
     }
     return !!(debouncedSearch || collectionEchoSetFilter !== 'all' || collectionEchoBuffFilter !== 'all');
-  }, [collectionView, debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, weaponsTypeFilter, weaponsStatFilter, collectionEchoSetFilter, collectionEchoBuffFilter]);
+  }, [collectionView, debouncedSearch, collectionCategoryFilter, collectionElementFilter, collectionWeaponFilter, collectionStatFilter, collectionDamageFilter, collectionRoleFilter, collectionCombatRoleFilter, collectionRegionFilter, collectionTierFilter, collectionOwnedFilter, weaponsTypeFilter, weaponsStatFilter, collectionEchoSetFilter, collectionEchoBuffFilter]);
 
   // Extended sort: apply DPS/name/tier sorting on top of the base sortItems result
   const applySortOverride = useCallback((items) => {
@@ -523,6 +534,21 @@ function CollectionTab({
                       { value: 'Healer', label: 'Healer' },
                     ]}
                     ariaLabel="Filter by role"
+                  />
+                  <KuroSelect
+                    value={collectionCombatRoleFilter}
+                    onChange={setCollectionCombatRoleFilter}
+                    options={[
+                      { value: 'all', label: 'All Combat Roles' },
+                      ...allCombatRoleTags.map(tag => {
+                        const icon = getCombatRoleIcon(tag);
+                        return {
+                          value: tag,
+                          label: <span className="inline-flex items-center gap-1.5"><img src={icon} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
+                        };
+                      }),
+                    ]}
+                    ariaLabel="Filter by combat role"
                   />
                   <KuroSelect
                     value={collectionRegionFilter}
