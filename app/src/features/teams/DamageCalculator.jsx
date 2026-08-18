@@ -1237,9 +1237,32 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             const defaultSubs = getSubstats();
                             const newEchoes = [null, null, null, null, null];
                             const usedNames = new Set();
+                            // Many echoes carry 2-3 set tags at once (e.g. Glommoth: Trailblazing Star
+                            // AND Wishes of Quiet Snowfall). Picking the first echo that merely mentions
+                            // the target set — the old behavior — can drag in an unrelated secondary set
+                            // as a side effect: if two picked echoes both happen to also share some other
+                            // tag, the equipped-echo summary shows that set as "active" (>=2 matching)
+                            // even though it was never the intended build (this is exactly what produced
+                            // reports like "Auto Equip put Hiyuki in Trailblazing Star" — Wishes of Quiet
+                            // Snowfall was correctly targeted, but a multi-tagged pick coincidentally also
+                            // completed Trailblazing Star). Prefer echoes whose ENTIRE set list is limited
+                            // to sets we actually want (setPrefs' keys) so no unintended set can complete;
+                            // only fall back to an impure multi-set echo if no pure candidate exists.
                             const pickEcho = (tierList, setPrefs) => {
                               for (const name of tierList) { if (!usedNames.has(name) && directEchoes.has(name)) { usedNames.add(name); return name; } }
-                              for (const [setName] of setPrefs) { for (const name of tierList) { if (usedNames.has(name)) continue; const ed = ECHO_DATA[name]; if (ed?.sets?.includes(setName)) { usedNames.add(name); return name; } } }
+                              const wanted = new Set(setPrefs.keys());
+                              for (const [setName] of setPrefs) {
+                                let impureFallback = null;
+                                for (const name of tierList) {
+                                  if (usedNames.has(name)) continue;
+                                  const ed = ECHO_DATA[name];
+                                  if (!ed?.sets?.includes(setName)) continue;
+                                  const isPure = ed.sets.every(s => wanted.has(s));
+                                  if (isPure) { usedNames.add(name); return name; }
+                                  if (!impureFallback) impureFallback = name;
+                                }
+                                if (impureFallback) { usedNames.add(impureFallback); return impureFallback; }
+                              }
                               return null;
                             };
                             const e0 = pickEcho(ALL_4COST_ECHOES, recSets);
