@@ -68,6 +68,12 @@ const ECHO_SETS = {
 
 // [SECTION:ECHO_LISTS] — All echoes grouped by cost tier (newest first)
 const ALL_4COST_ECHOES = [
+  // v3.6 — added 2026-08-18 (echo audit): missing from roster entirely. Confirmed 4-cost, Aero,
+  // 'Heart of Evil's Purge' set via WebSearch (game8.co Qingxiao build guides, ldshop.gg Qingxiao build
+  // guide). Active-skill dmg% and any main-slot buff stats could not be confirmed from any accessible
+  // source (nanoka.cc/prydwen.gg blocked by Cloudflare/403, fandom wiki 402, game8/theriagames/wuwacompanion
+  // pages didn't carry the specific numbers) — left out of ECHO_SKILL_BUFFS and desc has no fabricated %s.
+  'Calamity Effigy',
   // v3.5 — Land of Xuanfang
   'Thousand-Puppet Pavilion', 'Myriad Snare: Rustfire Chassis', 'Reminiscence: Denia',
   'Reminiscence: Threnodian - Voidborne Construct', 'Reminiscence - Nightmare: Adam Smasher',
@@ -223,6 +229,12 @@ const ECHO_DATA = {
   'Reminiscence: Denia':             { sets: ['Chromatic Foam'], buff: 'Fusion DMG', desc: "Denia's Calamity-class signature Echo. Skill summons \"Trickster\" for 273.60% Fusion DMG; within 15s, casting Outro Skill grants the incoming Resonator +12% Fusion DMG Bonus for 15s.", iconUrl: 'https://i.ibb.co/qYy1Y7Ck/Reminiscence-Denia.webp' },
   'Reminiscence: Threnodian - Voidborne Construct': { sets: ['Wishes of Quiet Snowfall'], buff: 'Glacio DMG', desc: "Calamity-class Echo from Land of Xuanfang. Skill summons Aleph-1's Creation for 5 hits of 21.88% Glacio DMG plus one hit of 164.16% Glacio DMG. Main slot grants +12% Glacio DMG and +12% Resonance Liberation DMG.", iconUrl: 'https://i.ibb.co/gZdFc1CG/Reminiscence-Threnodian-Voidborne-Construct.webp' },
   'Reminiscence - Nightmare: Adam Smasher': { sets: ['Shadow of Shattered Dreams'], buff: 'Physical DMG', desc: "Overlord-class Echo from the Cyberpunk: Edgerunners collab. Skill deals 16 hits of 10.26% ATK Physical DMG. When equipped by Lucy or Rebecca in the main slot, grants +15% Crit Rate and unlocks a character-specific enhanced Echo Skill (Lucy: Spectro burst; Rebecca: Electro missile barrage).", iconUrl: 'https://i.ibb.co/twCtsS1D/Reminiscence-Nightmare-Adam-Smasher.webp' },
+  // added 2026-08-18 (echo audit): Calamity-class Aero echo, Qingxiao's dedicated v3.6 main echo for
+  // Heart of Evil's Purge. Set/element/cost confirmed via WebSearch (game8.co & ldshop.gg Qingxiao build
+  // guides). Active-skill damage % and any main-slot passive buff numbers could not be confirmed from any
+  // accessible source (nanoka.cc/prydwen.gg blocked, fandom wiki paywalled) — no numbers fabricated here,
+  // and no ECHO_SKILL_BUFFS entry was added pending confirmation.
+  'Calamity Effigy':                 { sets: ["Heart of Evil's Purge"], buff: 'Aero DMG', desc: "A Calamity-class Echo from Land of Xuanfang, Qingxiao's dedicated main Echo. Skill transforms to deal Aero DMG; the main slot grants Aero DMG Bonus (exact percentages unconfirmed)." },
   // ── 3-Cost Echoes ──
   'Forbidden Bastion':               { sets: ['Song of Feathered Trace', "Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Healing', desc: 'An Elite-class fortified construct from Land of Xuanfang. Skill summons Forbidden Bastion to bash enemies for 237.60% Glacio DMG. Main slot grants +10% Healing Bonus.', iconUrl: 'https://i.ibb.co/Ps1zmbnM/Forbidden-Bastion.webp' },
   'Fog Lionarch':                    { sets: ['Song of Feathered Trace', "Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Fusion DMG', desc: 'An Elite-class beast from Land of Xuanfang. Skill summons Fog Lionarch to spit fire at enemies, dealing 7 stages of 33.93% Fusion DMG.', iconUrl: 'https://i.ibb.co/TB6d8kTy/Fog-Lionarch.webp' },
