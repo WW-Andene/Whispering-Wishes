@@ -153,7 +153,7 @@ export default function DPSComparisonCard({
                   <div className="text-sm"><span className="text-gray-500">{s.mainDps.scaling !== 'ATK' ? s.mainDps.scaling : 'ATK'}: </span><span className="text-yellow-400 kuro-number">{s.effAtk?.toLocaleString('en-US')}</span></div>
                   <div className="text-sm"><span className="text-gray-500">CR: </span><span className="text-cyan-400 kuro-number">{s.critRate.toFixed(0)}%</span></div>
                   <div className="text-sm"><span className="text-gray-500">CD: </span><span className="text-cyan-400 kuro-number">{s.critDmg.toFixed(0)}%</span></div>
-                  <div className="text-sm"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.mainDps.d.rotTime || 25}s</span></div>
+                  <div className="text-sm"><span className="text-gray-500">Rot: </span><span className="text-gray-300 kuro-number">{s.rotTime || s.mainDps.d.rotTime || 25}s</span></div>
                   {s.mainDps.scaling !== 'ATK' && <div className="text-sm"><span className="text-violet-400">{s.mainDps.scaling} scaling</span></div>}
                   {s.defShred > 0 && <div className="text-sm"><span className="text-gray-500">DEF↓ </span><span className="text-red-400 kuro-number">{Math.round(s.defShred)}%</span></div>}
                 </div>
