@@ -451,6 +451,15 @@ const ECHO_SKILL_BUFFS = {
 // enemyRes: elemental resistances when this echo is fought as an enemy boss (4-cost only)
 [
   // ── 4-Cost Echoes (Bosses) ──
+  // added 2026-08-18 (echo audit, task #6): these 5 v3.5 4-cost echoes had full ECHO_DATA entries
+  // (desc, sets, buff) but were never merged with a dmg/element tuple, so equipping any of them in the
+  // main echo slot silently contributed 0 active-skill DMG in DamageCalculator's echoActiveDmg calc.
+  // Myriad Snare: Rustfire Chassis is Max-HP%-scaled, not ATK%-scaled, so its dmg is left unset (same
+  // precedent as other %MaxHP echoes elsewhere in this file).
+  ['Thousand-Puppet Pavilion', 109, 'Havoc', null],
+  ['Reminiscence: Denia', 274, 'Fusion', null],
+  ['Reminiscence: Threnodian - Voidborne Construct', 274, 'Glacio', null],
+  ['Reminiscence - Nightmare: Adam Smasher', 164, 'Physical', null],
   ['Mourning Aix', 394, 'Spectro', { spectro: 40 }],
   ['Feilian Beringal', 515, 'Aero', { aero: 40 }],
   ['Tempest Mephis', 0, 'Electro', { electro: 40 }],
