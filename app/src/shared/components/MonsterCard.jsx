@@ -21,7 +21,7 @@ function resBadgeClass(val) {
   return 'kuro-badge-amber';                           // flat baseline, nothing notable
 }
 
-function StatRow({ icon, label, value }) {
+function StatRow({ icon, label, value, suffix = '' }) {
   if (value === null || value === undefined) return null;
   return (
     <div className="flex items-center justify-between text-sm py-0.5">
@@ -29,7 +29,7 @@ function StatRow({ icon, label, value }) {
         {icon && <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
         {label}
       </span>
-      <span className="text-white font-semibold tabular-nums">{value.toLocaleString()}</span>
+      <span className="text-white font-semibold tabular-nums">{value.toLocaleString()}{suffix}</span>
     </div>
   );
 }
@@ -110,6 +110,19 @@ export default function MonsterCard({
           <StatRow icon={getStatIcon('DEF')} label="DEF" value={def} />
           <StatRow icon={getStatIcon('Stun DMG')} label="Stun DMG" value={stunDmg} />
           <StatRow icon={getStatIcon('Toughness DMG')} label="Toughness DMG" value={toughnessDmg} />
+        </div>
+      )}
+
+      {/* Stagger-system stats — flat per-boss constants (not level-scaled), so read straight off
+          enemyStats rather than the level-scaled hp/atk/def/stunDmg/toughnessDmg above. */}
+      {enemyStats && (enemyStats.interruptRes != null || enemyStats.vibration != null || enemyStats.rage != null) && (
+        <div className="mt-2 pt-2 border-t border-[var(--border-subtle)]">
+          <StatRow label="Interruption RES" value={enemyStats.interruptRes} suffix="%" />
+          <StatRow label="Interruption RES Recovery" value={enemyStats.interruptResRecover} suffix="%" />
+          <StatRow label="Vibration Strength" value={enemyStats.vibration} suffix="%" />
+          <StatRow label="Vibration Strength Recovery" value={enemyStats.vibrationRecover} suffix="%" />
+          <StatRow label="Rage" value={enemyStats.rage} suffix="%" />
+          <StatRow label="Rage Recovery" value={enemyStats.rageRecover} suffix="%" />
         </div>
       )}
 

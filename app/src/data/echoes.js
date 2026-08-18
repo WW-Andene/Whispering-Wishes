@@ -3,6 +3,7 @@
 // Edit this file to add/update echoes, sets, and echo damage data
 
 import ENEMY_LEVEL_STATS from './enemyLevelStats.json';
+import ENEMY_BASE_STATS from './enemyBaseStats.json';
 
 /** @type {Record<string, import('../types.js').EchoSetData>} */
 const ECHO_SETS = {
@@ -483,6 +484,21 @@ export function getEnemyStatsAtLevel(name, level) {
   return { hp, atk, def, stunDmg, toughnessDmg };
 }
 
+// Base (non-level-scaling) stagger-system stats for boss echoes, sourced from the same nanoka.cc
+// monster JSON as above (base_stats.hardness_change/recover, tough_change/recover, rage_change/
+// recover — nanoka's own UI doesn't surface these, only the raw API carries them). All in percent.
+// interruptRes/interruptResRecover = hardness_change/hardness_recover (Interruption Resistance)
+// vibration/vibrationRecover = tough_change/tough_recover (Vibration Strength)
+// rage/rageRecover = rage_change/rage_recover (Rage)
+
+/** Returns { interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover } (%) or null. */
+export function getEnemyBaseStats(name) {
+  const row = ENEMY_BASE_STATS[name];
+  if (!row) return null;
+  const [interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover] = row;
+  return { interruptRes, interruptResRecover, vibration, vibrationRecover, rage, rageRecover };
+}
+
 // [SECTION:ECHO_DMG_DATA] — Per-echo active skill damage multipliers & enemy resistance
 // dmg: total ATK% damage multiplier of echo active skill (sum of all hits)
 // element: damage element of the echo skill
@@ -682,6 +698,7 @@ export function getEnemyStatsAtLevel(name, level) {
   // want a different level should call getEnemyStatsAtLevel(name, level) directly rather than reading
   // this fixed level-90 snapshot.
   const lv90 = getEnemyStatsAtLevel(name, 90);
+  const baseStats = getEnemyBaseStats(name);
   // These 39 boss echoes' own audited RES (enemyRes) only ever records their one boosted element —
   // every other element (Physical included) is a flat 10% RES baseline confirmed across every raw
   // nanoka.cc monster JSON sampled for this class of enemy (Overlord/Calamity). Fill the full 7-way
@@ -689,6 +706,9 @@ export function getEnemyStatsAtLevel(name, level) {
   const enemyStats = enemyRes ? {
     level: 90, hp: lv90?.hp ?? null, atk: lv90?.atk ?? null, def: lv90?.def ?? null,
     stunDmg: lv90?.stunDmg ?? null, toughnessDmg: lv90?.toughnessDmg ?? null,
+    interruptRes: baseStats?.interruptRes ?? null, interruptResRecover: baseStats?.interruptResRecover ?? null,
+    vibration: baseStats?.vibration ?? null, vibrationRecover: baseStats?.vibrationRecover ?? null,
+    rage: baseStats?.rage ?? null, rageRecover: baseStats?.rageRecover ?? null,
     res: {
       physical: enemyRes.physical || 10,
       glacio: enemyRes.glacio || 10, fusion: enemyRes.fusion || 10, electro: enemyRes.electro || 10,
