@@ -317,27 +317,34 @@ function TeamsTab({
               // Compute recommended teammates from current team members' team suggestions.
               // Each character's own `teams` field is a list of DIFFERENT curated comps built
               // around them individually (e.g. Mornye's own list includes both a Lynae/Aemeath
-              // team and an unrelated Luuk Herssen/Denia team) — naively unioning every member's
-              // list together recommends candidates that only make sense in a team that ISN'T the
-              // one currently being built (e.g. recommending Luuk once Hiyuki+Mornye are both
-              // placed, even though Luuk's curated pairing is with Mornye alone in a totally
-              // different Spectro comp, not Hiyuki's Glacio one). So once 2+ members are already
-              // placed, only trust a curated teamStr as a recommendation source if every OTHER
-              // already-placed member also appears in that exact teamStr — i.e. it's actually
-              // describing (a superset of) the team being built, not an unrelated one.
+              // team and an unrelated Luuk Herssen/Denia team). A first attempt at fixing bad
+              // cross-contaminated suggestions (e.g. recommending Luuk once Hiyuki+Mornye were both
+              // placed) required every OTHER already-placed member to appear in the SAME exact
+              // curated teamStr — but that's too strict once 2+ members are placed: curated `teams`
+              // lists are a small illustrative sample, not exhaustive, so it's common for NO single
+              // curated trio to literally name both already-placed characters even when a genuinely
+              // good pick exists (e.g. Denia+Lynae: neither's own list mentions the other, so the
+              // strict rule went to zero recommendations — even though Denia's list separately names
+              // Mornye and Lynae's list ALSO separately names Mornye, a real convergent signal).
+              // Now: count, for each candidate, how many DISTINCT already-placed members' own
+              // curated lists mention them at all (no cross-string containment required). A
+              // candidate named by multiple placed members independently (Mornye, above) is a much
+              // stronger signal than one named by only one (Luuk, named only by Mornye's list, not
+              // Hiyuki's) — so instead of hard-excluding the weaker single-source ones, they're kept
+              // but ranked below multi-source convergent picks in the sort below. Never zero unless
+              // truly no placed member's own list mentions anyone.
               const placedNow = teamSlots.filter(s => s);
-              const recommendedNames = new Set();
+              const recommendedNames = new Map(); // name -> number of distinct placed members recommending them
               placedNow.forEach(charInSlot => {
                 const d = CHARACTER_DATA[charInSlot];
                 if (!d?.teams) return;
-                const otherPlaced = placedNow.filter(p => p !== charInSlot);
+                const mentionedByThisMember = new Set();
                 d.teams.forEach(teamStr => {
-                  const members = teamStr.split('+').map(m => m.trim());
-                  if (otherPlaced.length > 0 && !otherPlaced.every(p => members.includes(p))) return;
-                  members.forEach(m => {
-                    if (m !== charInSlot && !usedInTeam.has(m)) recommendedNames.add(m);
+                  teamStr.split('+').map(m => m.trim()).forEach(m => {
+                    if (m !== charInSlot && !usedInTeam.has(m)) mentionedByThisMember.add(m);
                   });
                 });
+                mentionedByThisMember.forEach(m => recommendedNames.set(m, (recommendedNames.get(m) || 0) + 1));
               });
 
               // Filter characters for selector
@@ -355,9 +362,10 @@ function TeamsTab({
                 if (teamRoleFilter !== 'all' && data.role !== teamRoleFilter) return false;
                 return true;
               }).sort((a, b) => {
-                const aRec = recommendedNames.has(a) ? 0 : 1;
-                const bRec = recommendedNames.has(b) ? 0 : 1;
-                if (aRec !== bRec) return aRec - bRec;
+                // Higher vote count (more placed members independently recommending them) ranks first.
+                const aRec = recommendedNames.get(a) || 0;
+                const bRec = recommendedNames.get(b) || 0;
+                if (aRec !== bRec) return bRec - aRec;
                 // 5★ before 4★
                 const aRar = CHARACTER_DATA[a]?.rarity || 0;
                 const bRar = CHARACTER_DATA[b]?.rarity || 0;
