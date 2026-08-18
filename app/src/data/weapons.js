@@ -120,7 +120,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'The Last Dance': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
     desc: 'Carlotta signature. Elegant pistols for one final, perfect dance. ATK buff with Res. Skill DMG on Intro/Lib.',
-    passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta', 'Aalto', 'Chixia'],
+    passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta', 'Aalto', 'Chixia', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his #1 option at 106.12%, ahead of his own signature Static Mist
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Tragicomedy': { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Roccia signature. Gauntlets born of comedy and tragedy entwined. Boosts team ATK and Outro Skill DMG.',
@@ -244,7 +244,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Thunderbolt': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Huanglong ceremonial pistols, resilient and enduring. Stacking Skill DMG on Basic/Heavy hits.',
-    passive: 'Basic/Heavy ATK hit → Res. Skill DMG +7% per stack (max x3, 10s per stack, 1s trigger interval)', pv: { skillDmg: 21 }, bestFor: ['Chixia', 'Pistol users'],
+    passive: 'Basic/Heavy ATK hit → Res. Skill DMG +7% per stack (max x3, 10s per stack, 1s trigger interval)', pv: { skillDmg: 21 }, bestFor: ['Chixia', 'Pistol users', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 83.07%
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
 
   'Overture': { rarity: 4, type: 'Sword', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
@@ -287,7 +287,7 @@ const WEAPON_DATA = {
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Gauntlet DPS', 'Lingyang'] },
   'Relativistic Jet': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s incessant course of cosmic destruction. Skill grants Resonance Energy and ATK buff.',
-    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS', 'Aalto'] },
+    passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS', 'Aalto', 'Mortefi'] }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his top 4★ alt at 83.92%, noting it "significantly reduces Energy requirements"
   'Endless Collapse': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'The collapsing heart of a dying blazar. Skill grants Resonance Energy and ATK buff.',
     // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (82.82%), a good F2P
@@ -332,10 +332,10 @@ const WEAPON_DATA = {
     passive: 'Intro Skill → Liberation DMG +20% for 15s', pv: { libDmg: 20 }, bestFor: ['Gauntlet supports', 'Yuanwu'] }, // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this 100% (2nd overall, top DEF-scaler pick)
   'Novaburst': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Pistols erupting with nova-like force. Stacking ATK boost on dash/dodge.',
-    passive: 'Dash/dodge → ATK +4% (max x3, 8s)', pv: { atkPct: 12 }, bestFor: ['Pistol DPS'] },
+    passive: 'Dash/dodge → ATK +4% (max x3, 8s)', pv: { atkPct: 12 }, bestFor: ['Pistol DPS', 'Mortefi'] }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 83.64%
   'Undying Flame': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Pistols burning with an undying flame. Skill DMG boost on Intro Skill.',
-    passive: 'Intro Skill → Res. Skill DMG +20% for 15s', pv: { skillDmg: 20 }, bestFor: ['Pistol DPS'] },
+    passive: 'Intro Skill → Res. Skill DMG +20% for 15s', pv: { skillDmg: 20 }, bestFor: ['Pistol DPS', 'Mortefi'] }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 81.87%
   'Helios Cleaver': { rarity: 4, type: 'Broadblade', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Broadblade forged in sunfire. Gradual stacking ATK buff after Skill use.',
     passive: 'After Res. Skill → ATK +3% every 2s (max x4, 12s)', pv: { atkPct: 12 }, bestFor: ['Broadblade DPS'] },
@@ -370,7 +370,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Pistols#26': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Craftable pistols. Stacking ATK buff while avoiding damage.',
-    passive: 'Omniscient: No DMG taken → ATK +6% every 5s (max 2 stacks, 8s). Taking DMG: lose 1 stack, heal 5% HP', bestFor: ['Pistol users'],
+    passive: 'Omniscient: No DMG taken → ATK +6% every 5s (max 2 stacks, 8s). Taking DMG: lose 1 stack, heal 5% HP', bestFor: ['Pistol users', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 82.65%
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
 
   // ── 4★ Battle Pass (Hunter's Growl series) ──

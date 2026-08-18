@@ -825,13 +825,27 @@ const CHARACTER_DATA = {
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt4: ['Amity Accord', 'Stonard'], alt3: ['Guardian Gauntlets', 'Gauntlets of Voyager', 'Originite: Type IV'] },
     teams: ['Yuanwu + Jinhsi + Verina', 'Yuanwu + Jinhsi + Shorekeeper'] },
+  // corrected 2026-08-18 via fandom's Mortefi/Combat page (Forte Details, rendered) + Prydwen's Kit/
+  // Build/Review/Gameplay tabs (previously only had a partial CHARACTER_DATA entry, no weaponAlts).
+  // desc: kept largely as-is (Fusion Coordinated ATK + Outro Heavy ATK buff both trace exactly to
+  // Violent Finale's Burning Rhapsody and Rage Transposition), just re-worded to flag him as a Hybrid
+  // per Prydwen's own classification (he deals meaningful personal Fusion DMG via Fury Fugue/Marcato,
+  // not a pure buffer). bestEchoes replaced the bare 'Moonlit Clouds 5pc' with Prydwen's actual #1
+  // build — Impermanence Heron (Main Echo) + Moonlit Clouds 5pc, swap-cancelled right before Outro for
+  // a stacked ATK/DMG buff on the incoming DPS — and added 'Empyrean Anthem 5pc' as Prydwen's
+  // documented #2 alternative for endgame-invested accounts. teams corrected to Prydwen's Synergies
+  // tab: 'Mortefi + Galbrena + Lupa' is his explicitly named "Best Team" (Galbrena Mono Fusion, with
+  // Lupa called out by name for the mono-Fusion setup); 'Mortefi + Jiyan + Verina' kept since Prydwen's
+  // own text calls Jiyan "Mortefi's tailor-made partner" — Heavy ATK DMG Amp is Jiyan's main damage
+  // type.
   'Mortefi': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Sub DPS',
-    desc: 'Hot-tempered researcher whose music erupts in violent crescendos. Fusion sub-DPS who fires off-field Fusion Coordinated Attacks and buffs the on-field character\'s Heavy ATK DMG via Outro.',
+    desc: 'Hot-tempered researcher whose music erupts in violent crescendos. Fusion Hybrid who fires off-field Fusion Coordinated Attacks (Burning Rhapsody) and buffs the on-field character\'s Heavy ATK DMG via Outro.',
     skills: ['Impromptu Show', 'Passionate Variation', 'Violent Finale', 'Fury Fugue'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Static Mist',
-    teams: ['Mortefi + Jiyan + Verina', 'Mortefi + Jiyan + Shorekeeper'] },
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Empyrean Anthem 5pc'], bestWeapon: 'Static Mist',
+    weaponAlts: { alt5: ['The Last Dance'], alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Pistols#26'] },
+    teams: ['Mortefi + Galbrena + Lupa', 'Mortefi + Jiyan + Verina'] },
   'Youhu': { rarity: 4, element: 'Glacio', weapon: 'Gauntlets', role: 'Support',
     desc: 'Whimsical antique appraiser who trusts her luck in all things. Glacio support who heals the team via Resonance Skill and amplifies Coordinated ATK DMG through her Outro buff.',
     skills: ['Frosty Punches', 'Scroll Divination', 'Fortune\'s Favor', 'Poetic Essence'],
@@ -1021,7 +1035,9 @@ const CHARACTER_DATA = {
   // DEF corrected 2026-08-18: was 1637 vs fandom's exact Lv.90 Ascensions and Stats table
   // (8,525.00 / 225.00 / 1,637.75, rounds to 1638) and Prydwen's own Lv.90 stat screen (DEF 1638).
   ['Yuanwu',        8525,  225, 1638, 125],
-  ['Mortefi',       10025, 250, 1136, 125],
+  // DEF corrected 2026-08-18: was 1136 vs fandom's exact Lv.90 Ascensions and Stats table (10,025.00 /
+  // 250.00 / 1,136.65, rounds to 1137) and Prydwen's own Lv.90 stat screen (DEF 1137).
+  ['Mortefi',       10025, 250, 1137, 125],
   ['Youhu',         9975,  262, 1051, 125],
   ['Lumi',          8500,  337, 879,  125],
   ['Buling',        10625, 225, 1258, 125],
@@ -1542,6 +1558,17 @@ const CHARACTER_DATA = {
   // Diggle, CN Liu Beichen (刘北辰), JP Shirokuma Hiroshi (白熊寬嗣), KR Park Seong-tae (박성태) —
   // cross-checked and matching against Prydwen's own Voice Actors tab.
   ['Yuanwu', 'Fist of Thunder', 'Huanglong', 'Yuanwu Boxing Gym', { en: 'Adam Diggle', cn: 'Liu Beichen', jp: 'Shirokuma Hiroshi', kr: 'Park Seong-tae' }],
+  // Mortefi: added 2026-08-18, sourced via the MediaWiki API (action=parse&page=Mortefi&prop=wikitext).
+  // Title 'Dragon's Breath' from the infobox `title` field. birthplace 'New Federation' (distinct from
+  // his region/nation tie, Huanglong, in REGION_DATA above — same birthplace-vs-nation-tie pattern as
+  // Verina/Calcharo). organization uses affiliation2 'Huaxu Academy' (he's head of the Branch of
+  // Tacetite Weaponry within its Department of Safety, per his own Official Introduction/desc) over the
+  // generic primary affiliation 'Jinzhou', matching the Baizhi/Jiyan sub-group convention. VAs confirmed
+  // exact from the infobox and cross-checked against Prydwen's own Voice Actors panel (exact match):
+  // EN Joseph May, CN Liu Yijia (刘以嘉), JP Miura Katsuyuki (三浦勝之), KR Kim Da-ol (김다올). Note: the
+  // infobox's own CN-VA citation footnote text is a stray copy-paste artifact referencing an unrelated
+  // resonator's name — the CN VA name itself (Liu Yijia) is unaffected and matches Prydwen independently.
+  ['Mortefi', "Dragon's Breath", 'New Federation', 'Huaxu Academy', { en: 'Joseph May', cn: 'Liu Yijia', jp: 'Miura Katsuyuki', kr: 'Kim Da-ol' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -2855,12 +2882,24 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Light Surge', '50%×2'],
     ['Outro', 'Radiant Blessing', '+12% Glacio DMG (14s)'],
   ],
+  // corrected 2026-08-18: replaced the old generic "Stage 1-4" placeholder values (fabricated move names
+  // "Violent Crescendo"/"Fury Overture"/"Flame Reprise" don't exist on the real kit at all) with real
+  // Lv.10 Attribute Scaling values and move names from wutheringwaves.fandom.com/wiki/Mortefi/Combat's
+  // Forte Details table (rendered — the raw wikitext only transcludes {{Forte Table|Mortefi}}), cross-
+  // checked against Prydwen's own Kit tab. Basic ATK's real 4-part combo, Heavy ATK/Mid-air/Dodge Counter
+  // rows, Forte Circuit's Fury Fugue, and both Inherent Skills were entirely missing.
   'Mortefi': [
-    ['Basic ATK', 'Stage 1-4', '20.8% → 17.3%×3 → 15.1%×4 → 38.6%'],
-    ['Skill', 'Passionate Variation', '23.9%×4'],
-    ['Liberation', 'Violent Crescendo', '50% + coordinated Fusion ATK'],
-    ['Intro', 'Fury Overture', '50%'],
-    ['Outro', 'Flame Reprise', '+38% Heavy ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Impromptu Show Stage 1-4', '48.30% → 40.78%×2 → 107.30% → 21.02%×4+126.93%', 'Up to 4 consecutive pistol/flame shots.'],
+    ['Heavy ATK', 'Impromptu Show (aimed shot)', '97.70%', 'Aim then fire a more powerful charged shot.'],
+    ['Heavy ATK', 'Impromptu Show (fully charged)', '167.01%', 'Fully-charged aimed shot.'],
+    ['Mid-air', 'Impromptu Show', '23.25%+23.25%', 'Consumes STA for consecutive mid-air shots.'],
+    ['Dodge Counter', 'Impromptu Show', '194.98%', 'Basic ATK after a successful Dodge.'],
+    ['Skill', 'Passionate Variation', '208.76%', 'Launches a flame-lightning flash forward, dealing Fusion DMG. 14s CD.'],
+    ['Liberation', 'Violent Finale', '159.05%', 'Fusion DMG plus applies Burning Rhapsody to the whole team (10s, 20s CD).'],
+    ['Liberation', 'Marcato (Coordinated ATK)', '31.81%', 'During Burning Rhapsody: on-field Basic ATK hit → 1 Marcato; on-field Heavy ATK hit → 2 Marcato. Max 1 Coordinated ATK/0.35s.'],
+    ['Forte', 'Fury Fugue', '326.05%', 'Replaces Resonance Skill once Annoyance reaches 100; consumes all Annoyance, counted as Resonance Skill DMG.'],
+    ['Intro', 'Dissonance', '168.99%', 'Fusion DMG opener.'],
+    ['Outro', 'Rage Transposition', '+38% Heavy ATK DMG Amp (14s or until swapped)', 'Grants the incoming character Heavy ATK DMG Amplification.'],
   ],
   'Sanhua': [
     ['Basic ATK', 'Frigid Light Stage 1-5', '48.71% → 73.76% → 21.58%×4 → 39.67%×2 → 233.81%', 'Up to 5 Glacio strikes.'],
@@ -3466,6 +3505,20 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Thunder Wedge', note: 're-deploy Thunder Wedge to keep the Coordinated ATK field active' },
     { type: 'Outro', skill: 'Lightning Manipulation', note: 'swap out — depletes enemy Vibration Strength, no DMG; quickswap into the main DPS immediately' },
   ],
+  // Added 2026-08-18 (previously entirely missing) — sourced from Prydwen's Gameplay and teams "Rotation"
+  // list and fandom's Mortefi/Combat Instructions/Forte text. His Concerto rotation is one of the
+  // fastest in the game: build Annoyance to trigger Fury Fugue twice, then Liberation right before
+  // swapping so Burning Rhapsody's off-field Coordinated ATKs and the Outro's Heavy ATK buff both land
+  // on the incoming Heavy Attacker.
+  'Mortefi': [
+    { type: 'Intro', skill: 'Dissonance', note: 'Fusion DMG opener, builds Annoyance' },
+    { type: 'Skill', skill: 'Passionate Variation', note: 'builds Annoyance and opens a 5s window where Basic ATK hits restore extra Annoyance' },
+    { type: 'Forte', skill: 'Fury Fugue', note: 'cast once Annoyance is full — no CD, counted as Resonance Skill DMG' },
+    { type: 'Basic ATK', skill: 'Impromptu Show', note: 'Basic ATK combo (Parts 1-4) inside the post-Skill Annoyance window to refill Fury Fugue fast' },
+    { type: 'Forte', skill: 'Fury Fugue', note: 'cast again once Annoyance refills' },
+    { type: 'Liberation', skill: 'Violent Finale', note: 'cast right before swapping out — applies Burning Rhapsody (off-field Coordinated ATK Marcato hits) to the whole team' },
+    { type: 'Outro', skill: 'Rage Transposition', note: 'swap into the main Heavy Attacker — grants them 38% Heavy ATK DMG Amp for 14s; Impermanence Heron\'s swap-cancel adds a further buff on the same swap' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
@@ -3624,7 +3677,18 @@ const RESONANCE_CHAIN_DATA = {
   // the real value 100. S6 team ATK+10%/stack, stacking to 2 (=20% max) for 20s (confirmed exact),
   // unchanged.
   'Sanhua':       { s1: { critRate: 15 }, s2: { totalMult: 5 }, s3: { totalMult: 35 }, s4: { heavyDmg: 120 }, s5: { critDmg: 100 }, s6: { atkPct: 20 } },
-  'Mortefi':      { s1: { heavyDmg: 10 }, s2: { totalMult: 10 }, s3: { heavyDmg: 10 }, s4: { coordDmg: 15 }, s5: { totalMult: 10 }, s6: { heavyDmg: 40 } },
+  // corrected 2026-08-18: prior values (heavyDmg/totalMult/coordDmg guesses on every node) had no basis
+  // in Mortefi's real chain kit (fandom Combat page rendered Resonance Chain table, matches Prydwen's Kit
+  // tab wording exactly) — none of his nodes touch Heavy ATK DMG at all. Real effects: S1 Solitary Etude —
+  // during Burning Rhapsody, Coordinated Attacks also trigger off the on-field character's Resonance
+  // Skill hits, firing 2 Marcato (extra proc source, no DMG% stat in schema, kept as small totalMult). S2
+  // Hypocritical Hymn — Echo Skill use restores +10 Resonance Energy, 20s CD (pure utility, not modeled,
+  // kept as small totalMult). S3 Flaming Recitativo — during Burning Rhapsody, Marcato Crit DMG+30%
+  // (confirmed exact, modeled as critDmg). S4 Cathartic Waltz — Burning Rhapsody duration +7s (utility, no
+  // DMG stat, kept as small totalMult). S5 Funerary Quartet — Skill/Fury Fugue hits fire 4 bonus Marcato
+  // hits at 50% reduced DMG (extra proc source, kept as small totalMult). S6 Apoplectic Instrumental — on
+  // Liberation cast, team ATK+20% for 20s (confirmed exact, modeled as atkPct).
+  'Mortefi':      { s1: { totalMult: 6 }, s2: { totalMult: 3 }, s3: { critDmg: 30 }, s4: { totalMult: 4 }, s5: { totalMult: 8 }, s6: { atkPct: 20 } },
   // Danjin re-verified 2026-08-18 against fandom's Chain Node pages (Crimson Heart of Justice/Dusted
   // Mirror/Fleeting Blossom/Solitary Carnation/Reigning Blade/Bloodied Jade wikitext, cross-checked with
   // Prydwen's Kit tab Resonance Chain text — identical wording): S1 ATK+5% per stack on Incinerating Will
@@ -4404,6 +4468,20 @@ const SKILL_ICONS = {
     'Thunder Bombardment': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/27/Skill_Thunder_Bombardment.png',
     'Lightning Manipulation': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e4/Skill_Lightning_Manipulation.png',
   },
+  // added 2026-08-18 — previously entirely missing (Mortefi's SKILL_MULTIPLIERS rows had no icon
+  // lookup at all). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the
+  // MediaWiki API (action=query&titles=File:Skill X.png&prop=imageinfo&iiprop=url). 'Marcato' (the
+  // Coordinated ATK hit fired during Burning Rhapsody) has no dedicated icon file on the wiki — it's a
+  // sub-effect of Resonance Liberation Violent Finale, so it reuses that icon.
+  'Mortefi': {
+    'Impromptu Show': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/28/Skill_Pistols.png',
+    'Passionate Variation': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/35/Skill_Passionate_Variation.png',
+    'Violent Finale': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Skill_Violent_Finale.png',
+    'Marcato': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Skill_Violent_Finale.png',
+    'Fury Fugue': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ab/Skill_Fury_Fugue.png',
+    'Dissonance': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d3/Skill_Dissonance.png',
+    'Rage Transposition': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c0/Skill_Rage_Transposition.png',
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -4864,6 +4942,16 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/39/Sequence_Node_Neighborhood_Protector.png',
     s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/67/Sequence_Node_Defender_of_All_Realms.png',
   },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
+  // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Mortefi/Combat&prop=images).
+  'Mortefi': {
+    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e8/Sequence_Node_Solitary_Etude.png',
+    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d2/Sequence_Node_Hypocritical_Hymn.png',
+    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/63/Sequence_Node_Flaming_Recitativo.png',
+    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c5/Sequence_Node_Cathartic_Waltz.png',
+    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/cc/Sequence_Node_Funerary_Quartet.png',
+    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Sequence_Node_Apoplectic_Instrumental.png',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -4924,6 +5012,8 @@ const CHAIN_NODE_NAMES = {
   'Taoqi': { s1: 'Essense of Tranquility', s2: 'Silent Strength', s3: 'Keen-eyed Observer', s4: 'Heavylifting Duty', s5: 'Benevolent Guardian', s6: 'Defender of Peace' },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's Yuanwu/Combat Resonance Chain table.
   'Yuanwu': { s1: 'Steaming Cup of Justice', s2: 'Fierce Heart, Serene Mind', s3: 'Upholder of Integrity', s4: 'Retributive Knuckles', s5: 'Neighborhood Protector', s6: 'Defender of All Realms' },
+  // added 2026-08-18 — previously entirely missing. Sourced from fandom's Mortefi/Combat Resonance Chain table.
+  'Mortefi': { s1: 'Solitary Etude', s2: 'Hypocritical Hymn', s3: 'Flaming Recitativo', s4: 'Cathartic Waltz', s5: 'Funerary Quartet', s6: 'Apoplectic Instrumental' },
   // Danjin's node names added 2026-08-18 via wutheringwaves.fandom.com's Danjin/Combat page (Resonance
   // Chain table + Sequence_Node_*.png filenames) — was previously missing entirely.
   'Danjin': { s1: 'Crimson Heart of Justice', s2: 'Dusted Mirror', s3: 'Fleeting Blossom', s4: 'Solitary Carnation', s5: 'Reigning Blade', s6: 'Bloodied Jade' },
