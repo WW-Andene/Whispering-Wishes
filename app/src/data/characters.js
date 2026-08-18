@@ -672,11 +672,20 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
     teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Hiyuki + Lynae', 'Suisui + Aemeath + Denia'] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Swordswoman who wields a stringed blade of Aero. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks.',
+    desc: 'Paragon of Mengzhou. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks and her own Mindlock stacks.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
-    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
+    // specialty confirmed 2026-08-18 via fandom's own File:Blade_Blossom.png/Item Infobox ("Ascension
+    // Material (Mengzhou)", the specialty-material tier for her home city) — boss/common materials
+    // still have no dedicated wiki page or uploaded icon this close to her 2026-08-20 release.
+    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Blade Blossom' },
     skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
     bestEchoes: ['Heart of Evil\'s Purge 5pc'], bestWeapon: 'Glint of Clouds',
+    // weaponAlts added 2026-08-18 from ww.nanoka.cc's own pre-release "Recommended Weapons" ranking
+    // (character/1413, datamined ahead of release — Prydwen has no build guide published yet):
+    // Blazing Brilliance is the only ranked non-signature 5★; Endless Collapse the only ranked 4★;
+    // Sword of Night is the 3★ fallback (unranked by nanoka), matching the "<Weapon Type> of Night"
+    // naming convention used elsewhere.
+    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
@@ -1148,6 +1157,7 @@ const CHARACTER_DATA = {
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
   ['Qiuyuan',      'Huanglong'], ['Yangyang: Xuanling', 'Huanglong'], ['Suisui', 'Huanglong'],
+  ['Qingxiao',     'Huanglong'],
   // Huanglong 4★
   ['Aalto',        'Huanglong'], ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
   ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
@@ -1371,6 +1381,14 @@ const CHARACTER_DATA = {
   // exists for Zhaoming Commerce Guild on the wiki, so it's intentionally left out of FACTION_ICONS
   // rather than guessed, same as the Jinzhou/Mingting precedent. Birthday: blank on the infobox.
   ['Suisui', 'Host of Harmony', 'Huanglong', 'Zhaoming Commerce Guild', { en: 'Emily Piggford', cn: 'Sun Yanqi', jp: 'Fukuen Misato', kr: 'Park Ji-yoon' }],
+  // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Qingxiao&prop=wikitext&section=0) from
+  // fandom's own "Upcoming" stub infobox, 2 days ahead of her 2026-08-20 release — title/birthplace/
+  // nation/affiliations/VAs are already confirmed there even though the Combat subpage doesn't exist
+  // yet. birthplace/nation both Huanglong (REGION_DATA above). organization uses her primary
+  // affiliation 'Mengzhou' (the city she's the "Paragon" of, per her own quote/intro text and its own
+  // dedicated FACTION_ICONS emblem) over affiliation2 'Xuanfang Wardens'. Birthday: blank on the
+  // infobox, omitted from BIRTHDAY_DATA per the established convention.
+  ['Qingxiao', 'Heart Sword', 'Huanglong', 'Mengzhou', { en: 'Kirsty Rider', cn: 'Jiang He', jp: 'Nabatame Hitomi', kr: 'Park Ri-na' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
 });
@@ -1522,9 +1540,12 @@ const CHAR_BUFF_TABLE = {
   'Qingxiao': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' }],
-    debuffs: [{ stat: 'deepen', value: 40, duration: 999, condition: 'Resonance Chain 6 — targets w/ Mindlock take +40% DMG from key skills' }],
-    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic.',
+    selfBuffs: [
+      { stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' },
+      { stat: 'skillDmg', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
+    ],
+    debuffs: [{ stat: 'deepen', value: 49, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
+    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, ~49% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S1/S2 raise the stack cap to 25). Pre-release data via ww.nanoka.cc datamine (2026-08-18, releases 2026-08-20) — subject to change at launch.',
   },
   'Jingran': {
     outroBuffs: [],
@@ -4313,6 +4334,11 @@ const CHAIN_NODE_NAMES = {
   'Lucilla': { s1: 'Distant Noon', s2: 'Slumbering Moonlight', s3: 'Days Fade Unheard', s4: 'The Past Fades Into Silence', s5: 'Time is Like a Stream', s6: 'Gazing In the Mist of Time' },
   'Yangyang: Xuanling': { s1: "At the Wind's Breath, the Blossoms Wake", s2: 'River Carries Her Song Away', s3: 'My Grief Follows You into the Clouds', s4: 'Across the Miles, a Letter and My Longing', s5: 'Take Wing. Take Wing.', s6: 'Let the Azure Keep Its Light' },
   'Suisui': { s1: 'Mountains Washed Into Paintings', s2: 'Clouds Pour Like Molten Gold', s3: 'Sparse Curtains Invite Evening Glow', s4: 'Autumn Mountains in Choir Sing', s5: 'I Long To Ride The Eastern Wind', s6: 'Staying True To This Splendid Realm' },
+  // Qingxiao's node names confirmed 2026-08-18 via ww.nanoka.cc's pre-release datamine (character/1413)
+  // — icons NOT populated in CHAIN_NODE_ICONS above: fandom has no Sequence Node assets uploaded yet
+  // (verified via direct MediaWiki titles queries, all "missing"), a genuine pre-release gap 2 days
+  // ahead of her release, not a fetch failure.
+  'Qingxiao': { s1: 'Like Clouds That Meet and Drift Apart', s2: 'Like Petals That Fall Without a Sound', s3: 'Dreams Fade, Sword Abides', s4: 'Wherever the Road Leads, Side by Side', s5: 'Cold Steel That Longs to Warm the Snow', s6: 'Cleanse This Tarnished Age, Till All Runs Clear' },
 };
 
 // Release order for sorting (based on first banner appearance)

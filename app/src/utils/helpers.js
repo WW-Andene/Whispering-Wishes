@@ -217,6 +217,9 @@ const FACTION_ICONS = {
   // REGION_ICONS entry below, matching the Black Shores dual-use precedent (a name that's both a
   // nation and a faction shares one emblem rather than needing two).
   'Lahai-Roi':             'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
+  // Added 2026-08-18 for Qingxiao's audit: Mengzhou is a city within Huanglong (like Jinzhou) with its
+  // own dedicated emblem, sourced from fandom's File:Mengzhou_Emblem.png (uploaded for her 3.6 release).
+  'Mengzhou':              'https://i.ibb.co/hJV68MmF/mengzhou-emblem.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // In-game nation/region emblem icons, re-hosted on ibb.co. Same convention as FACTION_ICONS but for

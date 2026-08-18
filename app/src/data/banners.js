@@ -67,7 +67,10 @@ const BANNER_HISTORY = [
   // release date, and the usual 21-day cycle for Version halves." Characters/weapons confirmed via
   // game8.co archive 453303 (Aug 10 2026 update), kit data not final until release.)
   { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
-  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', predicted: true },
+  // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
+  // rerun here, Qingxiao is this banner's new headliner). Now Qingxiao's own splash art, sourced from
+  // fandom's File:Qingxiao_Splash_Art.png via the MediaWiki API ahead of her 2026-08-20 release.
+  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/Hf3J3Ypc/qingxiao-splash.webp', predicted: true },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
   // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
   // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously
@@ -398,8 +401,10 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Denia': 'https://i.ibb.co/B59KDGHZ/Denia-Full-Sprite.webp',
   'Hiyuki': 'https://i.ibb.co/Q5s9CMF/Hiyuki-Full-Sprite.webp',
   'Suisui': 'https://i.ibb.co/Q7z2ZLGV/Suisui-Full-Sprite.webp',
+  // Qingxiao sourced 2026-08-18 from fandom's own File:Qingxiao_Full_Sprite.png (uploaded 2026-08-17,
+  // ahead of her 2026-08-20 release, via the MediaWiki API — bypasses the site's Cloudflare challenge).
+  'Qingxiao': 'https://i.ibb.co/27tS4Zw1/qingxiao-sprite.webp',
   // v3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
-  'Qingxiao': PLACEHOLDER_IMAGE,
   'Jingran': PLACEHOLDER_IMAGE,
   // 4★ Resonators
   'Aalto': 'https://i.ibb.co/v81v3Hq/Aalto-Full-Sprite.webp',
