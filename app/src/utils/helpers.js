@@ -212,6 +212,16 @@ const FACTION_ICONS = {
   // Added 2026-08-17 for Augusta's audit: Septimont is a city-state region of Rinascita (see
   // REGION_DATA's fix in characters.js) but also has its own dedicated emblem, used as her organization.
   'Septimont':             'https://i.ibb.co/0pV0d4Yg/septimont-emblem.webp',
+  // Added 2026-08-17 for Lucy's audit: her organization field is the nation Lahai-Roi itself (see
+  // characters.js's IDENTITY_DATA comment) — reuses the same Roya Frostlands Emblem asset as the
+  // REGION_ICONS entry below, matching the Black Shores dual-use precedent (a name that's both a
+  // nation and a faction shares one emblem rather than needing two).
+  'Lahai-Roi':             'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
+  // Added 2026-08-18 for Qingxiao's audit: Mengzhou is a city within Huanglong (like Jinzhou) with its
+  // own dedicated emblem, sourced from fandom's File:Mengzhou_Emblem.png (uploaded for her 3.6 release).
+  'Mengzhou':              'https://i.ibb.co/hJV68MmF/mengzhou-emblem.webp',
+  // Added 2026-08-18 for Baizhi's 4★ audit, sourced from fandom's File:Huaxu_Academy.png.
+  'Huaxu Academy':         'https://i.ibb.co/hFdM9DTy/huaxu-academy.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // In-game nation/region emblem icons, re-hosted on ibb.co. Same convention as FACTION_ICONS but for
@@ -225,8 +235,67 @@ const REGION_ICONS = {
   // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
   // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
   'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
+  // Fixed 2026-08-17 (was File:Lahai-Roi.png, a 1920x1080 gameplay screenshot, not an emblem — wrong
+  // asset for a badge icon). The nation's own {{Nation Infobox}} on fandom lists File:Roya_Frostlands_
+  // Emblem.png as ITS emblem too (Lahai-Roi is the underground nation beneath the surface Roya
+  // Frostlands, and the wiki has never made a separate emblem for the two) — same asset as the
+  // 'Roya Frostlands' entry below, matching the wiki's own convention rather than guessing a new icon.
+  'Lahai-Roi': 'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
+  // Added 2026-08-17: Aemeath's birthplace (distinct from her Lahai-Roi region tie above) — sourced
+  // from fandom's own File:Roya_Frostlands_Emblem.png. New Federation (Lynae/Mornye's birthplace) has
+  // no dedicated emblem asset on the wiki, so it's intentionally left unset rather than guessed.
+  'Roya Frostlands': 'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
 };
 const getRegionIcon = (region) => REGION_ICONS[region] || null;
+
+// Combat Role tag icons — the small badge row (Main Damage Dealer, Heavy Attack DMG, Traction, DMG
+// Amplification, Tune Rupture Response, etc.) shown on each character's infobox, distinct from the
+// single `role` field (Main DPS/Sub DPS/Healer/etc.) already used elsewhere. Source: fandom's own
+// Combat_Roles wiki page (the fixed, game-wide icon set — every character just picks a subset of these
+// same ~38 icons), re-hosted on ibb.co (2026-08-17). Keys match the infobox `role` field's tag text
+// exactly (semicolon-separated in wikitext, see characters.js's COMBAT_ROLE_DATA comment).
+const COMBAT_ROLE_ICONS = {
+  'Main Damage Dealer':                    'https://i.ibb.co/W4hpCQK0/Role-Main-Damage-Dealer.webp',
+  'Resonance Skill Damage':                'https://i.ibb.co/pBKR9Cnh/Role-Resonance-Skill-Damage.webp',
+  'Concerto Efficiency':                   'https://i.ibb.co/QvrG5dSh/Role-Concerto-Efficiency.webp',
+  'Traction':                              'https://i.ibb.co/z9nYB8L/Role-Traction.webp',
+  'Resonance Liberation Regeneration':     'https://i.ibb.co/rRwcLxNs/Role-Resonance-Liberation-Regeneration.webp',
+  'Support and Healer':                    'https://i.ibb.co/xSxCY50N/Role-Support-And-Healer.webp',
+  'Coordinated Attack':                    'https://i.ibb.co/zWxYmVq3/Role-Coordinated-Attack.webp',
+  'DMG Amplification':                     'https://i.ibb.co/1tbwQf7c/Role-DMGAmplification.webp',
+  'Basic Attack DMG Amplification':        'https://i.ibb.co/VcHHWdsP/Role-Basic-Attack-DMGAmplification.webp',
+  'Resonance Liberation Damage':           'https://i.ibb.co/VWpRsvgx/Role-Resonance-Liberation-Damage.webp',
+  'Resonance Skill DMG Amplification':     'https://i.ibb.co/PHkR7pc/Role-Resonance-Skill-DMGAmplification.webp',
+  'Stagnation':                            'https://i.ibb.co/jkksyQRy/Role-Stagnation.webp',
+  'Basic Attack Damage':                   'https://i.ibb.co/QFG8KmHN/Role-Basic-Attack-Damage.webp',
+  'Havoc DMG Amplification':               'https://i.ibb.co/WNGg3bcj/Role-Havoc-DMGAmplification.webp',
+  'Aero DMG Amplification':                'https://i.ibb.co/j9x4bJ4M/Role-Aero-DMGAmplification.webp',
+  'Heavy Attack Damage':                   'https://i.ibb.co/dsRPFN0h/Role-Heavy-Attack-Damage.webp',
+  'Heavy Attack DMG Amplification':        'https://i.ibb.co/4wjWDVxF/Role-Heavy-Attack-DMGAmplification.webp',
+  'Resonance Liberation DMG Amplification': 'https://i.ibb.co/MDvPXhD4/Role-Resonance-Liberation-DMGAmplification.webp',
+  'Electro DMG Amplification':             'https://i.ibb.co/4Rw38fBj/Role-Electro-DMGAmplification.webp',
+  'Vibration Strength Reduction':          'https://i.ibb.co/gM2GBSkv/Role-Vibration-Strength-Reduction.webp',
+  'Interruption Resistance Boost':         'https://i.ibb.co/1tWDtMZK/Role-Interruption-Resistance-Boost.webp',
+  'Fusion DMG Amplification':              'https://i.ibb.co/hFQJvK5t/Role-Fusion-DMGAmplification.webp',
+  'Glacio DMG Amplification':              'https://i.ibb.co/Gv9NJ8sF/Role-Glacio-DMGAmplification.webp',
+  'Spectro DMG Amplification':             'https://i.ibb.co/sJVW2xP6/Role-Spectro-DMGAmplification.webp',
+  'Coordinated Attack DMG Amplification':  'https://i.ibb.co/G34ytqhK/Role-Coordinated-Attack-DMGAmplification.webp',
+  'Spectro Frazzle':                       'https://i.ibb.co/tpjNJZ4q/Role-Spectro-Frazzle-Role.webp',
+  'Aero Erosion':                          'https://i.ibb.co/YBfF4MZJ/Role-Aero-Erosion-Role.webp',
+  'Echo Skill DMG Amplification':          'https://i.ibb.co/ccGBSck3/Role-Echo-Skill-DMGAmplification.webp',
+  'Glacio Chafe':                          'https://i.ibb.co/CK3CZrT8/Role-Glacio-Chafe-Role.webp',
+  'Electro Flare':                         'https://i.ibb.co/wFQpCbgN/Role-Electro-Flare-Role.webp',
+  'Fusion Burst':                          'https://i.ibb.co/YFnMtBws/Role-Fusion-Burst-Role.webp',
+  'Havoc Bane':                            'https://i.ibb.co/kV0kLwbb/Role-Havoc-Bane-Role.webp',
+  'Tune Rupture Response':                 'https://i.ibb.co/5X8kGT3f/Role-Tune-Rupture-Response.webp',
+  'Tune Break Boost':                      'https://i.ibb.co/PZY92L4r/Role-Tune-Break-Boost.webp',
+  'Tune Strain Response':                  'https://i.ibb.co/jZJchddX/Role-Tune-Strain-Response.webp',
+  'Off-Tune Buildup Efficiency':           'https://i.ibb.co/Jjcpjtg6/Role-Off-Tune-Buildup-Efficiency.webp',
+  'Echo Skill Damage':                     'https://i.ibb.co/XrLtSVzH/Role-Echo-Skill-Damage.webp',
+  'Hack Response':                         'https://i.ibb.co/jPFyVDzn/Role-Hack-Response.webp',
+};
+const getCombatRoleIcon = (tag) => COMBAT_ROLE_ICONS[tag] || null;
+
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
 //          no longer crashes when document is partially built.
@@ -311,4 +380,6 @@ export {
   getFactionIcon,
   REGION_ICONS,
   getRegionIcon,
+  COMBAT_ROLE_ICONS,
+  getCombatRoleIcon,
 };

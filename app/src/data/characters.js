@@ -499,7 +499,11 @@ const CHARACTER_DATA = {
     skills: ['Reign of Silence', 'Fractured Composition', 'Moment of Nihility', 'Sight of Unraveling - Oblivion'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Summer Flower' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Reminiscence: Threnodian - Leviathan (Thread of Severed Fate, personal DMG) / Fallacy of No Return (Rejuvenating Glow, best overall team ATK)', 'Rejuvenating Glow (best overall, except non-ATK-scaling teams) or Thread of Severed Fate 3pc + Havoc Eclipse/Midnight Veil 2pc (personal DMG)'], bestWeapon: 'Kumokiri',
+    // bestEchoes reshaped 2026-08-17 into the standard [main1, set1, main2, set2] multi-build pairing
+    // (matching Aemeath/Denia's convention) so the detail modal can render each build as its own row with
+    // icons — was previously two long freeform strings baking both options into one entry, which broke
+    // set-icon lookup entirely (no exact key match) and only ever displayed a single unlabeled row.
+    bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc (personal DMG)', 'Fallacy of No Return', 'Rejuvenating Glow 5pc (best overall team ATK)'], bestWeapon: 'Kumokiri',
     weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
     teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
@@ -508,6 +512,13 @@ const CHARACTER_DATA = {
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Core', specialty: 'Rimewisp' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Combustor' },
     bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc'], bestWeapon: 'Spectrum Blaster',
+    // weaponAlts added 2026-08-17 against Prydwen's live build calcs page (30/July/2026 profile update):
+    // Phasic Homogenizer (91.2%) and The Last Dance (85.0%) are the top non-signature 5★ alts (ahead of
+    // Lux & Umbra 82.6%, Woodland Aria 70.3%, Static Mist 81.5% — Static Mist is a QOL pick per Prydwen's
+    // review text but scores lower than these two in raw calcs); Solar Flame (68.8%) and Relativistic Jet
+    // (68.5%) are the best 4★s; Pistols of Night is the 3★ fallback (matches the "<Weapon Type> of Night"
+    // naming convention used for other characters' 3★ slot).
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa'] },
   'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who restores HP via Resonance Skill and Liberation while boosting the team\'s Off-Tune Buildup Rate.',
@@ -515,6 +526,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Gemini Spore' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Carved Crystal' },
     bestEchoes: ['Reactor Husk', 'Halo of Starry Radiance 5pc'], bestWeapon: 'Starfield Calibrator',
+    // weaponAlts added 2026-08-17: Prydwen's live build calcs only rank 3 weapons total for Mornye
+    // (Signature, then Discord/Broadblade#41 as 4★ Energy Regen picks — she has no ranked 5★ alt since
+    // no other 3.x Broadblade offers her key ER stat). Verdant Summit added as the 5★ alt slot as a
+    // generic ATK/Crit DMG stat-stick (same fallback role it plays for other Broadblade users' alt5
+    // slots elsewhere in this file); Broadblade of Night is the 3★ fallback, matching the "<Weapon
+    // Type> of Night" naming convention used for other characters' 3★ slot.
+    weaponAlts: { alt5: ['Verdant Summit'], alt4: ['Discord', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
     teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia'] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles Aureole of Execution's three enhanced forms and deals bonus Total DMG by responding to Tune Strain - Interfered.",
@@ -522,6 +540,12 @@ const CHARACTER_DATA = {
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Pendant', specialty: 'Edelschnee' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Twin Nova - Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Blazing Justice (83.4%) and
+    // Moongazer's Sigil (80.7%) are the top non-signature 5★ Gauntlets (ahead of Verity's Handle 80.2%,
+    // Tragicomedy 74.5%, Abyss Surges 66.5%); Pulsation Bracer (85.7%, the permanent-banner F2P pick,
+    // Prydwen's explicit second-best overall) and Celestial Spiral (65.9%) are the best 4★s; Gauntlets of
+    // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Blazing Justice', "Moongazer's Sigil"], alt4: ['Pulsation Bracer', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between Tune Rupture and Fusion Burst Resonance Modes, dealing massive Resonance Liberation DMG through Seraphic Duet and Heavenfall Edict.',
@@ -529,6 +553,12 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Moss Amber' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Polarizer' },
     bestEchoes: ['Sigillum', 'Trailblazing Star 5pc'], bestWeapon: 'Everbright Polestar',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Emerald of Genesis (83.5%) and Red
+    // Spring (83.2%) are the top non-signature 5★ Swords (ahead of Emerald Sentence 82.9%, Blazing
+    // Brilliance 78.1%); Feather Edge (74.8%) and Somnoire Anchor (74.1%) are the best 4★s (ahead of
+    // Endless Collapse 73.9%); Sword of Night is the 3★ fallback, matching the "<Weapon Type> of Night"
+    // naming convention used for other characters' 3★ slot.
+    weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Feather Edge', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
     teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye'] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
@@ -536,6 +566,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Pendant', specialty: 'Arithmetic Shell' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Nameless Explorer', 'Sound of True Name 5pc'], bestWeapon: 'Solsworn Ciphers',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Blazing Justice (85.4%) and Pulsation
+    // Bracer (81.8%, her best permanent-banner pick) are the top non-signature 5★ Gauntlets (ahead of
+    // Verity's Handle 78.5%, Moongazer's Sigil 76.3%, Abyss Surges 69.4%); Aether Strike (69.4%) and
+    // Legend of Drunken Hero (best F2P no-gacha pick) are the best 4★s; Gauntlets of Night is the 3★
+    // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere (Prydwen doesn't
+    // rank a 3★ for her at all — she "lacks strong F2P weapon alternatives" per its own review).
+    weaponAlts: { alt5: ['Blazing Justice', 'Pulsation Bracer'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
     teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Qiuyuan + Ciaccona'] },
   'Rebecca': { rarity: 5, element: 'Electro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Edgerunner and Fury-Type Arsenal from the Cyberpunk: Edgerunners collab. Electro Hybrid who mode-switches between Huntress and Guts stances, buffing team Heavy ATK DMG and All DMG Amplification via her Outro turret.',
@@ -543,13 +580,27 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Nightmare Flashdrive', common: 'Mech Core', specialty: 'Past Reveries' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Combustor' },
     bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'], bestWeapon: 'Skull Thrasher',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Lucy+Mornye team average): Spectrum
+    // Blaster (96.3%) and Static Mist (93.3%) are the top non-signature 5★ Pistols (ahead of Phasic
+    // Homogenizer, Woodland Aria, The Last Dance, Spectral Trigger, Lux & Umbra); Solar Flame (79.1%)
+    // and Relativistic Jet (79.0%) are the best 4★s (ahead of the craftable Pistols#26); Pistols of Night
+    // is the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
+    // naming convention used elsewhere.
+    weaponAlts: { alt5: ['Spectrum Blaster', 'Static Mist'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Rebecca + Yangyang: Xuanling + Lucy', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'President of Startorch Academy. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
+    desc: 'President and head of Startorch Academy, former chief editor of the New Federation\'s top academic journal. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
     ascension: { boss: "Suncoveter's Reach", common: 'Mech Core', specialty: 'Forget-Me-Not' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
     bestEchoes: ['Glommoth', 'Wishes of Quiet Snowfall 5pc (Chafe)', 'Impermanence Heron', 'Moonlit Clouds 5pc (Echo)'], bestWeapon: 'Freeze Frame',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Hiyuki Chafe / Sigrika+Shorekeeper
+    // Echo team average): Whispers of Sirens (95.7%/81.6%) and Stringmaster (95.6%/87.6%) are the top
+    // non-signature 5★ Rectifiers (ahead of Lethean Elegy, Rime-Draped Sprouts, Forged Dwarf Star,
+    // Luminous Hymn, Cosmic Ripples); Radiant Dawn (90.4%/68.6%) and Augment (89.1%/73.3%) are the best
+    // Battle Pass 4★s (ahead of Waltz in Masquerade); Rectifier of Night is the 3★ fallback (Prydwen
+    // doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Whispers of Sirens', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Lucilla + Hiyuki + Chisa', 'Lucilla + Sigrika + Shorekeeper', 'Lucilla + Phrolova + Qiuyuan'] },
   'Lucy': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Main DPS',
     desc: 'The Netrunner, from the Cyberpunk: Edgerunners collab. Spectro DPS who builds TCP/Root Access into an enhanced Heavy Attack and a battlefield-freezing Ultimate with selectable Spoofing Program debuffs, dealing bonus DMG via the Hack mechanic.',
@@ -557,6 +608,13 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Nightmare Flashdrive', common: 'Exoswarm Core', specialty: 'Past Reveries' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Combustor' },
     bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Rite of Gilded Revelation 2pc'], bestWeapon: 'Spectral Trigger',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Rebecca+Mornye team average): Lux &
+    // Umbra (88.4%) and Skull Thrasher (83.5%) are the top non-signature 5★ Pistols (ahead of Phasic
+    // Homogenizer, The Last Dance, Spectrum Blaster, Static Mist, Woodland Aria); Solar Flame (67.5%)
+    // and Relativistic Jet (64.6%) are the best 4★s (ahead of the craftable Pistols#26); Pistols of Night
+    // is the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
+    // naming convention used elsewhere.
+    weaponAlts: { alt5: ['Lux & Umbra', 'Skull Thrasher'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Iuno + Shorekeeper'] },
   'Yangyang: Xuanling': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG — one of the highest damage ceilings in the game at release.',
@@ -564,13 +622,27 @@ const CHARACTER_DATA = {
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Cloudperch Seed' },
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Polarizer' },
     bestEchoes: ['Thousand-Puppet Pavilion', 'Song of Feathered Trace 5pc'], bestWeapon: 'Azure Oath',
+    // weaponAlts added 2026-08-18 from Prydwen's live build calcs (Lynae+Chisa team): Emerald Sentence
+    // (87.8%) and Red Spring (80.5%) are the top non-signature 5★ Swords (ahead of Everbright Polestar,
+    // Frostburn, Emerald of Genesis, Blazing Brilliance); Lumingloss (70.4%, Prydwen's explicit best
+    // 4★) and Fables of Wisdom (her best F2P no-gacha pick) are the only ranked 4★s; Sword of Night is
+    // the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming
+    // convention used elsewhere.
+    weaponAlts: { alt5: ['Emerald Sentence', 'Red Spring'], alt4: ['Lumingloss', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Department of Voidmatters student at Startorch Academy. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
+    desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Dream of Stars' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'String' },
     bestEchoes: ['Reminiscence: Denia', 'Chromatic Foam 5pc (Fusion Burst)', 'Voidwing Moth', 'Reel of Spliced Memories 5pc (Tune Strain)'], bestWeapon: 'Forged Dwarf Star',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs (Aemeath+Chisa Fusion Burst / Luuk
+    // Herssen+Mornye Tune Strain average): Stringmaster (91.0%/85.7%) and Lethean Elegy (89.3%/79.9%)
+    // are the top non-signature 5★ Rectifiers (ahead of Luminous Hymn, Whispers of Sirens, Rime-Draped
+    // Sprouts, Cosmic Ripples); Augment (78.3%/67.6%) and Radiant Dawn (77.6%/60.4%) are the best
+    // Battle Pass 4★s (ahead of Waltz in Masquerade, Fusion Accretion, Jinzhou Keeper); Rectifier of
+    // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Stringmaster', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
     teams: ['Denia + Luuk Herssen + Mornye', 'Denia + Aemeath + Lupa'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
@@ -578,6 +650,12 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Redbell' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Reminiscence: Threnodian - Voidborne Construct', 'Wishes of Quiet Snowfall 5pc'], bestWeapon: 'Frostburn',
+    // weaponAlts added 2026-08-17 from Prydwen's live build calcs: Blazing Brilliance (80.8%) and
+    // Emerald of Genesis (80.1%) are the top non-signature 5★ Swords (ahead of Emerald Sentence 79.0%,
+    // Red Spring 79.0%, Everbright Polestar 76.9%); Feather Edge (76.9%, Prydwen's explicit best 4★) and
+    // Fables of Wisdom (71.8%, her best F2P no-gacha pick) are the 4★s; Sword of Night is the 3★
+    // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Blazing Brilliance', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG + Chafe) via Resonance Skill, culminating in a team-wide All DMG Amplification through her Outro.',
@@ -585,37 +663,59 @@ const CHARACTER_DATA = {
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Flowborne Dream' },
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'String' },
     bestEchoes: ['Forbidden Bastion', 'Song of Feathered Trace 5pc'], bestWeapon: "Firstlight's Herald",
+    // weaponAlts added 2026-08-18: Prydwen ranks Suisui's weapons by a simple 1-4 list rather than
+    // percentages. Stellar Symphony (Shorekeeper's Signature, #2) is her only ranked non-signature 5★
+    // (provides enough Energy Regen to max her passives, though its team-ATK passive goes unused);
+    // Variation (#3, best cost-efficiency pick) and Call of the Abyss (#4, last-resort fallback) are
+    // the 4★s; Rectifier of Night is the 3★ fallback (Prydwen doesn't rank a 3★ for her), matching the
+    // "<Weapon Type> of Night" naming convention used elsewhere.
+    weaponAlts: { alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
     teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Hiyuki + Lynae', 'Suisui + Aemeath + Denia'] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Swordswoman who wields a stringed blade of Aero. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks.',
+    desc: 'Paragon of Mengzhou. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks and her own Mindlock stacks.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
-    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
+    // specialty confirmed 2026-08-18 via fandom's own File:Blade_Blossom.png/Item Infobox ("Ascension
+    // Material (Mengzhou)", the specialty-material tier for her home city) — boss/common materials
+    // still have no dedicated wiki page or uploaded icon this close to her 2026-08-20 release.
+    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Blade Blossom' },
     skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
     bestEchoes: ['Heart of Evil\'s Purge 5pc'], bestWeapon: 'Glint of Clouds',
+    // weaponAlts added 2026-08-18 from ww.nanoka.cc's own pre-release "Recommended Weapons" ranking
+    // (character/1413, datamined ahead of release — Prydwen has no build guide published yet):
+    // Blazing Brilliance is the only ranked non-signature 5★; Endless Collapse the only ranked 4★;
+    // Sword of Night is the 3★ fallback (unranked by nanoka), matching the "<Weapon Type> of Night"
+    // naming convention used elsewhere.
+    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
+    desc: 'A loner treading into illusive depths, of Mengzhou. HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
-    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
-    skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
+    // Dates corrected 2026-08-18: Jingran releases in the v3.6-p2 banner (~2026-09-10, per BANNER_HISTORY),
+    // not Aug 20 (that's Qingxiao's v3.6-p1 date) — fandom's own infobox leaves releaseDate blank/commented
+    // ("2026-09-??"), so no exact day is confirmed yet.
+    ascension: { boss: 'Unconfirmed (releases 3.6, ~Sept 2026)', common: 'Unconfirmed (releases 3.6, ~Sept 2026)', specialty: 'Unconfirmed (releases 3.6, ~Sept 2026)' },
+    skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, ~Sept 2026)', forgery: 'Unconfirmed (releases 3.6, ~Sept 2026)' },
     // bestWeapon confirmed real via nanoka.cc: Thousandfold Deliverance (Broadblade, 413 ATK / +72.2% HP, "Hark, Spirits and Stars").
-    // No community build guide exists yet (unreleased) — bestEchoes/teams remain unconfirmed.
-    bestEchoes: ['Unconfirmed (releases 3.6, Aug 20 2026)'], bestWeapon: 'Thousandfold Deliverance',
-    teams: ['Unconfirmed (releases 3.6, Aug 20 2026)'] },
+    // No community build guide exists yet (unreleased, and he isn't even datamined into nanoka.cc's own
+    // character list yet unlike Qingxiao) — bestEchoes/teams/weaponAlts remain unconfirmed.
+    bestEchoes: ['Unconfirmed (releases 3.6, ~Sept 2026)'], bestWeapon: 'Thousandfold Deliverance',
+    teams: ['Unconfirmed (releases 3.6, ~Sept 2026)'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
     skills: ['Half Truths', 'Shift Trick', 'Flower in the Mist', 'Mistcloak Dash'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'The Last Dance',
-    teams: ['Aalto + Jiyan + Verina', 'Aalto + Cartethyia + Shorekeeper'] },
+    bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'The Last Dance',
+    weaponAlts: { alt5: ['Woodland Aria', 'Static Mist'], alt4: ['Relativistic Jet', 'Undying Flame'], alt3: ['Pistols of Night'] },
+    teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     desc: "Devoted Huaxu Academy researcher accompanied by her companion You'an. Glacio healer who restores HP via Resonance Skill and Liberation, providing consistent team sustain with low field time.",
     skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Cycle of Life'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
+    weaponAlts: { alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
     teams: ['Yangyang + Jiyan + Baizhi', 'Lingyang + Sanhua + Baizhi', 'Encore + Sanhua + Baizhi'] },
   'Chixia': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Energetic patroller who blazes through Jinzhou with dual pistols. On-field Fusion DPS who deals Fusion DMG through rapid-fire Resonance Skill shots and Basic Attack combos.',
@@ -623,7 +723,8 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'The Last Dance',
-    teams: ['Chixia + Changli + Verina', 'Chixia + Mortefi + Baizhi'] },
+    weaponAlts: { alt5: ['Static Mist'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
+    teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Baizhi'] },
   'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Midnight Ranger who trades her own blood for power. Havoc sub-DPS who consumes HP to fuel enhanced Basic and Heavy Attacks, gaining Havoc DMG Bonus as health decreases.',
     skills: ['Execution', 'Crimson Fragment', 'Crimson Bloom', 'Serene Vigil'],
@@ -1062,15 +1163,18 @@ const CHARACTER_DATA = {
   ['Jianxin',      'Huanglong'], ['Lingyang',     'Huanglong'],
   ['Verina',       'Huanglong'], ['Yinlin',       'Huanglong'], ['Jinhsi',       'Huanglong'],
   ['Changli',      'Huanglong'], ['Zhezhi',       'Huanglong'], ['Xiangli Yao',  'Huanglong'],
-  ['Qiuyuan',      'Huanglong'],
+  ['Qiuyuan',      'Huanglong'], ['Yangyang: Xuanling', 'Huanglong'], ['Suisui', 'Huanglong'],
+  ['Qingxiao',     'Huanglong'], ['Jingran',      'Huanglong'],
   // Huanglong 4★
-  ['Aalto',        'Huanglong'], ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
+  ['Baizhi',       'Huanglong'], ['Chixia',       'Huanglong'],
   ['Danjin',       'Huanglong'], ['Yangyang',     'Huanglong'], ['Sanhua',       'Huanglong'],
   ['Taoqi',        'Huanglong'], ['Yuanwu',       'Huanglong'], ['Mortefi',      'Huanglong'],
   ['Youhu',        'Huanglong'], ['Lumi',         'Huanglong'], ['Buling',       'Huanglong'],
   // Black Shores
   ['Shorekeeper',  'Black Shores'], ['Camellya',   'Black Shores'], ['Galbrena',   'Black Shores'],
   ['Encore',       'Black Shores'],
+  // Aalto's own infobox `nation` field reads "The Black Shores", not Huanglong — corrected 2026-08-18.
+  ['Aalto',        'Black Shores'],
   // Rinascita
   ['Carlotta',     'Rinascita'], ['Roccia',       'Rinascita'], ['Phoebe',       'Rinascita'],
   ['Brant',        'Rinascita'], ['Cantarella',   'Rinascita'], ['Zani',         'Rinascita'],
@@ -1082,6 +1186,11 @@ const CHARACTER_DATA = {
   // Lahai-Roi (Startorch Academy)
   ['Chisa',        'Lahai-Roi'], ['Lynae',        'Lahai-Roi'], ['Mornye',       'Lahai-Roi'],
   ['Luuk Herssen', 'Lahai-Roi'], ['Aemeath',      'Lahai-Roi'], ['Sigrika',      'Lahai-Roi'],
+  ['Hiyuki',       'Lahai-Roi'], ['Denia',        'Lahai-Roi'], ['Lucilla',      'Lahai-Roi'],
+  // Night City (Cyberpunk: Edgerunners collab, per both characters' own `nation` infobox field — a
+  // real-world-fiction location outside the Solaris-3 nations above, not a Solaris-3 error; no dedicated
+  // wiki emblem exists for it, same "no icon" convention as New Federation elsewhere in this table).
+  ['Lucy',         'Night City'], ['Rebecca',      'Night City'],
 ].forEach(([name, region]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { region });
 });
@@ -1099,6 +1208,10 @@ const CHARACTER_DATA = {
   ['Danjin',      '08-31'], ['Yangyang',    '10-11'], ['Sanhua',      '01-20'],
   ['Taoqi',       '02-25'], ['Yuanwu',      '10-02'], ['Mortefi',     '11-06'],
   ['Youhu',       '10-13'],
+  // Yangyang: Xuanling shares her 4★ counterpart Yangyang's birthday per fandom's own infobox
+  // ('October 11th', confirmed 2026-08-18 via the MediaWiki API). Suisui's infobox leaves `birthday`
+  // blank — omitted per the established convention rather than guessed.
+  ['Yangyang: Xuanling', '10-11'],
 ].forEach(([name, birthday]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { birthday });
 });
@@ -1125,7 +1238,11 @@ const CHARACTER_DATA = {
   // cn VA corrected 2026-08-17: fandom's own wikitext link text ("Yu Tou") doesn't match the CN actor's
   // real name in its own linked moegirl URL (%E5%BC%A0%E6%98%B1 = 张昱, surname Zhang) — ww.nanoka.cc's
   // Voice Cast list confirms "Elise Zhang", used here instead as the more internally-consistent source.
-  ['Jianxin', 'Guiding Starlance', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
+  // title corrected 2026-08-17 (found while auditing Aemeath, whose real title turned out to be
+  // "Guiding Starlance" per both ww.nanoka.cc character/1210 and fandom): Jianxin's title was wrongly
+  // copied as "Guiding Starlance" too — ww.nanoka.cc character/1405 confirms her actual title is
+  // "Cleansing Reflections".
+  ['Jianxin', 'Cleansing Reflections', 'Huanglong', 'Jinzhou', { en: 'Ioanna Kimbook', cn: 'Elise Zhang', jp: 'Anzai Chika', kr: 'Lee Eunjo' }],
   // organization uses affiliation2 (Liondance Troupe), his specific in-game sub-group within Jinzhou/
   // Huanglong, matching the Jiyan/Midnight Rangers convention above rather than the generic nation tie.
   ['Lingyang', 'Frosty Gusto', 'Huanglong', 'Liondance Troupe', { en: 'Aleksander Varadian', cn: 'Jinli', jp: 'Natsuki Hanae', kr: 'Lee Sangho' }],
@@ -1186,8 +1303,201 @@ const CHARACTER_DATA = {
   // wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as the Jinzhou precedent.
   ['Qiuyuan', 'Bambooscape', 'Huanglong', 'Mingting', { en: 'Jeremy Ang Jones', cn: 'Gan Ziqi', jp: 'Miki Shinichiro', kr: 'Kim Min-ju' }],
   ['Chisa', 'Eye of Unravelling', 'Ashinohara', 'Startorch Academy', { en: 'Leader Looi', cn: 'Zhao Lingze', jp: 'Kanemoto Hisako', kr: 'Lee Joo-eun' }],
+  // Cross-checked ww.nanoka.cc character/1509 against fandom's own infobox — both agree exactly:
+  // birthplace New Federation (born in the Lawless Zone there, before stealing "Lynae"'s identity to
+  // attend Startorch Academy), organization Startorch Academy (her current affiliation; the wiki lists
+  // "Lawless Zone" only as a "formerly" tag, not her active org). Birthday: both sources list "Unknown" —
+  // intentionally left out of BIRTHDAY_DATA above rather than guessed, same as the "omitted" convention
+  // documented there. cn/jp VA names/spellings confirmed identical on both sources.
+  ['Lynae', 'Radiant Spectrum', 'New Federation', 'Startorch Academy', { en: 'Elsie Lovelock', cn: 'Zhu Jing', jp: 'Inoue Marina', kr: 'Choi Hyeon-ji' }],
+  // Cross-checked ww.nanoka.cc character/1209 (matches its own infobox exactly): birthplace New
+  // Federation, organization 'Spacetrek Collective' (the wiki's short Affiliation field — her full
+  // in-universe title is "Spacetrek Collective Research Institute engineer", already captured in her
+  // `desc`). Birthday: 'Unknown' per the site — left out of BIRTHDAY_DATA above, same convention as
+  // Lynae/Augusta/Camellya/etc.
+  ['Mornye', 'Astral Mapping', 'New Federation', 'Spacetrek Collective', { en: 'Michelle Fox', cn: 'Tong Xinzhu', jp: 'Iwami Manaka', kr: 'Oh Ro-ah' }],
+  // Cross-checked ww.nanoka.cc character/1210 against fandom's own infobox — both agree exactly.
+  // birthplace: Roya Frostlands (she's a Roya Tribe native), distinct from her region/nation tie
+  // (Lahai-Roi, in REGION_DATA above) — same birthplace-vs-nation-tie pattern as Verina/Galbrena.
+  // organization: fandom's infobox lists two affiliations (Startorch Academy "on profile" + Roya Tribe);
+  // 'Startorch Academy' is used to match nanoka's single Affiliation field and the Lynae/Mornye
+  // convention for other Startorch-affiliated characters. Birthday: both sources list 'Unknown'.
+  ['Aemeath', 'Guiding Starlance', 'Roya Frostlands', 'Startorch Academy', { en: 'Cara Theobold', cn: 'Wang Yaxin', jp: 'Sato Satomi', kr: 'Kim Ha-ru' }],
+  // Cross-checked ww.nanoka.cc character/1510 against fandom's own infobox — both agree exactly:
+  // birthplace New Federation, organization 'Startorch Academy' (his primary affiliation; the wiki's
+  // affiliation2/3 — Spacetrek Collective, Lollo Logistics — are secondary ties, matching the
+  // Lynae/Mornye/Aemeath convention of using the primary Startorch Academy tie). Birthday: 'Unknown' on
+  // both sources.
+  ['Luuk Herssen', 'Phase Transition', 'New Federation', 'Startorch Academy', { en: 'Griffyn Bellah', cn: 'Ma Zhengyang', jp: 'Tachibana Shinnosuke', kr: 'Min Seung-woo' }],
+  // birthplace: fandom's own infobox lists this as 'Roya Frostlands' (distinct from her Lahai-Roi
+  // region/nation tie, in REGION_DATA above), same birthplace-vs-nation-tie pattern as Aemeath — both are
+  // Roya Tribe natives. ww.nanoka.cc's own Birthplace field shows 'Lahai-Roi' instead (a discrepancy
+  // between the two sources); fandom's is used here as the more granular/precise of the two, matching
+  // the convention already established for Aemeath's identical Roya Frostlands birthplace.
+  // organization: 'Roya Tribe' matches both sources' primary affiliation (nanoka's single Organization
+  // field, and fandom's `affiliation` over `affiliation2` Startorch Academy) — the reverse of Aemeath's
+  // primary tie, despite both characters sharing the same two affiliations.
+  ['Sigrika', 'True Name Manifestation', 'Roya Frostlands', 'Roya Tribe', { en: 'Maya Lindh', cn: 'Qian Chen', jp: 'Akasaki Chinatsu', kr: 'Jang Ye-na' }],
+  // Cross-checked ww.nanoka.cc character/1108 against fandom's own infobox — both agree exactly:
+  // birthplace Ashinohara (a region distinct from Lahai-Roi, where she now resides — see REGION_DATA
+  // above), organization 'Miko of Flaming Sakura' (her primary affiliation on both sources; fandom lists
+  // 3 more secondary ties — Special Response Force, Spacetrek Collective, Startorch Academy — but no
+  // dedicated emblem exists for any of them on the wiki, matching the Jinzhou-precedent convention of
+  // leaving unconfirmed sub-org icons out rather than guessed). Birthday: 'Unknown' on both sources.
+  ['Hiyuki', "Futures' Tithe", 'Ashinohara', 'Miko of Flaming Sakura', { en: 'Mei Mac', cn: 'Li Chanfei', jp: 'Tomatsu Haruka', kr: 'Jung Hye-won' }],
+  // Sourced via wutheringwaves.fandom.com's MediaWiki API (action=parse&page=Denia&prop=wikitext&
+  // section=0), which bypasses the site's Cloudflare challenge. birthplace: the infobox's own
+  // `birthplace` field is literally 'Redacted' (a deliberate in-lore mystery tied to her being a
+  // Fractsidus-created Resonator for Aleph-1, not a sourcing gap — used verbatim rather than guessed).
+  // organization: uses her primary affiliation (Fractsidus, her secret true allegiance) over affiliation2
+  // (Startorch Academy, her cover identity) to match the Phrolova/Fractsidus convention above; nation
+  // 'Lahai-Roi' (REGION_DATA above) is a separate infobox field from either affiliation. Birthday: blank
+  // on the infobox, omitted from BIRTHDAY_DATA per the established 'Unknown' convention.
+  ['Denia', 'Bubbles of Nihility', 'Redacted', 'Fractsidus', { en: 'Jodie Bell Cortez', cn: 'Ge Zinyu', jp: 'Itō Miku', kr: 'Park Si-yoon' }],
+  // Cyberpunk: Edgerunners collab characters, sourced via the MediaWiki API (action=parse&page=Lucy/
+  // Rebecca&prop=wikitext&section=0). birthplace: both infoboxes list 'Unknown'. organization: Lucy's
+  // primary affiliation is 'Lahai-Roi' itself (she's since settled there post-collab-arc, per "At
+  // Dream's Edge" — a specific in-world tie distinct from her REGION_DATA nation, Night City, above);
+  // Rebecca's primary affiliation is blank/'Unknown' on the infobox (she died before the game's events —
+  // per her own infobox `status` field — and never had one), so her affiliation2 'Collaboration
+  // Resonators' (a meta-tag, not an in-universe faction with its own emblem) is used instead, left
+  // icon-less rather than guessed. realname: Lucy's infobox lists 'Lucyna Kushinada' as `realname`, not
+  // surfaced as a separate field here since no other audited character's realname is tracked yet.
+  ['Lucy', 'Xeno-Domain Hacking', 'Unknown', 'Lahai-Roi', { en: 'Emi Lo', cn: 'Song Zhengnan', jp: 'Yūki Aoi', kr: 'Kim Ga-ryeong' }],
+  ['Rebecca', 'Fury-Type Arsenal', 'Unknown', 'Collaboration Resonators', { en: 'Alex Cazares', cn: 'Chen Zhang', jp: 'Kurosawa Tomoyo', kr: 'Park Si-yoon' }],
+  // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
+  // page=Lucilla&prop=wikitext&section=0). birthplace New Federation, distinct from her Lahai-Roi
+  // region tie (REGION_DATA above) — same birthplace-vs-nation-tie pattern as Verina/Galbrena.
+  // organization uses her primary affiliation (Startorch Academy, where she's president) over
+  // affiliation2 (Spacetrek Collective) and the now-inactive affiliation3 (Pioneer Association,
+  // "formerly"), matching the Lynae/Mornye/Aemeath Startorch Academy convention. Birthday: blank on
+  // the infobox, omitted from BIRTHDAY_DATA per the established 'Unknown' convention.
+  ['Lucilla', 'Memory Palace', 'New Federation', 'Startorch Academy', { en: 'Luci Fish', cn: 'Liu Yinuo', jp: 'Itō Shizuka', kr: 'Min-ah' }],
+  // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
+  // page=Yangyang:_Xuanling&prop=wikitext&section=0). title2 'Votary of the Voice' is also given but
+  // not surfaced here (no dual-title field exists yet in this table). birthplace/nation both Huanglong
+  // (REGION_DATA above). organization uses affiliation3 'Xuan Triad' (the group whose members are
+  // called "Xuan Watchers" per the infobox's own extra-effect note — matching her own `desc`'s "Xuan
+  // Watcher of Xuanfang Hold") over the more generic primary affiliation 'Ministry of War' and the
+  // now-inactive affiliation4 'Midnight Rangers' ("formerly"); no dedicated emblem exists for Xuan
+  // Triad on the wiki, so it's intentionally left out of FACTION_ICONS rather than guessed, same as
+  // the Jinzhou/Mingting precedent.
+  ['Yangyang: Xuanling', 'Voices of Azure Plume', 'Huanglong', 'Xuan Triad', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
+  // Cross-checked wutheringwaves.fandom.com's own infobox via the MediaWiki API (action=parse&
+  // page=Suisui&prop=wikitext&section=0). birthplace/nation both Huanglong (REGION_DATA above).
+  // organization uses her primary affiliation (Zhaoming Commerce Guild, where she's director, matching
+  // her own `desc`) over affiliation2 (Mingting, her noble family of birth) — no dedicated emblem
+  // exists for Zhaoming Commerce Guild on the wiki, so it's intentionally left out of FACTION_ICONS
+  // rather than guessed, same as the Jinzhou/Mingting precedent. Birthday: blank on the infobox.
+  ['Suisui', 'Host of Harmony', 'Huanglong', 'Zhaoming Commerce Guild', { en: 'Emily Piggford', cn: 'Sun Yanqi', jp: 'Fukuen Misato', kr: 'Park Ji-yoon' }],
+  // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Qingxiao&prop=wikitext&section=0) from
+  // fandom's own "Upcoming" stub infobox, 2 days ahead of her 2026-08-20 release — title/birthplace/
+  // nation/affiliations/VAs are already confirmed there even though the Combat subpage doesn't exist
+  // yet. birthplace/nation both Huanglong (REGION_DATA above). organization uses her primary
+  // affiliation 'Mengzhou' (the city she's the "Paragon" of, per her own quote/intro text and its own
+  // dedicated FACTION_ICONS emblem) over affiliation2 'Xuanfang Wardens'. Birthday: blank on the
+  // infobox, omitted from BIRTHDAY_DATA per the established convention.
+  ['Qingxiao', 'Heart Sword', 'Huanglong', 'Mengzhou', { en: 'Kirsty Rider', cn: 'Jiang He', jp: 'Nabatame Hitomi', kr: 'Park Ri-na' }],
+  // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Jingran&prop=wikitext&section=0) from
+  // fandom's own "Upcoming" stub infobox — note its `name` field is a stray copy-paste leftover from
+  // Qingxiao's own infobox (a wiki bug, not this table's error); every other field (title, gender,
+  // birthplace, nation, affiliation, VA, quote) is genuinely Jingran-specific and cross-checked against
+  // his own quote/intro text and release-patch pairing with Qingxiao. birthplace/nation both Huanglong
+  // (REGION_DATA above). organization uses his only listed affiliation, 'Mengzhou' (same city/emblem as
+  // Qingxiao — both release in the 3.6 patch). Only JP VA is confirmed pre-release (Kawanishi Kengo);
+  // EN/CN/KR are blank on the infobox, left unset rather than guessed. Birthday: blank, omitted from
+  // BIRTHDAY_DATA per the established convention.
+  ['Jingran', 'Nether Qi Art', 'Huanglong', 'Mengzhou', { jp: 'Kawanishi Kengo' }],
+  // 4★ Resonators — sourced via the MediaWiki API (action=parse&page=X&prop=wikitext&section=0).
+  // Aalto: birthplace New Federation, nation 'The Black Shores' (REGION_DATA above, corrected from the
+  // prior Huanglong bug), organization 'Black Shores' (affiliation).
+  ['Aalto', 'Mistcloak Strike', 'New Federation', 'Black Shores', { en: 'James Day', cn: 'Liang Dawei', jp: 'Iwasaki Ryōta', kr: 'Lim Chae-bin' }],
+  // Baizhi: birthplace/nation both Huanglong. organization uses affiliation2 'Huaxu Academy' (her
+  // research institute) over the generic Jinzhou tie, matching the Jiyan/Changli sub-group convention.
+  ['Baizhi', "Healing You'tan", 'Huanglong', 'Huaxu Academy', { en: 'Samantha Dakin', cn: 'Chen Tingting', jp: 'Seto Asami', kr: 'Seong Ye-won' }],
+  // Chixia: birthplace/nation both Huanglong. organization uses affiliation2 'Public Security Bureau'
+  // over the generic Jinzhou tie, matching the Yinlin precedent (no dedicated emblem exists for it).
+  ['Chixia', 'Gallant Blaze', 'Huanglong', 'Public Security Bureau', { en: 'Harriet Carmichael', cn: 'Cai Na', jp: 'Nagase Anna', kr: 'Kang Eun-ae' }],
 ].forEach(([name, title, birthplace, organization, voiceActor]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { title, birthplace, organization, voiceActor });
+});
+
+// [SECTION:COMBAT_ROLE_DATA] — Per-character Combat Role tag badges (Main Damage Dealer, Heavy Attack
+// DMG, Traction, DMG Amplification, Tune Rupture Response, etc.) — a fixed, game-wide icon set of ~38
+// tags (see helpers.js's COMBAT_ROLE_ICONS) where each character just carries a subset. Distinct from
+// the single `role` field elsewhere (Main DPS/Sub DPS/Healer) — these are the specific mechanical tags
+// from the character's own infobox `role` field (order preserved as listed there).
+// Source: wutheringwaves.fandom.com infobox `role` field, pulled via the MediaWiki API's raw wikitext
+// (prop=revisions) — bypasses the site's Cloudflare challenge entirely. Only characters from Jiyan
+// through Aemeath (RELEASE_ORDER's 1.0–3.1 span) have been audited so far.
+[
+  ['Jiyan', ['Main Damage Dealer', 'Heavy Attack Damage', 'Traction']],
+  ['Yinlin', ['Concerto Efficiency', 'Resonance Skill Damage', 'Coordinated Attack', 'Electro DMG Amplification', 'Resonance Liberation DMG Amplification']],
+  ['Calcharo', ['Main Damage Dealer', 'Resonance Liberation Damage']],
+  ['Encore', ['Main Damage Dealer', 'Basic Attack Damage']],
+  ['Jianxin', ['Support and Healer', 'Heavy Attack Damage', 'Traction', 'Resonance Liberation DMG Amplification']],
+  ['Lingyang', ['Main Damage Dealer']],
+  ['Verina', ['Support and Healer', 'Coordinated Attack', 'DMG Amplification']],
+  ['Aalto', ['Concerto Efficiency', 'Aero DMG Amplification']],
+  ['Baizhi', ['Support and Healer', 'Coordinated Attack', 'DMG Amplification']],
+  ['Chixia', ['Main Damage Dealer']],
+  ['Danjin', ['Concerto Efficiency', 'Havoc DMG Amplification']],
+  ['Yangyang', ['Concerto Efficiency', 'Traction', 'Resonance Liberation Regeneration']],
+  ['Sanhua', ['Concerto Efficiency', 'Basic Attack DMG Amplification']],
+  ['Taoqi', ['Support and Healer', 'Resonance Liberation Damage', 'Resonance Skill DMG Amplification']],
+  ['Yuanwu', ['Concerto Efficiency', 'Coordinated Attack', 'Interruption Resistance Boost', 'Vibration Strength Reduction']],
+  ['Mortefi', ['Concerto Efficiency', 'Resonance Liberation Damage', 'Coordinated Attack', 'Heavy Attack DMG Amplification']],
+  ['Jinhsi', ['Main Damage Dealer', 'Resonance Skill Damage']],
+  ['Changli', ['Main Damage Dealer', 'Resonance Skill Damage', 'Fusion DMG Amplification', 'Resonance Liberation DMG Amplification']],
+  ['Youhu', ['Support and Healer', 'Resonance Skill Damage', 'Vibration Strength Reduction', 'Coordinated Attack DMG Amplification']],
+  ['Zhezhi', ['Concerto Efficiency', 'Basic Attack Damage', 'Coordinated Attack', 'Glacio DMG Amplification', 'Resonance Skill DMG Amplification']],
+  ['Xiangli Yao', ['Main Damage Dealer', 'Resonance Liberation Damage']],
+  ['Shorekeeper', ['Support and Healer', 'Traction', 'DMG Amplification']],
+  ['Lumi', ['Main Damage Dealer', 'Basic Attack Damage', 'Resonance Skill DMG Amplification']],
+  ['Camellya', ['Main Damage Dealer', 'Concerto Efficiency', 'Basic Attack Damage']],
+  ['Carlotta', ['Main Damage Dealer', 'Resonance Skill Damage']],
+  ['Roccia', ['Concerto Efficiency', 'Heavy Attack Damage', 'Traction', 'Havoc DMG Amplification', 'Basic Attack DMG Amplification']],
+  ['Phoebe', ['Main Damage Dealer', 'Concerto Efficiency', 'Spectro Frazzle']],
+  ['Brant', ['Support and Healer', 'Basic Attack Damage', 'Fusion DMG Amplification', 'Resonance Skill DMG Amplification']],
+  ['Cantarella', ['Support and Healer', 'Concerto Efficiency', 'Basic Attack Damage', 'Coordinated Attack', 'Havoc DMG Amplification', 'Resonance Skill DMG Amplification']],
+  ['Zani', ['Main Damage Dealer', 'Heavy Attack Damage', 'Spectro DMG Amplification', 'Spectro Frazzle']],
+  ['Ciaccona', ['Concerto Efficiency', 'Traction', 'Aero Erosion']],
+  ['Cartethyia', ['Main Damage Dealer', 'Aero Erosion', 'Aero DMG Amplification', 'Traction']],
+  ['Lupa', ['Concerto Efficiency', 'Resonance Liberation Damage', 'Fusion DMG Amplification', 'Basic Attack DMG Amplification']],
+  ['Phrolova', ['Main Damage Dealer', 'Resonance Skill Damage', 'Havoc DMG Amplification', 'Heavy Attack DMG Amplification']],
+  ['Augusta', ['Main Damage Dealer', 'Heavy Attack Damage', 'DMG Amplification']],
+  ['Iuno', ['Support and Healer', 'Concerto Efficiency', 'Resonance Liberation Damage', 'Heavy Attack DMG Amplification']],
+  ['Galbrena', ['Main Damage Dealer', 'Heavy Attack Damage']],
+  ['Qiuyuan', ['Concerto Efficiency', 'Heavy Attack Damage', 'Echo Skill DMG Amplification']],
+  ['Chisa', ['Support and Healer', 'Resonance Liberation Damage', 'Havoc Bane']],
+  ['Buling', ['Support and Healer', 'DMG Amplification', 'Electro Flare']],
+  ['Lynae', ['Concerto Efficiency', 'Basic Attack Damage', 'DMG Amplification', 'Resonance Liberation DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Tune Break Boost']],
+  ['Mornye', ['Support and Healer', 'DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Off-Tune Buildup Efficiency']],
+  ['Aemeath', ['Main Damage Dealer', 'Resonance Liberation Damage', 'Tune Rupture Response', 'Fusion Burst', 'DMG Amplification']],
+  // Remaining roster (post-3.1 releases + Rover) added 2026-08-17 so every character carries combatRoles
+  // — otherwise the Combat Profile box silently falls back to the old iconless data.role/dmgFocus badges
+  // for anyone left out. Rover's 4 attunements pulled from their own per-attunement fandom pages
+  // (Rover-Spectro/-Havoc/-Aero/-Electro), not the shared "Rover" page whose `role` field is all 4
+  // attunements' tags concatenated together with no clean separation.
+  ['Rover: Spectro', ['Concerto Efficiency', 'Stagnation', 'Spectro Frazzle']],
+  ['Rover: Havoc', ['Main Damage Dealer']],
+  ['Rover: Aero', ['Support and Healer', 'Resonance Skill Damage', 'Aero Erosion']],
+  ['Rover: Electro', ['Concerto Efficiency', 'Resonance Skill Damage', 'Electro Flare']],
+  ['Luuk Herssen', ['Main Damage Dealer', 'Basic Attack Damage', 'Tune Strain Response']],
+  ['Sigrika', ['Main Damage Dealer', 'Traction', 'Echo Skill Damage']],
+  ['Rebecca', ['Concerto Efficiency', 'Basic Attack Damage', 'Heavy Attack DMG Amplification', 'Tune Break Boost', 'Hack Response']],
+  ['Lucilla', ['Concerto Efficiency', 'Basic Attack Damage', 'Echo Skill Damage', 'Glacio Chafe', 'Echo Skill DMG Amplification']],
+  ['Lucy', ['Main Damage Dealer', 'Heavy Attack Damage', 'Basic Attack DMG Amplification', 'Hack Response']],
+  ['Yangyang: Xuanling', ['Main Damage Dealer', 'Heavy Attack Damage', 'Havoc Bane', 'Traction']],
+  ['Denia', ['Concerto Efficiency', 'Resonance Liberation Damage', 'Traction', 'Fusion Burst', 'Tune Break Boost', 'Tune Strain Response']],
+  ['Hiyuki', ['Main Damage Dealer', 'Resonance Liberation Damage', 'Glacio Chafe']],
+  ['Suisui', ['Support and Healer', 'DMG Amplification', 'Glacio Chafe']],
+  ['Qingxiao', ['Main Damage Dealer', 'Tune Strain Response']],
+  // Jingran intentionally omitted: unreleased (3.6, Aug 20 2026) — fandom's own infobox has an empty
+  // `role` field since Kuro hasn't published her kit yet, matching the "Unconfirmed" placeholder already
+  // used for her bestEchoes/weapon data elsewhere in this file rather than guessing.
+].forEach(([name, combatRoles]) => {
+  if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { combatRoles });
 });
 
 // [SECTION:CHAR_BUFFS] — Per-character buff/debuff data with exact values
@@ -1235,9 +1545,9 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 12, target: 'team', duration: 6, condition: '400+ Floral Epistle consumed, Ceaseless Landscape active' },
     ],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [{ stat: 'critRate', value: 80, target: 'self', duration: 999, condition: 'Inherent Skill Sky Over Water — Awakening Spring/Tinkling Jade hit, once every 25s (also +240% Glacio DMG on that hit)' }],
     debuffs: [],
-    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff.',
+    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff. Inherent Skill Sky Over Water grants a self Crit Rate/Glacio DMG spike on her own Awakening Spring/Tinkling Jade hits, gated to once every 25s.',
   },
   'Lynae': {
     outroBuffs: [
@@ -1259,9 +1569,12 @@ const CHAR_BUFF_TABLE = {
   'Qingxiao': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' }],
-    debuffs: [{ stat: 'deepen', value: 40, duration: 999, condition: 'Resonance Chain 6 — targets w/ Mindlock take +40% DMG from key skills' }],
-    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic.',
+    selfBuffs: [
+      { stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' },
+      { stat: 'skillDmg', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
+    ],
+    debuffs: [{ stat: 'deepen', value: 49, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
+    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, ~49% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S1/S2 raise the stack cap to 25). Pre-release data via ww.nanoka.cc datamine (2026-08-18, releases 2026-08-20) — subject to change at launch.',
   },
   'Jingran': {
     outroBuffs: [],
@@ -1273,16 +1586,27 @@ const CHAR_BUFF_TABLE = {
   'Yangyang: Xuanling': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'Havoc Bane appliers only, via As the Wind Wills' }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critDmg', value: 150, target: 'self', duration: 4, condition: 'Feathered Oath, up to 6 stacks' }],
+    selfBuffs: [
+      { stat: 'critDmg', value: 150, target: 'self', duration: 4, condition: 'Feathered Oath, up to 6 stacks' },
+      { stat: 'critDmg', value: 160, target: 'self', duration: 999, condition: 'Bated Breath/Streaming Storm — Heavy ATK Crit DMG, once every 25s' },
+      { stat: 'elemDmg', value: 36, target: 'self', duration: 999, condition: 'Inherent Skill Unbroken Vow — Havoc Bane DMG Amp, +10%/stack (1-3), +12%/stack (4-6), up to 36% at 6 stacks' },
+    ],
     debuffs: [],
-    note: 'Primarily a self-buffing DPS (huge personal Crit DMG scaling via Feathered Oath). Outro grants +20% Havoc DMG to other Havoc Bane appliers in the team (Chisa).',
+    note: 'Primarily a self-buffing DPS (huge personal Crit DMG scaling via Feathered Oath, plus Bated Breath/Streaming Storm +160% Crit DMG on her Forte-gated Heavy ATK and Unbroken Vow\'s Havoc Bane DMG Amp). Outro grants +20% Havoc DMG to other Havoc Bane appliers in the team (Chisa).',
   },
   'Hiyuki': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'vs. targets affected by Glacio Chafe' }],
     libBuffs: [],
-    selfBuffs: [],
+    // Added 2026-08-17 against Prydwen's live kit breakdown — Inherent Skill "Fine Snow" was missing
+    // entirely. It's a self-only Snow Rust scaling buff, gated on teammates applying Glacio Chafe/Havoc
+    // Bane (1 stack is free from Hiyuki's own Glacio Chafe application; 2nd/3rd stacks need teammates,
+    // e.g. Lucilla/Chisa/Suisui — hence her documented reliance on those specific supports).
+    selfBuffs: [
+      { stat: 'critDmg', value: 40, target: 'self', duration: 99, condition: 'Inherent Fine Snow, 1 stack of Snow Rust (self-applied via her own Glacio Chafe)' },
+      { stat: 'elemDmg', value: 60, target: 'self', duration: 99, condition: 'Inherent Fine Snow, Glacio Bite DMG Amp (a distinct multiplier from base Glacio DMG Bonus): +30% at 1 stack of Snow Rust, +30% more at 3 stacks (teammates applying Glacio Chafe/Havoc Bane, e.g. Lucilla/Chisa/Suisui)' },
+    ],
     debuffs: [],
-    note: 'On-field Glacio DPS. Outro grants +20% Glacio DMG to the rest of the team against Glacio Chafe-affected targets (20s).',
+    note: 'On-field Glacio DPS. Outro grants +20% Glacio DMG to the rest of the team against Glacio Chafe-affected targets (20s). Inherent Fine Snow: self +40% Crit DMG at 1 Snow Rust stack, +30%/+30% Glacio Bite DMG Amp at 1/3 stacks — needs teammates applying Glacio Chafe or Havoc Bane to reach max stacks.',
   },
   'Lucy': {
     outroBuffs: [{ stat: 'basicDmg', value: 25, target: 'next', duration: 14 }],
@@ -1683,9 +2007,16 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [
       { stat: 'echoDmg', value: 50, target: 'self', duration: 15, condition: 'Inherent: +2% Echo Skill DMG per 1% ER above 125% (up to 50%)' },
       { stat: 'defIgnore', value: 10, target: 'self', duration: 6, condition: 'Sig weapon: Aero DMG ignores 10% DEF on Echo Skill hit' },
+      // Added 2026-08-17 against Prydwen's live kit breakdown — Blessing of Runes was missing entirely.
+      // Whichever Resonator is active gets this (not Sigrika specifically), stacking on any teammate's
+      // Echo Skill cast up to 6 stacks (3% Aero + 3% Echo Skill DMG each), with a further +30%/+30% jump
+      // at max stacks — modeled as target: 'team' per this file's existing convention for passive,
+      // always-on team buffs (see e.g. Yinlin's Overshock ATK buff).
+      { stat: 'elemDmg', value: 48, target: 'team', duration: 99, condition: 'Inherent True Names Aligned — Blessing of Runes, max 6 stacks (18% base + 30% at max): +48% Aero DMG to whichever Resonator is active, refreshed by teammates\' Echo Skill casts' },
+      { stat: 'echoDmg', value: 48, target: 'team', duration: 99, condition: 'Same Blessing of Runes stacks, +48% Echo Skill DMG to the active Resonator' },
     ],
     debuffs: [],
-    note: 'Rune-consuming Echo Skill hypercarry. Inherent: up to 50% Echo DMG from ER. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes.',
+    note: 'Rune-consuming Echo Skill hypercarry. Inherent True Names Aligned: Blessing of Runes grants the active Resonator +3%/+3% Aero+Echo Skill DMG per stack (6 max) from teammates\' Echo Skill casts, +30%/+30% more at max stacks (48%/48% total) — resets on team swap. Inherent Aligned Names 2: up to 50% Echo DMG from ER above 125%. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes.',
   },
   'Phrolova': {
     outroBuffs: [
@@ -3036,6 +3367,27 @@ const RESONANCE_CHAIN_DATA = {
 // Source: wutheringwaves.fandom.com per-character Skill_* image assets, re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const SKILL_ICONS = {
+  'Aalto': {
+    'Half Truths': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Basic ATK — shared generic Pistols icon
+    'Standard': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
+    'Shift Trick': 'https://i.ibb.co/4ZDDVq43/aalto-skill.webp',
+    'Flower in the Mist': 'https://i.ibb.co/qYjnpYdK/aalto-heavy.webp',
+    'Mistcloak Dash': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp',
+  },
+  'Baizhi': {
+    'Destined Promise': 'https://i.ibb.co/6c75rLCc/baizhi-basic.webp', // Basic ATK — generic Rectifier icon
+    'Standard': 'https://i.ibb.co/6c75rLCc/baizhi-basic.webp',
+    'Emergency Plan': 'https://i.ibb.co/2BC255K/baizhi-skill.webp',
+    'Momentary Union': 'https://i.ibb.co/fsP021g/baizhi-liberation.webp',
+    'Cycle of Life': 'https://i.ibb.co/d0nRGZwy/baizhi-forte.webp',
+  },
+  'Chixia': {
+    'POW POW': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp', // Basic ATK — shared generic Pistols icon
+    'Standard': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp',
+    'Whizzing Fight Spirit': 'https://i.ibb.co/s9jWxj9V/chixia-skill.webp',
+    'Blazing Flames': 'https://i.ibb.co/67N4dq55/chixia-liberation.webp',
+    'Heroic Bullets': 'https://i.ibb.co/x8mwJBr0/chixia-forte.webp',
+  },
   'Encore': {
     'Wooly Attack': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
@@ -3447,6 +3799,157 @@ const SKILL_ICONS = {
     'Reverberance - Return': 'https://i.ibb.co/KxsFThC1/skill-reverberance-return.webp', // Intro Skill
     'Unraveling - Law Zero': 'https://i.ibb.co/mC9hRxyB/skill-unraveling-law-zero.webp', // Outro Skill
   },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lynae/Mornye/Aemeath, pulled via the
+  // MediaWiki API (bypasses the site's Cloudflare challenge entirely) and re-hosted on ibb.co (2026-08-17).
+  'Lynae': {
+    'Stage 1-3': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Chroma_Drift.png resolves to this same asset)
+    'Kaleidoscopic 1-5': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp',
+    'Spark Collision': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp',
+    'Lynae-Style Palettes': 'https://i.ibb.co/KxK0V0g9/Lynae-res-Skill.webp', // Resonance Skill
+    'Additive Color': 'https://i.ibb.co/KxK0V0g9/Lynae-res-Skill.webp', // Additive Color shares the Resonance Skill's own icon
+    'Visual Impact': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp', // Forte Circuit — Chromaticity Modeling
+    'Iridescent Splash': 'https://i.ibb.co/Q3tV0xMr/Lynae-forte.webp',
+    'Prismatic Overblast': 'https://i.ibb.co/WW1q9Z9P/Lynae-liberation.webp', // Resonance Liberation
+    'Time to Show Some Colors!': 'https://i.ibb.co/nsQDdd3q/Lynae-intro.webp', // Intro Skill
+    "Let's Hit the Road!": 'https://i.ibb.co/6c4LdY9C/Lynae-outro.webp', // Outro Skill
+    'Spectral Analysis': 'https://i.ibb.co/Jw2KkfqG/Lynae-tune.webp', // Tune Break
+  },
+  'Mornye': {
+    'Stage 1-4': 'https://i.ibb.co/CpPvLLVt/Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (same asset already used for Calcharo/Jiyan)
+    'Optimal Solution': 'https://i.ibb.co/q3z1KKmg/Mornye-res-Skill.webp', // Resonance Skill — Resolution
+    'Distributed Array': 'https://i.ibb.co/q3z1KKmg/Mornye-res-Skill.webp',
+    'Geopotential Shift': 'https://i.ibb.co/MDT4gMcx/Mornye-forte.webp', // Forte Circuit — Mass-Energy Equivalence
+    'Inversion': 'https://i.ibb.co/MDT4gMcx/Mornye-forte.webp',
+    'Critical Protocol': 'https://i.ibb.co/kVF6D8Lw/Mornye-liberation.webp', // Resonance Liberation
+    'Convergence': 'https://i.ibb.co/NgLq63xG/Mornye-intro.webp', // Intro Skill
+    'Recursion': 'https://i.ibb.co/wrMwYwtW/Mornye-outro.webp', // Outro Skill
+    'Decoupling': 'https://i.ibb.co/rGgn1yqf/Mornye-tune.webp', // Tune Break
+  },
+  'Aemeath': {
+    'Aemeath Form Stage': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp', // Basic ATK — generic Sword icon, covers both her human- and Mech-form Basic strings
+    'Mech Form Stage': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Aemeath Charged': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Mech Charged': 'https://i.ibb.co/4w6tSxmb/Skill-Sword.webp',
+    'Sync Strikes': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp', // Resonance Skill — Shared Voyage
+    'Seraphic Duet': 'https://i.ibb.co/V0KcrNV5/Aemeath-res-Skill.webp',
+    'Heavenfall Edict': 'https://i.ibb.co/3YGvVWff/Aemeath-liberation.webp', // Resonance Liberation — Towards the Daybreak
+    'Songs Across the Universe': 'https://i.ibb.co/prZnwGKQ/Aemeath-skill-intro.webp', // Intro Skill — Overture of Departure
+    'Debut of Meteoric Radiance': 'https://i.ibb.co/prZnwGKQ/Aemeath-skill-intro.webp',
+    'Silent Protection': 'https://i.ibb.co/svSPtz0x/Aemeath-outro.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Luuk Herssen, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Luuk Herssen': {
+    'Stage 1-4': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Such_is_Light.png resolves to this same asset)
+    'Scythe: Dissection': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Mid-air Attack strings — considered Basic ATK
+    'Scythe: Resection': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp',
+    'Golden Reflux': 'https://i.ibb.co/1fhf0vt7/Luuk-skill-res-Skill.webp', // Resonance Skill — Reunion of All the Fallen
+    'Aureole of Execution': 'https://i.ibb.co/1fhf0vt7/Luuk-skill-res-Skill.webp',
+    'Basic Attack - Golden Impale': 'https://i.ibb.co/1fhf0vt7/Luuk-skill-res-Skill.webp',
+    'Gavel of Earthshaker': 'https://i.ibb.co/8nFJT3SG/Luuk-skill-forte.webp', // Forte Circuit — Spark from the Frost
+    "Rewritten in Winter's Margins": 'https://i.ibb.co/1Y4xcqYx/Luuk-skill-liberation.webp', // Resonance Liberation
+    'Before Injection of Dawn': 'https://i.ibb.co/ksYqXQPQ/Luuk-skill-intro.webp', // Intro Skill
+    'Bow to the Last Light': 'https://i.ibb.co/W4MMpcrv/Luuk-skill-outro.webp', // Outro Skill
+    'Silent Debate of Light': 'https://i.ibb.co/BHdBsKjP/Luuk-skill-tune.webp', // Tune Break
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Sigrika, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Sigrika': {
+    'Stage 1-4': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (same asset already used for Luuk Herssen)
+    'Elucidated': 'https://i.ibb.co/rR5XytVJ/Luuk-skill-basic.webp', // Decipher-state Basic ATK finisher, still generic weapon icon
+    'BOOMY BOOM!': 'https://i.ibb.co/k6M2mPzF/Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
+    'BIG BOOMY BOOM!': 'https://i.ibb.co/k6M2mPzF/Sigrika-skill-res-Skill.webp',
+    'Runic Outburst': 'https://i.ibb.co/1Ydcf5Gb/Sigrika-skill-forte.webp', // Forte Circuit — Within Infinity's Embrace
+    'Learn My True Name': 'https://i.ibb.co/1Ydcf5Gb/Sigrika-skill-forte.webp',
+    "Where Trust Leads Me!": 'https://i.ibb.co/tTFS1w8x/Sigrika-skill-liberation.webp', // Resonance Liberation
+    'Solsworn Etymology': 'https://i.ibb.co/Qj6rsbGF/Sigrika-skill-intro.webp', // Intro Skill
+    'In This Very Moment': 'https://i.ibb.co/q3yGzhyX/Sigrika-skill-outro.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Hiyuki, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Hiyuki': {
+    'Present Self Stage': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Flaming_Sakura_Blade_Art.png resolves to this same asset)
+    'Foreclaimed Self Stage': 'https://i.ibb.co/YTdT2Yxf/skill-sword.webp',
+    'Frost Splinter': 'https://i.ibb.co/9HCF6LL6/Hiyuki-skill-forte.webp', // Heavy ATK, Forte-gated — Everfrost Dominion
+    'Bitterfrost': 'https://i.ibb.co/9HCF6LL6/Hiyuki-skill-forte.webp',
+    'Glacio Bite': 'https://i.ibb.co/9HCF6LL6/Hiyuki-skill-forte.webp', // Forte Circuit
+    'Foreclaiming': 'https://i.ibb.co/hJgrR7gJ/Hiyuki-skill-liberation.webp', // Resonance Liberation
+    'Frostblight': 'https://i.ibb.co/7Jq5CD3r/Hiyuki-skill-res-Skill.webp', // Resonance Skill
+    'Frostedge': 'https://i.ibb.co/NRt7X9T/Hiyuki-skill-intro.webp', // Intro Skill
+    'Snowlight Blessing': 'https://i.ibb.co/Ng7S6X8j/Hiyuki-skill-outro.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Denia, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Denia': {
+    'Stage 1-4': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used for Encore/Yinlin)
+    'Phantom Bubble': 'https://i.ibb.co/ZpdRC3Kx/denia-res-Skill.webp', // Resonance Skill — Bubbles and Baits
+    'Banish': 'https://i.ibb.co/ZpdRC3Kx/denia-res-Skill.webp', // Breakdown Form's Resonance Skill replacement, same wiki icon
+    'Final Act: Stagecraft': 'https://i.ibb.co/xtj5xwht/denia-liberation.webp', // Resonance Liberation — 1st Ultimate
+    'Final Act: Breakdown': 'https://i.ibb.co/xtj5xwht/denia-liberation.webp', // Resonance Liberation — 2nd Ultimate, same wiki icon
+    'Erosion Field': 'https://i.ibb.co/PGHNXhY3/denia-forte.webp', // Forte Circuit "Flawless"
+    "It's Been A While!": 'https://i.ibb.co/hx2nmhpT/denia-intro.webp', // Intro Skill — Formal Greetings
+    'Formal Greetings': 'https://i.ibb.co/hx2nmhpT/denia-intro.webp',
+    'Unfinished Lies': 'https://i.ibb.co/BVB2jBsW/denia-outro.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lucy/Rebecca, pulled via the MediaWiki
+  // API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Lucy': {
+    'Locked Thread': 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
+    'Payload': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp', // Resonance Skill — Protocol Breach
+    'Pulse Interference': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp',
+    'Deadlock': 'https://i.ibb.co/Z6KMgzkb/lucy-res-Skill.webp', // Max-TCP Resonance Skill upgrade, same wiki icon
+    'Netrunner': 'https://i.ibb.co/qFDfbxtV/lucy-liberation.webp', // Resonance Liberation
+    'Multi-threading': 'https://i.ibb.co/hJfyn0s6/lucy-forte.webp', // Forte-gated Heavy ATK — Depths of Blackwall
+    'Hack Response': 'https://i.ibb.co/hJfyn0s6/lucy-forte.webp', // Forte Circuit
+    'Outdated Hallucination': 'https://i.ibb.co/TBQxkbJy/lucy-intro.webp', // Intro Skill
+    'Countermeasure Program': 'https://i.ibb.co/gZT3x8g7/lucy-outro.webp', // Outro Skill
+  },
+  'Rebecca': {
+    "Mix-'n'-Match": 'https://i.ibb.co/NG3jXXG/skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
+    "Yo, It's Big Boomin' Time!": 'https://i.ibb.co/4RZv4Pks/rebecca-intro.webp', // Intro Skill — My Turn! (must precede the shorter Skill-row key below)
+    "Hey, Leadhead": 'https://i.ibb.co/4RZv4Pks/rebecca-intro.webp', // Guts-mode Intro alternative, same wiki icon
+    "It's Big Boomin' Time!": 'https://i.ibb.co/8n7M3D1K/rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks
+    "Come 'n' Get Me!": 'https://i.ibb.co/8n7M3D1K/rebecca-res-Skill.webp',
+    "Party 'til Dawn!": 'https://i.ibb.co/KcVy8tQW/rebecca-liberation.webp', // Resonance Liberation
+    'Rat-tat-tat': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte-gated Heavy ATK — Gloves Are Comin' Off!
+    'Bang-bang-bang': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp',
+    'Hack Response': 'https://i.ibb.co/tGfyYTJ/rebecca-forte.webp', // Forte Circuit
+    'Preem Choom': 'https://i.ibb.co/zhQshWzF/rebecca-outro.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Lucilla, pulled via the MediaWiki API
+  // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  'Lucilla': {
+    'Snapshot': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
+    'Phantom Frame': 'https://i.ibb.co/G4jbSdr2/lucilla-res-Skill.webp', // Resonance Skill
+    'Clear As Day': 'https://i.ibb.co/Q7dvwN32/lucilla-liberation.webp', // Resonance Liberation
+    'Oblivion': 'https://i.ibb.co/qYZ1pTZ0/lucilla-forte.webp', // Forte Circuit — Memory Palace
+    'Clip It': 'https://i.ibb.co/7JWJhpcF/lucilla-intro.webp', // Intro Skill
+    'Montage': 'https://i.ibb.co/RGZrzfTY/lucilla-outro.webp', // Outro Skill
+  },
+  // Source: wutheringwaves.fandom.com Skill_*.png assets for Yangyang: Xuanling/Suisui, pulled via
+  // the MediaWiki API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-18).
+  'Yangyang: Xuanling': {
+    'Azure/Feather Stance': 'https://i.ibb.co/x86mmjbD/skill-sword.webp', // Basic ATK — generic Sword icon (same asset already used elsewhere)
+    'Sword Stance Switch': 'https://i.ibb.co/NgDz5JK6/yx-res-Skill.webp', // Resonance Skill — Feather's Edge
+    'Azure Sword Stance': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp', // Forte-gated Heavy ATK — The Way of Ten Thousand Voices
+    'Feather Sword Stance': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp',
+    'Shadow of Xuanling': 'https://i.ibb.co/N6yKBC9r/yx-forte.webp', // Forte Circuit
+    'Hush of a Thousand Voices': 'https://i.ibb.co/hJWFGQ8N/yx-liberation.webp', // Resonance Liberation
+    'Skybound Feather': 'https://i.ibb.co/5hWRkHJj/yx-intro.webp', // Intro Skill
+    'As the Wind Wills': 'https://i.ibb.co/SDZqCdLj/yx-outro.webp', // Outro Skill
+  },
+  'Suisui': {
+    'Zephyr Stance Stage 1-4': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
+    'Zephyr Stance thrust': 'https://i.ibb.co/rKYhDsHw/suisui-res-Skill.webp', // Resonance Skill — Vernal Screen
+    'Drizzle Stance Stage 1-4': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp',
+    'Awakening Spring': 'https://i.ibb.co/rKYhDsHw/suisui-res-Skill.webp', // Zephyr Skill's max-Cloud Breath upgrade, same wiki icon
+    'Drizzle Stance thrust': 'https://i.ibb.co/rKYhDsHw/suisui-res-Skill.webp',
+    'Zephyr Stance': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Mid-air Attack row, generic weapon icon (must follow the longer Zephyr-prefixed keys above)
+    'Drizzle Stance': 'https://i.ibb.co/cRkfdDc/suisui-forte.webp', // Forte-gated Heavy ATK — Lambent Gold (must follow the longer Drizzle-prefixed keys above)
+    'Song of Thoroughfare': 'https://i.ibb.co/27WLZMx6/suisui-liberation.webp', // Resonance Liberation
+    'Tinkling Jade': 'https://i.ibb.co/fdXb5bgm/suisui-intro.webp', // Intro Skill
+    'Rippling Waters': 'https://i.ibb.co/fhrX8pF/suisui-outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -3460,6 +3963,30 @@ const getSkillIcon = (name, skillName) => {
 // Combat page infobox gallery, which lists nodes S1→S6 top to bottom), re-hosted on ibb.co.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_ICONS = {
+  'Aalto': {
+    s1: 'https://i.ibb.co/NkJrMMZ/aalto-s1.webp',
+    s2: 'https://i.ibb.co/3mWXdcDs/aalto-s2.webp',
+    s3: 'https://i.ibb.co/tMr4KzDw/aalto-s3.webp',
+    s4: 'https://i.ibb.co/Hf4q5RKy/aalto-s4.webp',
+    s5: 'https://i.ibb.co/KMWZb8Q/aalto-s5.webp',
+    s6: 'https://i.ibb.co/KzcQtD3c/aalto-s6.webp',
+  },
+  'Baizhi': {
+    s1: 'https://i.ibb.co/mF47z129/baizhi-s1.webp',
+    s2: 'https://i.ibb.co/0RXgwTXZ/baizhi-s2.webp',
+    s3: 'https://i.ibb.co/gb918z7X/baizhi-s3.webp',
+    s4: 'https://i.ibb.co/hxg5Y83Q/baizhi-s4.webp',
+    s5: 'https://i.ibb.co/Rw5VF1d/baizhi-s5.webp',
+    s6: 'https://i.ibb.co/3Q9HWqJ/baizhi-s6.webp',
+  },
+  'Chixia': {
+    s1: 'https://i.ibb.co/RGQBc5g3/chixia-s1.webp',
+    s2: 'https://i.ibb.co/svts4DW5/chixia-s2.webp',
+    s3: 'https://i.ibb.co/dRDWwbs/chixia-s3.webp',
+    s4: 'https://i.ibb.co/HThYzvPf/chixia-s4.webp',
+    s5: 'https://i.ibb.co/KpFQt9N0/chixia-s5.webp',
+    s6: 'https://i.ibb.co/bg00YYjQ/chixia-s6.webp',
+  },
   'Encore': {
     s1: 'https://i.ibb.co/67jq2qtF/Sequence-Node-Woolys-Fairy-Tale.webp',
     s2: 'https://i.ibb.co/qvQ1d2y/Sequence-Node-Sheep-counting-Lullaby.webp',
@@ -3751,6 +4278,89 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/GffX5Qbj/node-s5.webp',
     s6: 'https://i.ibb.co/1S0brGY/node-s6.webp',
   },
+  // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lynae/Mornye/Aemeath, pulled via the
+  // MediaWiki API (bypasses the site's Cloudflare challenge entirely) and re-hosted on ibb.co (2026-08-17)
+  // — order confirmed S1→S6 against each character's own Resonance Chain section (action=parse, section
+  // "Resonance Chain", Node 1→Node 6 in document order).
+  'Lynae': {
+    s1: 'https://i.ibb.co/jKpHS2C/Lynae-s1.webp',
+    s2: 'https://i.ibb.co/kjCkrdC/Lynae-s2.webp',
+    s3: 'https://i.ibb.co/TBB7SWd9/Lynae-s3.webp',
+    s4: 'https://i.ibb.co/XZ0yd3HN/Lynae-s4.webp',
+    s5: 'https://i.ibb.co/23k6X01r/Lynae-s5.webp',
+    s6: 'https://i.ibb.co/wNpcWSrY/Lynae-s6.webp',
+  },
+  'Mornye': {
+    s1: 'https://i.ibb.co/5hVnMMTV/Mornye-s1.webp',
+    s2: 'https://i.ibb.co/Kzr4mvfw/Mornye-s2.webp',
+    s3: 'https://i.ibb.co/KBrzbMX/Mornye-s3.webp',
+    s4: 'https://i.ibb.co/Kp4VY4tn/Mornye-s4.webp',
+    s5: 'https://i.ibb.co/zV1QDk59/Mornye-s5.webp',
+    s6: 'https://i.ibb.co/DDCxvJfC/Mornye-s6.webp',
+  },
+  'Aemeath': {
+    s1: 'https://i.ibb.co/WNfdHqR4/Aemeath-s1.webp',
+    s2: 'https://i.ibb.co/b5SXdtzk/Aemeath-s2.webp',
+    s3: 'https://i.ibb.co/MygKfXVn/Aemeath-chain-s3.webp',
+    s4: 'https://i.ibb.co/mVwt8H0s/Aemeath-s4.webp',
+    s5: 'https://i.ibb.co/dwK7K9m7/Aemeath-s5.webp',
+    s6: 'https://i.ibb.co/wFsPszFL/Aemeath-chain-s6.webp',
+  },
+  'Luuk Herssen': {
+    s1: 'https://i.ibb.co/xtbnWHrb/Luuk-chain-s1.webp',
+    s2: 'https://i.ibb.co/hF2MW2bF/Luuk-chain-s2.webp',
+    s3: 'https://i.ibb.co/2X8CFmL/Luuk-chain-s3.webp',
+    s4: 'https://i.ibb.co/JF8kcKvm/Luuk-chain-s4.webp',
+    s5: 'https://i.ibb.co/1tXKZntb/Luuk-chain-s5.webp',
+    s6: 'https://i.ibb.co/svXR1Hkf/Luuk-chain-s6.webp',
+  },
+  'Sigrika': {
+    s1: 'https://i.ibb.co/jv6R8NVL/Sigrika-chain-s1.webp',
+    s2: 'https://i.ibb.co/nyJ4qGz/Sigrika-chain-s2.webp',
+    s3: 'https://i.ibb.co/tMYNB071/Sigrika-chain-s3.webp',
+    s4: 'https://i.ibb.co/mCj31gfL/Sigrika-chain-s4.webp',
+    s5: 'https://i.ibb.co/9H04pcpv/Sigrika-chain-s5.webp',
+    s6: 'https://i.ibb.co/9kG4hxbd/Sigrika-chain-s6.webp',
+  },
+  'Hiyuki': {
+    s1: 'https://i.ibb.co/cK3XdXtT/Hiyuki-chain-s1.webp',
+    s2: 'https://i.ibb.co/tMGFBF2R/Hiyuki-chain-s2.webp',
+    s3: 'https://i.ibb.co/Rmcwhym/Hiyuki-chain-s3.webp',
+    s4: 'https://i.ibb.co/4RpdTpjM/Hiyuki-chain-s4.webp',
+    s5: 'https://i.ibb.co/4ZdSWbXC/Hiyuki-chain-s5.webp',
+    s6: 'https://i.ibb.co/VP72Z2V/Hiyuki-chain-s6.webp',
+  },
+  'Denia': {
+    s1: 'https://i.ibb.co/dwDTRNpm/denia-s1.webp',
+    s2: 'https://i.ibb.co/v4KYCSjk/denia-s2.webp',
+    s3: 'https://i.ibb.co/SXYXMvNR/denia-s3.webp',
+    s4: 'https://i.ibb.co/tTjNYQZD/denia-s4.webp',
+    s5: 'https://i.ibb.co/gZBNkHMH/denia-s5.webp',
+    s6: 'https://i.ibb.co/Zz5XhZzj/denia-s6.webp',
+  },
+  'Yangyang: Xuanling': {
+    s1: 'https://i.ibb.co/93ZS4rdV/yx-s1.webp',
+    s2: 'https://i.ibb.co/ksZDCX9W/yx-s2.webp',
+    s3: 'https://i.ibb.co/XrMxyjcG/yx-s3.webp',
+    s4: 'https://i.ibb.co/KpQnZkWY/yx-s4.webp',
+    s5: 'https://i.ibb.co/6KDh2KB/yx-s5.webp',
+    s6: 'https://i.ibb.co/TD3gkgcb/yx-s6.webp',
+  },
+  'Suisui': {
+    s1: 'https://i.ibb.co/1YF19wXw/suisui-s1.webp',
+    s2: 'https://i.ibb.co/7d5F5ZtZ/suisui-s2.webp',
+    s3: 'https://i.ibb.co/JFGC6Dq2/suisui-s3.webp',
+    s4: 'https://i.ibb.co/DDMC0F52/suisui-s4.webp',
+    s5: 'https://i.ibb.co/vMRL5cr/suisui-s5.webp',
+    s6: 'https://i.ibb.co/tM5fJd43/suisui-s6.webp',
+  },
+  // Lucy/Rebecca/Lucilla (2026-08-17): NOT populated — verified via direct MediaWiki titles queries
+  // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 18 node names across
+  // all three characters) that wutheringwaves.fandom.com has not uploaded Sequence Node icon assets
+  // for any of them yet (their own Chain Table template renders an empty icon column on all three
+  // /Combat pages — a genuine wiki content gap for these June-2026-release characters, not a fetch
+  // failure). Node NAMES are still populated below in CHAIN_NODE_NAMES since the modal renders names
+  // independently of icons; add icons here once fandom uploads them.
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
@@ -3758,6 +4368,9 @@ const CHAIN_NODE_ICONS = {
 // (static.nanoka.cc/ww/<version>/en/character/<id>.json) and wutheringwaves.fandom.com.
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_NAMES = {
+  'Aalto': { s1: "Trickster's Opening Show", s2: "Mistweaver's Debut", s3: 'Hazey Transition', s4: 'Blake Bloom for Finale', s5: 'Applause of the Lost', s6: "Broker's Secrets" },
+  'Baizhi': { s1: 'Complex Simplicity', s2: 'Silent Tundra', s3: 'Veritas Lux Mea', s4: 'Eternal Verity', s5: 'A Wish Answered', s6: "Seeker's Devotion" },
+  'Chixia': { s1: 'No.1 Hero Play Fan', s2: 'Leaping Sparkles', s3: 'Eternal Flames', s4: "Hero's Ultimate Move", s5: 'Triumphant Explosions', s6: 'Easter Egg Performance' },
   'Jiyan': { s1: 'Benevolence', s2: 'Versatility', s3: 'Spectation', s4: 'Prudence', s5: 'Resolution', s6: 'Fortitude' },
   'Yinlin': { s1: "Morality's Crossroad", s2: 'Ensnarled By Rapport', s3: 'Unyielding Verdict', s4: 'Steadfast Conviction', s5: 'Resounding Will', s6: 'Pursuit of Justice' },
   'Calcharo': { s1: 'Covert Negotiation', s2: 'Zero-Sum Game', s3: 'Iron Fist Diplomacy', s4: 'Dark Alliance', s5: 'Unconventional Compact', s6: 'The Ultimatum' },
@@ -3786,6 +4399,23 @@ const CHAIN_NODE_NAMES = {
   'Galbrena': { s1: 'Heart of Defiance Ever Ablaze', s2: 'Hellbound Dive of Fire and Abyss', s3: "Hunter's Blood Oath Rekindled", s4: 'Carry Forth This Fading Spark', s5: 'Though Light Fades, Torment Consumes', s6: 'I Remain Who I am, Eternal My Flame' },
   'Qiuyuan': { s1: 'Sword Sheathed, Mind Unclouded', s2: 'O Blade, I, Who Teach No More', s3: 'O Blade, I, Who Save No More', s4: 'O Blade, I, Who Sacrifice No More', s5: 'O Blade, I, Who Await to be Wielded', s6: 'Thus I Heard, Thus I Saw, Thus I Spoke' },
   'Chisa': { s1: 'Wandering Through the Desolate Corridors', s2: 'Into the Web of Endless Bonds', s3: 'Across the Confusion of the Long Night', s4: 'Severing the Endless Cycle of Tragic Fate', s5: 'Thousands of Lights to Guide the Way Home', s6: 'Thus, Hope is Rekindled with the Rising Dawn' },
+  'Lynae': { s1: 'Days to be Painted Like a Canvas', s2: "Into Lights' Vanishing Point", s3: 'For One Brilliant Moment', s4: 'Shadows of a Wind Racer', s5: 'Visions of a Future Unbound', s6: 'Painted in My True Color' },
+  'Mornye': { s1: 'The Silent Observer', s2: 'Morning Star of Entropy', s3: 'Blueprint of Recursion', s4: 'Latent Variables of the Cosmos', s5: 'Time Dilation Effect', s6: 'To the Far Shores of the Stars' },
+  'Aemeath': { s1: 'Gilded Glimmer of the First Dawn', s2: 'Downy Notes of Snowfluff', s3: 'Fervor Sightly Burns Bright as New', s4: 'Ethereal Waltz on Binary Tides', s5: 'Voyage to the Astral Shore', s6: "A Zephyr-Kissed Journey to You" },
+  'Luuk Herssen': { s1: 'Gold Kindled in Ash', s2: 'Avalanche Roaring in Eyes', s3: 'Spine Tempered by Golden Rain', s4: 'Pulse Thrumming Under Rime', s5: 'Through the Stillness of Snowstorm', s6: 'Dawn Unfurling over Frostlands' },
+  'Sigrika': { s1: 'The Gleam Meant for Radiance', s2: 'The Bitterness Steeped in Hope', s3: 'I Flee, Yet I Seek', s4: 'I Lose, Yet I Gain', s5: 'Until Submerged by the Dark', s6: 'True Names Resurfaced, Rising in Light' },
+  'Hiyuki': { s1: 'Springless', s2: 'To Burn Cold in Silence', s3: 'No Self, No Bound', s4: 'Like Reeds on Tides', s5: 'Vessel of Thousand Wishes', s6: 'Into a Night Without End' },
+  'Denia': { s1: 'Silent Glows in a Dimlit Dream', s2: 'Tossed in the Tides of Reality', s3: 'Through Dark and Wind, the Erlking Follows', s4: 'From the Far Beyond, to the Far Beyond', s5: 'If Lies Patch Up a Heart', s6: 'May You Find Your Sun in the Silence' },
+  'Lucy': { s1: 'The Moon, a Ticket, and a Dream', s2: 'The Blackwall, the Past, the Escape', s3: 'Cyberpunk', s4: 'No Living Legends in Night City', s5: 'A Broken Path to Hell', s6: 'I Really Want to Stay At Your House' },
+  'Rebecca': { s1: 'Try Not to Get in the Way!', s2: 'Oh, Hey Choom!', s3: "Don't Sweat Your Six!", s4: 'Got Ya Covered!', s5: 'Dreamin\' on the Edge', s6: 'Maybe, Just Maybe...' },
+  'Lucilla': { s1: 'Distant Noon', s2: 'Slumbering Moonlight', s3: 'Days Fade Unheard', s4: 'The Past Fades Into Silence', s5: 'Time is Like a Stream', s6: 'Gazing In the Mist of Time' },
+  'Yangyang: Xuanling': { s1: "At the Wind's Breath, the Blossoms Wake", s2: 'River Carries Her Song Away', s3: 'My Grief Follows You into the Clouds', s4: 'Across the Miles, a Letter and My Longing', s5: 'Take Wing. Take Wing.', s6: 'Let the Azure Keep Its Light' },
+  'Suisui': { s1: 'Mountains Washed Into Paintings', s2: 'Clouds Pour Like Molten Gold', s3: 'Sparse Curtains Invite Evening Glow', s4: 'Autumn Mountains in Choir Sing', s5: 'I Long To Ride The Eastern Wind', s6: 'Staying True To This Splendid Realm' },
+  // Qingxiao's node names confirmed 2026-08-18 via ww.nanoka.cc's pre-release datamine (character/1413)
+  // — icons NOT populated in CHAIN_NODE_ICONS above: fandom has no Sequence Node assets uploaded yet
+  // (verified via direct MediaWiki titles queries, all "missing"), a genuine pre-release gap 2 days
+  // ahead of her release, not a fetch failure.
+  'Qingxiao': { s1: 'Like Clouds That Meet and Drift Apart', s2: 'Like Petals That Fall Without a Sound', s3: 'Dreams Fade, Sword Abides', s4: 'Wherever the Road Leads, Side by Side', s5: 'Cold Steel That Longs to Warm the Snow', s6: 'Cleanse This Tarnished Age, Till All Runs Clear' },
 };
 
 // Release order for sorting (based on first banner appearance)
