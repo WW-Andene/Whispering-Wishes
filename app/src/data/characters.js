@@ -3952,7 +3952,10 @@ const RESONANCE_CHAIN_DATA = {
   // Close Your Eyes/Winds Whisper/A Tribute to Life's Sweet Hymn wikitext) — all 6 values above confirmed
   // exact against the real node text, no changes needed.
   'Yangyang':     { s1: { elemDmg: 15 }, s2: { totalMult: 5 }, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
-  'Youhu':        { s1: { atkPct: 5 }, s2: { deepen: 5 }, s3: { atkPct: 5 }, s4: { deepen: 5 }, s5: { atkPct: 5 }, s6: { deepen: 10 } },
+  // Removed 2026-08-18: this was a stale unsourced 'Youhu' duplicate key (atkPct/deepen on every node,
+  // no basis in her real kit) that silently overrode the correctly-audited 'Youhu' entry earlier in this
+  // object (see the real, sourced values a few lines up) — JS object literals let the later duplicate
+  // key win, so this dead entry was masking the real data at runtime despite the audit looking complete.
   // corrected 2026-08-18: prior values (atkPct/deepen on every node) had no basis in Yuanwu's real
   // chain kit (fandom Combat page, rendered Resonance Chain table) — he has no ATK% or DMG Deepen node
   // at all. Real effects: S1 Steaming Cup of Justice — Lightning Infused Basic/Heavy Attack Speed+20%
