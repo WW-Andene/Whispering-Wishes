@@ -192,12 +192,26 @@ const ECHO_DATA = {
   'Hyvatia':                         { sets: ['Pact of Neonlight Leap', 'Rite of Gilded Revelation'], buff: 'Spectro DMG', desc: 'An ancient construct boss from Lahai-Roi that fires converging lasers. Skill summons Hyvatia mid-air to fire lasers dealing 27% Spectro DMG x10. Outro within 15s grants the incoming Resonator +10% All-Attribute DMG Bonus for 15s.' , iconUrl: 'https://i.ibb.co/PGtdhhRd/Hyvatia-Icon.webp' },
   'Twin Nova - Nebulous Cannon':      { sets: ['Rite of Gilded Revelation', 'Chromatic Foam'], buff: 'Spectro DMG', desc: 'The ranged model of a Spacetrek Collective combat mech pair. Skill transforms to slash enemies twice for 80% Spectro DMG each. Main slot grants +12% Spectro DMG and +12% Basic ATK DMG. Pairing with Collapsar Blade enables combo attacks and Dyad Origins stacks (+10% Echo Skill DMG each, up to 6).' , iconUrl: 'https://i.ibb.co/s9rrBgL8/Twin-Nova-Nebulous-Cannon-Icon.webp' },
   'Sigillum':                        { sets: ['Trailblazing Star'], buff: 'Fusion DMG', desc: 'A Calamity-class star guardian sealed beyond the Gate of the Lost Star. Skill summons Sigillum for two attacks dealing 68%/205% Fusion DMG. When equipped by Aemeath, grants +25% Resonance Liberation DMG.' , iconUrl: 'https://i.ibb.co/JR620JdC/Sigillum-Icon.webp' },
-  'Reactor Husk':                    { sets: ['Halo of Starry Radiance', 'Chromatic Foam'], buff: 'Fusion DMG', desc: 'A massive reactor construct from Lahai-Roi. Skill transforms into Reactor Husk and overloads its core, detonating for 273% Fusion DMG in a wide area. Hold to charge the Meltdown Beam for up to 280% Fusion DMG. Grants +12% Fusion DMG and +12% Resonance Skill DMG.' , iconUrl: 'https://i.ibb.co/4nRHm50w/Reactor-Husk-Icon.webp' },
-  'Nameless Explorer':               { sets: ['Sound of True Name'], buff: 'Aero DMG', desc: 'A mysterious explorer Overlord who wanders between forgotten ruins. Skill transforms into Nameless Explorer and unleashes a 3-hit wind combo dealing 135%/135%/183% Aero DMG. Final hit creates a Gale Vortex pulling enemies in for 2s. Grants +12% Aero DMG and +12% Heavy ATK DMG.' , iconUrl: 'https://i.ibb.co/sdWR4SgF/Nameless-Explorer-Icon.webp' },
+  // corrected 2026-08-18 (echo audit): desc fabricated "+12% Fusion DMG and +12% Resonance Skill DMG" and
+  // a "Hold to charge Meltdown Beam" mechanic that doesn't exist — nanoka.cc's raw skill data shows a
+  // single jumping slash (351% Fusion DMG) and the real main-slot bonus is just +10% Energy Regen.
+  'Reactor Husk':                    { sets: ['Halo of Starry Radiance', 'Chromatic Foam'], buff: 'Fusion DMG', desc: 'A massive reactor construct from Lahai-Roi. Skill transforms into Reactor Husk, jumping into the air and unleashing a heavy slash dealing 351% Fusion DMG. Grants +10% Energy Regen.' , iconUrl: 'https://i.ibb.co/4nRHm50w/Reactor-Husk-Icon.webp' },
+  // corrected 2026-08-18 (echo audit): was missing the 'Reel of Spliced Memories' set tag, and the desc
+  // fabricated a "3-hit wind combo 135%/135%/183%" breakdown and "+12% Heavy ATK DMG" — nanoka.cc's raw
+  // skill data shows a single 273.60% Aero DMG application and "+12% Aero DMG, +20% Echo Skill DMG Bonus".
+  'Nameless Explorer':               { sets: ['Sound of True Name', 'Reel of Spliced Memories'], buff: 'Aero DMG', desc: 'A mysterious explorer Overlord who wanders between forgotten ruins. Skill summons Nameless Explorer to attack enemies along its path, dealing 273.6% Aero DMG. Grants +12% Aero DMG and +20% Echo Skill DMG.' , iconUrl: 'https://i.ibb.co/sdWR4SgF/Nameless-Explorer-Icon.webp' },
   'Lorelei':                         { sets: ['Midnight Veil'], buff: 'Havoc DMG', desc: 'A siren-like Overlord that lures with haunting melodies. Skill transforms into Lorelei and sings a Dirge of Ruin, dealing 68% Havoc DMG x6 to enemies in a cone. Enemies hit by all 6 notes are Silenced for 2s. Grants +12% Havoc DMG and +12% Resonance Liberation DMG.' , iconUrl: 'https://i.ibb.co/9kynG0DJ/Lorelei-Icon.webp' },
-  'Nightmare: Kelpie':               { sets: ['Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Glacio DMG', desc: 'A nightmare variant of a water-horse Overlord wreathed in frozen mist. Skill transforms into Nightmare: Kelpie and charges forward for 205% Glacio DMG, then rears up and stomps for 248% Glacio DMG with a chance to freeze. Grants +12% Glacio DMG and +12% Basic ATK DMG.' , iconUrl: 'https://i.ibb.co/bjtwr7yr/Nightmare-Kelpie-Icon.webp' },
-  'Hecate':                          { sets: ['Empyrean Anthem'], buff: 'Havoc DMG', desc: 'The three-headed witch Calamity of the deep. Skill transforms into Hecate and channels a tri-beam convergence dealing 135% Havoc DMG x3, then detonates the focal point for 148% Havoc DMG. Grants +12% Havoc DMG and +12% Resonance Skill DMG.' , iconUrl: 'https://i.ibb.co/DH0bCdYK/Hecate-Icon.webp' },
-  'Reminiscence: Fenrico':           { sets: ['Dream of the Lost', 'Law of Harmony'], buff: 'Aero DMG', desc: 'A reminiscence of the wolf guardian Fenrico, howling with primordial wind. Skill transforms into Fenrico and lunges with 3 slashes dealing 91%/91%/182% Aero DMG, then howls to create a Wind Domain for 5s dealing 19% Aero DMG x5 to enemies inside. Grants +12% Aero DMG and +12% Resonance Liberation DMG.' , iconUrl: 'https://i.ibb.co/wZK2x483/Reminiscence-Fenrico-Icon.webp' },
+  // corrected 2026-08-18: desc's "+12% Basic ATK DMG" was wrong — real second bonus is +12% Aero DMG.
+  // Damage breakdown also corrected: real is a single 405% Glacio DMG hit, plus a separate 405% Aero DMG
+  // hit from Nightmare: Kelpie summoned on Outro Skill (not "205%+248% Glacio with a freeze chance").
+  'Nightmare: Kelpie':               { sets: ['Gusts of Welkin', 'Windward Pilgrimage'], buff: 'Glacio DMG', desc: 'A nightmare variant of a water-horse Overlord wreathed in frozen mist. Skill transforms into Nightmare: Kelpie to attack nearby targets for 405% Glacio DMG. Switching out via Outro Skill summons it again to deal 405% Aero DMG. Grants +12% Glacio DMG and +12% Aero DMG.' , iconUrl: 'https://i.ibb.co/bjtwr7yr/Nightmare-Kelpie-Icon.webp' },
+  // corrected 2026-08-18: desc fabricated a "tri-beam + detonation" combo and "+12% Havoc DMG/+12% Skill
+  // DMG" — nanoka.cc's raw skill data shows 3 Crescent Servants attacking for a single 45.59% Havoc DMG
+  // application, and the real main-slot bonus is just +40% Coordinated Attack DMG (no Havoc DMG at all).
+  'Hecate':                          { sets: ['Empyrean Anthem'], buff: 'Havoc DMG', desc: 'The three-headed witch Calamity of the deep. Skill summons 3 twirling Crescent Servants that attack enemies with spinning blades for 45.6% Havoc DMG; triggering a Counterattack resets their duration. Grants +40% Coordinated Attack DMG.' , iconUrl: 'https://i.ibb.co/DH0bCdYK/Hecate-Icon.webp' },
+  // corrected 2026-08-18: desc's "+12% Resonance Liberation DMG" was wrong — nanoka.cc's raw skill data
+  // shows the real second bonus is +12% Heavy Attack DMG.
+  'Reminiscence: Fenrico':           { sets: ['Dream of the Lost', 'Law of Harmony'], buff: 'Aero DMG', desc: 'A reminiscence of the wolf guardian Fenrico, howling with primordial wind. Skill summons the Talons of Decree to attack nearby enemies for 273.6% Aero DMG. Grants +12% Aero DMG and +12% Heavy Attack DMG.' , iconUrl: 'https://i.ibb.co/wZK2x483/Reminiscence-Fenrico-Icon.webp' },
   // v3.5 — Land of Xuanfang echoes, confirmed via nanoka.cc live echo pages (2026-08-14)
   'Thousand-Puppet Pavilion':        { sets: ['Song of Feathered Trace'], buff: 'Havoc DMG', desc: "A Calamity-class puppet-master construct from Land of Xuanfang. Skill attacks nearby enemies for 109.44% Havoc DMG and summons 4 Blades of Thousand Memories (15s); inflicting Havoc Bane consumes a Blade to deal 41.04% Havoc DMG (once per 1s). Main slot grants +12% Havoc DMG and +12% Heavy ATK DMG.", iconUrl: 'https://i.ibb.co/23cVrFbk/Thousand-Puppet-Pavilion.webp' },
   'Myriad Snare: Rustfire Chassis':  { sets: ["Heart of Evil's Purge", 'Lamp of Nether Road'], buff: 'Fusion DMG', desc: "An Overlord-class mechanical hazard from Land of Xuanfang. Skill summons a crushing chassis dealing 10.20% Max HP Fusion DMG on impact, then up to 19 more hits of 0.37% Max HP Fusion DMG each. Main slot grants +12% Fusion DMG and +12% Heavy ATK DMG.", iconUrl: 'https://i.ibb.co/KzxLH0wS/Myriad-Snare-Rustfire-Chassis.webp' },
@@ -353,7 +367,9 @@ const ECHO_SKILL_BUFFS = {
   'Jué':                     { buffs: [{ stat: 'skillDmg', value: 16 }], duration: 15 },
   'Fallacy of No Return':    { buffs: [{ stat: 'atkPct', value: 10 }], duration: 20, target: 'team' },
   // ── v2.0 — Rinascita ──
-  'Sentry Construct':        { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  // corrected 2026-08-18: real desc has no "for Xs" clause on the main-slot bonus — it's an always-on
+  // passive while equipped, not a temporary duration-15 buff.
+  'Sentry Construct':        { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], passive: true },
   'Dreamless':               { buffs: [{ stat: 'allDmg', value: 50 }], duration: 5, condition: 'Rover: Havoc' },
   'Nightmare: Impermanence Heron': { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
   'Nightmare: Lampylumen Myriad':  { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'coordDmg', value: 30 }], passive: true },
@@ -361,7 +377,9 @@ const ECHO_SKILL_BUFFS = {
   'Reminiscence: Fleurdelys':      { buffs: [{ stat: 'aeroDmg', value: 10 }], passive: true },
   'Dragon of Dirge':               { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], passive: true },
   'Nightmare: Hecate':             { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'echoDmg', value: 20 }], passive: true },
-  'Hecate':                        { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
+  // corrected 2026-08-18: real main-slot bonus is +40% Coordinated Attack DMG only — no Havoc DMG or
+  // Skill DMG bonus exists on this echo (that was fabricated), and it's an always-on passive.
+  'Hecate':                        { buffs: [{ stat: 'coordDmg', value: 40 }], passive: true },
   'Nightmare: Crownless':          { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], passive: true },
   'Nightmare: Mourning Aix':       { buffs: [{ stat: 'spectroDmg', value: 12 }], passive: true },
   'Nightmare: Feilian Beringal':   { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
@@ -372,17 +390,24 @@ const ECHO_SKILL_BUFFS = {
   'Lioness of Glory':              { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
   'The False Sovereign':           { buffs: [{ stat: 'electroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
   'Lady of the Sea':               { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
-  'Lorelei':                       { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'libDmg', value: 12 }], duration: 15 },
-  'Nightmare: Kelpie':             { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], duration: 15 },
-  'Reminiscence: Fenrico':         { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'libDmg', value: 12 }], duration: 15 },
+  // corrected 2026-08-18: all three below have no "for Xs" clause in the real desc — always-on passives,
+  // not temporary duration-15 buffs. Nightmare: Kelpie's second stat was also wrong (basicDmg → aeroDmg,
+  // per "gains Glacio DMG Bonus and Aero DMG Bonus"); Reminiscence: Fenrico's was wrong too
+  // (libDmg → heavyDmg, per "gains Aero DMG Bonus and Heavy Attack DMG Bonus").
+  'Lorelei':                       { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
+  'Nightmare: Kelpie':             { buffs: [{ stat: 'glacioDmg', value: 12 }, { stat: 'aeroDmg', value: 12 }], passive: true },
+  'Reminiscence: Fenrico':         { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
   // ── v2.8 — Chronorift ──
   'Reminiscence: Threnodian - Leviathan': { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'libDmg', value: 12 }], passive: true },
   // ── v3.0+ — Lahai-Roi ──
   'Hyvatia':                       { buffs: [{ stat: 'allDmg', value: 10 }], duration: 15, target: 'next' },
   'Twin Nova - Nebulous Cannon':   { buffs: [{ stat: 'spectroDmg', value: 12 }, { stat: 'basicDmg', value: 12 }], passive: true },
   'Sigillum':                      { buffs: [{ stat: 'libDmg', value: 25 }], passive: true, condition: 'Aemeath' },
-  'Reactor Husk':                  { buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'skillDmg', value: 12 }], duration: 15 },
-  'Nameless Explorer':             { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], duration: 15 },
+  // corrected 2026-08-18: real main-slot bonus is +10% Energy Regen only — no Fusion DMG or Skill DMG
+  // bonus exists on this echo (that was fabricated), and it's an always-on passive.
+  'Reactor Husk':                  { buffs: [{ stat: 'energyRegen', value: 10 }], passive: true },
+  // corrected 2026-08-18: was heavyDmg +12%, real is echoDmg +20% (per nanoka.cc's raw skill data).
+  'Nameless Explorer':             { buffs: [{ stat: 'aeroDmg', value: 12 }, { stat: 'echoDmg', value: 20 }], duration: 15 },
   // ── v3.5 — Land of Xuanfang (confirmed via nanoka.cc live echo pages) ──
   'Thousand-Puppet Pavilion':      { buffs: [{ stat: 'havocDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
   'Myriad Snare: Rustfire Chassis':{ buffs: [{ stat: 'fusionDmg', value: 12 }, { stat: 'heavyDmg', value: 12 }], passive: true },
