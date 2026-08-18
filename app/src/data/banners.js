@@ -66,11 +66,9 @@ const BANNER_HISTORY = [
   // Version 3.6 (upcoming — dates are Game8's own estimate: "based on the Version Update's confirmed
   // release date, and the usual 21-day cycle for Version halves." Characters/weapons confirmed via
   // game8.co archive 453303 (Aug 10 2026 update), kit data not final until release.)
-  // bannerArt sourced 2026-08-18: fandom has no wide banner asset for Jingran yet (unreleased) — self
-  // cropped from File:Jingran_Card.jpg (a tall 2160x3840 portrait) to a 2160x1215 band centered on his
-  // face/upper body, matching the composition of every other bannerArt entry. Swap for the official
-  // wide banner art if/when one surfaces.
-  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: 'https://i.ibb.co/DSdRzq6/jingran-banner-crop1.jpg', predicted: true },
+  // bannerArt updated 2026-08-18: replaced the self-cropped Card.jpg placeholder with the real
+  // official "Where Santu Beckons" Featured Resonator Convene banner (user-supplied).
+  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: 'https://i.ibb.co/mCc8yv6J/show-76.png', predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
   // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used fandom's
   // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a

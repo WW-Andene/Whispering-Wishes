@@ -59,7 +59,11 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Suisui': { x: 1, y: -22, zoom: 207 },
   'collection-Yangyang: Xuanling': { x: 1, y: -22, zoom: 207 },
   'collection-Qingxiao': { x: 1, y: -22, zoom: 207 },
-  'collection-Jingran': { x: 1, y: -22, zoom: 207 },
+  // Tuned individually 2026-08-18 (was the generic averaged fallback, still looked de-zoomed): his
+  // sprite's content already fills the canvas edge-to-edge (unlike flowing-hair characters, most of
+  // that bleed is his weapon/energy wisp, not his body), so the average zoom left him looking smaller
+  // than everyone else — bumped zoom and shifted the crop up toward his torso/face.
+  'collection-Jingran': { x: 0, y: -20, zoom: 240 },
   'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
   // 4-star Resonators
@@ -134,7 +138,7 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'team-Suisui': { x: 2, y: -17, zoom: 185 },
   'team-Yangyang: Xuanling': { x: 2, y: -17, zoom: 185 },
   'team-Qingxiao': { x: 2, y: -17, zoom: 185 },
-  'team-Jingran': { x: 2, y: -17, zoom: 185 },
+  'team-Jingran': { x: 0, y: -15, zoom: 220 },
   // Info panel framing
   'info-Encore': { x: -2, y: -50, zoom: 170 },
   'info-Lingyang': { x: -2, y: -50, zoom: 170 },
@@ -191,7 +195,7 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'info-Suisui': { x: -4, y: -59, zoom: 233 },
   'info-Yangyang: Xuanling': { x: -4, y: -59, zoom: 233 },
   'info-Qingxiao': { x: -4, y: -59, zoom: 233 },
-  'info-Jingran': { x: -4, y: -59, zoom: 233 },
+  'info-Jingran': { x: -4, y: -60, zoom: 260 },
 });
 
 const defaultFramingBase = Object.freeze({ x: 0, y: 0, zoom: 100 });
