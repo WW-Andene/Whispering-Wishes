@@ -1119,8 +1119,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         t += onField;
       });
 
-      // ── Textual rotation guide — narrates the same schedule the Gantt chart shows, so the two
-      // never disagree. One step per on-field window, in the order actually computed above. ──
+      // ── Rotation blocks — Prydwen-style: one self-contained block per character (what THEY do
+      // on field, independent of the rest of the team), plus what it hands off to / inherits from
+      // its neighbors in the sequence, so the whole team rotation reads as a chain of blocks rather
+      // than one flat, undifferentiated buff dump. One block per on-field window, in the order
+      // actually computed above. ──
+      const fmtBuff = (b) => `+${b.value}% ${STAT_LABELS[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`;
       const steps = timeline.map((seg, i) => {
         const isDps = seg.name === mainDps.name;
         const reason = isDps
@@ -1130,11 +1134,24 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             : nextOutroValue(mems.find(m => m.name === seg.name)) > 0
               ? 'Buff only reaches whoever swaps in next — placed right before the DPS window'
               : 'Sub-DPS / utility window';
-        const given = buffs
-          .filter(b => (b.owner || b.source) === seg.name && (Math.abs(b.start - seg.start) < 0.5 || Math.abs(b.start - (seg.start + seg.duration)) < 0.5))
-          .map(b => `+${b.value}% ${STAT_LABELS[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`);
-        const uniqueGiven = [...new Set(given)];
-        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, buffsGiven: uniqueGiven };
+        const own = buffs.filter(b => (b.owner || b.source) === seg.name);
+        // Self: fires and is fully spent during this character's own on-field window (Liberation,
+        // selfBuffs, weapon/echo passives while they're the one attacking).
+        const selfActive = [...new Set(
+          own.filter(b => b.start < seg.start + seg.duration - 0.05).map(fmtBuff)
+        )];
+        // Hands off: starts at/after they leave the field — this is the block's outbound link to
+        // whichever block comes next (outro buffs, echo outro procs).
+        const handsOff = [...new Set(
+          own.filter(b => b.start >= seg.start + seg.duration - 0.05).map(fmtBuff)
+        )];
+        // Inherits: buffs from an earlier block still active when this one starts — the block's
+        // inbound link, i.e. how it adapts to whatever the team set up before it.
+        const inherits = [...new Set(
+          buffs.filter(b => (b.owner || b.source) !== seg.name && b.start <= seg.start + 0.05 && b.start + b.duration > seg.start + 0.05)
+            .map(fmtBuff)
+        )];
+        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits };
       });
 
       return { segments: timeline, buffs, totalTime: rotTime, steps };
@@ -1851,37 +1868,63 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         </p>
       )}
 
-      {/* Rotation Guide — narrates the exact schedule the Gantt chart above shows, in plain text */}
+      {/* Rotation Guide — Prydwen-style: one self-contained block per character (readable on its
+          own — what THEY do on field) chained to its neighbors via explicit inherited/handed-off
+          buffs, instead of one flat list mixing everyone's numbers together. */}
       {rotationTimeline?.steps?.length > 0 && (
         <Card>
           <CardHeader>
             <span className="flex items-center gap-1.5"><ListOrdered size={14} /> Rotation Guide</span>
           </CardHeader>
           <CardBody>
-            <ol className="space-y-2">
-              {rotationTimeline.steps.map(step => (
-                <li key={step.order} className={`p-2.5 rounded-lg border flex gap-2.5 ${step.isDps ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-[var(--border-medium)]'}`} style={step.isDps ? undefined : { background: 'var(--bg-stat)' }}>
-                  <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold mt-0.5 ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm">
-                      <span className={`font-semibold ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>
-                      <span className="text-gray-500"> plays on-field for {step.duration}s</span>
+            <div className="space-y-0">
+              {rotationTimeline.steps.map((step, i) => (
+                <React.Fragment key={step.order}>
+                  <div className={`p-2.5 rounded-lg border ${step.isDps ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-[var(--border-medium)]'}`} style={step.isDps ? undefined : { background: 'var(--bg-stat)' }}>
+                    <div className="flex items-center gap-2">
+                      <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
+                      <span className={`font-semibold text-sm ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>
+                      <span className="text-gray-500 text-sm">on-field {step.duration}s</span>
+                      {step.isDps && <span className="kuro-badge kuro-badge-yellow ml-auto">Main DPS</span>}
                     </div>
-                    <div className="text-sm text-gray-500 mt-0.5">{step.reason}</div>
-                    {step.buffsGiven.length > 0 && (
-                      <div className="mt-1.5">
-                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Grants</div>
+                    <div className="text-sm text-gray-500 mt-1 pl-7">{step.reason}</div>
+
+                    {/* Inbound — what earlier blocks handed this one, i.e. how it adapts to the team */}
+                    {step.inherits.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-cyan-400/70 uppercase tracking-wide mb-1 flex items-center gap-1">↓ Inherits from team</div>
                         <div className="flex flex-wrap gap-1">
-                          {step.buffsGiven.map((b, bi) => (
-                            <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>
-                          ))}
+                          {step.inherits.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-cyan">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Self-contained — this character's own kit, readable with zero team context */}
+                    {step.selfActive.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Own kit</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.selfActive.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-violet">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Outbound — what this block hands off to whoever comes next */}
+                    {step.handsOff.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-emerald-400/70 uppercase tracking-wide mb-1">↑ Hands off to next</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.handsOff.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>)}
                         </div>
                       </div>
                     )}
                   </div>
-                </li>
+                  {i < rotationTimeline.steps.length - 1 && (
+                    <div className="flex justify-center py-0.5" aria-hidden="true">
+                      <ChevronDown size={14} className="text-gray-600" />
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
-            </ol>
+            </div>
           </CardBody>
         </Card>
       )}
