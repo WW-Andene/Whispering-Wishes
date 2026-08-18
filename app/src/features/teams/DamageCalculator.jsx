@@ -14,7 +14,7 @@ import {
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcEnergyCycles,
 } from './calcEngine.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -1263,7 +1263,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                     {activeSets.length > 0 ? activeSets.map(([setName, count]) => {
                                       const isForced = eq.echoSet === setName;
                                       return (
-                                        <div key={setName} className={`text-gray-500 ${allDetectedSets.length > 1 ? 'cursor-pointer hover:text-white' : ''}`}
+                                        <div key={setName} className={`text-gray-500 inline-flex items-center gap-1 ${allDetectedSets.length > 1 ? 'cursor-pointer hover:text-white' : ''}`}
                                           title={allDetectedSets.length > 1 ? 'Click to set as active echo set' : ''}
                                           onClick={allDetectedSets.length > 1 ? () => {
                                             const eqk = state.activeTeamIndex + ':' + m.name;
@@ -1275,6 +1275,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                             haptic.light();
                                           } : undefined}>
                                           {isForced && <span className="text-emerald-400 mr-0.5">●</span>}
+                                          {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                                           {setName} <span className="text-emerald-400/70">×{count}</span>
                                         </div>
                                       );
