@@ -1888,14 +1888,44 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [],
     debuffs: [{ stat: 'defShred', value: 5, duration: 30, condition: 'Spoofing Program: Breach Protocol' }],
-    note: 'Outro: 25% Basic ATK DMG Amp to next Resonator (14s) + team-wide Countermeasure Program (Hack - Interfered triggers +20% All DMG Amp).',
+    // Added 2026-08-18 against Prydwen's live kit page (JS-rendered fetch) + fandom's Tune Break page
+    // (which explicitly lists Lucy's "Data Crash" as a Hack-family Tune Break skill, confirming Hack
+    // is mechanically the same generic Tune Break system this file's tuneBreak schema models — not a
+    // separate mechanic). Forte Circuit "Data Crash": "Responding to Hack - Interfered: when
+    // Resonators in the team trigger Tune Break on the target and cause them to be affected by
+    // Hack - Interfered, Lucy applies Hack Response - Data Crash on the target. Each target can be
+    // inflicted with this effect up to 1 time every 8s." Exact ruptureDmgMult (%ATK) for Data Crash
+    // renders client-side in a "Multipliers" table widget not exposed in text extraction — omitted
+    // rather than guessed (Prydwen's own review text separately confirms "the damage multipliers
+    // function in the exact same way" as Tune Rupture, without giving the number). No Tune Break
+    // Boost team buff or stack-cap increase found in Lucy's own kit text (Rebecca's kit is the one
+    // that grants +30 Tune Break Boost, modeled on her entry instead) — boostToTeam/maxStrainStacks
+    // omitted.
+    tuneBreak: {
+      baseTuneBreakBoost: 10, // 3.x char base stat
+    },
+    note: 'Outro: 25% Basic ATK DMG Amp to next Resonator (14s) + team-wide Countermeasure Program (Hack - Interfered triggers +20% All DMG Amp). Tune Break: Hack is confirmed the same generic Tune Break family (per fandom\'s Tune Break page); Hack Response - Data Crash is genuine (base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18 — multiplier table renders client-side).',
   },
   'Rebecca': {
     outroBuffs: [{ stat: 'heavyDmg', value: 35, target: 'next', duration: 14 }, { stat: 'allDmg', value: 15, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [{ stat: 'critDmg', value: 30, target: 'self', duration: 999, condition: 'Huntress mode' }, { stat: 'defIgnore', value: 15, target: 'self', duration: 999, condition: 'Guts mode' }],
     debuffs: [],
-    note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore (personal, not a team-wide DEF Shred debuff — fixed 2026-08-16, was miscategorized under debuffs as defShred).',
+    // Added 2026-08-18 against Prydwen's live kit page (JS-rendered fetch). Inherent Skill "Tag,
+    // You're It!": "When a Resonator in the team inflicts Hack - Shifting, their Tune Break Boost is
+    // increased by 30 for 30s" — a real, sourced team-facing Tune Break Boost grant, modeled here as
+    // boostToTeam like Lynae/Denia's flat team buffs (in reality it targets whichever Resonator did
+    // the Shifting hit, not unconditionally all team members, but this file's existing schema has no
+    // per-target granularity for tuneBreak — same approximation already used elsewhere). Forte Circuit
+    // "Hack - Meltdown" (Hack Response): "When any Resonator in the team deals Tune Break DMG and
+    // inflicts the Hack - Interfered, Rebecca triggers Hack - Meltdown on the target... once every 8s"
+    // — genuine, but exact ruptureDmgMult (%ATK) not sourced (multiplier table renders client-side,
+    // not in text extraction). maxStrainStacks omitted — no stack-cap increase found in her kit text.
+    tuneBreak: {
+      boostToTeam: 30, // Tag, You're It! (Inherent Skill): +30 Tune Break Boost (30s) to whichever Resonator inflicts Hack - Shifting
+      baseTuneBreakBoost: 10, // 3.x char base stat
+    },
+    note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore (personal, not a team-wide DEF Shred debuff — fixed 2026-08-16, was miscategorized under debuffs as defShred). Tune Break: Hack Response - Meltdown is genuine (base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18); Tag, You\'re It! confirmed +30 Tune Break Boost (30s) to whichever teammate inflicts Hack - Shifting.',
   },
   'Denia': {
     outroBuffs: [{ stat: 'allDmg', value: 40, target: 'next', duration: 16, condition: 'Tune Strain mode, after inflicting Tune Strain - Shifting' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
@@ -2267,7 +2297,19 @@ const CHAR_BUFF_TABLE = {
       { stat: 'deepen', value: 25, target: 'self', duration: 99, condition: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25%' },
     ],
     debuffs: [{ stat: 'fusionBurst', value: 30, duration: 30, condition: 'Rupturous Trail / Fusion Trail: stacks up to 30 (60 at RC6), each stack removed by Seraphic Duet grants scaling DMG Mult' }],
-    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars.',
+    // Added 2026-08-18 against Prydwen's live kit page (JS-rendered fetch). Confirmed genuine Tune
+    // Rupture Response — Forte Circuit "Unlanded Melody": "Responding to Tune Rupture - Interfered:
+    // when Resonators in the team trigger Tune Break on the target and cause them to be affected by
+    // Tune Rupture - Interfered, Aemeath triggers Tune Rupture Response - Starburst. The same target
+    // can only be damaged by this skill once every 8s." However the exact ruptureDmgMult (%ATK) for
+    // Starburst renders client-side in a "Multipliers" table widget that isn't exposed in text
+    // extraction (same gap as the prior audit pass) — omitted rather than guessed. No "Tune Break
+    // Boost" team buff or stack-cap increase found anywhere in her kit text, so boostToTeam and
+    // maxStrainStacks are also omitted. Only the generic 3.x base stat is filled in.
+    tuneBreak: {
+      baseTuneBreakBoost: 10, // 3.x char base stat
+    },
+    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars. Tune Break: confirmed genuine Tune Rupture Response (Starburst, base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18 — multiplier table renders client-side, not in text extraction); tuneBreak sub-object only carries the generic base Boost stat pending that number.',
   },
   // corrected 2026-08-18: removed "Weapon passive: Aero DMG +12%" — this assumed a fixed generic weapon
   // baseline regardless of which weapon is actually equipped, double-counting with the equipped weapon's
