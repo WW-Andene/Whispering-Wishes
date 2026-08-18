@@ -3360,6 +3360,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Flickering Reverie', note: 'Mirage Skill replacement, applies Hazy Dream' },
     { type: 'Forte', skill: 'Phantom Sting 1-3', note: 'Mirage Basic ATK combo, builds Shiver toward 3' },
     { type: 'Forte', skill: 'Perception Drain', note: 'consumes 3 Shiver for the burst nuke, heals the team' },
+    { type: 'Echo', skill: 'Swap Cancel', note: 're-verified 2026-08-18 against Prydwen live page — Echo step was missing before Outro' },
     { type: 'Outro', skill: 'Gentle Tentacles', duration: 14, note: 'grants the incoming Resonator Havoc + Resonance Skill DMG Amp' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Brant (2026-08-17, Chrome
@@ -3391,7 +3392,8 @@ const CHARACTER_ROTATIONS = {
     { type: 'Basic ATK', skill: 'Pero, Easy Stage 4', note: 'skip straight to Stage 4 after Intro, grants 100 more Imagination' },
     { type: 'Skill', skill: 'Acrobatic Trick', note: 'pulls enemies in, grants the last 100 Imagination, enters Beyond Imagination' },
     { type: 'Forte', skill: 'Real Fantasy 1-3', note: '3 Forte bounces, counted as Heavy Attack DMG' },
-    { type: 'Liberation', skill: 'Commedia Improvviso!', note: 'AoE nuke + flat team ATK buff scaling with Crit Rate over 50%' },
+    { type: 'Liberation', skill: 'Commedia Improvviso!', note: 'AoE nuke + flat team ATK buff scaling with Crit Rate over 50%; can cancel Forte P3\'s landing animation with this' },
+    { type: 'Echo', skill: 'Swap Cancel', note: 're-verified 2026-08-18 against Prydwen live page — Echo step was missing before Outro' },
     { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'grants the incoming Resonator Havoc + Basic ATK DMG Amp, and replaces their Utility with the Magic Box' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (2026-08-17,
