@@ -6,7 +6,7 @@
 
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 
 // ── Constants (named, not magic) ──
@@ -586,49 +586,12 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   return { score, tags: [...new Set(tags)].slice(0, 3) };
 }
 
-// ── Compose N per-character solo rotations into one continuous, loopable team rotation ──
-// Each character's CHARACTER_ROTATIONS entry is a self-contained "module" (Intro → combo → Outro).
-// The Outro step already carries CHAR_BUFF_TABLE[name].outroBuffs — the buff it hands to whichever
-// Resonator swaps in next. Chaining modules end-to-end in team order, and wrapping the last member's
-// handoff back to the first, turns those N solo modules into a single loop: swap through the whole
-// team once, land back on member 1 with their buffs cycled back around, repeat indefinitely. This is
-// what makes any 1-3 character selection "just work" as a team rotation (teams in this game — and in
-// state.teams' fixed 3-slot arrays — max out at 3 members) — the module boundary (Outro buff → next
-// Intro) is the actual interface, not anything team-comp-specific.
-export function composeTeamRotation(members) {
-  const modules = (members || []).filter(Boolean).map(name => {
-    const rotationSteps = CHARACTER_ROTATIONS[name];
-    const fallbackSteps = CHARACTER_DATA[name]?.rotation;
-    const steps = rotationSteps || (fallbackSteps ? fallbackSteps.map(s => ({ type: 'Step', skill: s })) : []);
-    const bt = CHAR_BUFF_TABLE[name];
-    // 'next' and 'team' are NOT the same interface and must not be merged: a 'next'-target Outro buff
-    // (e.g. Jianxin's +38% Liberation DMG, 14s) is consumed by whoever swaps in immediately and is gone
-    // once THEY swap out — a single handoff link to the next module. A 'team'-target Outro buff (e.g.
-    // Verina's/Shorekeeper's +15% All DMG Amp, 30s) applies to every member simultaneously regardless of
-    // swap order and keeps running in the background across multiple swaps within its duration — it is
-    // not "given to the next character" at all, it's closer to a timed team-wide field effect. Rendering
-    // both as one arrow to the next module (the previous version of this function) misrepresents exactly
-    // how 'team' buffs work — every other team-scoring/buff-consuming path in this file already treats
-    // 'next' and 'team' as distinct (see scoreTeamComposition's libBuffs handling above), so this needed
-    // to match rather than silently collapse the distinction for display purposes.
-    const nextHandoff = (bt?.outroBuffs || []).filter(b => b.target === 'next');
-    const teamHandoff = (bt?.outroBuffs || []).filter(b => b.target === 'team');
-    return { name, steps, nextHandoff, teamHandoff, hasData: !!rotationSteps || !!fallbackSteps?.length };
-  });
-  if (modules.length === 0) return { timeline: [], loop: false, modules: [] };
-
-  const timeline = [];
-  modules.forEach((mod, i) => {
-    timeline.push({ kind: 'swap-in', char: mod.name, hasData: mod.hasData });
-    mod.steps.forEach(step => timeline.push({ kind: 'step', char: mod.name, ...step }));
-    const nextMod = modules[(i + 1) % modules.length];
-    if (mod.nextHandoff.length && nextMod && nextMod !== mod) {
-      timeline.push({ kind: 'handoff', char: mod.name, to: nextMod.name, buffs: mod.nextHandoff });
-    }
-    if (mod.teamHandoff.length) {
-      timeline.push({ kind: 'team-buff', char: mod.name, buffs: mod.teamHandoff });
-    }
-  });
-  // loop only means something with 2+ distinct members — a solo "team" just repeats its own module
-  return { timeline, loop: modules.length > 1, modules: modules.map(m => ({ name: m.name, hasData: m.hasData })) };
-}
+// NOTE: an earlier version of this file had a second, cruder rotation-composer here
+// (composeTeamRotation) that duplicated what DamageCalculator.jsx's rotationTimeline/steps
+// computation already does — and did it worse: naive placed-slot order instead of the real
+// hasTeamOutro/nextOutroValue-driven ordering, static rather than simulation-derived on-field
+// durations, and no shared source of truth with the Rotation Timeline Gantt chart. Two
+// independently-maintained "team rotation" features drift apart by construction, so it was
+// removed rather than kept as a second implementation — DamageCalculator's rotationTimeline.steps
+// (rendered by the "Rotation Guide" card) is the one true composed-rotation feature now, and it
+// additionally consumes CHARACTER_ROTATIONS for its per-character skill sequence.

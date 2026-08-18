@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { scoreTeamComposition, isHealerRole, isSupportRole, TIER_SCORES, composeTeamRotation } from './calcEngine.js';
+import { scoreTeamComposition, isHealerRole, isSupportRole, TIER_SCORES } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -14,31 +14,6 @@ import DamageCalculator from './DamageCalculator.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useSessionState } from '../../utils/useSessionState.js';
 
-// Human-readable labels for the raw stat keys used throughout CHAR_BUFF_TABLE (elemDmg, libDmg, ...) —
-// the rotation card is the first place these get shown directly to the player rather than only feeding
-// the damage calculator, so they need plain-English names instead of internal field names.
-const STAT_LABELS = {
-  atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elemental DMG', deepen: 'DMG Deepen', basicDmg: 'Basic ATK DMG',
-  heavyDmg: 'Heavy ATK DMG', libDmg: 'Liberation DMG', echoDmg: 'Echo Skill DMG', skillDmg: 'Skill DMG',
-  coordDmg: 'Coordinated ATK DMG', critRate: 'Crit Rate', critDmg: 'Crit DMG', resShred: 'RES Shred', defShred: 'DEF Shred',
-};
-// Color + short-code per rotation-step type, so the timeline reads as a shape (colored badges in a row)
-// instead of a wall of identical gray text — the step type is the thing a player scans for first.
-const STEP_TYPE_STYLE = {
-  Intro: { code: 'IN', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
-  Skill: { code: 'SK', cls: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
-  Liberation: { code: 'LIB', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
-  Ultimate: { code: 'ULT', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
-  'Heavy ATK': { code: 'HVY', cls: 'text-orange-400 bg-orange-500/10 border-orange-500/30' },
-  'Basic ATK': { code: 'BSC', cls: 'text-slate-300 bg-slate-500/10 border-slate-500/30' },
-  Forte: { code: 'FRT', cls: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
-  'Mid-air': { code: 'AIR', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  'Mid-air ATK': { code: 'AIR', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  Echo: { code: 'ECH', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
-  Outro: { code: 'OUT', cls: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
-};
-const stepStyle = (type) => STEP_TYPE_STYLE[type] || { code: (type || '?').slice(0, 3).toUpperCase(), cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' };
-
 function TeamsTab({
   state,
   dispatch,
@@ -49,7 +24,6 @@ function TeamsTab({
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [suggestionsCollapsed, setSuggestionsCollapsed] = useSessionState('ww-team-suggestions-collapsed', false);
-  const [rotationCollapsed, setRotationCollapsed] = useSessionState('ww-team-rotation-collapsed', false);
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -213,7 +187,6 @@ function TeamsTab({
             {(() => {
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
-              const teamRotation = composeTeamRotation(teamSlots.filter(s => s));
               // Relevant whenever auto-detect can't unambiguously know which member the player wants
               // the headline DPS number built around: dual/multi-Main-DPS-role comps (ambiguous which
               // one), and pure Sub-DPS/hybrid quickswap comps with zero 'Main DPS'-role members (falls
@@ -705,109 +678,6 @@ function TeamsTab({
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
                   />
-
-                  {/* Composed Team Rotation — chains each placed Resonator's own solo rotation (module)
-                      end-to-end via their Outro→next-Intro buff handoff, looping back to member 1 after
-                      the last, so it reads as one continuous, repeatable team rotation for whatever
-                      comp is currently placed. Collapsible, matching the Suggestions card below. */}
-                  {teamRotation.timeline.length > 0 && (
-                  <Card>
-                    <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setRotationCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setRotationCollapsed(p => !p); } }} aria-expanded={!rotationCollapsed}>
-                      <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${rotationCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-purple-400" /> Team Rotation{teamRotation.loop ? ' (loops)' : ''}</CardHeader>
-                    </div>
-                    {!rotationCollapsed && (
-                    <CardBody>
-                      <p className="text-2xs text-gray-500 mb-3">Play each Resonator's block top to bottom, then swap — the handoff line shows exactly what buff carries over. After the last member, loop back to the first.</p>
-                      {teamRotation.modules.some(m => !m.hasData) && (
-                        <p className="text-2xs text-yellow-500/70 mb-2">
-                          No verified rotation data yet for: {teamRotation.modules.filter(m => !m.hasData).map(m => m.name).join(', ')}
-                        </p>
-                      )}
-                      <div className="space-y-3">
-                        {(() => {
-                          // Regroup the flat timeline into per-character blocks so each Resonator reads as
-                          // one visual unit (portrait + colored element accent + numbered steps) instead of
-                          // an undifferentiated scroll of rows — this is the actual "unusable" complaint:
-                          // the underlying data was fine, but nothing distinguished where one character's
-                          // rotation ended and the next began, or made the buff handoff visually obvious.
-                          const blocks = [];
-                          let current = null;
-                          teamRotation.timeline.forEach(entry => {
-                            if (entry.kind === 'swap-in') {
-                              current = { char: entry.char, hasData: entry.hasData, steps: [], handoff: null, teamBuff: null };
-                              blocks.push(current);
-                            } else if (entry.kind === 'step' && current) {
-                              current.steps.push(entry);
-                            } else if (entry.kind === 'handoff' && current) {
-                              current.handoff = entry;
-                            } else if (entry.kind === 'team-buff' && current) {
-                              current.teamBuff = entry;
-                            }
-                          });
-                          return blocks.map((block, bi) => {
-                            const d = CHARACTER_DATA[block.char];
-                            const elColor = d ? getElementColor(d.element) : '#888';
-                            return (
-                              <div key={bi} className="rounded-lg border overflow-hidden" style={{ borderColor: `${elColor}40`, background: `${elColor}0a` }}>
-                                <div className="flex items-center gap-2 px-2.5 py-1.5" style={{ background: `${elColor}18`, borderBottom: `1px solid ${elColor}30` }}>
-                                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold flex-shrink-0" style={{ background: elColor, color: '#0a0a0a' }}>{bi + 1}</span>
-                                  {collectionImages[block.char] && (
-                                    <img src={collectionImages[block.char]} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0" onError={hideOnError} />
-                                  )}
-                                  <span className="text-sm font-medium" style={{ color: elColor }}>{block.char}</span>
-                                  {!block.hasData && <span className="text-2xs text-yellow-500/70 ml-auto">no verified data</span>}
-                                </div>
-                                <div className="px-2.5 py-2 space-y-1">
-                                  {block.steps.length === 0 && <p className="text-2xs text-gray-500 italic">No rotation steps recorded yet for this Resonator.</p>}
-                                  {block.steps.map((step, si) => {
-                                    const sty = stepStyle(step.type);
-                                    return (
-                                      <div key={si} className="flex items-start gap-2">
-                                        <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${sty.cls}`}>{sty.code}</span>
-                                        <div className="flex-1 min-w-0">
-                                          <span className="text-sm text-gray-200">{step.skill}</span>
-                                          {step.note && <div className="text-2xs text-gray-500">{step.note}</div>}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                                {block.teamBuff && (
-                                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-2xs bg-purple-500/10 border-t border-purple-500/20 text-purple-300 flex-wrap">
-                                    <span className="font-medium">Outro buffs the whole team (not just next):</span>
-                                    {block.teamBuff.buffs.map((b, j) => (
-                                      <span key={j} className="kuro-badge text-2xs bg-purple-500/15 border border-purple-500/30 text-purple-200">
-                                        +{b.value}% {STAT_LABELS[b.stat] || b.stat}{b.duration ? ` (${b.duration}s, all members)` : ' (all members)'}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                                {block.handoff && (
-                                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-2xs bg-cyan-500/10 border-t border-cyan-500/20 text-cyan-300 flex-wrap">
-                                    <span className="font-medium">Swap out → {block.handoff.to} only gets:</span>
-                                    {block.handoff.buffs.map((b, j) => (
-                                      <span key={j} className="kuro-badge text-2xs bg-cyan-500/15 border border-cyan-500/30 text-cyan-200">
-                                        +{b.value}% {STAT_LABELS[b.stat] || b.stat}{b.duration ? ` (${b.duration}s)` : ''}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          });
-                        })()}
-                        {teamRotation.loop && (
-                          <div className="flex items-center gap-2 pt-1">
-                            <span className="h-px flex-1 bg-purple-500/20" />
-                            <span className="text-2xs text-purple-400/80 font-medium">↻ loop back to {teamRotation.modules[0]?.name}, repeat indefinitely</span>
-                            <span className="h-px flex-1 bg-purple-500/20" />
-                          </div>
-                        )}
-                      </div>
-                    </CardBody>
-                    )}
-                  </Card>
-                  )}
 
                   {/* Suggested Teams from Character Data — collapsible */}
                   <Card>

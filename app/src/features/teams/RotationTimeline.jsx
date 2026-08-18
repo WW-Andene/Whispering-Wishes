@@ -18,6 +18,25 @@ export const STAT_LABELS = {
   aeroDmg: 'Aero', spectroDmg: 'Spectro', havocDmg: 'Havoc',
 };
 
+// Color + short-code per CHARACTER_ROTATIONS step type — shared by the Rotation Guide's skill-sequence
+// chips so a step's category (Intro/Skill/Liberation/Heavy/Basic/Forte/Echo/Outro) reads as a shape at a
+// glance instead of identical plain text for every step.
+export const STEP_TYPE_STYLE = {
+  Intro: { code: 'IN', cls: 'text-blue-400 bg-blue-500/10 border-blue-500/30' },
+  Skill: { code: 'SK', cls: 'text-purple-400 bg-purple-500/10 border-purple-500/30' },
+  Liberation: { code: 'LIB', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
+  Ultimate: { code: 'ULT', cls: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30' },
+  'Heavy ATK': { code: 'HVY', cls: 'text-orange-400 bg-orange-500/10 border-orange-500/30' },
+  'Basic ATK': { code: 'BSC', cls: 'text-slate-300 bg-slate-500/10 border-slate-500/30' },
+  Forte: { code: 'FRT', cls: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
+  'Mid-air': { code: 'AIR', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  'Mid-air ATK': { code: 'AIR', cls: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
+  Echo: { code: 'ECH', cls: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  Outro: { code: 'OUT', cls: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
+  Step: { code: '•', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' },
+};
+export const stepStyle = (type) => STEP_TYPE_STYLE[type] || { code: (type || '?').slice(0, 3).toUpperCase(), cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' };
+
 export default function RotationTimeline({ rotationTimeline }) {
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 

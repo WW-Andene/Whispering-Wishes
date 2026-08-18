@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, ListOrdered, Sword, Users, X, Zap } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
@@ -20,7 +20,7 @@ import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
-import RotationTimeline, { STAT_LABELS } from './RotationTimeline.jsx';
+import RotationTimeline, { STAT_LABELS, stepStyle } from './RotationTimeline.jsx';
 import { useSessionState } from '../../utils/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
@@ -1152,9 +1152,14 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             .map(fmtBuff)
         )];
         // Verified skill-by-skill sequence from Prydwen.gg's "Standard Rotation" guides — real
-        // combat data, not derived from CHAR_BUFF_TABLE like the rest of this block. Only present
-        // for the handful of characters it's been sourced for; renders nothing otherwise.
-        const skillSequence = CHARACTER_DATA[seg.name]?.rotation || null;
+        // combat data, not derived from CHAR_BUFF_TABLE like the rest of this block. CHARACTER_ROTATIONS
+        // (type/skill/note per step, 56 of 58 characters) is the richer, actively-maintained dataset —
+        // prefer it over the older CHARACTER_DATA[name].rotation plain-string array, which only exists
+        // for ~10 legacy entries and lacks per-step notes/type tagging. Both are normalized to the same
+        // {type, skill, note} shape so the rendering below doesn't need to know which source it got.
+        const richSequence = CHARACTER_ROTATIONS[seg.name];
+        const legacySequence = CHARACTER_DATA[seg.name]?.rotation;
+        const skillSequence = richSequence || (legacySequence ? legacySequence.map(s => ({ type: 'Step', skill: s })) : null);
         return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits, skillSequence };
       });
 
@@ -1898,13 +1903,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     {step.skillSequence && (
                       <div className="mt-2 pl-7">
                         <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">Skill sequence</div>
-                        <div className="text-sm leading-relaxed">
-                          {step.skillSequence.map((s, si) => (
-                            <React.Fragment key={si}>
-                              {si > 0 && <span className="text-gray-700"> → </span>}
-                              <span className="inline-block px-1 rounded-sm border border-white/10 bg-white/5 text-gray-300 text-2xs align-middle">{s}</span>
-                            </React.Fragment>
-                          ))}
+                        <div className="space-y-1">
+                          {step.skillSequence.map((s, si) => {
+                            const sty = stepStyle(s.type);
+                            return (
+                              <div key={si} className="flex items-start gap-2">
+                                <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border flex-shrink-0 ${sty.cls}`}>{sty.code}</span>
+                                <div className="min-w-0">
+                                  <span className="text-sm text-gray-300">{s.skill}</span>
+                                  {s.note && <div className="text-2xs text-gray-500">{s.note}</div>}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -1944,6 +1955,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   )}
                 </React.Fragment>
               ))}
+              {/* This block chain is one cycle (rotTime seconds) that repeats — each character's own
+                  module (skill sequence + inherits/hands-off) is unaffected by which comp it's slotted
+                  into, so swapping any member here still "just works": the chain re-derives inherits/
+                  hands-off/ordering from whichever 1-3 characters are actually placed. */}
+              {rotationTimeline.steps.length > 1 && (
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="h-px flex-1 bg-purple-500/20" />
+                  <span className="text-2xs text-purple-400/80 font-medium">↻ loop back to {rotationTimeline.steps[0]?.name}, repeat every {rotationTimeline.totalTime}s</span>
+                  <span className="h-px flex-1 bg-purple-500/20" />
+                </div>
+              )}
             </div>
           </CardBody>
         </Card>
