@@ -54,6 +54,7 @@ const CHARACTER_DATA = {
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
     desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS who builds Resolve through Basic Attacks and the Intro Skill Tactical Strike, spending it on an empowered Windqueller or the Emerald Storm: Finale burst, then unleashes Emerald Storm: Prelude to enter Qingloong Mode — a heavy-hitting Lance of Qingloong combo with high interrupt resistance.",
     skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
+    rotation: ['Echo', 'Intro', 'Liberation: Emerald Storm', 'Heavy: Lance of Qingloong 1 (cancel → Skill)', 'Skill', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Skill', 'Outro'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
     // bestEchoes/weaponAlts corrected against Prydwen's Jiyan build calcs (2026-07-30 profile update):
@@ -66,6 +67,7 @@ const CHARACTER_DATA = {
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS who builds Cruelty from his Resonance Skill Extermination Order into an enhanced Heavy Attack "Mercy," then triggers Resonance Liberation Phantom Etching to enter Deathblade Gear, replacing his Basic Attack with the Killing Intent-fueled "Death Messenger" burst finisher.',
     skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
+    rotation: ['Echo', 'Intro', 'Liberation', 'Heavy: Death Messenger', 'Basic: Hounds Roar 1-5', 'Heavy: Death Messenger', 'Basic: Hounds Roar 1-5', 'Heavy: Death Messenger', 'Outro'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
     // bestEchoes confirmed accurate (Void Thunder/Nightmare: Thundering Mephis is genuinely #1 per
@@ -173,6 +175,7 @@ const CHARACTER_DATA = {
   'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS who marks targets with Sinner\'s Mark via Basic Attack and Intro Skill, deals off-field Electro DMG through Coordinated Attacks (Electromagnetic Blast/Judgement Strike) once Punishment Mark is applied, and amplifies the incoming teammate\'s Electro DMG and Resonance Liberation DMG via Outro.',
     skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Chameleon Cipher', 'Thundering Wrath'],
+    rotation: ['Intro', 'Basic 4 (optional swap cancel)', 'Skill: Magnetic Roar', 'Heavy Attack', 'Skill: Lightning Execution (cancel → Heavy endlag)', 'Liberation (on landing)', 'Basic 1', 'Forte Heavy: Chameleon Cipher', 'Outro'],
     ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Helix' },
     // bestEchoes confirmed accurate (Moonlit Clouds/Impermanence Heron ties #1 with Empyrean Anthem per
