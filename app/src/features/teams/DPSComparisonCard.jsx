@@ -5,9 +5,10 @@
 import React from 'react';
 import { BarChart3, Sword, X } from 'lucide-react';
 import { ECHO_DATA, ALL_4COST_ECHOES } from '../../data/echoes.js';
-import { getElementColor } from '../../utils/helpers.js';
+import { getElementColor, getElementIcon } from '../../utils/helpers.js';
 import { haptic } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 const roleColors = {
   DPS: { bg: 'bg-red-500/15', text: 'text-red-400' },
@@ -106,7 +107,10 @@ export default function DPSComparisonCard({
                     const rc2 = roleColors[m.d.role] || roleColors.Support;
                     return (
                       <div key={mi} className={`flex-1 min-w-0 p-1.5 rounded-lg border text-center ${rarity5 ? 'border-yellow-500/50 glow-gold bg-yellow-500/10' : 'border-purple-500/50 glow-purple bg-purple-500/10'}`}>
-                        <div className="text-sm font-semibold truncate" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>{m.name}</div>
+                        <div className="text-sm font-semibold truncate inline-flex items-center justify-center gap-1 w-full" style={{ color: getElementColor(m.d.element), textShadow: `0 0 8px ${getElementColor(m.d.element)}60` }}>
+                          {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3 h-3 shrink-0" onError={hideOnError} />}
+                          <span className="truncate">{m.name}</span>
+                        </div>
                         <div className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
                         <span className={`text-2xs px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
                       </div>

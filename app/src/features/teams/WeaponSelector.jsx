@@ -2,7 +2,7 @@ import React from 'react';
 import { Sword, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
-import { haptic, getStatIcon } from '../../utils/helpers.js';
+import { haptic, getStatIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
@@ -21,7 +21,11 @@ export default function WeaponSelector({
                         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
                             <h3 className="text-white font-semibold text-xl">Select Weapon</h3>
-                            <p className="text-gray-400 text-sm">{weaponSelectorTarget.charName} — {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}</p>
+                            <p className="text-gray-400 text-sm inline-flex items-center gap-1">
+                              {weaponSelectorTarget.charName} —
+                              {getWeaponTypeIcon(CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon) && <img src={getWeaponTypeIcon(CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                              {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}
+                            </p>
                           </div>
                           <button onClick={() => setWeaponSelectorOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close weapon selector"><X size={16} /></button>
                         </div>

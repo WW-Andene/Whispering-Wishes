@@ -15,7 +15,7 @@ import {
   calcEnergyCycles,
   isHealerRole,
 } from './calcEngine.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -1193,7 +1193,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                           {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3.5 h-3.5 inline-block align-middle mr-0.5" onError={hideOnError} />}
                           {getElementShape(m.d.element)}{getElementShape(m.d.element) ? ' ' : ''}{m.d.element}
                         </span>
-                        <span className="text-sm text-gray-500">{m.d.weapon}</span>
+                        <span className="text-sm text-gray-500 inline-flex items-center gap-1">
+                          {getWeaponTypeIcon(m.d.weapon) && <img src={getWeaponTypeIcon(m.d.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                          {m.d.weapon}
+                        </span>
                       </div>
                     </div>
                     {/* Auto Equip button */}

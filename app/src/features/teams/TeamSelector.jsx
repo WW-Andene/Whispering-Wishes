@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Star, Users, X } from 'lucide-react';
+import { Search, Star, Users, X, Heart, ShieldCheck, Swords, TrendingUp, Target, Flame, BatteryCharging, Users2, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
@@ -126,14 +126,14 @@ export default function TeamSelector({
                               onChange={setTeamBuffFilter}
                               options={[
                                 { value: 'all', label: 'All Buffs' },
-                                { value: 'Heal', label: 'Heal' },
-                                { value: 'Shield', label: 'Shield' },
-                                { value: 'Coordinated ATK', label: 'Coordinated ATK' },
-                                { value: 'ATK Buff', label: 'ATK Buff' },
-                                { value: 'Crit', label: 'Crit' },
-                                { value: 'DMG', label: 'DMG Buff' },
-                                { value: 'Energy Regen', label: 'Energy Regen' },
-                                { value: 'Grouping', label: 'Grouping' },
+                                ...[
+                                  ['Heal', Heart], ['Shield', ShieldCheck], ['Coordinated ATK', Swords],
+                                  ['ATK Buff', TrendingUp], ['Crit', Target], ['DMG', Flame, 'DMG Buff'],
+                                  ['Energy Regen', BatteryCharging], ['Grouping', Users2],
+                                ].map(([val, Icon, text]) => ({
+                                  value: val,
+                                  label: <span className="inline-flex items-center gap-1.5"><Icon size={14} className="shrink-0" /> {text || val}</span>,
+                                })),
                               ]}
                               ariaLabel="Filter by buff type"
                               small
@@ -143,11 +143,13 @@ export default function TeamSelector({
                               onChange={setTeamDebuffFilter}
                               options={[
                                 { value: 'all', label: 'All Debuffs' },
-                                { value: 'Frazzle', label: 'Frazzle' },
-                                { value: 'Erosion', label: 'Erosion' },
-                                { value: 'Off-Tune', label: 'Off-Tune' },
-                                { value: 'DEF Shred', label: 'DEF Shred' },
-                                { value: 'RES Shred', label: 'RES Shred' },
+                                ...[
+                                  ['Frazzle', Flame], ['Erosion', Droplets], ['Off-Tune', Music2],
+                                  ['DEF Shred', ShieldOff], ['RES Shred', ShieldAlert],
+                                ].map(([val, Icon]) => ({
+                                  value: val,
+                                  label: <span className="inline-flex items-center gap-1.5"><Icon size={14} className="shrink-0" /> {val}</span>,
+                                })),
                               ]}
                               ariaLabel="Filter by debuff type"
                               small
