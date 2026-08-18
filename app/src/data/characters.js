@@ -3938,6 +3938,49 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Flashing Thunder Spell: Harmony', note: 'Yin-Yang Balance reached — enhanced Liberation deploys the Five Thunders Spell Array (Electro Flare)' },
     { type: 'Outro', skill: 'Exorcism Spell', duration: 30, note: 'swap-cancel her Echo right before this — heals the incoming active character and Amplifies nearby team DMG by 15% for 30s' },
   ],
+  // Added 2026-08-18, sourced from Prydwen's live "Gameplay and teams" tab for all four Rover
+  // attunements (Chrome UA + google.com referer + jsRender, 8s wait). These four were previously
+  // entirely missing from CHARACTER_ROTATIONS — the only gap in the 58-character roster.
+  'Rover: Havoc': [
+    { type: 'Intro', skill: 'Instant of Annihilation' },
+    { type: 'Skill', skill: 'Wingblade' },
+    { type: 'Heavy ATK', skill: 'Devastation', note: 'consumes full Umbra, enters Dark Surge (Havoc RES shred on hit)' },
+    { type: 'Skill', skill: 'Umbra: Lifetaker', note: 'enhanced Skill inside Dark Surge, cancel optional' },
+    { type: 'Liberation', skill: 'Deadening Abyss' },
+    { type: 'Echo', skill: 'Dreamless', note: 'swap-cancel immediately, best used within 5s of Liberation for +50% DMG' },
+    { type: 'Outro', skill: 'Soundweaver', note: 'this is the Short Burst Combo — for Main DPS field time, insert 1-3 Dark Surge Basic ATK strings (P1-P5) before the Skill/Ultimate/Echo finisher' },
+  ],
+  'Rover: Spectro': [
+    { type: 'Heavy ATK', skill: 'Resonance → Aftertune', note: 'pre-swap-in warmup, builds Diminutive Sound' },
+    { type: 'Forte', skill: 'Resonating Spin → Resonating Whirl', note: 'enhanced Skill, applies 2 Spectro Frazzle + Shimmer' },
+    { type: 'Intro', skill: 'Waveshock' },
+    { type: 'Liberation', skill: 'Echoing Orchestra', note: 'applies 6 Spectro Frazzle' },
+    { type: 'Basic ATK', skill: 'Vibration Manifestation 1-2' },
+    { type: 'Forte', skill: 'Resonating Spin → Resonating Whirl' },
+    { type: 'Forte', skill: 'Resonating Echoes 1-2' },
+    { type: 'Outro', skill: 'Instant' },
+  ],
+  'Rover: Aero': [
+    { type: 'Intro', skill: 'Relentless Squall' },
+    { type: 'Forte', skill: 'Cloudburst Dance 1-2', note: 'mid-air, heals nearby team' },
+    { type: 'Liberation', skill: 'Omega Storm', note: 'cast near ground to land instantly, heals team' },
+    { type: 'Skill', skill: 'Awakening Gale', note: 'returns to mid-air' },
+    { type: 'Forte', skill: 'Cloudburst Dance 1-2' },
+    { type: 'Skill', skill: 'Skyfall Severance', note: 'optional — converts enemy Negative Status stacks into Aero Erosion' },
+    { type: 'Mid-air ATK', skill: 'Plunge' },
+    { type: 'Forte', skill: 'Unbound Flow P1 (switch out)', note: 'swap-cancel here — P2 resolves automatically off-field' },
+    { type: 'Outro', skill: "Storm's Echo", duration: 30, note: 'raises nearby team\'s max Aero Erosion stack cap by 3' },
+  ],
+  'Rover: Electro': [
+    { type: 'Intro', skill: 'Thunderous Fury' },
+    { type: 'Basic ATK', skill: 'Deterrence 1-4' },
+    { type: 'Skill', skill: 'Thunderclap' },
+    { type: 'Basic ATK', skill: 'Repel', note: 'cancel animation endlag via Ultimate' },
+    { type: 'Liberation', skill: 'Ultimate Tactics' },
+    { type: 'Forte', skill: 'Overshock', note: 'consumes full Electric Surge, applies 10 Electro Flare + team 10% ATK buff; cancel endlag via Echo' },
+    { type: 'Echo', skill: 'Impermanence Heron', note: 'swap-cancel into Outro' },
+    { type: 'Outro', skill: 'Rumbling Thunders', duration: 20, note: 'incoming Resonator gains Electro Core — consumed on their next Negative Status hit for +25% All DMG Amp; expires on swap, so use fast' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator

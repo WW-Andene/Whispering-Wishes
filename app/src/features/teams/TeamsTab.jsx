@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { scoreTeamComposition, isHealerRole, isSupportRole, TIER_SCORES } from './calcEngine.js';
+import { scoreTeamComposition, isHealerRole, isSupportRole, TIER_SCORES, composeTeamRotation } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -24,6 +24,7 @@ function TeamsTab({
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [suggestionsCollapsed, setSuggestionsCollapsed] = useSessionState('ww-team-suggestions-collapsed', false);
+  const [rotationCollapsed, setRotationCollapsed] = useSessionState('ww-team-rotation-collapsed', false);
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -187,6 +188,7 @@ function TeamsTab({
             {(() => {
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
+              const teamRotation = composeTeamRotation(teamSlots.filter(s => s));
               // Relevant whenever auto-detect can't unambiguously know which member the player wants
               // the headline DPS number built around: dual/multi-Main-DPS-role comps (ambiguous which
               // one), and pure Sub-DPS/hybrid quickswap comps with zero 'Main DPS'-role members (falls
@@ -678,6 +680,61 @@ function TeamsTab({
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
                   />
+
+                  {/* Composed Team Rotation — chains each placed Resonator's own solo rotation (module)
+                      end-to-end via their Outro→next-Intro buff handoff, looping back to member 1 after
+                      the last, so it reads as one continuous, repeatable team rotation for whatever
+                      comp is currently placed. Collapsible, matching the Suggestions card below. */}
+                  {teamRotation.timeline.length > 0 && (
+                  <Card>
+                    <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setRotationCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setRotationCollapsed(p => !p); } }} aria-expanded={!rotationCollapsed}>
+                      <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${rotationCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-purple-400" /> Team Rotation{teamRotation.loop ? ' (loops)' : ''}</CardHeader>
+                    </div>
+                    {!rotationCollapsed && (
+                    <CardBody>
+                      {teamRotation.modules.some(m => !m.hasData) && (
+                        <p className="text-2xs text-yellow-500/70 mb-2">
+                          No verified rotation data yet for: {teamRotation.modules.filter(m => !m.hasData).map(m => m.name).join(', ')}
+                        </p>
+                      )}
+                      <div className="space-y-1">
+                        {teamRotation.timeline.map((entry, i) => {
+                          const d = entry.char ? CHARACTER_DATA[entry.char] : null;
+                          if (entry.kind === 'swap-in') {
+                            return (
+                              <div key={i} className="flex items-center gap-2 pt-2 first:pt-0">
+                                <span className="h-px flex-1 bg-white/5" />
+                                <span className="text-2xs uppercase tracking-wider font-medium" style={{ color: d ? getElementColor(d.element) : undefined }}>{entry.char} on field</span>
+                                <span className="h-px flex-1 bg-white/5" />
+                              </div>
+                            );
+                          }
+                          if (entry.kind === 'handoff') {
+                            return (
+                              <div key={i} className="text-2xs text-cyan-400/80 pl-4 py-0.5">
+                                → hands off to {entry.to}: {entry.buffs.map((b, j) => `+${b.value}% ${b.stat}${b.duration ? ` (${b.duration}s)` : ''}`).join(', ')}
+                              </div>
+                            );
+                          }
+                          return (
+                            <div key={i} className="text-sm text-gray-300 pl-4 flex gap-2">
+                              <span className="text-gray-500 text-2xs w-16 flex-shrink-0 uppercase">{entry.type}</span>
+                              <span className="flex-1">{entry.skill}{entry.note ? <span className="text-gray-500"> — {entry.note}</span> : null}</span>
+                            </div>
+                          );
+                        })}
+                        {teamRotation.loop && (
+                          <div className="flex items-center gap-2 pt-2">
+                            <span className="h-px flex-1 bg-white/5" />
+                            <span className="text-2xs text-purple-400/70">↻ loops back to {teamRotation.modules[0]?.name}</span>
+                            <span className="h-px flex-1 bg-white/5" />
+                          </div>
+                        )}
+                      </div>
+                    </CardBody>
+                    )}
+                  </Card>
+                  )}
 
                   {/* Suggested Teams from Character Data — collapsible */}
                   <Card>

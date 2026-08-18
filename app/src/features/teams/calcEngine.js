@@ -6,7 +6,7 @@
 
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 
 // ── Constants (named, not magic) ──
@@ -584,4 +584,38 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   members.forEach(m => { const d = CHARACTER_DATA[m]; if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) { score += d.role === 'Main DPS' ? 12 : 4; hasBis = true; } });
   if (hasBis) tags.push('BiS Weapon');
   return { score, tags: [...new Set(tags)].slice(0, 3) };
+}
+
+// ── Compose N per-character solo rotations into one continuous, loopable team rotation ──
+// Each character's CHARACTER_ROTATIONS entry is a self-contained "module" (Intro → combo → Outro).
+// The Outro step already carries CHAR_BUFF_TABLE[name].outroBuffs — the buff it hands to whichever
+// Resonator swaps in next. Chaining modules end-to-end in team order, and wrapping the last member's
+// handoff back to the first, turns those N solo modules into a single loop: swap through the whole
+// team once, land back on member 1 with their buffs cycled back around, repeat indefinitely. This is
+// what makes any 2-4 character selection "just work" as a team rotation — the module boundary (Outro
+// buff → next Intro) is the actual interface, not anything team-comp-specific.
+export function composeTeamRotation(members) {
+  const modules = (members || []).filter(Boolean).map(name => {
+    const rotationSteps = CHARACTER_ROTATIONS[name];
+    const fallbackSteps = CHARACTER_DATA[name]?.rotation;
+    const steps = rotationSteps || (fallbackSteps ? fallbackSteps.map(s => ({ type: 'Step', skill: s })) : []);
+    const bt = CHAR_BUFF_TABLE[name];
+    // Only 'next'/'team' targeted outro buffs are a real hand-off to whoever swaps in — 'self' buffs
+    // stay with this character and aren't part of the chain interface.
+    const handoff = (bt?.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'team');
+    return { name, steps, handoff, hasData: !!rotationSteps || !!fallbackSteps?.length };
+  });
+  if (modules.length === 0) return { timeline: [], loop: false, modules: [] };
+
+  const timeline = [];
+  modules.forEach((mod, i) => {
+    timeline.push({ kind: 'swap-in', char: mod.name, hasData: mod.hasData });
+    mod.steps.forEach(step => timeline.push({ kind: 'step', char: mod.name, ...step }));
+    const nextMod = modules[(i + 1) % modules.length];
+    if (mod.handoff.length && nextMod && nextMod !== mod) {
+      timeline.push({ kind: 'handoff', char: mod.name, to: nextMod.name, buffs: mod.handoff });
+    }
+  });
+  // loop only means something with 2+ distinct members — a solo "team" just repeats its own module
+  return { timeline, loop: modules.length > 1, modules: modules.map(m => ({ name: m.name, hasData: m.hasData })) };
 }
