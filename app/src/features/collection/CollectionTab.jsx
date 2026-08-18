@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon } from '../../utils/helpers.js';
 
 function CollectionTab({
   state,
@@ -527,11 +527,10 @@ function CollectionTab({
                     onChange={setCollectionRegionFilter}
                     options={[
                       { value: 'all', label: 'All Regions' },
-                      { value: 'Huanglong', label: 'Huanglong' },
-                      { value: 'Rinascita', label: 'Rinascita' },
-                      { value: 'Black Shores', label: 'Black Shores' },
-                      { value: 'Septimont', label: 'Septimont' },
-                      { value: 'Lahai-Roi', label: 'Lahai-Roi' },
+                      ...['Huanglong', 'Rinascita', 'Black Shores', 'Septimont', 'Lahai-Roi'].map(r => ({
+                        value: r,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getRegionIcon(r)} alt="" width={14} height={14} className="shrink-0" /> {r}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by region"
                   />
@@ -609,7 +608,15 @@ function CollectionTab({
                     onChange={setCollectionEchoBuffFilter}
                     options={[
                       { value: 'all', label: 'All Buffs' },
-                      ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b })),
+                      ...ALL_ECHO_BUFF_TYPES.map(b => {
+                        const icon = getElementIcon(b.replace(/ DMG$/, ''));
+                        return {
+                          value: b,
+                          label: icon
+                            ? <span className="inline-flex items-center gap-1.5"><img src={icon} alt="" width={14} height={14} className="shrink-0" /> {b}</span>
+                            : b,
+                        };
+                      }),
                     ]}
                     ariaLabel="Filter by buff type"
                   />

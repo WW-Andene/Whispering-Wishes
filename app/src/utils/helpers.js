@@ -232,6 +232,9 @@ const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 const REGION_ICONS = {
   'Huanglong': 'https://i.ibb.co/G34c0tdc/Huanglong-Emblem.webp',
   'Black Shores': 'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
+  // Added 2026-08-18: Septimont is a valid Region filter value (CollectionTab) but had no REGION_ICONS
+  // entry — only a FACTION_ICONS one. Same asset, matching this file's own Black Shores dual-use precedent.
+  'Septimont': 'https://i.ibb.co/0pV0d4Yg/septimont-emblem.webp',
   // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
   // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
   'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
