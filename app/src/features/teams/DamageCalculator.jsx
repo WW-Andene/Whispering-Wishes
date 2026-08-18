@@ -1215,40 +1215,62 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   const [overviewCollapsed, setOverviewCollapsed] = useSessionState('ww-team-overview-collapsed', false);
 
   const stats = activeTeamStats;
+
+  // Enemy Target — drives enemyDef90/enemyResMap in calcTeamStats above, so it's rendered
+  // unconditionally (both with and without a team set) rather than only inside DPSComparisonCard,
+  // which is gated behind "+ Compare", or only alongside Team Overview, which needs a team.
+  const enemyTargetCard = (
+    <Card>
+      <CardBody>
+        <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
+          <Sword size={12} className="text-red-400" />
+          <span className="text-gray-400 text-sm font-medium">Target:</span>
+          <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
+            className="kuro-btn text-sm px-2 py-1 flex-1 min-w-[120px] max-w-[280px] text-left truncate">
+            {enemyEcho || 'Training Dummy (Default)'}
+          </button>
+          <div className="flex items-center gap-1">
+            <span className="text-gray-500 text-sm">Lv.</span>
+            <input type="text" inputMode="numeric" value={enemyLevel}
+              onFocus={e => e.target.select()}
+              onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
+              onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
+              className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
+          </div>
+          <span className="text-gray-600 text-sm">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
+        </div>
+      </CardBody>
+    </Card>
+  );
+  const enemyTargetModal = (
+    <EnemyEchoSelectorModal
+      isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
+      enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
+      enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+      collectionImages={collectionImages}
+      search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
+      costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}
+      setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
+      buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
+    />
+  );
+
   if (!stats) return (
-    <Card><CardBody className="text-center py-6">
-      <Users size={24} className="mx-auto mb-2 text-gray-500" />
-      <p className="text-gray-400 text-sm">Add Resonators to your team to see damage analysis</p>
-    </CardBody></Card>
+    <>
+      {enemyTargetCard}
+      <Card><CardBody className="text-center py-6">
+        <Users size={24} className="mx-auto mb-2 text-gray-500" />
+        <p className="text-gray-400 text-sm">Add Resonators to your team to see damage analysis</p>
+      </CardBody></Card>
+      {enemyTargetModal}
+    </>
   );
   const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
     <>
-      {/* Enemy Target — drives enemyDef90/enemyResMap above, so it lives here (always visible once a
-          team exists) rather than only inside DPSComparisonCard, which is gated behind "+ Compare". */}
-      <Card>
-        <CardBody>
-          <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-[var(--border-medium)]" style={{ background: 'var(--bg-stat)' }}>
-            <Sword size={12} className="text-red-400" />
-            <span className="text-gray-400 text-sm font-medium">Target:</span>
-            <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
-              className="kuro-btn text-sm px-2 py-1 flex-1 min-w-[120px] max-w-[280px] text-left truncate">
-              {enemyEcho || 'Training Dummy (Default)'}
-            </button>
-            <div className="flex items-center gap-1">
-              <span className="text-gray-500 text-sm">Lv.</span>
-              <input type="text" inputMode="numeric" value={enemyLevel}
-                onFocus={e => e.target.select()}
-                onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
-                onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
-                className="kuro-input w-12 text-sm px-1 py-0.5 text-center" />
-            </div>
-            <span className="text-gray-600 text-sm">DEF {getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.def ?? (792 + 8 * (Number(enemyLevel) || 90))}</span>
-          </div>
-        </CardBody>
-      </Card>
+      {enemyTargetCard}
 
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
@@ -2038,16 +2060,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         setTeamEquipment={setTeamEquipment}
       />
 
-      <EnemyEchoSelectorModal
-        isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
-        enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
-        enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
-        collectionImages={collectionImages}
-        search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
-        costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}
-        setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
-        buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
-      />
+      {enemyTargetModal}
     </>
   );
 });
