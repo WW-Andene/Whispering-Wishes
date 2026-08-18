@@ -372,6 +372,14 @@ export function calcEnergyCycles(members, teamEquipment, teamIdx) {
     });
     if (m.echoSet?.p2val?.energyRegen) totalER += m.echoSet.p2val.energyRegen;
     if (m.echoSet2?.p2val?.energyRegen) totalER += m.echoSet2.p2val.energyRegen;
+    // Main-slot echo skill buffs that grant Energy Regen (e.g. Reactor Husk +10%) — these use a stat
+    // key ('energyRegen') the generic applyBuff() damage-stat switch doesn't handle, since ER isn't a
+    // damage stat; it has to feed into this energy-cycle accumulator instead.
+    const mainEchoName = eq?.echoes?.[0]?.name;
+    const esb = mainEchoName && ECHO_SKILL_BUFFS[mainEchoName];
+    if (esb && (esb.target || 'self') === 'self') {
+      (esb.buffs || []).forEach(b => { if (b.stat === 'energyRegen') totalER += b.value; });
+    }
     const energyCost = m.d.maxEnergy || 125;
     const erThreshold = energyCost >= 175 ? ER_THRESHOLD_HEALER : ER_THRESHOLD_STANDARD;
     factors[m.name] = {
