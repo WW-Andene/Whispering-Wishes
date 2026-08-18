@@ -475,7 +475,25 @@ function TeamsTab({
                           <FolderOpen size={12} />
                         </button>
                         <button
-                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex }); haptic.medium(); } }}
+                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) {
+                            dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex });
+                            // Clean up orphaned equipment entries for every cleared member — CLEAR_TEAM
+                            // wipes all slots at once, so this must sweep all of them (single-slot
+                            // removeFromSlot only ever cleaned up its own one entry).
+                            const clearedNames = teamSlots.filter(Boolean);
+                            if (clearedNames.length) {
+                              setTeamEquipment(prev => {
+                                const n = { ...prev };
+                                let changed = false;
+                                clearedNames.forEach(charName => {
+                                  const eqKey = state.activeTeamIndex + ':' + charName;
+                                  if (n[eqKey]) { delete n[eqKey]; changed = true; }
+                                });
+                                return changed ? n : prev;
+                              });
+                            }
+                            haptic.medium();
+                          } }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
                           aria-label="Clear all slots in current team"
                         >
@@ -734,7 +752,7 @@ function TeamsTab({
                                 <div className="flex gap-1 mt-0.5 flex-wrap">
                                   {s.members.slice(0, 3).map((m, j) => {
                                     const role = CHARACTER_DATA[m]?.role;
-                                    const rc = role === 'Main DPS' ? 'text-red-400' : role === 'Sub DPS' ? 'text-orange-400' : role === 'Healer' ? 'text-emerald-400' : 'text-blue-400';
+                                    const rc = role === 'Main DPS' ? 'text-red-400' : role === 'Sub DPS' ? 'text-orange-400' : isHealerRole(role) ? 'text-emerald-400' : 'text-blue-400';
                                     return <span key={j} className={`text-2xs ${rc}`}>{role || '?'}</span>;
                                   })}
                                   {s.tags?.map((tag, j) => (

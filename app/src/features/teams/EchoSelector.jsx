@@ -3,6 +3,7 @@ import { Diamond, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
 import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
+import { isHealerRole, isSupportRole } from './calcEngine.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -242,8 +243,11 @@ export default function EchoSelector({
             const charEl = cd?.element;
             const charRole = cd?.role;
             const elDmgStat = charEl ? `${charEl} DMG` : null;
-            const isHealer = charRole === 'Healer';
-            const isSupport = charRole === 'Support';
+            // Compound role strings ('Support/Healer' — Chisa, Suisui) never match an exact
+            // equality check, so those characters silently fell through to the plain-DPS
+            // recommendation branch below. Use the substring-aware role helpers instead.
+            const isHealer = isHealerRole(charRole);
+            const isSupport = isSupportRole(charRole);
             const recMainStats = new Set();
             const recSubstats = new Set();
             // Recommended sonata sets for this character

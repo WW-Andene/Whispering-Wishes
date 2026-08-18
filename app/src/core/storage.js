@@ -85,6 +85,7 @@ const loadFromStorage = () => {
         ? safeParsed.teams.map((t, i) => ({
             name: (t && typeof t.name === 'string') ? t.name : initialState.teams[i].name,
             slots: (t && Array.isArray(t.slots) && t.slots.length === 3) ? t.slots : [null, null, null],
+            mainDpsOverride: (t && typeof t.mainDpsOverride === 'string') ? t.mainDpsOverride : null,
           }))
         : initialState.teams,
       activeTeamIndex: typeof safeParsed.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, safeParsed.activeTeamIndex)) : 0,

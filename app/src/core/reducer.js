@@ -387,7 +387,7 @@ const reducer = (state, action) => {
         const rawSlots = Array.isArray(t?.slots) ? t.slots.slice(0, 3).map(s => typeof s === 'string' ? s : null) : [null, null, null];
         const seen = new Set();
         const slots = rawSlots.map(s => { if (s && seen.has(s)) return null; if (s) seen.add(s); return s; });
-        return { name: (t?.name || `Team ${i + 1}`).slice(0, 20), slots };
+        return { name: (t?.name || `Team ${i + 1}`).slice(0, 20), slots, mainDpsOverride: typeof t?.mainDpsOverride === 'string' ? t.mainDpsOverride : null };
       });
       return { ...state, teams, activeTeamIndex: Math.max(0, Math.min(4, action.activeTeamIndex ?? state.activeTeamIndex)) };
     }
