@@ -2500,6 +2500,49 @@ const CHAR_BUFF_TABLE = {
   },
 };
 
+// [SECTION:CHAR_BUFF_TAGS] — Added 2026-08-18: CHARACTER_DATA[name].buffs/.debuffs (plain human-
+// readable string arrays) were referenced by the Team Selector's Buff/Debuff filter dropdowns
+// (TeamsTab.jsx) and by DamageCalculator.jsx's per-member buff display, but were NEVER assigned
+// anywhere in this file — every character's `.buffs`/`.debuffs` was `undefined`, so selecting ANY
+// value in those two filters matched zero characters (100% non-functional), and the per-member buff
+// list in the team overview never rendered. Derived here from each character's own already-verified
+// CHAR_BUFF_TABLE entries (not hand-typed per character, to avoid re-fabricating 58 characters' worth
+// of tags) plus dmgFocus/role, mapped onto the exact category labels the filter dropdowns offer.
+// 'Shield' and 'Grouping' are NOT derived — neither has a structured numeric representation anywhere
+// in this data (shields/CC aren't part of the DPS calc), so tagging them would mean guessing from kit
+// descriptions rather than verified data; those two filter options remain non-matching until someone
+// sources them properly, which is an honest gap rather than a silent wrong answer.
+const BUFF_STAT_TAGS = {
+  deepen: 'DMG Buff', allDmg: 'DMG Buff', elemDmg: 'DMG Buff', basicDmg: 'DMG Buff',
+  heavyDmg: 'DMG Buff', skillDmg: 'DMG Buff', libDmg: 'DMG Buff', echoDmg: 'DMG Buff', coordDmg: 'DMG Buff',
+  critRate: 'Crit', critDmg: 'Crit',
+  atkPct: 'ATK Buff',
+  energyRegen: 'Energy Regen',
+};
+const DEBUFF_STAT_TAGS = {
+  defShred: 'DEF Shred', resShred: 'RES Shred', defIgnore: 'DEF Shred',
+  frazzle: 'Frazzle', erosion: 'Erosion', offTune: 'Off-Tune',
+};
+Object.entries(CHARACTER_DATA).forEach(([name, d]) => {
+  const bt = CHAR_BUFF_TABLE[name];
+  const buffTags = new Set();
+  const debuffTags = new Set();
+  if (d.role === 'Healer') buffTags.add('Heal');
+  if ((d.dmgFocus || []).includes('Coordinated ATK')) buffTags.add('Coordinated ATK');
+  if (bt) {
+    [...(bt.outroBuffs || []), ...(bt.libBuffs || []), ...(bt.selfBuffs || []), ...(bt.weaponBuffs || [])].forEach(b => {
+      const tag = BUFF_STAT_TAGS[b.stat];
+      if (tag) buffTags.add(tag);
+    });
+    (bt.debuffs || []).forEach(db => {
+      const tag = DEBUFF_STAT_TAGS[db.stat];
+      if (tag) debuffTags.add(tag);
+    });
+  }
+  d.buffs = [...buffTags];
+  d.debuffs = [...debuffTags];
+});
+
 // [SECTION:SKILL_MULTIPLIERS] — Per-character skill ATK% multipliers at Lv.10 (max skill level)
 // Format: { charName: [ [type, skillName, multString], ... ] }
 // Source: game8.co character pages (Aemeath/Luuk Herssen/Lynae/Mornye/Chisa cross-checked against ww.nanoka.cc "Skill Attributes (Lv.10)" 2026-08-15)
