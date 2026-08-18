@@ -2,7 +2,7 @@ import React from 'react';
 import { Sword, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic, getStatIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
@@ -100,7 +100,10 @@ export default function WeaponSelector({
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
                                             <span className="text-sm text-gray-400">ATK {w.baseAtk}</span>
-                                            <span className="text-sm text-cyan-400/80">{w.stat} {w.subStatValue}</span>
+                                            <span className="text-sm text-cyan-400/80 inline-flex items-center gap-1">
+                                              {getStatIcon(w.stat) && <img src={getStatIcon(w.stat)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                                              {w.stat} {w.subStatValue}
+                                            </span>
                                           </div>
                                         </div>
                                       </div>

@@ -5,7 +5,7 @@
 import React from 'react';
 import { Diamond, X } from 'lucide-react';
 import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -52,10 +52,27 @@ export default function EnemyEchoSelectorModal({
           </div>
           <div className="flex gap-1.5">
             <KuroSelect value={setFilter} onChange={v => setSetFilter(v)} small
-              options={[{ value: 'all', label: 'All Sets' }, ...ALL_ECHO_SONATA_SETS.map(s => ({ value: s, label: s }))]}
+              options={[
+                { value: 'all', label: 'All Sets' },
+                ...ALL_ECHO_SONATA_SETS.map(s => ({
+                  value: s,
+                  label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
+                })),
+              ]}
               className="flex-1 text-sm" />
             <KuroSelect value={buffFilter} onChange={v => setBuffFilter(v)} small
-              options={[{ value: 'all', label: 'All Types' }, ...ALL_ECHO_BUFF_TYPES.map(b => ({ value: b, label: b }))]}
+              options={[
+                { value: 'all', label: 'All Types' },
+                ...ALL_ECHO_BUFF_TYPES.map(b => {
+                  const icon = getElementIcon(b.replace(/ DMG$/, ''));
+                  return {
+                    value: b,
+                    label: icon
+                      ? <span className="inline-flex items-center gap-1.5"><img src={icon} alt="" width={14} height={14} className="shrink-0" /> {b}</span>
+                      : b,
+                  };
+                }),
+              ]}
               className="flex-1 text-sm" />
           </div>
         </div>
@@ -93,15 +110,22 @@ export default function EnemyEchoSelectorModal({
                         <span className={`text-2xs px-1 py-0.5 rounded bg-${costColor}-500/15 text-${costColor}-400 border border-${costColor}-500/25`}>{cost}C</span>
                       </div>
                       <div className="flex gap-1 mt-0.5 flex-wrap">
-                        {resEntries.length > 0 ? resEntries.map(([el, val]) => (
-                          <span key={el} className="kuro-badge kuro-badge-red">
-                            {el.charAt(0).toUpperCase() + el.slice(1)} {val}%
-                          </span>
-                        )) : (
+                        {resEntries.length > 0 ? resEntries.map(([el, val]) => {
+                          const elName = el.charAt(0).toUpperCase() + el.slice(1);
+                          const icon = getElementIcon(elName);
+                          return (
+                            <span key={el} className="kuro-badge kuro-badge-red inline-flex items-center gap-1">
+                              {icon && <img src={icon} alt="" className="w-3 h-3" onError={hideOnError} />}
+                              {elName} {val}%
+                            </span>
+                          );
+                        }) : (
                           <span className="text-sm text-gray-500">10% all RES</span>
                         )}
                         {ed?.element && ed.element !== 'Healing' && (
-                          <span className="text-sm text-gray-500">· {ed.element}</span>
+                          <span className="text-sm text-gray-500 inline-flex items-center gap-1">
+                            · {getElementIcon(ed.element) && <img src={getElementIcon(ed.element)} alt="" className="w-3 h-3" onError={hideOnError} />} {ed.element}
+                          </span>
                         )}
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Star, Users, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -72,12 +72,10 @@ export default function TeamSelector({
                               onChange={setTeamElementFilter}
                               options={[
                                 { value: 'all', label: 'All Elements' },
-                                { value: 'Aero', label: 'Aero' },
-                                { value: 'Glacio', label: 'Glacio' },
-                                { value: 'Electro', label: 'Electro' },
-                                { value: 'Fusion', label: 'Fusion' },
-                                { value: 'Spectro', label: 'Spectro' },
-                                { value: 'Havoc', label: 'Havoc' },
+                                ...['Aero', 'Glacio', 'Electro', 'Fusion', 'Spectro', 'Havoc'].map(el => ({
+                                  value: el,
+                                  label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(el)} alt="" width={14} height={14} className="shrink-0" /> {el}</span>,
+                                })),
                               ]}
                               ariaLabel="Filter by element"
                               small
@@ -111,12 +109,14 @@ export default function TeamSelector({
                               onChange={setTeamDmgFilter}
                               options={[
                                 { value: 'all', label: 'Damage Focus' },
-                                { value: 'Basic ATK', label: 'Basic ATK' },
-                                { value: 'Heavy ATK', label: 'Heavy ATK' },
-                                { value: 'Skill', label: 'Skill' },
-                                { value: 'Liberation', label: 'Liberation' },
-                                { value: 'Echo', label: 'Echo' },
-                                { value: 'Coordinated ATK', label: 'Coordinated ATK' },
+                                ...[
+                                  ['Basic ATK', 'Basic Attack Damage'], ['Heavy ATK', 'Heavy Attack Damage'],
+                                  ['Skill', 'Resonance Skill Damage'], ['Liberation', 'Resonance Liberation Damage'],
+                                  ['Echo', 'Echo Skill Damage'], ['Coordinated ATK', 'Coordinated Attack'],
+                                ].map(([val, tag]) => ({
+                                  value: val,
+                                  label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(tag)} alt="" width={14} height={14} className="shrink-0" /> {val}</span>,
+                                })),
                               ]}
                               ariaLabel="Filter by damage focus"
                               small
@@ -205,9 +205,11 @@ export default function TeamSelector({
                                   })()}
                                   <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                                   {/* Element indicator */}
-                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center"
+                                  <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center overflow-hidden"
                                     style={{ background: getElementColor(el) }}>
-                                    {getElementShape(el) || el?.[0]}
+                                    {getElementIcon(el)
+                                      ? <img src={getElementIcon(el)} alt="" className="w-full h-full object-cover" onError={hideOnError} />
+                                      : (getElementShape(el) || el?.[0])}
                                   </div>
                                   {/* Rarity */}
                                   <div className="absolute top-1 right-1">

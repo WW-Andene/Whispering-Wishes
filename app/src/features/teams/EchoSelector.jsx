@@ -2,7 +2,7 @@ import React from 'react';
 import { Diamond, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
-import { haptic, getSetIcon } from '../../utils/helpers.js';
+import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -90,7 +90,10 @@ export default function EchoSelector({
                       onChange={v => setEchoSetFilter(v)}
                       options={[
                         { value: 'all', label: 'All Sets' },
-                        ...availableSets.map(s => ({ value: s, label: s })),
+                        ...availableSets.map(s => ({
+                          value: s,
+                          label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
+                        })),
                       ]}
                       className="flex-1 text-sm"
                     />
@@ -99,7 +102,15 @@ export default function EchoSelector({
                       onChange={v => setEchoBuffFilter(v)}
                       options={[
                         { value: 'all', label: 'All Buffs' },
-                        ...availableBuffs.map(b => ({ value: b, label: b })),
+                        ...availableBuffs.map(b => {
+                          const icon = getElementIcon(b.replace(/ DMG$/, ''));
+                          return {
+                            value: b,
+                            label: icon
+                              ? <span className="inline-flex items-center gap-1.5"><img src={icon} alt="" width={14} height={14} className="shrink-0" /> {b}</span>
+                              : b,
+                          };
+                        }),
                       ]}
                       className="flex-1 text-sm"
                     />
