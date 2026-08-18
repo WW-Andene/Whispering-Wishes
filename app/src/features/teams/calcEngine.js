@@ -6,7 +6,7 @@
 
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
-import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 
 // ── Constants (named, not magic) ──
@@ -492,4 +492,81 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
     }
   }
   return totalMultBonus;
+}
+
+// ── Team composition scoring: tier + role coverage + buff/debuff synergy + element resonance +
+// BiS weapon ownership, all reusing data that already exists on every character (element, role,
+// dmgFocus, tier, CHAR_BUFF_TABLE's outroBuffs/libBuffs/debuffs, bestWeapon) — no separate
+// "recommendation" data model needed, just the same combat data combined correctly. Shared by the
+// Team Suggestions card (scoring whole curated/roster-built teams) and the character selector
+// (scoring hypothetical [...placed, candidate] teams to rank every possible addition, not just
+// ones that happen to appear in someone's hand-curated `teams` string list) — a single source of
+// truth so the two can never drift the way they did before this was extracted. ──
+export const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
+
+export function scoreTeamComposition(members, ownedWeaps = new Set()) {
+  let score = 0;
+  const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
+  const tags = [];
+  // Tier
+  let tierSum = 0;
+  members.forEach(m => { const t = CHARACTER_DATA[m]?.tier?.toa; if (t) tierSum += (TIER_SCORES[t] ?? 10); });
+  score += tierSum;
+  // Meta = truly top-tier (needs ≥2 T0 members, ~115+ pts)
+  if (tierSum >= 115) tags.push('Meta');
+  else if (tierSum >= 95) tags.push('Strong');
+  // Roles
+  const hasMain = roles.includes('Main DPS'), hasSub = roles.includes('Sub DPS');
+  const hasHeal = roles.includes('Healer'), hasSupp = roles.includes('Support');
+  if (hasMain) score += 15; if (hasHeal || hasSupp) score += 10; if (hasSub) score += 8;
+  if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
+  // DPS power + buff synergy
+  const mainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+  if (mainDps) {
+    // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster.
+    // Min-max normalize against that observed range so the top of the meta still differentiates
+    // (a flat divisor saturates and makes most current-meta DPS score identically).
+    const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
+    score += Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
+    const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
+    const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
+    // An elemDmg buff only helps this DPS if its condition (when present) actually names their
+    // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
+    const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
+    members.forEach(m => {
+      if (m === mainDps) return;
+      const bt = CHAR_BUFF_TABLE[m]; if (!bt) return;
+      (bt.outroBuffs || []).forEach(b => {
+        if (b.stat === 'deepen') score += 8;
+        else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) { score += 10; tags.push('ATK Amp'); }
+        else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) { score += 10; tags.push('Heavy Amp'); }
+        else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) { score += 10; tags.push('Echo Amp'); }
+        else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) score += 8;
+        else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
+      });
+      // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
+      (bt.libBuffs || []).forEach(b => {
+        if (b.target !== 'team' && b.target !== 'next') return;
+        if (b.stat === 'atkPct' || b.stat === 'critRate' || b.stat === 'critDmg') score += 6;
+        else if (b.stat === 'allDmg' || b.stat === 'deepen') score += 8;
+        else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
+        else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) score += 6;
+      });
+      (bt.debuffs || []).forEach(db => {
+        if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
+        if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
+        if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
+      });
+    });
+  }
+  // Element
+  const els = members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
+  const elSet = new Set(els);
+  if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
+  if (elSet.size === 1 && els.length > 1) { score += 8; tags.push('Mono'); }
+  // BiS weapon
+  let hasBis = false;
+  members.forEach(m => { const d = CHARACTER_DATA[m]; if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) { score += d.role === 'Main DPS' ? 12 : 4; hasBis = true; } });
+  if (hasBis) tags.push('BiS Weapon');
+  return { score, tags: [...new Set(tags)].slice(0, 3) };
 }

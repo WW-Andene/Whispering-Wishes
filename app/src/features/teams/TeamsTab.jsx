@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { scoreTeamComposition } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -78,78 +79,9 @@ function TeamsTab({
       ...Object.keys(collectionData?.weaps5Counts || {}),
       ...Object.keys(collectionData?.weaps4Counts || {}),
     ]);
-    const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
-
-    // ── Score a team (shared logic) ──
-    const scoreTeam = (members) => {
-      let score = 0;
-      const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
-      const tags = [];
-      // Tier
-      let tierSum = 0;
-      members.forEach(m => { const t = CHARACTER_DATA[m]?.tier?.toa; if (t) tierSum += (TIER_SCORES[t] ?? 10); });
-      score += tierSum;
-      // Meta = truly top-tier (needs ≥2 T0 members, ~115+ pts)
-      if (tierSum >= 115) tags.push('Meta');
-      else if (tierSum >= 95) tags.push('Strong');
-      // Roles
-      const hasMain = roles.includes('Main DPS'), hasSub = roles.includes('Sub DPS');
-      const hasHeal = roles.includes('Healer'), hasSupp = roles.includes('Support');
-      if (hasMain) score += 15; if (hasHeal || hasSupp) score += 10; if (hasSub) score += 8;
-      if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
-      // DPS power + buff synergy
-      const mainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
-      if (mainDps) {
-        // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster.
-        // The old flat `/120` divisor saturated at totalMult >= 3000, so most of the current meta
-        // (Jinhsi 3200, Sigrika 3500, Yangyang: Xuanling 3600, Hiyuki 3400, Aemeath 3800) scored
-        // identically despite real power differences. Min-max normalize against that observed range
-        // instead so the top of the meta still differentiates.
-        const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
-        score += Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
-        const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
-        const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
-        // An elemDmg buff only helps this DPS if its condition (when present) actually names their
-        // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
-        const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
-        members.forEach(m => {
-          if (m === mainDps) return;
-          const bt = CHAR_BUFF_TABLE[m]; if (!bt) return;
-          (bt.outroBuffs || []).forEach(b => {
-            if (b.stat === 'deepen') score += 8;
-            else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) { score += 10; tags.push('ATK Amp'); }
-            else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) { score += 10; tags.push('Heavy Amp'); }
-            else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) { score += 10; tags.push('Echo Amp'); }
-            else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) score += 8;
-            else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
-          });
-          // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports) were
-          // previously invisible to scoring entirely, undervaluing teams built around them.
-          (bt.libBuffs || []).forEach(b => {
-            if (b.target !== 'team' && b.target !== 'next') return;
-            if (b.stat === 'atkPct' || b.stat === 'critRate' || b.stat === 'critDmg') score += 6;
-            else if (b.stat === 'allDmg' || b.stat === 'deepen') score += 8;
-            else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
-            else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) score += 6;
-          });
-          (bt.debuffs || []).forEach(db => {
-            if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
-            if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
-            if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
-          });
-        });
-      }
-      // Element
-      const els = members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
-      const elSet = new Set(els);
-      if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
-      if (elSet.size === 1) { score += 8; tags.push('Mono'); }
-      // BiS weapon
-      let hasBis = false;
-      members.forEach(m => { const d = CHARACTER_DATA[m]; if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) { score += d.role === 'Main DPS' ? 12 : 4; hasBis = true; } });
-      if (hasBis) tags.push('BiS Weapon');
-      return { score, tags: [...new Set(tags)].slice(0, 3) };
-    };
+    // scoreTeam moved to calcEngine.js as scoreTeamComposition — shared with the character
+    // selector's recommendation ranking below so the two can't drift from each other again.
+    const scoreTeam = (members) => scoreTeamComposition(members, ownedWeaps);
 
     // ═══ SECTION 1: Build custom teams from YOUR owned characters ═══
     const customTeams = [];
@@ -314,27 +246,32 @@ function TeamsTab({
               // three attunements must be excluded from the selector, not just the exact duplicate.
               const usedRoverAttuned = [...usedInTeam].some(n => n.startsWith('Rover:'));
 
-              // Compute recommended teammates from current team members' team suggestions.
-              // Each character's own `teams` field is a list of DIFFERENT curated comps built
-              // around them individually (e.g. Mornye's own list includes both a Lynae/Aemeath
-              // team and an unrelated Luuk Herssen/Denia team). A first attempt at fixing bad
-              // cross-contaminated suggestions (e.g. recommending Luuk once Hiyuki+Mornye were both
-              // placed) required every OTHER already-placed member to appear in the SAME exact
-              // curated teamStr — but that's too strict once 2+ members are placed: curated `teams`
-              // lists are a small illustrative sample, not exhaustive, so it's common for NO single
-              // curated trio to literally name both already-placed characters even when a genuinely
-              // good pick exists (e.g. Denia+Lynae: neither's own list mentions the other, so the
-              // strict rule went to zero recommendations — even though Denia's list separately names
-              // Mornye and Lynae's list ALSO separately names Mornye, a real convergent signal).
-              // Now: count, for each candidate, how many DISTINCT already-placed members' own
-              // curated lists mention them at all (no cross-string containment required). A
-              // candidate named by multiple placed members independently (Mornye, above) is a much
-              // stronger signal than one named by only one (Luuk, named only by Mornye's list, not
-              // Hiyuki's) — so instead of hard-excluding the weaker single-source ones, they're kept
-              // but ranked below multi-source convergent picks in the sort below. Never zero unless
-              // truly no placed member's own list mentions anyone.
+              // ── Character recommendation engine ──
+              // Two earlier iterations both relied SOLELY on hand-curated `teams` string lists
+              // (each character's own small, illustrative sample of tested comps): first a naive
+              // union (recommended Luuk for a Hiyuki+Mornye team because Mornye's own list happens
+              // to mention him elsewhere, in an unrelated comp); then a strict "every other placed
+              // member must appear in the same curated string" fix, which solved that but could go
+              // to ZERO recommendations whenever no single curated trio happened to name every
+              // placed character (e.g. Denia+Lynae: neither's list mentions the other, even though
+              // both separately name Mornye/Aemeath — a real signal the strict rule couldn't see).
+              //
+              // The actual fix is structural, not another patch: every character already carries
+              // everything scoreTeamComposition needs (element, role, dmgFocus, tier, CHAR_BUFF_
+              // TABLE's buffs/debuffs, bestWeapon) — the same engine the Team Suggestions card uses
+              // to score whole teams. So instead of asking "did someone write this exact trio down
+              // somewhere," score EVERY eligible candidate by actually forming the hypothetical team
+              // (already-placed + candidate) and running it through that same synergy math. This
+              // always produces a real, ranked answer — never empty, never dependent on curated-data
+              // coverage — while curated `teams` convergence (multiple placed members' own lists
+              // independently naming the same candidate) is folded in as a meaningful bonus so
+              // community-tested pairs still rank above merely mechanically-plausible ones.
               const placedNow = teamSlots.filter(s => s);
-              const recommendedNames = new Map(); // name -> number of distinct placed members recommending them
+              const ownedWeapsForRec = new Set([
+                ...Object.keys(collectionData?.weaps5Counts || {}),
+                ...Object.keys(collectionData?.weaps4Counts || {}),
+              ]);
+              const curatedVotes = new Map();
               placedNow.forEach(charInSlot => {
                 const d = CHARACTER_DATA[charInSlot];
                 if (!d?.teams) return;
@@ -344,8 +281,23 @@ function TeamsTab({
                     if (m !== charInSlot && !usedInTeam.has(m)) mentionedByThisMember.add(m);
                   });
                 });
-                mentionedByThisMember.forEach(m => recommendedNames.set(m, (recommendedNames.get(m) || 0) + 1));
+                mentionedByThisMember.forEach(m => curatedVotes.set(m, (curatedVotes.get(m) || 0) + 1));
               });
+              // Full synergy score for every eligible candidate — drives sort order for the whole list.
+              const candidateScores = new Map();
+              allCharNames.forEach(name => {
+                if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
+                const hypotheticalTeam = placedNow.length > 0 ? [...placedNow, name] : [name];
+                const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec);
+                candidateScores.set(name, score + (curatedVotes.get(name) || 0) * 20);
+              });
+              // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
+              // character has a real score, badging literally everyone would make the highlight
+              // meaningless, so keep it to a bounded top slice of the ranked list.
+              const REC_BADGE_COUNT = 8;
+              const recommendedNames = new Map(
+                [...candidateScores.entries()].sort((a, b) => b[1] - a[1]).slice(0, REC_BADGE_COUNT)
+              );
 
               // Filter characters for selector
               const filteredChars = allCharNames.filter(name => {
@@ -363,8 +315,8 @@ function TeamsTab({
                 return true;
               }).sort((a, b) => {
                 // Higher vote count (more placed members independently recommending them) ranks first.
-                const aRec = recommendedNames.get(a) || 0;
-                const bRec = recommendedNames.get(b) || 0;
+                const aRec = candidateScores.get(a) || 0;
+                const bRec = candidateScores.get(b) || 0;
                 if (aRec !== bRec) return bRec - aRec;
                 // 5★ before 4★
                 const aRar = CHARACTER_DATA[a]?.rarity || 0;
