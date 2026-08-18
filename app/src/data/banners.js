@@ -69,12 +69,10 @@ const BANNER_HISTORY = [
   { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: PLACEHOLDER_IMAGE, predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
   // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used fandom's
-  // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt used the full
-  // File:Qingxiao_Card.jpg directly, but that's a tall 2160x3840 portrait — rendered through this
-  // component's object-cover on a wide strip, the center-crop landed on her torso/legs instead of her
-  // face, looking off-center. Fixed by pre-cropping Card.jpg to a proper 16:9-ish band (2160x1215)
-  // centered on her face/upper body, matching the composition of every other bannerArt entry.
-  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/nMYgz048/qingxiao-banner-crop1.jpg', predicted: true },
+  // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a
+  // self-cropped band of File:Qingxiao_Card.jpg (a tall portrait, imprecisely centered). Replaced with
+  // the real official wide banner art (user-supplied, already hosted on ibb.co).
+  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg', predicted: true },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
   // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
   // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously
