@@ -13,6 +13,7 @@ import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
+import MonsterCard from '../components/MonsterCard.jsx';
 
 const ECHO_COST_COLORS = {
   4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', label: '4 Cost' },
@@ -141,18 +142,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
             <p className="text-md text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
           )}
 
-          {/* 3. Enemy resistance (boss echoes with known resistance) */}
-          {data.enemyRes && (
-            <div className="p-3 rounded-xl border border-red-500/20" style={{ background: 'rgba(239,68,68,0.05)' }}>
-              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Elemental Resistance</div>
-              <div className="flex flex-wrap gap-1">
-                {Object.entries(data.enemyRes).map(([el, val]) => (
-                  <span key={el} className="kuro-badge kuro-badge-red font-medium">
-                    {el.charAt(0).toUpperCase() + el.slice(1)}: {val}%
-                  </span>
-                ))}
-                <span className="kuro-badge kuro-badge-gray">Others: 10%</span>
-              </div>
+          {/* 3. Boss Stats — 4-cost echoes ARE the boss they're dropped by, so surface its combat stats */}
+          {data.enemyStats && (
+            <div>
+              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Boss Stats</div>
+              <MonsterCard name={name} iconUrl={data.iconUrl} enemyStats={data.enemyStats} compact />
             </div>
           )}
 

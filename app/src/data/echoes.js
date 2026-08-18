@@ -650,7 +650,18 @@ const ECHO_SKILL_BUFFS = {
   ['Nightmare: Havoc Warrior', 515, 'Havoc', null],
   ['Nightmare: Tick Tack', 171, 'Havoc', null],
 ].forEach(([name, dmg, element, enemyRes]) => {
-  if (ECHO_DATA[name]) Object.assign(ECHO_DATA[name], { dmg, element, ...(enemyRes && { enemyRes }) });
+  // enemyStats: full boss stat card shape for MonsterCard/EnemySelector/EchoDetail. hp/atk/def are left
+  // null (never fabricated) — wutheringwaves.fandom.com blocked this session (HTTP 402) and no other
+  // accessible source carried per-boss Lv.90 HP/ATK/DEF numbers, so only the RES map (already audited
+  // in a prior session as enemyRes) is populated. A future session with wiki access should fill these in.
+  const enemyStats = enemyRes ? {
+    level: 90, hp: null, atk: null, def: null,
+    res: {
+      glacio: enemyRes.glacio || 0, fusion: enemyRes.fusion || 0, electro: enemyRes.electro || 0,
+      aero: enemyRes.aero || 0, spectro: enemyRes.spectro || 0, havoc: enemyRes.havoc || 0,
+    },
+  } : null;
+  if (ECHO_DATA[name]) Object.assign(ECHO_DATA[name], { dmg, element, ...(enemyRes && { enemyRes, enemyStats }) });
 });
 
 // All unique echo sonata sets (for filter dropdown, includes sets beyond ECHO_SETS)

@@ -149,9 +149,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       || mems[0];
 
     // ── Enemy scaling (using named constants from calcEngine) ──
-    const enemyDef90 = 792 + 8 * (Number(enemyLevel) || 90);
+    // "Training Dummy" (enemyEcho === '') keeps the original generic level-only formula/0-baseline
+    // behavior unchanged. A selected boss echo overrides DEF with its real stat when known, and RES
+    // with its full per-element map (enemyStats.res) instead of the old single-element enemyRes lookup.
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
-    const enemyResMap = enemyEchoData?.enemyRes || {};
+    const enemyStats = enemyEchoData?.enemyStats || null;
+    const enemyDef90 = enemyStats?.def ?? (792 + 8 * (Number(enemyLevel) || 90));
+    const enemyResMap = enemyStats?.res || enemyEchoData?.enemyRes || {};
     const getEnemyRes = (el) => {
       const elLow = (el || '').toLowerCase();
       return enemyResMap[elLow] ?? 10;
