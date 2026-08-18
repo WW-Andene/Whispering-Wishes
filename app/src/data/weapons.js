@@ -17,22 +17,22 @@ const WEAPON_DATA = {
     passive: 'ATK +12%. Intro Skill: self Basic ATK DMG +24% (14s). Hack - Shifting: self Basic ATK DMG +12% (14s), team ATK +24% (30s). Same-name effects don\'t stack.',
     pv: { atkPct: 12, basicDmg: 24 }, bestFor: ['Rebecca'],
     ascensionMaterials: { forgery: 'Combustor', common: 'Mech Core' } },
-  'Freeze Frame': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 588, subStatValue: '+24.3%',
+  'Freeze Frame': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Lucilla signature ("Light\'s Offering"). Inflicting Glacio Chafe grants self Glacio DMG Bonus and a team-wide ATK buff.',
     passive: 'ATK +12%. After inflicting Glacio Chafe: self Glacio DMG +30% (12s), team ATK +24% (30s). Same-name effects can\'t stack.',
     pv: { atkPct: 12, elemDmg: 30 }, bestFor: ['Lucilla', 'Zhezhi'],
     ascensionMaterials: { forgery: 'String', common: 'Mech Core' } },
-  'Spectral Trigger': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 588, subStatValue: '+48.6%',
+  'Spectral Trigger': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: "Lucy signature (\"Sunken Dream\"). Resonance Skill grants stacking self Spectro DMG Bonus; Hack - Shifting grants self Heavy ATK DMG Amplification and DEF Ignore.",
     passive: 'ATK +12%. Resonance Skill: self Spectro DMG +20% (14s, up to 2 stacks). Hack - Shifting: self Heavy ATK DMG +30%, DEF Ignore +10% (14s).',
     pv: { atkPct: 12, elemDmg: 20, heavyDmg: 30, defIgnore: 10 }, bestFor: ['Lucy'],
     ascensionMaterials: { forgery: 'Combustor', common: 'Exoswarm Core' } },
-  'Azure Oath': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 588, subStatValue: '+24.3%',
+  'Azure Oath': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: "Yangyang: Xuanling signature (\"Unbending\"). Inflicting Havoc Bane grants self Heavy ATK DMG Amplification and DEF Ignore.",
     passive: 'All-Attribute DMG +12%. After inflicting Havoc Bane: self Heavy ATK DMG +36%, DEF Ignore +12% (8s).',
     pv: { allDmg: 12, heavyDmg: 36, defIgnore: 12 }, bestFor: ['Yangyang: Xuanling', 'Rover'],
     ascensionMaterials: { forgery: 'Polarizer', common: 'Autopuppet Kernel' } },
-  'Frostburn': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 588, subStatValue: '+24.3%',
+  'Frostburn': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Hiyuki signature ("Self No More"). Applying Glacio Chafe amplifies self Glacio DMG and Liberation DEF Ignore, plus an AoE Glacio Chafe DMG amplification while on-field.',
     passive: 'ATK +12%. After applying Glacio Chafe: self Glacio DMG +28%, Resonance Liberation DEF Ignore +10%. While on-field: nearby Glacio Chafe DMG +20% (6s, up to 1x/0.1s). Strongest same-name effect applies.',
     pv: { atkPct: 12, elemDmg: 28, defIgnore: 10 }, bestFor: ['Hiyuki'],
@@ -43,7 +43,7 @@ const WEAPON_DATA = {
     pv: { atkPct: 12, libDmg: 36 }, bestFor: ['Denia'],
     ascensionMaterials: { forgery: 'String', common: 'Mech Core' } },
   // v3.6 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
-  'Thousandfold Deliverance': { rarity: 5, type: 'Broadblade', stat: 'HP', baseAtk: 413, subStatValue: '+72.2%',
+  'Thousandfold Deliverance': { rarity: 5, type: 'Broadblade', stat: 'HP', baseAtk: 412, subStatValue: '+72.2%',
     desc: "Jingran signature (\"Hark, Spirits and Stars\"). Casting Intro Skill or gaining a Shield builds stacking self Crit DMG and Heavy ATK DEF Ignore, fitting his Shield-focused HP-scaling kit.",
     passive: 'All-Attribute DMG +12%. Intro Skill or gaining a Shield: self Crit DMG +4% (up to 6 stacks/24%; at 6 stacks, Heavy ATK Crit Rate +12%). Casting Heavy Attack consumes up to 2 stacks for Heavy ATK DEF Ignore +15% each (up to 30%, 2s).',
     pv: { allDmg: 12, critDmg: 24, defIgnore: 30 }, bestFor: ['Jingran'],
@@ -54,63 +54,83 @@ const WEAPON_DATA = {
     pv: { atkPct: 12, elemDmg: 56, defIgnore: 10 }, bestFor: ['Qingxiao'],
     ascensionMaterials: { forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)' } },
   // v3.5 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
-  "Firstlight's Herald": { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 413, subStatValue: '+77.0%',
+  "Firstlight's Herald": { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+77.0%',
     desc: "Suisui signature. Dawn-forged rectifier etched with the divine bird's legend. Grants Max HP and Liberation energy regen, culminating in a team ATK buff.",
     passive: 'Max HP +12%. Liberation restores 8 Concerto Energy (20s ICD). Inflicting Glacio Chafe + applying healing while on-field grants the next Outro both effects (6s); with both active, team ATK +20%',
     pv: { atkPct: 20 }, bestFor: ['Suisui', 'Shorekeeper'],
     ascensionMaterials: { forgery: 'Unconfirmed (3.5 live — materials not yet catalogued)', common: 'Unconfirmed (3.5 live — materials not yet catalogued)' } },
+  // corrected 2026-08-18 (5★ audit): passive was a fabricated "ATK/DMG-type" description that didn't match
+  // nanoka.cc's actual R1 effect (Swordsworn) at all — real effect is an Attr DMG Bonus baseline plus a
+  // Heavy ATK DMG stack gained from Intro Skill/Liberation, not "Heavy Attack hits grant Skill DMG".
   'Verdant Summit': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
-    desc: 'Jiyan signature. Verdant blade that commands the wind. Heavy ATK hits boost Resonance Skill DMG.',
-    passive: 'Heavy Attack hits grant Resonance Skill DMG +20%', pv: { heavyDmg: 20 }, bestFor: ['Jiyan', 'Calcharo', 'Jinhsi', 'Lumi'],
+    desc: 'Jiyan signature. Verdant blade that commands the wind. Intro Skill/Liberation stack Heavy ATK DMG.',
+    passive: 'Swordsworn: Attr DMG +12%. Intro Skill/Liberation → self Heavy ATK DMG +24% (stacks x2, 14s)', pv: { elemDmg: 12, heavyDmg: 48 }, bestFor: ['Jiyan', 'Calcharo', 'Jinhsi', 'Lumi'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
+  // corrected 2026-08-18: this and the next four "Standard 5★" (Stormy Resolution) weapons all share the
+  // same base effect (Energy Regen +12.8%) plus a unique secondary effect; the file previously had unrelated
+  // fabricated passives (wrong stat entirely, wrong numbers, or wrong trigger conditions) for all five.
   'Lustrous Razor': { rarity: 5, type: 'Broadblade', stat: 'ATK%', baseAtk: 587, subStatValue: '+36.4%',
-    desc: 'Standard 5★. Razor honed to a lustrous edge. ATK buff with Electro DMG on combo finisher.',
-    passive: 'ATK +12%, Electro DMG +12% on combo finisher', pv: { atkPct: 12, elemDmg: 12 }, bestFor: ['Calcharo', 'Jiyan', 'Jinhsi', 'Lumi'],
+    desc: 'Standard 5★. Razor honed to a lustrous edge. Energy Regen with stacking Liberation DMG on Skill use.',
+    passive: 'Stormy Resolution: Energy Regen +12.8%. Resonance Skill → self Resonance Liberation DMG +7% (stacks x3, 12s)', pv: { libDmg: 21 }, bestFor: ['Calcharo', 'Jiyan', 'Jinhsi', 'Lumi'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   'Emerald of Genesis': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Standard 5★. Jade-forged sword of ancient origin. Stacking ATK buff on Resonance Skill use.',
-    passive: 'Resonance Skill use grants ATK +12%', pv: { atkPct: 12 }, bestFor: ['Danjin', 'Yangyang', 'Sanhua', 'Rover', 'Changli'],
+    desc: 'Standard 5★. Jade-forged sword of ancient origin. Energy Regen with stacking ATK buff on Skill use.',
+    passive: 'Stormy Resolution: Energy Regen +12.8%. Resonance Skill → self ATK +6% (stacks x2, 10s)', pv: { atkPct: 12 }, bestFor: ['Danjin', 'Yangyang', 'Sanhua', 'Rover', 'Changli'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Static Mist': { rarity: 5, type: 'Pistols', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Standard 5★. Pistols wreathed in lingering mist. Energy Regen with ATK boost at full energy.',
-    passive: 'Energy Regen +12%, ATK +12% when full energy', pv: { atkPct: 12 }, bestFor: ['Mortefi', 'Aalto'],
+    desc: 'Standard 5★. Pistols wreathed in lingering mist. Energy Regen with ATK buff for the Resonator swapped in after Outro.',
+    passive: 'Stormy Resolution: Energy Regen +12.8%. Outro Skill → incoming Resonator ATK +10% (14s)', pv: { atkPct: 10 }, bestFor: ['Mortefi', 'Aalto'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Abyss Surges': { rarity: 5, type: 'Gauntlets', stat: 'ATK%', baseAtk: 587, subStatValue: '+36.4%',
-    desc: 'Standard 5★. Gauntlets surging with abyssal power. Stacking ATK buff based on energy consumed.',
-    passive: 'ATK +8% per 10 energy consumed, max 4 stacks', pv: { atkPct: 32 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu', 'Youhu'], // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!"). Youhu tag added 2026-08-18: this is her own signature weapon (bestWeapon in CHARACTER_DATA), ranked #3 on Prydwen's Best Weapons for her.
+    desc: 'Standard 5★. Gauntlets surging with abyssal power. Energy Regen with Basic/Skill DMG cross-buffs.',
+    passive: 'Stormy Resolution: Energy Regen +12.8%. Resonance Skill hit → self Basic ATK DMG +10% (8s). Basic Attack hit → self Resonance Skill DMG +10% (8s)', pv: { basicDmg: 10, skillDmg: 10 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu', 'Youhu'], // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!"). Youhu tag added 2026-08-18: this is her own signature weapon (bestWeapon in CHARACTER_DATA), ranked #3 on Prydwen's Best Weapons for her.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
-  'Cosmic Ripples': { rarity: 5, type: 'Rectifier', stat: 'ATK%', baseAtk: 500, subStatValue: '+53.9%',
-    desc: 'Standard 5★. Rectifier resonating with cosmic ripples. Stacking Basic ATK DMG buff on hit.',
-    passive: 'Basic Attack DMG +12%, stacks on hit', pv: { basicDmg: 12 }, bestFor: ['Encore', 'Verina', 'Yinlin', 'Zhezhi', 'Shorekeeper', 'Buling'],
+  'Cosmic Ripples': { rarity: 5, type: 'Rectifier', stat: 'ATK%', baseAtk: 500, subStatValue: '+54.0%',
+    desc: 'Standard 5★. Rectifier resonating with cosmic ripples. Energy Regen with stacking Basic ATK DMG buff on hit.',
+    passive: 'Stormy Resolution: Energy Regen +12.8%. Basic ATK DMG → self Basic ATK DMG +3.2% (stacks x5, 8s, 0.5s ICD)', pv: { basicDmg: 16 }, bestFor: ['Encore', 'Verina', 'Yinlin', 'Zhezhi', 'Shorekeeper', 'Buling'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
-  'Stringmaster': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+35.9%',
-    desc: 'Yinlin signature. Strings that orchestrate fate itself. Boosts Resonance Skill DMG and Crit Rate.',
-    passive: 'Resonance Skill DMG +24%, Crit Rate +8%', pv: { skillDmg: 24, critRate: 8 }, bestFor: ['Yinlin', 'Buling'],
+  // corrected 2026-08-18: passive was fabricated (wrong effect name and mechanic — real effect is
+  // "Electric Amplification", an Attr DMG Bonus baseline plus a stacking self/off-field ATK buff from
+  // Resonance Skill DMG, not a flat Skill DMG/Crit Rate boost).
+  'Stringmaster': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
+    desc: 'Yinlin signature. Strings that orchestrate fate itself. Attr DMG with stacking ATK on Skill DMG.',
+    passive: 'Electric Amplification: Attr DMG +12%. Resonance Skill DMG → self ATK +12% (stacks x2, 5s). Off-field: additional ATK +12%', pv: { elemDmg: 12, atkPct: 24 }, bestFor: ['Yinlin', 'Buling'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Ages of Harvest': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Jinhsi signature. Blade forged from ages of harvest and resolve. Attr DMG + dual Skill DMG marks.',
     passive: 'Attr DMG +12%, Intro/Skill → Res. Skill DMG +24% each (stacks)', pv: { elemDmg: 12, skillDmg: 48 }, bestFor: ['Jinhsi', 'Jiyan', 'Calcharo', 'Lumi'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
+  // corrected 2026-08-18 (5★ audit): passive was fabricated (wrong effect name "Crimson Phoenix" and
+  // mechanic — real effect is a flat ATK Bonus baseline plus a Searing Feather stack system that boosts
+  // Resonance Skill DMG, not "Fusion DMG +12%, Resonance Skill +24%").
   'Blazing Brilliance': { rarity: 5, type: 'Sword', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
-    desc: 'Changli signature. Sword ablaze with undying brilliance. Boosts Fusion and Resonance Skill DMG.',
+    desc: 'Changli signature. Sword ablaze with undying brilliance. ATK with stacking Resonance Skill DMG.',
     // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon (102.39%) despite being
     // Changli's signature — usable on any Sword user with heavy Resonance Skill DMG, listed as her
     // primary alt5 alongside the more widely-obtainable standard Emerald of Genesis (bestWeapon).
     // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon overall (108.39%),
     // making it her bestWeapon despite also being Changli's signature.
-    passive: 'Fusion DMG +12%, Resonance Skill +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Changli', 'Rover', 'Yangyang', 'Sanhua'],
+    passive: 'Crimson Phoenix: ATK +12%. Dealing DMG → 1 Searing Feather stack (0.5s ICD); Resonance Skill → 5 stacks. Each stack: self Resonance Skill DMG +4% (max x14/+56%; resets 12s after reaching cap)', pv: { atkPct: 12, skillDmg: 56 }, bestFor: ['Changli', 'Rover', 'Yangyang', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
+  // corrected 2026-08-18 (5★ audit): passive was fabricated (wrong effect name "Panorama" and mechanic —
+  // real effect is a flat ATK baseline plus an on-field Basic ATK DMG stack from Resonance Skill, consumed
+  // by Outro Skill to carry the buff off-field; not "Off-field DMG +24%, Glacio DMG +12%").
   'Rime-Draped Sprouts': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
-    desc: 'Zhezhi signature. Frost-kissed sprouts that bloom in stillness. Boosts off-field and Glacio DMG.',
-    passive: 'Off-field DMG +24%, Glacio DMG +12%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Zhezhi', 'Yinlin', 'Buling'],
+    desc: 'Zhezhi signature. Frost-kissed sprouts that bloom in stillness. Basic ATK DMG buff carried off-field via Outro.',
+    passive: 'Panorama: ATK +12%. On-field: Resonance Skill → self Basic ATK DMG +12% (stacks x3, 6s). At 3 stacks, Outro Skill consumes them → Basic ATK DMG +52% for 27s (works off-field)', pv: { atkPct: 12, basicDmg: 52 }, bestFor: ['Zhezhi', 'Yinlin', 'Buling'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
+  // corrected 2026-08-18: passive was fabricated (wrong effect name "Ad Veritatem" and mechanic — real
+  // effect is an Attr DMG Bonus baseline plus an extendable Resonance Liberation DMG buff, not "Electro
+  // DMG +12%, Mech form +24%" — Verity's Handle has no Mech-form-specific text in game).
   "Verity's Handle": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Xiangli Yao signature. Handle that unlocks the truth of verity. Boosts Electro and Mech form DMG.',
-    passive: 'Electro DMG +12%, Mech form +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Xiangli Yao', 'Jianxin'],
+    desc: "Xiangli Yao signature. Handle that unlocks the truth of verity. Attr DMG with extendable Liberation DMG buff.",
+    passive: "Ad Veritatem: Attr DMG +12%. Liberation → self Resonance Liberation DMG +48% (8s), extended +5s per Skill cast (up to 3 times)", pv: { elemDmg: 12, libDmg: 48 }, bestFor: ['Xiangli Yao', 'Jianxin'],
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
+  // corrected 2026-08-18: passive was missing its Concerto Energy restore clause (Liberation → 8 Concerto
+  // Energy, 1x/20s) alongside the already-correct HP/team ATK-on-heal numbers.
   'Stellar Symphony': { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+77.0%',
-    desc: 'Shorekeeper signature. Symphony echoing across the stellar sea. HP buff with team ATK on heal.',
-    passive: 'HP +12%, heal Skill → team ATK +14% for 30s', pv: { hpPct: 12 }, tv: { atkPct: 14, duration: 30 }, bestFor: ['Shorekeeper', 'Verina'],
+    desc: 'Shorekeeper signature. Symphony echoing across the stellar sea. HP buff, Concerto restore, team ATK on heal.',
+    passive: 'Astral Evolvement: HP +12%. Liberation restores 8 Concerto Energy (1x/20s). Healing Skill → team ATK +14% for 30s', pv: { hpPct: 12 }, tv: { atkPct: 14, duration: 30 }, bestFor: ['Shorekeeper', 'Verina'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Red Spring': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Camellya signature. Crimson blade blooming like a red spring flower. ATK buff with stacking Basic ATK DMG.',
@@ -122,100 +142,141 @@ const WEAPON_DATA = {
     desc: 'Carlotta signature. Elegant pistols for one final, perfect dance. ATK buff with Res. Skill DMG on Intro/Lib.',
     passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta', 'Aalto', 'Chixia', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his #1 option at 106.12%, ahead of his own signature Static Mist
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
+  // corrected 2026-08-18 (5★ audit): passive was fabricated — no "team ATK" or "Outro Skill DMG" buff
+  // exists on this weapon; real effect (Fool's Warble) is a flat ATK baseline plus a self Heavy ATK DMG
+  // buff from Basic Attack/Intro Skill. Also dropped the fabricated tv (there's no team-wide buff here).
   'Tragicomedy': { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Roccia signature. Gauntlets born of comedy and tragedy entwined. Boosts team ATK and Outro Skill DMG.',
-    passive: 'Team ATK +12%, Outro Skill +24%', pv: {}, tv: { atkPct: 12, duration: 99 }, bestFor: ['Roccia', 'Lingyang', 'Xiangli Yao'],
+    desc: 'Roccia signature. Gauntlets born of comedy and tragedy entwined. ATK with stacking Heavy ATK DMG.',
+    passive: "Fool's Warble: ATK +12%. Basic Attack/Intro Skill → self Heavy ATK DMG +48% (3s)", pv: { atkPct: 12, heavyDmg: 48 }, bestFor: ['Roccia', 'Lingyang', 'Xiangli Yao'],
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
+  // corrected 2026-08-18: passive was fabricated ("Card skills" isn't a real WuWa mechanic) — real effect
+  // (Homebuilder's Anthem) is an ATK baseline plus a Spectro-Frazzle-triggered Basic/Heavy ATK DMG stack,
+  // and an Outro Skill Spectro Frazzle DMG amplification.
   'Luminous Hymn': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
-    desc: 'Phoebe signature. Rectifier crowned in holy light. Boosts Spectro and Card skill DMG.',
-    passive: 'Spectro DMG +12%, Card skills +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Phoebe', 'Buling'],
+    desc: 'Phoebe signature. Rectifier crowned in holy light. ATK with stacking Basic/Heavy ATK DMG on Frazzle DMG.',
+    passive: "Homebuilder's Anthem: ATK +12%. DMG to Spectro Frazzle targets → self Basic & Heavy ATK DMG +14% (stacks x3, 6s). Outro Skill → Spectro Frazzle DMG Amp +30% (30s) around active Resonator", pv: { atkPct: 12, basicDmg: 42, heavyDmg: 42 }, bestFor: ['Phoebe', 'Buling'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
+  // corrected 2026-08-18: passive was fabricated ("ATK speed" isn't a real WuWa stat) — real effect
+  // (Laughter Prevails) is a Crit Rate baseline plus Basic ATK DMG buffs from Liberation and from Basic
+  // Attacks themselves, not "Fusion DMG +12%, ATK speed +10%".
   'Unflickering Valor': { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+77.0%',
-    desc: 'Brant signature. Sword of unflickering valor and burning resolve. Boosts Fusion DMG and ATK speed.',
-    passive: 'Fusion DMG +12%, ATK speed +10%', pv: { elemDmg: 12, atkSpeed: 10 }, bestFor: ['Brant'],
+    desc: 'Brant signature. Sword of unflickering valor and burning resolve. Crit Rate with stacking Basic ATK DMG.',
+    passive: 'Laughter Prevails: Crit Rate +8%. Liberation → self Basic ATK DMG +24% (10s). Basic ATK DMG → self Basic ATK DMG +24% (4s)', pv: { critRate: 8, basicDmg: 24 }, bestFor: ['Brant'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
+  // corrected 2026-08-18 (5★ audit): passive was fabricated — real effect (From the Deep) is an ATK
+  // baseline plus a post-Intro/Basic Echo Skill window that grants a Basic ATK DMG buff at 1 stack and a
+  // Havoc RES ignore at 2 stacks; not a flat "Havoc DMG +12%, Off-field +24%".
   'Whispers of Sirens': { rarity: 5, type: 'Rectifier', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
-    desc: 'Cantarella signature. Rectifier whispering siren songs of ruin. Boosts Havoc and off-field DMG.',
-    passive: 'Havoc DMG +12%, Off-field +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Cantarella'],
+    desc: 'Cantarella signature. Rectifier whispering siren songs of ruin. ATK with Echo Skill-triggered Basic ATK DMG and Havoc RES ignore.',
+    passive: 'From the Deep: ATK +12%. Echo Skill within 10s of Intro Skill/Basic Attack → Gentle Dream stack (max x2, 1x/10s trigger). At 1 stack: self Basic ATK DMG +40%. At 2 stacks: ignores 12% Havoc RES', pv: { atkPct: 12, basicDmg: 40, resShred: 12 }, bestFor: ['Cantarella'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
+  // corrected 2026-08-18: the extra "+24%" ATK and DEF Ignore value were wrong — real effect (Darkness
+  // Breaker) is just the flat ATK baseline plus DEF Ignore +8% (not +16%) and the Frazzle Amp on Basic Attack.
   'Blazing Justice': { rarity: 5, type: 'Gauntlets', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: 'Zani signature. Gauntlets blazing with righteous justice. Boosts ATK with DEF Ignore and Frazzle Amp.',
-    passive: 'ATK +24%, Spectro Frazzle DMG Amp +50%, DEF Ignore +16%', pv: { atkPct: 24, defIgnore: 16 }, bestFor: ['Zani'],
+    passive: 'Darkness Breaker: ATK +12%. Basic Attack → DEF Ignore +8%, Spectro Frazzle DMG Amp +50% (6s, retrigger resets duration)', pv: { atkPct: 12, defIgnore: 8 }, bestFor: ['Zani'],
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
+  // corrected 2026-08-18: RES shred value was wrong (real is -10%, not -16%) and the trigger condition/
+  // durations were imprecise.
   'Woodland Aria': { rarity: 5, type: 'Pistols', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
     desc: 'Ciaccona signature. Pistols singing a woodland aria of wind and leaves. Boosts Aero DMG with RES shred.',
-    passive: 'ATK +12%, Aero DMG +24% on Erosion, Aero RES -16%', pv: { atkPct: 12, elemDmg: 24, resShred: 16 }, bestFor: ['Ciaccona', 'Aalto'],
+    passive: 'Lingering Summer Tune: ATK +12%. Inflicting Aero Erosion → self Aero DMG +24% (10s). Hitting Aero-Eroded targets → Aero RES -10% (20s)', pv: { atkPct: 12, elemDmg: 24, resShred: 10 }, bestFor: ['Ciaccona', 'Aalto'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
+  // corrected 2026-08-18: passive was fabricated — HP bonus is 12% not 24%, DEF Ignore is 8% not 16% and
+  // applies unconditionally (within a window after Intro/Basic), and the Aero-Erosion condition actually
+  // triggers a separate "DMG taken Amplified +20%" effect, not the DEF Ignore.
   "Defier's Thorn": { rarity: 5, type: 'Sword', stat: 'HP%', baseAtk: 412, subStatValue: '+72.2%',
-    desc: 'Cartethyia signature. Thorned sword of a defiant heart. HP scaling with DEF Ignore on Eroded targets.',
-    passive: 'HP +24%, DEF Ignore +16% on Aero Eroded targets', pv: { hpPct: 24, defIgnore: 16 }, bestFor: ['Cartethyia'],
+    desc: 'Cartethyia signature. Thorned sword of a defiant heart. HP scaling with DEF Ignore and Aero Erosion DMG Amp.',
+    passive: "A Free Knight's Tarantella: HP +12%. Within 15s of Intro Skill/Basic Attack: DEF Ignore +8%. Targets with ≥1 Aero Erosion stack take +20% DMG", pv: { hpPct: 12, defIgnore: 8 }, bestFor: ['Cartethyia'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Wildfire Mark': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: 'Lupa signature. Broadblade marked by wildfire and fury. Boosts Liberation DMG with team Fusion buff.',
     passive: 'ATK +12%, Res. Liberation DMG +24%, team Fusion DMG +24%', pv: { atkPct: 12, libDmg: 24 }, tv: { elemDmg: 24, duration: 99 }, bestFor: ['Lupa'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
+  // corrected 2026-08-18 (5★ audit): passive was fabricated — no team-wide buff exists on this weapon
+  // (real effect, Underworld Requiem, is entirely self-target); dropped the fabricated tv and replaced
+  // with the actual post-Echo-Skill Resonance Skill DMG/Echo Skill DMG/DEF Ignore buffs.
   'Lethean Elegy': { rarity: 5, type: 'Rectifier', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Phrolova signature. Rectifier weaving an elegy of forgotten sorrows. Boosts Havoc DMG with team buff.',
-    passive: 'Havoc DMG +12%, Team buff +20%', pv: { elemDmg: 12 }, tv: { atkPct: 20, duration: 99 }, bestFor: ['Phrolova', 'Buling'],
+    desc: 'Phrolova signature. Rectifier weaving an elegy of forgotten sorrows. ATK with Echo Skill-triggered self buffs.',
+    passive: 'Underworld Requiem: ATK +12%. Within 12s of Echo Skill DMG: self Resonance Skill DMG +32%, Echo Skill DMG +32%, DEF Ignore +8%', pv: { atkPct: 12, skillDmg: 32, echoDmg: 32, defIgnore: 8 }, bestFor: ['Phrolova', 'Buling'],
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
-  'Thunderflare Dominion': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 675, subStatValue: '+12.1%',
-    desc: 'Augusta signature. Broadblade crackling with thunderflare dominion. Boosts Electro and Heavy ATK DMG.',
-    passive: 'Electro DMG +12%, Heavy ATK +24%', pv: { elemDmg: 12, heavyDmg: 24 }, bestFor: ['Augusta'],
+  // corrected 2026-08-18: passive was fabricated — real effect (Thunderblaze Eminence) is an ATK baseline
+  // plus a Heavy ATK DMG buff from Intro/Skill and a stacking DEF Ignore from gaining Shields; the file's
+  // "Electro DMG +12%, Heavy ATK +24%" numbers/mechanic didn't match at all.
+  'Thunderflare Dominion': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 675, subStatValue: '+12.2%',
+    desc: 'Augusta signature. Broadblade crackling with thunderflare dominion. ATK with Heavy ATK DMG and Shield-triggered DEF Ignore.',
+    passive: 'Thunderblaze Eminence: ATK +12%. Intro Skill/Resonance Skill → self Heavy ATK DMG +20% (15s). Gaining a Shield → Heavy ATK DMG ignores 7.2% DEF (stacks x5, 7s, 0.5s ICD)', pv: { atkPct: 12, heavyDmg: 20, defIgnore: 36 }, bestFor: ['Augusta'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
+  // corrected 2026-08-18 (5★ audit): "Time skills" isn't a real WuWa mechanic — real effect (Plenilune
+  // Radiance) is an ATK baseline plus a Liberation DMG buff from Intro/Liberation and a stacking DEF Ignore
+  // from gaining Shields (same structure as Thunderflare Dominion, applied to Liberation instead of Heavy ATK).
   "Moongazer's Sigil": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
-    desc: 'Iuno signature. Gauntlets bearing the sigil of moonlit prophecy. Boosts Aero and Time skill DMG.',
-    passive: 'Aero DMG +12%, Time skills +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Iuno', 'Jianxin', 'Lingyang'],
+    desc: 'Iuno signature. Gauntlets bearing the sigil of moonlit prophecy. ATK with Liberation DMG and Shield-triggered DEF Ignore.',
+    passive: 'Plenilune Radiance: ATK +12%. Intro Skill/Liberation → self Resonance Liberation DMG +20% (15s). Gaining a Shield → Liberation DMG ignores 7.2% DEF (stacks x5, 7s, 0.5s ICD; Intro Skill maxes stacks instantly)', pv: { atkPct: 12, libDmg: 20, defIgnore: 36 }, bestFor: ['Iuno', 'Jianxin', 'Lingyang'],
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
+  // corrected 2026-08-18: passive was fabricated — real effect (To Fire She Returns) is an ATK baseline
+  // plus a cross-buff between Echo Skill DMG and Heavy Attack DMG, capped by a shared DEF Ignore when both
+  // are active; not "Fusion DMG +12%, Liberation +24%".
   'Lux & Umbra': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
-    desc: 'Galbrena signature. Twin pistols of light and shadow entwined. Boosts Fusion and Liberation DMG.',
-    passive: 'Fusion DMG +12%, Liberation +24%', pv: { elemDmg: 12, libDmg: 24 }, bestFor: ['Galbrena'],
+    desc: 'Galbrena signature. Twin pistols of light and shadow entwined. ATK with Echo Skill/Heavy ATK DMG cross-buff.',
+    passive: 'To Fire She Returns: ATK +12%. Echo Skill DMG → self Heavy ATK DMG +24% (6s). Heavy ATK DMG → self Echo Skill DMG +24% (6s). Both active: DEF Ignore +8%', pv: { atkPct: 12, heavyDmg: 24, echoDmg: 24, defIgnore: 8 }, bestFor: ['Galbrena'],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
+  // corrected 2026-08-18: passive was fabricated — real effect (When A Heart Settles) is an ATK baseline
+  // plus a Heavy ATK DMG stack from post-Intro/Basic Echo Skill casts, and a team Echo Skill DMG buff from
+  // Intro Skill; not "Aero DMG +12%, Skill +24%".
   'Emerald Sentence': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Qiuyuan signature. Jade sword passing an emerald sentence on the unjust. Boosts Aero and Skill DMG.',
-    passive: 'Aero DMG +12%, Skill +24%', pv: { elemDmg: 12, skillDmg: 24 }, bestFor: ['Qiuyuan'],
+    desc: 'Qiuyuan signature. Jade sword passing an emerald sentence on the unjust. ATK with Echo Skill-triggered Heavy ATK DMG and team Echo Skill buff.',
+    passive: 'When A Heart Settles: ATK +12%. Echo Skill within 10s of Intro Skill/Basic Attack → self Heavy ATK DMG +12% (stacks x2, 30s, 10s trigger interval). Intro Skill → team Echo Skill DMG +20% (30s)', pv: { atkPct: 12, heavyDmg: 24 }, tv: { echoDmg: 20, duration: 30 }, bestFor: ['Qiuyuan'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
+  // corrected 2026-08-18 (5★ audit): Liberation DMG was a flat +24%; real effect (Thread of Fate) grants
+  // it as +8% per stack up to 3 stacks (same 24% max, but stacking, not flat) — clarified for accuracy.
   'Kumokiri': { rarity: 5, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 500, subStatValue: '+36.0%',
     desc: 'Chisa signature. Mist-veiled blade that severs fog and fate alike. Boosts Liberation and All-Type DMG.',
-    passive: 'ATK +12%, Res. Liberation DMG +24%, All-Type DMG +24% at max stacks', pv: { atkPct: 12, libDmg: 24, elemDmg: 24 }, bestFor: ['Chisa'],
+    passive: 'Thread of Fate: ATK +12%. Intro Skill/inflicting Negative Status → self Resonance Liberation DMG +8% (stacks x3, 15s). At max stacks, team inflicting Negative Status → All-Attribute DMG +24% (15s)', pv: { atkPct: 12, libDmg: 24, elemDmg: 24 }, bestFor: ['Chisa'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
-  'Spectrum Blaster': { rarity: 5, type: 'Pistols', stat: 'Crit Rate', baseAtk: 588, subStatValue: '+24.3%',
+  'Spectrum Blaster': { rarity: 5, type: 'Pistols', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Lynae signature. Pistols that blast prismatic light across the spectrum. Boosts Basic ATK DMG and stacks team All DMG on Tune Break.',
     passive: 'ATK +12%, self Basic ATK DMG +36% (4s) on Intro/Basic ATK hit, team All DMG +8%/stack ×3 (24% max, 30s) on Tune Rupture/Strain - Shifting during Basic ATK', pv: { atkPct: 12, basicDmg: 36 }, tv: { allDmg: 24, duration: 30 }, bestFor: ['Lynae'],
     ascensionMaterials: { forgery: 'Combustor', common: 'Exoswarm Pendant' } },
-  'Starfield Calibrator': { rarity: 5, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 413, subStatValue: '+77.0%',
+  'Starfield Calibrator': { rarity: 5, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+77.0%',
     desc: 'Mornye signature. Broadblade calibrated to the starfield\'s rhythm. DEF scaling with team Crit DMG buff.',
     passive: 'DEF +16%, Concerto +8 (1x/20s), team Crit DMG +20% (4s) on heal', pv: { defPct: 16 }, tv: { critDmg: 20, duration: 4 }, bestFor: ['Mornye'],
     ascensionMaterials: { forgery: 'Carved Crystal', common: 'Mech Core' } },
-  'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 588, subStatValue: '+24.3%',
+  'Everbright Polestar': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Aemeath signature. Sword radiating everbright polestar light. DEF Ignore with Fusion RES Ignore.',
     passive: 'All-Attr DMG +12%, DEF Ignore +32%, Fusion RES Ignore +10%', pv: { elemDmg: 12, defIgnore: 32, resShred: 10 }, bestFor: ['Aemeath'],
     ascensionMaterials: { forgery: 'Polarizer', common: 'Exoswarm Pendant' } },
-  "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 588, subStatValue: '+24.3%',
+  "Daybreaker's Spine": { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Luuk Herssen signature. Gauntlets forged from a daybreaker\'s spine. Boosts Basic ATK and Spectro DMG.',
     passive: 'ATK +12%, Basic ATK DMG Amp +20%, Spectro DMG +20%, DEF Ignore +10%', pv: { atkPct: 12, elemDmg: 20, basicDmg: 20, defIgnore: 10 }, bestFor: ['Luuk Herssen'],
     ascensionMaterials: { forgery: 'Waveworn Shard', common: 'Mech Core' } },
   // Standard 5★ Weapons (Lustrous Tide pool - v3.0)
+  // corrected 2026-08-18 (5★ audit): all five "Lustrous Tide" standard-5★ weapons below had fabricated
+  // passives (wrong stat baseline and/or wrong trigger condition entirely) — re-sourced from nanoka.cc's
+  // raw effect data. Radiance Cleaver/Laser Shearer/Pulsation Bracer share the same base mechanic (bonus
+  // DMG on hitting a Tune Strain-Interfered target); Phasic Homogenizer/Boson Astrolabe share theirs
+  // (bonus on any team member casting a Tune Break skill).
   'Radiance Cleaver': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
-    desc: 'Standard 5★. Synth broadblade of concentrated force. Heavy ATK DMG with stacking ATK buff on hit.',
-    passive: 'Heavy ATK DMG +12%, ATK +12% on hit', pv: { heavyDmg: 12, atkPct: 12 }, bestFor: ['Broadblade users'],
+    desc: 'Standard 5★. Synth broadblade of concentrated force. ATK with Liberation DMG on Tune Strain-Interfered hits.',
+    passive: 'Edge Breaker: ATK +12%. DMG to Tune Strain-Interfered targets → self Resonance Liberation DMG +24% (3s, retrigger resets duration)', pv: { atkPct: 12, libDmg: 24 }, bestFor: ['Broadblade users'],
     ascensionMaterials: { forgery: 'Carved Crystal', common: 'Mech Core' } },
-  'Laser Shearer': { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 587, subStatValue: '+38.8%',
-    desc: 'Standard 5★. Synth sword that shears away uncertainty. Energy Regen with Skill DMG boost.',
-    passive: 'Energy Regen +12%, Res. Skill DMG +12%', pv: { skillDmg: 12 }, bestFor: ['Sword users', 'Rover'],
+  'Laser Shearer': { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 587, subStatValue: '+38.9%',
+    desc: 'Standard 5★. Synth sword that shears away uncertainty. ATK with Skill DMG on Tune Strain-Interfered hits.',
+    passive: 'Signal Catcher: ATK +12%. DMG to Tune Strain-Interfered targets → self Resonance Skill DMG +24% (3s, retrigger resets duration)', pv: { atkPct: 12, skillDmg: 24 }, bestFor: ['Sword users', 'Rover'],
     ascensionMaterials: { forgery: 'Polarizer', common: 'Exoswarm Pendant' } },
   'Phasic Homogenizer': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
-    desc: 'Standard 5★. Synth pistols of piercing focus. Boosts off-field and Liberation DMG.',
-    passive: 'Off-field DMG +12%, Res. Liberation +12%', pv: { skillDmg: 12, libDmg: 12 }, bestFor: ['Pistol users'],
+    desc: 'Standard 5★. Synth pistols of piercing focus. ATK with All-Attribute DMG when a teammate casts a Tune Break skill.',
+    passive: 'Insight Bearer: ATK +12%. Team member casts a Tune Break skill → self All-Attribute DMG +20% (14s)', pv: { atkPct: 12, allDmg: 20 }, bestFor: ['Pistol users'],
     ascensionMaterials: { forgery: 'Combustor', common: 'Exoswarm Pendant' } },
   'Pulsation Bracer': { rarity: 5, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
-    desc: 'Standard 5★. Synth gauntlets pulsing with decisive surge. Boosts Coordinated ATK with swap-in ATK buff.',
-    passive: 'Coordinated ATK +12%, ATK +12% on swap', pv: { atkPct: 12, coordDmg: 12 }, bestFor: ['Gauntlet users'],
+    desc: 'Standard 5★. Synth gauntlets pulsing with decisive surge. ATK with stacking Basic ATK DMG on Tune Strain-Interfered hits.',
+    passive: 'Barrier Breacher: ATK +12%. DMG to Tune Strain-Interfered targets → self Basic ATK DMG +6% (stacks x3, 4s, 0.5s ICD, retrigger resets duration)', pv: { atkPct: 12, basicDmg: 18 }, bestFor: ['Gauntlet users'],
     ascensionMaterials: { forgery: 'Waveworn Shard', common: 'Mech Core' } },
-  'Boson Astrolabe': { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 525, subStatValue: '+38.8%',
-    desc: 'Standard 5★. Synth rectifier mapping stellar possibilities. Healing bonus with team ATK buff on heal.',
-    passive: 'Healing +12%, team ATK +12% on heal', pv: {}, tv: { atkPct: 12, duration: 15 }, bestFor: ['Rectifier users', 'Encore', 'Verina'],
+  'Boson Astrolabe': { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 525, subStatValue: '+38.9%',
+    desc: 'Standard 5★. Synth rectifier mapping stellar possibilities. ATK and Basic ATK DMG when a teammate casts a Tune Break skill.',
+    passive: 'Path Observer: ATK +12%. Team member casts a Tune Break skill → self ATK +12%, Basic ATK DMG +12% (14s)', pv: { atkPct: 24, basicDmg: 12 }, bestFor: ['Rectifier users', 'Encore', 'Verina'],
     ascensionMaterials: { forgery: 'String', common: 'Mech Core' } },
-  "Bloodpact's Pledge": { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 587, subStatValue: '+38.8%',
+  "Bloodpact's Pledge": { rarity: 5, type: 'Sword', stat: 'Energy Regen', baseAtk: 587, subStatValue: '+38.9%',
     desc: 'Standard 5★. Sword sealed with an unbreakable blood oath. Healing boosts Resonance Skill DMG.',
     passive: 'Healing → Res. Skill DMG +10% for 6s. Aero DMG +10% for 30s', pv: { skillDmg: 10, elemDmg: 10 }, bestFor: ['Sword healers', 'Rover'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
