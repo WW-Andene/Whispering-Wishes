@@ -345,14 +345,18 @@ const WEAPON_DATA = {
   'Autumntrace': { rarity: 4, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Huanglong\'s golden ginkgo, prosperous and long-lasting. Stacking ATK on Basic/Heavy hits.',
     passive: 'Basic/Heavy ATK DMG → ATK +4% per stack (max x5, 7s per stack, 1s trigger interval)', pv: { atkPct: 20 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi', 'Lumi'] },
-  'Solar Flame': { rarity: 4, type: 'Pistols', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.2%',
+  // corrected 2026-08-18 (4★ audit): Crit Rate substat is an exact 20.25% at Lv.90 R1 (nanoka.cc's raw
+  // stat table), which the game's toFixed(1)-style rounding renders as +20.3%, not +20.2%.
+  'Solar Flame': { rarity: 4, type: 'Pistols', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Pistols burning with solar fire. Stacking ATK and Heavy ATK DMG on hits.',
     passive: 'Basic/Heavy ATK → ATK +2.2%, Heavy ATK DMG +2.2% (max x4, 7s)', pv: { atkPct: 8.8, heavyDmg: 8.8 }, bestFor: ['Pistol DPS'] },
-  'Feather Edge': { rarity: 4, type: 'Sword', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.2%',
+  'Feather Edge': { rarity: 4, type: 'Sword', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Sword light as a feather but sharp as a blade. ATK and Liberation DMG boost after Liberation.',
     passive: 'Liberation → ATK +7.2%, Liberation DMG +10.8% for 15s', pv: { atkPct: 7.2, libDmg: 10.8 }, bestFor: ['Sword DPS'] },
   // ── 4★ Craftable ──
-  'Broadblade#41': { rarity: 4, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+32.3%',
+  // corrected 2026-08-18 (4★ audit): Energy Regen substat was +32.3%, nanoka.cc's raw Lv.90 stat table
+  // shows an exact 32.4%.
+  'Broadblade#41': { rarity: 4, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+32.4%',
     desc: 'Craftable broadblade. ATK and healing boost when HP is high or low.',
     passive: 'HP >80% → ATK +12%. HP <40% → heal 5% on ATK', pv: { atkPct: 12 }, bestFor: ['Broadblade users'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Ring' } },
