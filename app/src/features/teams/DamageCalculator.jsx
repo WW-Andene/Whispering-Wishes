@@ -15,7 +15,7 @@ import {
   calcEnergyCycles,
   isHealerRole,
 } from './calcEngine.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
+import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -41,6 +41,18 @@ const TEAM_SET_BUFFS = {
   'Flaming Clawprint': [{ stat: 'elemDmg', value: 15, elem: 'fusion' }, { stat: 'libDmg', value: 20 }],
   'Midnight Veil': [{ stat: 'elemDmg', value: 15, elem: 'havoc' }],
   'Chromatic Foam': [{ stat: 'elemDmg', value: 25, elem: 'fusion' }], // Outro: +25% Fusion for next
+};
+
+// Maps CHARACTER_DATA.dmgFocus's short tags to the long-form wiki tag names COMBAT_ROLE_ICONS
+// is keyed by — same mapping CollectionTab/CharacterDetailModal use for the "All Damage" filter
+// and Combat Role badges, so this section's icons match the rest of the app instead of drifting.
+const DMG_FOCUS_ROLE_TAG = {
+  'Basic ATK': 'Basic Attack Damage',
+  'Heavy ATK': 'Heavy Attack Damage',
+  'Skill': 'Resonance Skill Damage',
+  'Liberation': 'Resonance Liberation Damage',
+  'Echo': 'Echo Skill Damage',
+  'Coordinated ATK': 'Coordinated Attack',
 };
 
 const DamageCalculator = forwardRef(function DamageCalculator({
@@ -1628,11 +1640,33 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                           {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3.5 h-3.5 inline-block align-middle mr-0.5" onError={hideOnError} />}
                           {getElementShape(m.d.element)}{getElementShape(m.d.element) ? ' ' : ''}{m.d.element} DMG
                         </span>
-                        {(m.d.dmgFocus || []).map((df, di) => (
-                          <span key={di} className="kuro-badge kuro-badge-amber">{df}</span>
-                        ))}
+                        {/* Audited combatRoles is the authoritative, iconed tag source (see
+                            CharacterDetailModal) — falls back to plain dmgFocus tags, iconed via
+                            the same short-tag→wiki-tag mapping, only for un-audited characters. */}
+                        {m.d.combatRoles?.length > 0 ? (
+                          m.d.combatRoles.map((tag, ti) => {
+                            const icon = getCombatRoleIcon(tag);
+                            return (
+                              <span key={ti} className="kuro-badge kuro-badge-amber inline-flex items-center gap-1">
+                                {icon && <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                                {tag}
+                              </span>
+                            );
+                          })
+                        ) : (m.d.dmgFocus || []).map((df, di) => {
+                          const icon = getCombatRoleIcon(DMG_FOCUS_ROLE_TAG[df]);
+                          return (
+                            <span key={di} className="kuro-badge kuro-badge-amber inline-flex items-center gap-1">
+                              {icon && <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                              {df}
+                            </span>
+                          );
+                        })}
                         {m.d.statScaling && (
-                          <span className="kuro-badge kuro-badge-violet">{m.d.statScaling} Scaling</span>
+                          <span className="kuro-badge kuro-badge-violet inline-flex items-center gap-1">
+                            {getStatIcon(m.d.statScaling) && <img src={getStatIcon(m.d.statScaling)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                            {m.d.statScaling} Scaling
+                          </span>
                         )}
                       </div>
                     </div>
