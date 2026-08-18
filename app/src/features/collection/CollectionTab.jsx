@@ -17,7 +17,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from '../../shared/components/CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 
 function CollectionTab({
   state,
@@ -501,12 +501,14 @@ function CollectionTab({
                     onChange={setCollectionDamageFilter}
                     options={[
                       { value: 'all', label: 'All Damage' },
-                      { value: 'Basic ATK', label: 'Basic ATK' },
-                      { value: 'Heavy ATK', label: 'Heavy ATK' },
-                      { value: 'Skill', label: 'Skill' },
-                      { value: 'Liberation', label: 'Liberation' },
-                      { value: 'Echo', label: 'Echo' },
-                      { value: 'Coordinated', label: 'Coordinated' },
+                      ...[
+                        ['Basic ATK', 'Basic Attack Damage'], ['Heavy ATK', 'Heavy Attack Damage'],
+                        ['Skill', 'Resonance Skill Damage'], ['Liberation', 'Resonance Liberation Damage'],
+                        ['Echo', 'Echo Skill Damage'], ['Coordinated', 'Coordinated Attack'],
+                      ].map(([val, tag]) => ({
+                        value: val,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(tag)} alt="" width={14} height={14} className="shrink-0" /> {val}</span>,
+                      })),
                     ]}
                     ariaLabel="Filter by damage type"
                   />
