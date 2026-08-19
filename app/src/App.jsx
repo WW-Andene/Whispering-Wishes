@@ -963,7 +963,11 @@ function WhisperingWishesInner() {
         // is pinned to the true viewport edges no matter what — including the
         // strip behind/above the floating header — rather than depending on
         // inset-0 resolving the way it's expected to.
-        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+        // Brute-force overpaint: extends a bit past every edge (negative
+        // inset) and sits above TabBackground's vignette (z-index 4) so it
+        // physically paints over whatever is causing the top-edge seam,
+        // regardless of what that turns out to be.
+        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: -20, left: -20, right: -20, bottom: -20, zIndex: 6 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
