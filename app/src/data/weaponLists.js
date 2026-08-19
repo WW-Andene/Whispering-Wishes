@@ -3,13 +3,6 @@
 // Standard-pool + full weapon rarity lists, and release order for sorting.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// P9-FIX: Include ALL standard pool weapons — original 5 + Lustrous Razor + v3.0 Synth Armament series
-// Must match CURRENT_BANNERS.standardWeapons for correct import history 50/50 tracking
-const STANDARD_5STAR_WEAPONS = new Set([
-  'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
-  'Radiance Cleaver', 'Laser Shearer', 'Phasic Homogenizer', 'Pulsation Bracer', 'Boson Astrolabe',
-]);
-
 const ALL_5STAR_WEAPONS = [
   'Verdant Summit', 'Lustrous Razor', 'Emerald of Genesis', 'Static Mist', 'Abyss Surges', 'Cosmic Ripples',
   'Stringmaster', 'Ages of Harvest', 'Blazing Brilliance', 'Rime-Draped Sprouts', "Verity's Handle",
@@ -106,7 +99,6 @@ const WEAPON_RELEASE_ORDER = [
 ];
 
 export {
-  STANDARD_5STAR_WEAPONS,
   ALL_5STAR_WEAPONS,
   ALL_4STAR_WEAPONS,
   ALL_3STAR_WEAPONS,
