@@ -45,7 +45,6 @@ export {
   WEAPON_EXP_COSTS_4,
 } from './materialData.js';
 export {
-  STANDARD_5STAR_WEAPONS,
   ALL_5STAR_WEAPONS,
   ALL_4STAR_WEAPONS,
   ALL_3STAR_WEAPONS,

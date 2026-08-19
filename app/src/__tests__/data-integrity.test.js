@@ -7,7 +7,7 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIER
 import { WEAPON_DATA } from '../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../data/echoes.js';
 import { CURRENT_BANNERS } from '../data/banners.js';
-import { WEAPON_REFINE_SCALE } from '../data/constants.js';
+import { WEAPON_REFINE_SCALE, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../data/constants.js';
 
 describe('CHARACTER_DATA integrity', () => {
   const chars = Object.entries(CHARACTER_DATA);
@@ -97,6 +97,26 @@ describe('WEAPON_DATA integrity', () => {
     weapons.filter(([, d]) => d.rarity === 5).forEach(([name, data]) => {
       expect(data.passive, `${name} missing passive`).toBeTruthy();
       expect(data.pv, `${name} missing pv (parsed passive values)`).toBeDefined();
+    });
+  });
+
+  // weaponLists.js maintains ALL_*STAR_WEAPONS as hand-curated arrays (display order
+  // matters — used to render collection grids — so they aren't derived from WEAPON_DATA
+  // at import time). This cross-check catches drift between the two without touching
+  // that curated order: every weapon's rarity-list membership must match its
+  // WEAPON_DATA.rarity, and every list must be exhaustive (no weapon missing).
+  it('ALL_*STAR_WEAPONS lists match WEAPON_DATA.rarity exactly', () => {
+    const rarityLists = { 5: ALL_5STAR_WEAPONS, 4: ALL_4STAR_WEAPONS, 3: ALL_3STAR_WEAPONS, 2: ALL_2STAR_WEAPONS, 1: ALL_1STAR_WEAPONS };
+    weapons.forEach(([name, data]) => {
+      const list = rarityLists[data.rarity];
+      expect(list, `${name} has unknown rarity ${data.rarity}`).toBeDefined();
+      expect(list, `${name} (rarity ${data.rarity}) missing from ALL_${data.rarity}STAR_WEAPONS`).toContain(name);
+    });
+    Object.entries(rarityLists).forEach(([rarity, list]) => {
+      list.forEach(name => {
+        expect(WEAPON_DATA[name], `ALL_${rarity}STAR_WEAPONS has "${name}" but WEAPON_DATA doesn't`).toBeDefined();
+        expect(WEAPON_DATA[name].rarity, `"${name}" is in ALL_${rarity}STAR_WEAPONS but WEAPON_DATA says rarity ${WEAPON_DATA[name].rarity}`).toBe(Number(rarity));
+      });
     });
   });
 });
