@@ -18,7 +18,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Download, Trash2, HardDriveDownload } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { loadAssetManifest, downloadAssets, purgeAssets, queryAssets, ASSET_CATEGORY_LABELS, serviceWorkerAvailable } from '../../providers/assetSW.js';
+import { loadAssetManifest, downloadAssets, purgeAssets, queryAssets, ASSET_CATEGORY_LABELS, serviceWorkerAvailable } from '../../core/assetSW.js';
 import { haptic } from '../../utils/helpers.js';
 
 const CATEGORIES = Object.keys(ASSET_CATEGORY_LABELS);
