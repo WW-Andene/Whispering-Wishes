@@ -12,6 +12,9 @@ on:
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write # needed to publish the GitHub Release the in-app updater reads
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -64,13 +67,37 @@ jobs:
         working-directory: app
         run: npx cap sync android
 
+      # versionCode/Name are set to this run's number (see android/app/build.gradle's
+      # comment) so the in-app update check (src/utils/appUpdate.js) can compare the
+      # running app's own build number against the GitHub release published below —
+      # tag_name apk-<run number> — with no separate version file to keep in sync.
       - name: Build debug APK
         working-directory: app/android
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon \
+            -PappVersionCode=${{ github.run_number }} \
+            -PappVersionName=1.0.${{ github.run_number }}
 
-      - name: Upload APK
+      - name: Upload APK (workflow artifact)
         uses: actions/upload-artifact@v4
         with:
           name: whispering-wishes-debug
           path: app/android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
+
+      # Workflow artifacts (above) require a GitHub login and expire in 30 days — not
+      # usable as a stable in-app update URL. Releases are public, permanent, and give
+      # a predictable browser_download_url the app can fetch via the public releases
+      # API (see src/utils/appUpdate.js) without any auth.
+      - name: Publish GitHub Release with the APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: APK build ${{ github.run_number }}
+          body: |
+            Automated build from ${{ github.sha }}.
+            Install: download app-debug.apk below, open it on your Android device
+            ("Install unknown apps" must be allowed for the app you download it with —
+            see CAPACITOR_APP.md).
+          files: app/android/app/build/outputs/apk/debug/*.apk
