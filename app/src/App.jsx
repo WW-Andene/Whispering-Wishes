@@ -964,10 +964,13 @@ function WhisperingWishesInner() {
         // strip behind/above the floating header — rather than depending on
         // inset-0 resolving the way it's expected to.
         // Brute-force overpaint: extends a bit past every edge (negative
-        // inset) and sits above TabBackground's vignette (z-index 4) so it
-        // physically paints over whatever is causing the top-edge seam,
-        // regardless of what that turns out to be.
-        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: -20, left: -20, right: -20, bottom: -20, zIndex: 6 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+        // inset) so it physically paints over whatever is causing the
+        // top-edge seam, regardless of what that turns out to be. Stays at
+        // its original z-index 3 (below .kuro-card's z-index 5) so it
+        // doesn't paint over UI cards — an earlier attempt bumped this to
+        // z-index 6 to also sit above TabBackground's vignette, but that
+        // made every card render underneath it instead, washing them out.
+        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: -20, left: -20, right: -20, bottom: -20, zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
