@@ -515,10 +515,17 @@ export function getEnemyStaggerStatsAtLevel(name, level) {
   // main echo slot silently contributed 0 active-skill DMG in DamageCalculator's echoActiveDmg calc.
   // Myriad Snare: Rustfire Chassis is Max-HP%-scaled, not ATK%-scaled, so its dmg is left unset (same
   // precedent as other %MaxHP echoes elsewhere in this file).
-  ['Thousand-Puppet Pavilion', 109, 'Havoc', null],
-  ['Reminiscence: Denia', 274, 'Fusion', null],
-  ['Reminiscence: Threnodian - Voidborne Construct', 274, 'Glacio', null],
-  ['Reminiscence - Nightmare: Adam Smasher', 164, 'Physical', null],
+  // RES filled in 2026-08-19 from static.nanoka.cc's monster JSON (same pipeline as the 39 main
+  // bosses); Thousand-Puppet Pavilion carries TWO boosted elements (Electro AND Havoc), confirmed
+  // directly in its base_stats rather than assumed from its own damage element.
+  ['Thousand-Puppet Pavilion', 109, 'Havoc', { electro: 40, havoc: 40 }],
+  ['Myriad Snare: Rustfire Chassis', 0, 'Fusion', { fusion: 40 }],
+  ['Reminiscence: Denia', 274, 'Fusion', { fusion: 40 }],
+  ['Reminiscence: Threnodian - Voidborne Construct', 274, 'Glacio', { fusion: 40 }],
+  ['Reminiscence - Nightmare: Adam Smasher', 164, 'Physical', {}],
+  // Calamity Effigy had no dmg/element/enemyRes row at all before this — its active-skill dmg% is
+  // still genuinely unconfirmed (see its ECHO_DATA desc), left at 0 rather than guessed; RES is real.
+  ['Calamity Effigy', 0, 'Aero', { aero: 40 }],
   ['Mourning Aix', 394, 'Spectro', { spectro: 40 }],
   ['Feilian Beringal', 515, 'Aero', { aero: 40 }],
   ['Tempest Mephis', 0, 'Electro', { electro: 40 }],
