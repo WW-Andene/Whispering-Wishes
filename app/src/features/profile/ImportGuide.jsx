@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/ImportGuide.jsx
+// WHISPERING WISHES — features/profile/ImportGuide.jsx
 // ImportGuide component + IMPORT_GUIDE_DATA
 // ═══════════════════════════════════════════════════════════════════════════════
 

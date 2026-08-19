@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/EventCard.jsx
+// WHISPERING WISHES — features/events/EventCard.jsx
 // Event banner card with countdown timer and status toggling.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -7,9 +7,9 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Star, Check, CheckCircle, SkipForward } from 'lucide-react';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
 import { haptic } from '../../utils/helpers.js';
-import { hideOnError } from '../utils/imageHelpers.js';
-import { CountdownTimer } from './CountdownTimer.jsx';
-import { EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, generateMaskGradient } from './BannerCard.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
+import { EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
 import { PLACEHOLDER_IMAGE } from '../../data/banners.js';
 
 const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {

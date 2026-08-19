@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/PityRing.jsx
+// WHISPERING WISHES — features/calculator/PityRing.jsx
 // PityRing component (the circular pity visualization)
 // ═══════════════════════════════════════════════════════════════════════════════
 

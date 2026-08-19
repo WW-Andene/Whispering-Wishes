@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/CalcResults.jsx
+// WHISPERING WISHES — features/calculator/CalcResults.jsx
 // CalcResultsCard component
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { memo } from 'react';
-import { Card, CardHeader, CardBody } from './Card.jsx';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 const getSuccessColor = (rate) => {
   const r = parseFloat(rate);

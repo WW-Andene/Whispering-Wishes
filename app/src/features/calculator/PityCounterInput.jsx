@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/PityCounterInput.jsx
+// WHISPERING WISHES — features/calculator/PityCounterInput.jsx
 // PityCounterInput component
 // ═══════════════════════════════════════════════════════════════════════════════
 

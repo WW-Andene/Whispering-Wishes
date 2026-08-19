@@ -16,8 +16,8 @@ import { calcStats } from '../../core/calcStats.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { PityCounterInput } from '../../shared/components/PityCounterInput.jsx';
-import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
+import { PityCounterInput } from './PityCounterInput.jsx';
+import { CalcResultsCard } from './CalcResults.jsx';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 

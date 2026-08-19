@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/StandardBannerSection.jsx
+// WHISPERING WISHES — features/tracker/StandardBannerSection.jsx
 // Standard (permanent) banner section with particle overlay.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -7,8 +7,8 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Star } from 'lucide-react';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { haptic } from '../../utils/helpers.js';
-import { hideOnError } from '../utils/imageHelpers.js';
-import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW, TEXT_SHADOW_STYLE } from './BannerCard.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
 
 const StandardBannerOverlay = memo(() => {
   const canvasRef = useRef(null);
