@@ -1359,10 +1359,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             if (!d) return;
                             const weapon = d.bestWeapon && WEAPON_DATA[d.bestWeapon] ? d.bestWeapon : null;
                             const recSets = new Map();
-                            const directEchoes = new Set();
+                            const rawDirectEchoes = new Set();
                             (d.bestEchoes || []).forEach(entry => {
                               [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES].forEach(en => {
-                                if (entry.toLowerCase().includes(en.toLowerCase())) directEchoes.add(en);
+                                if (entry.toLowerCase().includes(en.toLowerCase())) rawDirectEchoes.add(en);
                               });
                               entry.split('+').forEach(part => {
                                 const trimmed = part.trim();
@@ -1375,6 +1375,40 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 }
                               });
                             });
+                            // When crowned as this team's Main DPS despite a different static role
+                            // (e.g. Qiuyuan run as Main DPS instead of his native Sub DPS/buffer), the
+                            // character's own bestEchoes recommendation is tuned for the OFF-field/support
+                            // usage (e.g. a 3pc+2pc split favoring a team-wide buff over personal DMG%) —
+                            // verified this stays selected even when crowned, with zero adaptation. The
+                            // roster's own data shows the real pattern for actual Main DPS characters is a
+                            // clean full 5pc of the character's own element (Jiyan→Windward Pilgrimage,
+                            // Calcharo→Void Thunder, Encore→Molten Rift, ...), so switch to that shape:
+                            // reuse an own-element set already in the recommendation if one exists (e.g.
+                            // Qiuyuan's Sierra Gale, already present at 2pc), else search for any tracked
+                            // set of the character's element with a real echo carrier, and promote it to
+                            // a full 5pc target, replacing the off-role recommendation entirely.
+                            const isTeamMainDps = activeTeamData.mainDpsOverride === m.name;
+                            if (isTeamMainDps && d.role !== 'Main DPS') {
+                              const allTierEchoes = [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
+                              const ownElementSet = [...recSets.keys()].find(s => ECHO_SETS[s]?.element === d.element)
+                                || Object.keys(ECHO_SETS).find(s => ECHO_SETS[s].element === d.element
+                                  && allTierEchoes.some(n => ECHO_DATA[n]?.sets?.includes(s)));
+                              if (ownElementSet) {
+                                recSets.clear();
+                                recSets.set(ownElementSet, 5);
+                              }
+                            }
+                            // A signature boss echo only belongs in the direct-pick shortcut if it
+                            // actually carries one of the sets being targeted — otherwise (most likely
+                            // after the Main-DPS override above swapped to a set the boss echo doesn't
+                            // carry, e.g. Qiuyuan's own "Reminiscence: Fenrico" carries Law of Harmony/
+                            // Dream of the Lost, neither of which is Sierra Gale) force-picking it would
+                            // occupy the 4-cost slot with an echo that contributes 0 of the 5 needed
+                            // pieces, capping the set at 4pc max out of only 4 remaining slots — silently
+                            // making the "5pc" recommendation impossible to actually complete.
+                            const directEchoes = new Set(
+                              [...rawDirectEchoes].filter(name => (ECHO_DATA[name]?.sets || []).some(s => recSets.has(s)))
+                            );
                             // Read the current echo preset to assign appropriate mainStats. Only fall
                             // back to a role-derived default when the user has never actually chosen a
                             // preset for this character — once they have, that choice is deliberate and
@@ -1395,7 +1429,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             // change the preset at all. When crowned for this team, force the DPS-maximizing
                             // 'default' (Crit Rate/Crit DMG) preset even if their static role would
                             // otherwise point to 'support'.
-                            const isTeamMainDps = activeTeamData.mainDpsOverride === m.name;
                             const roleDefaultPreset = isTeamMainDps ? 'default'
                               : (isHealerRole(d.role) || isSupportRole(d.role)) ? 'support' : 'default';
                             const preset = currentEq?.echoPreset || roleDefaultPreset;
