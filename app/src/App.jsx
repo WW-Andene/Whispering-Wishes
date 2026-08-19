@@ -959,7 +959,11 @@ function WhisperingWishesInner() {
         </>
       ) : null}
       {appBgUrl && (
-        <div className={`fixed inset-0 ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+        // Explicit top/left/right/bottom (not just the inset-0 class) so this
+        // is pinned to the true viewport edges no matter what — including the
+        // strip behind/above the floating header — rather than depending on
+        // inset-0 resolving the way it's expected to.
+        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
