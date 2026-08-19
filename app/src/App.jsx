@@ -52,9 +52,7 @@ import { ImageFramingProvider, useImageFramingContext } from './providers/ImageF
 import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---
 import AdminMiniPanel from './features/profile/AdminMiniPanel.jsx';
-import { CharacterDetailModal } from './shared/modals/CharacterDetailModal.jsx';
-import { WeaponDetailModal } from './shared/modals/WeaponDetailModal.jsx';
-import { EchoDetailModal } from './shared/modals/EchoDetailModal.jsx';
+import { DetailModalHost } from './shared/components/DetailModalHost.jsx';
 import { TabButton } from './shared/components/Card.jsx';
 import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
 import { BackgroundGlow } from './shared/backgrounds/BackgroundGlow.jsx';
@@ -1505,42 +1503,13 @@ function WhisperingWishesInner() {
 
 
       {/* Character/Weapon Detail Modal */}
-      {detailModal.show && detailModal.type === 'character' && (
-        <CharacterDetailModal
-          name={detailModal.name}
-          imageUrl={detailModal.imageUrl}
-          framing={detailModal.framing}
-          infoFraming={getImageFraming(`info-${detailModal.name}`)}
-          visualSettings={visualSettings}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null })}
-          onViewInTeams={() => {
-            // P-FIX: "View in Team Builder" must only navigate — it silently added the
-            // character to the active team's first empty slot before, contradicting its
-            // own label and equipping resonators the user only meant to look up.
-            setDetailModal({ show: false, type: null, name: null, imageUrl: null, framing: null });
-            setActiveTab('teams');
-          }}
-          collectionData={collectionData}
-        />
-      )}
-      {detailModal.show && detailModal.type === 'weapon' && (
-        <WeaponDetailModal
-          name={detailModal.name}
-          imageUrl={detailModal.imageUrl}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
-          collectionData={collectionData}
-        />
-      )}
-      {detailModal.show && detailModal.type === 'echo' && (
-        <EchoDetailModal
-          name={detailModal.name}
-          imageUrl={detailModal.imageUrl}
-          cost={detailModal.cost}
-          visualSettings={visualSettings}
-          onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
-          collectionData={collectionData}
-        />
-      )}
+      <DetailModalHost
+        detailModal={detailModal}
+        setDetailModal={setDetailModal}
+        visualSettings={visualSettings}
+        setActiveTab={setActiveTab}
+        collectionData={collectionData}
+      />
 
 
       {/* Desktop right margin - ad slot + footer text at bottom (hidden on mobile) */}
