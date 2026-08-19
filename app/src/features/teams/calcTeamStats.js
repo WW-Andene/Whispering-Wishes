@@ -14,6 +14,7 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../../data
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ECHO_DATA, ECHO_SKILL_BUFFS, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
+import { STAT_LABELS_FULL } from './RotationTimeline.jsx';
 import {
   ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
   ECHO_MAIN_STAT_VALUES, ECHO_SUB_STAT_VALUES, ECHO_FLAT_SUB_STAT_VALUES,

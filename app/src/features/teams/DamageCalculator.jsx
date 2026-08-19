@@ -9,7 +9,7 @@ import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
-import RotationTimeline, { STAT_LABELS, STAT_LABELS_FULL } from './RotationTimeline.jsx';
+import RotationTimeline from './RotationTimeline.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import { computeAutoEquipEntry } from './autoEquip.js';
