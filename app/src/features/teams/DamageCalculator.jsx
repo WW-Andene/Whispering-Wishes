@@ -959,6 +959,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const dpsCount = mems.filter(m => m.d.role === 'Main DPS').length;
       if (dpsCount >= 2) warnings.push(`Dual DPS: rotation time shared — use 👑 to pick which one${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
       if (dpsCount === 0) warnings.push(`No Main DPS: using highest damage dealer — use 👑 to pick a different headline DPS${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
+      // Real, calculated consequence of the selected enemy (not just a DEF/RES number difference) —
+      // flag when the main DPS's own element is one the target specifically resists, since that's the
+      // one matchup the player can actually act on (swap main DPS or bring an off-element sub-DPS).
+      if (enemyEcho) {
+        const mainRes = getEnemyRes(mainDps.d.element);
+        if (mainRes > 10) warnings.push(`${enemyEcho} resists ${mainDps.d.element} (${mainRes}% RES) — ${mainDps.name}'s main-hit DMG is reduced against this target`);
+      }
     }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
