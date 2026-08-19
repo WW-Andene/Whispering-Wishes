@@ -387,7 +387,23 @@ function WhisperingWishesInner() {
     return () => { clearTimeout(debounceTimer); window.removeEventListener('storage', handleStorageChange); };
   }, []); // P14-FIX: LOW-3 - Removed dead eslint-disable comment (no ESLint configured)
   const { activeTab, setActiveTab, tabNavRef, navPadding } = useTabNavigation(visualSettings.swipeNavigation);
-  
+  // Header is now a floating bar (fixed, inset from the edges) like the bottom nav, instead of a
+  // full-width sticky bar — so its height no longer reserves space in normal document flow and
+  // <main>'s top padding has to be measured dynamically, same technique useTabNavigation already
+  // uses for navPadding below. A static pt-3 would either clip content under the header or leave a
+  // huge gap, since header height varies (theme banner art, safe-area-inset-top on notched phones).
+  const headerRef = useRef(null);
+  const [headerPadding, setHeaderPadding] = useState(64);
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const update = () => setHeaderPadding(header.offsetHeight + 12 + 12);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(header);
+    return () => ro.disconnect();
+  }, []);
+
 
   const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null, framing: null });
   // Close detail modal on tab switch to prevent it blocking the new tab
@@ -989,7 +1005,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header className="kuro-card sticky top-0 z-50" style={{borderRadius: 0, paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {})}}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           <>
@@ -1102,7 +1118,7 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
       </nav>
 
-      <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 pt-3 space-y-3 w-full" style={{ paddingBottom: navPadding }} role="main">
+      <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
