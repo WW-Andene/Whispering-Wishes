@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
+import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -15,6 +15,7 @@ import { loadDrafts, saveDrafts, loadPaintStrokes, savePaintStrokes } from './ma
 import { useToast } from './useToast.js';
 import { useOfflineTiles } from './useOfflineTiles.js';
 import { OfflineDownloadsPopover } from './OfflineDownloadsPopover.jsx';
+import { ZonesPopover } from './ZonesPopover.jsx';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
@@ -2879,115 +2880,24 @@ export default function MapTab({ navPadding = 80 }) {
 
             {/* Zone selector — same var(--space-md) gap on top and right */}
             {zonesOpen && (
-              <div
-                ref={zonesPanelRef}
-                className="map-zones-popover"
-                role="dialog"
-                aria-label="Zones"
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  top: `${headerHeight + 8}px`,
-                  maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
-                }}
-              >
-                <Card>
-                  <CardHeader
-                    action={
-                      <button
-                        type="button"
-                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                        onClick={() => setZonesOpen(false)}
-                        aria-label="Close"
-                      >✕</button>
-                    }
-                  >
-                    Regions
-                  </CardHeader>
-                  <CardBody className="map-zones-body">
-                    {(() => {
-                      const renderNode = (zone, depth) => {
-                        const children = zoneNav.get(zone.id) || [];
-                        const hasChildren = children.length > 0;
-                        const expanded = expandedZones.has(zone.id);
-                        // Indent by level (L1 → 0, L2 → 1 unit, …),
-                        // falling back to tree depth when level is unset.
-                        const indentLevel = (zone.level != null ? zone.level - 1 : depth);
-                        const isCurrent = zone.id === currentZoneId;
-                        return (
-                          <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
-                            <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
-                              <button
-                                type="button"
-                                className={`kuro-btn kuro-btn-sm zone-selector-item ${!hasChildren && pendingZoneId === zone.id ? 'is-armed' : ''} ${isCurrent ? 'is-current' : ''}`}
-                                onClick={() => {
-                                  if (hasChildren) {
-                                    // L1 parent: single click toggles expand;
-                                    // the LocateFixed icon on the right fires
-                                    // fly-to separately.
-                                    toggleZoneExpanded(zone.id);
-                                    return;
-                                  }
-                                  // L2 leaf: arm-then-fire. No icon for these;
-                                  // second tap on the same zone within
-                                  // ZONE_ARM_MS fires handleFlyToZone.
-                                  if (pendingZoneId === zone.id) {
-                                    if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
-                                    setPendingZoneId(null);
-                                    handleFlyToZone(zone);
-                                    return;
-                                  }
-                                  setPendingZoneId(zone.id);
-                                  if (pendingZoneTimerRef.current) clearTimeout(pendingZoneTimerRef.current);
-                                  pendingZoneTimerRef.current = setTimeout(() => setPendingZoneId(null), ZONE_ARM_MS);
-                                  showToast(`Tap again to open ${zone.name || zone.id}`, ZONE_ARM_MS);
-                                }}
-                                aria-label={hasChildren ? `${zone.name || zone.id} — ${expanded ? 'collapse' : 'expand'}` : `${zone.name || zone.id} — tap again to open`}
-                                aria-current={isCurrent ? 'location' : undefined}
-                                title={hasChildren ? (expanded ? 'Collapse' : 'Expand') : 'Tap · Tap again to open'}
-                              >
-                                <span className="zone-selector-caret">{hasChildren ? (expanded ? '▾' : '▸') : '·'}</span>
-                                <span className="zone-selector-name">{zone.name || zone.id}</span>
-                              </button>
-                              {hasChildren && (
-                                <button
-                                  type="button"
-                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                  onClick={() => handleFlyToZone(zone)}
-                                  aria-label={`Go to ${zone.name || zone.id}`}
-                                  title={`Go to ${zone.name || zone.id}`}
-                                >
-                                  <LocateFixed size={14} />
-                                </button>
-                              )}
-                              {zone.overlayId && authorMode && (
-                                <button
-                                  type="button"
-                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                  onClick={(e) => { e.stopPropagation(); handlePushSubMapToEdit(zone); }}
-                                  aria-label={`Push "${zone.name || zone.id}" back to sub-map editor`}
-                                  title="Push back to sub-map editor"
-                                >
-                                  <Pen size={14} />
-                                </button>
-                              )}
-                            </div>
-                            {hasChildren && expanded && (
-                              <div role="group">
-                                {children.map(c => renderNode(c, depth + 1))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      };
-                      const roots = zoneNav.get(null) || [];
-                      if (roots.length === 0) {
-                        return <div className="zone-selector-empty">No zones</div>;
-                      }
-                      return roots.map(z => renderNode(z, 0));
-                    })()}
-                  </CardBody>
-                </Card>
-              </div>
+              <ZonesPopover
+                panelRef={zonesPanelRef}
+                top={headerHeight + 8}
+                maxHeight={`calc(100dvh - ${headerHeight + navPadding + 40}px)`}
+                zoneNav={zoneNav}
+                expandedZones={expandedZones}
+                currentZoneId={currentZoneId}
+                pendingZoneId={pendingZoneId}
+                setPendingZoneId={setPendingZoneId}
+                pendingZoneTimerRef={pendingZoneTimerRef}
+                zoneArmMs={ZONE_ARM_MS}
+                authorMode={authorMode}
+                toggleZoneExpanded={toggleZoneExpanded}
+                onFlyToZone={handleFlyToZone}
+                onPushSubMapToEdit={handlePushSubMapToEdit}
+                showToast={showToast}
+                onClose={() => setZonesOpen(false)}
+              />
             )}
 
             {filtersOpen && (
