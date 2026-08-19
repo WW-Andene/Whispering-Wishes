@@ -72,10 +72,15 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
     if (cost === 3) return elDmgKey || scalingStat;
     return scalingStat;
   };
+  // Each echo's 5 substats must be 5 DISTINCT stat types (matches how echoes actually roll
+  // in-game) — applyEchoStats in calcEngine.js sums each array entry independently, so a
+  // repeated stat here silently double-counts its value. 'ATK' (flat) is always a safe
+  // distinct filler: it's a different substat type from the '%' stats above, handled via
+  // flatSubToPct rather than colliding with scalingStat (which is always the '%' form).
   const getSubstats = () => {
-    if (preset === 'er') return ['Energy Regen', scalingStat, 'Crit Rate', 'Crit DMG', scalingStat];
-    if (preset === 'support') return [scalingStat, 'Energy Regen', 'Crit Rate'];
-    return [scalingStat, 'Crit Rate', 'Crit DMG', scalingStat, 'Crit DMG'];
+    if (preset === 'er') return ['Energy Regen', scalingStat, 'Crit Rate', 'Crit DMG', 'ATK'];
+    if (preset === 'support') return [scalingStat, 'Energy Regen', 'Crit Rate', 'Crit DMG', 'ATK'];
+    return [scalingStat, 'Crit Rate', 'Crit DMG', 'ATK', 'Energy Regen'];
   };
   const defaultSubs = getSubstats();
   const newEchoes = [null, null, null, null, null];

@@ -45,13 +45,29 @@ function TeamsTab({
   const [showPresetDropdown, setShowPresetDropdown] = useState(false);
   // Debounced save for teamEquipment — prevents localStorage thrash on rapid interactions
   const eqSaveTimerRef = useRef(null);
+  const teamEquipmentRef = useRef(teamEquipment);
+  useEffect(() => { teamEquipmentRef.current = teamEquipment; }, [teamEquipment]);
   useEffect(() => {
     if (eqSaveTimerRef.current) clearTimeout(eqSaveTimerRef.current);
     eqSaveTimerRef.current = setTimeout(() => {
       try { localStorage.setItem('ww-team-equipment', JSON.stringify(teamEquipment)); } catch {}
+      eqSaveTimerRef.current = null;
     }, 300);
     return () => { if (eqSaveTimerRef.current) clearTimeout(eqSaveTimerRef.current); };
   }, [teamEquipment]);
+  // Flush any still-pending debounced write on true unmount (e.g. switching tabs
+  // within the 300ms window) instead of silently dropping it — not every
+  // setTeamEquipment call site (Auto Equip / Full Auto Build / Reset Equipment in
+  // DamageCalculator.jsx) also writes localStorage synchronously the way the
+  // per-slot Weapon/Echo selectors do, so this debounce is their only save path.
+  useEffect(() => {
+    return () => {
+      if (eqSaveTimerRef.current) {
+        clearTimeout(eqSaveTimerRef.current);
+        try { localStorage.setItem('ww-team-equipment', JSON.stringify(teamEquipmentRef.current)); } catch {}
+      }
+    };
+  }, []);
   useEffect(() => {
     try { localStorage.setItem('ww-equipment-presets', JSON.stringify(equipPresets)); } catch {}
   }, [equipPresets]);
