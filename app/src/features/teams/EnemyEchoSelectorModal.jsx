@@ -109,7 +109,7 @@ export default function EnemyEchoSelectorModal({
                 <MonsterCard
                   key={name}
                   name={name}
-                  iconUrl={collectionImages[name] || ed?.iconUrl}
+                  iconUrl={collectionImages[name] || ed?.monsterIconUrl || ed?.iconUrl}
                   enemyStats={ed?.enemyStats}
                   level={enemyLevel ?? 90}
                   selected={enemyEcho === name}
