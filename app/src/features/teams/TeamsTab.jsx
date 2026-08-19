@@ -70,6 +70,10 @@ function TeamsTab({
   const startRename = useCallback((idx, name) => { setRenamingTeamIdx(idx); setRenameValue(name); haptic.medium(); }, []);
   const damageCalcRef = useRef(null);
 
+  // Bumped by the Shuffle button to re-roll which curated teams are displayed (see metaTeams
+  // selection below) — Shuffle mixes up the CURATED suggestions list itself, it does not load any
+  // team into the active team's slots.
+  const [metaShuffleSeed, setMetaShuffleSeed] = useState(0);
   // ── Memoized team suggestions — was previously duplicated verbatim (and drifted) inline in the
   // JSX render body below, recomputed unmemoized on every render; this is now the single source. ──
   const teamSuggestions = useMemo(() => {
@@ -166,6 +170,19 @@ function TeamsTab({
       }
     }
     metaTeams.sort((a, b) => b.score - a.score);
+    const metaDisplayCount = customTeams.length > 0 ? 7 : 15;
+    // Shuffle re-rolls WHICH curated teams are shown, not their quality — on the initial render
+    // (seed 0) show the straightforward top-by-score picks; each Shuffle click re-samples a fresh
+    // random N from the full scored pool instead of always the same fixed top-N.
+    let metaDisplay = metaTeams.slice(0, metaDisplayCount);
+    if (metaShuffleSeed > 0 && metaTeams.length > metaDisplayCount) {
+      const pool = [...metaTeams];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      metaDisplay = pool.slice(0, metaDisplayCount);
+    }
 
     const allSuggestions = [];
     // Show custom teams first (built from your roster), then meta
@@ -173,12 +190,14 @@ function TeamsTab({
       allSuggestions.push({ header: 'Built from your roster' });
       customTeams.slice(0, 8).forEach(s => allSuggestions.push(s));
     }
-    if (metaTeams.length > 0) {
+    if (metaDisplay.length > 0) {
       allSuggestions.push({ header: 'Curated teams' });
-      metaTeams.slice(0, customTeams.length > 0 ? 7 : 15).forEach(s => allSuggestions.push(s));
+      metaDisplay.forEach(s => allSuggestions.push(s));
     }
     return allSuggestions;
-  }, [collectionData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- metaShuffleSeed is a deliberate re-roll
+    // trigger, not a real data dependency; its value is never read, only its identity changing matters.
+  }, [collectionData, metaShuffleSeed]);
 
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
@@ -199,10 +218,11 @@ function TeamsTab({
                 dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: null });
                 haptic.success();
               };
+              // Re-rolls WHICH curated teams are displayed in the suggestions list (a fresh random
+              // sample from the full scored pool) — does NOT touch the active team's slots.
               const shuffleSuggestion = () => {
-                const picks = teamSuggestions.filter(s => !s.header);
-                if (!picks.length) return;
-                applySuggestion(picks[Math.floor(Math.random() * picks.length)]);
+                setMetaShuffleSeed(s => s + 1);
+                haptic.light();
               };
               // The crown is offered whenever more than one member could plausibly be the headline DPS
               // (dmgCapableCount > 1) — NOT gated behind "auto-detect thinks this is ambiguous". That
@@ -746,10 +766,10 @@ function TeamsTab({
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={(e) => { e.stopPropagation(); shuffleSuggestion(); }}
-                            disabled={!teamSuggestions.some(s => !s.header)}
+                            disabled={!teamSuggestions.some(s => s.header === 'Curated teams')}
                             className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                            aria-label="Shuffle: load a random suggested team"
-                            title="Shuffle: load a random suggested team"
+                            aria-label="Shuffle: show a different random sample of curated teams"
+                            title="Shuffle: show a different random sample of curated teams"
                           >
                             <Shuffle size={12} /> Shuffle
                           </button>
