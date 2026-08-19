@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef 
 import { AlertTriangle, BarChart3, ChevronDown, Diamond, ListOrdered, Sword, Users, X, Zap } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
-import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import {
   ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
@@ -13,7 +13,7 @@ import {
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcEnergyCycles,
-  isHealerRole,
+  isHealerRole, isSupportRole,
 } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -24,6 +24,7 @@ import RotationTimeline, { STAT_LABELS, STAT_LABELS_FULL, stepStyle } from './Ro
 import { useSessionState } from '../../utils/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
+import MonsterCard from '../../shared/components/MonsterCard.jsx';
 
 // Hardcoded team-wide echo-set bonuses that don't come from a per-member p5val (WuWa sets whose
 // team ATK/DMG bonus is an approximated flat number rather than a modeled trigger). Kept as a single
@@ -71,7 +72,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   const [enemyEcho, setEnemyEcho] = useState('');
   const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
   const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
-  const [enemyEchoCostFilter, setEnemyEchoCostFilter] = useState('all');
+  const [enemyEchoRankFilter, setEnemyEchoRankFilter] = useState('all');
   const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
   const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
 
@@ -149,12 +150,14 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       || mems[0];
 
     // ── Enemy scaling (using named constants from calcEngine) ──
-    // "Training Dummy" (enemyEcho === '') keeps the original generic level-only formula/0-baseline
-    // behavior unchanged. A selected boss echo overrides DEF with its real stat when known, and RES
-    // with its full per-element map (enemyStats.res) instead of the old single-element enemyRes lookup.
+    // No target selected (enemyEcho === '') keeps the original generic level-only formula/0-baseline
+    // behavior unchanged. A selected target overrides DEF with its real stat at the chosen enemyLevel
+    // (getEnemyStatsAtLevel, full 1-120 per-enemy curve) when known, and RES with its full per-element
+    // map (enemyStats.res) instead of the old single-element enemyRes lookup.
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
     const enemyStats = enemyEchoData?.enemyStats || null;
-    const enemyDef90 = enemyStats?.def ?? (792 + 8 * (Number(enemyLevel) || 90));
+    const enemyLevelStats = enemyEcho ? getEnemyStatsAtLevel(enemyEcho, enemyLevel) : null;
+    const enemyDef90 = enemyLevelStats?.def ?? enemyStats?.def ?? (792 + 8 * (Number(enemyLevel) || 90));
     const enemyResMap = enemyStats?.res || enemyEchoData?.enemyRes || {};
     const getEnemyRes = (el) => {
       const elLow = (el || '').toLowerCase();
@@ -535,11 +538,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
     // ── DOT damage (ICD-aware, from calcEngine) ──
+    // Each of these reactions has a fixed damage element regardless of which character on the team
+    // triggers it (Frazzle is always Spectro, Erosion always Havoc, etc.) — so its RES must come from
+    // the enemy's RES to THAT element, not resMult above (which is keyed to mainDps's own element and
+    // was wrong here whenever the team's element differs from the reaction's, e.g. a Glacio main DPS
+    // whose support triggers Havoc Erosion). Tune Break has no single canonical element (bespoke
+    // per-character mechanic), so it keeps using mainDps's resMult as before.
     let dotDmgPerRotation = 0;
-    const frazzleResult = calcFrazzleDmg(mems, rotTime, defMult, resMult);
-    const erosionResult = calcErosionDmg(mems, rotTime, defMult, resMult);
-    const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, resMult);
-    const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, resMult);
+    const frazzleResMult = calcResMult(getEnemyRes('Spectro'), resShred);
+    const erosionResMult = calcResMult(getEnemyRes('Havoc'), resShred);
+    const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
+    const electroFlareResMult = calcResMult(getEnemyRes('Electro'), resShred);
+    const frazzleResult = calcFrazzleDmg(mems, rotTime, defMult, frazzleResMult);
+    const erosionResult = calcErosionDmg(mems, rotTime, defMult, erosionResMult);
+    const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, fusionBurstResMult);
+    const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, electroFlareResMult);
     const tuneBreakResult = calcTuneBreakDmg(mems, rotTime, defMult, resMult);
     dotDmgPerRotation += frazzleResult.dmg + erosionResult.dmg + fusionBurstResult.dmg + electroFlareResult.dmg + tuneBreakResult.dmg;
     const hasFrazzle = frazzleResult.active;
@@ -946,6 +959,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       const dpsCount = mems.filter(m => m.d.role === 'Main DPS').length;
       if (dpsCount >= 2) warnings.push(`Dual DPS: rotation time shared — use 👑 to pick which one${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
       if (dpsCount === 0) warnings.push(`No Main DPS: using highest damage dealer — use 👑 to pick a different headline DPS${mainDpsOverride ? ` (${mainDps.name})` : ''}`);
+      // Real, calculated consequence of the selected enemy (not just a DEF/RES number difference) —
+      // flag when the main DPS's own element is one the target specifically resists, since that's the
+      // one matchup the player can actually act on (swap main DPS or bring an off-element sub-DPS).
+      if (enemyEcho) {
+        const mainRes = getEnemyRes(mainDps.d.element);
+        if (mainRes > 10) warnings.push(`${enemyEcho} resists ${mainDps.d.element} (${mainRes}% RES) — ${mainDps.name}'s main-hit DMG is reduced against this target`);
+      }
     }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
@@ -1213,17 +1233,76 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   const [overviewCollapsed, setOverviewCollapsed] = useSessionState('ww-team-overview-collapsed', false);
 
   const stats = activeTeamStats;
-  if (!stats) return (
-    <Card><CardBody className="text-center py-6">
-      <Users size={24} className="mx-auto mb-2 text-gray-500" />
-      <p className="text-gray-400 text-sm">Add Resonators to your team to see damage analysis</p>
-    </CardBody></Card>
+
+  // Enemy Target — drives enemyDef90/enemyResMap in calcTeamStats above, so it's rendered
+  // unconditionally (both with and without a team set) rather than only inside DPSComparisonCard,
+  // which is gated behind "+ Compare", or only alongside Team Overview, which needs a team. Shows
+  // the boss's real icon and full HP/ATK/DEF/RES card (via MonsterCard, stats stacked below the
+  // icon/name row) instead of a bare DEF number. No boss selected falls back to a nameless "no
+  // target" state with just the level-formula DEF — there's no "Training Dummy" boss to pick since
+  // it isn't an actual enemy.
+  const enemyTargetEd = enemyEcho ? ECHO_DATA[enemyEcho] : null;
+  const enemyTargetIcon = enemyEcho ? (collectionImages[enemyEcho] || enemyTargetEd?.monsterIconUrl || enemyTargetEd?.iconUrl) : null;
+  const enemyTargetStats = enemyEcho
+    ? enemyTargetEd?.enemyStats
+    : { level: enemyLevel, hp: null, atk: null, def: 792 + 8 * (Number(enemyLevel) || 90), res: {} };
+  const enemyTargetCard = (
+    <Card>
+      <CardBody>
+        <div className="flex items-center gap-2 mb-2">
+          <Sword size={12} className="text-red-400 shrink-0" />
+          <span className="text-gray-400 text-sm font-medium shrink-0">Target</span>
+          <div className="flex items-center gap-1 ml-auto">
+            <span className="text-gray-500 text-sm">Lv.</span>
+            <input type="text" inputMode="numeric" value={enemyLevel}
+              onFocus={e => e.target.select()}
+              onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
+              onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
+              className="kuro-input w-14 text-sm px-1 py-0.5 text-center" />
+            <span className="text-gray-600 text-sm">/ 120</span>
+          </div>
+        </div>
+        <MonsterCard
+          name={enemyEcho || 'No Target Selected (Default)'}
+          rank={enemyTargetEd?.rank}
+          iconUrl={enemyTargetIcon}
+          enemyStats={enemyTargetStats}
+          level={enemyLevel}
+          onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
+        />
+      </CardBody>
+    </Card>
   );
-  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
+  const enemyTargetModal = (
+    <EnemyEchoSelectorModal
+      isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
+      enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
+      enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+      collectionImages={collectionImages}
+      search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
+      rankFilter={enemyEchoRankFilter} setRankFilter={setEnemyEchoRankFilter}
+      setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
+      buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
+    />
+  );
+
+  if (!stats) return (
+    <>
+      {enemyTargetCard}
+      <Card><CardBody className="text-center py-6">
+        <Users size={24} className="mx-auto mb-2 text-gray-500" />
+        <p className="text-gray-400 text-sm">Add Resonators to your team to see damage analysis</p>
+      </CardBody></Card>
+      {enemyTargetModal}
+    </>
+  );
+  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline, rotTime } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
     <>
+      {enemyTargetCard}
+
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
           <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${overviewCollapsed ? '' : 'rotate-180'}`} />}><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
@@ -1280,10 +1359,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             if (!d) return;
                             const weapon = d.bestWeapon && WEAPON_DATA[d.bestWeapon] ? d.bestWeapon : null;
                             const recSets = new Map();
-                            const directEchoes = new Set();
+                            const rawDirectEchoes = new Set();
                             (d.bestEchoes || []).forEach(entry => {
                               [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES].forEach(en => {
-                                if (entry.toLowerCase().includes(en.toLowerCase())) directEchoes.add(en);
+                                if (entry.toLowerCase().includes(en.toLowerCase())) rawDirectEchoes.add(en);
                               });
                               entry.split('+').forEach(part => {
                                 const trimmed = part.trim();
@@ -1296,9 +1375,63 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 }
                               });
                             });
-                            // Read the current echo preset to assign appropriate mainStats
+                            // When crowned as this team's Main DPS despite a different static role
+                            // (e.g. Qiuyuan run as Main DPS instead of his native Sub DPS/buffer), the
+                            // character's own bestEchoes recommendation is tuned for the OFF-field/support
+                            // usage (e.g. a 3pc+2pc split favoring a team-wide buff over personal DMG%) —
+                            // verified this stays selected even when crowned, with zero adaptation. The
+                            // roster's own data shows the real pattern for actual Main DPS characters is a
+                            // clean full 5pc of the character's own element (Jiyan→Windward Pilgrimage,
+                            // Calcharo→Void Thunder, Encore→Molten Rift, ...), so switch to that shape:
+                            // reuse an own-element set already in the recommendation if one exists (e.g.
+                            // Qiuyuan's Sierra Gale, already present at 2pc), else search for any tracked
+                            // set of the character's element with a real echo carrier, and promote it to
+                            // a full 5pc target, replacing the off-role recommendation entirely.
+                            const isTeamMainDps = activeTeamData.mainDpsOverride === m.name;
+                            if (isTeamMainDps && d.role !== 'Main DPS') {
+                              const allTierEchoes = [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
+                              const ownElementSet = [...recSets.keys()].find(s => ECHO_SETS[s]?.element === d.element)
+                                || Object.keys(ECHO_SETS).find(s => ECHO_SETS[s].element === d.element
+                                  && allTierEchoes.some(n => ECHO_DATA[n]?.sets?.includes(s)));
+                              if (ownElementSet) {
+                                recSets.clear();
+                                recSets.set(ownElementSet, 5);
+                              }
+                            }
+                            // A signature boss echo only belongs in the direct-pick shortcut if it
+                            // actually carries one of the sets being targeted — otherwise (most likely
+                            // after the Main-DPS override above swapped to a set the boss echo doesn't
+                            // carry, e.g. Qiuyuan's own "Reminiscence: Fenrico" carries Law of Harmony/
+                            // Dream of the Lost, neither of which is Sierra Gale) force-picking it would
+                            // occupy the 4-cost slot with an echo that contributes 0 of the 5 needed
+                            // pieces, capping the set at 4pc max out of only 4 remaining slots — silently
+                            // making the "5pc" recommendation impossible to actually complete.
+                            const directEchoes = new Set(
+                              [...rawDirectEchoes].filter(name => (ECHO_DATA[name]?.sets || []).some(s => recSets.has(s)))
+                            );
+                            // Read the current echo preset to assign appropriate mainStats. Only fall
+                            // back to a role-derived default when the user has never actually chosen a
+                            // preset for this character — once they have, that choice is deliberate and
+                            // Auto Equip re-runs should respect it, not silently override it every time.
+                            // Previously this always fell back to 'default' (the Crit Rate/Crit DMG DPS
+                            // build) regardless of role, so a first-ever Auto Equip on a pure Healer/
+                            // Support (Verina, Baizhi, Shorekeeper, Chisa, ...) handed them a Crit Rate
+                            // 4-cost main stat — dead weight on a kit whose heal/shield output has no
+                            // crit scaling at all. A fresh click for a Healer/Support role now defaults
+                            // to the 'support' preset (ER/Healing Bonus-oriented) instead.
                             const currentEq = teamEquipment[aeqKey];
-                            const preset = currentEq?.echoPreset || 'default';
+                            // The 👑 crown (activeTeamData.mainDpsOverride) is a stronger, team-specific
+                            // signal than a character's static innate role — it's the user explicitly
+                            // saying "for THIS team, this one is the headline damage dealer" (e.g. running
+                            // a normally Sub-DPS/hybrid character like Qiuyuan as Main DPS). Verified this
+                            // override was never read anywhere in Auto Equip: it always fell back to the
+                            // static-role default regardless, so crowning a Healer/Support/Sub DPS didn't
+                            // change the preset at all. When crowned for this team, force the DPS-maximizing
+                            // 'default' (Crit Rate/Crit DMG) preset even if their static role would
+                            // otherwise point to 'support'.
+                            const roleDefaultPreset = isTeamMainDps ? 'default'
+                              : (isHealerRole(d.role) || isSupportRole(d.role)) ? 'support' : 'default';
+                            const preset = currentEq?.echoPreset || roleDefaultPreset;
                             const scaling = d.statScaling || 'ATK';
                             const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
                             const elDmgKey = d.element ? d.element.charAt(0).toUpperCase() + d.element.slice(1).toLowerCase() + ' DMG' : '';
@@ -1328,6 +1461,39 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             const defaultSubs = getSubstats();
                             const newEchoes = [null, null, null, null, null];
                             const usedNames = new Set();
+                            // Auto Equip ran fully in isolation per character — no awareness of what
+                            // teammates already have equipped. Verified against the roster's own
+                            // recommended `teams` combos that this is a real, frequent collision: e.g.
+                            // "Ciaccona + Cartethyia + Rover: Aero" all list the exact same unique 4-cost
+                            // boss echo ("Reminiscence: Fleurdelys") as their #1 pick, so Auto Equipping
+                            // all three in turn would equip the identical single echo item on all three
+                            // simultaneously — physically impossible unless the player owns 3 copies of
+                            // that specific boss drop, which nothing in this app tracks. Only the 4-cost
+                            // slot is guarded here (not 3-/1-cost commons, which are cheap/plentiful
+                            // Elite/Common-rank mob drops players legitimately farm many copies of and
+                            // sharing them across a team is normal, not a conflict).
+                            members.forEach(mem => {
+                              if (mem.name === m.name) return;
+                              const teammateEq = teamEquipment[state.activeTeamIndex + ':' + mem.name];
+                              const teammate4Cost = teammateEq?.echoes?.[0]?.name;
+                              if (teammate4Cost) usedNames.add(teammate4Cost);
+                            });
+                            // recSets carries the INTENDED piece count per set (e.g. Qiuyuan's own data
+                            // says "Law of Harmony 3pc + Sierra Gale 2pc") but pickEcho used to have no
+                            // memory of how many pieces of each set it had already handed out — every
+                            // call just walked setPrefs in Map insertion order and grabbed the first set
+                            // with an available candidate, so a 2-set split silently degenerated into a
+                            // full 5pc of whichever set was listed first (verified: Qiuyuan ended up all
+                            // Law of Harmony, Sierra Gale's 2pc Aero DMG bonus never got equipped at
+                            // all). assignedCounts tracks real allocations across every pickEcho call
+                            // (including the direct-echo shortcut) so each set stops being picked once
+                            // its target piece count is reached.
+                            const assignedCounts = new Map();
+                            const markAssigned = (name, setPrefs) => {
+                              (ECHO_DATA[name]?.sets || []).forEach(s => {
+                                if (setPrefs.has(s)) assignedCounts.set(s, (assignedCounts.get(s) || 0) + 1);
+                              });
+                            };
                             // Two independent selection concerns for the low-cost slots, checked in
                             // priority order — element match matters far more than "purity":
                             //
@@ -1351,7 +1517,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             // the tier matches the character's element at all, so a slot is never left
                             // empty over an unmatched preference.
                             const pickEcho = (tierList, setPrefs) => {
-                              for (const name of tierList) { if (!usedNames.has(name) && directEchoes.has(name)) { usedNames.add(name); return name; } }
+                              for (const name of tierList) {
+                                if (!usedNames.has(name) && directEchoes.has(name)) {
+                                  usedNames.add(name); markAssigned(name, setPrefs); return name;
+                                }
+                              }
                               const wanted = new Set(setPrefs.keys());
                               const charEl = (d.element || '').toLowerCase();
                               // A 'Healing' echo is only justified for a character who can actually
@@ -1370,21 +1540,38 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                   return true;
                                 });
                               };
-                              for (const [setName] of setPrefs) {
-                                let bestElemMatch = null, bestPure = null, anyMatch = null;
+                              // A wrong-element DMG-tagged echo (e.g. a Havoc-buffed mob on a Fusion
+                              // character) still deals its own real, calculated active-skill damage —
+                              // just without any of the character's own elemental buffs applying to it.
+                              // A 'Healing' echo on a non-healer contributes exactly zero: the character
+                              // can't use the heal, and echoActiveDmg has nothing to calculate for it.
+                              // So when a set has no element-matching candidate in this tier at all
+                              // (confirmed to happen for real recommended sets — e.g. no Fusion-buffed
+                              // echo carries "Empyrean Anthem"/"Trailblazing Star" at 3-/1-cost — the
+                              // 5pc sonata bonus is still worth keeping over dropping the set entirely),
+                              // prefer any candidate that at least isn't a dead-weight Healing pick over
+                              // one that is, before falling back to the literal first-seen candidate.
+                              const isDeadWeight = (ed) => {
+                                const buffs = ed?.buff ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
+                                return buffs.length > 0 && buffs.every(b => b === 'Healing') && !isRoleForHealing;
+                              };
+                              for (const [setName, targetPc] of setPrefs) {
+                                if ((assignedCounts.get(setName) || 0) >= targetPc) continue; // quota already met — move to the next preferred set
+                                let bestElemMatch = null, bestPure = null, bestLive = null, anyMatch = null;
                                 for (const name of tierList) {
                                   if (usedNames.has(name)) continue;
                                   const ed = ECHO_DATA[name];
                                   if (!ed?.sets?.includes(setName)) continue;
                                   if (!anyMatch) anyMatch = name;
+                                  if (!bestLive && !isDeadWeight(ed)) bestLive = name;
                                   const elemOk = matchesElement(ed);
                                   const pure = ed.sets.every(s => wanted.has(s));
-                                  if (elemOk && pure) { usedNames.add(name); return name; }
+                                  if (elemOk && pure) { usedNames.add(name); markAssigned(name, setPrefs); return name; }
                                   if (elemOk && !bestElemMatch) bestElemMatch = name;
                                   if (!elemOk && pure && !bestPure) bestPure = name;
                                 }
-                                const chosen = bestElemMatch || bestPure || anyMatch;
-                                if (chosen) { usedNames.add(chosen); return chosen; }
+                                const chosen = bestElemMatch || bestPure || bestLive || anyMatch;
+                                if (chosen) { usedNames.add(chosen); markAssigned(chosen, setPrefs); return chosen; }
                               }
                               return null;
                             };
@@ -1822,6 +2009,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{teamDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-sm">skills + echoes + DOTs + reactions</div>
               </div>
+              {enemyEcho && teamDps > 0 && (() => {
+                const targetHp = getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.hp;
+                return targetHp > 0 && (
+                  <div className="kuro-stat p-2 text-center col-span-2">
+                    <div className="text-gray-400 text-sm">Time to Kill</div>
+                    <div className="text-lg font-bold text-white kuro-number">{(targetHp / teamDps).toFixed(1)}s</div>
+                    <div className="text-gray-500 text-sm">
+                      {enemyEcho} Lv.{enemyLevel} HP {targetHp.toLocaleString('en-US')} ÷ Team DPS
+                      {rotTime > 0 && <> · {(targetHp / teamDps / rotTime).toFixed(1)} rotation cycles</>}
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                 <div className="text-gray-400 text-sm">Solo DPS</div>
                 <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{soloDps.toLocaleString('en-US')}/s</div>
@@ -2012,15 +2212,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         setTeamEquipment={setTeamEquipment}
       />
 
-      <EnemyEchoSelectorModal
-        isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
-        enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
-        collectionImages={collectionImages}
-        search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
-        costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}
-        setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
-        buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
-      />
+      {enemyTargetModal}
     </>
   );
 });

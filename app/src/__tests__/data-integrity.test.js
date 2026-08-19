@@ -246,3 +246,51 @@ describe('Cross-reference consistency', () => {
     });
   });
 });
+
+// wutheringwaves.fandom.com/wiki/Damage (official, fetched 2026-08-19): "For most enemies in the
+// game, the base resistance is equal to 0.1 (10%). Bosses with element-specific resistances have an
+// additional 0.3 (30%) resistance, for a total of 0.4 (40%)." — every tracked enemy's RES map
+// (built in echoes.js from static.nanoka.cc's real per-boss data) should honor that exact rule: every
+// element sits at the 10% baseline except the boosted one(s), which sit at exactly 40%. If this ever
+// fails, either the enemy-stats pipeline drifted from its source or the wiki's own stated rule
+// changed for a patch — either way it's the actual game's data disagreeing with what this app models.
+describe('Enemy RES data matches the wiki\'s documented baseline rule', () => {
+  const enemiesWithRes = Object.entries(ECHO_DATA).filter(([, d]) => d.enemyStats?.res);
+
+  it('found tracked enemies to check', () => {
+    expect(enemiesWithRes.length).toBeGreaterThan(100);
+  });
+
+  it('every RES value is the 10% baseline, 40% boss-signature, or 100% elemental immunity', () => {
+    // 100% is real, not a data bug: WW's "Prism" enemies (Fusion Prism, Glacio Prism, etc.) are a
+    // documented gimmick — fully immune to their own element by design, meant to be hit with a
+    // different one. Confirmed directly in nanoka.cc's raw base_stats (damage_resistance_element = 10000
+    // exactly, i.e. 100.00%) for exactly the 5 Prism enemies, nothing else.
+    const offenders = [];
+    for (const [name, d] of enemiesWithRes) {
+      for (const [el, val] of Object.entries(d.enemyStats.res)) {
+        if (val !== 10 && val !== 40 && val !== 100) offenders.push(`${name}.${el}=${val}`);
+      }
+    }
+    expect(offenders, offenders.join(', ')).toEqual([]);
+  });
+
+  it('100% RES is only ever a Prism enemy resisting its own name-matching element', () => {
+    const offenders = [];
+    for (const [name, d] of enemiesWithRes) {
+      for (const [el, val] of Object.entries(d.enemyStats.res)) {
+        if (val !== 100) continue;
+        const isPrism = name.endsWith('Prism') && name.toLowerCase().startsWith(el);
+        if (!isPrism) offenders.push(`${name}.${el}=100`);
+      }
+    }
+    expect(offenders, offenders.join(', ')).toEqual([]);
+  });
+
+  it('every tracked enemy has all 7 elements present (Physical + 6 attributes)', () => {
+    const expected = ['physical', 'glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'].sort();
+    for (const [name, d] of enemiesWithRes) {
+      expect(Object.keys(d.enemyStats.res).sort(), name).toEqual(expected);
+    }
+  });
+});
