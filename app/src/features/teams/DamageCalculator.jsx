@@ -1382,7 +1382,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   // target" state with just the level-formula DEF — there's no "Training Dummy" boss to pick since
   // it isn't an actual enemy.
   const enemyTargetEd = enemyEcho ? ECHO_DATA[enemyEcho] : null;
-  const enemyTargetIcon = enemyEcho ? (collectionImages[enemyEcho] || enemyTargetEd?.monsterIconUrl || enemyTargetEd?.iconUrl) : null;
+  // monsterIconUrl (the boss's own portrait) must win over collectionImages — see the matching fix
+  // and full explanation in EnemyEchoSelectorModal.jsx's icon priority.
+  const enemyTargetIcon = enemyEcho ? (enemyTargetEd?.monsterIconUrl || collectionImages[enemyEcho] || enemyTargetEd?.iconUrl) : null;
   const enemyTargetStats = enemyEcho
     ? enemyTargetEd?.enemyStats
     : { level: enemyLevel, hp: null, atk: null, def: 792 + 8 * (Number(enemyLevel) || 90), res: {} };

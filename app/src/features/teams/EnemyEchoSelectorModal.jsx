@@ -17,6 +17,16 @@ import MonsterCard from '../../shared/components/MonsterCard.jsx';
 const ALL_TARGETABLE_ECHOES = [...new Set([...ALL_1COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_4COST_ECHOES])];
 const RANK_ORDER = { Calamity: 0, Overlord: 1, Elite: 2, Common: 3 };
 const RANKS = ['Calamity', 'Overlord', 'Elite', 'Common'];
+// Each ALL_XCOST_ECHOES array is already grouped and commented by game version (newest patch first —
+// see the "v3.6 —"/"v1.0 — Launch" section comments in echoes.js) — real curated release data, just
+// never used for sort order before. Reversed per-tier so the index runs oldest-to-newest, matching
+// this app's existing release-order convention elsewhere (e.g. RELEASE_ORDER for characters lists
+// launch resonators first). Sorting by this instead of alphabetically is what actually reads as
+// "in release order" rather than the arbitrary-looking A-Z ordering within each rank tier.
+const RELEASE_ORDER_INDEX = new Map();
+[ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES].forEach(tierList => {
+  [...tierList].reverse().forEach((name, i) => { if (!RELEASE_ORDER_INDEX.has(name)) RELEASE_ORDER_INDEX.set(name, i); });
+});
 
 export default function EnemyEchoSelectorModal({
   isOpen, onClose,
@@ -40,7 +50,9 @@ export default function EnemyEchoSelectorModal({
   }).sort((a, b) => {
     const ra = RANK_ORDER[ECHO_DATA[a]?.rank] ?? 9;
     const rb = RANK_ORDER[ECHO_DATA[b]?.rank] ?? 9;
-    return ra - rb || a.localeCompare(b);
+    const oa = RELEASE_ORDER_INDEX.get(a) ?? 999;
+    const ob = RELEASE_ORDER_INDEX.get(b) ?? 999;
+    return ra - rb || oa - ob || a.localeCompare(b);
   });
 
   // Stable across renders (unlike an inline `() => { setEnemyEcho(name); ... }` per card), so
@@ -133,7 +145,12 @@ export default function EnemyEchoSelectorModal({
                   key={name}
                   name={name}
                   rank={ed?.rank}
-                  iconUrl={collectionImages[name] || ed?.monsterIconUrl || ed?.iconUrl}
+                  // monsterIconUrl (the boss's own portrait) must win over collectionImages here —
+                  // DEFAULT_COLLECTION_IMAGES duplicates each echo's iconUrl (its equippable-item
+                  // icon, e.g. Crownless-Icon.webp) under the same name key for the Collection tab's
+                  // echo grid, so checking collectionImages first showed the wrong picture (the item
+                  // drop, not the enemy) for every boss that has a default collection image.
+                  iconUrl={ed?.monsterIconUrl || collectionImages[name] || ed?.iconUrl}
                   enemyStats={ed?.enemyStats}
                   level={enemyLevel ?? 90}
                   selected={enemyEcho === name}
