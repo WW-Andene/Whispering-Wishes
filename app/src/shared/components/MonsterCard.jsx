@@ -14,6 +14,7 @@ import { getEnemyStatsAtLevel, getEnemyStaggerStatsAtLevel } from '../../data/ec
 const ELEMENT_ORDER = ['physical', 'glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'];
 const ELEMENT_LABEL = { physical: 'Physical', glacio: 'Glacio', fusion: 'Fusion', electro: 'Electro', aero: 'Aero', spectro: 'Spectro', havoc: 'Havoc' };
 const BASELINE_RES = 10; // every tracked boss's flat non-signature-element RES — see echoes.js
+const RANK_BADGE_CLASS = { Calamity: 'kuro-badge-red', Overlord: 'kuro-badge-amber', Elite: 'kuro-badge-emerald', Common: '' };
 
 function resBadgeClass(val) {
   if (val > BASELINE_RES) return 'kuro-badge-red';    // boosted RES on this element = worse for the player, flag it
@@ -44,10 +45,11 @@ function StatRow({ icon, label, value, suffix = '' }) {
  *   manages its own local level state, starting from enemyStats.level ?? 90 — for standalone contexts
  *   (e.g. EchoDetailModal's Boss Stats card) that shouldn't touch any shared app-level enemy level.
  * compact: smaller footprint for grid/list contexts
+ * rank: optional classification badge (Common/Elite/Overlord/Calamity — see ECHO_DATA[name].rank)
  */
 export default function MonsterCard({
   name, iconUrl, enemyStats, compact = false, selected = false, onClick,
-  level: controlledLevel, onLevelChange, showLevelControl = false,
+  level: controlledLevel, onLevelChange, showLevelControl = false, rank,
 }) {
   const [localLevel, setLocalLevel] = useState(enemyStats?.level ?? 90);
   const isControlled = controlledLevel != null;
@@ -93,7 +95,10 @@ export default function MonsterCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-white font-semibold truncate">{name}</div>
+          <div className="flex items-center gap-1.5">
+            <div className="text-white font-semibold truncate">{name}</div>
+            {rank && <span className={`kuro-badge ${RANK_BADGE_CLASS[rank] || ''} shrink-0 text-2xs`}>{rank}</span>}
+          </div>
           {showLevelControl && enemyStats ? (
             <div className="flex items-center gap-1 mt-0.5" onClick={e => e.stopPropagation()}>
               <button type="button" onClick={() => stepLevel(-1)} className="w-4 h-4 flex items-center justify-center rounded bg-white/5 hover:bg-white/15 text-gray-400 text-2xs leading-none">−</button>

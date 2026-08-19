@@ -72,7 +72,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   const [enemyEcho, setEnemyEcho] = useState('');
   const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
   const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
-  const [enemyEchoCostFilter, setEnemyEchoCostFilter] = useState('all');
+  const [enemyEchoRankFilter, setEnemyEchoRankFilter] = useState('all');
   const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
   const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
 
@@ -1262,7 +1262,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
       collectionImages={collectionImages}
       search={enemyEchoSearch} setSearch={setEnemyEchoSearch}
-      costFilter={enemyEchoCostFilter} setCostFilter={setEnemyEchoCostFilter}
+      rankFilter={enemyEchoRankFilter} setRankFilter={setEnemyEchoRankFilter}
       setFilter={enemyEchoSetFilter} setSetFilter={setEnemyEchoSetFilter}
       buffFilter={enemyEchoBuffFilter} setBuffFilter={setEnemyEchoBuffFilter}
     />
