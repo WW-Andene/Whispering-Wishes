@@ -21,7 +21,7 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
 import RotationTimeline, { STAT_LABELS, STAT_LABELS_FULL, stepStyle } from './RotationTimeline.jsx';
-import { useSessionState } from '../../utils/useSessionState.js';
+import { useSessionState } from '../../hooks/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
 import MonsterCard from '../../shared/components/MonsterCard.jsx';

@@ -12,7 +12,7 @@ import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { useSessionState } from '../../utils/useSessionState.js';
+import { useSessionState } from '../../hooks/useSessionState.js';
 
 function TeamsTab({
   state,
