@@ -97,6 +97,17 @@ let sw = fs.readFileSync(swPath, 'utf-8');
 // prevents the original handler from also running and calling event.respondWith() a second time
 // on the same event, which throws (each FetchEvent can only be responded to once). Every other
 // request is left completely alone and falls through to the original handler as before.
+//
+// This must itself be cache-first (checking the same TILE_CACHE/ASSET_CACHE the "Download for
+// Offline" button and map-tile downloader fill — see providers/assetSW.js, providers/tileSW.js,
+// and the cache handling below in this same file) rather than a bare network fetch. A previous
+// version did a plain fetch() here with no cache check at all: since this listener runs FIRST and
+// stops the original handler (which is the one that actually implements cache-first for these
+// exact paths) from running, every single image load — even ones the user explicitly downloaded
+// for offline use — went straight to the network and never touched the cache. TILE_CACHE and
+// ASSET_CACHE are referenced here even though they're declared further down in this same file:
+// safe, because this callback only runs once an actual 'fetch' event fires, by which point the
+// whole script (including those consts) has already finished executing top to bottom.
 const patch = `
 // ─── Injected by capacitor-build/build.mjs — DO NOT hand-edit dist-native/sw.js directly,
 // re-run \`npm run build:native\` instead; this file is regenerated from public/sw.js each time. ───
@@ -104,9 +115,24 @@ const NATIVE_REMOTE_BASE = ${JSON.stringify(HOST_URL)};
 const NATIVE_REMOTE_DIRS = ${JSON.stringify(EXCLUDED_DIRS)};
 self.addEventListener('fetch', (event) => {
   const u = new URL(event.request.url);
-  if (event.request.method === 'GET' && NATIVE_REMOTE_DIRS.some(d => u.pathname.startsWith('/' + d + '/'))) {
+  const dir = NATIVE_REMOTE_DIRS.find(d => u.pathname.startsWith('/' + d + '/'));
+  if (event.request.method === 'GET' && dir) {
     event.stopImmediatePropagation();
-    event.respondWith(fetch(NATIVE_REMOTE_BASE + u.pathname + u.search));
+    const cacheName = dir === 'map-tiles' ? TILE_CACHE : ASSET_CACHE;
+    event.respondWith((async () => {
+      const cached = await caches.match(event.request, { cacheName });
+      if (cached) return cached;
+      try {
+        const resp = await fetch(NATIVE_REMOTE_BASE + u.pathname + u.search);
+        if (resp.ok) {
+          const cache = await caches.open(cacheName);
+          cache.put(event.request, resp.clone()).catch(() => {});
+        }
+        return resp;
+      } catch (err) {
+        return new Response('', { status: 503 });
+      }
+    })());
   }
 });
 `;
