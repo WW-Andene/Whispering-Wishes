@@ -1,0 +1,9 @@
+{
+  "appId": "cc.andene.whisperingwishes",
+  "appName": "Whispering Wishes",
+  "webDir": "dist-native",
+  "backgroundColor": "#0c0818",
+  "android": {
+    "backgroundColor": "#0c0818"
+  }
+}

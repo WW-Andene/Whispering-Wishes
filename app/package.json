@@ -13,9 +13,15 @@
     "preview": "vite preview",
     "test": "vitest run",
     "manifest": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs",
-    "selfhost": "node self-host/server.js"
+    "selfhost": "node self-host/server.js",
+    "build:native": "node capacitor-build/build.mjs",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@esotericsoftware/spine-player": "^4.2.109",
     "express": "^4.21.2",
     "leaflet": "^1.9.4",

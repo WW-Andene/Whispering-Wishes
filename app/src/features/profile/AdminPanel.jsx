@@ -8,6 +8,7 @@ import React, { useState, useRef } from 'react';
 import { Settings, X } from 'lucide-react';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { CardHeader } from '../../shared/components/Card.jsx';
+import { apiUrl } from '../../utils/apiBase.js';
 import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
 import { ADMIN_HASH } from '../../shared/components/bannerUtils.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -43,7 +44,7 @@ function EchoBgRemover({ toast, adminHash }) {
       const echo = allEchoes[i];
       setProgress({ done: i, total, current: echo.name });
       try {
-        const res = await fetch('/api/batch-remove-bg', {
+        const res = await fetch(apiUrl('/api/batch-remove-bg'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': adminHash },
           body: JSON.stringify({ name: echo.name, imageUrl: echo.imageUrl }),
