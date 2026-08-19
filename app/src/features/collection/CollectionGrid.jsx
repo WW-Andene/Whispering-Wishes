@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — shared/components/CollectionGrid.jsx
+// WHISPERING WISHES — features/collection/CollectionGrid.jsx
 // CollectionGridSection component
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -7,8 +7,8 @@ import React, { useState, useRef, useCallback, memo } from 'react';
 import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic } from '../../utils/helpers.js';
-import { hideOnError } from '../utils/imageHelpers.js';
-import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { SpinePlayer, getSpineId } from '../../shared/components/SpinePlayer.jsx';
 
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 

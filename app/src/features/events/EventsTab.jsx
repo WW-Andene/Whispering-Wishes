@@ -9,7 +9,7 @@ import { EVENTS } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { EventCard } from '../../shared/components/EventCard.jsx';
+import { EventCard } from './EventCard.jsx';
 import { getActiveBanners } from '../../shared/components/bannerUtils.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
