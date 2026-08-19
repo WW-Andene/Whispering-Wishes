@@ -99,11 +99,11 @@ Mêmes fichiers `dist-native/`/`capacitor.config.json` réutilisés tels quels.
 
 ## Avant de publier
 
-- **Icônes/splash screen** : ceux générés sont les placeholders par défaut de
-  Capacitor (robot bleu générique) — à remplacer par ceux de l'app avant
-  publication. Android Studio a un assistant "Image Asset" pour ça, ou
-  [PWABuilder](https://www.pwabuilder.com/imageGenerator) pour générer tous
-  les formats d'un coup à partir d'une image source.
+- **Icônes/splash screen** : générés à partir de `assets/icon.png` (le vrai
+  logo de l'app, pas le placeholder Capacitor par défaut) via
+  `npm run icons` (`@capacitor/assets`). Pour changer l'icône : remplace
+  `assets/icon.png` (idéalement 1024×1024) et relance `npm run icons`, puis
+  commit les fichiers générés sous `android/app/src/main/res/`.
 - **Test réel** : installer l'APK debug sur un appareil/émulateur et vérifier
   que la carte/les animations/les fonds de bannière se chargent bien depuis
   `VITE_API_BASE_URL` — non testé en exécution réelle dans cet environnement.
