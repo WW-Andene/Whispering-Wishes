@@ -12,6 +12,7 @@ import { MAP_W, MAP_H, TILE_SIZE, NATIVE_ZOOM, MAX_ZOOM, rdpSimplify } from './t
 import { getIconImage } from './iconImageCache.js';
 import { OVERLAY_TILE_CACHE, OVERLAY_TILE_CACHE_LIMIT } from './tileCache.js';
 import { loadDrafts, saveDrafts, loadPaintStrokes, savePaintStrokes } from './mapStorage.js';
+import { useToast } from './useToast.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
@@ -70,7 +71,7 @@ export default function MapTab({ navPadding = 80 }) {
   const [draftLevel, setDraftLevel] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [jsonSnippet, setJsonSnippet] = useState('');
-  const [toast, setToast] = useState('');
+  const [toast, showToast] = useToast();
   const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   // Sub-map overlay state
@@ -1976,8 +1977,7 @@ export default function MapTab({ navPadding = 80 }) {
       setAuthorEnabled(prev => {
         const next = !prev;
         try { localStorage.setItem(AUTHOR_FLAG_KEY, next ? '1' : ''); } catch {}
-        setToast(next ? 'Zone author unlocked' : 'Zone author locked');
-        setTimeout(() => setToast(''), 1800);
+        showToast(next ? 'Zone author unlocked' : 'Zone author locked');
         if (next) {
           setAuthorMode(true);
           setPanelCollapsed(false);
@@ -1992,11 +1992,6 @@ export default function MapTab({ navPadding = 80 }) {
 
   const handleUndo = () => setAuthorPoints(prev => prev.slice(0, -1));
   const handleClear = () => { setAuthorPoints([]); setJsonSnippet(''); };
-
-  const showToast = (msg, ms = 1800) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), ms);
-  };
 
   const parseLevel = (raw) => {
     const trimmed = String(raw ?? '').trim();
@@ -3301,8 +3296,7 @@ export default function MapTab({ navPadding = 80 }) {
                       setAuthorMode(false);
                       setAuthorPoints([]);
                       setJsonSnippet('');
-                      setToast('Zone author locked');
-                      setTimeout(() => setToast(''), 1800);
+                      showToast('Zone author locked');
                     }}
                     aria-label="Lock editor"
                     title="Lock editor (triple-tap map header to re-open)"
