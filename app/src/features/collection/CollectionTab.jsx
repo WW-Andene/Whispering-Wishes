@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useSessionState } from '../../utils/useSessionState.js';
+import { useSessionState } from '../../hooks/useSessionState.js';
 import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
