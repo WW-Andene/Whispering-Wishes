@@ -1449,20 +1449,36 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                   return true;
                                 });
                               };
+                              // A wrong-element DMG-tagged echo (e.g. a Havoc-buffed mob on a Fusion
+                              // character) still deals its own real, calculated active-skill damage —
+                              // just without any of the character's own elemental buffs applying to it.
+                              // A 'Healing' echo on a non-healer contributes exactly zero: the character
+                              // can't use the heal, and echoActiveDmg has nothing to calculate for it.
+                              // So when a set has no element-matching candidate in this tier at all
+                              // (confirmed to happen for real recommended sets — e.g. no Fusion-buffed
+                              // echo carries "Empyrean Anthem"/"Trailblazing Star" at 3-/1-cost — the
+                              // 5pc sonata bonus is still worth keeping over dropping the set entirely),
+                              // prefer any candidate that at least isn't a dead-weight Healing pick over
+                              // one that is, before falling back to the literal first-seen candidate.
+                              const isDeadWeight = (ed) => {
+                                const buffs = ed?.buff ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
+                                return buffs.length > 0 && buffs.every(b => b === 'Healing') && !isRoleForHealing;
+                              };
                               for (const [setName] of setPrefs) {
-                                let bestElemMatch = null, bestPure = null, anyMatch = null;
+                                let bestElemMatch = null, bestPure = null, bestLive = null, anyMatch = null;
                                 for (const name of tierList) {
                                   if (usedNames.has(name)) continue;
                                   const ed = ECHO_DATA[name];
                                   if (!ed?.sets?.includes(setName)) continue;
                                   if (!anyMatch) anyMatch = name;
+                                  if (!bestLive && !isDeadWeight(ed)) bestLive = name;
                                   const elemOk = matchesElement(ed);
                                   const pure = ed.sets.every(s => wanted.has(s));
                                   if (elemOk && pure) { usedNames.add(name); return name; }
                                   if (elemOk && !bestElemMatch) bestElemMatch = name;
                                   if (!elemOk && pure && !bestPure) bestPure = name;
                                 }
-                                const chosen = bestElemMatch || bestPure || anyMatch;
+                                const chosen = bestElemMatch || bestPure || bestLive || anyMatch;
                                 if (chosen) { usedNames.add(chosen); return chosen; }
                               }
                               return null;
