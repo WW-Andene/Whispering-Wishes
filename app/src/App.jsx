@@ -1016,12 +1016,7 @@ function WhisperingWishesInner() {
         {headerBgUrl && (
           <div className="absolute inset-0" style={{ overflow: 'hidden', borderRadius: 'inherit' }}>
             <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
-            {/* The gradient used to start almost transparent at 0% (top),
-                so the raw art was at its brightest right at the header's
-                top border — a visible seam against the darker app
-                background just outside it. Starting the darkening at the
-                very top edge instead removes that seam. */}
-            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, rgba(8,12,20,0.5) 0%, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 12%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
+            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
           </div>
         )}
         {bgFramingMode && headerBgUrl && (
