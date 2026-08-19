@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// MonsterCard — Boss/monster stat card (icon, level, HP/ATK/DEF, elemental RES%)
-// Used by EnemyEchoSelectorModal (target picker), EchoDetailModal ("Boss Stats"
-// section for 4-cost boss echoes), and anywhere else a boss's combat stats need
-// a compact, reusable presentation.
+// MonsterCard — Enemy stat card (icon, level, HP/ATK/DEF, elemental RES%)
+// Used by EnemyEchoSelectorModal (target picker — up to 181 of these render at once,
+// hence memo() below), EchoDetailModal's "Enemy Stats" section, and anywhere else an
+// enemy's combat stats need a compact, reusable presentation.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Skull } from 'lucide-react';
 import { getElementIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
@@ -46,11 +46,16 @@ function StatRow({ icon, label, value, suffix = '' }) {
  *   (e.g. EchoDetailModal's Boss Stats card) that shouldn't touch any shared app-level enemy level.
  * compact: smaller footprint for grid/list contexts
  * rank: optional classification badge (Common/Elite/Overlord/Calamity — see ECHO_DATA[name].rank)
+ * onClick / onSelect: onClick fires with no args (for one-off usage); onSelect(name) fires with the
+ *   card's name — prefer onSelect in a big list (EnemyEchoSelectorModal's 181 cards) so the parent can
+ *   pass one stable useCallback instead of a fresh arrow function per card per render, letting memo()
+ *   actually skip re-rendering cards whose other props didn't change.
  */
-export default function MonsterCard({
-  name, iconUrl, enemyStats, compact = false, selected = false, onClick,
+function MonsterCard({
+  name, iconUrl, enemyStats, compact = false, selected = false, onClick, onSelect,
   level: controlledLevel, onLevelChange, showLevelControl = false, rank,
 }) {
+  const handleClick = onSelect ? () => onSelect(name) : onClick;
   const [localLevel, setLocalLevel] = useState(enemyStats?.level ?? 90);
   const isControlled = controlledLevel != null;
   const level = isControlled ? controlledLevel : localLevel;
@@ -74,15 +79,15 @@ export default function MonsterCard({
 
   const res = enemyStats?.res || {};
   const hasResData = Object.values(res).some(v => v);
-  const Wrapper = onClick ? 'button' : 'div';
+  const Wrapper = handleClick ? 'button' : 'div';
 
   const clampLevel = v => Math.max(1, Math.min(120, v));
   const stepLevel = delta => setLevel?.(clampLevel((Number(level) || 90) + delta));
 
   return (
     <Wrapper
-      onClick={onClick}
-      className={`kuro-card text-left w-full transition-all ${compact ? 'p-2' : 'p-3'} ${onClick ? 'hover:scale-[1.01] cursor-pointer' : ''} ${selected ? 'border-2 border-yellow-400/60 bg-yellow-500/10' : ''}`}
+      onClick={handleClick}
+      className={`kuro-card text-left w-full transition-all ${compact ? 'p-2' : 'p-3'} ${handleClick ? 'hover:scale-[1.01] cursor-pointer' : ''} ${selected ? 'border-2 border-yellow-400/60 bg-yellow-500/10' : ''}`}
     >
       <div className="flex items-center gap-2.5">
         {iconUrl ? (
@@ -156,3 +161,5 @@ export default function MonsterCard({
     </Wrapper>
   );
 }
+
+export default memo(MonsterCard);

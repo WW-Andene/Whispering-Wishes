@@ -2,7 +2,7 @@
 // EnemyEchoSelectorModal — Echo picker modal for enemy target selection
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { X } from 'lucide-react';
 import { ECHO_DATA, ALL_1COST_ECHOES, ALL_3COST_ECHOES, ALL_4COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
 import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
@@ -42,6 +42,14 @@ export default function EnemyEchoSelectorModal({
     const rb = RANK_ORDER[ECHO_DATA[b]?.rank] ?? 9;
     return ra - rb || a.localeCompare(b);
   });
+
+  // Stable across renders (unlike an inline `() => { setEnemyEcho(name); ... }` per card), so
+  // MonsterCard's memo() can actually skip re-rendering the ~181 cards whose other props didn't
+  // change — e.g. typing in the search box only re-renders cards, not their internals, until the
+  // filtered set itself changes.
+  const handleSelect = useCallback((name) => {
+    setEnemyEcho(name); onClose(); haptic.success();
+  }, [setEnemyEcho, onClose]);
 
   return (
     <FocusTrapModal isOpen={isOpen} onClose={onClose} className="" onClick={onClose} centered>
@@ -129,7 +137,7 @@ export default function EnemyEchoSelectorModal({
                   enemyStats={ed?.enemyStats}
                   level={enemyLevel ?? 90}
                   selected={enemyEcho === name}
-                  onClick={() => { setEnemyEcho(name); onClose(); haptic.success(); }}
+                  onSelect={handleSelect}
                 />
               );
             })}

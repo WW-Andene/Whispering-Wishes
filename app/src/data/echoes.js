@@ -506,7 +506,9 @@ export function getEnemyStaggerStatsAtLevel(name, level) {
 // [SECTION:ECHO_DMG_DATA] — Per-echo active skill damage multipliers & enemy resistance
 // dmg: total ATK% damage multiplier of echo active skill (sum of all hits)
 // element: damage element of the echo skill
-// enemyRes: elemental resistances when this echo is fought as an enemy boss (4-cost only)
+// enemyRes: elemental resistances when this echo is fought as the enemy that drops it — covers all
+// 181 tracked echoes (1/3/4-cost alike), not just 4-cost bosses; every row below has real data, no
+// nulls left as of the 2026-08-19 enemy-stats audit
 [
   // ── 4-Cost Echoes (Bosses) ──
   // added 2026-08-18 (echo audit, task #6): these 5 v3.5 4-cost echoes had full ECHO_DATA entries
@@ -710,10 +712,10 @@ export function getEnemyStaggerStatsAtLevel(name, level) {
   // this fixed level-90 snapshot.
   const lv90 = getEnemyStatsAtLevel(name, 90);
   const stagger90 = getEnemyStaggerStatsAtLevel(name, 90);
-  // These 39 boss echoes' own audited RES (enemyRes) only ever records their one boosted element —
-  // every other element (Physical included) is a flat 10% RES baseline confirmed across every raw
-  // nanoka.cc monster JSON sampled for this class of enemy (Overlord/Calamity). Fill the full 7-way
-  // table from that baseline rather than leaving unlisted elements undisplayed at an implicit 0%.
+  // Each row's own audited RES (enemyRes) only ever records the boosted element(s) — every other
+  // element (Physical included) is a flat 10% RES baseline confirmed across every raw nanoka.cc
+  // monster JSON sampled, all 181 enemies alike. Fill the full 7-way table from that baseline rather
+  // than leaving unlisted elements undisplayed at an implicit 0%.
   const enemyStats = enemyRes ? {
     level: 90, hp: lv90?.hp ?? null, atk: lv90?.atk ?? null, def: lv90?.def ?? null,
     interruptRes: stagger90?.interruptRes ?? null, interruptResRecover: stagger90?.interruptResRecover ?? null,

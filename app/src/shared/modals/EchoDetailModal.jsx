@@ -142,11 +142,13 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
             <p className="text-md text-gray-400 italic">{data.desc.split(/(?<=\.)\s+/)[0]}</p>
           )}
 
-          {/* 3. Boss Stats — 4-cost echoes ARE the boss they're dropped by, so surface its combat stats */}
+          {/* 3. Enemy Stats — every echo here is dropped by a specific enemy, so surface its combat
+              stats (all 181 tracked echoes have this, not just 4-cost bosses — "Boss Stats" was
+              misleading for e.g. a Common-rank mob like Smiter). */}
           {data.enemyStats && (
             <div>
-              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Boss Stats</div>
-              <MonsterCard name={name} iconUrl={data.monsterIconUrl || data.iconUrl} enemyStats={data.enemyStats} compact showLevelControl />
+              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Enemy Stats</div>
+              <MonsterCard name={name} rank={data.rank} iconUrl={data.monsterIconUrl || data.iconUrl} enemyStats={data.enemyStats} compact showLevelControl />
             </div>
           )}
 

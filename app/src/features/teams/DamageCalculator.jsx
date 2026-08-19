@@ -150,10 +150,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       || mems[0];
 
     // ── Enemy scaling (using named constants from calcEngine) ──
-    // "Training Dummy" (enemyEcho === '') keeps the original generic level-only formula/0-baseline
-    // behavior unchanged. A selected boss echo overrides DEF with its real stat at the chosen
-    // enemyLevel (getEnemyStatsAtLevel, full 1-120 per-boss curve) when known, and RES with its full
-    // per-element map (enemyStats.res) instead of the old single-element enemyRes lookup.
+    // No target selected (enemyEcho === '') keeps the original generic level-only formula/0-baseline
+    // behavior unchanged. A selected target overrides DEF with its real stat at the chosen enemyLevel
+    // (getEnemyStatsAtLevel, full 1-120 per-enemy curve) when known, and RES with its full per-element
+    // map (enemyStats.res) instead of the old single-element enemyRes lookup.
     const enemyEchoData = enemyEcho ? ECHO_DATA[enemyEcho] : null;
     const enemyStats = enemyEchoData?.enemyStats || null;
     const enemyLevelStats = enemyEcho ? getEnemyStatsAtLevel(enemyEcho, enemyLevel) : null;
@@ -1247,6 +1247,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         </div>
         <MonsterCard
           name={enemyEcho || 'No Target Selected (Default)'}
+          rank={enemyTargetEd?.rank}
           iconUrl={enemyTargetIcon}
           enemyStats={enemyTargetStats}
           level={enemyLevel}
@@ -1883,13 +1884,16 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{teamDps.toLocaleString('en-US')}/s</div>
                 <div className="text-gray-500 text-sm">skills + echoes + DOTs + reactions</div>
               </div>
-              {enemyEcho && teamDps > 0 && getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.hp > 0 && (
-                <div className="kuro-stat p-2 text-center col-span-2">
-                  <div className="text-gray-400 text-sm">Time to Kill</div>
-                  <div className="text-lg font-bold text-white kuro-number">{(getEnemyStatsAtLevel(enemyEcho, enemyLevel).hp / teamDps).toFixed(1)}s</div>
-                  <div className="text-gray-500 text-sm">{enemyEcho} Lv.{enemyLevel} HP {getEnemyStatsAtLevel(enemyEcho, enemyLevel).hp.toLocaleString('en-US')} ÷ Team DPS</div>
-                </div>
-              )}
+              {enemyEcho && teamDps > 0 && (() => {
+                const targetHp = getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.hp;
+                return targetHp > 0 && (
+                  <div className="kuro-stat p-2 text-center col-span-2">
+                    <div className="text-gray-400 text-sm">Time to Kill</div>
+                    <div className="text-lg font-bold text-white kuro-number">{(targetHp / teamDps).toFixed(1)}s</div>
+                    <div className="text-gray-500 text-sm">{enemyEcho} Lv.{enemyLevel} HP {targetHp.toLocaleString('en-US')} ÷ Team DPS</div>
+                  </div>
+                );
+              })()}
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
                 <div className="text-gray-400 text-sm">Solo DPS</div>
                 <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{soloDps.toLocaleString('en-US')}/s</div>
