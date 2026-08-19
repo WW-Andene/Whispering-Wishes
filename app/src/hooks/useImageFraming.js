@@ -33,7 +33,7 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Phoebe': { x: 10, y: -26, zoom: 190 },
   'collection-Brant': { x: -2, y: -26, zoom: 250 },
   'collection-Cantarella': { x: -2, y: -20, zoom: 230 },
-  'collection-Zani': { x: 4, y: -26, zoom: 210 },
+  'collection-Zani': { x: 6, y: -26, zoom: 210 },
   'collection-Ciaccona': { x: 10, y: -24, zoom: 230 },
   'collection-Cartethyia': { x: -4, y: -26, zoom: 210 },
   'collection-Lupa': { x: 0, y: -12, zoom: 210 },
@@ -49,21 +49,22 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
   'collection-Lynae': { x: -12, y: -28, zoom: 190 },
   'collection-Sigrika': { x: 2, y: -23, zoom: 180 },
+  'collection-Rover: Electro': { x: 24, y: -26, zoom: 260 },
   // New sprites without individual tuning yet — averaged from every other
   // collection- entry above (avg x/y/zoom across all 46 tuned characters).
-  'collection-Lucy': { x: 1, y: -22, zoom: 207 },
-  'collection-Rebecca': { x: 1, y: -22, zoom: 202 },
-  'collection-Lucilla': { x: 1, y: -27, zoom: 207 },
-  'collection-Denia': { x: 0, y: -27, zoom: 202 },
-  'collection-Hiyuki': { x: 1, y: -26, zoom: 207 },
-  'collection-Suisui': { x: 8, y: -27, zoom: 202 },
-  'collection-Yangyang: Xuanling': { x: 6, y: -22, zoom: 207 },
-  'collection-Qingxiao': { x: 6, y: -18, zoom: 207 },
+  'collection-Lucy': { x: 1, y: -22, zoom: 217 },
+  'collection-Rebecca': { x: -1, y: -24, zoom: 202 },
+  'collection-Lucilla': { x: -1, y: -27, zoom: 217 },
+  'collection-Denia': { x: -2, y: -27, zoom: 202 },
+  'collection-Hiyuki': { x: 3, y: -28, zoom: 227 },
+  'collection-Suisui': { x: 12, y: -27, zoom: 202 },
+  'collection-Yangyang: Xuanling': { x: 6, y: -22, zoom: 217 },
+  'collection-Qingxiao': { x: 8, y: -20, zoom: 217 },
   // Tuned individually 2026-08-18 (was the generic averaged fallback, still looked de-zoomed): his
   // sprite's content already fills the canvas edge-to-edge (unlike flowing-hair characters, most of
   // that bleed is his weapon/energy wisp, not his body), so the average zoom left him looking smaller
   // than everyone else — bumped zoom and shifted the crop up toward his torso/face.
-  'collection-Jingran': { x: -4, y: -20, zoom: 240 },
+  'collection-Jingran': { x: -2, y: -20, zoom: 240 },
   'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
   // 4-star Resonators
@@ -145,7 +146,8 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'info-Calcharo': { x: -12, y: -68, zoom: 250 },
   'info-Aemeath': { x: -6, y: -60, zoom: 230 },
   'info-Lynae': { x: -6, y: -62, zoom: 210 },
-  'info-Sigrika': { x: 0, y: -60, zoom: 210 },
+  'info-Sigrika': { x: -2, y: -62, zoom: 220 },
+  'info-Rover: Electro': { x: -8, y: -68, zoom: 260 },
   'info-Chisa': { x: -12, y: -66, zoom: 230 },
   'info-Iuno': { x: -6, y: -56, zoom: 190 },
   'info-Augusta': { x: -2, y: -66, zoom: 250 },
@@ -187,15 +189,15 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'info-Buling': { x: 0, y: -64, zoom: 230 },
   // New sprites without individual tuning yet — averaged from every other
   // info- entry above (avg x/y/zoom across all 45 tuned characters).
-  'info-Lucy': { x: -4, y: -59, zoom: 233 },
-  'info-Rebecca': { x: -4, y: -59, zoom: 233 },
-  'info-Lucilla': { x: -4, y: -59, zoom: 233 },
-  'info-Denia': { x: -4, y: -59, zoom: 233 },
-  'info-Hiyuki': { x: -4, y: -59, zoom: 233 },
-  'info-Suisui': { x: -4, y: -59, zoom: 233 },
-  'info-Yangyang: Xuanling': { x: -4, y: -59, zoom: 233 },
-  'info-Qingxiao': { x: -4, y: -59, zoom: 233 },
-  'info-Jingran': { x: -4, y: -60, zoom: 260 },
+  'info-Lucy': { x: -18, y: -63, zoom: 273 },
+  'info-Rebecca': { x: -4, y: -59, zoom: 223 },
+  'info-Lucilla': { x: -10, y: -67, zoom: 273 },
+  'info-Denia': { x: -10, y: -63, zoom: 243 },
+  'info-Hiyuki': { x: -14, y: -65, zoom: 273 },
+  'info-Suisui': { x: 2, y: -67, zoom: 273 },
+  'info-Yangyang: Xuanling': { x: -10, y: -63, zoom: 273 },
+  'info-Qingxiao': { x: -10, y: -59, zoom: 273 },
+  'info-Jingran': { x: -18, y: -60, zoom: 290 },
 });
 
 const defaultFramingBase = Object.freeze({ x: 0, y: 0, zoom: 100 });
