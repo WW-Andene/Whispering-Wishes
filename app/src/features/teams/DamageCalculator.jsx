@@ -538,11 +538,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
     // ── DOT damage (ICD-aware, from calcEngine) ──
+    // Each of these reactions has a fixed damage element regardless of which character on the team
+    // triggers it (Frazzle is always Spectro, Erosion always Havoc, etc.) — so its RES must come from
+    // the enemy's RES to THAT element, not resMult above (which is keyed to mainDps's own element and
+    // was wrong here whenever the team's element differs from the reaction's, e.g. a Glacio main DPS
+    // whose support triggers Havoc Erosion). Tune Break has no single canonical element (bespoke
+    // per-character mechanic), so it keeps using mainDps's resMult as before.
     let dotDmgPerRotation = 0;
-    const frazzleResult = calcFrazzleDmg(mems, rotTime, defMult, resMult);
-    const erosionResult = calcErosionDmg(mems, rotTime, defMult, resMult);
-    const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, resMult);
-    const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, resMult);
+    const frazzleResMult = calcResMult(getEnemyRes('Spectro'), resShred);
+    const erosionResMult = calcResMult(getEnemyRes('Havoc'), resShred);
+    const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
+    const electroFlareResMult = calcResMult(getEnemyRes('Electro'), resShred);
+    const frazzleResult = calcFrazzleDmg(mems, rotTime, defMult, frazzleResMult);
+    const erosionResult = calcErosionDmg(mems, rotTime, defMult, erosionResMult);
+    const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, fusionBurstResMult);
+    const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, electroFlareResMult);
     const tuneBreakResult = calcTuneBreakDmg(mems, rotTime, defMult, resMult);
     dotDmgPerRotation += frazzleResult.dmg + erosionResult.dmg + fusionBurstResult.dmg + electroFlareResult.dmg + tuneBreakResult.dmg;
     const hasFrazzle = frazzleResult.active;
