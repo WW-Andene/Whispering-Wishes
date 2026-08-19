@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Download, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
+import { Settings, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
 import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog.js';
-import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../core/tileSW.js';
+import { tileUrlsForOverlay } from '../../core/tileSW.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { MAP_W, MAP_H, TILE_SIZE, NATIVE_ZOOM, MAX_ZOOM, rdpSimplify } from './tileMath.js';
@@ -13,6 +13,8 @@ import { getIconImage } from './iconImageCache.js';
 import { OVERLAY_TILE_CACHE, OVERLAY_TILE_CACHE_LIMIT } from './tileCache.js';
 import { loadDrafts, saveDrafts, loadPaintStrokes, savePaintStrokes } from './mapStorage.js';
 import { useToast } from './useToast.js';
+import { useOfflineTiles } from './useOfflineTiles.js';
+import { OfflineDownloadsPopover } from './OfflineDownloadsPopover.jsx';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
@@ -81,7 +83,6 @@ export default function MapTab({ navPadding = 80 }) {
   // Offline cache status per catalog id: { cached, total, downloading, done }.
   // Populated on mount by querying the tile-cache service worker; updated
   // live during downloads so the UI can show a progress indicator.
-  const [overlayOffline, setOverlayOffline] = useState({});
   // Downloads popover (gear icon) — shown to all users.
   const [downloadsOpen, setDownloadsOpen] = useState(false);
   const downloadsAnchorRef = useRef(null);
@@ -1544,101 +1545,15 @@ export default function MapTab({ navPadding = 80 }) {
     }
   }, [overlayDrafts, drafts, overlayBoundsPolygon, editingOverlayId]);
 
-  // Downloadables = base world map (Solaris_3) + every tileable overlay
-  // (imageUrl ending in .webp). The base map sits at the top so users see
-  // it first; overlays follow in catalog order.
-  const downloadables = useMemo(() => {
-    const items = [
-      { id: 'solaris_3', name: 'World Map', urls: tileUrlsForBaseMap() },
-    ];
-    for (const cat of OVERLAY_CATALOG) {
-      if (!cat.imageUrl?.endsWith?.('.webp')) continue;
-      items.push({ id: cat.id, name: cat.name, urls: tileUrlsForOverlay(cat) });
-    }
-    return items;
-  }, []);
-
-  // Query the service-worker tile cache on mount so the gear-icon downloads
-  // panel has accurate "X/N cached" labels without any user action.
-  useEffect(() => {
-    if (!serviceWorkerAvailable()) return;
-    let cancelled = false;
-    (async () => {
-      for (const item of downloadables) {
-        try {
-          const { cached, total } = await queryTiles(item);
-          if (cancelled) return;
-          setOverlayOffline(prev => ({ ...prev, [item.id]: { ...(prev[item.id] || {}), cached, total } }));
-        } catch {}
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [downloadables]);
-
-  const handleDownloadItem = useCallback(async (item) => {
-    if (!serviceWorkerAvailable()) {
-      showToast('Service worker not active — reload and try again');
-      return;
-    }
-    setOverlayOffline(prev => ({
-      ...prev,
-      [item.id]: { ...(prev[item.id] || {}), downloading: true, done: 0, total: prev[item.id]?.total || item.urls.length },
-    }));
-    try {
-      const { failed } = await downloadTiles(item, (done, total) => {
-        setOverlayOffline(prev => ({ ...prev, [item.id]: { cached: done, total, downloading: true, done } }));
-      });
-      const { cached, total } = await queryTiles(item);
-      setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: cached } }));
-      if (failed > 0) {
-        showToast(`Saved ${item.name} — ${cached}/${total} tiles (${failed} failed, retry to catch them)`, 3200);
-      } else {
-        showToast(`Saved ${item.name} for offline (${total} tiles)`);
-      }
-    } catch (err) {
-      // Refresh state from the SW so the UI reflects what was actually cached
-      // before the stall/error (partial progress).
-      try {
-        const { cached, total } = await queryTiles(item);
-        setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: cached } }));
-      } catch {
-        setOverlayOffline(prev => ({ ...prev, [item.id]: { ...(prev[item.id] || {}), downloading: false } }));
-      }
-      const msg = err?.message === 'service-worker-stalled'
-        ? 'Download stalled — browser may have paused the service worker. Retry to resume.'
-        : 'Download failed: ' + (err?.message || err);
-      showToast(msg, 3500);
-    }
-  }, []);
-
-  const handleDownloadAll = useCallback(async () => {
-    for (const item of downloadables) {
-      // Await sequentially so the SW isn't hammered and we don't spawn
-      // concurrent progress streams that'd overwrite each other.
-      await handleDownloadItem(item);
-    }
-  }, [downloadables, handleDownloadItem]);
-
-  const handlePurgeItem = useCallback(async (item) => {
-    if (!serviceWorkerAvailable()) return;
-    try {
-      await purgeTiles(item);
-      const { cached, total } = await queryTiles(item);
-      setOverlayOffline(prev => ({ ...prev, [item.id]: { cached, total, downloading: false, done: 0 } }));
-      showToast(`Removed ${item.name} offline copy`);
-    } catch (err) {
-      showToast('Remove failed: ' + (err?.message || err));
-    }
-  }, []);
-
-  // Editor-side per-overlay handlers — wrap the generic ones so the existing
-  // Sub-maps editor row keeps working with a `cat` argument.
-  const handleDownloadOverlay = useCallback((cat) => {
-    return handleDownloadItem({ id: cat.id, name: cat.name, urls: tileUrlsForOverlay(cat) });
-  }, [handleDownloadItem]);
-  const handlePurgeOverlay = useCallback((cat) => {
-    return handlePurgeItem({ id: cat.id, name: cat.name, urls: tileUrlsForOverlay(cat) });
-  }, [handlePurgeItem]);
+  const {
+    overlayOffline,
+    downloadables,
+    handleDownloadItem,
+    handleDownloadAll,
+    handlePurgeItem,
+    handleDownloadOverlay,
+    handlePurgeOverlay,
+  } = useOfflineTiles(showToast);
 
   const handleDeleteOverlay = useCallback((id) => {
     // Also remove any linked zone from the tree
@@ -2947,99 +2862,17 @@ export default function MapTab({ navPadding = 80 }) {
             </div>
 
             {downloadsOpen && (
-              <div
-                ref={downloadsPanelRef}
-                className="map-downloads-popover"
-                role="dialog"
-                aria-label="Offline map downloads"
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  top: `${headerHeight + 8}px`,
-                  maxHeight: `calc(100dvh - ${headerHeight + navPadding + 40}px)`,
-                }}
-              >
-                <Card>
-                  <CardHeader
-                    action={
-                      <button
-                        type="button"
-                        className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                        onClick={() => setDownloadsOpen(false)}
-                        aria-label="Close"
-                      >✕</button>
-                    }
-                  >
-                    Offline maps
-                  </CardHeader>
-                  <CardBody className="map-downloads-body">
-                    {(() => {
-                      const anyDownloading = downloadables.some(it => overlayOffline[it.id]?.downloading);
-                      const allCached = downloadables.every(it => {
-                        const o = overlayOffline[it.id];
-                        return o && o.total > 0 && o.cached >= o.total;
-                      });
-                      return (
-                        <>
-                          <button
-                            type="button"
-                            className="kuro-btn kuro-btn-sm map-downloads-all"
-                            onClick={handleDownloadAll}
-                            disabled={anyDownloading || allCached}
-                          >
-                            <Download size={14} />
-                            {allCached ? 'All maps already offline' : anyDownloading ? 'Downloading…' : `Download all ${downloadables.length} maps`}
-                          </button>
-                          <div className="map-downloads-list">
-                            {downloadables.map(item => {
-                          const off = overlayOffline[item.id] || {};
-                          const total = off.total || 0;
-                          const cached = off.cached || 0;
-                          const downloading = !!off.downloading;
-                          const full = total > 0 && cached >= total;
-                          const pct = total > 0 ? Math.round((off.done || cached) / total * 100) : 0;
-                          return (
-                            <div key={item.id} className="map-downloads-row">
-                              <div className="map-downloads-meta">
-                                <div className="name">{item.name}</div>
-                                <div className="hint">
-                                  {downloading
-                                    ? `${pct}% · ${off.done || 0}/${total}`
-                                    : total > 0 ? `${cached}/${total} tiles` : '—'}
-                                </div>
-                              </div>
-                              {full ? (
-                                <button
-                                  type="button"
-                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                  onClick={() => handlePurgeItem(item)}
-                                  disabled={downloading}
-                                  title={`Remove ${item.name} from offline cache`}
-                                  aria-label={`Remove ${item.name}`}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="kuro-btn kuro-btn-sm kuro-btn-icon"
-                                  onClick={() => handleDownloadItem(item)}
-                                  disabled={downloading}
-                                  title={`Download ${item.name} for offline`}
-                                  aria-label={`Download ${item.name}`}
-                                >
-                                  <Download size={14} />
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </CardBody>
-                </Card>
-              </div>
+              <OfflineDownloadsPopover
+                panelRef={downloadsPanelRef}
+                top={headerHeight + 8}
+                maxHeight={`calc(100dvh - ${headerHeight + navPadding + 40}px)`}
+                downloadables={downloadables}
+                overlayOffline={overlayOffline}
+                onDownloadAll={handleDownloadAll}
+                onDownloadItem={handleDownloadItem}
+                onPurgeItem={handlePurgeItem}
+                onClose={() => setDownloadsOpen(false)}
+              />
             )}
 
             {toast && <div className="zone-author-toast" role="status">{toast}</div>}
