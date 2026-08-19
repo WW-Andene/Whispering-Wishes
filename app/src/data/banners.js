@@ -21,7 +21,7 @@ const CURRENT_BANNERS = {
   // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
   startDate: '2026-07-30T08:00:00Z',
   endDate: '2026-08-19T09:59:00Z',
-  characterBannerImage: PLACEHOLDER_IMAGE, // TODO: replace with real Suisui banner art once available
+  characterBannerImage: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg',
   weaponBannerImage: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg',
   eventBannerImage: PLACEHOLDER_IMAGE,
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
@@ -84,14 +84,14 @@ const BANNER_HISTORY = [
   // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously
   // across both p1 and p2, on top of the phase-bound character banners — not itemized as its own
   // history entry since it isn't a standard per-phase character/weapon banner.
-  { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: PLACEHOLDER_IMAGE },
+  { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg' },
   { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: 'https://i.ibb.co/QFHC5Y4h/Yangyang-Xuanling-banner.jpg' },
   // Version 3.4 (Somnoire: Night City region) — corrected via game8.co archive 494979 (official Banner
   // History, fetched 2026-08-16): Phase 1 was "Dreaming Upon the Moon"/"Rekindled Embers of Rage"
   // (Lucy + Rebecca dual-debut, Jun 8 - Jul 9). Phase 2 ran two concurrent character banners: "Tomorrow
   // in the Frame" (Lucilla debut, Jun 13 - Jul 9) and "Dance in The Storm's Wake" (Cartethyia rerun,
   // Jun 18 - Jul 9) — merged into one entry below since both share the v3.4/phase-2 slot.
-  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucilla', 'Cartethyia'], weapons: ['Freeze Frame', "Defier's Thorn"], startDate: '2026-06-13', endDate: '2026-07-09', bannerArt: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg' },
+  { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucilla', 'Cartethyia'], weapons: ['Freeze Frame', "Defier's Thorn"], startDate: '2026-06-13', endDate: '2026-07-09', bannerArt: 'https://i.ibb.co/zT91s0wt/Lucilla-banner.jpg' },
   { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Lucy', 'Rebecca'], weapons: ['Spectral Trigger', 'Skull Thrasher'], startDate: '2026-06-08', endDate: '2026-07-09', bannerArt: 'https://i.ibb.co/mC4xmBYY/Lucy-Banner.jpg' },
   // Version 3.3 — corrected via game8.co archive 494979 (official Banner History, fetched 2026-08-16):
   // Phase 1 debuted Hiyuki alongside Mornye + Iuno reruns; Phase 2 debuted Denia alongside Chisa +
