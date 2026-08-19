@@ -48,22 +48,22 @@ const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'collection-Phrolova': { x: 0, y: -28, zoom: 210 },
   'collection-Qiuyuan': { x: -8, y: -26, zoom: 220 },
   'collection-Lynae': { x: -12, y: -28, zoom: 190 },
-  'collection-Sigrika': { x: 2, y: -16, zoom: 180 },
+  'collection-Sigrika': { x: 2, y: -21, zoom: 180 },
   // New sprites without individual tuning yet — averaged from every other
   // collection- entry above (avg x/y/zoom across all 46 tuned characters).
   'collection-Lucy': { x: 1, y: -22, zoom: 207 },
-  'collection-Rebecca': { x: 1, y: -22, zoom: 197 },
-  'collection-Lucilla': { x: 1, y: -32, zoom: 207 },
-  'collection-Denia': { x: 1, y: -32, zoom: 197 },
-  'collection-Hiyuki': { x: 1, y: -32, zoom: 207 },
-  'collection-Suisui': { x: 11, y: -32, zoom: 197 },
-  'collection-Yangyang: Xuanling': { x: 11, y: -22, zoom: 207 },
-  'collection-Qingxiao': { x: 11, y: -12, zoom: 207 },
+  'collection-Rebecca': { x: 1, y: -22, zoom: 202 },
+  'collection-Lucilla': { x: 1, y: -27, zoom: 207 },
+  'collection-Denia': { x: 1, y: -27, zoom: 202 },
+  'collection-Hiyuki': { x: 1, y: -27, zoom: 207 },
+  'collection-Suisui': { x: 6, y: -27, zoom: 202 },
+  'collection-Yangyang: Xuanling': { x: 6, y: -22, zoom: 207 },
+  'collection-Qingxiao': { x: 6, y: -17, zoom: 207 },
   // Tuned individually 2026-08-18 (was the generic averaged fallback, still looked de-zoomed): his
   // sprite's content already fills the canvas edge-to-edge (unlike flowing-hair characters, most of
   // that bleed is his weapon/energy wisp, not his body), so the average zoom left him looking smaller
   // than everyone else — bumped zoom and shifted the crop up toward his torso/face.
-  'collection-Jingran': { x: -10, y: -20, zoom: 240 },
+  'collection-Jingran': { x: -5, y: -20, zoom: 240 },
   'collection-Solsworn Ciphers': { x: 2, y: -2, zoom: 100 },
   'collection-Blazing Justice': { x: 0, y: 0, zoom: 100 },
   // 4-star Resonators
