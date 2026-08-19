@@ -1,0 +1,147 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — OfflineAssetsCard
+// "Download for offline" for the three asset directories the native
+// (Capacitor) app build excludes from its bundle to stay a reasonable size
+// (see CAPACITOR_APP.md) — character animations (portraits/, spine/) and
+// banner videos (animated-bg/). On the web build these are already served
+// same-origin, so this is equally useful there for anyone who wants the PWA
+// to work fully offline (e.g. before a flight) rather than lazily fetching
+// art the first time each screen is visited.
+//
+// Map tiles have their own dedicated download UI already (MapTab.jsx) — not
+// duplicated here, this card is specifically the three directories that
+// don't have one yet.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Download, Trash2, HardDriveDownload } from 'lucide-react';
+import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { loadAssetManifest, downloadAssets, purgeAssets, queryAssets, ASSET_CATEGORY_LABELS, serviceWorkerAvailable } from '../../providers/assetSW.js';
+import { haptic } from '../../utils/helpers.js';
+
+const CATEGORIES = Object.keys(ASSET_CATEGORY_LABELS);
+
+function fmtMB(bytes) {
+  if (!bytes) return '0 MB';
+  return `${(bytes / 1024 / 1024).toFixed(0)} MB`;
+}
+
+export default function OfflineAssetsCard({ toast }) {
+  const [manifest, setManifest] = useState(null);
+  const [manifestError, setManifestError] = useState(false);
+  // Per-category state: { cached, total, progress: {done,total}|null, busy }
+  const [status, setStatus] = useState({});
+  const swReady = serviceWorkerAvailable();
+
+  const refreshCounts = useCallback(async () => {
+    for (const cat of CATEGORIES) {
+      try {
+        const { cached, total } = await queryAssets(cat);
+        setStatus(s => ({ ...s, [cat]: { ...(s[cat] || {}), cached, total } }));
+      } catch { /* SW not ready yet — leave as unknown, retried on next mount/interaction */ }
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAssetManifest().then(setManifest).catch(() => setManifestError(true));
+    if (swReady) refreshCounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [swReady]);
+
+  const runDownload = async (cat) => {
+    setStatus(s => ({ ...s, [cat]: { ...(s[cat] || {}), busy: true, progress: { done: 0, total: 1 } } }));
+    haptic.light();
+    try {
+      const { failed } = await downloadAssets(cat, (done, total) => {
+        setStatus(s => ({ ...s, [cat]: { ...(s[cat] || {}), progress: { done, total } } }));
+      });
+      await refreshCounts();
+      if (failed > 0) toast?.addToast?.(`Downloaded with ${failed} file(s) failing — try again to retry just those.`, 'warning');
+      else { toast?.addToast?.('Downloaded for offline use.', 'success'); haptic.success(); }
+    } catch (err) {
+      toast?.addToast?.(`Download failed: ${err.message}`, 'error');
+    } finally {
+      setStatus(s => ({ ...s, [cat]: { ...(s[cat] || {}), busy: false, progress: null } }));
+    }
+  };
+
+  const runPurge = async (cat) => {
+    setStatus(s => ({ ...s, [cat]: { ...(s[cat] || {}), busy: true } }));
+    try {
+      await purgeAssets(cat);
+      await refreshCounts();
+      toast?.addToast?.('Removed from offline storage.', 'info');
+      haptic.light();
+    } catch (err) {
+      toast?.addToast?.(`Remove failed: ${err.message}`, 'error');
+    } finally {
+      setStatus(s => ({ ...s, [cat]: { ...(s[cat] || {}), busy: false } }));
+    }
+  };
+
+  const runDownloadAll = async () => {
+    for (const cat of CATEGORIES) await runDownload(cat);
+  };
+
+  if (!swReady) {
+    return (
+      <Card>
+        <CardHeader><HardDriveDownload size={14} className="text-cyan-400" /> Download for Offline</CardHeader>
+        <CardBody>
+          <p className="text-gray-400 text-sm">Not available yet — reload the app once to activate offline support, then come back here.</p>
+        </CardBody>
+      </Card>
+    );
+  }
+
+  const totalBytes = manifest ? Object.values(manifest.categories).reduce((s, c) => s + c.totalBytes, 0) : 0;
+  const anyBusy = Object.values(status).some(s => s?.busy);
+
+  return (
+    <Card>
+      <CardHeader action={
+        <button
+          onClick={runDownloadAll}
+          disabled={anyBusy || !manifest}
+          className="kuro-btn kuro-btn-sm flex items-center gap-1 disabled:opacity-40"
+        >
+          <Download size={12} /> Download All{manifest ? ` (${fmtMB(totalBytes)})` : ''}
+        </button>
+      }>
+        <HardDriveDownload size={14} className="text-cyan-400" /> Download for Offline
+      </CardHeader>
+      <CardBody className="space-y-2">
+        <p className="text-gray-400 text-sm mb-1">
+          Character animations and banner backgrounds normally load as you browse. Download them ahead of time to use the app with no connection at all — handy on the native app (these are the assets kept off the app's own download to stay small) or before a flight on the web version.
+        </p>
+        {manifestError && <p className="text-red-400 text-sm">Couldn't load the asset list — check your connection and reopen this tab.</p>}
+        {CATEGORIES.map(cat => {
+          const cat_ = status[cat] || {};
+          const manifestCat = manifest?.categories?.[cat];
+          const isCached = manifestCat && cat_.cached === manifestCat.fileCount && manifestCat.fileCount > 0;
+          return (
+            <div key={cat} className="flex items-center gap-3 p-2 rounded-lg" style={{ background: 'var(--bg-stat)' }}>
+              <div className="flex-1 min-w-0">
+                <div className="text-gray-200 text-sm">{ASSET_CATEGORY_LABELS[cat]}</div>
+                <div className="text-gray-500 text-2xs">
+                  {manifestCat ? `${manifestCat.fileCount} files, ${fmtMB(manifestCat.totalBytes)}` : '…'}
+                  {typeof cat_.cached === 'number' && !cat_.progress && ` — ${cat_.cached}/${cat_.total} cached`}
+                  {cat_.progress && ` — downloading ${cat_.progress.done}/${cat_.progress.total}…`}
+                </div>
+              </div>
+              {isCached ? (
+                <button onClick={() => runPurge(cat)} disabled={cat_.busy} className="kuro-btn kuro-btn-sm kuro-btn-icon text-red-400 disabled:opacity-40" aria-label={`Remove downloaded ${ASSET_CATEGORY_LABELS[cat]}`}>
+                  <Trash2 size={14} />
+                </button>
+              ) : (
+                <button onClick={() => runDownload(cat)} disabled={cat_.busy || !manifestCat} className="kuro-btn kuro-btn-sm kuro-btn-icon disabled:opacity-40" aria-label={`Download ${ASSET_CATEGORY_LABELS[cat]} for offline`}>
+                  <Download size={14} />
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </CardBody>
+    </Card>
+  );
+}
