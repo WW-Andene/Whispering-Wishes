@@ -1,16 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — OfflineAssetsCard
-// "Download for offline" for the three asset directories the native
-// (Capacitor) app build excludes from its bundle to stay a reasonable size
-// (see CAPACITOR_APP.md) — character animations (portraits/, spine/) and
-// banner videos (animated-bg/). On the web build these are already served
-// same-origin, so this is equally useful there for anyone who wants the PWA
-// to work fully offline (e.g. before a flight) rather than lazily fetching
-// art the first time each screen is visited.
+// "Download for offline" for four categories: three local asset directories
+// the native (Capacitor) app build excludes from its bundle to stay a
+// reasonable size (see CAPACITOR_APP.md) — character animations
+// (portraits/, spine/) and banner videos (animated-bg/) — plus every
+// character/weapon/echo/skill icon, which are hotlinked from third-party
+// hosts rather than shipped locally at all (see build-asset-manifest.mjs).
+// On the web build the local three are already served same-origin, so this
+// is equally useful there for anyone who wants the PWA to work fully
+// offline (e.g. before a flight) rather than lazily fetching art the first
+// time each screen is visited.
 //
 // Map tiles have their own dedicated download UI already (MapTab.jsx) — not
-// duplicated here, this card is specifically the three directories that
-// don't have one yet.
+// duplicated here.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -21,8 +23,11 @@ import { haptic } from '../../utils/helpers.js';
 
 const CATEGORIES = Object.keys(ASSET_CATEGORY_LABELS);
 
-function fmtMB(bytes) {
-  if (!bytes) return '0 MB';
+// Icons are hotlinked from third-party hosts (see build-asset-manifest.mjs)
+// so their size isn't known ahead of download — totalBytes is always 0 for
+// that category even though it's a real, non-empty set of files.
+function fmtMB(bytes, fileCount) {
+  if (!bytes) return fileCount > 0 ? 'size unknown' : '0 MB';
   return `${(bytes / 1024 / 1024).toFixed(0)} MB`;
 }
 
@@ -124,7 +129,7 @@ export default function OfflineAssetsCard({ toast }) {
               <div className="flex-1 min-w-0">
                 <div className="text-gray-200 text-sm">{ASSET_CATEGORY_LABELS[cat]}</div>
                 <div className="text-gray-500 text-2xs">
-                  {manifestCat ? `${manifestCat.fileCount} files, ${fmtMB(manifestCat.totalBytes)}` : '…'}
+                  {manifestCat ? `${manifestCat.fileCount} files, ${fmtMB(manifestCat.totalBytes, manifestCat.fileCount)}` : '…'}
                   {typeof cat_.cached === 'number' && !cat_.progress && ` — ${cat_.cached}/${cat_.total} cached`}
                   {cat_.progress && ` — downloading ${cat_.progress.done}/${cat_.progress.total}…`}
                 </div>

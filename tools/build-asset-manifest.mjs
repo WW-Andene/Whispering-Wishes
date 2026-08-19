@@ -14,6 +14,14 @@
 // src/providers/tileSW.js already computes its full tile list mathematically
 // from the known tile-pyramid dimensions.
 //
+// A fourth "icons" category is scraped separately, below: character/weapon/
+// echo/skill icons aren't files in public/ at all — they're hotlinked from
+// third-party hosts (i.ibb.co, wuwatracker.com, wuwa.gg, static.nanoka.cc)
+// straight in src/data/*.js. There's no directory to walk, so instead we
+// regex every such URL out of those files. No file size is known ahead of
+// time for these (unlike local files), so totalBytes for this category is
+// left at 0 — the UI just won't show a size estimate for it.
+//
 //   node tools/build-asset-manifest.mjs
 
 import fs from 'node:fs';
@@ -23,7 +31,13 @@ import url from 'node:url';
 const here = path.dirname(url.fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..');
 const publicDir = path.join(repoRoot, 'app/public');
+const srcDataDir = path.join(repoRoot, 'app/src/data');
 const DIRS = ['portraits', 'animated-bg', 'spine'];
+const ICON_HOSTS = ['i.ibb.co', 'wuwatracker.com', 'wuwa.gg', 'static.nanoka.cc'];
+const ICON_URL_RE = new RegExp(
+  `https?://(?:${ICON_HOSTS.map(h => h.replace(/\./g, '\\.')).join('|')})/[^"'\`)\\s]+?\\.(?:webp|png|jpg|jpeg)`,
+  'g'
+);
 
 function walk(dir, urlPrefix, out) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -45,6 +59,20 @@ for (const dirName of DIRS) {
   const totalBytes = files.reduce((s, f) => s + f.bytes, 0);
   manifest.categories[dirName] = { fileCount: files.length, totalBytes, files };
 }
+
+const iconUrls = new Set();
+if (fs.existsSync(srcDataDir)) {
+  for (const entry of fs.readdirSync(srcDataDir)) {
+    if (!entry.endsWith('.js')) continue;
+    const text = fs.readFileSync(path.join(srcDataDir, entry), 'utf8');
+    for (const match of text.matchAll(ICON_URL_RE)) iconUrls.add(match[0]);
+  }
+}
+manifest.categories.icons = {
+  fileCount: iconUrls.size,
+  totalBytes: 0, // hotlinked from third-party hosts — sizes aren't known ahead of download
+  files: [...iconUrls].sort().map(u => ({ url: u, bytes: 0 })),
+};
 
 const outPath = path.join(publicDir, 'dev/asset-manifest.json');
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
