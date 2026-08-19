@@ -397,7 +397,7 @@ function WhisperingWishesInner() {
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
-    const update = () => setHeaderPadding(header.offsetHeight + 12);
+    const update = () => setHeaderPadding(header.offsetHeight + 12 + 12);
     update();
     const ro = new ResizeObserver(update);
     ro.observe(header);
@@ -963,7 +963,15 @@ function WhisperingWishesInner() {
         // is pinned to the true viewport edges no matter what — including the
         // strip behind/above the floating header — rather than depending on
         // inset-0 resolving the way it's expected to.
-        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+        // `isolation: isolate` + a forced compositing layer (translateZ(0)):
+        // the header is a rounded, overflow:hidden, backdrop-filter element —
+        // that combination can make some engines paint/clip a sibling fixed
+        // layer against the rounded element's own layer bounds instead of the
+        // true viewport, even though the sibling's actual box (verified via
+        // getBoundingClientRect) is correctly full-screen. Forcing this onto
+        // its own independent layer keeps its paint from being affected by
+        // the header's rounded/blurred one.
+        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 3, isolation: 'isolate', transform: 'translateZ(0)' }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
@@ -1009,7 +1017,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', borderTopLeftRadius: 0, borderTopRightRadius: 0, borderLeft: 'none', borderRight: 'none', borderTop: 'none', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
