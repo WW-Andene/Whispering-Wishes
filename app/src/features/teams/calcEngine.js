@@ -566,13 +566,18 @@ export function estimateBuffUplift(stat, value) {
   }
   return (synergyDmgIndex(s) / SYNERGY_BASE_INDEX - 1) * 100;
 }
-// Uptime-scale a buff's uplift by how much of the Main DPS's rotation it can realistically cover —
-// a 20%-uplift buff lasting 8s in a 24s rotation isn't worth what it'd be worth at 100% uptime. Falls
-// back to full uptime for undurationed (passive/permanent) buffs rather than zeroing them out.
-export function uptimeScaledUplift(stat, value, buffDuration, rotTime) {
+// Uptime-scale a buff's uplift by how much of the Main DPS's actual ON-FIELD window it can
+// realistically cover — the relevant comparison is against onField, not the full rotTime, because
+// a buff sitting on the DPS while they're off-field contributes nothing. Outro-triggered buffs exist
+// specifically to be timed with the incoming DPS's swap-in, so this models "does the buff still cover
+// them by the time their on-field segment ends" rather than "does it cover the whole team rotation" —
+// a 20%-uplift buff lasting 8s covers all of a 6s on-field burst DPS at full value, but only ~40% of
+// a 20s on-field hypercarry's window. Falls back to rotTime, then to full uptime, when onField/rotTime
+// aren't available (undurationed passive/permanent buffs, or a DPS missing that data).
+export function uptimeScaledUplift(stat, value, buffDuration, onFieldOrRotTime) {
   const raw = estimateBuffUplift(stat, value);
-  if (!raw || !buffDuration || !rotTime) return raw;
-  return raw * Math.min(1, buffDuration / rotTime);
+  if (!raw || !buffDuration || !onFieldOrRotTime) return raw;
+  return raw * Math.min(1, buffDuration / onFieldOrRotTime);
 }
 // Points-per-%-uplift conversion so the new mechanic-grounded scoring stays on a comparable scale to
 // the tier/role/element point totals elsewhere in scoreTeamComposition (Meta/Strong tag thresholds
@@ -605,10 +610,21 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
     // Min-max normalize against that observed range so the top of the meta still differentiates
     // (a flat divisor saturates and makes most current-meta DPS score identically).
     const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
-    score += Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
+    let dpsScore = Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
     const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
+    // A Liberation-focused DPS with a 175-Energy cost (calcEnergyCycles' own cutoff for the harder ER
+    // threshold, ER_THRESHOLD_HEALER) is genuinely harder to keep at full Liberation uptime without
+    // dedicated ER investment — this suggestion context can't assume the player has built that, so
+    // apply the same mild discount to their own power score that a high-cost support gets below,
+    // rather than only ever discounting OTHER members' output and treating the DPS's own energy cost
+    // as free.
+    if (dpsFocus.includes('Liberation') && (CHARACTER_DATA[mainDps]?.maxEnergy || 0) >= 175) dpsScore *= 0.85;
+    score += dpsScore;
     const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
-    const dpsRotTime = CHARACTER_DATA[mainDps]?.rotTime;
+    // Compare a buff/support's uptime against the DPS's actual on-field window, not the whole
+    // rotation — a buff sitting on them while off-field does nothing. Falls back to rotTime only
+    // when onField isn't tracked for this character.
+    const dpsOnField = CHARACTER_DATA[mainDps]?.onField || CHARACTER_DATA[mainDps]?.rotTime;
     // An elemDmg buff only helps this DPS if its condition (when present) actually names their
     // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
     const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
@@ -627,7 +643,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
     // same way a hand-curated team would, instead of only recognizing patterns someone hardcoded.
     const scoreBuff = (b) => {
       if (!buffApplies(b)) return;
-      const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsRotTime);
+      const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField);
       if (uplift <= 0) return;
       score += uplift * UPLIFT_TO_SCORE;
       if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
@@ -641,14 +657,16 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
       (bt.outroBuffs || []).forEach(scoreBuff);
       // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
       // High-cost (175 Energy) Liberation-reliant supports need real ER investment to sustain uptime
-      // that a generic roster-suggestion context can't assume the player has built — same threshold
-      // calcEnergyCycles uses for its own libUptime estimate, applied here as a mild discount rather
-      // than assuming either full uptime or zero.
-      const erDiscount = (CHARACTER_DATA[m]?.maxEnergy || 0) >= ER_THRESHOLD_HEALER ? 0.85 : 1;
+      // that a generic roster-suggestion context can't assume the player has built — 175 is the same
+      // cost cutoff calcEnergyCycles uses to switch to its harder ER_THRESHOLD_HEALER target, applied
+      // here as a mild discount on this support's own libBuff output rather than assuming either full
+      // uptime or zero. (Comparing maxEnergy, a cost in the ~100-175 range, directly against
+      // ER_THRESHOLD_HEALER, a 140% ER *target*, would silently mix units — use the real 175 cutoff.)
+      const erDiscount = (CHARACTER_DATA[m]?.maxEnergy || 0) >= 175 ? 0.85 : 1;
       (bt.libBuffs || []).forEach(b => {
         if (b.target !== 'team' && b.target !== 'next') return;
         if (!buffApplies(b)) return;
-        const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsRotTime) * erDiscount;
+        const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField) * erDiscount;
         if (uplift > 0) score += uplift * UPLIFT_TO_SCORE;
       });
       (bt.debuffs || []).forEach(db => {
