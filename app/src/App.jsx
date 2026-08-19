@@ -972,10 +972,10 @@ function WhisperingWishesInner() {
               muted
               playsInline
               className="w-full h-full object-cover"
-              style={{ objectPosition: appBgPos }}
+              style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
             />
           ) : (
-            <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ objectPosition: appBgPos }} />
+            <img src={appBgUrl} alt="" className="w-full h-full object-cover" style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }} />
           )}
           {bgFramingMode && (
             <div className={`absolute inset-0 ${editingBgTarget === 'bg' ? 'ring-4 ring-inset ring-cyan-400' : ''}`}>
