@@ -25,6 +25,7 @@ import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data
 import { CURRENT_BANNERS, preloadBannerHistoryArt } from './data/banners.js';
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS, getServerOffset } from './data/constants.js';
 import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
+import { IMPORT_NAME_ALIASES } from './utils/gachaImporter.js';
 // --- extracted hooks ---
 import { useVisualSettings, DEFAULT_VISUAL_SETTINGS } from './hooks/useVisualSettings.js';
 import { useBackgroundFraming } from './hooks/useBackgroundFraming.js';
@@ -537,17 +538,6 @@ function WhisperingWishesInner() {
   // collectionMaskData moved to CollectionTab component
 
   // Shared import processor for both file and paste methods
-  // Name normalization: maps game API / tracker names to internal names used in this app
-  const IMPORT_NAME_ALIASES = useMemo(() => ({
-    'The Shorekeeper': 'Shorekeeper',
-    'Rover (Spectro)': 'Rover: Spectro', 'Rover (Havoc)': 'Rover: Havoc', 'Rover (Aero)': 'Rover: Aero', 'Rover (Electro)': 'Rover: Electro',
-    'Rover-Spectro': 'Rover: Spectro', 'Rover-Havoc': 'Rover: Havoc', 'Rover-Aero': 'Rover: Aero', 'Rover-Electro': 'Rover: Electro',
-    'Rover: Spectro (Female)': 'Rover: Spectro', 'Rover: Spectro (Male)': 'Rover: Spectro',
-    'Rover: Havoc (Female)': 'Rover: Havoc', 'Rover: Havoc (Male)': 'Rover: Havoc',
-    'Rover: Aero (Female)': 'Rover: Aero', 'Rover: Aero (Male)': 'Rover: Aero',
-    'Rover: Electro (Female)': 'Rover: Electro', 'Rover: Electro (Male)': 'Rover: Electro',
-  }), []);
-
   const importInFlightRef = useRef(false);
   const processImportData = useCallback(async (jsonString) => {
     // P2-F006: Prevent duplicate concurrent imports (race condition guard)

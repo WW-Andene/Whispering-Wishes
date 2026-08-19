@@ -5,6 +5,17 @@
 
 import { apiUrl } from './apiBase.js';
 
+// Name normalization: maps game API / tracker names to internal names used in this app
+export const IMPORT_NAME_ALIASES = {
+  'The Shorekeeper': 'Shorekeeper',
+  'Rover (Spectro)': 'Rover: Spectro', 'Rover (Havoc)': 'Rover: Havoc', 'Rover (Aero)': 'Rover: Aero', 'Rover (Electro)': 'Rover: Electro',
+  'Rover-Spectro': 'Rover: Spectro', 'Rover-Havoc': 'Rover: Havoc', 'Rover-Aero': 'Rover: Aero', 'Rover-Electro': 'Rover: Electro',
+  'Rover: Spectro (Female)': 'Rover: Spectro', 'Rover: Spectro (Male)': 'Rover: Spectro',
+  'Rover: Havoc (Female)': 'Rover: Havoc', 'Rover: Havoc (Male)': 'Rover: Havoc',
+  'Rover: Aero (Female)': 'Rover: Aero', 'Rover: Aero (Male)': 'Rover: Aero',
+  'Rover: Electro (Female)': 'Rover: Electro', 'Rover: Electro (Male)': 'Rover: Electro',
+};
+
 export const POOL_LABELS = {
   1: 'Featured Resonator',     // Temps limité personnages
   2: 'Featured Weapon',        // Temps limité armes
