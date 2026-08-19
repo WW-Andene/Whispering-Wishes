@@ -8,24 +8,18 @@
 // + hidden flags). See data/achievements.js header for full sourcing notes.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Award, Check, ChevronLeft, EyeOff, Search, X } from 'lucide-react';
 import { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIEVEMENT_VERSIONS } from '../../data/achievements.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { usePersistedState } from '../../hooks/usePersistedState.js';
 
 const STORAGE_KEY = 'ww-achievements-done';
-
-function loadDone() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
-    return new Set(JSON.parse(raw));
-  } catch { return new Set(); }
-}
-function saveDone(set) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...set])); } catch {}
-}
+const SET_CODEC = {
+  serialize: (set) => JSON.stringify([...set]),
+  deserialize: (raw) => new Set(JSON.parse(raw)),
+};
 
 // Precompute achievement id list per series once (module-level, data is static)
 const ACHIEVEMENTS_BY_SERIES = (() => {
@@ -41,15 +35,13 @@ const ALL_SERIES_LIST = Object.entries(ACHIEVEMENT_SERIES)
   .sort((a, b) => a.id - b.id);
 
 function AchievementsTool({ onClose }) {
-  const [done, setDone] = useState(loadDone);
+  const [done, setDone] = usePersistedState(STORAGE_KEY, new Set(), SET_CODEC);
   const [search, setSearch] = useState('');
   const [versionFilter, setVersionFilter] = useState('all');
   const [seriesFilter, setSeriesFilter] = useState('all'); // series (group) id, or 'all'
   const [completionFilter, setCompletionFilter] = useState('all'); // all | complete | incomplete
   const [hiddenFilter, setHiddenFilter] = useState('all'); // all | hidden | visible ("Caché")
   const [categoryFilter, setCategoryFilter] = useState('all');
-
-  useEffect(() => { saveDone(done); }, [done]);
 
   const toggleDone = useCallback((id) => {
     setDone(prev => {

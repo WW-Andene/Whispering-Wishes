@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../hooks/useSessionState.js';
+import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
@@ -72,10 +73,9 @@ function CollectionTab({
   }, []);
 
   // ── Owned characters tracking (persisted to localStorage) ────────────────────
-  const [ownedChars, setOwnedChars] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ww-owned-chars') || '[]'); } catch { return []; }
-  });
-  useEffect(() => { try { localStorage.setItem('ww-owned-chars', JSON.stringify(ownedChars)); } catch {} }, [ownedChars]);
+  const [ownedChars, setOwnedChars] = usePersistedState('ww-owned-chars', []);
+  // ── Manual copy count overrides (long-press to add copies) ─────────────────
+  const [manualCounts, setManualCounts] = usePersistedState('ww-manual-counts', {});
   // Re-sync from localStorage when profile is cleared (importedAt becomes null)
   useEffect(() => {
     if (!state.profile.importedAt) {
@@ -84,12 +84,6 @@ function CollectionTab({
     }
   }, [state.profile.importedAt]);
   const toggleOwned = useCallback((name) => setOwnedChars(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]), []);
-
-  // ── Manual copy count overrides (long-press to add copies) ─────────────────
-  const [manualCounts, setManualCounts] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('ww-manual-counts') || '{}'); } catch { return {}; }
-  });
-  useEffect(() => { try { localStorage.setItem('ww-manual-counts', JSON.stringify(manualCounts)); } catch {} }, [manualCounts]);
   // Floating +/- counter widget (replaces long-press +1 only)
   const [counterWidget, setCounterWidget] = useState(null); // { name, isCharacter, x, y }
   const [dismissedImport, setDismissedImport] = useState(false);

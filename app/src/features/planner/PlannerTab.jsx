@@ -12,12 +12,13 @@
 // a self-contained sub-component with its own [SECTION:] markers and no shared
 // state with the rest of this file.
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Minus, Plus, Search, Star, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, CURRENT_BANNERS } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { generateUniqueId, getElementColor, getElementShape } from '../../utils/helpers.js';
 import { CHARACTER_DATA, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
@@ -40,26 +41,18 @@ function PlannerTab({
 }) {
   const [showIncomePanel, setShowIncomePanel] = useState(false);
   // Calendar notes stored in localStorage
-  const [calendarNotes, setCalendarNotes] = useState(() => {
-    try { const v = localStorage.getItem('ww-calendar-notes'); return v ? JSON.parse(v) : {}; } catch { return {}; }
-  });
+  const [calendarNotes, setCalendarNotes] = usePersistedState('ww-calendar-notes', {});
   const handleSetNote = useCallback((dateKey, note) => {
     setCalendarNotes(prev => {
       const next = { ...prev };
       if (note) next[dateKey] = note; else delete next[dateKey];
-      try { localStorage.setItem('ww-calendar-notes', JSON.stringify(next)); } catch {}
       return next;
     });
   }, []);
   // Farming planner targets
-  const [farmTargetsState, setFarmTargetsState] = useState(() => {
-    try { const v = localStorage.getItem('ww-farm-targets'); return v ? JSON.parse(v) : []; } catch { return []; }
-  });
+  const [farmTargetsState, setFarmTargetsState] = usePersistedState('ww-farm-targets', []);
   const [farmPickerOpen, setFarmPickerOpen] = useState(false);
   const [farmSearch, setFarmSearch] = useState('');
-  useEffect(() => {
-    try { localStorage.setItem('ww-farm-targets', JSON.stringify(farmTargetsState)); } catch {}
-  }, [farmTargetsState]);
   // Collapsible card state
   const [collapsed, setCollapsed] = useState({});
 
