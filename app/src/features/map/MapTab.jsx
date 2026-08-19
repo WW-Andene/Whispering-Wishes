@@ -3,121 +3,29 @@ import { Settings, Download, Trash2, LocateFixed, Pen, Map as MapIcon, Hexagon, 
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
-import { DEFAULT_ZONE_DRAFTS, DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
+import { DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
 import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog.js';
 import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../core/tileSW.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { MAP_W, MAP_H, TILE_SIZE, NATIVE_ZOOM, MAX_ZOOM, rdpSimplify } from './tileMath.js';
+import { getIconImage } from './iconImageCache.js';
+import { OVERLAY_TILE_CACHE, OVERLAY_TILE_CACHE_LIMIT } from './tileCache.js';
+import { loadDrafts, saveDrafts, loadPaintStrokes, savePaintStrokes } from './mapStorage.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
-const MAP_W = 12288;
-const MAP_H = 16384;
-const TILE_SIZE = 256;
-const NATIVE_ZOOM = 6;  // zoom level at which the 16384×16384 tile pyramid is defined
-const MAX_ZOOM = 10;    // how far the user can zoom in (tiles upscale beyond NATIVE_ZOOM)
 const MAP_BG = '#062634';
 const MAP_BG_TRANSPARENT = 'rgba(6, 38, 52, 0.55)';
 const BASE = import.meta.env.BASE_URL || '/';
 const AUTHOR_FLAG_KEY = 'ww-zone-author';
-const DRAFTS_KEY = 'ww-zone-drafts';
-const PAINT_KEY = 'ww-paint-strokes';
 
 const COLOR_CANON = '#edaf18';   // brand gold — canonical zones from mapZones.js
 const COLOR_DRAFT = '#38bdf8';   // cyan — session drafts
-
-// Module-scoped cache of decoded HTMLImageElements for map icons.
-// Keyed by catalog id; one <img> per kind is shared across every placed
-// icon draft. Survives tab unmount so re-opening the Map is instant.
-const MAP_ICON_IMAGES = new Map();
-function getIconImage(kindId, onReady) {
-  const cat = getIconCatalogEntry(kindId);
-  if (!cat) return null;
-  const hit = MAP_ICON_IMAGES.get(cat.id);
-  if (hit) return hit;
-  const img = new Image();
-  img.decoding = 'async';
-  const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/';
-  // Encode each path segment defensively.
-  const encoded = cat.imageUrl.split('/').map(encodeURIComponent).join('/');
-  img.src = (base + encoded).replace(/([^:])\/\//g, '$1/');
-  img.onload = () => onReady && onReady();
-  MAP_ICON_IMAGES.set(cat.id, img);
-  return img;
-}
-
-// Module-scoped overlay tile cache — survives MapTab unmount / tab switches
-// so re-opening the Map instantly re-uses already-decoded tiles instead of
-// re-fetching. Capped LRU ~ keeps memory bounded on low-end devices. The
-// browser HTTP cache (and the offline service worker, when installed) cover
-// persistence across page reloads. Cap is set well above any single
-// overlay's tile count (Fabricatorium = 1664 tiles, the largest) so panning
-// inside one overlay never evicts tiles you just looked at.
-const OVERLAY_TILE_CACHE = new Map();        // "catalogId:y:x" → HTMLImageElement
-const OVERLAY_TILE_CACHE_LIMIT = 2000;
 const COLOR_ACTIVE = '#edaf18';  // gold dashed — in-progress polygon
 
-function loadDrafts() {
-  if (typeof localStorage === 'undefined') return DEFAULT_ZONE_DRAFTS;
-  try {
-    const raw = localStorage.getItem(DRAFTS_KEY);
-    if (raw === null) return DEFAULT_ZONE_DRAFTS;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEFAULT_ZONE_DRAFTS;
-  } catch { return DEFAULT_ZONE_DRAFTS; }
-}
-function saveDrafts(list) {
-  try { localStorage.setItem(DRAFTS_KEY, JSON.stringify(list)); } catch {}
-}
-function loadPaintStrokes() {
-  if (typeof localStorage === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(PAINT_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch { return []; }
-}
-function savePaintStrokes(list) {
-  try { localStorage.setItem(PAINT_KEY, JSON.stringify(list)); } catch {}
-}
 function slugify(s) {
   return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `zone-${Date.now().toString(36)}`;
-}
-
-// Ramer–Douglas–Peucker polyline simplification. Input/output: [[x,y], ...].
-// `epsilon` is the max perpendicular distance (same units as input) a dropped
-// point may lie from the kept segment.
-function rdpSimplify(points, epsilon) {
-  if (!Array.isArray(points) || points.length < 3) return points || [];
-  const sqSegDist = ([x, y], [x1, y1], [x2, y2]) => {
-    const dx = x2 - x1, dy = y2 - y1;
-    const lenSq = dx * dx + dy * dy;
-    let t = 0;
-    if (lenSq > 0) t = ((x - x1) * dx + (y - y1) * dy) / lenSq;
-    t = Math.max(0, Math.min(1, t));
-    const px = x1 + t * dx, py = y1 + t * dy;
-    const ex = x - px, ey = y - py;
-    return ex * ex + ey * ey;
-  };
-  const epsSq = epsilon * epsilon;
-  const keep = new Array(points.length).fill(false);
-  keep[0] = true;
-  keep[points.length - 1] = true;
-  const stack = [[0, points.length - 1]];
-  while (stack.length) {
-    const [first, last] = stack.pop();
-    let maxDist = 0, index = -1;
-    for (let i = first + 1; i < last; i++) {
-      const d = sqSegDist(points[i], points[first], points[last]);
-      if (d > maxDist) { maxDist = d; index = i; }
-    }
-    if (maxDist > epsSq && index !== -1) {
-      keep[index] = true;
-      stack.push([first, index], [index, last]);
-    }
-  }
-  return points.filter((_, i) => keep[i]);
 }
 
 export default function MapTab({ navPadding = 80 }) {
