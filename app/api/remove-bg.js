@@ -3,20 +3,12 @@
 // Usage: POST /api/remove-bg  { "imageUrl": "https://i.ibb.co/..." }
 // Returns: PNG image with transparent background
 
-import { isServiceDisabled, rateLimit } from './_common.js';
+import { isServiceDisabled, rateLimit, isAllowedOrigin } from './_common.js';
 
 const HF_MODEL = 'briaai/RMBG-2.0';
 const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
 const MAX_RETRIES = 3;
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
-
-// F-004/F-005: Origin allowlist + image URL allowlist (prevents open relay + SSRF)
-const ALLOWED_ORIGINS = [
-  'https://whispering-wishes.vercel.app',
-  'http://localhost:5000',
-  'http://localhost:5173',
-];
-const isAllowedOrigin = (origin) => ALLOWED_ORIGINS.includes(origin) || /^https:\/\/whispering-wishes[a-z0-9-]*\.vercel\.app$/.test(origin);
 
 // F-006: Restrict server-side fetches to known image hosts (prevents SSRF)
 const ALLOWED_IMAGE_HOSTS = ['i.ibb.co', 'ibb.co', 'i.imgur.com', 'imgur.com', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com', 'static.wikia.nocookie.net'];

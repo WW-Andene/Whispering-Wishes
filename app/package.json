@@ -12,10 +12,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "manifest": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs"
+    "manifest": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs",
+    "selfhost": "node self-host/server.js"
   },
   "dependencies": {
     "@esotericsoftware/spine-player": "^4.2.109",
+    "express": "^4.21.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.263.1",
     "react": "^18.2.0",

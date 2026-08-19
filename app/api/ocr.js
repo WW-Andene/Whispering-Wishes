@@ -1,19 +1,10 @@
 // Vercel serverless function — proxies OCR requests to Groq Vision API
 // API key stored server-side via GROQ_API_KEY environment variable
 
-import { isServiceDisabled, rateLimit } from './_common.js';
+import { isServiceDisabled, rateLimit, isAllowedOrigin } from './_common.js';
 
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB base64 limit (Groq allows up to 20MB)
 const ALLOWED_KEYS = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'lang', 'svr_area'];
-
-// F-013: Origin allowlist (prevents unauthorized API usage / quota drain)
-const ALLOWED_ORIGINS = [
-  'https://whispering-wishes.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5000',
-  'http://localhost:5173',
-];
-const isAllowedOrigin = (origin) => ALLOWED_ORIGINS.includes(origin) || /^https:\/\/whispering-wishes[a-z0-9-]*\.vercel\.app$/.test(origin);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

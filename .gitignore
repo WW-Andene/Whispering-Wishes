@@ -6,6 +6,7 @@ dist/
 .env.local
 app/.env
 app/.env.local
+app/self-host/.env
 
 # Agent runtime memory (local to each environment)
 agent/.memory.json
