@@ -17,9 +17,14 @@ export function EnemyTargetCard({ enemyEcho, enemyLevel, setEnemyLevel, collecti
   // monsterIconUrl (the boss's own portrait) must win over collectionImages — see the matching fix
   // and full explanation in EnemyEchoSelectorModal.jsx's icon priority.
   const enemyTargetIcon = enemyEcho ? (enemyTargetEd?.monsterIconUrl || collectionImages[enemyEcho] || enemyTargetEd?.iconUrl) : null;
+  // Display only — the actual damage calc (calcTeamStats.js) computes its own generic
+  // level-based DEF baseline independently of this card, so leaving `def` null here when
+  // no target is selected doesn't affect DPS numbers, only what MonsterCard renders. It
+  // used to carry that generic DEF value for display too, which made a lone "DEF" row
+  // show up with no HP/ATK next to it — looking like a target was silently selected.
   const enemyTargetStats = enemyEcho
     ? enemyTargetEd?.enemyStats
-    : { level: enemyLevel, hp: null, atk: null, def: 792 + 8 * (Number(enemyLevel) || 90), res: {} };
+    : { level: enemyLevel, hp: null, atk: null, def: null, res: {} };
 
   return (
     <Card>
