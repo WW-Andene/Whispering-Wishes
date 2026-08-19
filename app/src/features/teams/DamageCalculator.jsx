@@ -1407,6 +1407,22 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             const defaultSubs = getSubstats();
                             const newEchoes = [null, null, null, null, null];
                             const usedNames = new Set();
+                            // recSets carries the INTENDED piece count per set (e.g. Qiuyuan's own data
+                            // says "Law of Harmony 3pc + Sierra Gale 2pc") but pickEcho used to have no
+                            // memory of how many pieces of each set it had already handed out — every
+                            // call just walked setPrefs in Map insertion order and grabbed the first set
+                            // with an available candidate, so a 2-set split silently degenerated into a
+                            // full 5pc of whichever set was listed first (verified: Qiuyuan ended up all
+                            // Law of Harmony, Sierra Gale's 2pc Aero DMG bonus never got equipped at
+                            // all). assignedCounts tracks real allocations across every pickEcho call
+                            // (including the direct-echo shortcut) so each set stops being picked once
+                            // its target piece count is reached.
+                            const assignedCounts = new Map();
+                            const markAssigned = (name, setPrefs) => {
+                              (ECHO_DATA[name]?.sets || []).forEach(s => {
+                                if (setPrefs.has(s)) assignedCounts.set(s, (assignedCounts.get(s) || 0) + 1);
+                              });
+                            };
                             // Two independent selection concerns for the low-cost slots, checked in
                             // priority order — element match matters far more than "purity":
                             //
@@ -1430,7 +1446,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             // the tier matches the character's element at all, so a slot is never left
                             // empty over an unmatched preference.
                             const pickEcho = (tierList, setPrefs) => {
-                              for (const name of tierList) { if (!usedNames.has(name) && directEchoes.has(name)) { usedNames.add(name); return name; } }
+                              for (const name of tierList) {
+                                if (!usedNames.has(name) && directEchoes.has(name)) {
+                                  usedNames.add(name); markAssigned(name, setPrefs); return name;
+                                }
+                              }
                               const wanted = new Set(setPrefs.keys());
                               const charEl = (d.element || '').toLowerCase();
                               // A 'Healing' echo is only justified for a character who can actually
@@ -1464,7 +1484,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 const buffs = ed?.buff ? (Array.isArray(ed.buff) ? ed.buff : [ed.buff]) : [];
                                 return buffs.length > 0 && buffs.every(b => b === 'Healing') && !isRoleForHealing;
                               };
-                              for (const [setName] of setPrefs) {
+                              for (const [setName, targetPc] of setPrefs) {
+                                if ((assignedCounts.get(setName) || 0) >= targetPc) continue; // quota already met — move to the next preferred set
                                 let bestElemMatch = null, bestPure = null, bestLive = null, anyMatch = null;
                                 for (const name of tierList) {
                                   if (usedNames.has(name)) continue;
@@ -1474,12 +1495,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                   if (!bestLive && !isDeadWeight(ed)) bestLive = name;
                                   const elemOk = matchesElement(ed);
                                   const pure = ed.sets.every(s => wanted.has(s));
-                                  if (elemOk && pure) { usedNames.add(name); return name; }
+                                  if (elemOk && pure) { usedNames.add(name); markAssigned(name, setPrefs); return name; }
                                   if (elemOk && !bestElemMatch) bestElemMatch = name;
                                   if (!elemOk && pure && !bestPure) bestPure = name;
                                 }
                                 const chosen = bestElemMatch || bestPure || bestLive || anyMatch;
-                                if (chosen) { usedNames.add(chosen); return chosen; }
+                                if (chosen) { usedNames.add(chosen); markAssigned(chosen, setPrefs); return chosen; }
                               }
                               return null;
                             };
