@@ -963,7 +963,15 @@ function WhisperingWishesInner() {
         // is pinned to the true viewport edges no matter what — including the
         // strip behind/above the floating header — rather than depending on
         // inset-0 resolving the way it's expected to.
-        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+        // `isolation: isolate` + a forced compositing layer (translateZ(0)):
+        // the header is a rounded, overflow:hidden, backdrop-filter element —
+        // that combination can make some engines paint/clip a sibling fixed
+        // layer against the rounded element's own layer bounds instead of the
+        // true viewport, even though the sibling's actual box (verified via
+        // getBoundingClientRect) is correctly full-screen. Forcing this onto
+        // its own independent layer keeps its paint from being affected by
+        // the header's rounded/blurred one.
+        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: 0, left: 0, right: 0, bottom: 0, zIndex: 3, isolation: 'isolate', transform: 'translateZ(0)' }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
