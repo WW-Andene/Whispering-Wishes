@@ -520,6 +520,70 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
 // truth so the two can never drift the way they did before this was extracted. ──
 export const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
 
+// ── Mechanic-grounded synergy uplift: replaces flat "+8 points for a deepen buff, +6 for elemDmg"
+// pattern-matching with an estimate of what each buff/debuff actually contributes to DPS output,
+// using the same multiplicative bracket structure calcDmgBonus/calcAvgCrit already model. This is
+// what makes scoreTeamComposition reason about ANY buffer's kit generically (every character's real
+// CHAR_BUFF_TABLE entry, not just ones whose stat names happened to match a hardcoded case) instead
+// of only recognizing synergy patterns someone thought to hardcode. SYNERGY_BASELINE is a plausible
+// endgame-geared solo Main DPS snapshot (roughly BiS-adjacent echo/weapon investment) used ONLY to
+// measure each buff type's *relative marginal* value against the game's real formula shape — e.g. a
+// deepen buff is genuinely worth more than an equal-% elemDmg buff because deepen is its own
+// multiplicative bracket rather than diluted into the already-large elemDmg+skillDmg additive one,
+// same reason real theorycrafting prizes deepen buffers (Zhezhi/Roccia/Galbrena-style kits) — this
+// derives that from the formula instead of hardcoding the conclusion. Never used for actual damage
+// numbers, only for ranking hypothetical teams relative to each other.
+const SYNERGY_BASELINE = { atkPct: 220, cr: 65, cd: 220, elemDmg: 40, skillDmg: 0, amplify: 0, deepen: 0 };
+function synergyDmgIndex(s) {
+  return (1 + s.atkPct / 100) * calcAvgCrit(s.cr, s.cd) * calcDmgBonus(s.elemDmg, s.skillDmg, s.amplify, s.deepen);
+}
+const SYNERGY_BASE_INDEX = synergyDmgIndex(SYNERGY_BASELINE);
+// Returns the % DPS uplift a single buff of this stat/value contributes on top of SYNERGY_BASELINE.
+// defShred/resShred/defIgnore go through the real defense/resistance multiplier formulas instead of
+// the offense-side dmgIndex (they're a separate multiplicative stage of the damage formula entirely).
+export function estimateBuffUplift(stat, value) {
+  if (!value) return 0;
+  if (stat === 'defShred' || stat === 'defIgnore') {
+    const before = calcDefMult(1000, stat === 'defShred' ? 0 : 0, 0);
+    const after = calcDefMult(1000, stat === 'defShred' ? value : 0, stat === 'defIgnore' ? value : 0);
+    return (after / before - 1) * 100;
+  }
+  if (stat === 'resShred') {
+    const before = calcResMult(10, 0);
+    const after = calcResMult(10, value);
+    return (after / before - 1) * 100;
+  }
+  const s = { ...SYNERGY_BASELINE };
+  switch (stat) {
+    case 'atkPct': s.atkPct += value; break;
+    case 'critRate': s.cr = Math.min(100, s.cr + value); break;
+    case 'critDmg': s.cd += value; break;
+    case 'elemDmg': case 'allDmg': s.elemDmg += value; break;
+    case 'skillDmg': case 'basicDmg': case 'heavyDmg': case 'libDmg': case 'echoDmg': case 'coordDmg':
+      s.skillDmg += value; break; // once type-matched to the DPS's dmgFocus, these all route into skillDmg's bracket
+    case 'deepen': case 'offTune': s.deepen += value; break;
+    default: return 0;
+  }
+  return (synergyDmgIndex(s) / SYNERGY_BASE_INDEX - 1) * 100;
+}
+// Uptime-scale a buff's uplift by how much of the Main DPS's actual ON-FIELD window it can
+// realistically cover — the relevant comparison is against onField, not the full rotTime, because
+// a buff sitting on the DPS while they're off-field contributes nothing. Outro-triggered buffs exist
+// specifically to be timed with the incoming DPS's swap-in, so this models "does the buff still cover
+// them by the time their on-field segment ends" rather than "does it cover the whole team rotation" —
+// a 20%-uplift buff lasting 8s covers all of a 6s on-field burst DPS at full value, but only ~40% of
+// a 20s on-field hypercarry's window. Falls back to rotTime, then to full uptime, when onField/rotTime
+// aren't available (undurationed passive/permanent buffs, or a DPS missing that data).
+export function uptimeScaledUplift(stat, value, buffDuration, onFieldOrRotTime) {
+  const raw = estimateBuffUplift(stat, value);
+  if (!raw || !buffDuration || !onFieldOrRotTime) return raw;
+  return raw * Math.min(1, buffDuration / onFieldOrRotTime);
+}
+// Points-per-%-uplift conversion so the new mechanic-grounded scoring stays on a comparable scale to
+// the tier/role/element point totals elsewhere in scoreTeamComposition (Meta/Strong tag thresholds
+// were calibrated against the old score range) — 1% real DPS uplift ≈ 2.5 composition-score points.
+const UPLIFT_TO_SCORE = 2.5;
+
 export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   let score = 0;
   const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
@@ -546,38 +610,75 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
     // Min-max normalize against that observed range so the top of the meta still differentiates
     // (a flat divisor saturates and makes most current-meta DPS score identically).
     const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
-    score += Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
+    let dpsScore = Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
     const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
+    // A Liberation-focused DPS with a 175-Energy cost (calcEnergyCycles' own cutoff for the harder ER
+    // threshold, ER_THRESHOLD_HEALER) is genuinely harder to keep at full Liberation uptime without
+    // dedicated ER investment — this suggestion context can't assume the player has built that, so
+    // apply the same mild discount to their own power score that a high-cost support gets below,
+    // rather than only ever discounting OTHER members' output and treating the DPS's own energy cost
+    // as free.
+    if (dpsFocus.includes('Liberation') && (CHARACTER_DATA[mainDps]?.maxEnergy || 0) >= 175) dpsScore *= 0.85;
+    score += dpsScore;
     const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
+    // Compare a buff/support's uptime against the DPS's actual on-field window, not the whole
+    // rotation — a buff sitting on them while off-field does nothing. Falls back to rotTime only
+    // when onField isn't tracked for this character.
+    const dpsOnField = CHARACTER_DATA[mainDps]?.onField || CHARACTER_DATA[mainDps]?.rotTime;
     // An elemDmg buff only helps this DPS if its condition (when present) actually names their
     // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
     const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
+    // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
+    // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
+    // same file enforces the identical gate for the real damage calc, so scoring has to match it or
+    // it'll credit synergy that mechanically does nothing for this specific DPS.
+    const typeFocusMap = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', echoDmg: 'Echo', coordDmg: 'Coordinated ATK', skillDmg: 'Skill' };
+    const buffApplies = (b) => {
+      if (typeFocusMap[b.stat]) return dpsFocus.includes(typeFocusMap[b.stat]);
+      if (b.stat === 'elemDmg' || b.stat === 'allDmg') return elemBuffApplies(b);
+      return true; // atkPct/critRate/critDmg/deepen/offTune are universal, no gate needed
+    };
+    // Score any buff generically via real formula-derived uplift — this is what lets a completely
+    // off-meta pairing (any character whose CHAR_BUFF_TABLE just happens to fit) get credited the
+    // same way a hand-curated team would, instead of only recognizing patterns someone hardcoded.
+    const scoreBuff = (b) => {
+      if (!buffApplies(b)) return;
+      const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField);
+      if (uplift <= 0) return;
+      score += uplift * UPLIFT_TO_SCORE;
+      if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
+      else if (b.stat === 'basicDmg') tags.push('ATK Amp');
+      else if (b.stat === 'heavyDmg') tags.push('Heavy Amp');
+      else if (b.stat === 'echoDmg') tags.push('Echo Amp');
+    };
     members.forEach(m => {
       if (m === mainDps) return;
       const bt = CHAR_BUFF_TABLE[m]; if (!bt) return;
-      (bt.outroBuffs || []).forEach(b => {
-        if (b.stat === 'deepen') score += 8;
-        else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) { score += 10; tags.push('ATK Amp'); }
-        else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) { score += 10; tags.push('Heavy Amp'); }
-        else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) { score += 10; tags.push('Echo Amp'); }
-        else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) score += 8;
-        else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
-      });
+      (bt.outroBuffs || []).forEach(scoreBuff);
       // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
+      // High-cost (175 Energy) Liberation-reliant supports need real ER investment to sustain uptime
+      // that a generic roster-suggestion context can't assume the player has built — 175 is the same
+      // cost cutoff calcEnergyCycles uses to switch to its harder ER_THRESHOLD_HEALER target, applied
+      // here as a mild discount on this support's own libBuff output rather than assuming either full
+      // uptime or zero. (Comparing maxEnergy, a cost in the ~100-175 range, directly against
+      // ER_THRESHOLD_HEALER, a 140% ER *target*, would silently mix units — use the real 175 cutoff.)
+      const erDiscount = (CHARACTER_DATA[m]?.maxEnergy || 0) >= 175 ? 0.85 : 1;
       (bt.libBuffs || []).forEach(b => {
         if (b.target !== 'team' && b.target !== 'next') return;
-        if (b.stat === 'atkPct' || b.stat === 'critRate' || b.stat === 'critDmg') score += 6;
-        else if (b.stat === 'allDmg' || b.stat === 'deepen') score += 8;
-        else if (b.stat === 'elemDmg' && elemBuffApplies(b)) score += 6;
-        else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) score += 6;
+        if (!buffApplies(b)) return;
+        const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField) * erDiscount;
+        if (uplift > 0) score += uplift * UPLIFT_TO_SCORE;
       });
       (bt.debuffs || []).forEach(db => {
-        if (db.stat === 'defShred' || db.stat === 'resShred') { score += 6; tags.push('Shred'); }
+        if (db.stat === 'defShred' || db.stat === 'resShred') {
+          const uplift = estimateBuffUplift(db.stat, db.value);
+          if (uplift > 0) { score += uplift * UPLIFT_TO_SCORE; tags.push('Shred'); }
+        }
         if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
         if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
         // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
-        // universal damage multiplier just like the buff-side 'deepen' — was previously unscored here.
-        if (db.stat === 'deepen' || db.stat === 'offTune') score += 8;
+        // universal damage multiplier just like the buff-side 'deepen'.
+        if (db.stat === 'deepen' || db.stat === 'offTune') { const u = estimateBuffUplift('deepen', db.value); if (u > 0) score += u * UPLIFT_TO_SCORE; }
       });
     });
   }

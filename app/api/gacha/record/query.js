@@ -1,15 +1,7 @@
 // Vercel/DV serverless function — proxies POST requests to WuWa gacha API to avoid CORS
-import { isServiceDisabled, rateLimit } from '../../_common.js';
+import { isServiceDisabled, rateLimit, isAllowedOrigin } from '../../_common.js';
 
 const ALLOWED_HOST = 'gmserver-api.aki-game2.net';
-// F-004: Restrict CORS to app origins only (prevents open relay abuse)
-const ALLOWED_ORIGINS = [
-  'https://whispering-wishes.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5000',
-  'http://localhost:5173',
-];
-const isAllowedOrigin = (origin) => ALLOWED_ORIGINS.includes(origin) || /^https:\/\/whispering-wishes[a-z0-9-]*\.vercel\.app$/.test(origin);
 
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';

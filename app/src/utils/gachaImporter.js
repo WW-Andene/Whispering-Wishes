@@ -3,6 +3,8 @@
 // Extracted from WuwaImporter-6.jsx.txt (utility logic only, no UI)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { apiUrl } from './apiBase.js';
+
 export const POOL_LABELS = {
   1: 'Featured Resonator',     // Temps limité personnages
   2: 'Featured Weapon',        // Temps limité armes
@@ -76,7 +78,7 @@ async function fetchPage(params, cardPoolType, signal) {
 
   let res;
   try {
-    res = await fetch('/api/gacha/record/query', {
+    res = await fetch(apiUrl('/api/gacha/record/query'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -148,7 +150,7 @@ async function fetchOnePage(params, poolType, signal) {
   const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
 
   try {
-    const res = await fetch('/api/gacha/record/query', {
+    const res = await fetch(apiUrl('/api/gacha/record/query'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -277,7 +279,7 @@ export function compressImage(source) {
  * @returns {Promise<{ player_id: string|null, record_id: string|null, svr_id: string|null }>}
  */
 export async function extractIdsFromImage(base64Image) {
-  const res = await fetch('/api/ocr', {
+  const res = await fetch(apiUrl('/api/ocr'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: base64Image }),

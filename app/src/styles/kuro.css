@@ -85,7 +85,8 @@
        gutter flip correctly under `dir="rtl"` when/if an RTL locale is added. */
     @supports (padding-top: env(safe-area-inset-top)) {
       body {
-        /* Top/bottom safe areas handled by sticky header and main content respectively */
+        /* Top/bottom safe areas handled by the floating header (env(safe-area-inset-top) in its own
+           inline padding) and main content's dynamically-measured padding, respectively */
         padding-inline-start: env(safe-area-inset-left);
         padding-inline-end: env(safe-area-inset-right);
       }

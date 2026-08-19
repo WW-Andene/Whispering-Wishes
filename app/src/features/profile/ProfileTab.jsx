@@ -26,6 +26,8 @@ import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import AboutSection from './AboutSection.jsx';
+import OfflineAssetsCard from './OfflineAssetsCard.jsx';
+import AppUpdateCard from './AppUpdateCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
@@ -931,6 +933,10 @@ function ProfileTab({
                 </CardBody>
               </Card>
             )}
+
+            {/* ── App maintenance: updates + offline asset downloads ────────── */}
+            <AppUpdateCard toast={toast} />
+            <OfflineAssetsCard toast={toast} />
 
             {/* ── Cloud Backup ──────────────────────────────────── */}
             <Card>

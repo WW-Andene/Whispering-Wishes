@@ -8,14 +8,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs",
+    "prebuild": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs && node ../tools/build-asset-manifest.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "manifest": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs"
+    "manifest": "node ../tools/extract-sprite-list.mjs && node ../tools/build-prerender-manifest.mjs && node ../tools/build-asset-manifest.mjs",
+    "selfhost": "node self-host/server.js",
+    "build:native": "node capacitor-build/build.mjs",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@esotericsoftware/spine-player": "^4.2.109",
+    "express": "^4.21.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.263.1",
     "react": "^18.2.0",

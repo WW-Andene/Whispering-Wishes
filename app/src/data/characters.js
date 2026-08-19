@@ -4452,7 +4452,7 @@ const SKILL_ICONS = {
   // (was wrongly keyed 'Mistcloak Dash', the Forte's internal dash mechanic, not its own skill name) —
   // fixed to use the correct name while keeping 'Mistcloak Dash' as an alias to the same icon so any
   // existing reference to it still resolves. All new icons sourced directly from fandom's
-  // static.wikia.nocookie.net-hosted Skill_*.png assets, same convention as the other 2026-08-18 adds.
+  // fandom's static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   'Aalto': {
     'Half Truths': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp', // Basic ATK — shared generic Pistols icon
     'Standard': 'https://i.ibb.co/8gYdwYCF/skill-pistols.webp',
@@ -4460,8 +4460,8 @@ const SKILL_ICONS = {
     'Flower in the Mist': 'https://i.ibb.co/qYjnpYdK/aalto-heavy.webp',
     'Misty Cover': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp',
     'Mistcloak Dash': 'https://i.ibb.co/35S8hKWN/aalto-liberation.webp', // alias, see comment above
-    'Feint Shot': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/93/Skill_Feint_Shot.png',
-    'Dissolving Mist': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/77/Skill_Dissolving_Mist.png',
+    'Feint Shot': 'https://i.ibb.co/PzsmFsvH/Skill-Feint-Shot.webp',
+    'Dissolving Mist': 'https://i.ibb.co/N2bhMGbv/Skill-Dissolving-Mist.webp',
   },
   'Baizhi': {
     'Destined Promise': 'https://i.ibb.co/6c75rLCc/baizhi-basic.webp', // Basic ATK — generic Rectifier icon
@@ -4469,8 +4469,8 @@ const SKILL_ICONS = {
     'Emergency Plan': 'https://i.ibb.co/2BC255K/baizhi-skill.webp',
     'Momentary Union': 'https://i.ibb.co/fsP021g/baizhi-liberation.webp',
     'Cycle of Life': 'https://i.ibb.co/d0nRGZwy/baizhi-forte.webp',
-    'Overflowing Frost': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Overflowing_Frost.png',
-    'Rejuvinating Flow': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/60/Skill_Rejuvinating_Flow.png', // fandom's own spelling ("Rejuvinating") — kept verbatim to match the wiki's file name
+    'Overflowing Frost': 'https://i.ibb.co/bghHsrhw/Skill-Overflowing-Frost.webp',
+    'Rejuvinating Flow': 'https://i.ibb.co/Zps3MW2N/Skill-Rejuvinating-Flow.webp', // fandom's own spelling ("Rejuvinating") — kept verbatim to match the wiki's file name
   },
   'Chixia': {
     'POW POW': 'https://i.ibb.co/xq4xPQNP/Lynae-basic.webp', // Basic ATK — shared generic Pistols icon
@@ -4478,8 +4478,8 @@ const SKILL_ICONS = {
     'Whizzing Fight Spirit': 'https://i.ibb.co/s9jWxj9V/chixia-skill.webp',
     'Blazing Flames': 'https://i.ibb.co/67N4dq55/chixia-liberation.webp',
     'Heroic Bullets': 'https://i.ibb.co/x8mwJBr0/chixia-forte.webp',
-    'Grand Entrance': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/28/Skill_Grand_Entrance.png',
-    'Leaping Flames': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7d/Skill_Leaping_Flames.png',
+    'Grand Entrance': 'https://i.ibb.co/NdrkdWzL/Skill-Grand-Entrance.webp',
+    'Leaping Flames': 'https://i.ibb.co/2Ygxpzps/Skill-Leaping-Flames.webp',
   },
   'Encore': {
     'Wooly Attack': 'https://i.ibb.co/RkMykBkT/Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
@@ -5098,67 +5098,66 @@ const SKILL_ICONS = {
     'Rippling Waters': 'https://i.ibb.co/fhrX8pF/suisui-outro.webp', // Outro Skill
   },
   // Danjin/Yangyang/Sanhua icons added 2026-08-18, sourced directly from wutheringwaves.fandom.com's
-  // own static.wikia.nocookie.net-hosted Skill_*.png assets (no re-hosting needed — same file names
-  // verified live via the fandom Combat page image lists for each character).
+  // own static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   'Danjin': {
-    'Execution': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Crimson Fragment': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8c/Skill_Crimson_Fragment.png',
-    'Crimson Erosion': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8c/Skill_Crimson_Fragment.png', // Resonance Skill's Crimson Erosion follow-up, same skill icon
-    'Sanguine Pulse': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8c/Skill_Crimson_Fragment.png',
-    'Crimson Bloom': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/3b/Skill_Crimson_Bloom.png',
-    'Serene Vigil': 'https://static.wikia.nocookie.net/wutheringwaves/images/5/5e/Skill_Serene_Vigil.png',
-    'Chaoscleave': 'https://static.wikia.nocookie.net/wutheringwaves/images/5/5e/Skill_Serene_Vigil.png', // Forte Circuit's Heavy ATK finisher, same Forte icon
-    'Vindication': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/fe/Skill_Vindication.png',
-    'Duality': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/68/Skill_Duality.png',
+    'Execution': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Crimson Fragment': 'https://i.ibb.co/0Rsb2H4t/Skill-Crimson-Fragment.webp',
+    'Crimson Erosion': 'https://i.ibb.co/0Rsb2H4t/Skill-Crimson-Fragment.webp', // Resonance Skill's Crimson Erosion follow-up, same skill icon
+    'Sanguine Pulse': 'https://i.ibb.co/0Rsb2H4t/Skill-Crimson-Fragment.webp',
+    'Crimson Bloom': 'https://i.ibb.co/JjPSmMNr/Skill-Crimson-Bloom.webp',
+    'Serene Vigil': 'https://i.ibb.co/m5pGRN2t/Skill-Serene-Vigil.webp',
+    'Chaoscleave': 'https://i.ibb.co/m5pGRN2t/Skill-Serene-Vigil.webp', // Forte Circuit's Heavy ATK finisher, same Forte icon
+    'Vindication': 'https://i.ibb.co/fz39Q85Q/Skill-Vindication.webp',
+    'Duality': 'https://i.ibb.co/VYn8FS1d/Skill-Duality.webp',
   },
   'Yangyang': {
-    'Feather as Blade': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Zephyr Domain': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/32/Skill_Zephyr_Domain.png',
-    'Zephyr Song': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Heavy ATK follow-up, no dedicated fandom icon — generic Sword icon (same convention as Basic/Heavy ATK above)
-    'Wind Spirals': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7a/Skill_Wind_Spirals.png',
-    'Echoing Feathers': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b5/Skill_Echoing_Feathers.png',
-    'Feather Release': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b5/Skill_Echoing_Feathers.png', // Forte Circuit's Mid-air Attack finisher, same Forte icon
-    'Cerulean Song': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9f/Skill_Cerulean_Song.png',
-    'Whispering Breeze': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a8/Skill_Whispering_Breeze.png',
+    'Feather as Blade': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Zephyr Domain': 'https://i.ibb.co/VW0qky4r/Skill-Zephyr-Domain.webp',
+    'Zephyr Song': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Heavy ATK follow-up, no dedicated fandom icon — generic Sword icon (same convention as Basic/Heavy ATK above)
+    'Wind Spirals': 'https://i.ibb.co/934FW2wW/Skill-Wind-Spirals.webp',
+    'Echoing Feathers': 'https://i.ibb.co/s9HtLNhg/Skill-Echoing-Feathers.webp',
+    'Feather Release': 'https://i.ibb.co/s9HtLNhg/Skill-Echoing-Feathers.webp', // Forte Circuit's Mid-air Attack finisher, same Forte icon
+    'Cerulean Song': 'https://i.ibb.co/0SJV3np/Skill-Cerulean-Song.webp',
+    'Whispering Breeze': 'https://i.ibb.co/ZpfP3HZb/Skill-Whispering-Breeze.webp',
   },
   'Sanhua': {
-    'Frigid Light': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Eternal Frost': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6a/Skill_Eternal_Frost.png',
-    'Glacial Gaze': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/3c/Skill_Glacial_Gaze.png',
-    'Clarity of Mind': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Clarity_of_Mind.png',
-    'Detonate': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Clarity_of_Mind.png', // Forte Circuit's Heavy ATK finisher, same Forte icon
-    'Freezing Thorns': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ae/Skill_Freezing_Thorns.png',
-    'Silversnow': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Skill_Silversnow.png',
+    'Frigid Light': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Eternal Frost': 'https://i.ibb.co/W4h4QXjz/Skill-Eternal-Frost.webp',
+    'Glacial Gaze': 'https://i.ibb.co/m5qSqm32/Skill-Glacial-Gaze.webp',
+    'Clarity of Mind': 'https://i.ibb.co/tMVxnqGb/Skill-Clarity-of-Mind.webp',
+    'Detonate': 'https://i.ibb.co/tMVxnqGb/Skill-Clarity-of-Mind.webp', // Forte Circuit's Heavy ATK finisher, same Forte icon
+    'Freezing Thorns': 'https://i.ibb.co/203JZS27/Skill-Freezing-Thorns.webp',
+    'Silversnow': 'https://i.ibb.co/CpzvZz5K/Skill-Silversnow.webp',
   },
   // added 2026-08-18 — previously entirely missing (was falling back to no icon for every Taoqi skill
-  // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the MediaWiki API.
+  // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   'Taoqi': {
-    'Concealed Edge': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png', // Basic/Heavy/Mid-air/Dodge Counter — generic Broadblade icon
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
-    'Strategic Parry': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
-    'Fortified Defense': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a5/Skill_Fortified_Defense.png',
-    'Unmovable': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/00/Skill_Unmovable.png',
-    'Power Shift': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/33/Skill_Power_Shift.png',
-    'Defense Formation': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f1/Skill_Defense_Formation.png',
-    'Iron Will': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/fd/Skill_Iron_Will.png',
+    'Concealed Edge': 'https://i.ibb.co/B5n54GNt/Skill-Broadblade.webp', // Basic/Heavy/Mid-air/Dodge Counter — generic Broadblade icon
+    'Standard': 'https://i.ibb.co/B5n54GNt/Skill-Broadblade.webp',
+    'Strategic Parry': 'https://i.ibb.co/B5n54GNt/Skill-Broadblade.webp',
+    'Fortified Defense': 'https://i.ibb.co/LDMqFSKn/Skill-Fortified-Defense.webp',
+    'Unmovable': 'https://i.ibb.co/hJXvfC0F/Skill-Unmovable.webp',
+    'Power Shift': 'https://i.ibb.co/Y4dHVS3L/Skill-Power-Shift.webp',
+    'Defense Formation': 'https://i.ibb.co/KpkZ63SL/Skill-Defense-Formation.webp',
+    'Iron Will': 'https://i.ibb.co/G3bg0S5R/Skill-Iron-Will.webp',
   },
   // added 2026-08-18 — previously entirely missing (was falling back to no icon for every Yuanwu skill
-  // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the MediaWiki API
-  // (action=query&titles=File:Skill X.png&prop=imageinfo&iiprop=url). 'Leihuangquan' itself has no
-  // dedicated skill icon file on the wiki — it redirects to the generic Gauntlets weapon-type icon.
+  // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
+  // 'Leihuangquan' itself has no dedicated skill icon file on the wiki — it redirects to the generic
+  // Gauntlets weapon-type icon.
   'Yuanwu': {
-    'Leihuangquan': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png',
-    'Thunder Field': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6a/Skill_Leihuang_Master.png',
-    'Thunder Wedge': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6a/Skill_Leihuang_Master.png',
-    'Rumbling Spark': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1f/Skill_Unassuming_Blade.png',
-    'Thunder Uprising': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1f/Skill_Unassuming_Blade.png',
-    'Thunderweaver': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1f/Skill_Unassuming_Blade.png',
-    'Blazing Might': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ab/Skill_Blazing_Might.png',
-    'Thunder Bombardment': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/27/Skill_Thunder_Bombardment.png',
-    'Lightning Manipulation': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e4/Skill_Lightning_Manipulation.png',
+    'Leihuangquan': 'https://i.ibb.co/QvdmVfvF/Skill-Gauntlets.webp',
+    'Thunder Field': 'https://i.ibb.co/MK40ZPV/Skill-Leihuang-Master.webp',
+    'Thunder Wedge': 'https://i.ibb.co/MK40ZPV/Skill-Leihuang-Master.webp',
+    'Rumbling Spark': 'https://i.ibb.co/Q7zJbCct/Skill-Unassuming-Blade.webp',
+    'Thunder Uprising': 'https://i.ibb.co/Q7zJbCct/Skill-Unassuming-Blade.webp',
+    'Thunderweaver': 'https://i.ibb.co/Q7zJbCct/Skill-Unassuming-Blade.webp',
+    'Blazing Might': 'https://i.ibb.co/spn2bspQ/Skill-Blazing-Might.webp',
+    'Thunder Bombardment': 'https://i.ibb.co/21ghLjJQ/Skill-Thunder-Bombardment.webp',
+    'Lightning Manipulation': 'https://i.ibb.co/7dB9SgTZ/Skill-Lightning-Manipulation.webp',
   },
   // added 2026-08-18 — previously entirely missing (Mortefi's SKILL_MULTIPLIERS rows had no icon
   // lookup at all). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the
@@ -5166,13 +5165,13 @@ const SKILL_ICONS = {
   // Coordinated ATK hit fired during Burning Rhapsody) has no dedicated icon file on the wiki — it's a
   // sub-effect of Resonance Liberation Violent Finale, so it reuses that icon.
   'Mortefi': {
-    'Impromptu Show': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/28/Skill_Pistols.png',
-    'Passionate Variation': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/35/Skill_Passionate_Variation.png',
-    'Violent Finale': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Skill_Violent_Finale.png',
-    'Marcato': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Skill_Violent_Finale.png',
-    'Fury Fugue': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ab/Skill_Fury_Fugue.png',
-    'Dissonance': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d3/Skill_Dissonance.png',
-    'Rage Transposition': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c0/Skill_Rage_Transposition.png',
+    'Impromptu Show': 'https://i.ibb.co/FbhQWDHw/Skill-Pistols.webp',
+    'Passionate Variation': 'https://i.ibb.co/4ZLkXg3k/Skill-Passionate-Variation.webp',
+    'Violent Finale': 'https://i.ibb.co/jXMLr4K/Skill-Violent-Finale.webp',
+    'Marcato': 'https://i.ibb.co/jXMLr4K/Skill-Violent-Finale.webp',
+    'Fury Fugue': 'https://i.ibb.co/cS6rzxkd/Skill-Fury-Fugue.webp',
+    'Dissonance': 'https://i.ibb.co/60NBXg5j/Skill-Dissonance.webp',
+    'Rage Transposition': 'https://i.ibb.co/Dfg4cLZs/Skill-Rage-Transposition.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Skill_*.png assets via the MediaWiki API (Forte Details table image thumbnails + a direct
@@ -5181,16 +5180,16 @@ const SKILL_ICONS = {
   // (Chime/Ruyi/Ding/Mask) share Scroll Divination's icon since they're all sub-effects of the same
   // Resonance Skill row on the wiki, with no separate per-variant icon files uploaded.
   'Youhu': {
-    'Frosty Punches': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Gauntlets.png',
-    'Scroll Divination': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
-    'Chime': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
-    'Ruyi': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
-    'Ding': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
-    'Mask': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/37/Skill_Scroll_Divination.png',
-    "Fortune's Favor": 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Skill_Fortune%27s_Favor.png',
-    'Poetic Essence': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/9a/Skill_Poetic_Essence.png',
-    'Scroll of Wonders': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/61/Skill_Scroll_of_Wonders.png',
-    'Timeless Classics': 'https://static.wikia.nocookie.net/wutheringwaves/images/6/61/Skill_Timeless_Classics.png',
+    'Frosty Punches': 'https://i.ibb.co/QvdmVfvF/Skill-Gauntlets.webp',
+    'Scroll Divination': 'https://i.ibb.co/Z66ZH20V/Skill-Scroll-Divination.webp',
+    'Chime': 'https://i.ibb.co/Z66ZH20V/Skill-Scroll-Divination.webp',
+    'Ruyi': 'https://i.ibb.co/Z66ZH20V/Skill-Scroll-Divination.webp',
+    'Ding': 'https://i.ibb.co/Z66ZH20V/Skill-Scroll-Divination.webp',
+    'Mask': 'https://i.ibb.co/Z66ZH20V/Skill-Scroll-Divination.webp',
+    "Fortune's Favor": 'https://i.ibb.co/tT1TmNJ5/Skill-Fortune-s-Favor.webp',
+    'Poetic Essence': 'https://i.ibb.co/6JDTt2c6/Skill-Poetic-Essence.webp',
+    'Scroll of Wonders': 'https://i.ibb.co/SX5rWz0L/Skill-Scroll-of-Wonders.webp',
+    'Timeless Classics': 'https://i.ibb.co/RTxh31Pp/Skill-Timeless-Classics.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Skill_*.png assets via the MediaWiki API (Forte Details table image thumbnails, section=4 of
@@ -5198,18 +5197,18 @@ const SKILL_ICONS = {
   // resolves 'Energized Pounce'/'Energized Rebound' (Forte Circuit moves) to Signal Light's icon rather
   // than falling through to the plain Resonance Skill (Searchlight Service) icon.
   'Lumi': {
-    'Energized': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
-    'Glare': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
-    'Red Spotlight': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
-    'Laser': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/09/Signal_Light.png',
-    'Pounce': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1e/Searchlight_Service.png',
-    'Rebound': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1e/Searchlight_Service.png',
-    'Squeakie Express': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e2/Squeakie_Express.png',
-    'Yellow Light': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
-    'Red Light': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
-    'Glitter': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/87/Skill_Broadblade.png',
-    'Special Delivery': 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bc/Skill_Special_Delivery.png',
-    'Escorting': 'https://static.wikia.nocookie.net/wutheringwaves/images/9/94/Skill_Escorting.png',
+    'Energized': 'https://i.ibb.co/WLVPqHx/Signal-Light.webp',
+    'Glare': 'https://i.ibb.co/WLVPqHx/Signal-Light.webp',
+    'Red Spotlight': 'https://i.ibb.co/WLVPqHx/Signal-Light.webp',
+    'Laser': 'https://i.ibb.co/WLVPqHx/Signal-Light.webp',
+    'Pounce': 'https://i.ibb.co/FvQP99m/Searchlight-Service.webp',
+    'Rebound': 'https://i.ibb.co/FvQP99m/Searchlight-Service.webp',
+    'Squeakie Express': 'https://i.ibb.co/Y7pMmWDX/Squeakie-Express.webp',
+    'Yellow Light': 'https://i.ibb.co/B5n54GNt/Skill-Broadblade.webp',
+    'Red Light': 'https://i.ibb.co/B5n54GNt/Skill-Broadblade.webp',
+    'Glitter': 'https://i.ibb.co/B5n54GNt/Skill-Broadblade.webp',
+    'Special Delivery': 'https://i.ibb.co/Xxx7gYgj/Skill-Special-Delivery.webp',
+    'Escorting': 'https://i.ibb.co/N2dQ7Kyg/Skill-Escorting.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Skill_*.png assets via the MediaWiki API (action=query&titles=File:Skill+...&prop=imageinfo, section
@@ -5217,67 +5216,67 @@ const SKILL_ICONS = {
   // the shared generic Skill_Rectifier.png weapon-type icon on fandom, used here for all her un-enhanced
   // Basic ATK/Heavy Attack/Mid-air Attack moves.
   'Buling': {
-    'Hexagram Calls': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Rectifier.png',
-    'Mid-air Attack': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Rectifier.png',
-    'Heavy Attack': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f6/Skill_Rectifier.png',
-    'In Shadow Thunder Stirs': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/24/Skill_In_Shadow_Thunder_Stirs.png',
-    'Five Thunders Spell Array': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/ff/Skill_Flashing_Thunder_Spell.png',
-    'Flashing Thunder Spell': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/ff/Skill_Flashing_Thunder_Spell.png',
-    'Summon and Smite': 'https://static.wikia.nocookie.net/wutheringwaves/images/3/38/Skill_Summon_and_Smite.png',
-    'Exorcism Spell': 'https://static.wikia.nocookie.net/wutheringwaves/images/1/17/Skill_Exorcism_Spell.png',
+    'Hexagram Calls': 'https://i.ibb.co/rKNB0p6J/Skill-Rectifier.webp',
+    'Mid-air Attack': 'https://i.ibb.co/rKNB0p6J/Skill-Rectifier.webp',
+    'Heavy Attack': 'https://i.ibb.co/rKNB0p6J/Skill-Rectifier.webp',
+    'In Shadow Thunder Stirs': 'https://i.ibb.co/6Jpxh0rV/Skill-In-Shadow-Thunder-Stirs.webp',
+    'Five Thunders Spell Array': 'https://i.ibb.co/6J1q4XqN/Skill-Flashing-Thunder-Spell.webp',
+    'Flashing Thunder Spell': 'https://i.ibb.co/6J1q4XqN/Skill-Flashing-Thunder-Spell.webp',
+    'Summon and Smite': 'https://i.ibb.co/rGpQ3fpb/Skill-Summon-and-Smite.webp',
+    'Exorcism Spell': 'https://i.ibb.co/R4hYk7rh/Skill-Exorcism-Spell.webp',
   },
   // added 2026-08-18 — previously entirely missing (zero SKILL_ICONS coverage for all 4 Rover
   // attunements). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the
   // MediaWiki API (Rover/Combat's tabbed Forte tables, one tab per element). All 4 Rovers share the
   // same generic Skill_Sword.png Basic ATK icon (also covers Heavy ATK/Mid-air/Dodge Counter).
   'Rover: Havoc': {
-    'Tuneslayer': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Wingblade': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c5/Skill_Wingblade.png', // Resonance Skill
-    'Umbra Eclipse': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e5/Skill_Umbra_Eclipse.png', // Forte Circuit
-    'Devastation': 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e5/Skill_Umbra_Eclipse.png', // Forte-gated Heavy Attack that enters Dark Surge, same Forte icon
-    'Deadening Abyss': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/4e/Skill_Deadening_Abyss.png', // Resonance Liberation
-    'Umbra: Lifetaker': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/4e/Skill_Deadening_Abyss.png', // Umbra-state Liberation nuke, same wiki icon
-    'Instant of Annihilation': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/79/Skill_Instant_of_Annihilation.png', // Intro Skill
-    'Soundweaver': 'https://static.wikia.nocookie.net/wutheringwaves/images/f/ff/Skill_Soundweaver.png', // Outro Skill
+    'Tuneslayer': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Wingblade': 'https://i.ibb.co/99BT9Qqn/Skill-Wingblade.webp', // Resonance Skill
+    'Umbra Eclipse': 'https://i.ibb.co/nNpvGF4L/Skill-Umbra-Eclipse.webp', // Forte Circuit
+    'Devastation': 'https://i.ibb.co/nNpvGF4L/Skill-Umbra-Eclipse.webp', // Forte-gated Heavy Attack that enters Dark Surge, same Forte icon
+    'Deadening Abyss': 'https://i.ibb.co/bgvHXLqr/Skill-Deadening-Abyss.webp', // Resonance Liberation
+    'Umbra: Lifetaker': 'https://i.ibb.co/bgvHXLqr/Skill-Deadening-Abyss.webp', // Umbra-state Liberation nuke, same wiki icon
+    'Instant of Annihilation': 'https://i.ibb.co/chtkVHd2/Skill-Instant-of-Annihilation.webp', // Intro Skill
+    'Soundweaver': 'https://i.ibb.co/4wsczBtt/Skill-Soundweaver.webp', // Outro Skill
   },
   'Rover: Spectro': {
-    'Vibration Manifestation': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Resonance': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Heavy Attack: Resonance/Aftertune combo timing hits, no dedicated icon — generic weapon icon
-    'Aftertune': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Resonating Slashes': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png', // Resonance Skill
-    'Resonating Spin': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png', // Forte-Gauge-enhanced Resonance Skill state, same wiki icon
-    'Resonating Whirl': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png',
-    'Resonating Echoes': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/45/Skill_Resonating_Slashes.png',
-    'Echoing Orchestra': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c4/Skill_Echoing_Orchestra.png', // Resonance Liberation
-    'Waveshock': 'https://static.wikia.nocookie.net/wutheringwaves/images/7/70/Skill_Waveshock.png', // Intro Skill
-    'Instant': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Skill_Instant.png', // Outro Skill
+    'Vibration Manifestation': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Resonance': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Heavy Attack: Resonance/Aftertune combo timing hits, no dedicated icon — generic weapon icon
+    'Aftertune': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Resonating Slashes': 'https://i.ibb.co/tw4hy1Ck/Skill-Resonating-Slashes.webp', // Resonance Skill
+    'Resonating Spin': 'https://i.ibb.co/tw4hy1Ck/Skill-Resonating-Slashes.webp', // Forte-Gauge-enhanced Resonance Skill state, same wiki icon
+    'Resonating Whirl': 'https://i.ibb.co/tw4hy1Ck/Skill-Resonating-Slashes.webp',
+    'Resonating Echoes': 'https://i.ibb.co/tw4hy1Ck/Skill-Resonating-Slashes.webp',
+    'Echoing Orchestra': 'https://i.ibb.co/PvNGkhk3/Skill-Echoing-Orchestra.webp', // Resonance Liberation
+    'Waveshock': 'https://i.ibb.co/CpD7BjSZ/Skill-Waveshock.webp', // Intro Skill
+    'Instant': 'https://i.ibb.co/hFR6TPbf/Skill-Instant.webp', // Outro Skill
   },
   'Rover: Aero': {
-    'Wind Cutter': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Plunge': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Mid-air Attack plunging attack, no dedicated icon — generic weapon icon
-    'Illusion Breaker': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // Resonance Skill
-    'Awakening Gale': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // Resonance Skill's mid-air jump-attack cast, same wiki icon
-    'Skyfall Severance': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // Resonance Skill's mid-air follow-up cast, same wiki icon
-    'Unbound Flow': 'https://static.wikia.nocookie.net/wutheringwaves/images/4/49/Skill_Illusion_Breaker.png', // max-Windstrings Resonance Skill upgrade, same wiki icon
-    'Cycle of Wind': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Skill_Cycle_of_Wind.png', // Forte Circuit
-    'Cloudburst Dance': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Skill_Cycle_of_Wind.png', // Forte Circuit's Mid-air Attack replacement, same wiki icon
-    'Omega Storm': 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c4/Skill_Omega_Storm.png', // Resonance Liberation
-    'Relentless Squall': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/23/Skill_Relentless_Squall.png', // Intro Skill
-    "Storm's Echo": 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a3/Skill_Storm%27s_Echo.png', // Outro Skill
+    'Wind Cutter': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Plunge': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Mid-air Attack plunging attack, no dedicated icon — generic weapon icon
+    'Illusion Breaker': 'https://i.ibb.co/JFC1QjWX/Skill-Illusion-Breaker.webp', // Resonance Skill
+    'Awakening Gale': 'https://i.ibb.co/JFC1QjWX/Skill-Illusion-Breaker.webp', // Resonance Skill's mid-air jump-attack cast, same wiki icon
+    'Skyfall Severance': 'https://i.ibb.co/JFC1QjWX/Skill-Illusion-Breaker.webp', // Resonance Skill's mid-air follow-up cast, same wiki icon
+    'Unbound Flow': 'https://i.ibb.co/JFC1QjWX/Skill-Illusion-Breaker.webp', // max-Windstrings Resonance Skill upgrade, same wiki icon
+    'Cycle of Wind': 'https://i.ibb.co/Q7gm1B2G/Skill-Cycle-of-Wind.webp', // Forte Circuit
+    'Cloudburst Dance': 'https://i.ibb.co/Q7gm1B2G/Skill-Cycle-of-Wind.webp', // Forte Circuit's Mid-air Attack replacement, same wiki icon
+    'Omega Storm': 'https://i.ibb.co/4nCR1X2f/Skill-Omega-Storm.webp', // Resonance Liberation
+    'Relentless Squall': 'https://i.ibb.co/bjqZf19b/Skill-Relentless-Squall.webp', // Intro Skill
+    "Storm's Echo": 'https://i.ibb.co/N69CQqFv/Skill-Storm-s-Echo.webp', // Outro Skill
   },
   'Rover: Electro': {
-    'Deterrence': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic ATK
-    'Standard': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png',
-    'Repel': 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ad/Skill_Sword.png', // Basic Attack follow-up after Resonance Skill, no dedicated icon — generic weapon icon
-    'Thunderclap': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Skill_Thunderclap.png', // Resonance Skill
-    "Myriad Omens' Mandate": 'https://static.wikia.nocookie.net/wutheringwaves/images/d/da/Skill_Myriad_Omens%27_Mandate.png', // Forte Circuit
-    'Overshock': 'https://static.wikia.nocookie.net/wutheringwaves/images/d/da/Skill_Myriad_Omens%27_Mandate.png', // Forte Circuit's capped-Electric-Surge Skill replacement, same wiki icon
-    'Ultimate Tactics': 'https://static.wikia.nocookie.net/wutheringwaves/images/0/05/Skill_Ultimate_Tactics.png', // Resonance Liberation
-    'Thunderous Fury': 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8a/Skill_Thunderous_Fury.png', // Intro Skill
-    'Rumbling Thunders': 'https://static.wikia.nocookie.net/wutheringwaves/images/2/2c/Skill_Rumbling_Thunders.png', // Outro Skill
+    'Deterrence': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic ATK
+    'Standard': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp',
+    'Repel': 'https://i.ibb.co/prZWKCtm/Skill-Sword.webp', // Basic Attack follow-up after Resonance Skill, no dedicated icon — generic weapon icon
+    'Thunderclap': 'https://i.ibb.co/2YyS74Pn/Skill-Thunderclap.webp', // Resonance Skill
+    "Myriad Omens' Mandate": 'https://i.ibb.co/7NKRhwQH/Skill-Myriad-Omens-Mandate.webp', // Forte Circuit
+    'Overshock': 'https://i.ibb.co/7NKRhwQH/Skill-Myriad-Omens-Mandate.webp', // Forte Circuit's capped-Electric-Surge Skill replacement, same wiki icon
+    'Ultimate Tactics': 'https://i.ibb.co/wNFW43BD/Skill-Ultimate-Tactics.webp', // Resonance Liberation
+    'Thunderous Fury': 'https://i.ibb.co/Kj3cKLdS/Skill-Thunderous-Fury.webp', // Intro Skill
+    'Rumbling Thunders': 'https://i.ibb.co/Zpw7cvMr/Skill-Rumbling-Thunders.webp', // Outro Skill
   },
 };
 const getSkillIcon = (name, skillName) => {
@@ -5693,92 +5692,92 @@ const CHAIN_NODE_ICONS = {
   // Danjin/Yangyang/Sanhua added 2026-08-18: fandom DOES have these Sequence_Node_*.png assets
   // uploaded (unlike the June-2026 characters above) — fetched directly via the MediaWiki API
   // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png&prop=imageinfo) and linked
-  // straight to their static.wikia.nocookie.net URLs, no re-hosting needed. This closes the gap the
+  // fandom's static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19). This closes the gap the
   // earlier audit pass missed (only CHAIN_NODE_NAMES was filled in, not the icon table).
   'Danjin': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c7/Sequence_Node_Crimson_Heart_of_Justice.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/6d/Sequence_Node_Dusted_Mirror.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/9/96/Sequence_Node_Fleeting_Blossom.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/82/Sequence_Node_Solitary_Carnation.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/bb/Sequence_Node_Reigning_Blade.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/08/Sequence_Node_Bloodied_Jade.png',
+    s1: 'https://i.ibb.co/5g9W42c0/Sequence-Node-Crimson-Heart-of-Justice.webp',
+    s2: 'https://i.ibb.co/rfZX4JF7/Sequence-Node-Dusted-Mirror.webp',
+    s3: 'https://i.ibb.co/dJjdp5Vh/Sequence-Node-Fleeting-Blossom.webp',
+    s4: 'https://i.ibb.co/B2zYPj4s/Sequence-Node-Solitary-Carnation.webp',
+    s5: 'https://i.ibb.co/4Z1rKbqK/Sequence-Node-Reigning-Blade.webp',
+    s6: 'https://i.ibb.co/7P4QXyb/Sequence-Node-Bloodied-Jade.webp',
   },
   'Yangyang': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/42/Sequence_Node_Sapphire_Skies%2C_Soaring_Sparrows.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/13/Sequence_Node_Nesting_Twigs%2C_in_Beaks_They_Harrow.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1c/Sequence_Node_Nature_Sings_in_Symphony.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e1/Sequence_Node_Close_Your_Eyes_and_Listen_in.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/76/Sequence_Node_Winds_Whisper_in_Harmony.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/f/f3/Sequence_Node_A_Tribute_to_Life%27s_Sweet_Hymn.png',
+    s1: 'https://i.ibb.co/B2X82K7q/Sequence-Node-Sapphire-Skies-Soaring-Sparrows.webp',
+    s2: 'https://i.ibb.co/4ZLLwpmg/Sequence-Node-Nesting-Twigs-in-Beaks-They-Harrow.webp',
+    s3: 'https://i.ibb.co/S49SrGRq/Sequence-Node-Nature-Sings-in-Symphony.webp',
+    s4: 'https://i.ibb.co/36xqPN5/Sequence-Node-Close-Your-Eyes-and-Listen-in.webp',
+    s5: 'https://i.ibb.co/LdSxmYwN/Sequence-Node-Winds-Whisper-in-Harmony.webp',
+    s6: 'https://i.ibb.co/RTtYL5yC/Sequence-Node-A-Tribute-to-Life-s-Sweet-Hymn.webp',
   },
   'Sanhua': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/3b/Sequence_Node_Solitude%27s_Embrace.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8d/Sequence_Node_Snowy_Clarity.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/03/Sequence_Node_Anomalous_Vision.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/84/Sequence_Node_Blade_Mastery.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e8/Sequence_Node_Unraveling_Fate.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1a/Sequence_Node_Daybreak_Radiance.png',
+    s1: 'https://i.ibb.co/KjhFTRrx/Sequence-Node-Solitude-s-Embrace.webp',
+    s2: 'https://i.ibb.co/9kxR0b3Y/Sequence-Node-Snowy-Clarity.webp',
+    s3: 'https://i.ibb.co/gcZgcdD/Sequence-Node-Anomalous-Vision.webp',
+    s4: 'https://i.ibb.co/hR4K48ZD/Sequence-Node-Blade-Mastery.webp',
+    s5: 'https://i.ibb.co/7Nj6QGLK/Sequence-Node-Unraveling-Fate.webp',
+    s6: 'https://i.ibb.co/CsBNd2c9/Sequence-Node-Daybreak-Radiance.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Taoqi/Combat&prop=images).
   'Taoqi': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/60/Sequence_Node_Essense_of_Tranquility.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/9/93/Sequence_Node_Silent_Strength.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/dc/Sequence_Node_Keen-eyed_Observer.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/43/Sequence_Node_Heavylifting_Duty.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/a/a1/Sequence_Node_Benevolent_Guardian.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/78/Sequence_Node_Defender_of_Peace.png',
+    s1: 'https://i.ibb.co/SXh4R3Vq/Sequence-Node-Essense-of-Tranquility.webp',
+    s2: 'https://i.ibb.co/m5XCTx1C/Sequence-Node-Silent-Strength.webp',
+    s3: 'https://i.ibb.co/9kJGkmL6/Sequence-Node-Keen-eyed-Observer.webp',
+    s4: 'https://i.ibb.co/9kWbx8fb/Sequence-Node-Heavylifting-Duty.webp',
+    s5: 'https://i.ibb.co/DPqM6zwH/Sequence-Node-Benevolent-Guardian.webp',
+    s6: 'https://i.ibb.co/5XzTbxBV/Sequence-Node-Defender-of-Peace.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Yuanwu/Combat&prop=images).
   'Yuanwu': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/0f/Sequence_Node_Steaming_Cup_of_Justice.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/dd/Sequence_Node_Fierce_Heart%2C_Serene_Mind.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/8/8d/Sequence_Node_Upholder_of_Integrity.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d8/Sequence_Node_Retributive_Knuckles.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/39/Sequence_Node_Neighborhood_Protector.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/67/Sequence_Node_Defender_of_All_Realms.png',
+    s1: 'https://i.ibb.co/ycfKwWWG/Sequence-Node-Steaming-Cup-of-Justice.webp',
+    s2: 'https://i.ibb.co/B20h0wfN/Sequence-Node-Fierce-Heart-Serene-Mind.webp',
+    s3: 'https://i.ibb.co/S4PSJrpp/Sequence-Node-Upholder-of-Integrity.webp',
+    s4: 'https://i.ibb.co/wrCs8zvG/Sequence-Node-Retributive-Knuckles.webp',
+    s5: 'https://i.ibb.co/ZpNBLSt6/Sequence-Node-Neighborhood-Protector.webp',
+    s6: 'https://i.ibb.co/nGN7G1z/Sequence-Node-Defender-of-All-Realms.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Mortefi/Combat&prop=images).
   'Mortefi': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/e/e8/Sequence_Node_Solitary_Etude.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d2/Sequence_Node_Hypocritical_Hymn.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/63/Sequence_Node_Flaming_Recitativo.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/c5/Sequence_Node_Cathartic_Waltz.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/cc/Sequence_Node_Funerary_Quartet.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/44/Sequence_Node_Apoplectic_Instrumental.png',
+    s1: 'https://i.ibb.co/s9ygxXYL/Sequence-Node-Solitary-Etude.webp',
+    s2: 'https://i.ibb.co/Z64664sR/Sequence-Node-Hypocritical-Hymn.webp',
+    s3: 'https://i.ibb.co/qLXh8L9K/Sequence-Node-Flaming-Recitativo.webp',
+    s4: 'https://i.ibb.co/99G1xJHS/Sequence-Node-Cathartic-Waltz.webp',
+    s5: 'https://i.ibb.co/yF2s64FP/Sequence-Node-Funerary-Quartet.webp',
+    s6: 'https://i.ibb.co/dspC2MzV/Sequence-Node-Apoplectic-Instrumental.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=parse&page=Youhu/Combat&prop=text&section=9).
   'Youhu': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/be/Sequence_Node_Waterside_Respite.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/a/ab/Sequence_Node_Sunroom_Siesta.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/63/Sequence_Node_Restless_Sleep.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/06/Sequence_Node_Frosted_Lullaby.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/0/04/Sequence_Node_Dreamland_Meander.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/23/Sequence_Node_Slumber_Evermore.png',
+    s1: 'https://i.ibb.co/cX15STLS/Sequence-Node-Waterside-Respite.webp',
+    s2: 'https://i.ibb.co/840rck5k/Sequence-Node-Sunroom-Siesta.webp',
+    s3: 'https://i.ibb.co/GvrkqwV3/Sequence-Node-Restless-Sleep.webp',
+    s4: 'https://i.ibb.co/2745M8Dv/Sequence-Node-Frosted-Lullaby.webp',
+    s5: 'https://i.ibb.co/nqjLTh0J/Sequence-Node-Dreamland-Meander.webp',
+    s6: 'https://i.ibb.co/qLYPfdcj/Sequence-Node-Slumber-Evermore.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=parse&page=Lumi/Combat&prop=text&section=9).
   'Lumi': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/7/7a/Sequence_Node_Parcel_To_Be_Delivered.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d5/Sequence_Node_Lollo_Logistics%2C_Ready_to_Help.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/3/35/Sequence_Node_Priority_Parcel_In_Transit.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/5/5b/Sequence_Node_Captain_Lumi%2C_At_Your_Service.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/c/cb/Sequence_Node_Parcel_Collected_On_Time.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/2/2a/Sequence_Node_Give_Me_A_Five-star_Rating.png',
+    s1: 'https://i.ibb.co/TqHQ8XjX/Sequence-Node-Parcel-To-Be-Delivered.webp',
+    s2: 'https://i.ibb.co/fVcQnMDm/Sequence-Node-Lollo-Logistics-Ready-to-Help.webp',
+    s3: 'https://i.ibb.co/vNfCcYX/Sequence-Node-Priority-Parcel-In-Transit.webp',
+    s4: 'https://i.ibb.co/LGscd4x/Sequence-Node-Captain-Lumi-At-Your-Service.webp',
+    s5: 'https://i.ibb.co/bgzPXf0f/Sequence-Node-Parcel-Collected-On-Time.webp',
+    s6: 'https://i.ibb.co/5XyLn8f0/Sequence-Node-Give-Me-A-Five-star-Rating.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=File:Sequence+Node+...&prop=
   // imageinfo, from Buling/Combat's image list).
   'Buling': {
-    s1: 'https://static.wikia.nocookie.net/wutheringwaves/images/4/4f/Sequence_Node_Exorcist_Gadgets%2C_Lend_Me_Your_Power.png',
-    s2: 'https://static.wikia.nocookie.net/wutheringwaves/images/d/d3/Sequence_Node_Talisman_Burns%2C_Spirits_Turn.png',
-    s3: 'https://static.wikia.nocookie.net/wutheringwaves/images/6/68/Sequence_Node_Summoner_of_Spirits%2C_Seeker_of_Fate.png',
-    s4: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b3/Sequence_Node_Wanderer_of_Solaris%2C_Blessed_by_Fortune.png',
-    s5: 'https://static.wikia.nocookie.net/wutheringwaves/images/1/1d/Sequence_Node_Forum_Ban%3F_New_Account%21.png',
-    s6: 'https://static.wikia.nocookie.net/wutheringwaves/images/b/b1/Sequence_Node_%22Almighty_Forum_Lord_of_Thunder_Spell%22.png',
+    s1: 'https://i.ibb.co/Nd55rsFn/Sequence-Node-Exorcist-Gadgets-Lend-Me-Your-Power.webp',
+    s2: 'https://i.ibb.co/v4b7KSnp/Sequence-Node-Talisman-Burns-Spirits-Turn.webp',
+    s3: 'https://i.ibb.co/BVdbprg6/Sequence-Node-Summoner-of-Spirits-Seeker-of-Fate.webp',
+    s4: 'https://i.ibb.co/fYLSNdB2/Sequence-Node-Wanderer-of-Solaris-Blessed-by-Fortune.webp',
+    s5: 'https://i.ibb.co/NdSwppx6/Sequence-Node-Forum-Ban-New-Account.webp',
+    s6: 'https://i.ibb.co/bRH5Fycd/Sequence-Node-Almighty-Forum-Lord-of-Thunder-Spell.webp',
   },
 };
 

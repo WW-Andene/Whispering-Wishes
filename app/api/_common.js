@@ -21,6 +21,33 @@
 // Any of those set to 'true' (case-insensitive) activates the kill switch.
 const _isTruthy = (v) => typeof v === 'string' && v.toLowerCase() === 'true';
 
+// Origin allowlist shared by every route (was copy-pasted per-file with a hardcoded Vercel domain +
+// a few localhost dev ports — moved here once so a self-hosted deployment doesn't have to touch each
+// handler individually). EXTRA_ALLOWED_ORIGINS (comma-separated, e.g.
+// "http://localhost:4173,https://your-tunnel.trycloudflare.com") ADDS origins on top of this base
+// list — unset (the default on Vercel) leaves behavior identical to before this existed.
+const BASE_ALLOWED_ORIGINS = [
+  'https://whispering-wishes.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:5173',
+  'http://localhost:4173', // Vite's default `vite preview` / self-host/server.js port
+  // Fixed, well-known origins Capacitor's WebView sends the Origin header as for the bundled
+  // native app (see CAPACITOR_APP.md) — 'capacitor://localhost' on iOS, 'https://localhost' on
+  // Android with the default HTTPS scheme. Not user-specific like a tunnel domain, so these are
+  // safe to bake in permanently rather than push onto every self-hoster via EXTRA_ALLOWED_ORIGINS.
+  'capacitor://localhost',
+  'https://localhost',
+];
+const _extraOrigins = (process.env.EXTRA_ALLOWED_ORIGINS || '')
+  .split(',').map(s => s.trim()).filter(Boolean);
+const ALL_ALLOWED_ORIGINS = [...BASE_ALLOWED_ORIGINS, ..._extraOrigins];
+
+export function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  return ALL_ALLOWED_ORIGINS.includes(origin) || /^https:\/\/whispering-wishes[a-z0-9-]*\.vercel\.app$/.test(origin);
+}
+
 export function isServiceDisabled(res, serviceKey) {
   const global = _isTruthy(process.env.SERVICE_DISABLED);
   const specific = serviceKey && _isTruthy(process.env[`SERVICE_DISABLED_${serviceKey.toUpperCase()}`]);

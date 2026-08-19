@@ -22,6 +22,16 @@ const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 const OVERLAY_TILE_RE = /\/lossless\/\d+\/\d+\.png$/i;
 const BASE_TILE_RE = /\/map-tiles\/Solaris_3\/\d+\/\d+\/\d+\.webp$/i;
 
+// "Download for offline" persistent asset cache — character portrait/spine
+// animations and banner videos a user explicitly chose to pre-fetch (via
+// ProfileTab's OfflineAssetsCard), same treatment as TILE_CACHE: not part of
+// the version-bumped APP_CACHE/IMG_CACHE cycle (survives app updates) and
+// not subject to IMG_CACHE's 250-entry LRU trim (explicitly downloaded, so
+// explicitly purged instead of silently evicted).
+const ASSET_CACHE_VERSION = 'v1';
+const ASSET_CACHE = `ww-assets-${ASSET_CACHE_VERSION}`;
+const ASSET_DIR_RE = /^\/(portraits|animated-bg|spine)\//;
+
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/app-title-icon/favicon.svg'];
@@ -45,7 +55,7 @@ self.addEventListener('install', (event) => {
 // version-suffixed name matches TILE_CACHE; older ww-tiles-* buckets get
 // cleaned so user-downloaded tiles aren't orphaned on the device.
 self.addEventListener('activate', (event) => {
-  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE, TILE_CACHE];
+  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE, TILE_CACHE, ASSET_CACHE];
   event.waitUntil(
     caches.keys().then(names =>
       Promise.all(names.filter(n => !currentCaches.includes(n)).map(n => caches.delete(n)))
@@ -155,6 +165,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Character animations / banner videos a user explicitly downloaded for
+  // offline (OfflineAssetsCard) → same dedicated-cache, cache-first
+  // treatment as tiles, and for the same reason: don't let the 250-entry
+  // image LRU quietly evict something the user asked to keep.
+  if (ASSET_DIR_RE.test(url.pathname)) {
+    event.respondWith(cacheFirst(event.request, ASSET_CACHE));
+    return;
+  }
+
   // CDN assets → cache-first
   if (CDN_DOMAINS.some(d => url.hostname.includes(d))) {
     event.respondWith(cacheFirst(event.request, CDN_CACHE));
@@ -194,11 +213,14 @@ self.addEventListener('message', (event) => {
     CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
   }
 
-  // ── Map overlay offline download API ─────────────────────────────────────
-  // The app sends the full list of tile URLs for one overlay and we bulk-
-  // fetch them into TILE_CACHE. Progress is posted back so the UI can show
-  // a percentage. Purge / query mirror the same shape so the UI can show
-  // "X / N cached" or wipe an overlay's tiles to free storage.
+  // ── Bulk offline-download API — shared by map tiles (TILE_CACHE) and the
+  // "download for offline" character animations / banner videos (ASSET_CACHE,
+  // OfflineAssetsCard). The app sends the full list of URLs for one item and
+  // an optional `cache: 'assets'` (defaults to tiles, the original/only
+  // caller before ASSET_CACHE existed) selecting which persistent cache to
+  // bulk-fetch them into. Progress is posted back so the UI can show a
+  // percentage. Purge / query mirror the same shape so the UI can show
+  // "X / N cached" or wipe an item's files to free storage. ──
   const data = event.data;
   if (!data || typeof data !== 'object') return;
   const reply = (msg) => event.source?.postMessage(msg);
@@ -245,10 +267,14 @@ async function fetchTileWithRetry(cache, url, maxAttempts = 3) {
   return false;
 }
 
+function resolveCacheName(data) {
+  return data.cache === 'assets' ? ASSET_CACHE : TILE_CACHE;
+}
+
 async function handleDownloadOverlay(data, reply) {
   const { id, urls } = data;
   try {
-    const cache = await caches.open(TILE_CACHE);
+    const cache = await caches.open(resolveCacheName(data));
     let done = 0;
     let failed = 0;
     const total = urls.length;
@@ -276,7 +302,7 @@ async function handleDownloadOverlay(data, reply) {
 async function handlePurgeOverlay(data, reply) {
   const { id, urls } = data;
   try {
-    const cache = await caches.open(TILE_CACHE);
+    const cache = await caches.open(resolveCacheName(data));
     await Promise.all(urls.map((u) => cache.delete(u)));
     reply({ type: 'purge-done', id });
   } catch (err) {
@@ -287,7 +313,7 @@ async function handlePurgeOverlay(data, reply) {
 async function handleQueryOverlay(data, reply) {
   const { id, urls } = data;
   try {
-    const cache = await caches.open(TILE_CACHE);
+    const cache = await caches.open(resolveCacheName(data));
     let cached = 0;
     for (const u of urls) {
       if (await cache.match(u)) cached++;
