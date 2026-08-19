@@ -13,6 +13,26 @@
 
 const BASE_URL = (import.meta.env.BASE_URL || '/');
 
+// Same fix apiBase.js applies to /api/*: inside the Capacitor native app the
+// bundle is served from capacitor://localhost (iOS) / https://localhost
+// (Android), which has no files under it at all — a relative '/portraits/...'
+// fetch 404s instantly against that origin. portraits/spine/animated-bg were
+// deliberately left out of the native bundle (see CAPACITOR_APP.md) and
+// dist-native/sw.js's *fetch* listener already redirects normal page loads
+// of those paths to VITE_API_BASE_URL, but handleDownloadOverlay's bulk
+// fetch() calls run inside the SW script itself and never go through that
+// listener, so they need the absolute URL up front. Icon URLs from
+// src/data/*.js are already absolute (hotlinked from third-party hosts) and
+// pass through untouched.
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const isNativePlatform = () =>
+  typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
+
+function resolveDownloadUrl(u) {
+  if (isNativePlatform() && API_BASE_URL && u.startsWith('/')) return API_BASE_URL + u;
+  return u;
+}
+
 let _manifestPromise = null;
 export function loadAssetManifest() {
   if (!_manifestPromise) {
@@ -27,6 +47,7 @@ export const ASSET_CATEGORY_LABELS = {
   portraits: 'Character Animations',
   spine: 'Banner Character Art',
   'animated-bg': 'Animated Banner Backgrounds',
+  icons: 'Character & Item Icons',
 };
 
 function swController() {
@@ -110,7 +131,7 @@ export async function queryAssets(category) {
 
 function urlsForCategory(manifest, category) {
   const cats = category === 'all' ? Object.keys(manifest.categories) : [category];
-  return cats.flatMap(c => (manifest.categories[c]?.files || []).map(f => f.url));
+  return cats.flatMap(c => (manifest.categories[c]?.files || []).map(f => resolveDownloadUrl(f.url)));
 }
 
 export function serviceWorkerAvailable() {

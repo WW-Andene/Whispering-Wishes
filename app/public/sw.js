@@ -248,8 +248,18 @@ async function fetchTileWithRetry(cache, url, maxAttempts = 3) {
   if (existing) return true;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      const resp = await fetch(url);
-      if (resp.ok) {
+      // no-cors: several icon hosts (wuwatracker.com, i.ibb.co, ...) don't
+      // send CORS headers, which would otherwise make a same-context fetch()
+      // call reject outright (unlike an <img> tag, which silently falls
+      // back to a no-cors load on its own). Same-origin requests are
+      // unaffected by the mode and still come back as a normal 'basic'
+      // response with a readable status.
+      const resp = await fetch(url, { mode: 'no-cors' });
+      // Opaque = cross-origin no-cors response: status/ok are unreadable by
+      // design, but the browser fetched *something* — treat it as success
+      // and let cache.put store it (opaque responses are cacheable and
+      // replayable, just not inspectable).
+      if (resp.ok || resp.type === 'opaque') {
         await cache.put(url, resp);
         return true;
       }
