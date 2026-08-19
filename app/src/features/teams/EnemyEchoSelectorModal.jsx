@@ -6,7 +6,7 @@ import React, { useCallback } from 'react';
 import { X } from 'lucide-react';
 import { ECHO_DATA, ALL_1COST_ECHOES, ALL_3COST_ECHOES, ALL_4COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
 import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import MonsterCard from '../../shared/components/MonsterCard.jsx';
 

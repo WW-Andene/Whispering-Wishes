@@ -6,7 +6,7 @@ import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../dat
 import { DEFAULT_ZONE_DRAFTS, DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
 import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog.js';
 import { downloadTiles, purgeTiles, queryTiles, tileUrlsForOverlay, tileUrlsForBaseMap, serviceWorkerAvailable } from '../../core/tileSW.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';

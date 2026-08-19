@@ -70,7 +70,7 @@ describe('Module imports', () => {
   });
 
   it('loads provider modules', async () => {
-    const { FocusTrapModal } = await import('../providers/FocusTrapModal.jsx');
+    const { FocusTrapModal } = await import('../shared/components/FocusTrapModal.jsx');
     expect(FocusTrapModal).toBeDefined();
     const { ToastProvider } = await import('../providers/ToastProvider.jsx');
     expect(ToastProvider).toBeDefined();

@@ -3,7 +3,7 @@ import { Sword, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { haptic, getStatIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 export default function WeaponSelector({

@@ -41,10 +41,10 @@ import { computeTrophies } from './core/computeTrophies.js';
 import { PWAProvider, usePWA } from './providers/PWAProvider.jsx';
 import { ToastProvider, useToast } from './providers/ToastProvider.jsx';
 import { ConfirmProvider, useConfirm } from './providers/ConfirmProvider.jsx';
-import { FocusTrapModal, useFocusTrap } from './providers/FocusTrapModal.jsx';
+import { FocusTrapModal, useFocusTrap } from './shared/components/FocusTrapModal.jsx';
 // KuroStyles removed — CSS now loaded via <link> in index.html (src/styles/kuro.css)
 // OLED mode overrides handled by .oled-mode class on root div (no JS needed)
-import { OnboardingModal } from './providers/OnboardingModal.jsx';
+import { OnboardingModal } from './shared/components/OnboardingModal.jsx';
 import { ImageFramingProvider, useImageFramingContext } from './providers/ImageFramingProvider.jsx';
 import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---

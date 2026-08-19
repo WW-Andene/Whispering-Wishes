@@ -12,7 +12,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { BannerCard } from '../../shared/components/BannerCard.jsx';
 import { StandardBannerSection } from '../../shared/components/StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 
 const FOCUS_DELAY_MS = 0;
