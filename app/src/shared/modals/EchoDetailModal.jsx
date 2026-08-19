@@ -9,7 +9,7 @@ import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { ECHO_DATA, ECHO_SETS } from '../../data/echoes.js';
 import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';

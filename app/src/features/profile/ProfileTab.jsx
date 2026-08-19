@@ -14,7 +14,7 @@ import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
 import { renderIdCard } from './idCardRenderer.js';
-import { useFocusTrap, FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';

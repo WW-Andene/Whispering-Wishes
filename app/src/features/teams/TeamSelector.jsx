@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Search, Star, Users, X, Heart, Swords, TrendingUp, Target, Flame, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon } from '../../utils/helpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';

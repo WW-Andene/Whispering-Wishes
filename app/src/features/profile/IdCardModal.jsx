@@ -9,7 +9,7 @@ import { CHARACTER_DATA, ALL_CHARACTERS } from '../../data/characters.js';
 import { HEADER_ICON } from '../../data/constants.js';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 

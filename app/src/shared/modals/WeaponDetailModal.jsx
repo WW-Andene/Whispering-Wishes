@@ -7,7 +7,7 @@ import React from 'react';
 import { Swords, Star, TrendingUp, X } from 'lucide-react';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';

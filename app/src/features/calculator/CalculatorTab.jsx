@@ -18,7 +18,7 @@ import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { PityCounterInput } from '../../shared/components/PityCounterInput.jsx';
 import { CalcResultsCard } from '../../shared/components/CalcResults.jsx';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
 import { MAX_BOOKMARK_NAME_LENGTH } from '../../shared/constants/appConstants.js';

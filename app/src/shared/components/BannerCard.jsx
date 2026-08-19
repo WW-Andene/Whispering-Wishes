@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 import { Info, Star, X } from 'lucide-react';
-import { FocusTrapModal } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';

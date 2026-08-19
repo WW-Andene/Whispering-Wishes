@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useCallback, useRef, useEffect, createContext, useContext } from 'react';
-import { FocusTrapModal } from './FocusTrapModal.jsx';
+import { FocusTrapModal } from '../shared/components/FocusTrapModal.jsx';
 
 // [SECTION:CONFIRM-DIALOG] — Native-style confirmation modal (replaces window.confirm)
 const ConfirmContext = createContext(null);

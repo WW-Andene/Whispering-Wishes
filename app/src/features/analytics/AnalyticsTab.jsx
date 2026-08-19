@@ -26,7 +26,7 @@ import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { FocusTrapModal, useFocusTrap } from '../../providers/FocusTrapModal.jsx';
+import { FocusTrapModal, useFocusTrap } from '../../shared/components/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
