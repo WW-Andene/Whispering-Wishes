@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Target, Trash2, Upload, Users, X } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { scoreTeamComposition, isHealerRole, isSupportRole, TIER_SCORES } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
@@ -189,14 +189,31 @@ function TeamsTab({
             {(() => {
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
-              // Relevant whenever auto-detect can't unambiguously know which member the player wants
-              // the headline DPS number built around: dual/multi-Main-DPS-role comps (ambiguous which
-              // one), and pure Sub-DPS/hybrid quickswap comps with zero 'Main DPS'-role members (falls
-              // back to highest totalMult with no player say). Exactly one Main DPS-role member is the
-              // only case that's genuinely unambiguous.
-              const mainDpsCandidateCount = teamSlots.filter(n => n && CHARACTER_DATA[n]?.role === 'Main DPS').length;
+              // Shared by the per-suggestion click handler and the Shuffle button below — loads a
+              // suggestion's members into the active team's slots and clears any stale headline-DPS
+              // override left over from whatever this team used to contain.
+              const applySuggestion = (s) => {
+                s.members.slice(0, 3).forEach((m, idx) => {
+                  dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: m });
+                });
+                dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: null });
+                haptic.success();
+              };
+              const shuffleSuggestion = () => {
+                const picks = teamSuggestions.filter(s => !s.header);
+                if (!picks.length) return;
+                applySuggestion(picks[Math.floor(Math.random() * picks.length)]);
+              };
+              // The crown is offered whenever more than one member could plausibly be the headline DPS
+              // (dmgCapableCount > 1) — NOT gated behind "auto-detect thinks this is ambiguous". That
+              // used to require mainDpsCandidateCount !== 1 (a dual/zero-Main-DPS-role heuristic), which
+              // meant the button silently never appeared for the vast majority of curated suggestions —
+              // almost every curated trio is exactly 1 Main DPS + 1 Sub + 1 Support by construction, so
+              // auto-detect always considered them "unambiguous" and hid the override entirely, even
+              // though the player might legitimately want to build around a different member than the
+              // nominal Main DPS. Always letting the player override (when there's more than one
+              // dmg-capable choice) is simpler and matches what was actually being reported as missing.
               const dmgCapableCount = teamSlots.filter(n => n && (CHARACTER_DATA[n]?.totalMult || 0) > 0).length;
-              const mainDpsChoiceAmbiguous = mainDpsCandidateCount !== 1 && dmgCapableCount > 1;
               const setTeamMainDps = (name) => {
                 dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: activeTeam.mainDpsOverride === name ? null : name });
                 haptic.light();
@@ -659,7 +676,7 @@ function TeamsTab({
                               >
                                 <X size={12} />
                               </button>}
-                              {!framingMode && mainDpsChoiceAmbiguous && (charData?.totalMult || 0) > 0 && (
+                              {!framingMode && dmgCapableCount > 1 && (charData?.totalMult || 0) > 0 && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setTeamMainDps(charName); }}
                                   className={`action-btn absolute top-1 left-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
@@ -725,7 +742,20 @@ function TeamsTab({
                   {/* Suggested Teams from Character Data — collapsible */}
                   <Card>
                     <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setSuggestionsCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSuggestionsCollapsed(p => !p); } }} aria-expanded={!suggestionsCollapsed}>
-                      <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${suggestionsCollapsed ? '' : 'rotate-180'}`} />}><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
+                      <CardHeader action={
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); shuffleSuggestion(); }}
+                            disabled={!teamSuggestions.some(s => !s.header)}
+                            className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                            aria-label="Shuffle: load a random suggested team"
+                            title="Shuffle: load a random suggested team"
+                          >
+                            <Shuffle size={12} /> Shuffle
+                          </button>
+                          <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${suggestionsCollapsed ? '' : 'rotate-180'}`} />
+                        </div>
+                      }><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
                     </div>
                     {!suggestionsCollapsed && (
                     <CardBody>
@@ -739,12 +769,7 @@ function TeamsTab({
                             return (
                             <button
                               key={i}
-                              onClick={() => {
-                                s.members.slice(0, 3).forEach((m, idx) => {
-                                  dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: m });
-                                });
-                                haptic.success();
-                              }}
+                              onClick={() => applySuggestion(s)}
                               className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-[var(--border-medium)] hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
                               style={{ background: 'var(--bg-stat)' }}
                             >
