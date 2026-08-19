@@ -291,13 +291,20 @@ export function countTeamElements(members) {
 }
 
 // ── Route type-specific DMG bonuses into skillDmg based on damage focus ──
+// Every character has a complete, non-empty dmgFocus (see characters.js's own contract comment), so
+// the `!dpsFocus.length` branches below are a defensive fallback for the (currently theoretical)
+// case of a character missing that data — not a live path in practice. What WAS live: libDmg had no
+// such guard at all, so any main DPS whose dmgFocus is defined and simply doesn't include
+// 'Liberation' (e.g. a Basic-ATK-focused character with a Liberation DMG buff active from gear/team)
+// still got 30% of that buff bled into skillDmg unconditionally — every other type (Basic/Heavy) is
+// correctly zeroed out in that same "defined focus, not this type" case.
 export function routeTypeBonuses(stats, dpsFocus) {
   if (dpsFocus.includes('Basic ATK')) stats.skillDmg += stats.basicDmg;
   else if (stats.basicDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.basicDmg * 0.5;
   if (dpsFocus.includes('Heavy ATK')) stats.skillDmg += stats.heavyDmg;
   else if (stats.heavyDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.heavyDmg * 0.5;
   if (dpsFocus.includes('Liberation')) stats.skillDmg += stats.libDmg;
-  else if (stats.libDmg > 0) stats.skillDmg += stats.libDmg * 0.3;
+  else if (stats.libDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.libDmg * 0.3;
   if (dpsFocus.includes('Echo')) stats.skillDmg += stats.echoDmg;
   if (dpsFocus.includes('Coordinated ATK')) stats.skillDmg += stats.coordDmg;
 }
