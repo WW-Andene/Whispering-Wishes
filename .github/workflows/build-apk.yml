@@ -1,14 +1,28 @@
 name: Build APK
 
+# Only ever builds from main — either automatically on a push that touches
+# the app, or manually via workflow_dispatch (the ref dropdown defaults to
+# main; the guard below hard-stops the job if someone runs it from another
+# branch anyway, so main is enforced regardless of what's picked there).
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 20
     steps:
+      - name: Refuse to run off main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "This workflow only builds from main (got $GITHUB_REF) — aborting." >&2
+          exit 1
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -30,26 +44,25 @@ jobs:
         working-directory: app
         run: npm install
 
-      - name: Build web app
+      # Produces dist-native/ (excludes the ~1GB map-tiles/portraits/animated-bg/spine
+      # directories and patches the bundled service worker to fetch them from
+      # VITE_API_BASE_URL instead) — see capacitor-build/build.mjs and CAPACITOR_APP.md
+      # for why this exists. Falls back to the project's own Vercel deployment if the
+      # VITE_API_BASE_URL repo secret isn't set, so this works with zero setup; set the
+      # secret (Settings → Secrets and variables → Actions) to point at a different
+      # deployment instead.
+      - name: Build native web bundle (dist-native/)
         working-directory: app
-        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'https://whispering-wishes.vercel.app' }}
+        run: npm run build:native
 
-      - name: Install Capacitor
+      # android/ (capacitor.config.json, native project, gradle wrapper) is already
+      # committed — no `cap add android` here, that would re-scaffold and diverge from
+      # what's actually in the repo. Just re-copy the freshly-built dist-native/ into it.
+      - name: Sync Capacitor
         working-directory: app
-        run: npm install --save @capacitor/core @capacitor/cli @capacitor/android
-
-      - name: Create Capacitor config
-        working-directory: app
-        run: |
-          cat > capacitor.config.json <<'EOF'
-          {"appId":"com.deployview.wwandene.whisperingwishes","appName":"Whispering Wishes","webDir":"dist","bundledWebRuntime":false}
-          EOF
-
-      - name: Add Android platform and sync
-        working-directory: app
-        run: |
-          npx cap add android
-          npx cap sync android
+        run: npx cap sync android
 
       - name: Build debug APK
         working-directory: app/android
@@ -60,3 +73,4 @@ jobs:
         with:
           name: whispering-wishes-debug
           path: app/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
