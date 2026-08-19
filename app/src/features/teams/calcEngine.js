@@ -4,8 +4,7 @@
 // Eliminates tripled logic (raw/full/sub-DPS) by providing shared functions.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { WEAPON_DATA } from '../../data/weapons.js';
-import { ECHO_SETS, ECHO_DATA, ECHO_SKILL_BUFFS } from '../../data/echoes.js';
+import { ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 

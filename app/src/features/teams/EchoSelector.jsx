@@ -138,7 +138,16 @@ export default function EchoSelector({
                           const existing = n[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
                           const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
                           newEchoes[slotIdx] = null;
-                          n[eqKey] = { ...existing, echoes: newEchoes };
+                          // Re-derive echoSet/echoSet2 from what's actually still equipped —
+                          // otherwise unequipping an echo below a set's 2pc threshold silently
+                          // keeps applying a set bonus the player no longer has gear for.
+                          const allNames = newEchoes.map(e => e?.name).filter(Boolean);
+                          const setCounts = {};
+                          allNames.forEach(en => { (ECHO_DATA[en]?.sets || []).forEach(s => { setCounts[s] = (setCounts[s] || 0) + 1; }); });
+                          const sortedSets = Object.entries(setCounts).sort((a, b) => b[1] - a[1]);
+                          const primarySet = sortedSets[0]?.[1] >= 2 ? sortedSets[0][0] : '';
+                          const secondarySet = sortedSets[1]?.[1] >= 2 ? sortedSets[1][0] : '';
+                          n[eqKey] = { ...existing, echoes: newEchoes, echoSet: primarySet, echoSet2: secondarySet };
                           try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                           return n;
                         });
@@ -442,7 +451,15 @@ export default function EchoSelector({
                           const existing = n[eqKeyInner] || { weapon: null, echoes: [null, null, null, null, null] };
                           const newEchoes = [...(existing.echoes || [null, null, null, null, null])];
                           newEchoes[slotIdx] = null;
-                          n[eqKeyInner] = { ...existing, echoes: newEchoes };
+                          // Re-derive echoSet/echoSet2 from what's actually still equipped — see
+                          // the matching fix in the "Unequip echo" selector button above.
+                          const allNames = newEchoes.map(e => e?.name).filter(Boolean);
+                          const setCounts = {};
+                          allNames.forEach(en => { (ECHO_DATA[en]?.sets || []).forEach(s => { setCounts[s] = (setCounts[s] || 0) + 1; }); });
+                          const sortedSets = Object.entries(setCounts).sort((a, b) => b[1] - a[1]);
+                          const primarySet = sortedSets[0]?.[1] >= 2 ? sortedSets[0][0] : '';
+                          const secondarySet = sortedSets[1]?.[1] >= 2 ? sortedSets[1][0] : '';
+                          n[eqKeyInner] = { ...existing, echoes: newEchoes, echoSet: primarySet, echoSet2: secondarySet };
                           try { localStorage.setItem('ww-team-equipment', JSON.stringify(n)); } catch {}
                           return n;
                         });
