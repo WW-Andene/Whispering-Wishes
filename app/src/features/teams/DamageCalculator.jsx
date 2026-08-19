@@ -1386,7 +1386,18 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             // crit scaling at all. A fresh click for a Healer/Support role now defaults
                             // to the 'support' preset (ER/Healing Bonus-oriented) instead.
                             const currentEq = teamEquipment[aeqKey];
-                            const roleDefaultPreset = (isHealerRole(d.role) || isSupportRole(d.role)) ? 'support' : 'default';
+                            // The 👑 crown (activeTeamData.mainDpsOverride) is a stronger, team-specific
+                            // signal than a character's static innate role — it's the user explicitly
+                            // saying "for THIS team, this one is the headline damage dealer" (e.g. running
+                            // a normally Sub-DPS/hybrid character like Qiuyuan as Main DPS). Verified this
+                            // override was never read anywhere in Auto Equip: it always fell back to the
+                            // static-role default regardless, so crowning a Healer/Support/Sub DPS didn't
+                            // change the preset at all. When crowned for this team, force the DPS-maximizing
+                            // 'default' (Crit Rate/Crit DMG) preset even if their static role would
+                            // otherwise point to 'support'.
+                            const isTeamMainDps = activeTeamData.mainDpsOverride === m.name;
+                            const roleDefaultPreset = isTeamMainDps ? 'default'
+                              : (isHealerRole(d.role) || isSupportRole(d.role)) ? 'support' : 'default';
                             const preset = currentEq?.echoPreset || roleDefaultPreset;
                             const scaling = d.statScaling || 'ATK';
                             const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
