@@ -43,6 +43,7 @@ import { PWAProvider, usePWA } from './providers/PWAProvider.jsx';
 import { ToastProvider, useToast } from './providers/ToastProvider.jsx';
 import { ConfirmProvider, useConfirm } from './providers/ConfirmProvider.jsx';
 import { FocusTrapModal, useFocusTrap } from './shared/components/FocusTrapModal.jsx';
+import { ServerSelectorModal } from './shared/components/ServerSelectorModal.jsx';
 // KuroStyles removed — CSS now loaded via <link> in index.html (src/styles/kuro.css)
 // OLED mode overrides handled by .oled-mode class on root div (no JS needed)
 import { OnboardingModal } from './shared/components/OnboardingModal.jsx';
@@ -1281,16 +1282,13 @@ function WhisperingWishesInner() {
       )}
 
       {/* Server Selector Modal */}
-      <FocusTrapModal isOpen={showServerDropdown} onClose={() => setShowServerDropdown(false)} className="" onClick={() => setShowServerDropdown(false)} ariaLabel="Select server region" centered>
-          <div className="kuro-card w-full max-w-[200px] rounded-2xl py-2" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-white font-semibold text-base px-4 py-2.5 border-b border-[var(--border-medium)]">Server Region</h3>
-            {Object.keys(SERVERS).map(s => (
-              <button key={s} onClick={() => { dispatch({ type: 'SET_SERVER', server: s }); setShowServerDropdown(false); }} className={`w-full text-left px-4 py-2.5 text-base transition-colors ${s === state.server ? 'text-yellow-400 bg-yellow-500/10' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
-                {s}
-              </button>
-            ))}
-          </div>
-      </FocusTrapModal>
+      <ServerSelectorModal
+        isOpen={showServerDropdown}
+        onClose={() => setShowServerDropdown(false)}
+        servers={SERVERS}
+        currentServer={state.server}
+        onSelectServer={(s) => { dispatch({ type: 'SET_SERVER', server: s }); setShowServerDropdown(false); }}
+      />
 
       {/* Export Modal */}
       <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore" centered>
