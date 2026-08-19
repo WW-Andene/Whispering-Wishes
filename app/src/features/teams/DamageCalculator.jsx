@@ -13,7 +13,7 @@ import {
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcEnergyCycles,
-  isHealerRole,
+  isHealerRole, isSupportRole,
 } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -1375,9 +1375,19 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 }
                               });
                             });
-                            // Read the current echo preset to assign appropriate mainStats
+                            // Read the current echo preset to assign appropriate mainStats. Only fall
+                            // back to a role-derived default when the user has never actually chosen a
+                            // preset for this character — once they have, that choice is deliberate and
+                            // Auto Equip re-runs should respect it, not silently override it every time.
+                            // Previously this always fell back to 'default' (the Crit Rate/Crit DMG DPS
+                            // build) regardless of role, so a first-ever Auto Equip on a pure Healer/
+                            // Support (Verina, Baizhi, Shorekeeper, Chisa, ...) handed them a Crit Rate
+                            // 4-cost main stat — dead weight on a kit whose heal/shield output has no
+                            // crit scaling at all. A fresh click for a Healer/Support role now defaults
+                            // to the 'support' preset (ER/Healing Bonus-oriented) instead.
                             const currentEq = teamEquipment[aeqKey];
-                            const preset = currentEq?.echoPreset || 'default';
+                            const roleDefaultPreset = (isHealerRole(d.role) || isSupportRole(d.role)) ? 'support' : 'default';
+                            const preset = currentEq?.echoPreset || roleDefaultPreset;
                             const scaling = d.statScaling || 'ATK';
                             const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
                             const elDmgKey = d.element ? d.element.charAt(0).toUpperCase() + d.element.slice(1).toLowerCase() + ' DMG' : '';
@@ -1407,6 +1417,23 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             const defaultSubs = getSubstats();
                             const newEchoes = [null, null, null, null, null];
                             const usedNames = new Set();
+                            // Auto Equip ran fully in isolation per character — no awareness of what
+                            // teammates already have equipped. Verified against the roster's own
+                            // recommended `teams` combos that this is a real, frequent collision: e.g.
+                            // "Ciaccona + Cartethyia + Rover: Aero" all list the exact same unique 4-cost
+                            // boss echo ("Reminiscence: Fleurdelys") as their #1 pick, so Auto Equipping
+                            // all three in turn would equip the identical single echo item on all three
+                            // simultaneously — physically impossible unless the player owns 3 copies of
+                            // that specific boss drop, which nothing in this app tracks. Only the 4-cost
+                            // slot is guarded here (not 3-/1-cost commons, which are cheap/plentiful
+                            // Elite/Common-rank mob drops players legitimately farm many copies of and
+                            // sharing them across a team is normal, not a conflict).
+                            members.forEach(mem => {
+                              if (mem.name === m.name) return;
+                              const teammateEq = teamEquipment[state.activeTeamIndex + ':' + mem.name];
+                              const teammate4Cost = teammateEq?.echoes?.[0]?.name;
+                              if (teammate4Cost) usedNames.add(teammate4Cost);
+                            });
                             // recSets carries the INTENDED piece count per set (e.g. Qiuyuan's own data
                             // says "Law of Harmony 3pc + Sierra Gale 2pc") but pickEcho used to have no
                             // memory of how many pieces of each set it had already handed out — every
