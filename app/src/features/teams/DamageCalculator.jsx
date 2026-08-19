@@ -1289,7 +1289,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       {enemyTargetModal}
     </>
   );
-  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline } = stats;
+  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline, rotTime } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
@@ -1900,7 +1900,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div className="kuro-stat p-2 text-center col-span-2">
                     <div className="text-gray-400 text-sm">Time to Kill</div>
                     <div className="text-lg font-bold text-white kuro-number">{(targetHp / teamDps).toFixed(1)}s</div>
-                    <div className="text-gray-500 text-sm">{enemyEcho} Lv.{enemyLevel} HP {targetHp.toLocaleString('en-US')} ÷ Team DPS</div>
+                    <div className="text-gray-500 text-sm">
+                      {enemyEcho} Lv.{enemyLevel} HP {targetHp.toLocaleString('en-US')} ÷ Team DPS
+                      {rotTime > 0 && <> · {(targetHp / teamDps / rotTime).toFixed(1)} rotation cycles</>}
+                    </div>
                   </div>
                 );
               })()}
