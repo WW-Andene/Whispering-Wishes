@@ -1008,7 +1008,10 @@ function WhisperingWishesInner() {
       <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
-          <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
+          <>
+            <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.8, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
+            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''} 0%, rgba(8,12,20,0.6) 60%, rgba(8,12,20,0.9) 100%)`, pointerEvents: 'none' }} aria-hidden="true" />}
+          </>
         )}
         {bgFramingMode && headerBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'header' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('header')}>
@@ -1094,7 +1097,10 @@ function WhisperingWishesInner() {
           if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
         }}>
         {navBgUrl && (
-          <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.5, pointerEvents: 'none', objectPosition: navBgPos }} />
+          <>
+            <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.5, pointerEvents: 'none', objectPosition: navBgPos }} />
+            {!bgFramingMode && <div className="absolute inset-0" style={{ background: `linear-gradient(to right, rgba(8,12,20,0.85), ${themeAccent || 'rgba(237,175,24,0.08)'}${themeAccent ? '15' : ''}, rgba(8,12,20,0.85))`, pointerEvents: 'none' }} aria-hidden="true" />}
+          </>
         )}
         {bgFramingMode && navBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'nav' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('nav')}>
