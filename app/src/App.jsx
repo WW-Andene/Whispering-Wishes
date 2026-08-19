@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Map, Sparkles, TrendingUp, User, Users, X } from 'lucide-react';
+import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Map, Sparkles, TrendingUp, User, Users } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
 import { CURRENT_BANNERS, preloadBannerHistoryArt } from './data/banners.js';
@@ -45,6 +45,7 @@ import { ConfirmProvider, useConfirm } from './providers/ConfirmProvider.jsx';
 import { FocusTrapModal, useFocusTrap } from './shared/components/FocusTrapModal.jsx';
 import { ServerSelectorModal } from './shared/components/ServerSelectorModal.jsx';
 import { ColorblindFilterDefs } from './shared/components/ColorblindFilterDefs.jsx';
+import { BackupRestoreModal } from './shared/components/BackupRestoreModal.jsx';
 // KuroStyles removed — CSS now loaded via <link> in index.html (src/styles/kuro.css)
 // OLED mode overrides handled by .oled-mode class on root div (no JS needed)
 import { OnboardingModal } from './shared/components/OnboardingModal.jsx';
@@ -1280,225 +1281,24 @@ function WhisperingWishesInner() {
       />
 
       {/* Export Modal */}
-      <FocusTrapModal isOpen={showExportModal} onClose={() => { setRestoreText(''); setShowExportModal(false); }} className="" onClick={() => { setRestoreText(''); setShowExportModal(false); }} ariaLabel="Backup and restore" centered>
-          <div className="kuro-card w-full sm:max-w-sm rounded-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)] flex-shrink-0" data-sheet-header>
-              <div className="flex items-center gap-2">
-                <Download size={14} className="text-yellow-400" />
-                <span className="text-white text-xl font-semibold">Backup</span>
-              </div>
-              <button onClick={() => { setRestoreText(''); setShowExportModal(false); }} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label="Close export modal"><X size={16} /></button>
-            </div>
-            <div className="overflow-y-auto flex-1 p-4 space-y-3">
-              <p className="text-gray-400 text-sm">Copy this data and save it as a .json file:</p>
-              <textarea
-                value={exportData}
-                readOnly
-                className="kuro-input w-full h-24 text-sm font-mono"
-                onClick={e => e.target.select()}
-                aria-label="Export backup data"
-              />
-              <button 
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(exportData);
-                    toast?.addToast?.('Copied to clipboard!', 'success');
-                  } catch {
-                    // P6-FIX: Fallback uses Blob + clipboard API instead of deprecated execCommand (HIGH-17)
-                    try {
-                      const blob = new Blob([exportData], { type: 'text/plain' });
-                      await navigator.clipboard.write([new ClipboardItem({ 'text/plain': blob })]);
-                      toast?.addToast?.('Copied to clipboard!', 'success');
-                    } catch {
-                      toast?.addToast?.('Copy failed - please select and copy manually', 'error');
-                    }
-                  }
-                }} 
-                className="kuro-btn w-full"
-              >
-                Copy to Clipboard
-              </button>
-              <button
-                onClick={() => {
-                  try {
-                    const blob = new Blob([exportData], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `whispering-wishes-backup-${new Date().toISOString().slice(0,10)}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
-                    toast?.addToast?.('Backup downloaded!', 'success');
-                  } catch {
-                    toast?.addToast?.('Download failed', 'error');
-                  }
-                }}
-                className="kuro-btn w-full flex items-center justify-center gap-2"
-              >
-                <Download size={14} /> Download .json
-              </button>
-
-              <div className="relative my-1">
-                <div className="kuro-divider" />
-                <span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-900 px-2 text-sm text-gray-400 uppercase tracking-wider">Restore</span>
-              </div>
-              
-              <p className="text-gray-400 text-sm">Paste backup data to restore:</p>
-              <textarea
-                value={restoreText}
-                onChange={(e) => setRestoreText(e.target.value)}
-                placeholder="Paste backup JSON here…"
-                className="kuro-input w-full h-20 text-sm font-mono"
-                aria-label="Paste backup data to restore"
-              />
-              <button
-                onClick={async () => {
-                  if (!restoreText.trim()) {
-                    toast?.addToast?.('Please paste backup data first', 'error');
-                    return;
-                  }
-                  // P9-FIX: Size limit check for pasted backup data (Step 4 audit)
-                  if (restoreText.length > MAX_IMPORT_SIZE_MB * 1024 * 1024) {
-                    toast?.addToast?.(`Backup data too large (${(restoreText.length / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
-                    return;
-                  }
-                  try {
-                    const data = JSON.parse(restoreText);
-                    if (!data || typeof data !== 'object' || !data.state || typeof data.state !== 'object') {
-                      toast?.addToast?.('Invalid backup format - missing required "state" object', 'error');
-                      return;
-                    }
-                    
-                    // Schema validation: check critical fields exist and have correct types
-                    const s = data.state;
-                    if (s.profile && typeof s.profile !== 'object') {
-                      toast?.addToast?.('Invalid backup -"profile" must be an object', 'error');
-                      return;
-                    }
-                    if (s.calc && typeof s.calc !== 'object') {
-                      toast?.addToast?.('Invalid backup -"calc" must be an object', 'error');
-                      return;
-                    }
-                    if (s.bookmarks && !Array.isArray(s.bookmarks)) {
-                      toast?.addToast?.('Invalid backup -"bookmarks" must be an array', 'error');
-                      return;
-                    }
-                    if (s.profile?.featured?.history && !Array.isArray(s.profile.featured.history)) {
-                      toast?.addToast?.('Invalid backup - Convene history must be an array', 'error');
-                      return;
-                    }
-                    
-                    // Version check warning
-                    const backupVersion = data.version || 'unknown';
-                    const pullCount = (s.profile?.featured?.history?.length || 0) + (s.profile?.weapon?.history?.length || 0) + (s.profile?.standardChar?.history?.length || 0) + (s.profile?.standardWeap?.history?.length || 0);
-                    
-                    // Auto-save pre-restore backup to localStorage for recovery
-                    try {
-                      const preRestoreBackup = JSON.stringify({ timestamp: new Date().toISOString(), version: APP_VERSION, state: stateRef.current, _preRestore: true });
-                      localStorage.setItem('whispering-wishes-pre-restore-backup', preRestoreBackup);
-                    } catch {} // best-effort - don't block restore if backup fails
-
-                    // Confirmation dialog
-                    const confirmed = await confirm({
-                      title: `Restore backup (v${backupVersion})`,
-                      message: `This will REPLACE all current data:\n• ${pullCount} total Convenes\n• ${s.bookmarks?.length || 0} bookmarks\n• All calculator & planner settings`,
-                      confirmLabel: 'Restore',
-                      destructive: true,
-                    });
-                    if (!confirmed) return;
-                    
-                    // P10-FIX: Sanitize all nested objects to prevent prototype pollution (matches loadFromStorage pattern)
-                    const safeParsed = sanitizeStateObj(s);
-                    const restoredState = {
-                      ...initialState,
-                      ...sanitizeImportedState(safeParsed),
-                      server: safeParsed.server || initialState.server,
-                      profile: {
-                        ...initialState.profile,
-                        ...(safeParsed.profile ? sanitizeStateObj(safeParsed.profile) : {}),
-                        featured: { ...initialState.profile.featured, ...(safeParsed.profile?.featured ? sanitizeStateObj(safeParsed.profile.featured) : {}) },
-                        weapon: { ...initialState.profile.weapon, ...(safeParsed.profile?.weapon ? sanitizeStateObj(safeParsed.profile.weapon) : {}) },
-                        standardChar: { ...initialState.profile.standardChar, ...(safeParsed.profile?.standardChar ? sanitizeStateObj(safeParsed.profile.standardChar) : {}) },
-                        standardWeap: { ...initialState.profile.standardWeap, ...(safeParsed.profile?.standardWeap ? sanitizeStateObj(safeParsed.profile.standardWeap) : {}) },
-                        beginner: { ...initialState.profile.beginner, ...(safeParsed.profile?.beginner ? sanitizeStateObj(safeParsed.profile.beginner) : {}) },
-                      },
-                      calc: { ...initialState.calc, ...safeParsed.calc },
-                      planner: { ...initialState.planner, ...safeParsed.planner },
-                      settings: { ...initialState.settings, ...safeParsed.settings },
-                      bookmarks: Array.isArray(safeParsed.bookmarks) ? safeParsed.bookmarks : [],
-                    };
-                    dispatch({ type: 'LOAD_STATE', state: restoredState });
-                    // Restore auxiliary localStorage data if present in backup
-                    if (data.aux && typeof data.aux === 'object') {
-                      try {
-                        if (data.aux.visualSettings && typeof data.aux.visualSettings === 'object') {
-                          localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(sanitizeStateObj(data.aux.visualSettings)));
-                          setVisualSettings(prev => {
-                const merged = { ...prev, ...sanitizeStateObj(data.aux.visualSettings) };
-                if (typeof merged.collectionZoom === 'number') merged.collectionZoom = Math.min(300, Math.max(100, merged.collectionZoom));
-                return merged;
-              });
-                        }
-                        if (data.aux.imageFraming && typeof data.aux.imageFraming === 'object') {
-                          localStorage.setItem(IMAGE_FRAMING_KEY, JSON.stringify(sanitizeStateObj(data.aux.imageFraming)));
-                          setImageFraming(sanitizeStateObj(data.aux.imageFraming));
-                        }
-                        if (data.aux.collectionImages && typeof data.aux.collectionImages === 'object') {
-                          localStorage.setItem(COLLECTION_IMAGES_KEY, JSON.stringify(sanitizeStateObj(data.aux.collectionImages)));
-                          setCustomCollectionImages(sanitizeStateObj(data.aux.collectionImages));
-                        }
-                        if (data.aux.trophyOverrides && typeof data.aux.trophyOverrides === 'object') {
-                          localStorage.setItem(TROPHY_OVERRIDES_KEY, JSON.stringify(sanitizeStateObj(data.aux.trophyOverrides)));
-                          setTrophyOverrides(sanitizeStateObj(data.aux.trophyOverrides));
-                        }
-                        if (data.aux.teamEquipment && typeof data.aux.teamEquipment === 'object') {
-                          localStorage.setItem('ww-team-equipment', JSON.stringify(sanitizeStateObj(data.aux.teamEquipment)));
-                        }
-                        // U6-01: Restore calendar notes from backup
-                        if (data.aux.calendarNotes && typeof data.aux.calendarNotes === 'object') {
-                          localStorage.setItem('ww-calendar-notes', JSON.stringify(sanitizeStateObj(data.aux.calendarNotes)));
-                        }
-                      } catch {}
-                    }
-                    toast?.addToast?.(`Backup restored! (v${backupVersion})`, 'success');
-                    setRestoreText('');
-                    setShowExportModal(false);
-                  } catch (e) {
-                    toast?.addToast?.('Invalid JSON data: ' + e.message, 'error');
-                  }
-                }} 
-                disabled={!restoreText.trim()}
-                className={`kuro-btn w-full ${restoreText.trim() ? '' : 'opacity-50'}`}
-              >
-                Restore Backup
-              </button>
-              {/* P15-FIX: LOW-11 - UI to restore pre-import backup from localStorage */}
-              {(() => {
-                try { return !!localStorage.getItem('whispering-wishes-pre-import-backup'); } catch { return false; }
-              })() && (
-                <button
-                  onClick={async () => {
-                    try {
-                      const raw = localStorage.getItem('whispering-wishes-pre-import-backup');
-                      if (!raw) { toast?.addToast?.('No pre-import backup found', 'error'); return; }
-                      const data = JSON.parse(raw);
-                      if (!data?.state || typeof data.state !== 'object') { toast?.addToast?.('Invalid pre-import backup', 'error'); return; }
-                      if (!await confirm({ title: 'Restore pre-import backup', message: `Restore backup from ${data.timestamp ? new Date(data.timestamp).toLocaleString('en-US') : 'unknown date'}?\nThis will revert to the state before your last import.`, confirmLabel: 'Restore', destructive: true })) return;
-                      dispatch({ type: 'LOAD_STATE', state: data.state });
-                      toast?.addToast?.('Pre-import backup restored!', 'success');
-                      setShowExportModal(false);
-                    } catch (e) { toast?.addToast?.('Failed to restore: ' + e.message, 'error'); }
-                  }}
-                  className="kuro-btn w-full text-sm mt-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-                >
-                  Restore Pre-Import Backup
-                </button>
-              )}
-            </div>
-          </div>
-      </FocusTrapModal>
+      <BackupRestoreModal
+        isOpen={showExportModal}
+        exportData={exportData}
+        restoreText={restoreText}
+        setRestoreText={setRestoreText}
+        onClose={() => { setRestoreText(''); setShowExportModal(false); }}
+        toast={toast}
+        confirm={confirm}
+        dispatch={dispatch}
+        stateRef={stateRef}
+        sanitizeStateObj={sanitizeStateObj}
+        sanitizeImportedState={sanitizeImportedState}
+        initialState={initialState}
+        setVisualSettings={setVisualSettings}
+        setImageFraming={setImageFraming}
+        setCustomCollectionImages={setCustomCollectionImages}
+        setTrophyOverrides={setTrophyOverrides}
+      />
 
 
 
