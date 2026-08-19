@@ -694,6 +694,38 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   return { score, tags: [...new Set(tags)].slice(0, 3) };
 }
 
+// Hardcoded team-wide echo-set bonuses that don't come from a per-member p5val (WuWa sets whose
+// team ATK/DMG bonus is an approximated flat number rather than a modeled trigger). Kept as a single
+// table so the DPS math and the rotation timeline read the exact same numbers instead of drifting —
+// previously these were only added to the stat totals and never shown as a buff bar on the timeline.
+const TEAM_SET_BUFFS = {
+  'Rejuvenating Glow': [{ stat: 'atkPct', value: 15 }],
+  'Moonlit Clouds': [{ stat: 'atkPct', value: 22.5 }],
+  'Empyrean Anthem': [{ stat: 'atkPct', value: 30 }], // 20% ATK × 2 stacks, ~75% uptime ≈ 30%
+  'Tidebreaking Courage': [{ stat: 'elemDmg', value: 30 }], // 30% All-Attr DMG team-wide at ≥250% ER
+  'Halo of Starry Radiance': [{ stat: 'atkPct', value: 25 }], // Up to +25% ATK via Off-Tune healing
+  'Pact of Neonlight Leap': [{ stat: 'atkPct', value: 30 }], // +15% base + up to 15% from Tune Break Boost
+  'Gusts of Welkin': [{ stat: 'elemDmg', value: 30, elem: 'aero' }], // 15% + 15% Aero DMG on Erosion trigger
+  'Windward Pilgrimage': [{ stat: 'elemDmg', value: 15, elem: 'aero' }],
+  'Flaming Clawprint': [{ stat: 'elemDmg', value: 15, elem: 'fusion' }, { stat: 'libDmg', value: 20 }],
+  'Midnight Veil': [{ stat: 'elemDmg', value: 15, elem: 'havoc' }],
+  'Chromatic Foam': [{ stat: 'elemDmg', value: 25, elem: 'fusion' }], // Outro: +25% Fusion for next
+};
+
+// Maps CHARACTER_DATA.dmgFocus's short tags to the long-form wiki tag names COMBAT_ROLE_ICONS
+// is keyed by — same mapping CollectionTab/CharacterDetailModal use for the "All Damage" filter
+// and Combat Role badges, so this section's icons match the rest of the app instead of drifting.
+const DMG_FOCUS_ROLE_TAG = {
+  'Basic ATK': 'Basic Attack Damage',
+  'Heavy ATK': 'Heavy Attack Damage',
+  'Skill': 'Resonance Skill Damage',
+  'Liberation': 'Resonance Liberation Damage',
+  'Echo': 'Echo Skill Damage',
+  'Coordinated ATK': 'Coordinated Attack',
+};
+
+export { TEAM_SET_BUFFS, DMG_FOCUS_ROLE_TAG };
+
 // NOTE: an earlier version of this file had a second, cruder rotation-composer here
 // (composeTeamRotation) that duplicated what DamageCalculator.jsx's rotationTimeline/steps
 // computation already does — and did it worse: naive placed-slot order instead of the real
