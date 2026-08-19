@@ -24,10 +24,9 @@ import { EchoImage } from '../../shared/components/EchoImage.jsx';
 import RotationTimeline, { STAT_LABELS, STAT_LABELS_FULL } from './RotationTimeline.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
-import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
-import MonsterCard from '../../shared/components/MonsterCard.jsx';
 import { computeAutoEquipEntry } from './autoEquip.js';
 import { RotationGuideCard } from './RotationGuideCard.jsx';
+import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -1214,42 +1213,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   // icon/name row) instead of a bare DEF number. No boss selected falls back to a nameless "no
   // target" state with just the level-formula DEF — there's no "Training Dummy" boss to pick since
   // it isn't an actual enemy.
-  const enemyTargetEd = enemyEcho ? ECHO_DATA[enemyEcho] : null;
-  // monsterIconUrl (the boss's own portrait) must win over collectionImages — see the matching fix
-  // and full explanation in EnemyEchoSelectorModal.jsx's icon priority.
-  const enemyTargetIcon = enemyEcho ? (enemyTargetEd?.monsterIconUrl || collectionImages[enemyEcho] || enemyTargetEd?.iconUrl) : null;
-  const enemyTargetStats = enemyEcho
-    ? enemyTargetEd?.enemyStats
-    : { level: enemyLevel, hp: null, atk: null, def: 792 + 8 * (Number(enemyLevel) || 90), res: {} };
   const enemyTargetCard = (
-    <Card>
-      <CardBody>
-        <div className="flex items-center gap-2 mb-2">
-          <Sword size={12} className="text-red-400 shrink-0" />
-          <span className="text-gray-400 text-sm font-medium shrink-0">Target</span>
-          <div className="flex items-center gap-1 ml-auto">
-            <span className="text-gray-500 text-sm">Lv.</span>
-            <input type="text" inputMode="numeric" value={enemyLevel}
-              onFocus={e => e.target.select()}
-              onChange={e => { const v = e.target.value.replace(/\D/g, ''); if (v === '') { setEnemyLevel(''); return; } const n = parseInt(v, 10); setEnemyLevel(Number.isNaN(n) ? 90 : Math.max(1, Math.min(120, n))); }}
-              onBlur={e => { if (!e.target.value || isNaN(parseInt(e.target.value, 10))) setEnemyLevel(90); }}
-              className="kuro-input w-14 text-sm px-1 py-0.5 text-center" />
-            <span className="text-gray-600 text-sm">/ 120</span>
-          </div>
-        </div>
-        <MonsterCard
-          name={enemyEcho || 'No Target Selected (Default)'}
-          rank={enemyTargetEd?.rank}
-          iconUrl={enemyTargetIcon}
-          enemyStats={enemyTargetStats}
-          level={enemyLevel}
-          onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
-        />
-      </CardBody>
-    </Card>
+    <EnemyTargetCard
+      enemyEcho={enemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+      collectionImages={collectionImages}
+      setEnemyEchoSearch={setEnemyEchoSearch} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
+    />
   );
   const enemyTargetModal = (
-    <EnemyEchoSelectorModal
+    <EnemyTargetModal
       isOpen={enemyEchoModalOpen} onClose={() => setEnemyEchoModalOpen(false)}
       enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
       enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
