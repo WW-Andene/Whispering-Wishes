@@ -1,5 +1,78 @@
 # Whispering Wishes — Content Refresh Audit Report
 
+## 2026-08-20 session (follow-up) — 4 gaps from prior review addressed
+
+**1. game8.co access — genuinely blocked, not a tool-selection failure.** Checked `mcp__DV__dv_tools`'s
+full catalog: every DV browser-driving tool (`screenshot`, `interact`, `inspect`, `meta`, `page_eval`,
+`console_logs`, `sandbox_*`) only operates against **this app's own deployed preview** (they all require
+`owner`/`repo`/`slug`) — none of them navigate arbitrary external URLs. `web_fetch` is the only DV tool
+that fetches arbitrary sites, and it already supports `jsRender` (real headless Chromium) + `stealth`
+(patches `navigator.webdriver`/plugin fingerprints) + custom UA/referer — i.e. the same technique that
+works on prydwen.gg/fandom. Re-tried it against `game8.co/games/Wuthering-Waves/archives/453473` with
+full JS rendering, an 8s wait, a real Chrome UA, and a google.com referer: still a hard **CloudFront 403
+"Request blocked"** at the edge, before any page JS runs. This matches `web_fetch`'s own documented
+limitation: "Pure network/WAF IP-level blocks... cannot be bypassed by any combination of these
+options — that needs an official API, a paid proxy/anti-bot vendor, or a mirror source instead." Given
+there's no alternate DV tool that reaches non-preview URLs, this is a genuine dead end this session too,
+not a missed tool. Not needed in the end — items 2/3 below were fully answerable via wuwatracker.com and
+nanoka.cc instead.
+
+**2. `EVENTS` — genuinely stale, now fixed.** Confirmed the gap directly: every dated entry in
+`app/src/data/banners.js`'s `EVENTS` object still had `currentEnd`/`currentStart` pinned to the **v3.5
+cycle** (ending 2026-08-19), even though `VERSION_DATES`/`PIONEER_PODCAST_HISTORY`/`BANNER_HISTORY` had
+already been correctly rolled to v3.6 by the prior session — the live-event countdown block was simply
+never touched when v3.6 shipped today. Re-fetched `wuwatracker.com/fr/timeline` via
+`mcp__DV__web_fetch` (`jsRender:true`, 6-8s wait) and read the rendered v3.6 event bar directly (the
+site exposes no readable embedded JSON for this page, unlike its achievements dataset, so exact
+per-event timestamps to the minute weren't recoverable — only names + relative durations). Fixed:
+  - `tacticalHologram` renamed **"Tactical Hologram: Simulation"** (replaces v3.5's "Sparring" arena);
+    `pioneerPodcast`, `endstateMatrix`, `versionSpecialCampaign` re-anchored to the confirmed-live
+    v3.6-p1 window (`BANNER_HISTORY`: 2026-08-20 → 2026-09-10 / 09-30 version end).
+  - `towerOfAdversity` rolled to its next 28-day cycle (2026-08-17 → 09-14, independent of version
+    boundaries); `whimperingWastes` left untouched — today falls inside its existing Aug 3–31 window.
+  - Removed 5 one-off v3.5 events confirmed ended (not on the live v3.6 bar): `versionSpecialCampaign`
+    description text, `giftsOfAftertune`, `lamentReconTacetCrisis`, `virtualCrisisQuadrantTrials`,
+    `lolloCampaignNewJourney`. Replaced with the actual v3.6 event names read off the bar:
+    `giftsOfDriftingMist` (renamed from Aftertune), `bountifulCrescendo` (returning), and 5 new v3.6
+    events — `resonanceSimRealm`, `secondComingOfSolaris`, `theStringsRemember`,
+    `ifDreamsStillReverberate`, `fogveilPagoda` — all anchored to the v3.6-p1 window as an estimate
+    (flagged in-code), same convention this file already uses for `VERSION_DATES`'/`BANNER_HISTORY`'s
+    own 3.6 estimates. `chordCleansing` kept (still on the v3.6 bar), dates re-anchored.
+  - Mirrored every key rename/addition into `banners.fr.js`'s `EVENTS_FR` (French names/descriptions)
+    so the locale swap doesn't silently fall back to English for the new keys.
+  - No new `_HISTORY` row was needed beyond what was already there: `PIONEER_PODCAST_HISTORY` already
+    had its 3.6 row from the prior session; `TACTICAL_HOLOGRAM_HISTORY` still needs a 3.6 "Simulation"
+    row once its exact arena boss roster is confirmable (left unadded rather than guessed — same
+    stance as the prior session's Qingxiao/Jingran material sourcing).
+
+**3. Qingxiao kit/weapon — spot-checked against nanoka.cc, confirmed accurate, no fixes needed.**
+Re-fetched `ww.nanoka.cc/character/1413` live (v3.6, now genuinely live per the site's own version
+selector) and cross-checked `CHARACTER_DATA['Qingxiao']`/`SKILL_MULTIPLIERS['Qingxiao']` field-by-field:
+base stats (HP 10,300 / ATK 463 / DEF 1,112 / Tune Break Boost 10) match exactly; skill names (Strings
+to Steel, Severing Note, Billows Beneath Heaven, Tonality Shift) match; Basic Attack multipliers in
+`SKILL_MULTIPLIERS` (`30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4`) and Heavy Attack
+(`14.62%×3+21.92%×6+263.03%`) match nanoka's own "Skill Attributes (Lv.10)" table exactly, digit for
+digit. `WEAPON_DATA['Glint of Clouds']` (base ATK 500, Crit Rate substat +36.0%, full R1 passive text)
+was already populated with real numbers, not placeholder text. Did not find anything blank, truncated,
+or wrong in this pass — the prior session's kit-data pull holds up under a fresh independent check. Did
+not re-check Jingran's weapon this session (time went to items 1/2/4 instead); it was already flagged
+non-placeholder by the prior session's own report.
+
+**4. ibb.co asset album — confirmed genuinely empty, not an access-key/gating issue.** Fetched
+`https://ibb.co/album/pnZXD3` via `mcp__DV__web_fetch` with `jsRender:true` and inspected the rendered
+page's own embedded resource JSON (`CHV.obj.resource`): `"privacy":"public"`, owned by user `andene`,
+**`"image-count":"0"`**, page body literally renders "There's nothing to show here." for every sort
+tab (Most recent/Oldest/Most viewed/AZ) and for sub-albums. Tried both the accesskey-as-cookie and
+accesskey-as-query-param forms in case the album were actually private — same empty result either way,
+and the resource JSON confirms it's already public (no key needed). This is a genuinely empty album,
+not a fetch/auth failure — no icons, portraits, or material art to pull from it this session. The app's
+existing placeholder-art convention (`MATERIAL_PLACEHOLDER_IMAGE`/`PLACEHOLDER_IMAGE`) stays as-is;
+nothing to wire in.
+
+**Tests/build:** 612/612 tests still passing after the `EVENTS` changes; production build succeeds clean.
+
+---
+
 ## 2026-08-20 session — v3.6 confirmed live, Qingxiao/Jingran upgraded from placeholder to real kit data
 
 **Confirmed:** nanoka.cc's version selector now reads "Version 3.6 (365) (latest) (live) (current)" —

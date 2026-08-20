@@ -207,23 +207,30 @@ const EVENTS = {
     description: 'Limited-time event',
     resetType: 'Version update',
     color: 'yellow',
-    // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentEnd: '2026-08-19T01:59:59Z',
+    // v3.6 cycle: Aug 20 (BANNER_HISTORY-confirmed live start) -> Sep 30 (PIONEER_PODCAST_HISTORY
+    // 3.6 row's own end estimate, same "Game8-pattern" estimate basis as VERSION_DATES 3.6).
+    currentEnd: '2026-09-29T01:59:59Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
   },
+  // Renamed 2026-08-20 (v3.6 launch): wuwatracker.com/fr/timeline's live v3.6 event bar shows
+  // "Tactical Hologram: Simulation" replacing v3.5's "Sparring" arena — same permanent-challenge
+  // slot, new arena tied to the v3.6 Land of Xuanfang story beat. Boss roster for the new arena not
+  // independently confirmed this pass (wuwatracker's rendered bar doesn't expose it via text scrape);
+  // kept the v3.5 boss note removed rather than guess new bosses.
   tacticalHologram: {
-    name: 'Tactical Hologram: Sparring',
+    name: 'Tactical Hologram: Simulation',
     subtitle: 'Combat Challenge',
-    description: 'Permanent combat challenge — Sparring arena, added in v3.5 (bosses: Denia, Myriad Snare: Rustfire Chassis)',
+    description: 'Permanent combat challenge — Simulation arena, added in v3.6',
     resetType: 'Permanent',
     color: 'cyan',
-    // Permanent content, current active arena introduced in v3.5 — not a time-limited event
-    // Showing with currentEnd for current version cycle display only
-    // Jul 10, 10:00 CEST -> Aug 18, 13:59 CEST (UTC+2)
-    currentEnd: '2026-08-18T11:59:59Z',
+    // Permanent content, current active arena introduced in v3.6 — not a time-limited event
+    // Showing with currentEnd for current version cycle display only. End date estimated from the
+    // v3.6 version cycle end (VERSION_DATES) minus 1 day, matching the v3.5 entry's own established
+    // pattern (ends the day before Pioneer Podcast's version-end date).
+    currentEnd: '2026-09-29T01:59:59Z',
     permanent: true,
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
@@ -236,9 +243,11 @@ const EVENTS = {
     description: 'High difficulty boss rush — new in v3.2',
     resetType: 'Multi-version',
     color: 'pink',
-    // v3.5 cycle: Jul 17, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-17T02:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    // v3.6 cycle estimate: confirmed live on wuwatracker.com/fr/timeline's v3.6 event bar as
+    // still active ("Endstate Matrix (Phase 1)"), anchored to the v3.6-p1 banner window
+    // (BANNER_HISTORY) since exact reset time wasn't recoverable from the rendered bar via text scrape.
+    currentStart: '2026-08-20T02:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     introducedVersion: '3.2',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
@@ -251,9 +260,11 @@ const EVENTS = {
     description: 'Endgame combat challenge',
     resetType: '28 days',
     color: 'orange',
-    // Jul 20, 04:00 CEST -> Aug 17, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-20T02:00:00Z',
-    currentEnd: '2026-08-17T01:59:00Z',
+    // 28-day cycle, independent of version boundaries — confirmed still active on
+    // wuwatracker.com/fr/timeline's v3.6 event bar 2026-08-20. Next cycle = prior cycle
+    // (Jul 20 -> Aug 17) + 28 days.
+    currentStart: '2026-08-17T02:00:00Z',
+    currentEnd: '2026-09-14T01:59:00Z',
     introducedVersion: '1.0', // Since launch
     rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
@@ -266,7 +277,9 @@ const EVENTS = {
     description: 'Combat challenge with token system',
     resetType: '28 days',
     color: 'cyan',
-    // Aug 3, 04:00 CEST -> Aug 31, 03:59 CEST (UTC+2)
+    // 28-day cycle — confirmed still active (unchanged) on wuwatracker.com/fr/timeline's v3.6
+    // event bar 2026-08-20; today falls inside the existing Aug 3 -> Aug 31 window, so it is
+    // NOT re-anchored to the version boundary like the other version-tied entries above.
     currentStart: '2026-08-03T02:00:00Z',
     currentEnd: '2026-08-31T01:59:59Z',
     introducedVersion: '2.1', // Added in v2.1 (Feb 13, 2025)
@@ -275,77 +288,110 @@ const EVENTS = {
     accentColor: 'cyan',
     imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
-  // Real name/description below confirmed 2026-08-14 via wuwatracker.com/fr/timeline's embedded RSC
-  // data (same technique used for the achievements dataset — see achievements.js header). Cover art
-  // originally pointed at wuwatracker.com's own API, but that endpoint 403s for any foreign Referer
-  // (confirmed via curl), so it never loads as an <img src> from this app in production — using the
-  // shared PLACEHOLDER_IMAGE fallback until real ibb.co-hosted art is sourced.
-  // No official Astrite reward figures are published for these events (wuwatracker's own timeline data
-  // has no reward field either), so `rewards` is intentionally left unset rather than guessed —
-  // EventCard.jsx hides the reward badge cleanly when absent (see Events audit fix).
-  // recapturedActionHighlights (ended 2026-08-06) and bountifulCrescendo (ended 2026-07-30) removed —
-  // both were one-off limited-time events already over as of today (2026-08-14).
+  // v3.6 refresh (2026-08-20): re-pulled wuwatracker.com/fr/timeline's rendered v3.6 event bar
+  // (JS-rendered browser fetch — the site exposes no readable embedded JSON for this page unlike
+  // the achievements dataset, so exact per-event start/end timestamps could not be recovered from
+  // the rendered bar via text scrape — only names + relative duration labels). Every v3.5-only
+  // one-off below (versionSpecialCampaign, giftsOfAftertune, lamentReconTacetCrisis,
+  // virtualCrisisQuadrantTrials, lolloCampaignNewJourney) has ended and does NOT appear on the live
+  // v3.6 bar — replaced with the actual v3.6 event names confirmed present on that bar. Dates are
+  // anchored to the confirmed-live v3.6-p1 window (BANNER_HISTORY: 2026-08-20 -> 2026-09-10) since
+  // exact per-event timestamps aren't recoverable this way — same "estimate anchored to a confirmed
+  // boundary" approach already used elsewhere in this file (see VERSION_DATES/BANNER_HISTORY 3.6
+  // comments). `rewards` left unset where no official figure is published, matching this file's
+  // existing convention (EventCard.jsx hides the badge cleanly when absent).
   versionSpecialCampaign: {
     name: 'Version Special Campaign',
     subtitle: 'Login Rewards',
-    description: 'In Version 3.5, a special event will be available: your first 10x Convenes in Reverb Resonator Convene are free.',
+    description: 'In Version 3.6, a special event will be available: your first 10x Convenes in Reverb Resonator Convene are free.',
     resetType: 'Version update',
     color: 'yellow',
-    // Jul 10, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
-    currentStart: '2026-07-10T08:00:00Z',
-    currentEnd: '2026-08-19T09:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  giftsOfAftertune: {
-    name: 'Gifts of Aftertune',
+  giftsOfDriftingMist: {
+    name: 'Gifts of Drifting Mist',
     subtitle: '7 Day Login Event',
     description: "During the event, log in to claim the day's login rewards from the event page.",
     resetType: 'Version update',
     color: 'yellow',
-    // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-10T08:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  lamentReconTacetCrisis: {
-    name: 'Lament Recon: Tacet Crisis',
-    subtitle: 'Limited-Time Event',
-    description: 'Under a special tactical view, use your weapons wisely to fend off waves of enemies. As you battle, power up your Resonator with new weapons, weapon upgrades, and boost items. To clear a drill, you must survive every wave of attack.',
-    resetType: 'Version update',
+  bountifulCrescendo: {
+    name: 'Bountiful Crescendo',
+    subtitle: 'Limited-Time Material Double Drop Event',
+    description: 'Spend Waveplates to claim double rewards after completing eligible material-farming challenges.',
+    resetType: 'Limited-time',
+    color: 'lime',
+    currentStart: '2026-08-20T02:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
+    accentColor: 'lime',
+    imageUrl: PLACEHOLDER_IMAGE,
+  },
+  resonanceSimRealm: {
+    name: 'Resonance Sim Realm',
+    subtitle: 'Combat Event',
+    description: 'New v3.6 limited-time combat event.',
+    resetType: 'Limited-time',
     color: 'red',
-    // Jul 11, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
-    currentStart: '2026-07-11T08:00:00Z',
-    currentEnd: '2026-08-19T09:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  virtualCrisisQuadrantTrials: {
-    name: 'Virtual Crisis: Quadrant Trials',
-    subtitle: 'Limited-Time Event',
-    description: 'Take on Crisis Trial challenges and Disaster Trial high-difficulty challenges under various combinations of Stress Modules.',
-    resetType: 'Version update',
+  secondComingOfSolaris: {
+    name: 'Second Coming of Solaris: Coded Deception',
+    subtitle: 'Leisure Event',
+    description: 'New v3.6 limited-time leisure event.',
+    resetType: 'Limited-time',
     color: 'cyan',
-    // Jul 30, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-30T08:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  lolloCampaignNewJourney: {
-    name: 'Lollo Campaign: New Journey',
-    subtitle: 'Limited-Time Event',
-    description: 'During the event, you can complete Lollo Campaigns to obtain a set number of Lollo Stamps. Each Lollo Stamp can be exchanged for a Lollo Helper special delivery.',
+  theStringsRemember: {
+    name: 'The Strings Remember',
+    subtitle: 'Leisure Event',
+    description: 'New v3.6 limited-time leisure event.',
+    resetType: 'Limited-time',
+    color: 'purple',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
+    accentColor: 'purple',
+    imageUrl: PLACEHOLDER_IMAGE,
+  },
+  ifDreamsStillReverberate: {
+    name: 'If Dreams Still Reverberate',
+    subtitle: 'Featured Co-op Combat Event',
+    description: 'New v3.6 limited-time co-op combat event.',
+    resetType: 'Limited-time',
+    color: 'orange',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
+    accentColor: 'orange',
+    imageUrl: PLACEHOLDER_IMAGE,
+  },
+  fogveilPagoda: {
+    name: 'Featured Exploration Event: Fogveil Pagoda',
+    subtitle: 'Exploration Event',
+    description: 'New v3.6 limited-time exploration event.',
     resetType: 'Limited-time',
     color: 'lime',
-    // Aug 6, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-08-06T02:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
     imageUrl: PLACEHOLDER_IMAGE,
@@ -356,9 +402,8 @@ const EVENTS = {
     description: 'Spend Waveplates to claim double rewards after completing a Tacet Suppression challenge.',
     resetType: 'Limited-time',
     color: 'pink',
-    // Aug 12, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-08-12T02:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T02:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
     imageUrl: PLACEHOLDER_IMAGE,
