@@ -578,26 +578,12 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
         const teamRotTime = rotTime;
-        const echoPreset = sEq?.echoPreset || 'default';
-        if (sEchoes.length === 0) {
-          if (echoPreset === 'er') {
-            sAtkPct += 18 + 18;
-            sCr += 22.5;
-            sCd += 45;
-            sElem += 30;
-          } else if (echoPreset === 'support') {
-            sAtkPct += 18;
-            sCr += 15;
-            sCd += 30;
-            sElem += 30;
-          } else {
-            sAtkPct += 30 + 18 + 18;
-            sCr += 22.5;
-            sCd += 45;
-            sElem += 60;
-          }
-        }
-        // ── Buff snapshotting for off-field damage ──
+        // An unbuilt sub-DPS (no echoes equipped) gets no fabricated "recommended build" stats here —
+        // a real player with empty echo slots has zero bonus stats, same as an unequipped Main DPS
+        // already correctly shows. A previous version injected a hardcoded preset stat block (e.g.
+        // +66% ATK, +22.5% Crit Rate) to preview a "likely" build, but that meant an unbuilt sub-DPS
+        // was scored as if near-BiS-geared while an unbuilt Main DPS was scored as bare — inconsistent
+        // across roles and not representative of what the player actually has equipped.
         // Coordinated ATK characters snapshot buffs at swap-out time.
         // They benefit from buffs that exist BEFORE they swap out (team-wide Lib buffs,
         // earlier outro buffs), but NOT from outro buffs applied AFTER them in rotation order.
