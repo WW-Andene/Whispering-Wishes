@@ -547,8 +547,8 @@ function ProfileTab({
             <Card>
               <CardHeader><Globe size={14} className="text-gray-400" /> {t('app.language')}</CardHeader>
               <CardBody className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                  <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center text-gray-400" style={{ background: 'var(--bg-btn)' }}>
                       <Globe size={16} />
                     </div>
@@ -557,13 +557,13 @@ function ProfileTab({
                       <div className="text-gray-400 text-sm">{t('app.languageDesc')}</div>
                     </div>
                   </div>
-                  <div className="flex rounded-full overflow-hidden border border-[var(--border-medium)]" role="radiogroup" aria-label={t('app.language')}>
+                  <div className="flex gap-1.5" role="radiogroup" aria-label={t('app.language')}>
                     <button
                       type="button"
                       onClick={() => { haptic?.(); setAppLocale('en'); }}
                       role="radio"
                       aria-checked={appLocale === 'en'}
-                      className={`px-4 py-1.5 text-sm font-medium transition-colors ${appLocale === 'en' ? 'bg-white text-black' : 'text-gray-300'}`}
+                      className={`kuro-btn flex-1 text-sm ${appLocale === 'en' ? 'active-gold' : ''}`}
                     >
                       {t('app.languageEnglish')}
                     </button>
@@ -572,7 +572,7 @@ function ProfileTab({
                       onClick={() => { haptic?.(); setAppLocale('fr'); }}
                       role="radio"
                       aria-checked={appLocale === 'fr'}
-                      className={`px-4 py-1.5 text-sm font-medium transition-colors ${appLocale === 'fr' ? 'bg-white text-black' : 'text-gray-300'}`}
+                      className={`kuro-btn flex-1 text-sm ${appLocale === 'fr' ? 'active-gold' : ''}`}
                     >
                       {t('app.languageFrench')}
                     </button>

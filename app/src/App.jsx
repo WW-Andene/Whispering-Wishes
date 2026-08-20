@@ -82,7 +82,7 @@ import {
 import { silentCatch } from './utils/silentCatch.js';
 import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
-import { t, formatDate } from './utils/i18n.js';
+import { t, formatDate, useAppLocale } from './utils/i18n.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -91,7 +91,10 @@ const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
-  
+  // Subscribing here (the app root) makes setAppLocale() re-render the whole
+  // tree, not just whichever component happens to call useAppLocale().
+  useAppLocale();
+
   const toast = useToast();
   const confirm = useConfirm();
   const pwa = usePWA();
