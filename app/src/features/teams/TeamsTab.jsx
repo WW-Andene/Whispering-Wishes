@@ -214,11 +214,11 @@ function TeamsTab({
     const allSuggestions = [];
     // Show custom teams first (built from your roster), then meta
     if (customTeams.length > 0) {
-      allSuggestions.push({ header: 'Built from your roster' });
+      allSuggestions.push({ header: t('teams.tab.sectionYourRoster') });
       customTeams.slice(0, 8).forEach(s => allSuggestions.push(s));
     }
     if (metaDisplay.length > 0) {
-      allSuggestions.push({ header: 'Curated teams' });
+      allSuggestions.push({ header: t('teams.tab.sectionCurated') });
       metaDisplay.forEach(s => allSuggestions.push(s));
     }
     return allSuggestions;
@@ -530,38 +530,38 @@ function TeamsTab({
                             haptic.success();
                           }}
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
-                          title={teamCompareEntries.length >= 5 ? 'Max 5 comparisons' : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? 'Add characters first' : 'Add to comparison'}
+                          title={teamCompareEntries.length >= 5 ? t('teams.tab.compareMax') : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? t('teams.tab.compareNeedChars') : t('teams.tab.compareAdd')}
                           className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-sm px-2 py-1.5 whitespace-nowrap"
-                          aria-label="Add current team to comparison"
+                          aria-label={t('teams.tab.compareAria')}
                         >
-                          + Compare
+                          {t('teams.tab.compareLabel')}
                         </button>
                         <button
                           onClick={() => {
-                            const name = window.prompt('Save loadout as:', `${activeTeam.name || 'Team ' + (state.activeTeamIndex + 1)} Loadout`);
+                            const name = window.prompt(t('teams.tab.savePrompt'), t('teams.tab.saveDefaultName', { name: activeTeam.name || t('teams.tab.defaultTeamName', { index: state.activeTeamIndex + 1 }) }));
                             if (!name || !name.trim()) return;
-                            const preset = { name: name.trim(), teams: state.teams.map(t => ({ name: t.name, slots: [...t.slots] })), equipment: { ...teamEquipment } };
+                            const preset = { name: name.trim(), teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
                             setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
-                            toast?.addToast?.(`Loadout "${name.trim()}" saved!`, 'success');
+                            toast?.addToast?.(t('teams.tab.saveSuccess', { name: name.trim() }), 'success');
                             haptic.success();
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
-                          aria-label="Save equipment loadout"
-                          title="Save Loadout"
+                          aria-label={t('teams.tab.saveAria')}
+                          title={t('teams.tab.saveTitle')}
                         >
                           <BookmarkPlus size={12} />
                         </button>
                         <button
                           onClick={() => setShowPresetDropdown(prev => !prev)}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
-                          aria-label="Load equipment loadout"
+                          aria-label={t('teams.tab.loadAria')}
                           aria-expanded={showPresetDropdown}
-                          title="Load Loadout"
+                          title={t('teams.tab.loadTitle')}
                         >
                           <FolderOpen size={12} />
                         </button>
                         <button
-                          onClick={async () => { if (await confirm?.({ title: 'Clear team', message: 'Remove all Resonators from this team?', confirmLabel: 'Clear', destructive: true })) {
+                          onClick={async () => { if (await confirm?.({ title: t('teams.tab.clearTeamTitle'), message: t('teams.tab.clearTeamMessage'), confirmLabel: t('teams.tab.clearTeamConfirm'), destructive: true })) {
                             dispatch({ type: 'CLEAR_TEAM', teamIndex: state.activeTeamIndex });
                             // Clean up orphaned equipment entries for every cleared member — CLEAR_TEAM
                             // wipes all slots at once, so this must sweep all of them (single-slot
@@ -581,17 +581,17 @@ function TeamsTab({
                             haptic.medium();
                           } }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
-                          aria-label="Clear all slots in current team"
+                          aria-label={t('teams.tab.clearAllSlotsAria')}
                         >
                           <Trash2 size={12} />
                         </button>
                       </div>
                     }>
-                      <Users size={14} className="text-yellow-400" /> Team Builder
+                      <Users size={14} className="text-yellow-400" /> {t('teams.tab.teamBuilder')}
                     </CardHeader>
                     <CardBody>
                       {/* Team Selector Tabs — P6-FIX: ARIA tab pattern (F-P6-059) */}
-                      <div className="flex gap-1 mb-3" role="tablist" aria-label="Team selector" onKeyDown={(e) => {
+                      <div className="flex gap-1 mb-3" role="tablist" aria-label={t('teams.tab.teamSelectorAria')} onKeyDown={(e) => {
                         const idx = state.activeTeamIndex;
                         let next;
                         if (e.key === 'ArrowRight') { e.preventDefault(); next = (idx + 1) % state.teams.length; }
@@ -614,7 +614,7 @@ function TeamsTab({
                                 className="kuro-input flex-1 min-w-0 text-center text-base py-1.5"
                                 maxLength={20}
                                 autoFocus
-                                aria-label={`Rename team ${idx + 1}`}
+                                aria-label={t('teams.tab.renameTeamAria', { index: idx + 1 })}
                               />
                             );
                           }
@@ -645,12 +645,12 @@ function TeamsTab({
                         <div className="relative mb-3">
                           <div className="absolute top-0 right-0 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
                             {equipPresets.length === 0 ? (
-                              <div className="px-3 py-2 text-sm text-gray-500">No saved loadouts</div>
+                              <div className="px-3 py-2 text-sm text-gray-500">{t('teams.tab.noSavedLoadouts')}</div>
                             ) : (
                               equipPresets.map((preset, i) => (
                                 <div key={i} className="flex items-center border-b border-[var(--border-medium)] last:border-b-0">
-                                  <button onClick={() => { setTeamEquipment(preset.equipment); try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {} if (preset.teams?.[0]?.slots) { preset.teams.forEach((t, ti) => { if (t.slots) t.slots.forEach((char, si) => { dispatch({ type: 'SET_TEAM_SLOT', teamIndex: ti, slotIndex: si, character: char }); }); }); } setShowPresetDropdown(false); toast?.addToast?.(`Loadout "${preset.name}" loaded!`, 'success'); haptic.success(); }} className="flex-1 text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors">{preset.name}</button>
-                                  <button onClick={(e) => { e.stopPropagation(); setEquipPresets(prev => prev.filter((_, idx) => idx !== i)); toast?.addToast?.(`Loadout "${preset.name}" deleted`, 'success'); }} className="px-2 py-2 text-gray-500 hover:text-red-400 transition-colors" aria-label={`Delete loadout ${preset.name}`}><X size={12} /></button>
+                                  <button onClick={() => { setTeamEquipment(preset.equipment); try { localStorage.setItem('ww-team-equipment', JSON.stringify(preset.equipment)); } catch {} if (preset.teams?.[0]?.slots) { preset.teams.forEach((tm, ti) => { if (tm.slots) tm.slots.forEach((char, si) => { dispatch({ type: 'SET_TEAM_SLOT', teamIndex: ti, slotIndex: si, character: char }); }); }); } setShowPresetDropdown(false); toast?.addToast?.(t('teams.tab.loadoutLoaded', { name: preset.name }), 'success'); haptic.success(); }} className="flex-1 text-left px-3 py-2 text-sm text-gray-200 hover:bg-white/10 transition-colors">{preset.name}</button>
+                                  <button onClick={(e) => { e.stopPropagation(); setEquipPresets(prev => prev.filter((_, idx) => idx !== i)); toast?.addToast?.(t('teams.tab.loadoutDeleted', { name: preset.name }), 'success'); }} className="px-2 py-2 text-gray-500 hover:text-red-400 transition-colors" aria-label={t('teams.tab.deleteLoadoutAria', { name: preset.name })}><X size={12} /></button>
                                 </div>
                               ))
                             )}
@@ -662,8 +662,8 @@ function TeamsTab({
                       <div className="grid grid-cols-3 gap-2 p-2 rounded-lg border border-yellow-500/20 bg-yellow-500/5 kuro-shadow-glow-gold">
                         {!teamSlots.some(s => s) && (
                           <div className="col-span-3 text-center py-4">
-                            <div className="text-gray-400 text-md mb-1">No characters assigned</div>
-                            <p className="text-gray-600 text-sm">Tap an empty slot to add a Resonator</p>
+                            <div className="text-gray-400 text-md mb-1">{t('teams.tab.noCharsAssigned')}</div>
+                            <p className="text-gray-600 text-sm">{t('teams.tab.tapEmptySlot')}</p>
                           </div>
                         )}
                         {teamSlots.map((charName, slotIdx) => {
@@ -679,10 +679,10 @@ function TeamsTab({
                                 onClick={() => openSelector(slotIdx)}
                                 className="relative overflow-hidden border-2 border-dashed rounded-lg border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50 hover:bg-yellow-500/10 transition-all flex flex-col items-center justify-center gap-1.5 group"
                                 style={{ height: '160px', contain: 'paint' }}
-                                aria-label={`Add resonator to slot ${slotIdx + 1}`}
+                                aria-label={t('teams.tab.addSlotAria', { slot: slotIdx + 1 })}
                               >
                                 <Plus size={24} className="text-yellow-500/50 group-hover:text-yellow-400 transition-colors" />
-                                <span className="text-sm text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">Add Resonator</span>
+                                <span className="text-sm text-yellow-500/40 group-hover:text-yellow-400 font-medium transition-colors">{t('teams.tab.addResonator')}</span>
                               </button>
                             );
                           }
@@ -724,7 +724,7 @@ function TeamsTab({
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
                                 className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
-                                aria-label={`Remove ${charName} from slot ${slotIdx + 1}`}
+                                aria-label={t('teams.tab.removeSlotAria', { name: charName, slot: slotIdx + 1 })}
                               >
                                 <X size={12} />
                               </button>}
@@ -732,8 +732,8 @@ function TeamsTab({
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setTeamMainDps(charName); }}
                                   className={`action-btn absolute top-1 left-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
-                                  aria-label={activeTeam.mainDpsOverride === charName ? `${charName} is the headline DPS — click to auto-detect instead` : `Set ${charName} as the headline DPS for this team`}
-                                  title={activeTeam.mainDpsOverride === charName ? 'Headline DPS (click to clear)' : 'Set as headline DPS'}
+                                  aria-label={activeTeam.mainDpsOverride === charName ? t('teams.tab.headlineDpsClearAria', { name: charName }) : t('teams.tab.headlineDpsSetAria', { name: charName })}
+                                  title={activeTeam.mainDpsOverride === charName ? t('teams.tab.headlineDpsClearTitle') : t('teams.tab.headlineDpsSetTitle')}
                                 >
                                   <Crown size={12} fill={activeTeam.mainDpsOverride === charName ? 'currentColor' : 'none'} />
                                 </button>
@@ -798,23 +798,23 @@ function TeamsTab({
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={(e) => { e.stopPropagation(); shuffleSuggestion(); }}
-                            disabled={!teamSuggestions.some(s => s.header === 'Curated teams')}
+                            disabled={!teamSuggestions.some(s => s.header === t('teams.tab.sectionCurated'))}
                             className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                            aria-label="Shuffle: show a different random sample of curated teams"
-                            title="Shuffle: show a different random sample of curated teams"
+                            aria-label={t('teams.tab.shuffleAria')}
+                            title={t('teams.tab.shuffleAria')}
                           >
-                            <Shuffle size={12} /> Shuffle
+                            <Shuffle size={12} /> {t('teams.tab.shuffle')}
                           </button>
                           <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${suggestionsCollapsed ? '' : 'rotate-180'}`} />
                         </div>
-                      }><Target size={14} className="text-cyan-400" /> Team Suggestions</CardHeader>
+                      }><Target size={14} className="text-cyan-400" /> {t('teams.tab.teamSuggestions')}</CardHeader>
                     </div>
                     {!suggestionsCollapsed && (
                     <CardBody>
                       <div className="space-y-2 team-suggestions-grid">
                         {(() => {
                           if (teamSuggestions.length === 0) {
-                            return <p className="text-gray-500 text-sm text-center py-2">No team suggestions available</p>;
+                            return <p className="text-gray-500 text-sm text-center py-2">{t('teams.tab.noSuggestions')}</p>;
                           }
                           return teamSuggestions.map((s, i) => {
                             if (s.header) return <div key={`h${i}`} className="text-xs text-gray-500 uppercase tracking-wider font-medium pt-2 pb-0.5 flex items-center gap-2"><span className="h-px flex-1 bg-white/5" />{s.header}<span className="h-px flex-1 bg-white/5" /></div>;
@@ -855,7 +855,7 @@ function TeamsTab({
                                 </div>
                               </div>
                               {s.allOwned ? (
-                                <span className="kuro-badge kuro-badge-emerald flex-shrink-0 text-2xs">Ready</span>
+                                <span className="kuro-badge kuro-badge-emerald flex-shrink-0 text-2xs">{t('teams.tab.ready')}</span>
                               ) : (
                                 <span className="text-2xs text-gray-500 flex-shrink-0">{s.ownedCount}/{s.members.length}</span>
                               )}

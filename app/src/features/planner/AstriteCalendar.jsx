@@ -8,6 +8,7 @@ import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, GanttChart, X } from 'lucide-react';
 import { ASTRITE_PER_PULL } from '../../data/constants.js';
 import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES } from '../../data/banners.js';
+import { t, formatNumber, formatDate } from '../../utils/i18n.js';
 
 // 9 colors — one per meaning. Raw hex required because values are used in JS string
 // interpolation (e.g. `${color}40` for alpha) where CSS var() would be invalid.
@@ -25,12 +26,13 @@ const BANNER_COLOR = '#edaf18';  // gold
 const GAME_LAUNCH = new Date('2024-05-23'); // Wuthering Waves global launch date
 GAME_LAUNCH.setHours(0, 0, 0, 0);
 
-// Legend labels — maps legendGroup keys to display names
-const LEGEND_LABELS = {
-  banner: 'Banner', weeklyBoss: 'Weekly Boss', illusiveRealm: 'Illusive Realm',
-  towerOfAdversity: 'Tower of Adversity', whimperingWastes: 'Whimpering Wastes',
-  matrix: 'Matrix', tacticalHologram: 'Tactical Hologram', pioneerPodcast: 'Pioneer Podcast',
+// Legend labels — maps legendGroup keys to i18n keys under planner.calendar.legend*
+const LEGEND_LABEL_KEYS = {
+  banner: 'planner.calendar.bannerLegend', weeklyBoss: 'planner.calendar.legendWeeklyBoss', illusiveRealm: 'planner.calendar.legendIllusiveRealm',
+  towerOfAdversity: 'planner.calendar.legendTowerOfAdversity', whimperingWastes: 'planner.calendar.legendWhimperingWastes',
+  matrix: 'planner.calendar.legendMatrix', tacticalHologram: 'planner.calendar.legendTacticalHologram', pioneerPodcast: 'planner.calendar.legendPioneerPodcast',
 };
+const getLegendLabel = (group) => t(LEGEND_LABEL_KEYS[group] || group);
 
 // Get the earliest date an event type existed (from introducedVersion)
 const getIntroducedDate = (ev) => {
@@ -133,7 +135,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         note: calendarNotes?.[dateKey] || '', isDailyDone,
       });
     }
-    return { year, month, firstDay, daysInMonth, days, monthName: view.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
+    return { year, month, firstDay, daysInMonth, days, monthName: formatDate(view, { month: 'long', year: 'numeric' }) };
   }, [monthOffset, dailyIncome, bannerEndDate, calendarNotes, eventStatus]);
 
   const sel = selectedDay ? cal.days.find(d => d.dateKey === selectedDay) : null;
@@ -349,26 +351,26 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* Month nav */}
         <div className="flex items-center justify-between">
           {/* U6-04: Don't clear selectedDay on month nav — panel hides naturally, note input preserved */}
-          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Previous month"><ChevronLeft size={16} /></button>
+          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label={t('planner.calendar.previousMonth')}><ChevronLeft size={16} /></button>
           {/* U6-03: Show "Today" pill when viewing a non-current month */}
-          <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-md font-bold tracking-wide hover:text-yellow-400 transition-colors" title={monthOffset !== 0 ? 'Jump to current month' : undefined}>
+          <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-md font-bold tracking-wide hover:text-yellow-400 transition-colors" title={monthOffset !== 0 ? t('planner.calendar.jumpToCurrentMonth') : undefined}>
             {cal.monthName}
-            {monthOffset !== 0 && <span className="kuro-badge kuro-badge-yellow" style={{ borderRadius: 'var(--radius-pill)', verticalAlign: 'middle', marginLeft: 'var(--space-base)' }}>Today</span>}
+            {monthOffset !== 0 && <span className="kuro-badge kuro-badge-yellow" style={{ borderRadius: 'var(--radius-pill)', verticalAlign: 'middle', marginLeft: 'var(--space-base)' }}>{t('planner.calendar.today')}</span>}
           </button>
-          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label="Next month"><ChevronRight size={16} /></button>
+          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label={t('planner.calendar.nextMonth')}><ChevronRight size={16} /></button>
         </div>
 
         {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1">
-          {['MON','TUE','WED','THU','FRI','SAT','SUN'].map(d => (
+          {t('planner.calendar.weekdays').map(d => (
             <div key={d} className="text-center text-sm font-bold tracking-wider" style={{ color: 'var(--text-disabled)' }}>{d}</div>
           ))}
         </div>
 
         {/* P7-F002: Hint that days are tappable (shown only when no day selected) */}
-        {!selectedDay && <p className="text-center text-sm text-gray-600 -mb-0.5">Tap a day to view events & add notes</p>}
+        {!selectedDay && <p className="text-center text-sm text-gray-600 -mb-0.5">{t('planner.calendar.tapHint')}</p>}
         {/* U6-06: Day grid with arrow key navigation */}
-        <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label="Calendar days">
+        <div className="space-y-1" ref={gridRef} onKeyDown={handleGridKeyDown} role="grid" aria-label={t('planner.calendar.calendarAriaLabel')}>
           {rows.map((row, ri) => (
             <div key={ri} className="grid grid-cols-7 gap-1" role="row">
               {row.map((d, ci) => {
@@ -378,7 +380,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                 return (
                   <button key={d.day} type="button" role="gridcell" data-day={d.day} onClick={() => handleTap(d)}
                     className="active:scale-95 transition-transform"
-                    aria-label={`${d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? ' (today)' : ''}${d.note ? ' (has note)' : ''}`}
+                    aria-label={`${formatDate(d.date, { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? t('planner.calendar.todaySuffix') : ''}${d.note ? t('planner.calendar.noteSuffix') : ''}`}
                     style={{
                       aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
                       background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : d.isBanner ? 'linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03))' : 'var(--bg-stat)',
@@ -403,10 +405,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* Calendar legend — only calendar-specific items */}
         {/* V5-05: Standardized 8px indicators */}
         <div className="flex items-center gap-3 justify-center" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)' }}>
-          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-micro)', border: '2px solid #edaf18', display: 'inline-block' }} />Today</span>
-          <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--banner" />Banner</span>
-          <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--dailies" />Dailies</span>
-          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />Note</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-micro)', border: '2px solid #edaf18', display: 'inline-block' }} />{t('planner.calendar.today')}</span>
+          <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--banner" />{t('planner.calendar.bannerLegend')}</span>
+          <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--dailies" />{t('planner.calendar.dailiesLegend')}</span>
+          <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />{t('planner.calendar.noteLegend')}</span>
         </div>
 
         {/* Detail panel */}
@@ -415,17 +417,17 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
             <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-sm)' }}>
               <div>
                 <span style={{ fontSize: 'var(--font-md)', fontWeight: 700, color: 'var(--text-heading)' }}>
-                  {sel.date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                  {formatDate(sel.date, { weekday: 'long', month: 'short', day: 'numeric' })}
                 </span>
-                {sel.isDailyDone && <span style={{ fontSize: 'var(--font-sm)', color: '#22c55e', marginLeft: '8px' }}>&#x2713; Dailies</span>}
+                {sel.isDailyDone && <span style={{ fontSize: 'var(--font-sm)', color: '#22c55e', marginLeft: '8px' }}>&#x2713; {t('planner.calendar.dailiesDone')}</span>}
               </div>
-              <button onClick={() => setSelectedDay(null)} className="modal-close-btn flex items-center justify-center text-gray-400 hover:text-white" style={{ width: 'var(--size-touch-min)', height: 'var(--size-touch-min)' }} aria-label="Close"><X size={14} /></button>
+              <button onClick={() => setSelectedDay(null)} className="modal-close-btn flex items-center justify-center text-gray-400 hover:text-white" style={{ width: 'var(--size-touch-min)', height: 'var(--size-touch-min)' }} aria-label={t('planner.calendar.closeDetail')}><X size={14} /></button>
             </div>
 
             {(dailyIncome > 0 || sel.eventAstrite > 0) && !sel.isPast && (
               <div className="flex gap-4" style={{ fontSize: 'var(--font-sm)', marginBottom: 'var(--space-sm)' }}>
-                {dailyIncome > 0 && <span><span className="text-yellow-400 kuro-number font-bold">{dailyIncome.toLocaleString('en-US')}</span> <span style={{ color: 'var(--text-muted)' }}>Astrite/day</span></span>}
-                {sel.eventAstrite > 0 && <span><span className="kuro-number font-bold" style={{ color: selEvents[0]?.color || '#a855f7' }}>+{sel.eventAstrite}</span> <span style={{ color: 'var(--text-muted)' }}>from {selEvents.length} event{selEvents.length !== 1 ? 's' : ''}</span></span>}
+                {dailyIncome > 0 && <span><span className="text-yellow-400 kuro-number font-bold">{formatNumber(dailyIncome)}</span> <span style={{ color: 'var(--text-muted)' }}>{t('planner.calendar.astritePerDay')}</span></span>}
+                {sel.eventAstrite > 0 && <span><span className="kuro-number font-bold" style={{ color: selEvents[0]?.color || '#a855f7' }}>+{sel.eventAstrite}</span> <span style={{ color: 'var(--text-muted)' }}>{t('planner.calendar.fromEvents', { count: selEvents.length, plural: selEvents.length !== 1 ? 's' : '' })}</span></span>}
               </div>
             )}
 

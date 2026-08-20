@@ -194,7 +194,7 @@ function AchievementsTool({ onClose }) {
           // Drilled into one series via a card click
           <div className="space-y-1.5">
             <button onClick={() => setSeriesFilter('all')} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200 mb-1">
-              <ChevronLeft size={13} /> Back to Séries
+              <ChevronLeft size={13} /> {t('analytics.achievements.backToSeries')}
             </button>
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium flex items-center gap-2">
@@ -202,7 +202,7 @@ function AchievementsTool({ onClose }) {
                 {selectedSeries.name}
               </span>
               <span className="text-gray-400 text-xs">
-                {seriesProgress(seriesFilter).doneCount} / {seriesProgress(seriesFilter).total} · {seriesProgress(seriesFilter).donePts} / {seriesProgress(seriesFilter).pts} pts
+                {formatNumber(seriesProgress(seriesFilter).doneCount)} / {formatNumber(seriesProgress(seriesFilter).total)} · {formatNumber(seriesProgress(seriesFilter).donePts)} / {formatNumber(seriesProgress(seriesFilter).pts)} pts
               </span>
             </div>
             <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
@@ -228,8 +228,8 @@ function AchievementsTool({ onClose }) {
                     <span className="text-[10px] text-gray-500 flex-shrink-0">{s.category}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
-                    <span>{p.doneCount} / {p.total}</span>
-                    <span>{p.donePts} / {p.pts} pts</span>
+                    <span>{formatNumber(p.doneCount)} / {formatNumber(p.total)}</span>
+                    <span>{formatNumber(p.donePts)} / {formatNumber(p.pts)} pts</span>
                   </div>
                 </button>
               );

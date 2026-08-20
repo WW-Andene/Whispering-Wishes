@@ -501,12 +501,12 @@ function PlannerTab({
             )}
 
             {/* Farming targets — splash / buttons / resources as separate visual blocks */}
-            {farmTargetsState.map((t, i) => {
-              const d = CHARACTER_DATA[t.name];
+            {farmTargetsState.map((ftg, i) => {
+              const d = CHARACTER_DATA[ftg.name];
               if (!d) return null;
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
-              const theme = CHARACTER_THEMES.find(ct => ct.name === t.name);
-              const currentBanner = CURRENT_BANNERS.characters?.find(c => c.name === t.name);
+              const theme = CHARACTER_THEMES.find(ct => ct.name === ftg.name);
+              const currentBanner = CURRENT_BANNERS.characters?.find(c => c.name === ftg.name);
               const themeArt = theme?.bannerArt || currentBanner?.imageUrl;
               const artPosition = theme?.pos?.header || currentBanner?.imagePosition || 'center 30%';
 
@@ -514,14 +514,14 @@ function PlannerTab({
               const charMats = {};
               let charShell = 0;
               const addMat = (name, qty) => { if (!name || !qty) return; if (!charMats[name]) charMats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; charMats[name].qty += qty; };
-              if (t.ascension) {
+              if (ftg.ascension) {
                 addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
                 const ct = COMMON_MAT_TIERS[d.ascension?.common];
                 if (ct) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT3); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT4); }
                 addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
                 charShell += RESONATOR_ASCENSION_COSTS.shell;
               }
-              if (t.skills) {
+              if (ftg.skills) {
                 const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
                 if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4); }
                 const ct = COMMON_MAT_TIERS[d.ascension?.common];
@@ -529,7 +529,7 @@ function PlannerTab({
                 addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
                 charShell += SKILL_UPGRADE_COSTS.shell;
               }
-              if (t.weapon && d.bestWeapon) {
+              if (ftg.weapon && d.bestWeapon) {
                 const w = WEAPON_DATA?.[d.bestWeapon];
                 if (w?.ascensionMaterials) {
                   const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
@@ -541,10 +541,10 @@ function PlannerTab({
                 }
               }
               const charMatList = Object.entries(charMats).sort((a, b) => b[1].qty - a[1].qty);
-              const hasAnyToggle = t.ascension || t.skills || t.weapon;
+              const hasAnyToggle = ftg.ascension || ftg.skills || ftg.weapon;
 
               return (
-                <div key={t.name} className="space-y-2">
+                <div key={ftg.name} className="space-y-2">
                   {/* ── Splash banner ── */}
                   <div className="relative overflow-hidden rounded-xl" style={{ height: '100px', border: `1px solid ${elColor}40` }}>
                     {themeArt && (
@@ -553,17 +553,17 @@ function PlannerTab({
                     )}
                     <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(10,14,22,0.6) 0%, rgba(10,14,22,0.2) 50%, rgba(10,14,22,0.6) 100%)' }} />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(3px)', textShadow: `0 1px 6px rgba(0,0,0,0.5)` }}>{t.name}</span>
+                      <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(3px)', textShadow: `0 1px 6px rgba(0,0,0,0.5)` }}>{ftg.name}</span>
                     </div>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
                       className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
-                      aria-label={t('planner.removeCharAria', { name: t.name })}><X size={12} /></button>
+                      aria-label={t('planner.removeCharAria', { name: ftg.name })}><X size={12} /></button>
                   </div>
 
                   {/* ── Toggle buttons ── */}
                   <div className="flex gap-1.5">
                     {[['ascension', t('planner.ascension')], ['skills', t('planner.forte')], ['weapon', t('planner.weapon')]].map(([key, label]) => (
-                      <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
+                      <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${ftg[key] ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>{ftg[key] ? '✓ ' : ''}{label}</button>
                     ))}
                   </div>
 
@@ -571,8 +571,8 @@ function PlannerTab({
                   {hasAnyToggle && charMatList.length > 0 && (
                     <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                       <div className="flex items-center justify-between p-1.5 rounded bg-yellow-500/10">
-                        <span className="text-yellow-400 text-sm font-medium">Shell Credit</span>
-                        <span className="text-yellow-400 font-bold text-sm kuro-number">{charShell.toLocaleString('en-US')}</span>
+                        <span className="text-yellow-400 text-sm font-medium">{t('planner.shellCredit')}</span>
+                        <span className="text-yellow-400 font-bold text-sm kuro-number">{formatNumber(charShell)}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-1">
                         {charMatList.map(([name, { qty, img }]) => (
@@ -629,11 +629,11 @@ function PlannerTab({
               const matList = Object.entries(mats).sort((a, b) => b[1].qty - a[1].qty);
               return (
                 <>
-                  <div className="kuro-label mt-2">Combined Total ({farmTargetsState.length} Resonators)</div>
+                  <div className="kuro-label mt-2">{t('planner.combinedTotal', { count: farmTargetsState.length })}</div>
                   <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                     <div className="flex items-center justify-between">
-                      <span className="text-yellow-400 text-base font-medium">Shell Credit</span>
-                      <span className="text-yellow-400 font-bold text-lg kuro-number">{totalShell.toLocaleString('en-US')}</span>
+                      <span className="text-yellow-400 text-base font-medium">{t('planner.shellCredit')}</span>
+                      <span className="text-yellow-400 font-bold text-lg kuro-number">{formatNumber(totalShell)}</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -654,8 +654,8 @@ function PlannerTab({
             {/* Empty state */}
             {farmTargetsState.length === 0 && (
               <div className="kuro-empty-state text-center py-6">
-                <div className="text-center py-6" style={{ color: 'var(--text-muted)' }}>Awaiting farming directives</div>
-                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>Select Resonators to compute material requirements for Ascension, Forte, and Weapon upgrades</p>
+                <div className="text-center py-6" style={{ color: 'var(--text-muted)' }}>{t('planner.awaitingFarming')}</div>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>{t('planner.selectResonatorsHint')}</p>
               </div>
             )}
           </CardBody>

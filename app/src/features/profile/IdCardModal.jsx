@@ -52,14 +52,14 @@ export default function IdCardModal({
                     <div className="idcard-corner-bl" />
                     <div className="flex gap-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-xl truncate leading-tight kuro-tshadow-overlay">{state.profile.username || 'Resonator'}</h3>
+                        <h3 className="text-white font-semibold text-xl truncate leading-tight kuro-tshadow-overlay">{state.profile.username || t('profile.idCard.usernameFallback')}</h3>
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>UID</span>
+                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>{t('profile.idCard.uid')}</span>
                             <span className="text-gray-200 text-base font-mono">{state.profile.uid || '—'}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>SVR</span>
+                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>{t('profile.idCard.server')}</span>
                             <span className="text-base font-mono kuro-tshadow-brand" style={{ color: '#edaf18' }}>{state.server}</span>
                           </div>
                         </div>
@@ -100,16 +100,16 @@ export default function IdCardModal({
                     <div className="idcard-corner-bl" />
                     <div className="flex items-center gap-2 mb-2">
                       <div className="idcard-gold-bar" />
-                      <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Convene Stats</span>
+                      <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>{t('profile.idCard.conveneStats')}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { label: 'Avg Pity', value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
-                      { label: 'Total Convenes', value: overallStats?.totalPulls?.toLocaleString('en-US') ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
-                      { label: '5★ Obtained', value: overallStats?.fiveStars ?? '—', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
-                      { label: '50/50 Win', value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
-                      { label: 'Won', value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
-                      { label: 'Lost', value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },
+                      { label: t('profile.idCard.avgPity'), value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
+                      { label: t('profile.idCard.totalConvenes'), value: overallStats?.totalPulls?.toLocaleString('en-US') ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
+                      { label: t('profile.idCard.fiveStarObtained'), value: overallStats?.fiveStars ?? '—', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
+                      { label: t('profile.idCard.winRate5050'), value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
+                      { label: t('profile.idCard.won'), value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
+                      { label: t('profile.idCard.lost'), value: overallStats?.lost5050 ?? '—', color: '#f87171', bg: 'rgba(248,113,113,0.1)', bc: 'rgba(248,113,113,0.3)' },
                     ].map((s, i) => (
                       <div key={i} className="relative rounded-lg px-2 py-1.5 text-center overflow-hidden" style={{ background: s.bg, border: `1px solid ${s.bc}` }}>
                         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
@@ -139,11 +139,11 @@ export default function IdCardModal({
                         <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
                           <div className="idcard-gold-bar" />
-                          <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Pity Distribution</span>
+                          <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>{t('profile.idCard.pityDistribution')}</span>
                         </div>
                         {/* §E10-CH-F2: Summary moved above histogram, escalated to text-base */}
                         <div className="text-right mb-1.5">
-                          <span className="text-base text-gray-400 kuro-number">Lo {lo} · Avg {avg} · Hi {hi}</span>
+                          <span className="text-base text-gray-400 kuro-number">{t('profile.idCard.pitySummary', { lo, avg, hi })}</span>
                         </div>
                         <div className="flex items-end gap-1.5" style={{ marginBottom: '2px' }}>
                           {labs.map((lab, i) => {
@@ -192,7 +192,7 @@ export default function IdCardModal({
                       <div className="idcard-corner-bl" />
                       <div className="flex items-center gap-2 mb-2">
                         <div className="idcard-gold-bar" />
-                        <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Resonators ({ownedCharNames.length})</span>
+                        <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>{t('profile.idCard.resonators', { count: ownedCharNames.length })}</span>
                       </div>
                       <div className="grid grid-cols-5 gap-1.5">
                         {ownedCharNames.slice(0, 16).map(name => {
@@ -237,7 +237,7 @@ export default function IdCardModal({
                         <div className="idcard-corner-bl" />
                         <div className="flex items-center gap-2 mb-2">
                           <div className="idcard-gold-bar" />
-                          <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>Trophies ({sorted.length})</span>
+                          <span className="text-sm font-semibold" style={{ color: '#f1f5f9', letterSpacing: '0.03em' }}>{t('profile.idCard.trophies', { count: sorted.length })}</span>
                         </div>
                         <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${sorted.length}, 1fr)` }}>
                           {sorted.map(trophy => {
@@ -259,7 +259,7 @@ export default function IdCardModal({
                   {/* ═══ FOOTER ═══ */}
                   <div className="relative flex items-center justify-between pt-1.5">
                     <div className="absolute top-0 left-0 right-0 h-px idcard-shimmer--subtle" />
-                    <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>Generated {new Date().toLocaleDateString()}</span>
+                    <span className="text-gray-500 font-mono" style={{ fontSize: '8px' }}>{t('profile.idCard.generated', { date: new Date().toLocaleDateString() })}</span>
                     <span className="text-gray-500" style={{ fontSize: '8px' }}>whisperingwishes.app</span>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ export default function IdCardModal({
                   onClick={() => setIdCardFormat('landscape')}
                   className="px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all"
                   style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid var(--border-medium)' } : { color: '#6b7280', borderRight: '1px solid var(--border-medium)' }}
-                  title="Landscape 16:9"
+                  title={t('profile.idCard.landscape')}
                 >
                   <Monitor size={12} /> 16:9
                 </button>
@@ -282,7 +282,7 @@ export default function IdCardModal({
                   onClick={() => setIdCardFormat('portrait')}
                   className="px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all"
                   style={idCardFormat === 'portrait' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18' } : { color: '#6b7280' }}
-                  title="Portrait 9:16"
+                  title={t('profile.idCard.portrait')}
                 >
                   <Smartphone size={12} /> 9:16
                 </button>
@@ -292,7 +292,7 @@ export default function IdCardModal({
                 onClick={() => downloadIdCard(idCardFormat)}
                 className="kuro-btn flex-1 py-2.5 text-base active-gold flex items-center justify-center gap-2"
               >
-                <Download size={14} /> Download {idCardFormat === 'portrait' ? '9:16' : '16:9'}
+                <Download size={14} /> {t('profile.idCard.download', { format: idCardFormat === 'portrait' ? '9:16' : '16:9' })}
               </button>
               {/* Close */}
               <button

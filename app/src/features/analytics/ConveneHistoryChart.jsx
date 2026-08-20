@@ -5,13 +5,14 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { t, formatNumber, formatDate } from '../../utils/i18n.js';
 
 const BANNER_FILTERS = [
-  ['all', 'All'],
-  ['featured', 'Featured'],
-  ['weapon', 'Weapon'],
-  ['stdChar', 'Standard Resonator'],
-  ['stdWeap', 'Standard Weapon'],
+  ['all', 'analytics.history.banners.all'],
+  ['featured', 'analytics.history.banners.featured'],
+  ['weapon', 'analytics.history.banners.weapon'],
+  ['stdChar', 'analytics.history.banners.stdChar'],
+  ['stdWeap', 'analytics.history.banners.stdWeap'],
 ];
 
 const TIME_RANGES = ['daily', 'weekly', 'monthly', 'yearly'];
@@ -45,11 +46,11 @@ const groupData = (chartHist, range) => {
 
 const formatLabel = (key, range) => {
   if (range === 'daily') {
-    return new Date(key + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return formatDate(new Date(key + 'T12:00:00'), { month: 'short', day: 'numeric' });
   } else if (range === 'weekly') {
     return key.split('-')[1];
   } else if (range === 'monthly') {
-    return new Date(key + '-15T12:00:00').toLocaleDateString('en-US', { month: 'short' });
+    return formatDate(new Date(key + '-15T12:00:00'), { month: 'short' });
   }
   return key;
 };
@@ -80,17 +81,17 @@ function ConveneHistoryChart({ statsTabData }) {
   return (
     <Card className="stats-full-width">
       <CardHeader>
-        <span className="flex items-center gap-1.5"><TrendingUp size={14} /> Convene History</span>
+        <span className="flex items-center gap-1.5"><TrendingUp size={14} /> {t('analytics.history.title')}</span>
       </CardHeader>
       <CardBody>
         <div className="flex gap-1 mb-2 flex-wrap">
-          {BANNER_FILTERS.map(([val, label]) => (
+          {BANNER_FILTERS.map(([val, labelKey]) => (
             <button
               key={val}
               onClick={() => { setChartBanner(val); setChartOffset(9999); }}
               className={`kuro-chip ${chartBanner === val ? 'active-gold' : ''}`}
             >
-              {label}
+              {t(labelKey)}
             </button>
           ))}
         </div>
@@ -101,15 +102,15 @@ function ConveneHistoryChart({ statsTabData }) {
               onClick={() => { setChartRange(r); setChartOffset(9999); }}
               className={`kuro-chip ${chartRange === r ? 'active-gold' : ''}`}
             >
-              {r.charAt(0).toUpperCase() + r.slice(1)}
+              {t(`analytics.history.ranges.${r}`)}
             </button>
           ))}
         </div>
 
         {chartHist.length < 10 ? (
-          <p className="kuro-empty-state text-gray-400 text-base text-center py-4">No data for this filter. Try a different banner type or time range.</p>
+          <p className="kuro-empty-state text-gray-400 text-base text-center py-4">{t('analytics.history.noDataFilter')}</p>
         ) : allData.length < 2 ? (
-          <p className="kuro-empty-state text-gray-400 text-base text-center py-4">No data for this combination. Try a different filter or time range.</p>
+          <p className="kuro-empty-state text-gray-400 text-base text-center py-4">{t('analytics.history.noDataCombination')}</p>
         ) : (
           <>
             <div className="flex items-center justify-between mb-3">
@@ -134,12 +135,12 @@ function ConveneHistoryChart({ statsTabData }) {
               )}
             </div>
             <div className="h-32">
-              <div className="sr-only">Convene history chart showing activity over time. Data points: {chartData?.map(d => `${d.label}: ${d.pulls} Convenes`).join(', ')}.</div>
+              <div className="sr-only">{t('analytics.history.srSummary', { points: chartData?.map(d => t('analytics.history.srDataPoint', { label: d.label, count: formatNumber(d.pulls) })).join(', ') })}</div>
               <ChartSvg chartData={chartData} />
             </div>
             {allData.length > maxVisible && (
               <div className="text-center text-sm text-gray-400 mt-1">
-                {clampedOffset + 1}-{Math.min(clampedOffset + maxVisible, allData.length)} of {allData.length}
+                {t('analytics.history.pageRange', { start: formatNumber(clampedOffset + 1), end: formatNumber(Math.min(clampedOffset + maxVisible, allData.length)), total: formatNumber(allData.length) })}
               </div>
             )}
           </>
@@ -189,7 +190,7 @@ function ChartSvg({ chartData }) {
       {pts.map((p, i) => (
         <g key={i}>
           <circle cx={p.x} cy={p.y} r="8" fill="transparent" className="cursor-pointer">
-            <title>{p.label}: {p.pulls} Convenes</title>
+            <title>{t('analytics.history.tooltipConvenes', { label: p.label, count: formatNumber(p.pulls) })}</title>
           </circle>
           <circle cx={p.x} cy={p.y} r="2" fill="rgba(237,175,24,0.6)" className="pointer-events-none" />
         </g>

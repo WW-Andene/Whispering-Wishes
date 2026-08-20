@@ -7,6 +7,7 @@ import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Camera, Scan, X } from 'lucide-react';
 import { HEADER_ICON } from '../../data/constants.js';
+import { t } from '../../utils/i18n.js';
 
 export default function ConveneScanner({
   directCameraOpen,
@@ -138,8 +139,8 @@ export default function ConveneScanner({
 
       {/* Instruction text */}
       <div className="absolute left-0 right-0 text-center pointer-events-none" style={{ top: `${zone.top + zone.height + 2}%` }}>
-        <p style={{ fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>Align URL text box within frame</p>
-        <p style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.12)', marginTop: 4 }}>Pinch to zoom</p>
+        <p style={{ fontSize: 'var(--font-2xs)', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>{t('profile.scanner.instructionAlign')}</p>
+        <p style={{ fontSize: 'var(--font-2xs)', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.12)', marginTop: 4 }}>{t('profile.scanner.instructionPinch')}</p>
       </div>
 
       {/* Bottom bar */}
@@ -154,7 +155,7 @@ export default function ConveneScanner({
             </div>
           </button>
         </div>
-        <p className="text-center" style={{ fontSize: 8, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.15)', marginTop: 8, textTransform: 'uppercase', fontWeight: 600 }}>Capture</p>
+        <p className="text-center" style={{ fontSize: 8, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.15)', marginTop: 8, textTransform: 'uppercase', fontWeight: 600 }}>{t('profile.scanner.capture')}</p>
       </div>
 
       <style>{`
