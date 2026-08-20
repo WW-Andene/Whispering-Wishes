@@ -634,4 +634,24 @@ const WEAPON_DATA = {
 };
 
 
+// [SECTION:LOCALIZATION] — locale-aware overlay for weapons.fr.js.
+// English data above is the single source of truth for numbers/mechanics;
+// this merges in translated *text* fields only (desc/passive), keyed by the
+// same names. calcEngine.js/calcTeamStats.js must keep importing WEAPON_DATA
+// directly — parsePassive() regex-parses the raw English passive string as
+// a fallback whenever a weapon has no `pv`, so feeding it translated text
+// would silently corrupt DPS calculations.
+import { WEAPON_DATA_FR } from './weapons.fr.js';
+
+/** @param {string} locale */
+export function getLocalizedWeaponData(locale) {
+  if (locale !== 'fr') return WEAPON_DATA;
+  const out = {};
+  for (const [name, base] of Object.entries(WEAPON_DATA)) {
+    const fr = WEAPON_DATA_FR[name];
+    out[name] = { ...base, ...(fr?.desc ? { desc: fr.desc } : {}), ...(fr?.passive ? { passive: fr.passive } : {}) };
+  }
+  return out;
+}
+
 export { WEAPON_DATA };

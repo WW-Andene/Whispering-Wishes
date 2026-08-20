@@ -5,14 +5,14 @@
 
 import React from 'react';
 import { Swords, Star, TrendingUp, X } from 'lucide-react';
-import { WEAPON_DATA } from '../../data/weapons.js';
+import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { t, formatNumber } from '../../utils/i18n.js';
+import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
 const WEAPON_RARITY_COLORS = {
   5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
@@ -23,7 +23,7 @@ const WEAPON_RARITY_COLORS = {
 };
 const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionData }) => {
   const { framingMode, editingImage, setEditingImage } = useImageFramingContext();
-  const data = WEAPON_DATA[name];
+  const data = getLocalizedWeaponData(getLocale())[name] || WEAPON_DATA[name];
   if (!data) return null;
 
   const ownsChar = (n) => {
@@ -99,7 +99,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
 
           {/* 2. Description */}
           {data.desc && (() => {
-            const sig = data.desc.match(/^(\w+ signature)\.\s*/);
+            const sig = data.desc.match(/^((?:\w+ signature)|(?:Arme signature de [^.(]+))\.\s*/);
             const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
             const dot = rest.indexOf('. ');
             const lore = dot > 0 ? rest.slice(0, dot + 1) : null;

@@ -6,7 +6,7 @@
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES } from '../../data/characters.js';
-import { WEAPON_DATA } from '../../data/weapons.js';
+import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
@@ -16,7 +16,7 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { t, formatNumber } from '../../utils/i18n.js';
+import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
@@ -38,7 +38,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
-  const weaponData = bestWeapon ? WEAPON_DATA[bestWeapon] : null;
+  const weaponData = bestWeapon ? (getLocalizedWeaponData(getLocale())[bestWeapon] || WEAPON_DATA[bestWeapon]) : null;
   const weaponImg = bestWeapon ? DEFAULT_COLLECTION_IMAGES[bestWeapon] : null;
 
   // Ownership helpers for greyed-out completion indicators
