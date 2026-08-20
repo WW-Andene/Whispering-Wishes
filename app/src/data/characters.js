@@ -1117,9 +1117,14 @@ const CHARACTER_DATA = {
   ['Hiyuki',        10300, 462, 1112, 125],
   ['Suisui',        16713, 288, 1100, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
-  // Jingran: nanoka shows "Base DEF -" (his kit fixes combat DEF to 0); using a placeholder in
-  // line with other Broadblade 5★ base DEF until his real stat page publishes at 3.6 launch.
-  ['Jingran',       15375, 313, 650,  125],
+  // Jingran: nanoka shows "Base DEF -" because his kit fixes combat DEF to 0 (not an unpublished
+  // stat pending 3.6 launch — a real, permanent kit mechanic). He's HP-scaling (statScaling: 'HP'),
+  // so this value was never read for his damage math either way, but a guessed "in line with other
+  // Broadblade 5★" placeholder (650) is still wrong to show as his base DEF — 0 is what the game
+  // actually displays/uses for him. Any DEF% substat/buff a player equips still correctly computes
+  // to 0 real DEF added (0 × any% = 0), matching his real fixed-DEF mechanic instead of coincidentally
+  // matching it only because it's never read.
+  ['Jingran',       15375, 313, 0,    125],
   // 4★
   ['Aalto',         9850,  262, 1075, 150],
   ['Baizhi',        12812, 212, 1002, 175],
@@ -2460,7 +2465,10 @@ const CHAR_BUFF_TABLE = {
     // Ciphers' own pv.defIgnore, which the calculator already applies whenever that weapon is actually
     // equipped. Hardcoding it here double-counted it and phantom-applied it with any other weapon equipped.
     selfBuffs: [
-      { stat: 'echoDmg', value: 50, target: 'self', duration: 15, condition: 'Inherent: +2% Echo Skill DMG per 1% ER above 125% (up to 50%)' },
+      // value is the CAP (50) — erScale lets the engine compute her real bonus from actual equipped
+      // ER (2% per 1% ER above 125%, capped at 50%) instead of always applying the max, the same
+      // fix already applied to Mornye's Tune Break Interfered Marker amp.
+      { stat: 'echoDmg', value: 50, target: 'self', duration: 15, erScale: { threshold: 125, ratePerPercent: 2, cap: 50 }, condition: 'Inherent: +2% Echo Skill DMG per 1% ER above 125% (up to 50%)' },
       // Added 2026-08-17 against Prydwen's live kit breakdown — Blessing of Runes was missing entirely.
       // Whichever Resonator is active gets this (not Sigrika specifically), stacking on any teammate's
       // Echo Skill cast up to 6 stacks (3% Aero + 3% Echo Skill DMG each), with a further +30%/+30% jump

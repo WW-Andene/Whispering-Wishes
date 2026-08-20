@@ -28,6 +28,18 @@ import {
   TEAM_SET_BUFFS,
 } from './calcEngine.js';
 
+// A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
+// Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
+// Interfered Marker amp) carries an optional erScale: { threshold, ratePerPercent, cap }. b.value
+// stays the CAP for display/fallback purposes; this resolves the buff's actual contribution from
+// totalER when known, so an under-ER-built character doesn't silently get credited the max anyway.
+function resolveBuffValue(b, totalER) {
+  if (!b.erScale) return b.value;
+  if (totalER == null) return b.value; // no ER data available (yet) — fall back to the cap
+  const { threshold, ratePerPercent, cap } = b.erScale;
+  return Math.min(cap, Math.max(0, totalER - threshold) * ratePerPercent);
+}
+
 export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, enemyEcho, enemyLevel) {
     const mems = slots.filter(s => s).map(name => {
       const d = CHARACTER_DATA[name];
@@ -119,6 +131,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const sumOnField = mems.reduce((s, m) => s + (m.d.onField || (m.name === mainDps.name ? 15 : 5)), 0);
     const rawRotTime = Math.max(15, Math.min(35, sumOnField + 2)); // +2s for swap animations
     const rotTime = rawRotTime;
+    // Computed early (was previously computed much later, after the buff-accumulation tiers had
+    // already run) so per-character ER-scaling selfBuffs (e.g. Sigrika's "+2% Echo Skill DMG per 1%
+    // ER above 125%, up to 50%") can read each member's real equipped ER instead of only ever
+    // applying their hardcoded cap — same fix already applied to Mornye's Tune Break amp.
+    const energyCycleFactors = calcEnergyCycles(mems, teamEquipment, teamIdx);
 
     // ── RAW TIER: equipment-only stats, no team buffs ──
     const rawMainOnField = Math.min(mainDps.d.onField || 15, rawRotTime * 0.8); // DPS gets at most 80% of rotation
@@ -367,13 +384,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       });
 
       if (isMain) {
+        const mainTotalER = energyCycleFactors?.[mainDps.name]?.totalER;
         (bt.selfBuffs || []).forEach(b => {
-          if (b.stat === 'atkPct') atkPct += b.value;
-          else if (b.stat === 'elemDmg') elemDmg += b.value;
-          else if (b.stat === 'critRate') cr += b.value;
-          else if (b.stat === 'critDmg') cd += b.value;
-          else if (b.stat === 'defIgnore') defIgnore += b.value;
-          else if (b.stat === 'deepen') deepen += b.value;
+          const val = resolveBuffValue(b, mainTotalER);
+          if (b.stat === 'atkPct') atkPct += val;
+          else if (b.stat === 'elemDmg') elemDmg += val;
+          else if (b.stat === 'critRate') cr += val;
+          else if (b.stat === 'critDmg') cd += val;
+          else if (b.stat === 'defIgnore') defIgnore += val;
+          else if (b.stat === 'deepen') deepen += val;
+          else if (b.stat === 'echoDmg') echoDmg += val;
         });
       }
 
@@ -508,10 +528,8 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const erosionResult = calcErosionDmg(mems, rotTime, defMult, erosionResMult);
     const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, fusionBurstResMult);
     const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, electroFlareResMult);
-    // ── Energy cycle awareness (from calcEngine) ── computed before calcTuneBreakDmg so Mornye's
-    // Interfered Marker amp can scale off real equipped ER instead of always assuming max ER.
-    const energyCycleFactors = calcEnergyCycles(mems, teamEquipment, teamIdx);
-
+    // energyCycleFactors is computed earlier now (see the top of this function) so it's available
+    // to the buff-accumulation tiers above, not just Tune Break.
     const tuneBreakResult = calcTuneBreakDmg(mems, rotTime, defMult, resMult, energyCycleFactors);
     dotDmgPerRotation += frazzleResult.dmg + erosionResult.dmg + fusionBurstResult.dmg + electroFlareResult.dmg + tuneBreakResult.dmg;
     const hasFrazzle = frazzleResult.active;
@@ -656,13 +674,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         });
         const mbt = CHAR_BUFF_TABLE[m.name];
         if (mbt) {
+          const subTotalER = energyCycleFactors?.[m.name]?.totalER;
           (mbt.selfBuffs || []).forEach(b => {
-            if (b.stat === 'atkPct') sAtkPct += b.value;
-            else if (b.stat === 'elemDmg') sElem += b.value;
-            else if (b.stat === 'critRate') sCr += b.value;
-            else if (b.stat === 'critDmg') sCd += b.value;
-            else if (b.stat === 'defIgnore') sDefIgnore += b.value;
-            else if (b.stat === 'deepen') sDeepen += b.value;
+            const val = resolveBuffValue(b, subTotalER);
+            if (b.stat === 'atkPct') sAtkPct += val;
+            else if (b.stat === 'elemDmg') sElem += val;
+            else if (b.stat === 'critRate') sCr += val;
+            else if (b.stat === 'critDmg') sCd += val;
+            else if (b.stat === 'defIgnore') sDefIgnore += val;
+            else if (b.stat === 'deepen') sDeepen += val;
+            else if (b.stat === 'echoDmg') sEchoDmg += val;
           });
           (mbt.debuffs || []).forEach(db => {
             if (db.stat === 'defShred') sDefShred += db.value;
