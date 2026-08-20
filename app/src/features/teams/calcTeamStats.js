@@ -1021,12 +1021,28 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           // unreadable sliver. Since these are self-target and only matter while the character is
           // actually dealing damage, the correct display window is their own on-field time, same as
           // the default for an unspecified duration.
+          //
+          // Self-only clamp (fixed 2026-08-20): a selfBuff/weaponBuff's `target` field already says
+          // who it can help — 'self' (or unset, same default calcEngine.js itself uses) means it
+          // physically cannot outlive its owner's own on-field window, no matter what explicit
+          // `duration` the source data carries (some run longer than the owner's own onField, e.g.
+          // Qingxiao's 30s Mindlock DMG bonus vs. her 17s onField — real durations describing how
+          // long the EFFECT would persist if she stayed on field, not a promise she stays that long
+          // in THIS team's block). Before this fix, that longer duration bled into whatever teammate
+          // came on-field right after, showing up as a false "inherits" badge for a buff that target:
+          // 'self' says can never apply to them. Only a buff explicitly marked target: 'team' (a real,
+          // if rare, case — e.g. Rover: Electro's Overshock ATK buff) is allowed to actually cross the
+          // block boundary into the next segment.
           (bt.selfBuffs || []).forEach(b => {
-            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            const isSelfOnly = !b.target || b.target === 'self';
+            const rawDur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            const dur = isSelfOnly ? Math.min(rawDur, onField) : rawDur;
             buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
           });
           (bt.weaponBuffs || []).forEach(b => {
-            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            const isSelfOnly = !b.target || b.target === 'self';
+            const rawDur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            const dur = isSelfOnly ? Math.min(rawDur, onField) : rawDur;
             buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
           });
         }

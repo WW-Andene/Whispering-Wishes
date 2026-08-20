@@ -603,3 +603,45 @@ duration-optimized swap order** (proves the search isn't a no-op). Also stress-t
 team comps — 0 crashes, all finite DPS.
 
 Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 10) — Order/mechanic-gating audit found and fixed a real cross-character leak
+
+**User's follow-up**: many buffs/debuffs are gated by order-of-action or mechanic state (Forte gauge,
+stacks) — can the app compute that? Traced every read of the `condition` field in `calcEngine.js`/
+`calcTeamStats.js`: it's mechanically enforced in exactly 2 narrow cases (element-name match for
+`elemDmg` buffs, character-name-substring match for echo buffs). Everywhere else `condition` is
+free-text documentation of an assumption already pre-baked into the buff's flat `value`/`duration` by
+whoever sourced it (e.g. Qingxiao's "+49% Resonance Skill DMG, 30s, condition: up to 15 Mindlock
+stacks" — the 49%/30s are a pre-averaged estimate, not a live stack simulation). Building a real Forte-
+gauge/stack-count state machine would need a new machine-readable trigger schema and per-step gauge-
+gain numbers that don't exist in `CHARACTER_ROTATIONS` for most steps — genuine data-model work, not
+buildable from what's already sourced without fabricating numbers no site publishes.
+
+**But auditing that surfaced a real, fixable bug**, using data already in the file: `bt.selfBuffs`/
+`bt.weaponBuffs` already carry a `target` field ('self' vs 'team', same field `calcEngine.js` itself
+reads elsewhere) — but the display-only `rotationTimeline` closure in `calcTeamStats.js` wasn't reading
+it. It pushed every selfBuff/weaponBuff with the buff's own explicit `duration`, with no cap tied to
+the owner's actual on-field window. Wrote a throwaway audit script comparing every `selfBuffs`/
+`weaponBuffs` entry's duration against its owner's `onField` from `ROTATION_DATA` — found **9 real
+cases** where a `target: 'self'` buff's duration exceeds the owner's on-field time (e.g. Qingxiao's
+Mindlock DMG bonus: 30s duration vs. her own 17s on-field window; Lucilla's Resonance Chain 1 Crit
+Rate: 10s vs. 5s). Since block boundaries sit exactly at `t + onField`, any self-buff duration longer
+than that bled into whatever teammate's block started right after — showing up as a false "inherits"
+badge for a buff their own `target: 'self'` tag says can never reach them.
+
+**Fixed**: `selfBuffs`/`weaponBuffs` now clamp to `min(duration, onField)` when `target` is 'self' or
+unset (matching the same default `calcEngine.js` already uses), but pass through uncapped when
+explicitly `target: 'team'` (a real, if rare, case — e.g. Rover: Electro's Overshock ATK buff, meant to
+help teammates). This also organically fixes the duration-based ordering search from last session,
+which was scoring candidate orders using this same `buffs` array — it can no longer credit an
+impossible self-buff leak toward a "better" ordering.
+
+**Verified**: constructed 2 targeted cases (Qingxiao in Denia/Mornye/Qingxiao; Lucilla in Lucilla/
+Zhezhi/Camellya) and confirmed the previously-leaking self-buffs no longer appear in the following
+teammate's `inherits` list. Ran the same 100-seeded-team before/after `teamDps` comparison as last
+session: **0 differences** (this is a display-only closure, doesn't touch the real DPS math which
+reads `bt.selfBuffs` from a separate, untouched code path).
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
