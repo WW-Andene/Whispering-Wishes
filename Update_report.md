@@ -725,3 +725,56 @@ bug this fix introduced — it's this fix legitimately correcting a number that 
 questionable for the reason flagged 2 sessions ago (no dedicated healer/support scoring model exists).
 
 Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 13) — Audited weapons/echoes for the same bug class; fixed one, found a bigger one
+
+**User's question**: why has everything focused on DPS/sub-DPS — what about weapons and echoes?
+
+**Real finding**: `CHARACTER_DATA[name].bestWeapon`/`.weaponAlts` are static, hand-authored strings
+sourced from external guides — never validated against this app's own (now materially more accurate)
+calculator. Built a diagnostic: for every 5★ Main DPS with `weaponAlts` data, ran their default team
+through `calcTeamStats` once per candidate weapon (declared best + every listed alt) and checked
+whether the app's own engine agrees the declared "best" actually scores highest. **11 of 24 characters
+disagreed.**
+
+**Root-caused one concretely, not just flagged it**: Xiangli Yao's own signature (Verity's Handle) lost
+to Iuno's signature (Moongazer's Sigil) in the app's engine. Moongazer's Sigil's passive text: "Gaining
+a Shield → Liberation DMG ignores 7.2% DEF (**stacks x5**, ...)" — `pv.defIgnore: 36` is that fully-
+stacked maximum, applied completely unconditionally by `applyWeaponPv`/the raw `.pv` read-sites, with
+zero check for whether the wielder can actually gain a Shield at all. Xiangli Yao's own default team
+(`Xiangli Yao + Lynae + Mornye`) has no Shield source anywhere — same bug class as the self-buff leak
+and outro-uptime dilution from earlier sessions (a real, checkable condition in the source text, never
+read by the code), just in the weapon layer instead of the character-buff layer. The same pattern
+exists on exactly one other weapon (Thunderflare Dominion / Augusta's signature, identical "Gaining a
+Shield" defIgnore:36).
+
+**Fixed**: added a small `gateWeaponDefIgnore()` check in `calcTeamStats.js`, applied at both DEF
+Ignore accumulation sites (main DPS + sub-DPS tiers) — zeroes these 2 weapons' `defIgnore` unless the
+team actually contains a member whose kit tags include `'Shield'` (reusing the existing `buffs` tag
+array already in `CHARACTER_DATA`, no new schema). Verified: Xiangli Yao's own signature now correctly
+wins (7617 vs 6934 for Moongazer's Sigil, down from Moongazer's Sigil incorrectly winning 8222 vs
+7617). Re-ran the full audit: disagreements dropped **11 → 10**. 500-team stress test: 0 crashes/
+invalid output.
+
+**Found something bigger, deliberately NOT touched this session**: of the remaining 10 disagreements,
+several (Jiyan, Calcharo, Augusta) lose specifically to weapons with a large `skillDmg` passive value
+(e.g. "Ages of Harvest": `skillDmg: 48`) despite none of these 3 characters having 'Skill' in their
+`dmgFocus`. Traced why: `routeTypeBonuses()` in `calcEngine.js` correctly gates `basicDmg`/`heavyDmg`/
+`libDmg`/`echoDmg`/`coordDmg` behind the character's actual `dmgFocus` before they count — but a
+weapon's raw `skillDmg` contribution is added directly to the `dmgBonus` formula with **no dmgFocus
+gate at all**, anywhere in `calcTeamStats.js`. This isn't a 2-weapon, easily-scoped fix like the
+shield-gating one — `skillDmg` feeds `dmgBonus = 1 + (elemDmg + skillDmg)/100`, a core formula used by
+every single team calculation in the app, and I don't yet know whether this ungated treatment is a
+genuine oversight or a deliberate simplification (e.g. a catch-all bucket for damage types that don't
+cleanly map to basic/heavy/lib/echo/coord). Fixing it blind risks a much larger, harder-to-verify
+regression than anything touched so far this session. Flagged here as a real, evidenced next step —
+not fixed, on purpose, pending its own diagnostic-first pass the way the DPS reproration got one.
+
+**Echoes**: spot-checked `ECHO_SKILL_BUFFS`' `condition` field usage (already confirmed correctly
+enforced, session 10) and searched `echoes.js` for the same "stacks x" pattern found in weapons — only
+5 hits, none obviously gated behind an unchecked external condition the way the 2 weapons were. Not a
+full audit; flagged as lower-priority than the `skillDmg` gating gap above.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.

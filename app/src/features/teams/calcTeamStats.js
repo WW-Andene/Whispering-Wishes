@@ -482,6 +482,25 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const outroStart = (ownerName) => { const s = rotSegByName[ownerName]; return s ? s.start + s.duration : 0; };
     const blockStart = (ownerName) => { const s = rotSegByName[ownerName]; return s ? s.start : 0; };
 
+    // ── Shield-gated weapon DEF Ignore ──
+    // Thunderflare Dominion (Augusta signature, passive name "Thunderblaze Eminence") and Moongazer's
+    // Sigil (Iuno signature, passive name "Plenilune Radiance") both encode their DEF Ignore stat as
+    // "Gaining a Shield -> ... ignores 7.2% DEF (stacks x5)" — pv.defIgnore: 36 is that fully-stacked
+    // MAXIMUM, pre-multiplied, same convention as every other "stacks x" weapon passive in this file.
+    // But unlike a self-triggered stack (built from the wearer's own Basic ATK/Resonance Skill, always
+    // reachable while they're attacking), gaining a Shield needs an actual shield source — either the
+    // wearer's own kit (both weapons' signature owners, Augusta/Iuno, self-shield) or a teammate's.
+    // Applying it unconditionally overcredits every OTHER wielder with 36% DEF Ignore they have no way
+    // to trigger. Found via a diagnostic comparing this app's own engine against its static `bestWeapon`
+    // data: it ranked Iuno's signature above Xiangli Yao's own signature for Xiangli Yao specifically
+    // because of this exact unconditional 36% DEF Ignore, in a team with no shield source at all.
+    const SHIELD_GATED_WEAPONS = new Set(['Thunderflare Dominion', "Moongazer's Sigil"]);
+    const teamHasShield = mems.some(m => (CHARACTER_DATA[m.name]?.buffs || []).includes('Shield'));
+    function gateWeaponDefIgnore(weaponName, rawDefIgnore) {
+      if (!weaponName || !SHIELD_GATED_WEAPONS.has(weaponName)) return rawDefIgnore;
+      return teamHasShield ? rawDefIgnore : 0;
+    }
+
     // ── RAW TIER: equipment-only stats, no team buffs ──
     const rawMainOnField = Math.min(mainDps.d.onField || 15, rawRotTime * 0.8); // DPS gets at most 80% of rotation
     const rawOffFieldTime = Math.max(0, rawRotTime - rawMainOnField);
@@ -563,7 +582,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       else if (mainDps.scaling === 'DEF') atkPct += (wp.defPct || 0);
       elemDmg += (wp.elemDmg || 0); skillDmg += (wp.skillDmg || 0);
       cr += (wp.critRate || 0); cd += (wp.critDmg || 0);
-      defIgnore += (wp.defIgnore || 0); resShred += (wp.resShred || 0);
+      defIgnore += gateWeaponDefIgnore(mainDps.weapName, wp.defIgnore || 0); resShred += (wp.resShred || 0);
       wpBasicDmg = (wp.basicDmg || 0); wpHeavyDmg = (wp.heavyDmg || 0);
       wpLibDmg = (wp.libDmg || 0); wpEchoDmg = (wp.echoDmg || 0);
       wpCoordDmg = (wp.coordDmg || 0);
@@ -1054,7 +1073,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           sBasicDmg += (swp.basicDmg || 0); sHeavyDmg += (swp.heavyDmg || 0);
           sLibDmg += (swp.libDmg || 0); sEchoDmg += (swp.echoDmg || 0);
           sCoordDmg += (swp.coordDmg || 0);
-          sDefIgnore += (swp.defIgnore || 0); sResShred += (swp.resShred || 0);
+          sDefIgnore += gateWeaponDefIgnore(m.weapName, swp.defIgnore || 0); sResShred += (swp.resShred || 0);
         }
         // Apply sub-DPS echo set + echo stats (using shared utility)
         {
