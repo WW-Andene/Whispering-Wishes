@@ -11,12 +11,13 @@ import { RELEASE_ORDER, CHARACTER_DATA } from './characters.js';
 const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 
 // [SECTION:BANNERS]
-// v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. Dates/lineup/art
-// carried over from BANNER_HISTORY's v3.6-p1 entry below (Game8 archive 453303, 21-day-cycle
-// estimate — marked `predicted: true` there since Kuro hasn't officially confirmed this phase yet).
-// title/element/weaponType pulled from CHARACTER_DATA (audited IDENTITY_DATA); featured4Stars carried
-// over from the prior v3.5 banner's set (Baizhi/Mortefi/Lumi, Variation/Endless Collapse/Relativistic
-// Jet) as the best available guess — not separately confirmed for this phase.
+// v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. CONFIRMED LIVE
+// 2026-08-20 (today) — nanoka.cc shows "Version 3.6 (365) (latest) (live) (current)" and
+// wutheringwaves.fandom.com's own Qingxiao infobox lists "Release Date: August 20, 2026" plus the
+// exact convene: "Wind of Transcendence" (2026-08-20 – 2026-09-10, 3.6), featured resonators
+// Qingxiao + Baizhi/Yangyang/Sanhua as 4★s — used to fix featured4Stars below (previously an
+// unconfirmed carry-over guess of Baizhi/Mortefi/Lumi). title/element/weaponType pulled from
+// CHARACTER_DATA (audited IDENTITY_DATA).
 const CURRENT_BANNERS = {
   version: '3.6', phase: 1, // Game version (not app version)
   // Aug 20, 10:00 CEST (UTC+2) = 08:00 UTC -> Sep 10, 10:00 CEST (UTC+2) = 08:00 UTC
@@ -36,8 +37,8 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/21kQ66xr/Drawn-Edges.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'qingxiao', name: 'Qingxiao', title: 'Heart Sword', element: 'Aero', weaponType: 'Sword', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg' }, // no individual splash art yet — new debut, using the combined convene banner
-    { id: 'denia', name: 'Denia', title: 'Bubbles of Nihility', element: 'Fusion', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', imagePosition: '50% 31%' }, // real splash art (same asset as BANNER_HISTORY v3.3-p2 / CHARACTER_THEMES.denia)
+    { id: 'qingxiao', name: 'Qingxiao', title: 'Heart Sword', element: 'Aero', weaponType: 'Sword', isNew: true, featured4Stars: ['Baizhi', 'Yangyang', 'Sanhua'], imageUrl: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg' }, // no individual splash art yet — new debut, using the combined convene banner
+    { id: 'denia', name: 'Denia', title: 'Bubbles of Nihility', element: 'Fusion', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Baizhi', 'Yangyang', 'Sanhua'], imageUrl: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', imagePosition: '50% 31%' }, // real splash art (same asset as BANNER_HISTORY v3.3-p2 / CHARACTER_THEMES.denia)
   ],
   weapons: [
     { id: 'glint-of-clouds', name: 'Glint of Clouds', type: 'Sword', forCharacter: 'Qingxiao', element: 'Aero', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg' },
@@ -79,7 +80,9 @@ const BANNER_HISTORY = [
   // the real official wide banner art (user-supplied, already hosted on ibb.co).
   // weaponBannerArt added 2026-08-18: real official Featured Weapon Convene banner for Glint of Clouds
   // (Qingxiao's signature Sword), user-supplied.
-  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg', weaponBannerArt: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg', predicted: true },
+  // predicted flag removed 2026-08-20: confirmed live via fandom's own infobox ("Wind of
+  // Transcendence" convene, 2026-08-20 – 2026-09-10, 3.6) — no longer a Game8 estimate.
+  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg', weaponBannerArt: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg' },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
   // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
   // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously
@@ -204,23 +207,30 @@ const EVENTS = {
     description: 'Limited-time event',
     resetType: 'Version update',
     color: 'yellow',
-    // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentEnd: '2026-08-19T01:59:59Z',
+    // v3.6 cycle: Aug 20 (BANNER_HISTORY-confirmed live start) -> Sep 30 (PIONEER_PODCAST_HISTORY
+    // 3.6 row's own end estimate, same "Game8-pattern" estimate basis as VERSION_DATES 3.6).
+    currentEnd: '2026-09-29T01:59:59Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: 'https://i.ibb.co/zHsVrt8z/Sans-titre-115-20260401035034.png'
   },
+  // Renamed 2026-08-20 (v3.6 launch): wuwatracker.com/fr/timeline's live v3.6 event bar shows
+  // "Tactical Hologram: Simulation" replacing v3.5's "Sparring" arena — same permanent-challenge
+  // slot, new arena tied to the v3.6 Land of Xuanfang story beat. Boss roster for the new arena not
+  // independently confirmed this pass (wuwatracker's rendered bar doesn't expose it via text scrape);
+  // kept the v3.5 boss note removed rather than guess new bosses.
   tacticalHologram: {
-    name: 'Tactical Hologram: Sparring',
+    name: 'Tactical Hologram: Simulation',
     subtitle: 'Combat Challenge',
-    description: 'Permanent combat challenge — Sparring arena, added in v3.5 (bosses: Denia, Myriad Snare: Rustfire Chassis)',
+    description: 'Permanent combat challenge — Simulation arena, added in v3.6',
     resetType: 'Permanent',
     color: 'cyan',
-    // Permanent content, current active arena introduced in v3.5 — not a time-limited event
-    // Showing with currentEnd for current version cycle display only
-    // Jul 10, 10:00 CEST -> Aug 18, 13:59 CEST (UTC+2)
-    currentEnd: '2026-08-18T11:59:59Z',
+    // Permanent content, current active arena introduced in v3.6 — not a time-limited event
+    // Showing with currentEnd for current version cycle display only. End date estimated from the
+    // v3.6 version cycle end (VERSION_DATES) minus 1 day, matching the v3.5 entry's own established
+    // pattern (ends the day before Pioneer Podcast's version-end date).
+    currentEnd: '2026-09-29T01:59:59Z',
     permanent: true,
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
@@ -233,9 +243,11 @@ const EVENTS = {
     description: 'High difficulty boss rush — new in v3.2',
     resetType: 'Multi-version',
     color: 'pink',
-    // v3.5 cycle: Jul 17, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-17T02:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    // v3.6 cycle estimate: confirmed live on wuwatracker.com/fr/timeline's v3.6 event bar as
+    // still active ("Endstate Matrix (Phase 1)"), anchored to the v3.6-p1 banner window
+    // (BANNER_HISTORY) since exact reset time wasn't recoverable from the rendered bar via text scrape.
+    currentStart: '2026-08-20T02:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     introducedVersion: '3.2',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
@@ -248,9 +260,11 @@ const EVENTS = {
     description: 'Endgame combat challenge',
     resetType: '28 days',
     color: 'orange',
-    // Jul 20, 04:00 CEST -> Aug 17, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-20T02:00:00Z',
-    currentEnd: '2026-08-17T01:59:00Z',
+    // 28-day cycle, independent of version boundaries — confirmed still active on
+    // wuwatracker.com/fr/timeline's v3.6 event bar 2026-08-20. Next cycle = prior cycle
+    // (Jul 20 -> Aug 17) + 28 days.
+    currentStart: '2026-08-17T02:00:00Z',
+    currentEnd: '2026-09-14T01:59:00Z',
     introducedVersion: '1.0', // Since launch
     rewards: '700 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
@@ -263,7 +277,9 @@ const EVENTS = {
     description: 'Combat challenge with token system',
     resetType: '28 days',
     color: 'cyan',
-    // Aug 3, 04:00 CEST -> Aug 31, 03:59 CEST (UTC+2)
+    // 28-day cycle — confirmed still active (unchanged) on wuwatracker.com/fr/timeline's v3.6
+    // event bar 2026-08-20; today falls inside the existing Aug 3 -> Aug 31 window, so it is
+    // NOT re-anchored to the version boundary like the other version-tied entries above.
     currentStart: '2026-08-03T02:00:00Z',
     currentEnd: '2026-08-31T01:59:59Z',
     introducedVersion: '2.1', // Added in v2.1 (Feb 13, 2025)
@@ -272,80 +288,117 @@ const EVENTS = {
     accentColor: 'cyan',
     imageUrl: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png'
   },
-  // Real name/description below confirmed 2026-08-14 via wuwatracker.com/fr/timeline's embedded RSC
-  // data (same technique used for the achievements dataset — see achievements.js header). Cover art
-  // originally pointed at wuwatracker.com's own API, but that endpoint 403s for any foreign Referer
-  // (confirmed via curl), so it never loads as an <img src> from this app in production — using the
-  // shared PLACEHOLDER_IMAGE fallback until real ibb.co-hosted art is sourced.
-  // No official Astrite reward figures are published for these events (wuwatracker's own timeline data
-  // has no reward field either), so `rewards` is intentionally left unset rather than guessed —
-  // EventCard.jsx hides the reward badge cleanly when absent (see Events audit fix).
-  // recapturedActionHighlights (ended 2026-08-06) and bountifulCrescendo (ended 2026-07-30) removed —
-  // both were one-off limited-time events already over as of today (2026-08-14).
+  // v3.6 refresh (2026-08-20): re-pulled wuwatracker.com/fr/timeline's rendered v3.6 event bar
+  // (JS-rendered browser fetch — the site exposes no readable embedded JSON for this page unlike
+  // the achievements dataset, so exact per-event start/end timestamps could not be recovered from
+  // the rendered bar via text scrape — only names + relative duration labels). Every v3.5-only
+  // one-off below (versionSpecialCampaign, giftsOfAftertune, lamentReconTacetCrisis,
+  // virtualCrisisQuadrantTrials, lolloCampaignNewJourney) has ended and does NOT appear on the live
+  // v3.6 bar — replaced with the actual v3.6 event names confirmed present on that bar. Dates are
+  // anchored to the confirmed-live v3.6-p1 window (BANNER_HISTORY: 2026-08-20 -> 2026-09-10) since
+  // exact per-event timestamps aren't recoverable this way — same "estimate anchored to a confirmed
+  // boundary" approach already used elsewhere in this file (see VERSION_DATES/BANNER_HISTORY 3.6
+  // comments). `rewards` left unset where no official figure is published, matching this file's
+  // existing convention (EventCard.jsx hides the badge cleanly when absent).
   versionSpecialCampaign: {
     name: 'Version Special Campaign',
     subtitle: 'Login Rewards',
-    description: 'In Version 3.5, a special event will be available: your first 10x Convenes in Reverb Resonator Convene are free.',
+    description: 'In Version 3.6, a special event will be available: your first 10x Convenes in Reverb Resonator Convene are free.',
     resetType: 'Version update',
     color: 'yellow',
-    // Jul 10, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
-    currentStart: '2026-07-10T08:00:00Z',
-    currentEnd: '2026-08-19T09:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  giftsOfAftertune: {
-    name: 'Gifts of Aftertune',
+  giftsOfDriftingMist: {
+    name: 'Gifts of Drifting Mist',
     subtitle: '7 Day Login Event',
     description: "During the event, log in to claim the day's login rewards from the event page.",
     resetType: 'Version update',
     color: 'yellow',
-    // Jul 10, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-10T08:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  lamentReconTacetCrisis: {
-    name: 'Lament Recon: Tacet Crisis',
-    subtitle: 'Limited-Time Event',
-    description: 'Under a special tactical view, use your weapons wisely to fend off waves of enemies. As you battle, power up your Resonator with new weapons, weapon upgrades, and boost items. To clear a drill, you must survive every wave of attack.',
-    resetType: 'Version update',
+  bountifulCrescendo: {
+    name: 'Bountiful Crescendo',
+    subtitle: 'Limited-Time Material Double Drop Event',
+    description: 'Spend Waveplates to claim double rewards after completing eligible material-farming challenges.',
+    resetType: 'Limited-time',
+    color: 'lime',
+    currentStart: '2026-08-20T02:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
+    accentColor: 'lime',
+    imageUrl: 'https://i.ibb.co/TqLqWVsv/bountiful-crescendo.webp', // real event art, sourced 2026-08-20 from fandom's File:Bountiful_Crescendo.jpg (recurring material double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
+  },
+  resonanceSimRealm: {
+    name: 'Resonance Sim Realm',
+    subtitle: 'Combat Event',
+    description: 'New v3.6 limited-time combat event.',
+    resetType: 'Limited-time',
     color: 'red',
-    // Jul 11, 10:00 CEST -> Aug 19, 11:59 CEST (UTC+2)
-    currentStart: '2026-07-11T08:00:00Z',
-    currentEnd: '2026-08-19T09:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  virtualCrisisQuadrantTrials: {
-    name: 'Virtual Crisis: Quadrant Trials',
-    subtitle: 'Limited-Time Event',
-    description: 'Take on Crisis Trial challenges and Disaster Trial high-difficulty challenges under various combinations of Stress Modules.',
-    resetType: 'Version update',
+  secondComingOfSolaris: {
+    name: 'Second Coming of Solaris: Coded Deception',
+    subtitle: 'Leisure Event',
+    description: 'New v3.6 limited-time leisure event.',
+    resetType: 'Limited-time',
     color: 'cyan',
-    // Jul 30, 10:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-07-30T08:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
+    // real art, sourced 2026-08-20 from fandom's File:Second_Coming_of_Solaris_(Ultra).jpg — the
+    // wiki page is for an earlier "Second Coming of Solaris" iteration, not the confirmed
+    // "Coded Deception" v3.6 sub-title art; kept as the best real-asset match found, not a
+    // guaranteed exact match for this specific event run.
+    imageUrl: 'https://i.ibb.co/7tVkVbdx/second-coming-of-solaris.webp',
+  },
+  theStringsRemember: {
+    name: 'The Strings Remember',
+    subtitle: 'Leisure Event',
+    description: 'New v3.6 limited-time leisure event.',
+    resetType: 'Limited-time',
+    color: 'purple',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
+    accentColor: 'purple',
     imageUrl: PLACEHOLDER_IMAGE,
   },
-  lolloCampaignNewJourney: {
-    name: 'Lollo Campaign: New Journey',
-    subtitle: 'Limited-Time Event',
-    description: 'During the event, you can complete Lollo Campaigns to obtain a set number of Lollo Stamps. Each Lollo Stamp can be exchanged for a Lollo Helper special delivery.',
+  ifDreamsStillReverberate: {
+    name: 'If Dreams Still Reverberate',
+    subtitle: 'Featured Co-op Combat Event',
+    description: 'New v3.6 limited-time co-op combat event.',
+    resetType: 'Limited-time',
+    color: 'orange',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
+    gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
+    accentColor: 'orange',
+    imageUrl: PLACEHOLDER_IMAGE,
+  },
+  fogveilPagoda: {
+    name: 'Featured Exploration Event: Fogveil Pagoda',
+    subtitle: 'Exploration Event',
+    description: 'New v3.6 limited-time exploration event.',
     resetType: 'Limited-time',
     color: 'lime',
-    // Aug 6, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-08-06T02:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: 'https://i.ibb.co/WNv772NQ/fogveil-pagoda.webp', // real event art, sourced 2026-08-20 from fandom's File:Fogveil_Pagoda.png, uploaded to imgbb 2026-08-20
   },
   chordCleansing: {
     name: 'Chord Cleansing',
@@ -353,12 +406,11 @@ const EVENTS = {
     description: 'Spend Waveplates to claim double rewards after completing a Tacet Suppression challenge.',
     resetType: 'Limited-time',
     color: 'pink',
-    // Aug 12, 04:00 CEST -> Aug 19, 03:59 CEST (UTC+2)
-    currentStart: '2026-08-12T02:00:00Z',
-    currentEnd: '2026-08-19T01:59:59Z',
+    currentStart: '2026-08-20T02:00:00Z',
+    currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: 'https://i.ibb.co/99Pk72ZX/chord-cleansing.webp', // real event art, sourced 2026-08-20 from fandom's File:Chord_Cleansing.jpg (recurring echo double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
   },
 };
 
@@ -472,9 +524,11 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Frostburn': 'https://i.ibb.co/29mMcRy/Frostburn-sprite.webp',
   'Forged Dwarf Star': 'https://i.ibb.co/FLf2rmCB/Forged-Dwarf-Start.webp',
   "Firstlight's Herald": 'https://i.ibb.co/PvkzS83F/First-s-Light-Herald-sprite.webp',
-  // v3.6 weapons — no real art asset sourced yet, using shared placeholder
-  'Glint of Clouds': PLACEHOLDER_IMAGE,
-  'Thousandfold Deliverance': PLACEHOLDER_IMAGE,
+  // v3.6 weapons — real icons sourced 2026-08-20 from fandom's own File:Weapon_Glint_of_Clouds.png
+  // / File:Weapon_Thousandfold_Deliverance.png via the MediaWiki API (bypasses Cloudflare),
+  // uploaded to imgbb 2026-08-20.
+  'Glint of Clouds': 'https://i.ibb.co/Q3CfgYv8/glint-of-clouds.webp',
+  'Thousandfold Deliverance': 'https://i.ibb.co/ccHCPYHF/thousandfold-deliverance.webp',
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',

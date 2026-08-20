@@ -55,9 +55,9 @@ export const EVENTS_FR = {
     description: 'Événement à durée limitée',
   },
   tacticalHologram: {
-    name: 'Hologramme tactique : Combat d’entraînement',
+    name: 'Hologramme tactique : Simulation',
     subtitle: 'Défi de combat',
-    description: 'Défi de combat permanent — Arène d’entraînement, ajoutée en v3.5 (boss : Denia, Piège Foisonnant : Châssis Rouille-de-Feu)',
+    description: 'Défi de combat permanent — Arène de simulation, ajoutée en v3.6',
   },
   endstateMatrix: {
     name: 'Matrice de fin d’état (Phase 1)',
@@ -77,27 +77,42 @@ export const EVENTS_FR = {
   versionSpecialCampaign: {
     name: 'Campagne spéciale de version',
     subtitle: 'Récompenses de connexion',
-    description: 'En Version 3.5, un événement spécial est disponible : vos 10 premiers Conviers dans le Convier Résonateur Réverbérant sont gratuits.',
+    description: 'En Version 3.6, un événement spécial est disponible : vos 10 premiers Conviers dans le Convier Résonateur Réverbérant sont gratuits.',
   },
-  giftsOfAftertune: {
-    name: 'Cadeaux de l’Après-Mélodie',
+  giftsOfDriftingMist: {
+    name: 'Cadeaux de la Brume Errante',
     subtitle: 'Événement de connexion sur 7 jours',
     description: 'Pendant l’événement, connectez-vous pour réclamer les récompenses de connexion du jour depuis la page de l’événement.',
   },
-  lamentReconTacetCrisis: {
-    name: 'Reconnaissance de la Complainte : Crise Tacet',
-    subtitle: 'Événement à durée limitée',
-    description: 'Sous une vue tactique spéciale, utilisez vos armes avec sagesse pour repousser des vagues d’ennemis. En combattant, renforcez votre Résonateur avec de nouvelles armes, des améliorations d’armes et des objets de boost. Pour terminer un exercice, vous devez survivre à chaque vague d’attaque.',
+  bountifulCrescendo: {
+    name: 'Crescendo Abondant',
+    subtitle: 'Événement de double récompense de matériaux à durée limitée',
+    description: 'Dépensez des Plaques d’Ondes pour réclamer des récompenses doublées après avoir terminé un défi de récolte de matériaux éligible.',
   },
-  virtualCrisisQuadrantTrials: {
-    name: 'Crise virtuelle : Épreuves du Quadrant',
-    subtitle: 'Événement à durée limitée',
-    description: 'Relevez les défis d’Épreuve de Crise et les défis de haute difficulté d’Épreuve de Catastrophe sous diverses combinaisons de Modules de Stress.',
+  resonanceSimRealm: {
+    name: 'Domaine de Simulation Résonante',
+    subtitle: 'Événement de combat',
+    description: 'Nouvel événement de combat à durée limitée de la v3.6.',
   },
-  lolloCampaignNewJourney: {
-    name: 'Campagne Lollo : Nouveau Voyage',
-    subtitle: 'Événement à durée limitée',
-    description: 'Pendant l’événement, vous pouvez accomplir des Campagnes Lollo pour obtenir un nombre défini de Timbres Lollo. Chaque Timbre Lollo peut être échangé contre une livraison spéciale de l’Assistant Lollo.',
+  secondComingOfSolaris: {
+    name: 'Second Avènement de Solaris : Tromperie Codée',
+    subtitle: 'Événement de détente',
+    description: 'Nouvel événement de détente à durée limitée de la v3.6.',
+  },
+  theStringsRemember: {
+    name: 'Les Cordes se Souviennent',
+    subtitle: 'Événement de détente',
+    description: 'Nouvel événement de détente à durée limitée de la v3.6.',
+  },
+  ifDreamsStillReverberate: {
+    name: 'Si les Rêves Résonnent Encore',
+    subtitle: 'Événement de combat coopératif',
+    description: 'Nouvel événement de combat coopératif à durée limitée de la v3.6.',
+  },
+  fogveilPagoda: {
+    name: 'Événement d’exploration : Pagode de Brume',
+    subtitle: 'Événement d’exploration',
+    description: 'Nouvel événement d’exploration à durée limitée de la v3.6.',
   },
   chordCleansing: {
     name: 'Purification d’Accord',

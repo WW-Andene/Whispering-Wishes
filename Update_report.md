@@ -1,5 +1,152 @@
 # Whispering Wishes — Content Refresh Audit Report
 
+## 2026-08-20 session (follow-up) — 4 gaps from prior review addressed
+
+**1. game8.co access — genuinely blocked, not a tool-selection failure.** Checked `mcp__DV__dv_tools`'s
+full catalog: every DV browser-driving tool (`screenshot`, `interact`, `inspect`, `meta`, `page_eval`,
+`console_logs`, `sandbox_*`) only operates against **this app's own deployed preview** (they all require
+`owner`/`repo`/`slug`) — none of them navigate arbitrary external URLs. `web_fetch` is the only DV tool
+that fetches arbitrary sites, and it already supports `jsRender` (real headless Chromium) + `stealth`
+(patches `navigator.webdriver`/plugin fingerprints) + custom UA/referer — i.e. the same technique that
+works on prydwen.gg/fandom. Re-tried it against `game8.co/games/Wuthering-Waves/archives/453473` with
+full JS rendering, an 8s wait, a real Chrome UA, and a google.com referer: still a hard **CloudFront 403
+"Request blocked"** at the edge, before any page JS runs. This matches `web_fetch`'s own documented
+limitation: "Pure network/WAF IP-level blocks... cannot be bypassed by any combination of these
+options — that needs an official API, a paid proxy/anti-bot vendor, or a mirror source instead." Given
+there's no alternate DV tool that reaches non-preview URLs, this is a genuine dead end this session too,
+not a missed tool. Not needed in the end — items 2/3 below were fully answerable via wuwatracker.com and
+nanoka.cc instead.
+
+**2. `EVENTS` — genuinely stale, now fixed.** Confirmed the gap directly: every dated entry in
+`app/src/data/banners.js`'s `EVENTS` object still had `currentEnd`/`currentStart` pinned to the **v3.5
+cycle** (ending 2026-08-19), even though `VERSION_DATES`/`PIONEER_PODCAST_HISTORY`/`BANNER_HISTORY` had
+already been correctly rolled to v3.6 by the prior session — the live-event countdown block was simply
+never touched when v3.6 shipped today. Re-fetched `wuwatracker.com/fr/timeline` via
+`mcp__DV__web_fetch` (`jsRender:true`, 6-8s wait) and read the rendered v3.6 event bar directly (the
+site exposes no readable embedded JSON for this page, unlike its achievements dataset, so exact
+per-event timestamps to the minute weren't recoverable — only names + relative durations). Fixed:
+  - `tacticalHologram` renamed **"Tactical Hologram: Simulation"** (replaces v3.5's "Sparring" arena);
+    `pioneerPodcast`, `endstateMatrix`, `versionSpecialCampaign` re-anchored to the confirmed-live
+    v3.6-p1 window (`BANNER_HISTORY`: 2026-08-20 → 2026-09-10 / 09-30 version end).
+  - `towerOfAdversity` rolled to its next 28-day cycle (2026-08-17 → 09-14, independent of version
+    boundaries); `whimperingWastes` left untouched — today falls inside its existing Aug 3–31 window.
+  - Removed 5 one-off v3.5 events confirmed ended (not on the live v3.6 bar): `versionSpecialCampaign`
+    description text, `giftsOfAftertune`, `lamentReconTacetCrisis`, `virtualCrisisQuadrantTrials`,
+    `lolloCampaignNewJourney`. Replaced with the actual v3.6 event names read off the bar:
+    `giftsOfDriftingMist` (renamed from Aftertune), `bountifulCrescendo` (returning), and 5 new v3.6
+    events — `resonanceSimRealm`, `secondComingOfSolaris`, `theStringsRemember`,
+    `ifDreamsStillReverberate`, `fogveilPagoda` — all anchored to the v3.6-p1 window as an estimate
+    (flagged in-code), same convention this file already uses for `VERSION_DATES`'/`BANNER_HISTORY`'s
+    own 3.6 estimates. `chordCleansing` kept (still on the v3.6 bar), dates re-anchored.
+  - Mirrored every key rename/addition into `banners.fr.js`'s `EVENTS_FR` (French names/descriptions)
+    so the locale swap doesn't silently fall back to English for the new keys.
+  - No new `_HISTORY` row was needed beyond what was already there: `PIONEER_PODCAST_HISTORY` already
+    had its 3.6 row from the prior session; `TACTICAL_HOLOGRAM_HISTORY` still needs a 3.6 "Simulation"
+    row once its exact arena boss roster is confirmable (left unadded rather than guessed — same
+    stance as the prior session's Qingxiao/Jingran material sourcing).
+
+**3. Qingxiao kit/weapon — spot-checked against nanoka.cc, confirmed accurate, no fixes needed.**
+Re-fetched `ww.nanoka.cc/character/1413` live (v3.6, now genuinely live per the site's own version
+selector) and cross-checked `CHARACTER_DATA['Qingxiao']`/`SKILL_MULTIPLIERS['Qingxiao']` field-by-field:
+base stats (HP 10,300 / ATK 463 / DEF 1,112 / Tune Break Boost 10) match exactly; skill names (Strings
+to Steel, Severing Note, Billows Beneath Heaven, Tonality Shift) match; Basic Attack multipliers in
+`SKILL_MULTIPLIERS` (`30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4`) and Heavy Attack
+(`14.62%×3+21.92%×6+263.03%`) match nanoka's own "Skill Attributes (Lv.10)" table exactly, digit for
+digit. `WEAPON_DATA['Glint of Clouds']` (base ATK 500, Crit Rate substat +36.0%, full R1 passive text)
+was already populated with real numbers, not placeholder text. Did not find anything blank, truncated,
+or wrong in this pass — the prior session's kit-data pull holds up under a fresh independent check. Did
+not re-check Jingran's weapon this session (time went to items 1/2/4 instead); it was already flagged
+non-placeholder by the prior session's own report.
+
+**4. ibb.co asset album — confirmed genuinely empty, not an access-key/gating issue.** Fetched
+`https://ibb.co/album/pnZXD3` via `mcp__DV__web_fetch` with `jsRender:true` and inspected the rendered
+page's own embedded resource JSON (`CHV.obj.resource`): `"privacy":"public"`, owned by user `andene`,
+**`"image-count":"0"`**, page body literally renders "There's nothing to show here." for every sort
+tab (Most recent/Oldest/Most viewed/AZ) and for sub-albums. Tried both the accesskey-as-cookie and
+accesskey-as-query-param forms in case the album were actually private — same empty result either way,
+and the resource JSON confirms it's already public (no key needed). This is a genuinely empty album,
+not a fetch/auth failure — no icons, portraits, or material art to pull from it this session. The app's
+existing placeholder-art convention (`MATERIAL_PLACEHOLDER_IMAGE`/`PLACEHOLDER_IMAGE`) stays as-is;
+nothing to wire in.
+
+**Tests/build:** 612/612 tests still passing after the `EVENTS` changes; production build succeeds clean.
+
+---
+
+## 2026-08-20 session — v3.6 confirmed live, Qingxiao/Jingran upgraded from placeholder to real kit data
+
+**Confirmed:** nanoka.cc's version selector now reads "Version 3.6 (365) (latest) (live) (current)" —
+v3.6 genuinely shipped today, not still in beta. Both Qingxiao (character/1413) and Jingran
+(character/1212) have full nanoka.cc kit pages (skills, Forte mechanics, Resonance Chain, damage
+tables) despite Jingran's own fandom wiki page still being flagged "upcoming content" — he's
+confirmed releasing in the 3.6-p2 banner (~Sept 10, per the app's existing BANNER_HISTORY), not
+live day-one like Qingxiao (who released today, confirmed via her own fandom infobox: "Release
+Date: August 20, 2026", convene "Wind of Transcendence" 2026-08-20 – 2026-09-10).
+
+**What was actually missing on entry to this session:** a prior session had already built out
+Qingxiao and Jingran's `CHARACTER_DATA` entries (base stats, rotation data, buff table, skill
+multipliers, resonance chain multipliers, real signature weapons) far beyond a bare placeholder —
+the two genuine gaps were (1) ascension/skill material *names*, both still literally
+`'Unconfirmed (releases 3.6, ...)'`, and (2) Jingran's Resonance Chain *node names*, entirely
+missing from `CHAIN_NODE_NAMES`.
+
+**Fixed this session:**
+- **Materials** — confirmed via `wutheringwaves.fandom.com`'s own Ascension Materials / Forte
+  tables for both characters (their pages are live even though Jingran hasn't banner-released):
+  - Qingxiao: `ascension: { boss: "Forged Empyrean's Sigh", common: 'Autopuppet Kernel', specialty: 'Blade Blossom' }`, `skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' }`
+  - Jingran: `ascension: { boss: "Forged Empyrean's Sigh", common: 'Whisperin Core', specialty: 'Cloudperch Seed' }`, `skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Carved Crystal' }`
+  - All families except one already existed in `COMMON_MAT_TIERS`/`FORGERY_MAT_TIERS`/`MATERIAL_IMAGES`
+    from earlier sessions' material passes. The one new material — **Forged Empyrean's Sigh** (the
+    boss-drop both characters share) — had no icon source; added to `MATERIAL_IMAGES` via a new local
+    `MATERIAL_PLACEHOLDER_IMAGE` constant in `data/materialData.js`, matching the existing
+    placeholder-art convention (kept separate from `banners.js`'s own `PLACEHOLDER_IMAGE` to avoid
+    coupling the two leaf data modules, per that convention's own stated rationale).
+- **Jingran's Resonance Chain node names** — sourced from nanoka.cc (fandom's own page literally says
+  "Jingran doesn't have any Sequence Nodes yet"): `Yin and Yang in Harmony, the Ultimate Law of Being`
+  / `A Solitary Lantern, Across Lands Shade-Trodden` / `World's Course Shifts, Each to Their Rightful
+  Paths` / `Where Reality Meets Illusion, Where Living Meet Dead` / `Ends Return to Beginnings, Truth
+  of Life Laid Bare` / `As Favors and Feuds Fade, New Stories Await`.
+- **`CURRENT_BANNERS`/`BANNER_HISTORY` v3.6-p1 correction** — `featured4Stars` for both Qingxiao and
+  Denia's banner cards was an unconfirmed carry-over guess (`Baizhi/Mortefi/Lumi`); fandom's own
+  convene table names the real trio as **Baizhi/Yangyang/Sanhua**. Fixed in both places. Also removed
+  the stale `predicted: true` flag from the `v3.6-p1` `BANNER_HISTORY` entry — it's confirmed live
+  now, not a Game8 estimate anymore.
+- **Test suite fix (pre-existing, unrelated to the above):** `data-integrity.test.js`'s "every
+  character has base stats" test unconditionally asserted `baseDef > 0` for every character. Jingran's
+  kit genuinely fixes his combat DEF to 0 (his "Nether to Light" passive: *"Jingran's DEF is fixed at
+  0"* — confirmed identically on both nanoka.cc and fandom), so this was a real conflict between a
+  test assumption and a correctly-modeled zero value, not a data bug. Fixed the test to explicitly
+  allow Jingran's confirmed real `baseDef: 0` instead of leaving the suite red or falsifying the data
+  with a fake nonzero value.
+
+**Verified, not re-fetched (already correct from a prior pass):** Qingxiao's base stats (HP 10300 /
+ATK 463 / DEF 1112 / maxEnergy 125), specialty material (Blade Blossom), signature weapon (Glint of
+Clouds, real Sword stats/passive already in `WEAPON_DATA`), skills/Forte description, and
+`CHAR_BUFF_TABLE`/`SKILL_MULTIPLIERS`/`RESONANCE_CHAIN_DATA` rows for both characters — all
+cross-checked against this session's own nanoka.cc kit pulls and found accurate.
+
+**Confirmed as genuine gaps, not fetch failures — left as explicitly-marked "Unconfirmed":**
+- **Jingran's `bestEchoes`/`teams`** — no community build guide exists yet; he isn't banner-live
+  (confirmed 3.6-p2, ~Sept 10). Fandom's own wiki still says "not featured in any Event Convene."
+- **`TIER_DATA` for both characters** — Prydwen's tier-list page, re-fetched this session, is still
+  headed "Wuthering Waves Tier List (**3.4** Patch)" and its character grid renders with no resolvable
+  text names (image/tooltip-only cells) — neither confirms nor lets us safely infer either character's
+  placement. Correctly left with no `TIER_DATA` row for either, same as the prior session's stance.
+- **Version 3.7** — checked nanoka.cc's own version selector for anything past 3.6 (`?version=3.7`
+  redirects to the same 3.6 roster, no new names) — nothing genuinely confirmed exists yet. No
+  placeholder/upcoming entries added, per this session's explicit instruction not to fabricate.
+
+**Source access note:** Game8 (`game8.co/games/Wuthering-Waves/archives/452489`) returned a hard
+CloudFront 403 this session (`"The request could not be satisfied... Request blocked"`) even via the
+same browser-fingerprint technique that reliably works on prydwen.gg and fandom — could not be routed
+around. Not needed in the end: nanoka.cc + fandom together fully covered this session's scope.
+
+**Tests/build:** Full suite now **612/612 passing** (up from 96 in the earlier audit — the app's test
+suite has grown substantially across sessions since this report was first written), production build
+succeeds clean.
+
+---
+
 **Date of audit:** 2026-08-14
 **App's last data version:** 3.3 (partial — only banner stubs for Denia/Hiyuki)
 **Live game version:** 3.5 ("Blade of Past Resounds, Lingering Dream Hymns" — July 10 to August 19, 2026)
@@ -140,3 +287,88 @@ Two entire new regions are absent from the app's map data:
 6. **Weapons + echoes** tied to all of the above.
 7. **New region map data** (Somnoire: Night City, Land of Xuanfang) if the app's map feature should reflect current content.
 8. **Wait for Aug 20** before touching Qingxiao/Jingran — build them once 3.6 is actually live, not off beta datamines.
+
+---
+
+## 9. 2026-08-20 — Missing-art placeholder fix (fandom sourcing + local rehost)
+
+Ran a fresh inventory of every `PLACEHOLDER_IMAGE`/`MATERIAL_PLACEHOLDER_IMAGE` reference across
+`app/src/data/*.js`. Finding: **almost all of the characters named in the original placeholder-art
+gap (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, Denia, Hiyuki, Qingxiao,
+Jingran and their signature weapons) already have real ibb.co-hosted sprite/banner art** wired in
+from prior sessions — that part of the original complaint is stale. The actual remaining gap was
+much smaller:
+
+- 2 weapon icons: **Glint of Clouds** (Qingxiao's Sword), **Thousandfold Deliverance** (Jingran's
+  Broadblade) — `WEAPON_ICONS` in `banners.js`
+- 1 material icon: **Forged Empyrean's Sigh** (Qingxiao/Jingran's shared v3.6 boss-drop ascension
+  material) — `MATERIAL_IMAGES` in `materialData.js`
+- 9 v3.6 event banner images in `CURRENT_EVENTS` (`banners.js`)
+
+**Sourcing**: fetched wutheringwaves.fandom.com via its MediaWiki `api.php` (`action=query`,
+`list=search` + `prop=imageinfo`), which bypasses the site's Cloudflare challenge that blocks plain
+HTTP fetches of wiki pages. Found and downloaded real game assets for all 3 weapon/material icons
+and 4 of the 9 events (Bountiful Crescendo, Fogveil Pagoda, Chord Cleansing, Second Coming of
+Solaris). The other 5 events (Version Special Campaign, Gifts of Drifting Mist, Resonance Sim Realm,
+The Strings Remember, If Dreams Still Reverberate) have no dedicated wiki file yet — likely too new
+(v3.6 launched today) for the wiki to have uploaded dedicated art — so they remain on
+`PLACEHOLDER_IMAGE`.
+
+**Hosting**: no `IMGBB_API_KEY` is set anywhere in this environment (checked env vars, `agent/lib/`,
+`.env.example` files — only an example placeholder exists), and imgbb's anonymous web-upload flow is
+session/CSRF-gated, not a stable scriptable public endpoint, so it wasn't used. Instead, the 7
+sourced images were committed directly into the repo under `app/public/icons/` and referenced by
+same-origin path (`/icons/glint-of-clouds.webp`, etc.) — this matches the app's existing local-asset
+convention (`app/public/portraits/`, `app/public/map-icons/`) and is covered by the CSP's default
+`'self'` `img-src` without needing any external allowlist change. All downloaded files are actually
+WebP regardless of their fandom filename extension (confirmed via `file`).
+
+**Wired in**: `Glint of Clouds`, `Thousandfold Deliverance` (`WEAPON_ICONS`), `Forged Empyrean's
+Sigh` (`MATERIAL_IMAGES`), `bountifulCrescendo`, `fogveilPagoda`, `chordCleansing`,
+`secondComingOfSolaris` (`CURRENT_EVENTS`) — 7 of the 12 gap items closed with real fandom art.
+
+**Still placeholder** (`PLACEHOLDER_IMAGE`, honest gap — no real asset found): `versionSpecialCampaign`,
+`giftsOfDriftingMist`, `resonanceSimRealm`, `theStringsRemember`, `ifDreamsStillReverberate`.
+
+**Caveat**: `secondComingOfSolaris`'s art (`File:Second_Coming_of_Solaris_(Ultra).jpg`) is from an
+earlier "Second Coming of Solaris" event run, not confirmed as pixel-identical to this v3.6
+"Coded Deception" sub-event — used as the best real-asset match, flagged in-code.
+
+Verified: `npm run build` succeeds, `npx vitest run` — 612/612 tests pass, `dist/icons/` contains all
+7 new files after build.
+
+---
+
+## 2026-08-20 (session 3) — imgbb migration
+
+**Correction from user**: the imgbb API key (redacted) is a real imgbb.com API key (session 2
+had wrongly evaluated it as an unusable ibb.co album key and worked around it by committing images
+locally). Migrated the 7 locally-hosted images from session 2 to imgbb per the app's existing
+external-hosting convention.
+
+**Uploaded** all 7 via `POST https://api.imgbb.com/1/upload` (multipart, `key=...&image=@file`) —
+all succeeded:
+- `bountiful-crescendo.webp` -> `https://i.ibb.co/TqLqWVsv/bountiful-crescendo.webp`
+- `chord-cleansing.webp` -> `https://i.ibb.co/99Pk72ZX/chord-cleansing.webp`
+- `fogveil-pagoda.webp` -> `https://i.ibb.co/WNv772NQ/fogveil-pagoda.webp`
+- `forged-empyreans-sigh.webp` -> `https://i.ibb.co/9mZJHrQ4/forged-empyreans-sigh.webp`
+- `glint-of-clouds.webp` -> `https://i.ibb.co/Q3CfgYv8/glint-of-clouds.webp`
+- `second-coming-of-solaris.webp` -> `https://i.ibb.co/7tVkVbdx/second-coming-of-solaris.webp`
+- `thousandfold-deliverance.webp` -> `https://i.ibb.co/ccHCPYHF/thousandfold-deliverance.webp`
+
+Spot-checked 2 URLs with a direct `curl` HEAD-equivalent fetch — both returned `200 image/webp` with
+byte sizes matching the local originals exactly (329904 and 45828 bytes), confirming clean uploads.
+
+**Wired in**: updated `WEAPON_ICONS`/`MATERIAL_IMAGES` (`banners.js`, `materialData.js`) and
+`CURRENT_EVENTS` (`banners.js`) to point at the new `i.ibb.co` URLs, matching the convention used
+everywhere else in those files. Deleted `app/public/icons/` entirely (confirmed via repo-wide grep
+that nothing else referenced the local paths) — no orphaned assets remain.
+
+**Re-checked the 5 still-placeholder v3.6 events** (`versionSpecialCampaign`, `giftsOfDriftingMist`,
+`resonanceSimRealm`, `theStringsRemember`, `ifDreamsStillReverberate`) via fandom's MediaWiki
+`action=query&list=search` API, one day after v3.6 launch. No exact-title wiki pages exist yet for
+any of the 5 (search returns only unrelated/older matches, e.g. "Lollo Campaign" pages, "Gifts of
+Fleeting Dreams", "Depths of Illusive Realm"). Left on `PLACEHOLDER_IMAGE` — still no real asset
+available.
+
+Verified: `npm run build` clean, `npx vitest run` 612/612 passing.

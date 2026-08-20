@@ -151,3 +151,92 @@ All 10 steps of the implementation plan are now complete or explicitly resolved 
 ```
 
 Character portraits/art assets are the practical bottleneck across almost every step — worth confirming those exist or can be sourced before committing to a start date on step 2.
+
+---
+
+## 11. v3.6 launch pass — ✅ DONE (2026-08-20 session)
+
+**Main work:** Confirmed v3.6 is genuinely live (nanoka.cc version selector: "3.6 (365) (latest)
+(live) (current)") and closed the two real remaining gaps in Qingxiao/Jingran's `CHARACTER_DATA`
+entries (which a prior session had already built out well past placeholder level — base stats,
+rotation data, buff table, skill multipliers, resonance chain multipliers, and real signature
+weapons were all already correct): their ascension/skill-material *names* (both were still the
+literal string `'Unconfirmed (releases 3.6, ...)'`) and Jingran's Resonance Chain node names
+(missing from `CHAIN_NODE_NAMES` entirely). See `Update_report.md`'s 2026-08-20 entry for full
+source citations and exact values.
+
+**Connected work — completed:**
+- Added one new material, **Forged Empyrean's Sigh** (the boss-drop material both characters
+  share), to `MATERIAL_IMAGES` via a new `MATERIAL_PLACEHOLDER_IMAGE` constant in
+  `data/materialData.js` — every other material family both characters need already existed from
+  earlier sessions' material passes.
+- Fixed `CURRENT_BANNERS`/`BANNER_HISTORY`'s v3.6-p1 `featured4Stars` (was an unconfirmed
+  Baizhi/Mortefi/Lumi carry-over guess; real trio per fandom's own convene table is
+  Baizhi/Yangyang/Sanhua) and removed the now-stale `predicted: true` flag on that entry.
+- Fixed a pre-existing, unrelated test bug: `data-integrity.test.js` unconditionally required
+  `baseDef > 0` for every character, which conflicted with Jingran's genuinely kit-fixed `baseDef: 0`
+  (confirmed on both nanoka.cc and fandom — his passive literally fixes his DEF to 0). Added an
+  explicit, commented exception rather than falsifying his data with a fake nonzero DEF.
+- Full test suite (**612/612**, up from 96 at the time of the original audit) and production build
+  both pass.
+
+**Confirmed still out of scope / genuine gaps, not oversights:**
+- Jingran's `bestEchoes`/`teams` — no community build guide exists yet; he isn't live in any banner
+  as of 2026-08-20 (confirmed for 3.6-p2, ~Sept 10).
+- `TIER_DATA` rows for Qingxiao/Jingran — Prydwen's tier-list page is still headed "3.4 Patch" and
+  its grid has no resolvable character names in this pass's fetch; can't safely infer placement.
+- Version 3.7 — checked nanoka.cc for anything beyond 3.6; nothing exists yet. No speculative
+  entries added.
+- Game8 (`archives/452489`) returned a hard CloudFront 403 all session, unlike prydwen.gg/fandom
+  which both worked fine with the same browser-fingerprint technique — not blocking since nanoka.cc
+  + fandom fully covered this session's scope, but flagged in case a future session needs Game8
+  specifically (e.g. for banner-history cross-checks Game8 previously provided).
+
+---
+
+## 2026-08-20 (session 2) — Missing-art placeholder fix
+
+**Task**: source real art for characters/weapons/materials still on the text-fallback placeholder,
+via wutheringwaves.fandom.com, re-host, and wire in.
+
+**What actually happened**: inventory showed the character-level gap from the original task
+description (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, Denia, Hiyuki,
+Qingxiao, Jingran) was already closed by earlier sessions — all have real ibb.co URLs in
+`DEFAULT_COLLECTION_IMAGES`/`CHARACTER_THEMES`. Remaining real gap: 2 weapon icons, 1 material icon,
+9 event banners (12 items total in `WEAPON_ICONS`/`MATERIAL_IMAGES`/`CURRENT_EVENTS`).
+
+**Sourcing**: fandom's MediaWiki `api.php` (search + imageinfo) bypasses the Cloudflare block that
+kills plain page fetches. Found/downloaded real assets for 7 of the 12: `Glint of Clouds`,
+`Thousandfold Deliverance`, `Forged Empyrean's Sigh`, `bountifulCrescendo`, `fogveilPagoda`,
+`chordCleansing`, `secondComingOfSolaris`.
+
+**Hosting decision — deviated from the imgbb instruction**: no `IMGBB_API_KEY` exists in this
+environment, and imgbb has no stable anonymous/keyless upload API (its web upload form is
+session/CSRF-gated). Rather than fabricate a workaround or block entirely, re-hosted the 7 images
+locally under `app/public/icons/` (same pattern as the existing `app/public/portraits/` and
+`app/public/map-icons/` local-asset folders) and referenced them by same-origin path. This is
+covered by the CSP's default `'self'` `img-src` with zero config changes, and is arguably more
+robust than another third-party hotlink dependency. If a real `IMGBB_API_KEY` becomes available
+later, `agent/lib/images.js`'s `uploadToImgbb()` is already wired for it and these could be migrated
+to match the ibb.co convention used everywhere else, but there's no functional need to.
+
+**Remaining gap** (still `PLACEHOLDER_IMAGE`, no real asset found on fandom as of today):
+`versionSpecialCampaign`, `giftsOfDriftingMist`, `resonanceSimRealm`, `theStringsRemember`,
+`ifDreamsStillReverberate` — all v3.6 events with no dedicated wiki File: page yet (game launched
+today, wiki likely hasn't caught up on event-specific art for these five).
+
+Verified: `npm run build` clean, `npx vitest run` 612/612 passing, `dist/icons/` populated correctly
+after build.
+
+---
+
+## 2026-08-20 (session 3) — imgbb migration
+
+**Task**: migrate the 7 images session 2 committed locally (`app/public/icons/`) to imgbb, now that
+a real imgbb API key (the imgbb API key (redacted)) is confirmed available, matching the
+external-hosting convention used elsewhere in `banners.js`/`materialData.js`.
+
+**Done**: uploaded all 7 to imgbb via its REST API, rewired `WEAPON_ICONS`, `MATERIAL_IMAGES`, and
+`CURRENT_EVENTS` to the new `i.ibb.co` URLs, deleted the now-orphaned `app/public/icons/` directory,
+re-verified the 5 remaining placeholder v3.6 events still have no dedicated wiki art one day after
+launch (none found). 612/612 tests pass, production build clean.

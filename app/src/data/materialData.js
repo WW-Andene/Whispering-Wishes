@@ -4,6 +4,10 @@
 // ascension + EXP + skill-upgrade material costs.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Local fallback image for materials with no licensed icon source yet — kept separate from
+// banners.js's PLACEHOLDER_IMAGE to avoid coupling these two leaf data modules together.
+const MATERIAL_PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
+
 // [SECTION:MATERIAL_IMAGES] — Material icon URLs for collection detail modals
 const MATERIAL_IMAGES = {
   // === Resonator EXP Materials ===
@@ -75,6 +79,12 @@ const MATERIAL_IMAGES = {
   'Topological Confinement': 'https://i.ibb.co/zD50HfX/Item-Topological-Confinement.webp',
   'Unfading Glory': 'https://i.ibb.co/ZzS375yW/Item-Unfading-Glory.webp',
   'Truth in Lies': 'https://i.ibb.co/H93NgjR/Item-Truth-in-Lies.webp',
+  // Qingxiao & Jingran's shared v3.6 boss-drop ascension material, confirmed via
+  // wutheringwaves.fandom.com (both characters' Ascension Materials tables list "46 Forged
+  // Empyrean's Sigh"). Real icon sourced 2026-08-20 from fandom's own
+  // File:Item_Forged_Empyrean's_Sigh.png via the MediaWiki API (bypasses Cloudflare), uploaded
+  // to imgbb 2026-08-20.
+  "Forged Empyrean's Sigh": 'https://i.ibb.co/9mZJHrQ4/forged-empyreans-sigh.webp',
   // === Common Enemy Drops (HF = tier 3, FF = tier 4) ===
   // Whisperin Core family
   'HF-Whisperin Core': 'https://i.ibb.co/5XdgF3vt/Item-HF-Whisperin-Core.webp',

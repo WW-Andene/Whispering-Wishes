@@ -32,10 +32,18 @@ describe('CHARACTER_DATA integrity', () => {
   });
 
   it('every character has base stats', () => {
+    // Jingran (v3.6) is a genuine exception: his kit passive "Nether to Light" fixes his combat DEF
+    // to 0 outright (confirmed via ww.nanoka.cc/wutheringwaves.fandom.com) — 0 is his real value, not
+    // a missing-data placeholder, so he's excluded from the baseDef > 0 assertion below.
+    const ZERO_DEF_BY_KIT = new Set(['Jingran']);
     chars.forEach(([name, data]) => {
       expect(data.baseHp, `${name} missing baseHp`).toBeGreaterThan(0);
       expect(data.baseAtk, `${name} missing baseAtk`).toBeGreaterThan(0);
-      expect(data.baseDef, `${name} missing baseDef`).toBeGreaterThan(0);
+      if (!ZERO_DEF_BY_KIT.has(name)) {
+        expect(data.baseDef, `${name} missing baseDef`).toBeGreaterThan(0);
+      } else {
+        expect(data.baseDef, `${name} baseDef should be exactly 0 (kit-fixed)`).toBe(0);
+      }
       expect(data.maxEnergy, `${name} missing maxEnergy`).toBeGreaterThan(0);
     });
   });
