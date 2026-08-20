@@ -78,3 +78,144 @@ export const CHARACTER_DESC_FR = {
   'Lumi': "Navigatrice de Lollo Logistics qui trace des routes à travers des cieux tonitruants. Buffeuse hybride Electro qui alterne les postures de combat à distance Lumière Jaune et au corps-à-corps Lumière Rouge, infligeant des DGT Electro considérés comme des DGT d'Attaque Basique sur presque tout son kit, et amplifie les DGT de Compétence de Résonance du personnage suivant de 38 % pendant 10 s via son Outro (Escorte) — l'une des seules sources d'Amplification de DGT de Compétence de Résonance du jeu.",
   'Buling': "Consultante des Rives Noires et diseuse de bonne aventure taoïste « Taoïste Chasse-Esprits » qui erre en enquêtant sur l'étrange et le mystérieux, vendant talismans et divination pour financer ses voyages. Soigneuse Electro qui génère des Trigrammes via son Attaque Basique/Compétence/Attaque Aérienne pour débloquer une Libération renforcée qui déploie Electro Flare et augmente le Bonus de DGT de Compétence de Résonance d'équipe sur les lancers d'Intro alliés, tandis que son Outro soigne le personnage actif et Amplifie les DGT d'équipe à proximité de 15 % pendant 30 s.",
 };
+
+// IDENTITY_DATA `title` field (displayed as the italic subtitle under the
+// character's name in CharacterDetailModal.jsx — CHARACTER_DATA[name].title,
+// display-only, no functional consumers). birthplace/organization are proper
+// nouns/faction keys matched against helpers.js's FACTION_ICONS and are left
+// untranslated, same policy as element/echo/weapon names.
+/** @type {Record<string, string>} */
+export const CHARACTER_TITLE_FR = {
+  'Jiyan': 'Cavalier du Vent',
+  'Yinlin': 'Foudre du Châtiment',
+  'Calcharo': 'Chasseur Fantôme',
+  'Encore': 'Jeu du Comptage des Moutons',
+  'Jianxin': 'Reflets Purificateurs',
+  'Lingyang': 'Bourrasque Givrée',
+  'Verina': 'Appel de la Nature',
+  'Jinhsi': 'Renouveau de l’Aube',
+  'Changli': 'Flamme Éternelle',
+  'Zhezhi': 'Pinceau Enchanté',
+  'Xiangli Yao': 'Tisseur de Matière',
+  'Shorekeeper': 'Chrysalide Euphonique',
+  'Camellya': 'Fleur Sanguine',
+  'Carlotta': 'Remodeler les Dimensions',
+  'Roccia': 'Scène dans la Boîte',
+  'Phoebe': 'Luminescence Gracieuse',
+  'Brant': 'Boussole Enflammée',
+  'Cantarella': 'Mer des Rêves',
+  'Zani': 'Éclat Calciné',
+  'Ciaccona': 'Mélodies Tissées',
+  'Cartethyia': 'Tempête Emplumée',
+  'Lupa': 'Flamme Hurlante',
+  'Phrolova': 'Symphonie de l’Au-delà',
+  'Augusta': 'Éphore de Septimont',
+  'Iuno': 'Stase, Cycle, Renouveau',
+  'Galbrena': 'Descente Infernale',
+  'Qiuyuan': 'Paysage de Bambous',
+  'Chisa': 'Œil du Dénouement',
+  'Lynae': 'Spectre Radiant',
+  'Mornye': 'Cartographie Astrale',
+  'Aemeath': 'Lance Étoilée Guide',
+  'Luuk Herssen': 'Transition de Phase',
+  'Sigrika': 'Manifestation du Vrai Nom',
+  'Hiyuki': 'Dîme des Futurs',
+  'Denia': 'Bulles de Néant',
+  'Lucy': 'Piratage Xéno-Domaine',
+  'Rebecca': 'Arsenal de Type Furie',
+  'Lucilla': 'Palais de la Mémoire',
+  'Yangyang': 'Souffle des Vents',
+  'Yangyang: Xuanling': 'Voix de la Plume d’Azur',
+  'Suisui': 'Hôte de l’Harmonie',
+  'Qingxiao': 'Épée du Cœur',
+  'Jingran': 'Art du Qi des Enfers',
+  'Aalto': 'Frappe du Manteau de Brume',
+  'Baizhi': 'Guérison de You’tan',
+  'Chixia': 'Flamme Vaillante',
+  'Danjin': 'Ombre Écarlate',
+  'Sanhua': 'Valse des Neiges',
+  'Taoqi': 'Floraison de Lames',
+  'Yuanwu': 'Poing du Tonnerre',
+  'Mortefi': 'Souffle du Dragon',
+  'Youhu': 'Merveilles Cryogéniques',
+  'Lumi': 'Réfraction Kaléido',
+  'Buling': 'Ouïe Divine',
+};
+
+// CHAR_BUFF_TABLE's `note` field is display-only prose (rendered in
+// CharacterDetailModal.jsx). `stat`/`target`/`duration`/`condition` are NOT
+// covered here -- `condition` is parsed by calcEngine.js's elemBuffApplies()
+// via a case-insensitive substring match against element names, so it stays
+// untranslated. Lingyang and Rover: Aero have no `note` in the English source
+// (no entry to translate).
+/** @type {Record<string, string>} */
+export const CHAR_BUFF_NOTE_FR = {
+  'Lingyang': "DPS principal Glacio sur le terrain. L'état Lion Bondissant du Circuit Forte (activé via l'Attaque Lourde Plongeon Glorieux à Esprit du Lion plein) débloque des attaques aériennes améliorées. L'Outro Marques Givrées est un pur proc de DGT de zone, pas un buff d'équipe, bien que la Chaîne de Résonance S4 confère à l'équipe +20 % DGT Glacio/30 s à son déclenchement.",
+  'Rover: Aero': "Soigneuse/soutien. La Compétence aérienne Rupture Céleste retire les cumuls de Spectro Frazzle, Havoc Fléau, Fusion Éclatement, Glacio Frisson et Electro Éclair de la cible touchée et convertit chacun en un cumul d'Érosion Aero. Le Forte Danse de l'Averse et la Libération Tempête Oméga soignent tous deux l'équipe.",
+  'Verina': 'Outro Éclosion : soigne le personnage entrant + Amplification de tous les DGT +15 % (30 s) pour l\'équipe à proximité. Don Inhérent de la Nature : ATQ d\'équipe +20 %/20 s au déclenchement du Forte/de la Libération/de l\'Outro.',
+  'Shorekeeper': 'Outro : Amplification de tous les DGT 15 %, équipe entière, 30 s (persiste à travers les changements). Libération Stellarealm : +12,5 % Taux Critique +25 % Dégâts Critiques (30 s), équipe entière. Récupération sur mise à terre.',
+  'Jianxin': 'Soutien à bouclier/sous-DPS en Posture de Parade. Le Forte (Spirale de Chi Primordial) confère un vaste bouclier proportionnel aux PV et des soins périodiques tant qu\'il est canalisé. Le Champ de Force de Purification de la Libération regroupe les ennemis avant d\'exploser. Outro Transcendance : Amplification des DGT de Libération de Résonance +38 % (14 s) pour le personnage entrant.',
+  'Suisui': 'Outro (Eaux Ondoyantes) : Amplification de tous les DGT inconditionnelle de 25 % pendant 30 s. À 400+ Épîtres Florales consommées (jauge de Forte en Posture de Bruine) pendant que Paysage Incessant est actif, confère en plus jusqu\'à 12 % d\'Amplification de tous les DGT (0,2 % par 1 % de Régén. d\'Énergie au-dessus de 200 %, plafonné à 260 % RE) pendant 6 s via Transcendance Itinérante. La Posture de Zéphyr soigne, la Posture de Bruine inflige des DGT Glacio + Frisson. La Libération (Chant de la Voie Publique) prolonge le plafond de cumuls de statuts négatifs pour l\'équipe plutôt que d\'accorder un buff de DGT fixe. La Compétence Inhérente Ciel au-dessus de l\'Eau confère un pic de Taux Critique/DGT Glacio personnel sur ses propres coups d\'Éveil du Printemps/Jade Tintant, limité à une fois toutes les 25 s.',
+  'Lynae': 'Libération : 24 % de tous les DGT (30 s, confirmé exact le 2026-08-16). Outro : 15 % de tous les DGT + 25 % d\'Amplification de Libération pour le suivant (14 s) — auparavant mal classé comme Renforcement, sans fondement. Regain de Rupture Tacet +40 équipe. Réponse de Rupture toutes les 8 s. Tension : 0,12 % DGT par cumul par Regain.',
+  'Qingxiao': 'DPS pur en cible unique, sans buff d\'équipe. Les dégâts évoluent avec la Tension Tacet infligée par l\'équipe — Interférence via son mécanisme de cumuls Verrou Mental (kit de base : jusqu\'à 15 cumuls, ~49 % d\'Amplification/Réduction de DGT combinée au maximum — les 7 premiers cumuls valent 7 % chacun, les cumuls restants 2 % chacun ; S1/S2 relèvent le plafond de cumuls à 25). Données de pré-sortie via le datamine ww.nanoka.cc (2026-08-18, sortie le 2026-08-20) — sujettes à changement au lancement.',
+  'Jingran': 'DPS pur proportionnel aux PV, sans buff d\'équipe. La Chaîne de Résonance 4 confère à l\'équipe +20 % de Bonus de DGT Tous Attributs (30 s) lorsqu\'un Résonateur quelconque obtient un Bouclier — conditionnel, non modélisé comme buff de kit de base.',
+  'Yangyang: Xuanling': 'Principalement une DPS auto-buffeuse (énorme scaling de Dégâts Critiques personnels via Serment Emplumé, plus Souffle Retenu/Tempête Ruisselante +160 % Dégâts Critiques sur son Attaque Lourde conditionnée par le Forte, et l\'Amplification de DGT Havoc Bane de Vœu Inébranlable). L\'Outro confère +20 % DGT Havoc aux autres applicatrices de Havoc Bane de l\'équipe (Chisa).',
+  'Hiyuki': 'DPS Glacio sur le terrain. L\'Outro confère +20 % DGT Glacio au reste de l\'équipe contre les cibles affectées par Glacio Frisson (20 s). Neige Fine Inhérente : personnel +40 % Dégâts Critiques à 1 cumul de Givre Rouillé, +30 %/+30 % Amplification de DGT Morsure Glacio à 1/3 cumuls — nécessite des coéquipiers appliquant Glacio Frisson ou Havoc Fléau pour atteindre les cumuls max.',
+  'Lucy': 'Outro : 25 % Amplification de DGT d\'Attaque Basique pour le Résonateur suivant (14 s) + Programme de Contre-mesure d\'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage confirmé de la même famille générique de Rupture Tacet (selon la page Rupture Tacet du fandom) ; la Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas sourcé (Prydwen 2026-08-18 — le tableau des multiplicateurs se génère côté client).',
+  'Rebecca': 'Outro : déploie une tourelle pendant 14 s et confère au Résonateur suivant 15 % d\'Amplification de tous les DGT (14 s), montant jusqu\'à 35 % d\'Amplification de DGT d\'Attaque Lourde via l\'accumulation d\'Overlimit. Les deux buffs ne ciblent que le personnage entrant, pas toute l\'équipe. Le mode Chasseresse confère personnellement 30 % Dégâts Critiques ; le mode Cran confère personnellement 15 % d\'Ignorance de DEF (personnel, pas un debuff de Réduction de DEF pour toute l\'équipe — corrigé le 2026-08-16, était mal classé sous debuffs comme defShred). Rupture Tacet : la Réponse de Piratage - Effondrement est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas sourcé (Prydwen 2026-08-18) ; Chat, t\'es Fait ! confère +30 Regain de Rupture Tacet (30 s) confirmé à quel que coéquipier inflige Piratage - Déplacement.',
+  'Denia': 'Mode Double Résonance : le mode Éclatement Fusion de l\'Outro amplifie les DGT d\'Éclatement Fusion de l\'équipe de 60 % (30 s) ; le mode Tension Tacet de l\'Outro confère au Résonateur suivant 15-40 % d\'Amplification de tous les DGT (16 s). Kit de Rupture Tacet (mode Tension Tacet uniquement, confirmé via Prydwen 2026-08-18) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, +10 Regain de Rupture Tacet équipe (Couleurs Gravées).',
+  'Lucilla': 'Mode Double Résonance : le mode Glacio Frisson de l\'Outro amplifie les DGT de Glacio Frisson de l\'équipe de 60 % (30 s) ; le mode Écho de l\'Outro confère au Résonateur suivant +50 % d\'Amplification de DGT de Compétence d\'Écho (14 s).',
+  'Mornye': 'Outro : 25 % d\'Amplification de tous les DGT pour l\'équipe (30 s, confirmé exact le 2026-08-16 — était auparavant mal classé comme Renforcement). Champ de Syntonie : +50 % de Taux d\'Accumulation Hors-Tonalité (25 s), soins, DEF +20 % via l\'Ultime. Marqueur Interféré : jusqu\'à 40 % d\'Amplification de DGT sur la cible. Réponse de Rupture.',
+  'Roccia': 'Outro : +20 % d\'Amplification de DGT Havoc + 25 % d\'Amplification de DGT d\'Attaque Basique (14 s). Inhérent 1 : personnel ATQ +20 % (12 s) sur Compétence/Attaque Lourde. Libération : ATQ d\'équipe fixe +1 par 0,1 % de Taux Critique au-delà de 50 %, jusqu\'à +200 (30 s) — pas un buff en %, donc non suivi dans libBuffs.',
+  'Changli': 'Outro : 20 % d\'Amplification de DGT Fusion + 25 % d\'Amplification de DGT de Libération (10 s). Montée en ATQ personnelle via Plume Ardente.',
+  'Yinlin': 'Sous-DPS Electro hors du terrain via Attaques Coordonnées (Salve Électromagnétique sur les cibles marquées par le Sceau du Pécheur, Frappe du Jugement sur les cibles marquées par le Châtiment). Outro : Amplification de DGT Electro +20 % + Amplification de DGT de Libération +25 % (14 s) pour le personnage entrant. Aucune Réduction de RES dans son kit.',
+  'Zhezhi': 'Outro : +20 % d\'Amplification de DGT Glacio + 25 % d\'Amplification de DGT de Compétence de Résonance (14 s). DGT de peintre hors du terrain.',
+  'Phoebe': 'Confession : applique 18 cumuls de Frazzle. Outro : RES Spectro -10 % + 100 % d\'Amplification de DGT de Frazzle. Le Frazzle est un DOT proportionnel au niveau, non basé sur l\'ATQ.',
+  'Cantarella': 'Outro : +20 % DGT Havoc + 25 % d\'Amplification de DGT de Compétence (14 s). Attaque Coordonnée hors du terrain. Soin. Personnel : jusqu\'à +12 % DGT Havoc via le Poison.',
+  'Ciaccona': 'Concert Solo : +24 % DGT Aero pour l\'équipe (via le passif d\'Attaque Basique, disponibilité quasi permanente, non conditionné par la Libération). Outro : +100 % d\'Amplification de DGT d\'Érosion Aero (30 s). 3 cumuls d\'Érosion Aero. La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse de buff d\'équipe codée en dur.',
+  'Lupa': 'Outro : +20 % DGT Fusion + 25 % d\'Amplification de DGT d\'Attaque Basique (14 s). Libération : jusqu\'à 18 % ATQ équipe (35 s), active Chasse Sauvage. Ignorance de RES Fusion jusqu\'à 15 % (35 s), nécessite une équipe mono-Fusion pour une valeur maximale (S3 supprime cette exigence). (Corrigé le 2026-08-16 : durées du buff de Libération et de l\'ignorance de RES corrigées, auparavant bien trop courtes ; ajout du buff personnel et du buff d\'arme manquants via Nanoka/Prydwen/Game8.)',
+  'Iuno': 'Outro : 50 % d\'Amplification de DGT d\'Attaque Lourde (14 s). Soins d\'équipe réels via les attaques de Nouvelle Lune Arc Lunaire/Contre-attaque Esquivée/Arc Au-delà du Bord (soin au contact) et Plénitude Absolue + Domaine de la Pleine Lune (régén. PV/END d\'équipe). Auto-bouclier via Ascension Croissante (32 % ATQ par lancer de compétence, personnel uniquement). La Libération active la phase d\'explosion Cycle Lunaire, sans buff de DGT d\'équipe. (Corrigé le 2026-08-16 : restauration de l\'affirmation de soin d\'équipe — confirmée via une nouvelle vérification en direct sur Nanoka après que Prydwen/Game8 avaient omis son kit de soin dans l\'audit précédent.)',
+  'Qiuyuan': 'Outro : 50 % d\'Amplification de DGT de Compétence d\'Écho (14 s). Libération : buff conditionnel de Dégâts Critiques (jusqu\'à +30 % à 65 %+ de Taux Critique), pas un buff fixe de DGT d\'Écho. Arme signature : 20 % DGT Écho équipe au lancer de l\'Intro. (Corrigé le 2026-08-16 : le buff de Libération était mal étiqueté comme echoDmg — l\'effet réel est les Dégâts Critiques, confirmé via Prydwen/Game8.)',
+  'Chisa': 'Soutien/Soigneuse pour équipes de Statut Négatif. L\'Ignorance de DEF de 18 % via Fil du Fléau et la Réduction de DEF jusqu\'à 12 % via Havoc Fléau nécessitent tous deux que l\'ennemi soit marqué par Piège Invisible, et Fil du Fléau ne bénéficie spécifiquement qu\'aux Résonateurs qui infligent eux-mêmes des dégâts de Statut Négatif — Prydwen souligne que son kit est proche de l\'inutilité en dehors des équipes de Statut Négatif. Soigne l\'équipe via Coupure Mortelle et Instant de Néant ; confère des Boucliers via Sawring - Éradication. Outro : les coéquipiers peuvent cumuler 3 Statut Négatif/Rage Electro supplémentaires pendant 20 s.',
+  'Camellya': 'DPS principale auto-buffeuse. Lit de Semis : +15 % DGT Havoc. Épiphyte : +15 % DGT d\'Attaque Basique.',
+  'Carlotta': 'DPS principale Glacio en explosion. Révérence Finale : +80 % de Multiplicateur de DGT de Libération à Substance maximale. Déconstruction : -18 % DEF de la cible (4 s).',
+  'Jinhsi': 'DPS Spectro en explosion sur le terrain. Accumule de l\'Incandescence à partir des DGT d\'Attribut/Coordonnés de n\'importe quel membre de l\'équipe, puis la dépense via Épiphanie Illuminée (Attaque Basique Stage 4 en Incarnation) pour un nuke massif Éclat Stella (+44,54 % DGT par Incandescence). L\'Outro Fléchisseur Temporel est un pur utilitaire de gain d\'Incandescence, pas un buff d\'équipe.',
+  'Zani': 'Convertit le Frazzle en Braises Héliaques. L\'Outro confère aux alliés touchant la cible marquée +20 % d\'Amplification de DGT Spectro (20 s). La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur.',
+  'Sanhua': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Basique (14 s). Changement rapide.',
+  'Mortefi': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Lourde. Attaque Coordonnée hors du terrain sur Attaque Lourde.',
+  'Danjin': 'Outro : 23 % de Renforcement de DGT Havoc pour le suivant.',
+  'Baizhi': 'Outro : 15 % de Renforcement (6 s par tic, se rafraîchit au soin). Inhérent : 15 % ATQ pour toute l\'équipe (20 s à la collecte d\'Euphonia). Soin.',
+  'Taoqi': 'Outro Volonté de Fer : 38 % d\'Amplification de DGT de Compétence de Résonance pour le suivant (14 s). La Compétence Défense Fortifiée confère 3 cumuls de Bouclier Inébranlable (15 % de réduction des DGT tant qu\'actif) + auto-soin.',
+  'Yuanwu': 'Compétence Coin de Tonnerre : Attaque Coordonnée hors du terrain (1x/1,2 s tant qu\'un allié est sur le terrain dans le champ). La Libération Puissance Ardente confère à toute l\'équipe une Résistance à l\'Interruption (Infusion Foudre, 10 s) — aucune statistique de DGT. Outro Manipulation Électrique : pure déplétion de Force Vibratoire, sans buff de DGT. Le Bouclier ne se débloque qu\'à la Chaîne de Résonance S4.',
+  'Yangyang': 'Outro (Brise Murmurante) achemine 4 Énergie/s pendant 5 s vers le personnage entrant — aucun buff de DGT direct à S0. Contribution personnelle aux DGT minimale ; sa valeur vient de la génération d\'Énergie et de sa facilité de changement rapide (des buffs se débloquent à des Séquences plus élevées).',
+  'Buling': 'Soigneuse hors du terrain (Attaques Lourdes/Intro/Outro). La Libération Améliorée déploie un réseau d\'Éclair Electro + un Bonus de DGT de Compétence d\'équipe croissant au lancer d\'Intro des alliés (10 %→25 %, 50 % à S6). Outro : 15 % d\'Amplification de DGT d\'équipe (30 s).',
+  'Aalto': 'Applicateur d\'Aero hors du terrain. Outro : 23 % d\'Amplification de DGT Aero pour le suivant. Attaque Coordonnée du clone de Brume.',
+  'Chixia': 'DPS Fusion. Explosion de Compétence de Résonance. Tir soutenu de l\'Esprit Combatif Vrombissant.',
+  'Lumi': 'Outro (Escorte) : 38 % d\'Amplification de DGT de Compétence de Résonance pour le suivant pendant 10 s ou jusqu\'à son changement. Buffeuse hybride Electro.',
+  'Youhu': 'Soigneuse Glacio (Divination par Parchemin + Essence Poétique, les deux soignent au lancer). Outro Classiques Intemporels : +100 % d\'Amplification de DGT d\'Attaque Coordonnée (28 s) pour le personnage entrant — son buff de niche signature.',
+  'Aemeath': 'DPS la plus puissante du jeu. Double mode : Rupture Tacet (cible unique) / Éclatement Fusion (zone). Duo Séraphique Amélioré évolue selon la Traînée de Rupture/Fusion (jusqu\'à 30 cumuls = multiplicateur 300 %, 4 %/10 % par cumul retiré). La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur. Auto-buff : jusqu\'à 60 % Dégâts Critiques via Entre les Étoiles. Rupture Tacet : Réponse de Rupture Tacet authentique confirmée (Éclat d\'Étoile, kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas sourcé (Prydwen 2026-08-18 — le tableau des multiplicateurs se génère côté client, non extrait du texte) ; le sous-objet tuneBreak ne porte que la statistique générique de Regain de base en attendant ce chiffre.',
+  'Jiyan': 'DPS d\'Attaque Lourde en forme Qingloong. La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur.',
+  'Calcharo': 'Combo Libération → Messager de la Mort.',
+  'Encore': 'DPS principale Fusion sur le terrain. Accumule du Chaos via les coups Basique/Compétence/Intro ; à Chaos plein, l\'Attaque Lourde entre dans un état de réduction de DGT de 70 % et lance un gros finisseur à DGT de Libération (Frénésie Nuageuse / Rupture Cosmique) à la sortie. La Libération Rave Cosmique remplace tout son kit par des versions Fusion améliorées pendant 10 s. L\'Outro Champ Thermique est un pur proc de DoT, sans buff d\'équipe — libre pour le changement rapide.',
+  'Cartethyia': 'DPS Aero de premier plan. Proportionnelle aux PV. Outro : +17,5 % DGT Aero contre Statut Négatif (20 s). L\'Empreinte Indélébile du Vent inflige un debuff aux cibles cumulant de l\'Érosion, jusqu\'à +60 % DGT subis. L\'Ignorance de DEF de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur.',
+  'Brant': 'Outro : +20 % DGT Fusion + 25 % d\'Amplification de DGT de Compétence (14 s). Auto-soin + bouclier d\'équipe via le Forte. Inhérent : +15 % de Bonus de DGT Fusion.',
+  'Augusta': 'DPS de zone en Attaque Lourde avec auto-boucliers intégrés (Faveur de la Gloire) et un auto-buff Couronne des Volontés. Outro : +15 % d\'Amplification de tous les DGT pour le Résonateur suivant (14 s), pas un multiplicateur de « Renforcement ». Le Royaume du Souverain de la Libération confère aux coéquipiers un bouclier au lancer d\'Intro — aucune statistique de DPS directe. (Corrigé le 2026-08-16 : l\'Outro était mal étiqueté comme Renforcement au lieu d\'Amplification de tous les DGT ; ajout du buff personnel Couronne des Volontés manquant.)',
+  'Galbrena': 'DPS Fusion en Compétence d\'Écho + Attaque Lourde. L\'Outro (Poursuite Cendrée) est purement offensif, sans buff d\'équipe — libre pour le changement rapide. Auto-buffs via la Libération et Élan Brûlant, sans kit de soutien d\'équipe. Flamme Résiduelle est un debuff de DGT subis sur l\'ennemi (pas un auto-buff), renouvelé par les lancers de Compétence d\'Écho de n\'importe quel coéquipier — Prydwen note que c\'est réalistement 36 % sans Phrolova, 48 % avec elle (rarement maximisé à 60 %).',
+  'Luuk Herssen': 'DPS Gantelets Spectro. Axé sur la Tension Tacet. La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur. Kit de Rupture Tacet (confirmé via Prydwen 2026-08-18) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, aucun buff de Regain de Rupture Tacet d\'équipe.',
+  'Sigrika': 'Hypercarry en Compétence d\'Écho consommant des Runes. Noms Vrais Alignés Inhérent : Bénédiction des Runes confère au Résonateur actif +3 %/+3 % DGT Aero+Compétence d\'Écho par cumul (6 max) via les lancers de Compétence d\'Écho des coéquipiers, +30 %/+30 % de plus aux cumuls max (48 %/48 % au total) — se réinitialise au changement d\'équipe. Noms Alignés Inhérent 2 : jusqu\'à 50 % DGT Écho via la RE au-dessus de 125 %. Arme signature : 32 % d\'Amplification de Compétence d\'Écho + 10 % d\'Ignorance de DEF. Contrôle de foule via les modes Runiques.',
+  'Phrolova': 'Outro (Pièce Inachevée) : +20 % DGT Havoc + 25 % d\'Amplification de DGT d\'Attaque Lourde (14 s). Personnel : jusqu\'à 60-100 % Dégâts Critiques via l\'accumulation de Résonance Post-mortem. L\'Intro est « Suite de Quiétude » (base) / « Suite d\'Immortalité » (améliorée par Maestro). (Corrigé le 2026-08-16 : le nom de la compétence Outro était erroné — le fichier l\'appelait auparavant « Applaudissement Final » ; le vrai nom de l\'Intro de base « Suite de Quiétude » manquait aussi, seule la forme améliorée Maestro était listée auparavant.)',
+  'Xiangli Yao': 'DPS principal en Libération, état Intuition. L\'Outro Règle de Chaîne inflige des DGT Electro bonus (237,63 % ATQ, jusqu\'à 3 procs sur 8 s) sur les Attaques Basiques du personnage entrant plutôt que d\'accorder un buff d\'Amplification de DGT.',
+  'Rover: Spectro': 'Applicatrice de Frazzle Spectro/soutien à changement rapide. Forte : la Compétence de Résonance à 50+ Son Diminutif lance Rotation Résonnante (2 cumuls de Frazzle + Chatoiement, qui stoppe la dégradation), suivie de l\'Attaque Basique Échos Résonnants. La Libération Orchestre en Écho applique 6 cumuls de Frazzle supplémentaires. S6 (5 exemplaires) : les coups de Compétence infligent -10 % RES Spectro/20 s.',
+  'Rover: Havoc': 'DPS principal Havoc sur le terrain. Maintenez l\'Attaque Lourde à Umbra plein pour lancer Dévastation et entrer en Poussée Sombre — un état amélioré d\'Attaque Basique/Lourde/Compétence se terminant par la Libération Abysse qui S\'éteint, un nuke en cible unique à 1520 % ATQ.',
+  'Rover: Electro': 'Hybride en Posture de Parade. Maintenez l\'Attaque Basique pour l\'immunité aux interruptions + 60 % de réduction des DGT. À Poussée Électrique maximale, appuyez sur Surchoc pour un buff d\'ATQ d\'équipe ou maintenez pour entrer en Résonance Apex, débloquant le combo de Forte multi-élémentaire Thrum of All Sounds (coups Spectro/Havoc/Aero + pulsations Electro de Fléau du Tonnerre). Actuellement l\'attunement le plus faible — manque d\'une partenaire DPS solide.',
+};
+
+// CHARACTER_ROTATIONS' `note` field is display-only prose (rendered in
+// CharacterDetailModal.jsx's rotation guide). `type`/`skill` are NOT
+// translated: they're matched by substring against SKILL_MULTIPLIERS at
+// render time. Keyed by character name -> array of translated notes in the
+// same order as CHARACTER_ROTATIONS[name] (index-aligned, not step-name
+// keyed, since some skill names repeat within one rotation).
+/** @type {Record<string, string[]>} */
+export const CHARACTER_ROTATION_NOTE_FR = {
+};

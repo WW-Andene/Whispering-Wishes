@@ -5916,7 +5916,7 @@ const STANDARD_5STAR_CHARACTERS = new Set(['Calcharo', 'Encore', 'Jianxin', 'Lin
 // [SECTION:LOCALIZATION] — locale-aware overlay for characters.fr.js.
 // English data above is the single source of truth; this merges in
 // translated `desc` bio text only, keyed by the same character names.
-import { CHARACTER_DESC_FR } from './characters.fr.js';
+import { CHARACTER_DESC_FR, CHARACTER_TITLE_FR, CHAR_BUFF_NOTE_FR, CHARACTER_ROTATION_NOTE_FR } from './characters.fr.js';
 
 /** @param {string} locale */
 export function getLocalizedCharacterData(locale) {
@@ -5924,7 +5924,36 @@ export function getLocalizedCharacterData(locale) {
   const out = {};
   for (const [name, base] of Object.entries(CHARACTER_DATA)) {
     const fr = CHARACTER_DESC_FR[name];
-    out[name] = { ...base, ...(fr ? { desc: fr } : {}) };
+    const title = CHARACTER_TITLE_FR[name];
+    out[name] = { ...base, ...(fr ? { desc: fr } : {}), ...(title ? { title } : {}) };
+  }
+  return out;
+}
+
+// CHAR_BUFF_TABLE's `note` field is display-only prose (rendered in
+// CharacterDetailModal.jsx). stat/target/duration/condition are NOT touched:
+// `condition` is parsed by calcEngine.js's elemBuffApplies() via a
+// case-insensitive substring match against element names — translating it
+// would silently break elemental conditional buff application.
+export function getLocalizedCharBuffTable(locale) {
+  if (locale !== 'fr') return CHAR_BUFF_TABLE;
+  const out = {};
+  for (const [name, base] of Object.entries(CHAR_BUFF_TABLE)) {
+    const note = CHAR_BUFF_NOTE_FR[name];
+    out[name] = note ? { ...base, note } : base;
+  }
+  return out;
+}
+
+// CHARACTER_ROTATIONS' `note` field is display-only prose (rendered in
+// RotationGuideCard.jsx). `type`/`skill` are NOT touched: they're matched
+// against SKILL_MULTIPLIERS via substring lookup at render time.
+export function getLocalizedCharacterRotations(locale) {
+  if (locale !== 'fr') return CHARACTER_ROTATIONS;
+  const out = {};
+  for (const [name, steps] of Object.entries(CHARACTER_ROTATIONS)) {
+    const notesFr = CHARACTER_ROTATION_NOTE_FR[name];
+    out[name] = notesFr ? steps.map((step, i) => (notesFr[i] ? { ...step, note: notesFr[i] } : step)) : steps;
   }
   return out;
 }

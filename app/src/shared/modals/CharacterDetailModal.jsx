@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations } from '../../data/characters.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
@@ -39,6 +39,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
   const weaponData = bestWeapon ? (getLocalizedWeaponData(getLocale())[bestWeapon] || WEAPON_DATA[bestWeapon]) : null;
+  const localizedBuffNote = getLocalizedCharBuffTable(getLocale())[name]?.note || CHAR_BUFF_TABLE[name]?.note;
+  const localizedRotation = getLocalizedCharacterRotations(getLocale())[name] || CHARACTER_ROTATIONS[name];
   const weaponImg = bestWeapon ? DEFAULT_COLLECTION_IMAGES[bestWeapon] : null;
 
   // Ownership helpers for greyed-out completion indicators
@@ -124,7 +126,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <span className="kuro-badge kuro-badge-neutral">{data.role}</span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
-            {data.title && <div className="text-sm text-gray-400 italic -mt-0.5">{data.title}</div>}
+            {data.title && <div className="text-sm text-gray-400 italic -mt-0.5">{getLocalizedCharacterData(getLocale())[name]?.title || data.title}</div>}
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
             </div>
@@ -414,7 +416,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           )}
 
           {/* Buff/Debuff — CHAR_BUFF_TABLE note plus the short buff/debuff tag lists */}
-          {(CHAR_BUFF_TABLE[name]?.note || data.buffs?.length > 0 || data.debuffs?.length > 0) && (
+          {(localizedBuffNote || data.buffs?.length > 0 || data.debuffs?.length > 0) && (
             <div className="kuro-detail-box space-y-2">
               <div className="kuro-section-label">{t('modals.characterDetail.buffDebuff')}</div>
               {data.buffs?.length > 0 && (
@@ -433,20 +435,20 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   </div>
                 </div>
               )}
-              {CHAR_BUFF_TABLE[name]?.note && (
-                <p className="text-sm text-gray-300 leading-relaxed">{CHAR_BUFF_TABLE[name].note}</p>
+              {localizedBuffNote && (
+                <p className="text-sm text-gray-300 leading-relaxed">{localizedBuffNote}</p>
               )}
             </div>
           )}
 
           {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
-          {CHARACTER_ROTATIONS[name] && (
+          {localizedRotation && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
                 <RotateCw size={14} className={colors.text} /> {t('modals.characterDetail.standardRotation')}
               </h3>
               <div className="space-y-0.5">
-                {CHARACTER_ROTATIONS[name].map((step, i) => {
+                {localizedRotation.map((step, i) => {
                   const typeColors = {
                     'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
                     'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
