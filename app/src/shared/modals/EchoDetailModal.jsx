@@ -14,6 +14,7 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import MonsterCard from '../components/MonsterCard.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 const ECHO_COST_COLORS = {
   4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', label: '4 Cost' },
@@ -31,8 +32,10 @@ const ECHO_BUFF_COLORS = {
   'Shield':       { bg: 'bg-blue-500/10',      text: 'text-blue-400',    border: 'border-blue-500/25' },
   'Physical DMG': { bg: 'bg-slate-400/10',     text: 'text-slate-300',   border: 'border-slate-400/25' },
 };
-const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visualSettings }) => {
+const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectionData, visualSettings }) => {
+  const { framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const isFullAnim = visualSettings?.animationsEnabled === 'full';
+  const f = infoFraming || { x: 0, y: 0, zoom: 100 };
   const data = ECHO_DATA[name];
   const ownsChar = (n) => {
     if (!collectionData) return true;
@@ -69,11 +72,21 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, collectionData, visual
       >
        <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
-        <div className="relative h-40 overflow-hidden rounded-t-2xl" style={{ contain: 'paint' }} data-sheet-header>
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl${framingMode ? ' cursor-pointer' : ''}${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+          onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
+        >
           <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
           {!headerGradient && <div className={`absolute inset-0 bg-gradient-to-br ${costColors.bg}`} />}
+          {framingMode && editingImage === `info-${name}` && (
+            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+              <span className="text-black text-sm">✓</span>
+            </div>
+          )}
           {imageUrl && (
-            <EchoImage src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" noBgProcess={data?.noBgProcess} />
+            <EchoImage src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" noBgProcess={data?.noBgProcess} style={{
+              transform: `translateY(-50%) scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+              transformOrigin: 'center',
+            }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close echo details">

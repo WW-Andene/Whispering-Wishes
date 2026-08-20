@@ -39,6 +39,7 @@ export function DetailModalHost({ detailModal, setDetailModal, visualSettings, s
       <WeaponDetailModal
         name={detailModal.name}
         imageUrl={detailModal.imageUrl}
+        infoFraming={getImageFraming(`info-${detailModal.name}`)}
         onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
         collectionData={collectionData}
       />
@@ -51,6 +52,7 @@ export function DetailModalHost({ detailModal, setDetailModal, visualSettings, s
         name={detailModal.name}
         imageUrl={detailModal.imageUrl}
         cost={detailModal.cost}
+        infoFraming={getImageFraming(`info-${detailModal.name}`)}
         visualSettings={visualSettings}
         onClose={() => setDetailModal({ show: false, type: null, name: null, imageUrl: null })}
         collectionData={collectionData}

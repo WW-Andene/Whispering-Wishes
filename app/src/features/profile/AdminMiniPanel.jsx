@@ -250,7 +250,7 @@ export default function AdminMiniPanel({
         )}
 
         {/* Info Panel Framing */}
-        {framingMode && detailModal.show && detailModal.type === 'character' && (() => {
+        {framingMode && detailModal.show && ['character', 'weapon', 'echo'].includes(detailModal.type) && (() => {
           const infoKey = `info-${detailModal.name}`;
           const infoF = getImageFraming(infoKey);
           return (
