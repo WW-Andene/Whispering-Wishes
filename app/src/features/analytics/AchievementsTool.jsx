@@ -10,7 +10,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Award, Check, ChevronLeft, EyeOff, Search, X } from 'lucide-react';
-import { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIEVEMENT_VERSIONS, getLocalizedAchievements } from '../../data/achievements.js';
+import { ACHIEVEMENTS, ALL_ACHIEVEMENT_VERSIONS, getLocalizedAchievements, getLocalizedAchievementSeries } from '../../data/achievements.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
@@ -31,12 +31,13 @@ const ACHIEVEMENTS_BY_SERIES = (() => {
   return map;
 })();
 
-const ALL_SERIES_LIST = Object.entries(ACHIEVEMENT_SERIES)
-  .map(([id, s]) => ({ id: Number(id), ...s }))
-  .sort((a, b) => a.id - b.id);
-
 function AchievementsTool({ onClose }) {
   const LOCALIZED_ACHIEVEMENTS = useMemo(() => getLocalizedAchievements(getLocale()), []);
+  const LOCALIZED_ACHIEVEMENT_SERIES = useMemo(() => getLocalizedAchievementSeries(getLocale()), []);
+  const ALL_SERIES_LIST = useMemo(() => Object.entries(LOCALIZED_ACHIEVEMENT_SERIES)
+    .map(([id, s]) => ({ id: Number(id), ...s }))
+    .sort((a, b) => a.id - b.id), [LOCALIZED_ACHIEVEMENT_SERIES]);
+  const ALL_ACHIEVEMENT_CATEGORIES = useMemo(() => [...new Set(Object.values(LOCALIZED_ACHIEVEMENT_SERIES).map(s => s.category))], [LOCALIZED_ACHIEVEMENT_SERIES]);
   const [done, setDone] = usePersistedState(STORAGE_KEY, new Set(), SET_CODEC);
   const [search, setSearch] = useState('');
   const [versionFilter, setVersionFilter] = useState('all');
@@ -108,11 +109,11 @@ function AchievementsTool({ onClose }) {
   // dropdown; clicking an individual series card drills into that specific group id.
   const visibleSeriesList = categoryFilter === 'all' ? ALL_SERIES_LIST : ALL_SERIES_LIST.filter(s => s.category === categoryFilter);
 
-  const selectedSeries = seriesFilter !== 'all' ? ACHIEVEMENT_SERIES[seriesFilter] : null;
+  const selectedSeries = seriesFilter !== 'all' ? LOCALIZED_ACHIEVEMENT_SERIES[seriesFilter] : null;
 
   const renderAchievementRow = (id) => {
     const a = LOCALIZED_ACHIEVEMENTS[id];
-    const s = ACHIEVEMENT_SERIES[a.group];
+    const s = LOCALIZED_ACHIEVEMENT_SERIES[a.group];
     const isDone = done.has(id);
     return (
       <div key={id} className="flex items-start gap-3 p-2.5 rounded-lg border transition-colors" style={{ borderColor: isDone ? 'rgba(74,222,128,0.35)' : 'var(--border-medium)', background: isDone ? 'rgba(74,222,128,0.06)' : 'rgba(15,20,28,0.25)' }}>
