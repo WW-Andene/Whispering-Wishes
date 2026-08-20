@@ -706,14 +706,21 @@
     }
 
     /* Rainbow accent theme — RGB "PC RAM" lighting effect.
-       Every .kuro-card gets a solid conic-gradient ring drawn in its own
-       ::before (mask-clipped to a ring shape, exactly like a border), and the
-       gradient's start angle is driven by a registered custom property
-       (--rainbow-angle) so it can be smoothly animated with @property —
-       the colors visibly travel around the ring rather than just recoloring
-       in place. @property has been baseline-supported in every evergreen
-       browser since 2024; browsers that somehow lack it just see a static
-       (unanimated) ring, which matches the reduced-motion fallback anyway. */
+       Previously drawn as a conic-gradient ::before ring clipped with
+       mask-composite: exclude, layered on top of .kuro-card's own real
+       (solid, static) border — that mask trick didn't render reliably, so
+       the only thing visible was the static border underneath it, which is
+       why the ring never appeared to move. Rewritten with the much more
+       robust "double background, transparent border" technique instead: the
+       card's real border is made transparent and painted with two background
+       layers (--bg-card at the padding-box, the conic-gradient at the
+       border-box), so the gradient IS the border, no masking involved.
+       The gradient's start angle is driven by a registered custom property
+       (--rainbow-angle) so it can be smoothly animated with @property — the
+       colors visibly travel around the border. @property has been
+       baseline-supported in every evergreen browser since 2024; browsers
+       that somehow lack it just see a static (unanimated) border, matching
+       the reduced-motion fallback anyway. */
     @property --rainbow-angle {
       syntax: '<angle>';
       inherits: false;
@@ -730,32 +737,29 @@
 
     .theme-rainbow .kuro-card {
       position: relative;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+        conic-gradient(from var(--rainbow-angle),
+          #ffb3c1, #ffd8a8, #fff3a0, #c3f0a8, #a8e6d8, #a8d8ff, #c9b3ff, #f0b3e8, #ffb3c1) border-box;
     }
 
-    .theme-rainbow .kuro-card::before {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      z-index: 6;
-      border-radius: inherit;
-      pointer-events: none;
-      padding: 1px;
-      background: conic-gradient(from var(--rainbow-angle),
-        #ffb3c1, #ffd8a8, #fff3a0, #c3f0a8, #a8e6d8, #a8d8ff, #c9b3ff, #f0b3e8, #ffb3c1);
-      -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-      -webkit-mask-clip: content-box, border-box;
-      -webkit-mask-composite: xor;
-      mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-      mask-clip: content-box, border-box;
-      mask-composite: exclude;
+    /* The generic .kuro-card:hover rule sets a solid border-color, which
+       would paint over the border-box gradient layer above and freeze the
+       border back to a flat color on hover — keep it transparent so the
+       gradient keeps showing (and animating) through hover too. */
+    @media (hover: hover) {
+      .theme-rainbow .kuro-card:hover {
+        border-color: transparent;
+      }
     }
 
     /* Only animate when the app's Animations setting is on/full.
        .theme-rainbow-animated is toggled alongside .theme-rainbow in JS
        (useThemeAccent) based on visualSettings.animationsEnabled. Without it,
-       the ring is still visible — just static — matching the reduced-motion
+       the border is still visible — just static — matching the reduced-motion
        fallback the rest of the app uses. */
-    .theme-rainbow-animated .kuro-card::before {
+    .theme-rainbow-animated .kuro-card {
       animation: rainbow-angle-spin 4s linear infinite;
     }
 
