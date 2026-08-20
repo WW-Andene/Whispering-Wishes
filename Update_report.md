@@ -429,3 +429,39 @@ Fleeting Dreams", "Depths of Illusive Realm"). Left on `PLACEHOLDER_IMAGE` — s
 available.
 
 Verified: `npm run build` clean, `npx vitest run` 612/612 passing.
+
+---
+
+## 2026-08-20 (session 5) — Qingxiao skill/R.Chain icons sourced; game8 confirmed still blocked
+
+**Picked up the dead end logged in session 4.** DV's browser tools (`mcp__DV__web_fetch` with
+`jsRender`) are working again this session. Used the same anti-bot technique the user described
+(real Chrome/Windows UA, `referer: google.com`, `waitUntil: load` + an 8s wait so any JS challenge
+has time to finish) to render `ww.nanoka.cc/character/1413`. The rendered page's raw HTML exposed
+the game's own CDN paths on `static.nanoka.cc` — `SkillIcon/SkillIconQingxiao/SP_IconQingxiao{B1,C1,
+D1,D2,QTE,T,Y}.webp` for the 7 skill-slot icons and `Image/IconDevice/T_IconDevice_QingxiaoM{1-6}_UI.webp`
+for the 6 R.Chain node icons. That CDN has no JS challenge of its own, so all 13 fetched cleanly with
+a plain `curl` once the exact filenames were known.
+
+**Letter convention** (B=Basic ATK, C=Resonance Skill, D=Forte Circuit [2 icons, matching Qingxiao's
+2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) inferred from nanoka's site-wide
+skill-icon-atlas ordering, not from filenames alone — cross-checked against the kit text already in
+`SKILL_MULTIPLIERS['Qingxiao']` (confirmed correct visually: B1 is a sword-attack icon, QTE is the
+liberation-style dramatic burst icon, T/Y are the intro/outro insignia style icons used elsewhere).
+
+Uploaded all 13 to imgbb (`ibb.co/album/pnZXD3`) and wired them into `app/src/data/characters.js`:
+- `SKILL_ICONS['Qingxiao']` — 9 skill-name-substring keys covering all `SKILL_MULTIPLIERS['Qingxiao']`
+  move names, sharing icons across combo variants (e.g. Plunging Attack/Sword Glide reuse Basic ATK).
+- `CHAIN_NODE_ICONS['Qingxiao']` — s1-s6, in the game's own M1-M6 order (matches the existing
+  `CHAIN_NODE_NAMES['Qingxiao']` s1-s6 order already sourced from the same nanoka page).
+
+**Event placeholders ("remaining events")**: re-attempted game8.co (archives/453303 banner,
+archives/453473 event) with the same browser-signature technique — still returns `ERROR: The
+request could not be satisfied` (CloudFront/WAF block), both with `waitUntil: load` and a stealth
+retry. Fandom's MediaWiki search (re-checked) still has no pages for the 5 events left on
+`PLACEHOLDER_IMAGE` (`versionSpecialCampaign`, `giftsOfDriftingMist`, `resonanceSimRealm`,
+`theStringsRemember`, `ifDreamsStillReverberate`) or `CURRENT_BANNERS.eventBannerImage`. Left as-is
+— did not fabricate art. game8 access remains the open blocker for a future session to retry.
+
+Verified: `npm install` (deps weren't present this session), `npx vitest run` — 612/612 passing,
+`npm run build` (from `app/`) succeeds clean.

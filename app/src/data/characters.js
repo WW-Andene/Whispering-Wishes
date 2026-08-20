@@ -5286,6 +5286,22 @@ const SKILL_ICONS = {
     'Thunderous Fury': 'https://i.ibb.co/Kj3cKLdS/Skill-Thunderous-Fury.webp', // Intro Skill
     'Rumbling Thunders': 'https://i.ibb.co/Zpw7cvMr/Skill-Rumbling-Thunders.webp', // Outro Skill
   },
+  // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) Update_report.md entry.
+  // Sourced from static.nanoka.cc's SkillIconQingxiao atlas (SP_IconQingxiaoB1/C1/D1/D2/QTE/T/Y.webp),
+  // re-hosted on ibb.co. Letter/order convention (B=Basic ATK, C=Resonance Skill, D=Forte Circuit
+  // [2 icons for her 2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) matches the
+  // pattern nanoka uses site-wide for every other character's SkillIcon atlas, not just Qingxiao's.
+  'Qingxiao': {
+    'Stringblade': 'https://i.ibb.co/vn7cCMT/Skill-Qingxiao-Basic-ATK.webp', // Basic ATK
+    'Plunging Attack': 'https://i.ibb.co/vn7cCMT/Skill-Qingxiao-Basic-ATK.webp',
+    'Sword Glide': 'https://i.ibb.co/vn7cCMT/Skill-Qingxiao-Basic-ATK.webp',
+    'Severing Note': 'https://i.ibb.co/QFfYPWSS/Skill-Qingxiao-Resonance-Skill.webp', // Resonance Skill
+    'Ephemeral Transcendence': 'https://i.ibb.co/Lz6TqkmC/Skill-Qingxiao-Forte-Circuit.webp', // Forte Circuit
+    "Heaven's Reckoning": 'https://i.ibb.co/Y7cXCSsL/Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher
+    'Billows Beneath Heaven': 'https://i.ibb.co/jkphKz37/Skill-Qingxiao-Liberation.webp', // Resonance Liberation
+    'Tonality Shift': 'https://i.ibb.co/BHfMMdWL/Skill-Qingxiao-Intro.webp', // Intro Skill
+    'Lingering Song': 'https://i.ibb.co/0jpvcBrL/Skill-Qingxiao-Outro.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -5786,6 +5802,21 @@ const CHAIN_NODE_ICONS = {
     s4: 'https://i.ibb.co/fYLSNdB2/Sequence-Node-Wanderer-of-Solaris-Blessed-by-Fortune.webp',
     s5: 'https://i.ibb.co/NdSwppx6/Sequence-Node-Forum-Ban-New-Account.webp',
     s6: 'https://i.ibb.co/bRH5Fycd/Sequence-Node-Almighty-Forum-Lord-of-Thunder-Spell.webp',
+  },
+  // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) Update_report.md entry.
+  // Fandom still has zero Sequence_Node_*/Skill_* uploads for Qingxiao, but DV's JS-capable web_fetch
+  // recovered this session and rendered ww.nanoka.cc/character/1413 directly; its network requests
+  // exposed the game's own static.nanoka.cc CDN asset paths (SkillIcon/SkillIconQingxiao/SP_IconQingxiao*
+  // and Image/IconDevice/T_IconDevice_QingxiaoM1-6_UI), fetched with a browser UA + referer (no JS
+  // challenge on the CDN itself), then re-hosted on ibb.co per this file's convention. R.Chain order
+  // (M1-M6) matches the game's own s1-s6 sequence-node numbering used in CHAIN_NODE_NAMES above.
+  'Qingxiao': {
+    s1: 'https://i.ibb.co/yn2fQNNY/qingxiao-s1.webp',
+    s2: 'https://i.ibb.co/pj1TDk2Z/qingxiao-s2.webp',
+    s3: 'https://i.ibb.co/SXYD4cPD/qingxiao-s3.webp',
+    s4: 'https://i.ibb.co/q30vSXqr/qingxiao-s4.webp',
+    s5: 'https://i.ibb.co/1t4yB6YJ/qingxiao-s5.webp',
+    s6: 'https://i.ibb.co/cGpCS76/qingxiao-s6.webp',
   },
 };
 
