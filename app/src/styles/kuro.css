@@ -716,13 +716,16 @@
 
     .theme-rainbow {
       --rainbow-hue: 280;
-      --shimmer-color: hsla(var(--rainbow-hue), 90%, 85%, 0.55);
-      --shimmer-color-bright: hsla(var(--rainbow-hue), 95%, 92%, 0.85);
-      --card-outline: hsla(var(--rainbow-hue), 85%, 85%, 0.12);
-      --card-outline-hover: hsla(var(--rainbow-hue), 85%, 85%, 0.22);
-      --card-glow: hsla(var(--rainbow-hue), 90%, 80%, 0.4);
-      --card-inset: hsla(var(--rainbow-hue), 85%, 85%, 0.15);
-      --card-inset-hover: hsla(var(--rainbow-hue), 85%, 85%, 0.25);
+      --border-default: hsla(var(--rainbow-hue), 100%, 65%, 0.35);
+      --border-hover: hsla(var(--rainbow-hue), 100%, 65%, 0.55);
+      --border-bright: hsla(var(--rainbow-hue), 100%, 65%, 0.65);
+      --shimmer-color: hsla(var(--rainbow-hue), 100%, 65%, 0.75);
+      --shimmer-color-bright: hsla(var(--rainbow-hue), 100%, 75%, 0.95);
+      --card-outline: hsla(var(--rainbow-hue), 100%, 65%, 0.35);
+      --card-outline-hover: hsla(var(--rainbow-hue), 100%, 65%, 0.55);
+      --card-glow: hsla(var(--rainbow-hue), 100%, 60%, 0.55);
+      --card-inset: hsla(var(--rainbow-hue), 100%, 65%, 0.25);
+      --card-inset-hover: hsla(var(--rainbow-hue), 100%, 65%, 0.4);
     }
 
     /* Only animate the hue when the app's Animations setting is on/full.

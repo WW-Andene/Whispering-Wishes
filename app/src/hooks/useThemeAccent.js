@@ -52,16 +52,13 @@ export function useThemeAccent(visualSettings) {
     el.classList.toggle('theme-rainbow', isRainbow);
     el.classList.toggle('theme-rainbow-animated', isRainbowAnimated);
     if (isRainbow) {
-      // Solid fallbacks (used by anything reading the var directly before the
-      // animated .theme-rainbow rules in kuro.css win the cascade) plus the
-      // static accent color. The animated shimmer/glow/outline colors are left
-      // to CSS (.theme-rainbow / .theme-rainbow:not(.no-animations)) instead of
-      // being set inline here, since inline styles would out-rank the keyframe.
+      // Static accent color for consumers that need a plain color (tab text,
+      // header icon). --border-* and the shimmer/glow/outline vars are left
+      // to CSS (.theme-rainbow / .theme-rainbow-animated) so they derive from
+      // the animated --rainbow-hue instead of being pinned to a static hex —
+      // inline styles would out-rank the keyframe and freeze the hue shift.
       el.style.setProperty('--theme-accent', themeAccent);
-      el.style.setProperty('--border-default', `${themeAccent}30`);
-      el.style.setProperty('--border-hover', `${themeAccent}50`);
-      el.style.setProperty('--border-bright', `${themeAccent}60`);
-      ['--shimmer-color','--shimmer-color-bright','--card-outline','--card-outline-hover','--card-glow','--card-inset','--card-inset-hover'].forEach(v => el.style.removeProperty(v));
+      ['--border-default','--border-hover','--border-bright','--shimmer-color','--shimmer-color-bright','--card-outline','--card-outline-hover','--card-glow','--card-inset','--card-inset-hover'].forEach(v => el.style.removeProperty(v));
     } else if (themeAccent) {
       el.style.setProperty('--theme-accent', themeAccent);
       el.style.setProperty('--border-default', `${themeAccent}20`);
