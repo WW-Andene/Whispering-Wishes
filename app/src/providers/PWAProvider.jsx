@@ -123,27 +123,7 @@ const PWAProvider = ({ children }) => {
     let swUpdateHandler = null;
     let swStateChangeHandler = null;
     let swInstallingWorker = null;
-    let swControllerChangeHandler = null;
     if ('serviceWorker' in navigator) {
-      // The SW's own install/activate handlers already call skipWaiting() +
-      // clients.claim(), so a new version takes over as controller in the
-      // background almost immediately — but that only affects *future*
-      // fetches. It does NOT swap out the JS/CSS this tab already loaded and
-      // rendered. Without an explicit reload here, a long-lived tab (or a
-      // home-screen PWA with no visible refresh button) can sit on a stale
-      // bundle indefinitely even though the new version is fully deployed
-      // and already controlling. Reload once when the controller genuinely
-      // changes (not on first-ever install, which also fires this event but
-      // has nothing to "update" from — guarded via hadController below).
-      const hadController = !!navigator.serviceWorker.controller;
-      let reloaded = false;
-      swControllerChangeHandler = () => {
-        if (!hadController || reloaded) return;
-        reloaded = true;
-        window.location.reload();
-      };
-      navigator.serviceWorker.addEventListener('controllerchange', swControllerChangeHandler);
-
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then((registration) => {
           swRegistration = registration;
@@ -176,9 +156,6 @@ const PWAProvider = ({ children }) => {
       }
       if (swInstallingWorker && swStateChangeHandler) {
         try { swInstallingWorker.removeEventListener('statechange', swStateChangeHandler); } catch {}
-      }
-      if (swControllerChangeHandler && 'serviceWorker' in navigator) {
-        try { navigator.serviceWorker.removeEventListener('controllerchange', swControllerChangeHandler); } catch {}
       }
       removeMetaTags();
     };
