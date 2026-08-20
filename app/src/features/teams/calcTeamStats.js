@@ -933,7 +933,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
     const rotationTimeline = (() => {
-      const buffs = [];
       // ── Smart rotation ordering based on WuWa swap mechanics ──
       // Rule 1: Main DPS goes LAST (receives all buffs in DPS window)
       // Rule 2: Characters with team-wide outro buffs go FIRST (persist through swaps)
@@ -957,25 +956,49 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       };
 
       // Sort: team-wide outro first, then by next-outro value ascending (strongest last = closest to DPS)
+      // — this is the FALLBACK order (also the tie-break/first candidate below), not the final word.
       supports.sort((a, b) => {
         const aTeam = hasTeamOutro(a) ? 0 : 1;
         const bTeam = hasTeamOutro(b) ? 0 : 1;
         if (aTeam !== bTeam) return aTeam - bTeam; // team-wide outro goes first
         return nextOutroValue(a) - nextOutroValue(b); // stronger next-outro goes last (closer to DPS)
       });
-      const ordered = dpsChar ? [...supports, dpsChar] : [...mems];
-      // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
-      const raw = ordered.map(m => ({
-        m, onField: m.d.onField ?? (m.name === mainDps.name ? 15 : 5),
-      }));
-      const totalRaw = raw.reduce((s, r) => s + r.onField, 0);
+
+      // ── Order search — referring to real buff/debuff durations, not just target-type heuristics ──
+      // The sort above only classifies buffs by target ('team' vs 'next') and static value; it never
+      // checks whether a buff's actual timed duration is long enough to survive the gap until the DPS
+      // window actually opens. With supports.length <= 3 (this app's team size cap), brute-forcing
+      // every permutation and scoring each by how much buff value-time from non-DPS members actually
+      // lands inside the DPS's own on-field window (using each buff's real `duration` field from
+      // CHAR_BUFF_TABLE/echo/weapon data — the same numbers the `inherits` badge below already reads)
+      // is cheap (<=6 orderings) and gives a genuinely duration-grounded pick instead of a fixed rule.
+      // This only reorders whole per-character blocks for DISPLAY (this closure runs after teamDps/
+      // grandTotal are already final above) — it cannot change the real DPS number, only which
+      // ordering the Rotation Guide presents as the swap sequence.
+      function permutations(arr) {
+        if (arr.length <= 1) return [arr];
+        const out = [];
+        for (let i = 0; i < arr.length; i++) {
+          const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+          for (const p of permutations(rest)) out.push([arr[i], ...p]);
+        }
+        return out;
+      }
+
+      // Calculate raw on-field times, then scale proportionally if total exceeds rotTime — same for
+      // every candidate order (durations don't depend on sequence), computed once up front.
+      const onFieldOf = (m) => m.d.onField ?? (m.name === mainDps.name ? 15 : 5);
+      const totalRaw = mems.reduce((s, m) => s + onFieldOf(m), 0);
       const scale = totalRaw > rotTime ? rotTime / totalRaw : 1;
 
+      // Builds the timeline + buff list for one candidate ordering of [...supports, dpsChar].
+      function buildForOrder(orderedMems) {
       const timeline = [];
+      const buffs = [];
       let t = 0;
-      raw.forEach(({ m, onField: rawField }) => {
+      orderedMems.forEach((m) => {
         const isMain = m.name === mainDps.name;
-        const onField = Math.round(rawField * scale * 10) / 10; // scale + round to 0.1s
+        const onField = Math.round(onFieldOf(m) * scale * 10) / 10; // scale + round to 0.1s
         timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
         const bt = CHAR_BUFF_TABLE[m.name];
         if (bt) {
@@ -1122,6 +1145,40 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
 
         t += onField;
       });
+      return { timeline, buffs };
+      }
+
+      // Candidate orderings: every permutation of supports (dpsChar always last — Rule 1 is not up
+      // for debate, only which support leads/trails is). Capped at 3! = 6 candidates since team size
+      // maxes at 3 (≤2 supports); if that cap is ever raised, falls back to just the heuristic order
+      // above rather than a factorial blowup.
+      const candidateOrders = (supports.length <= 3 ? permutations(supports) : [supports])
+        .map(perm => dpsChar ? [...perm, dpsChar] : [...perm]);
+
+      // Score = total buff value-time from non-DPS members that's actually still active (per its real
+      // `duration`) when the DPS's own on-field window starts — i.e. how much of what this ordering
+      // hands off actually reaches the damage dealer, not just "did we tag it 'next' vs 'team'".
+      function scoreOrder(timeline, buffs) {
+        const dpsSeg = timeline.find(s => s.name === mainDps.name);
+        if (!dpsSeg) return 0;
+        return buffs.reduce((sum, b) => {
+          const owner = b.owner || b.source;
+          if (owner === mainDps.name) return sum; // only cross-character handoffs count
+          const stillActive = b.start <= dpsSeg.start + 0.05 && b.start + b.duration > dpsSeg.start + 0.05;
+          return stillActive ? sum + Math.abs(b.value || 0) : sum;
+        }, 0);
+      }
+
+      let best = null;
+      candidateOrders.forEach((order, idx) => {
+        const built = buildForOrder(order);
+        const score = scoreOrder(built.timeline, built.buffs);
+        // idx 0 is always the original heuristic order (permutations()'s first result preserves input
+        // order) — strictly-greater comparison means ties keep that heuristic pick, so behavior is
+        // unchanged whenever duration data doesn't actually favor a different sequence.
+        if (!best || score > best.score) best = { ...built, score, order };
+      });
+      const { timeline, buffs } = best;
 
       // ── Rotation blocks — Prydwen-style: one self-contained block per character (what THEY do
       // on field, independent of the rest of the team), plus what it hands off to / inherits from

@@ -570,3 +570,36 @@ gap in the Team tab too, not something this introduces).
 error, all 58 produced non-empty `selfActive`/`handsOff` output (0 silently-empty solo rotations).
 
 Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 9) — Answered "can buff/debuff duration drive real interleaving?": partially yes
+
+**User's follow-up question after the rotation-interleaving audit**: can skill/buff/debuff *duration*
+data (already in the codebase) be used to construct rotation ordering, even without per-hit timing?
+
+**What it can't do**: per-hit cross-character interleaving (the toy example: `Hiyuki1 < Lucilla1-2-3 <
+Hiyuki3-4`) needs each *step's* cast/action duration, which doesn't exist anywhere in this data —
+`CHAR_BUFF_TABLE`/echo/weapon *buff* durations describe how long an *effect* lingers, not how long
+*performing* a step takes. Only 63 of 475 `CHARACTER_ROTATIONS` steps even carry a `duration` field
+(mostly Liberation/Outro, for buff purposes), so there's no timing skeleton to interleave against —
+building it would mean fabricating numbers no source publishes.
+
+**What it CAN do — and does now**: the whole-character-block *ordering* itself. The previous ordering
+was a fixed 2-key sort (team-wide-outro-first, strongest-next-outro-closest-to-DPS) that only looked
+at buff *target type*, never checked whether a buff's actual timed `duration` survives the real gap
+until the DPS's on-field window opens. Replaced it in `calcTeamStats.js`'s `rotationTimeline` closure
+with a brute-force search over every permutation of the (≤2) supports — cheap, since team size caps at
+3 — scoring each candidate by how much cross-character buff *value-time* is still active (per its real
+`duration` field, the same numbers the `inherits` badge already reads) when the DPS's segment starts.
+Ties keep the original heuristic order (permutation index 0), so nothing changes unless duration data
+actually favors a different sequence.
+
+**Verified safe**: this closure runs after `teamDps`/`grandTotal` are already finalized earlier in
+`calcTeamStats` — it only feeds the display-only Rotation Guide, never the real DPS number. Ran 60
+seeded-random 3-character teams through both the pre-change and post-change code: **0 `teamDps`
+differences** (proves zero risk to the actual calculator), **8/60 teams got a different, now
+duration-optimized swap order** (proves the search isn't a no-op). Also stress-tested 300 fully random
+team comps — 0 crashes, all finite DPS.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
